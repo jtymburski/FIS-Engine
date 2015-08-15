@@ -113,7 +113,7 @@ const float Battle::kDODGE_MODIFIER = 0.10;
 const float Battle::kDODGE_HIGHEST_RATE_PC = 50.0;
 const float Battle::kDODGE_PER_LEVEL_MODIFIER = 2.50;
 
-const float Battle::kDEFEND_MODIFIER = 0.50;
+const float Battle::kDEFEND_MODIFIER = 0.45;
 const float Battle::kGUARD_MODIFIER = 1.10;
 const float Battle::kSHIELDED_MODIFIER = 0.00;
 
@@ -772,6 +772,19 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
   auto targ_attrs = temp_target_stats.at(pro_index);
 
+  float action_power_mod = 1.0;
+
+  if (curr_skill->getPrimary() != Element::NONE)
+    action_power_mod = 1.50;
+
+  if (curr_skill->getSecondary() != Element::NONE)
+  {
+    action_power_mod = 1.25;
+
+    if (curr_skill->getPrimary() != Element::NONE)
+      action_power_mod = 2.00;
+  }
+
   int32_t base_user_pow = 0; /* Base user power value */
   int32_t base_targ_def = 0; /* Base target defense value */
   int32_t phys_pow_val = 0;  /* Physical towards attack */
@@ -890,6 +903,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
     var_val = base_var;
 
   action_power = Helpers::randU(action_power - var_val, action_power + var_val);
+  action_power = std::floor(action_power_mod * action_power);
 
   int32_t base_damage = 0;
 
@@ -2549,7 +2563,12 @@ bool Battle::processAilment()
 
       /* Check for party death */
       if (to_kill)
+      {
+        /* If the person is to die, their upkeeping has been processed */
+        setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, true);
+
         party_death = processPersonDeath(allies);
+      }
 
       /* Cure the ailment */
       if (to_cure)

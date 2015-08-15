@@ -3,7 +3,7 @@
 * Date Created: November 21, 2013
 * Inheritance: None
 * Description: A Skill is a container for actions which are the actual choices
-*              a person chooses to use in a Battle. Skills are generally 
+*              a person chooses to use in a Battle. Skills are generally
 *              contained in SkillSets which are used by Person and Items, etc.
 *              A Skill can have a number of actions, each with different
 *              effects.
@@ -11,8 +11,8 @@
 * Notes
 * -----
 *
-* [1]: A Skill is a possible selection for a BattleAction. When a Skill is 
-*      chosen, its cost in QD is removed from the user (unless the Skill is 
+* [1]: A Skill is a possible selection for a BattleAction. When a Skill is
+*      chosen, its cost in QD is removed from the user (unless the Skill is
 *      a skill from an Item). When the action is performed, each Action (effect)
 *      in the skill performs an effect on the selected targets.
 *
@@ -58,7 +58,7 @@ public:
         Action* effect, const float &chance, const uint32_t &cost = 0);
 
   /* General skill construction with multiple effects */
-  Skill(const int &id, const std::string &name, const ActionScope &scope, 
+  Skill(const int &id, const std::string &name, const ActionScope &scope,
   	    const std::vector<Action*> &effects, const float &chance,
         const uint32_t &cost = 0);
 
@@ -160,7 +160,7 @@ public:
 
   /* Returns a pointer to the animation sprite */
   Sprite* getAnimation();
- 
+
   /* Returns the chance of a given effect */
   float getChance();
 
@@ -196,7 +196,7 @@ public:
 
   /* Returns the enumerated scope */
   ActionScope getScope();
-  
+
   /* Returns the secondary element */
   Element getSecondary();
 
@@ -229,7 +229,7 @@ public:
 
   /* Assigns an ID to the Skill */
   bool setID(const int32_t &new_id);
-  
+
   /* Assigns a new using message */
   bool setMessage(const std::string &new_message);
 
@@ -238,10 +238,10 @@ public:
 
   /* Assigns a new primary elemental strength */
   void setPrimary(const Element &new_element);
-  
+
   /* Assigns a new action scope */
   void setScope(const ActionScope &new_scope);
-  
+
   /* Assigns a new secondary elemental strength */
   void setSecondary(const Element &new_element);
 
@@ -253,7 +253,7 @@ public:
 
   /* Assigns a new point value */
   bool setValue(const uint32_t &new_value);
- 
+
   /* Unsets the animation - deletes from memory */
   void unsetAnimation();
 

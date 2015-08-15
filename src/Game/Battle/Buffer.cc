@@ -39,7 +39,7 @@ Buffer::Buffer()
  *============================================================================*/
 
 /*
- * Description: Checks the validity of a given BufferAction and returns the 
+ * Description: Checks the validity of a given BufferAction and returns the
  *              determination of the validity.
  *
  * Inputs: elm - ref. to a BufferAction to check the validity of
@@ -61,7 +61,7 @@ bool Buffer::checkValid(BufferAction& elm)
   is_valid &= elm.targets.size() <= kMAXIMUM_TARGETS;
 
   /* Assign a valid value to the cooldown */
-  Helpers::setInRange(elm.cooldown, static_cast<uint16_t>(0), 
+  Helpers::setInRange(elm.cooldown, static_cast<uint16_t>(0),
                       kMAXIMUM_COOLDOWN);
 
   if (is_valid)
@@ -72,7 +72,7 @@ bool Buffer::checkValid(BufferAction& elm)
     /* Iterate through each target asserting they are alive and in battle */
     for (auto it = begin(elm.targets); it != end(elm.targets); ++it)
       is_valid &= (*it)->getBFlag(BState::IN_BATTLE);
- 
+
     if (elm.type == ActionType::SKILL)
     {
       /* Action skill must not be null and skill use must be enabled */
@@ -132,7 +132,7 @@ BufferAction& Buffer::getIndex(const uint32_t &index)
 {
   if (index < action_buffer.size())
     return action_buffer.at(index);;
- 
+
   return action_buffer.at(0);
 }
 
@@ -145,7 +145,7 @@ BufferAction& Buffer::getIndex(const uint32_t &index)
  *         buffer_sorts - the enumerated sort to be performed
  * Output: bool - true if the sorting took place
  */
-std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions, 
+std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
     BufferSorts buffer_sorts)
 {
   if (buffer_sorts == BufferSorts::ITEM_FIRST)
@@ -173,8 +173,8 @@ std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person* const new_user, Skill* const new_skill_used, 
-    std::vector<Person*> targets, const uint32_t &cooldown, 
+bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
+    std::vector<Person*> targets, const uint32_t &cooldown,
     const uint32_t &initial_turn)
 {
   BufferAction new_elm;
@@ -219,10 +219,10 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person* const new_user, Item* const new_item_used, 
+bool Buffer::add(Person* const new_user, Item* const new_item_used,
     std::vector<Person*> targets, const uint32_t &cooldown,
     const uint32_t &initial_turn)
-{ 
+{
   BufferAction new_elm;
 
   new_elm.cooldown     = cooldown;
@@ -244,13 +244,13 @@ bool Buffer::add(Person* const new_user, Item* const new_item_used,
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs: 
- *         
- *         
- *         
- * Output: 
+ * Inputs:
+ *
+ *
+ *
+ * Output:
  */
 bool Buffer::add(Person* const user, ActionType const &buffer_type,
     std::vector<Person*> targets, const uint32_t &cooldown,
@@ -322,7 +322,7 @@ void Buffer::clearAll(int32_t this_turn_only)
     for (const auto &elm : action_buffer)
       if (elm.initial_turn != static_cast<uint32_t>(this_turn_only))
         temp.push_back(elm);
-    
+
     action_buffer = temp;
   }
 
@@ -349,7 +349,7 @@ void Buffer::clearInvalid()
 
 /*
  * Description: Determines and returns true if the action buffer contains
- *              an element matching a given Person* which is a skill neededing 
+ *              an element matching a given Person* which is a skill neededing
  *              to be cooled down (thus the person skips their selection)
  *
  * Inputs:
@@ -360,12 +360,12 @@ Skill* Buffer::hasCoolingSkill(Person* check_person)
   for (auto element : action_buffer)
     if (element.user == check_person) //&& element.cooldown >= 0)
       return element.skill_used;
-  
+
   return nullptr;
 }
 
 /*
- * Description: Checks if the next element of the Buffer is valid. 
+ * Description: Checks if the next element of the Buffer is valid.
  *
  * Inputs: none
  * Output: bool - true if the next index of the Buffer is valid
@@ -392,7 +392,7 @@ void Buffer::injectGuardTargets(Person* guard, Person* guardee)
     for (size_t i = 0; i < (*it).targets.size(); i++)
     {
       auto person = (*it).targets.at(i)->getGuard();
-      
+
       if (person == guardee)
       {
         (*it).targets.at(i) = guard;
@@ -417,16 +417,16 @@ void Buffer::print(const bool &simple)
   {
     for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
     {
-      std::cout << "Action Type: " << Helpers::actionTypeToStr((*it).type) 
+      std::cout << "Action Type: " << Helpers::actionTypeToStr((*it).type)
                 << std::endl;
-                
+
       if ((*it).type == ActionType::SKILL)
       {
         if ((*it).skill_used != nullptr)
         {
           std::cout << "Skill Name: " << (*it).skill_used->getName() << "\n";
-          std::cout << "Skill Scope: " 
-                    << Helpers::actionScopeToStr((*it).skill_used->getScope()) 
+          std::cout << "Skill Scope: "
+                    << Helpers::actionScopeToStr((*it).skill_used->getScope())
                     << "\n";
         }
         else
@@ -439,7 +439,7 @@ void Buffer::print(const bool &simple)
         if ((*it).item_used != nullptr)
         {
           std::cout << "Item Name: " << (*it).item_used->getName();
-          std::cout << "\nItem Skill Name: " 
+          std::cout << "\nItem Skill Name: "
                     << (*it).item_used->getUseSkill()->getName();
 
           auto action_scope = ((*it).item_used->getUseSkill()->getScope());
@@ -499,7 +499,7 @@ bool Buffer::remove(const uint32_t &index)
  */
 void Buffer::removeAllByUser(Person* user)
 {
-  action_buffer.erase(std::remove_if(begin(action_buffer), 
+  action_buffer.erase(std::remove_if(begin(action_buffer),
                                   end(action_buffer),
                                   [&](BufferAction x) -> bool
                                   {
@@ -518,7 +518,7 @@ void Buffer::removeAllByUser(Person* user)
 /*
  * Description:
  *
- * Inputs: 
+ * Inputs:
  * Output:
  */
 void Buffer::rejectGuardTargets(Person* guard)
@@ -576,7 +576,7 @@ void Buffer::update(const bool &clear)
  * Description: Returns the enumerated action type for the current index on
  *              the Buffer.
  *
- * Inputs: none 
+ * Inputs: none
  * Output: ActionType -- enumerated action type for the current index
  */
 ActionType Buffer::getActionType()
@@ -591,7 +591,7 @@ ActionType Buffer::getActionType()
  * Description: Returns the cooldown of the current action buffer index if the
  *              index is valid, else returns -1
  *
- * Inputs: none 
+ * Inputs: none
  * Output: int32_t - the cooldown of the current index, or -1 if invalid
  */
 int32_t Buffer::getCooldown()
@@ -605,7 +605,7 @@ int32_t Buffer::getCooldown()
 /*
  * Description: Returns the pointer to the person of the current index's user.
  *
- * Inputs: none 
+ * Inputs: none
  * Output: Person* - ptr to the element at current index's user
  */
 Person* Buffer::getUser()
@@ -617,7 +617,7 @@ Person* Buffer::getUser()
 }
 
 /*
- * Description: Returns the pointer to the current index's skill 
+ * Description: Returns the pointer to the current index's skill
  *
  * Inputs: none
  * Output: Skill* - ptr to the current index's skill
@@ -631,7 +631,7 @@ Skill* Buffer::getSkill()
 }
 
 /*
- * Description: Returns the pointer to the current index's item 
+ * Description: Returns the pointer to the current index's item
  *
  * Inputs: none
  * Output: Item* - ptr to the current index's item
@@ -674,7 +674,7 @@ std::vector<Person*> Buffer::getTargets()
  * Description:
  *
  * Inputs:
- * Output: 
+ * Output:
  */
 std::vector<DamageType> Buffer::getDamageTypes()
 {
@@ -715,7 +715,7 @@ bool Buffer::reorder()
    *
    * DEFEND
    * GUARD
-   * ITEM 
+   * ITEM
    * SKILL
    * OTHER
    */

@@ -74,9 +74,9 @@
 const uint16_t Ailment::kMAX_TURNS           =   25;
 const uint16_t Ailment::kMIN_TURNS           =    1;
 const uint32_t Ailment::kPOISON_DMG_MAX      = 8000;
-const uint32_t Ailment::kPOISON_DMG_MIN      =   20;
-const double   Ailment::kPOISON_DMG_INCR     = 1.15;
-const double   Ailment::kPOISON_DMG_INIT     = 0.65;
+const uint32_t Ailment::kPOISON_DMG_MIN      =   10;
+const double   Ailment::kPOISON_DMG_INCR     = 0.95;
+const double   Ailment::kPOISON_DMG_INIT     = 0.15;
 const uint32_t Ailment::kBURN_DMG_MAX        = 5000;
 const uint32_t Ailment::kBURN_DMG_MIN        =  100;
 const double   Ailment::kBURN_DMG_INCR       = 1.50;

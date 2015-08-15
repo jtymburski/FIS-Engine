@@ -9,12 +9,12 @@
 /* Constant Implementation - see header file for descriptions */
 const uint8_t TestBattle::kLVL_MAX = 15;
 const std::string TestBattle::kMENU_ITEMS[] = {
-    "Arcadius", "Aurora Agent", "Aurora Agent x 2", "Aurora Agent x 5  // Probably impossible to balance? Suggest Aurora x 3",
+    "Arcadius", "Aurora Agent", "Aurora Agent x 2", "Aurora Agent x 3",
     "Aurora Agent, Heavy", "Aurora Heavy", "Aurora Engineer, Drone",
-    "Aurora Engineer, Drone x 4", "Aurora Engineer, Agent, Heavy, Drone",
+    "Aurora Engineer, Drone x 3", "Aurora Engineer, Agent, Heavy, Drone",
     "Reverdile, Reverdling", "Reverdile, Reverdling x 2",
-    "Reverdile, Reverdling x 4", "Reverdling", "Reverdling x 2",
-    "Reverdling x 5", "Exit"};
+    "Reverdile, Reverdling x 3", "Reverdling", "Reverdling x 2",
+    "The Impossible", "Exit"};
 const std::string TestBattle::kMENU_FOE = "Enter Foe Level: ";
 const std::string TestBattle::kMENU_FRIEND = "Enter Friend Level: ";
 const uint8_t TestBattle::kNUM_MENU_ITEMS = 16;
@@ -407,20 +407,20 @@ void TestBattle::create()
 
   stats_player_min = AttributeSet(
   {
-    100, 25, 7, 7,
+    125, 25, 8, 8,
     0, 0, 0, 0,
-    6, 6, 3, 3,
+    7, 7, 4, 4,
     0, 0, 0, 0,
-    10, 10, 10, 1
+    15, 15, 10, 1
   }, true);
 
   stats_player_max = AttributeSet(
   {
-    225, 50, 12, 12,
+    250, 50, 14, 14,
     0, 0, 0, 0,
-     10, 10, 6, 6,
-     0, 0, 0, 0,
-     20, 20, 15, 2
+    14, 14, 8, 8,
+    0, 0, 0, 0,
+    20, 20, 15, 2
   }, true);
 
   stats_aurora_heavy_min = AttributeSet(
@@ -443,9 +443,9 @@ void TestBattle::create()
 
   stats_aurora_agent_min = AttributeSet(
   {
-    50, 100, 4, 4,
+    50, 100, 3, 3,
     0, 0, 0, 0,
-    4, 4, 6, 6,
+    3, 3, 5, 5,
     0, 0, 0, 0,
     9, 9, 10, 0
   }, true);
@@ -550,7 +550,7 @@ void TestBattle::createActions()
   /* Enrich - healing */
   act_alt.push_back(new Action("200,ALTER,,,,VITA,PC.20,AMOUNT.10,,100"));
 
-  /* Chlorophona - helaing */
+  /* Chlorophona - healing */
   act_alt.push_back(new Action("201,ALTER,,,,VITA,PC.15,AMOUNT.10,,100"));
 
   /* Damage actions */
@@ -990,7 +990,7 @@ void TestBattle::createSkills()
   /* Static Shot */
   Skill *static_shot =
       new Skill(180, "Static Shot", ActionScope::ONE_ENEMY, act_dmg[4], 95, 0);
-  static_shot->setDescription("An electric shot from drone against a foe");
+  static_shot->setDescription("A weak charged-based attack.");
   static_shot->setPrimary(Element::ELECTRIC);
   static_shot->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(static_shot);
@@ -998,7 +998,7 @@ void TestBattle::createSkills()
   /* Locked Shot */
   Skill *locked_shot = new Skill(181, "Locked Shot", ActionScope::ONE_ENEMY,
                                  act_dmg[23], 100, 25);
-  locked_shot->setDescription("A perfect shot against a foe");
+  locked_shot->setDescription("A charged-based attack that will not miss.");
   locked_shot->setPrimary(Element::ELECTRIC);
   locked_shot->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(locked_shot);
@@ -1009,8 +1009,8 @@ void TestBattle::createSkills()
   /* Hidden Amplification */
   Skill *hidden_amp = new Skill(200, "Hidden Amplification", ActionScope::USER,
                                 act_inf[3], 90, 5);
-  hidden_amp->addAction(act_inf[4]);
-  hidden_amp->setDescription("Increase attack and defense of self");
+  // hidden_amp->addAction(act_inf[4]);
+  hidden_amp->setDescription("Raises one's attacking power.");
   hidden_amp->setPrimary(Element::PHYSICAL);
   hidden_amp->setFlag(SkillFlags::DEFENSIVE);
   skills.push_back(hidden_amp);
@@ -1019,9 +1019,8 @@ void TestBattle::createSkills()
   // TODO: HOW TO DO MULTI-TURN??
   // You can't. I think it was supposed to be cooldown? Else it's another
   // large scope change for no gain
-  // Skill* surge_will = new Skill(201, "Surge of Will",
-  // ActionScope::ALL_ALLIES,
-  //                              act_alt[0], 90, 25);
+  // Skill* surge_will = new Skill(201, "Surge of Will", ActionScope::ALL_ALLIES,
+  //   act_alt[0], 90, 25);
 
   /* Canopy */
   Skill *canopy =
@@ -1488,14 +1487,14 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
     Person *aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
     Person *aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
     Person *aa3 = createPerson(302, AURORAAGENT, renderer, lvl_foe);
-    Person *aa4 = createPerson(303, AURORAAGENT, renderer, lvl_foe);
-    Person *aa5 = createPerson(304, AURORAAGENT, renderer, lvl_foe);
+    // Person *aa4 = createPerson(303, AURORAAGENT, renderer, lvl_foe);
+    // Person *aa5 = createPerson(304, AURORAAGENT, renderer, lvl_foe);
 
     party_foes = new Party(400, aa1, PartyType::REGULAR_FOE, 5, pouch_foes);
     party_foes->addMember(aa2);
     party_foes->addMember(aa3);
-    party_foes->addMember(aa4);
-    party_foes->addMember(aa5);
+    // party_foes->addMember(aa4);
+    // party_foes->addMember(aa5);
   }
   else if(ref == AAnAH)
   {
@@ -1524,13 +1523,13 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
     Person *ad1 = createPerson(301, AURORADRONE, renderer, lvl_foe);
     Person *ad2 = createPerson(302, AURORADRONE, renderer, lvl_foe);
     Person *ad3 = createPerson(303, AURORADRONE, renderer, lvl_foe);
-    Person *ad4 = createPerson(304, AURORADRONE, renderer, lvl_foe);
+    // Person *ad4 = createPerson(304, AURORADRONE, renderer, lvl_foe);
 
     party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5, pouch_foes);
     party_foes->addMember(ad1);
     party_foes->addMember(ad2);
     party_foes->addMember(ad3);
-    party_foes->addMember(ad4);
+    // party_foes->addMember(ad4);
   }
   else if(ref == AAnAHnADnAE)
   {
@@ -1568,13 +1567,13 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
     Person *rg1 = createPerson(301, REVERDLING, renderer, lvl_foe);
     Person *rg2 = createPerson(302, REVERDLING, renderer, lvl_foe);
     Person *rg3 = createPerson(303, REVERDLING, renderer, lvl_foe);
-    Person *rg4 = createPerson(304, REVERDLING, renderer, lvl_foe);
+    // Person *rg4 = createPerson(304, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5, pouch_foes);
     party_foes->addMember(rg1);
     party_foes->addMember(rg2);
     party_foes->addMember(rg3);
-    party_foes->addMember(rg4);
+    // party_foes->addMember(rg4);
   }
   else if(ref == RG)
   {
