@@ -93,7 +93,7 @@ const float Battle::kDOUBLE_ELM_DIS_MODIFIER = 0.74;
 
 const float Battle::kMANNA_POW_MODIFIER = 1.00;
 const float Battle::kMANNA_DEF_MODIFIER = 1.20;
-const float Battle::kUSER_POW_MODIFIER = 3.00;
+const float Battle::kUSER_POW_MODIFIER = 2.00;
 const float Battle::kTARG_DEF_MODIFIER = 2.90;
 
 const float Battle::kBASE_CRIT_CHANCE = 0.10;
@@ -864,6 +864,8 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   /* Summation of base power / defense */
   base_user_pow = phys_pow_val + elm1_pow_val + elm2_pow_val + luck_pow_val;
+
+
   base_user_pow *= kUSER_POW_MODIFIER;
 
   base_targ_def = phys_def_val + elm1_def_val + elm2_def_val + luck_def_val;
@@ -913,9 +915,17 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
       Helpers::setInRange(base_damage, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
 
 #ifdef UDEBUG
-  std::cout << "User Power: ----- " << base_user_pow << std::endl;
+  std::cout << "Phys Pow Val: " << phys_pow_val << std::endl;
+  std::cout << "Prim Pow Val: " << elm1_pow_val << std::endl;
+  std::cout << "Secd Pow Val: " << elm2_pow_val << std::endl;
+  std::cout << "Luck Pow Val: " << luck_pow_val << std::endl;
+  std::cout << "Total User Power: " <<  base_user_pow << std::endl;
   std::cout << "Action Power: --- " << action_power << std::endl;
-  std::cout << "Target Def: ----- " << base_targ_def << std::endl;
+  std::cout << "Phys Def Val: " << phys_def_val << std::endl;
+  std::cout << "Prim Def Val: " << elm1_def_val << std::endl;
+  std::cout << "Secd Def Val: " << elm2_def_val << std::endl;
+  std::cout << "Luck Def Val: " << luck_def_val << std::endl;
+  std::cout << "Total Defense:   " << base_targ_def << std::endl;
   std::cout << "Crit Factor: ---- " << crit_factor << std::endl;
   std::cout << "Base Damage: ---- " << base_damage << std::endl
             << std::endl;

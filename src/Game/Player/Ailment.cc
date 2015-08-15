@@ -93,17 +93,17 @@ const std::vector<double> Ailment::kBUBBIFY_STAT_MULT{0.25, 0.25, 0.6, 0.6,
 const std::vector<double> Ailment::kMODULATE_STAT_MULT{1.3, 1.4, 1.2, 1.2,
                                               1.15, 1.15, 1.15, 1.15,
                                               1.15, 1.15, 1.15, 1.15,
-                                              1.15, 1.15, 1.15, 1.15, 
+                                              1.15, 1.15, 1.15, 1.15,
                                               1.05, 1.05, 1.05, 1.05};
 
 const double   Ailment::kPARALYSIS_PC        = 0.70;
 const double   Ailment::kBLIND_PC            = 0.50;
 const double   Ailment::kDREADSTRUCK_PC      = 0.75;
 const double   Ailment::kDREAMSNARE_PC       = 0.50;
-const double   Ailment::kALLBUFF_PC          = 1.20;
-const double   Ailment::kPHYSBUFF_PC         = 1.08;
-const double   Ailment::kELMBUFF_PC          = 1.15;
-const double   Ailment::kLIMBUFF_PC          = 1.10;
+const double   Ailment::kALLBUFF_PC          = 1.05;
+const double   Ailment::kPHYSBUFF_PC         = 1.05;
+const double   Ailment::kELMBUFF_PC          = 1.05;
+const double   Ailment::kLIMBUFF_PC          = 1.15;
 const double   Ailment::kUNBBUFF_PC          = 1.05;
 const double   Ailment::kMOMBUFF_PC          = 1.01;
 const double   Ailment::kVITBUFF_PC          = 1.20;
@@ -119,7 +119,7 @@ const double   Ailment::kBOND_STATS_PC       = 0.35;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-/* 
+/*
  * Description: General ailment constructor, constructs an ailment of a certain
  *              type (with a duration), given a person to be inflicted and an
  *              inflictor doing the inflicting.
@@ -131,8 +131,8 @@ const double   Ailment::kBOND_STATS_PC       = 0.35;
  *         uint16_t ail_max_turns - maximum duration of the ailmen
  *         double chance - chance the ailment has to clear each turn
  */
-Ailment::Ailment(Person* ail_victim, const Infliction &ail_type, 
-    Person* ail_inflictor, const uint16_t &ail_max_turns, 
+Ailment::Ailment(Person* ail_victim, const Infliction &ail_type,
+    Person* ail_inflictor, const uint16_t &ail_max_turns,
     const uint16_t &ail_min_turns, const double &ail_chance)
       : type{ail_type}
       , chance{ail_chance}
@@ -223,7 +223,7 @@ bool Ailment::apply()
           std::pow(static_cast<float>(kPOISON_DMG_INCR), turns_occured);
       damage = static_cast<int32_t>(std::floor(damage_amount));
     }
- 
+
     damage = Helpers::setInRange(damage, min_value, max_value);
     damage_type = DamageType::POISON;
 
@@ -239,7 +239,7 @@ bool Ailment::apply()
    *           kBURN_DMG_INCR - % incr burn damage per additional lvl
    *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
    */
-  else if (type == Infliction::BURN || type == Infliction::SCALD || 
+  else if (type == Infliction::BURN || type == Infliction::SCALD ||
            type == Infliction::CHARR)
   {
     auto min_value = static_cast<int32_t>(kBURN_DMG_MIN);
@@ -259,10 +259,10 @@ bool Ailment::apply()
 
     damage = Helpers::setInRange(damage, min_value, max_value);
     damage_type = DamageType::BURN;
-    
+
     setFlag(AilState::DEALS_DAMAGE, true);
   }
-  
+
   /* Berserk - Ailed actor physically attacks enemy target for extreme damage
    *           while receiving damage themselves. Hitback damage will take
    *           place in Battle.
@@ -406,7 +406,7 @@ bool Ailment::apply()
   {
     setFlag(AilState::BUFF, true);
     setFlag(AilState::TO_APPLY, false);
-    
+
     for (uint32_t i = 2; i < stats.getSize(); i++)
       if (i % 2 != 0 && i < 16)
         stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
@@ -518,7 +518,7 @@ bool Ailment::apply()
     for (uint32_t i = 0; i < turns_occured; i++)
       gain_pc += kHIBERNATION_INCR;
 
-    stats.setStat(Attribute::VITA, max_stats.getStat(Attribute::VITA) * 
+    stats.setStat(Attribute::VITA, max_stats.getStat(Attribute::VITA) *
                                     (1 + gain_pc));
   }
 
@@ -545,7 +545,7 @@ bool Ailment::apply()
   /* Modulate - Modulates a persons sprite and improves their stats by
    *            some factor.
    *
-   * Constants: 
+   * Constants:
    */
   else if (type == Infliction::MODULATE)
   {
@@ -636,7 +636,7 @@ bool Ailment::checkImmunity(Person* new_victim)
 bool Ailment::updateTurns()
 {
   turns_occured++;
-  
+
   /* If the ailment doesn't have one turn left, if it's finite, decrement it */
   if (max_turns_left <= kMAX_TURNS && max_turns_left > 0)
     --max_turns_left;
@@ -792,7 +792,7 @@ void Ailment::unapply()
  * Description:
  *
  * Inputs:
- * Output: 
+ * Output:
  */
 bool Ailment::toReapplyFlags()
 {
@@ -818,7 +818,7 @@ void Ailment::print(const bool &simple, const bool &flags)
 
   if (simple)
   {
-    std::cout << "Ch" << chance << " T Lf: " << max_turns_left 
+    std::cout << "Ch" << chance << " T Lf: " << max_turns_left
               << " T Oc: " << turns_occured << "\n";
     std::cout << "Vic: " << victim->getName() << "\n";
   }
@@ -846,7 +846,7 @@ void Ailment::print(const bool &simple, const bool &flags)
     std::cout << "INFLICTOR_SET" << getFlag(AilState::INFLICTOR_SET) << "\n";
     std::cout << "DEALS DAMAGE" << getFlag(AilState::DEALS_DAMAGE) << "\n";
     std::cout << "UPDATE PROCESSED" << getFlag(AilState::UPDATE_PROCESSED);
-  } 
+  }
 
   std::cout << "\n -- /Ailment --- " << std::endl;
 }
@@ -998,8 +998,8 @@ void Ailment::reset()
 /*
  * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 double Ailment::getBerserkHitbackPC()
 {

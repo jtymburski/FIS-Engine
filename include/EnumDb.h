@@ -1,7 +1,7 @@
 /*******************************************************************************
 * File Name: EnumDb [Declaration]
 * Date Created: November 12th, 2013
-* 
+*
 * Description: EnumDatabase  contains the database of global enumerations and
 *              functions for Enum -> String
 *******************************************************************************/
@@ -28,12 +28,12 @@
  *
  * ALWAYS - the action may be used in Battle and in Menu
  * BATTLE - the action may only be used in Battle
- 
+
  * MENU   - the action may only be used in Menu
  * NONE   - the action has no usable scenario
  */
 enum class ActionOccasion : std::uint8_t
-{ 
+{
   ALWAYS,
   BATTLE,
   MENU,
@@ -56,7 +56,7 @@ enum class ActionOccasion : std::uint8_t
  * ALL_NOT_USER - the skill strikes all targets except user
  */
 enum class ActionScope : std::uint16_t
-{ 
+{
   USER              = 0,
   ONE_TARGET        = 1,
   ONE_ENEMY         = 2,
@@ -72,7 +72,7 @@ enum class ActionScope : std::uint16_t
   ALL_TARGETS       = 12,
   NOT_USER          = 13,
   ALL_NOT_USER      = 14,
-  NO_SCOPE          = 15 
+  NO_SCOPE          = 15
 };
 
 /*
@@ -120,7 +120,7 @@ enum class AITarget
 };
 
 /*:
- * Description: 
+ * Description:
  *
  */
 enum class AddStatus : std::uint8_t
@@ -144,7 +144,7 @@ enum class AddStatus : std::uint8_t
  * NULL_ACTION - no action has been yet chosen by the actor
  */
 enum class ActionType : std::uint16_t
-{ 
+{
   SKILL   = 1,
   ITEM    = 2,
   DEFEND  = 3,
@@ -153,7 +153,7 @@ enum class ActionType : std::uint16_t
   INSPECT = 6,
   RUN     = 7,
   PASS    = 8,
-  NONE    = 0 
+  NONE    = 0
 };
 
 /*
@@ -184,22 +184,22 @@ enum class ActionType : std::uint16_t
  * NOAT - No Attribute - the enumeration does not describe an attribute
  */
 enum class Attribute : std::uint8_t
-{ 
-  VITA = 0, 
-  QTDR = 1, 
-  PHAG = 2, 
-  PHFD = 3, 
-  THAG = 4, 
+{
+  VITA = 0,
+  QTDR = 1,
+  PHAG = 2,
+  PHFD = 3,
+  THAG = 4,
   THFD = 5,
-  PRAG = 6, 
+  PRAG = 6,
   PRFD = 7,
-  POAG = 8, 
+  POAG = 8,
   POFD = 9,
-  CHAG = 10, 
+  CHAG = 10,
   CHFD = 11,
-  CYAG = 12, 
+  CYAG = 12,
   CYFD = 13,
-  NIAG = 14, 
+  NIAG = 14,
   NIFD = 15,
   MMNT = 16,
   LIMB = 17,
@@ -294,10 +294,10 @@ enum class CellState : std::uint32_t
  * Description: Dialog category for the talking in map
  */
 enum class DialogCategory
-{ 
+{
   TEXT,
   NUMBERENTRY,
-  TEXTENTRY 
+  TEXTENTRY
 };
 
 /*
@@ -316,7 +316,7 @@ enum class DamageType
 };
 
 /*
- * Description: Handler for all direction related calls for movement, 
+ * Description: Handler for all direction related calls for movement,
  *              passability, etc.
  */
 enum class Direction
@@ -325,7 +325,7 @@ enum class Direction
   EAST          = 0x2,
   SOUTH         = 0x4,
   WEST          = 0x8,
-  DIRECTIONLESS = 0 
+  DIRECTIONLESS = 0
 };
 
 /*
@@ -341,7 +341,7 @@ enum class Direction
  * NONELEMENTAL - there is no element
  */
 enum class Element : std::uint8_t
-{ 
+{
   PHYSICAL = 1 << 1,
   FIRE     = 1 << 2,
   ICE      = 1 << 3,
@@ -354,21 +354,21 @@ enum class Element : std::uint8_t
 
 /* Description: Curve of Elemental modifiers - fast to slow progression
  *              [increase on top of normal progression]
- * 
+ *
  * XS - Godlike
- *  S - Extremely powerful 
+ *  S - Extremely powerful
  *  A - Powerful
  *  B - Strong
  *  C - Moderate
  *  D - Normal
  */
 enum class ElementCurve : uint8_t
-{ 
-  XS = 0, 
-  S  = 1, 
-  A  = 2, 
+{
+  XS = 0,
+  S  = 1,
+  A  = 2,
   B  = 3,
-  C  = 4, 
+  C  = 4,
   D  = 5
 };
 
@@ -401,7 +401,7 @@ enum class GameKey
 };
 
 /*
- * Description: Infliction enumeration represents the possible ailments / 
+ * Description: Infliction enumeration represents the possible ailments /
  *              status buffs that an actor can have inflicted upon them
  *
  * Notes: See Ailment class for documentation on each Infliction
@@ -467,7 +467,7 @@ enum class ItemTier : std::uint8_t
  * Description: Possible states of sorting for inventory items
  */
 enum class SortType : std::uint8_t
-{ 
+{
   ID,
   NAME,
   FLAVOUR,
@@ -485,13 +485,13 @@ enum class SortType : std::uint8_t
  * BEARACKS - The storage party on the ship for the Player
  */
 enum class PartyType : std::uint8_t
-{ 
+{
   SLEUTH,
   BEARACKS,
   REGULAR_FOE,
   MINI_BOSS,
   BOSS,
-  FINAL_BOSS 
+  FINAL_BOSS
 };
 
 enum class PartyTarget : std::uint8_t
@@ -501,11 +501,11 @@ enum class PartyTarget : std::uint8_t
   FOES = 2
 };
 
-/* 
- * Description: The ranks a Person may hold 
+/*
+ * Description: The ranks a Person may hold
  */
 enum class Ranks : std::uint16_t
-{ 
+{
   NUBEAR,
   CUB,
   RECRUIT,
@@ -533,9 +533,9 @@ enum class RegenRate : std::uint16_t
 
 enum class SkillSorts : std::uint32_t
 {
-  COOLDOWN, 
-  COST, 
-  ID, 
+  COOLDOWN,
+  COST,
+  ID,
   NAME,
   PRIMARY,
   SECONDARY,
@@ -545,11 +545,11 @@ enum class SkillSorts : std::uint32_t
 };
 
 enum class SortObjects : std::uint32_t
-{ 
-  ZERO_BUBBIES, 
-  BUBBIES, 
-  EQUIPMENTS, 
-  ITEMS, 
+{
+  ZERO_BUBBIES,
+  BUBBIES,
+  EQUIPMENTS,
+  ITEMS,
 };
 
 /*
@@ -572,9 +572,9 @@ enum class ThingBase : std::uint8_t
  *  HIDING - lowering to the bottom */
 enum class WindowStatus : std::uint8_t
 {
-  OFF, 
-  SHOWING, 
-  ON, 
+  OFF,
+  SHOWING,
+  ON,
   HIDING
 };
 

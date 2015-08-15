@@ -36,15 +36,15 @@
  *============================================================================*/
 const uint8_t  Person::kACTION_X = 60;
 const uint8_t  Person::kACTION_Y = 128;
-const size_t   Person::kNUM_LEVELS{127};
+const size_t   Person::kNUM_LEVELS{15};
 const size_t   Person::kNUM_EQUIP_SLOTS{5};
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */
 const uint32_t Person::kMAX_EXP{1000000000}; /* 1 billion */
 const uint32_t Person::kMAX_EXP_DROP{1000000}; /* 1 million */
 const size_t   Person::kMAX_ITEM_DROPS{5};
-const uint32_t Person::kMAX_LVL_EXP{100000000}; /* 100 million */
+const uint32_t Person::kMAX_LVL_EXP{1200}; /* 100 million */
 const uint32_t Person::kMIN_EXP{0};
-const uint32_t Person::kMIN_LVL_EXP{500};
+const uint32_t Person::kMIN_LVL_EXP{20};
 const float Person::kMIN_DMG_MODI{ 0.01};
 const float Person::kMAX_DMG_MODI{10.00};
 const float Person::kMIN_EXP_MODI{ 0.10};

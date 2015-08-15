@@ -7,9 +7,9 @@
 #include "TestBattle.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint8_t TestBattle::kLVL_MAX = 127;
+const uint8_t TestBattle::kLVL_MAX = 15;
 const std::string TestBattle::kMENU_ITEMS[] = {
-    "Arcadius", "Aurora Agent", "Aurora Agent x 2", "Aurora Agent x 5",
+    "Arcadius", "Aurora Agent", "Aurora Agent x 2", "Aurora Agent x 5  // Probably impossible to balance? Suggest Aurora x 3",
     "Aurora Agent, Heavy", "Aurora Heavy", "Aurora Engineer, Drone",
     "Aurora Engineer, Drone x 4", "Aurora Engineer, Agent, Heavy, Drone",
     "Reverdile, Reverdling", "Reverdile, Reverdling x 2",
@@ -407,7 +407,7 @@ void TestBattle::create()
 
   stats_player_min = AttributeSet(
   {
-    100, 25, 5, 5,
+    100, 25, 7, 7,
     0, 0, 0, 0,
     6, 6, 3, 3,
     0, 0, 0, 0,
@@ -416,7 +416,7 @@ void TestBattle::create()
 
   stats_player_max = AttributeSet(
   {
-    225, 50, 10, 10,
+    225, 50, 12, 12,
     0, 0, 0, 0,
      10, 10, 6, 6,
      0, 0, 0, 0,
@@ -566,10 +566,10 @@ void TestBattle::createActions()
   act_dmg.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.35,AMOUNT.5,,100"));
 
   /* ShattersShot (~80 Damage) */
-  act_dmg.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.80, AMOUNT.10,,100"));
+  act_dmg.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.80,AMOUNT.10,,100"));
 
   /* Static Shot (drone nuisance) */
-  act_dmg.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.15, AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.15,AMOUNT.5,,100"));
 
   /* Surge of Will */
   act_dmg.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.135,AMOUNT.35,,100"));
@@ -584,7 +584,7 @@ void TestBattle::createActions()
   act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.23,AMOUNT.2,,100"));
 
   /* Paw Strike */
-  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA.AMOUNT.35,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.35,AMOUNT.5,,100"));
 
   /* Maul */
   act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.55,AMOUNT.10,,100"));
@@ -618,7 +618,7 @@ void TestBattle::createActions()
       new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
 
   act_inf.push_back(new Action("527,INFLICT,2.2,,,HIBERNATION,,,VITA,97"));
-  act_inf.push_back(new Action("528,INFLICT,2.3,,,SLEEP,,,,VITA,100"));
+  act_inf.push_back(new Action("528,INFLICT,2.3,,,SLEEP,,,VITA,100"));
 
   /* Relieve Actions */
   act_rlv.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,85"));
@@ -1101,6 +1101,7 @@ void TestBattle::createSkills()
       new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[9], 95, 0);
   paw_strike->setDescription("A standard, physical hit against a single foe");
   paw_strike->setPrimary(Element::PHYSICAL);
+  paw_strike->setSecondary(Element::FOREST);
   paw_strike->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(paw_strike);
 
@@ -1118,6 +1119,7 @@ void TestBattle::createSkills()
   multi_strike->addAction(act_dmg[9]);
   multi_strike->setDescription("What");
   multi_strike->setPrimary(Element::PHYSICAL);
+  multi_strike->setSecondary(Element::FOREST);
   multi_strike->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(multi_strike);
 
