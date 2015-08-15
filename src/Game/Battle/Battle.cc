@@ -250,7 +250,7 @@ bool Battle::addAilment(Infliction infliction_type, Person *inflictor,
  *
  * Inputs: Person* target - the target having an ailment unapplied
  *         Ailment* ail   - the ailment being unapplied
- * Output: bool - true if the ailment lags were being recalculated.
+ * Output: bool - true if the ailment flags were being recalculated.
  */
 bool Battle::reCalcAilmentFlags(Person *target, Ailment *ail)
 {
@@ -1422,6 +1422,7 @@ void Battle::cleanUp()
   setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
   setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
   setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, false);
+  setBattleFlag(CombatState::CURR_TARG_DEAD, false);
   setBattleFlag(CombatState::RENDERING_COMPLETE, false);
 
   /* Clean all action processing related variables */
@@ -2567,6 +2568,8 @@ bool Battle::processAilment()
         /* If the person is to die, their upkeeping has been processed */
         setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, true);
 
+        event_buffer->createDeathEvent(EventType::DEATH, curr_target, allies);
+
         party_death = processPersonDeath(allies);
       }
 
@@ -2677,6 +2680,9 @@ bool Battle::processAlterAction(BattleEvent *alter_event, Person *action_target,
       event_buffer->createDeathEvent(EventType::DEATH, curr_target,
                                      ally_target);
 
+      /* If a death occurs, processing needs to end after here */
+      setBattleFlag(CombatState::CURR_TARG_DEAD, true);
+
       party_death = processPersonDeath(ally_target);
     }
   }
@@ -2733,6 +2739,8 @@ bool Battle::processAssignAction(BattleEvent *assign_event,
   {
     event_buffer->createDeathEvent(EventType::DEATH, action_target,
                                    ally_target);
+
+    setBattleFlag(CombatState::CURR_TARG_DEAD, true);
 
     party_death = processPersonDeath(ally_target);
   }
@@ -2809,6 +2817,8 @@ bool Battle::processDamageAmount(int32_t amount)
   if (amount >= curr_target->getCurr().getStat(Attribute::VITA))
   {
     event_buffer->createDeathEvent(EventType::DEATH, curr_target, ally_target);
+
+    setBattleFlag(CombatState::CURR_TARG_DEAD, true);
     party_death = processPersonDeath(ally_target);
   }
   else
@@ -3207,6 +3217,7 @@ void Battle::processSkill(std::vector<Person *> targets)
       for (auto it = begin(targets); it != end(targets); ++it)
       {
         curr_target = *it;
+        setBattleFlag(CombatState::CURR_TARG_DEAD, false);
         auto event = event_buffer->createActionEvent(
             EventType::ACTION_BEGIN, curr_action, curr_skill, curr_user,
             curr_target, true);
@@ -3216,10 +3227,17 @@ void Battle::processSkill(std::vector<Person *> targets)
         event_buffer->createActionEvent(EventType::ACTION_END, curr_action,
                                         curr_skill, curr_user, curr_target,
                                         true);
+
+        if (getBattleFlag(CombatState::CURR_TARG_DEAD))
+        {
+          //End the skill processing here?
+          setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
+        }
       }
     }
     else
     {
+      //End the skill processing here?
       std::cout << "Reached maxed index" << std::endl;
       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }

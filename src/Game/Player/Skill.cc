@@ -3,7 +3,7 @@
 * Date Created: November 21, 2013
 * Inheritance: None
 * Description: A Skill is a container for actions which are the actual choices
-*              a person chooses to use in a Battle. Skills are generally 
+*              a person chooses to use in a Battle. Skills are generally
 *              contained in SkillSets which are used by Person and Items, etc.
 *              A Skill can have a number of actions, each with different
 *              effects.
@@ -69,7 +69,7 @@ Skill::Skill(const std::string &name)
 }
 
 /*
- * Description: General construction of a Skill given an ID, name, scope and 
+ * Description: General construction of a Skill given an ID, name, scope and
  *              a single effect with a chance for it occuring.
  *
  * Inputs: id - the ID number for the Skill
@@ -105,8 +105,8 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
  *         chance - chance of all the effects happening
  *         cost - the cost of the skill in QD
  */
-Skill::Skill(const int &id, const std::string &name, const ActionScope &scope, 
-    const std::vector<Action*> &effects, 
+Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
+    const std::vector<Action*> &effects,
     const float &chance, const uint32_t &cost)
       : Skill::Skill()
 {
@@ -197,6 +197,8 @@ void Skill::flagSetup()
  */
 bool Skill::addAction(Action* new_action, const bool &single)
 {
+  std::cout << " Adding action " << std::endl;
+
   if (new_action != nullptr && effects.size() < kMAX_ACTIONS)
   {
     effects.push_back(new_action);
@@ -206,7 +208,7 @@ bool Skill::addAction(Action* new_action, const bool &single)
 
     return true;
   }
- 
+
   return false;
 }
 
@@ -295,7 +297,7 @@ void Skill::print(bool flags)
   std::cout << "\nName: " << name << std::endl;
   std::cout << "Animation: " << animation << std::endl;
   std::cout << "Chance: " << chance << std::endl;
-  std::cout << "Cooldown: " << cooldown << std::endl; 
+  std::cout << "Cooldown: " << cooldown << std::endl;
   std::cout << "Cost: " << cost << std::endl;
   std::cout << "Description: " << description << std::endl;
   std::cout << "Point Value: " << value << std::endl;
@@ -347,13 +349,13 @@ bool Skill::removeAction(const uint32_t &index)
  * Description: Returns a pointer to the using animation of the Skill.
  *
  * Inputs: none
- * Output: Sprite* 
+ * Output: Sprite*
  */
 Sprite* Skill::getAnimation()
 {
   return animation;
 }
- 
+
 /*
  * Description: Returns the chance of an effect of a given index, if it exists
  *
@@ -554,7 +556,7 @@ bool Skill::setAnimation(Sprite* new_animation)
 }
 
 /*
- * Description: Assign a new chance for occuring to the skill. Return true 
+ * Description: Assign a new chance for occuring to the skill. Return true
  *              if the chance is under the max_value and above zero.
  *
  * Inputs: new_chance - new chance for the Skill to occur
@@ -698,7 +700,7 @@ bool Skill::setMessage(const std::string &new_message)
   if (new_message.size() < kMAX_MESG_LENGTH)
   {
     message = new_message;
-    
+
     return true;
   }
 

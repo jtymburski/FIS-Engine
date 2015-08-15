@@ -584,44 +584,60 @@ void TestBattle::createActions()
   act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.23,AMOUNT.2,,100"));
 
   /* Paw Strike */
-  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.35,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.5,,100"));
 
   /* Maul */
   act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.55,AMOUNT.10,,100"));
 
   /* Ensnare */
-  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.35,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,100"));
 
   /* Inflict Actions */
-  act_inf.push_back(new Action("500,INFLICT,4.7,,,POISON,,,VITA,90"));
 
-  act_inf.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
-  act_inf.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
+  /* Poison */
+  act_inf.push_back(new Action("500,INFLICT,3.6,,,POISON,,,VITA,100"));
 
+  /* Confusion */
   act_inf.push_back(
-      new Action("508,INFLICT,2.5,,,ALLATKBUFF,AMOUNT.0,,VITA,99"));
+      new Action("501,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,100"));
+
+  /* Silence */
   act_inf.push_back(
-      new Action("509,INFLICT,2.5,,,ALLDEFBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("510,INFLICT,2.5,,,PHYBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("511,INFLICT,2.5,,,THRBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("512,INFLICT,2.5,,,POLBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("513,INFLICT,2.5,,,PRIBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("514,INFLICT,2.5,,,CHGBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("515,INFLICT,2.5,,,CYBBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("516,INFLICT,2.5,,,NIHBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("517,INFLICT,2.5,,,LIMBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("518,INFLICT,2.5,,,UNBBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
+      new Action("502,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,100"));
 
+  /* All Attack Buff */
   act_inf.push_back(
-      new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
+      new Action("503,INFLICT,3.6,,,ALLATKBUFF,AMOUNT.0,,VITA,100"));
 
-  act_inf.push_back(new Action("527,INFLICT,2.2,,,HIBERNATION,,,VITA,97"));
-  act_inf.push_back(new Action("528,INFLICT,2.3,,,SLEEP,,,VITA,100"));
+  /* All Def Buff */
+  act_inf.push_back(
+      new Action("504,INFLICT,3.6,,,ALLDEFBUFF,AMOUNT.0,,VITA,100"));
 
-  /* Relieve Actions */
-  act_rlv.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,85"));
+  /* Dodge Buff */
+  act_inf.push_back(new Action("505,INFLICT,4.7,,,LIMBUFF,AMOUNT.0,,VITA,100"));
+
+  /* Paralysis Buff */
+  act_inf.push_back(
+      new Action("506,INFLICT,1.3,,,PARALYSIS,AMOUNT.30,,VITA,100"));
+
+  /* Hibernation */
+  act_inf.push_back(new Action("507,INFLICT,2.3,,,HIBERNATION,,,VITA,100"));
+
+  for(const auto& action : act_alt)
+  {
+    std::cout << "Alt Valid: " << action->actionFlag(ActionFlags::VALID)
+              << std::endl;
+  }
+  for(const auto& action : act_dmg)
+  {
+    std::cout << "Dmg Valid: " << action->actionFlag(ActionFlags::VALID)
+              << std::endl;
+  }
+  for(const auto& action : act_inf)
+  {
+    std::cout << "Inf Valid: " << action->actionFlag(ActionFlags::VALID)
+              << std::endl;
+  }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -636,9 +652,6 @@ void TestBattle::createClasses()
   class_arcadius1->setVitaRegenRate(RegenRate::WEAK);
   class_arcadius1->setQDRegenRate(RegenRate::WEAK);
   class_arcadius1->setDescription("The one. The only.");
-  // class_arcadius1->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_arcadius1->setFlag(CategoryState::GRD_ENABLED, true);
-  // class_arcadius1->setFlag(CategoryState::E_CLAWS, true);
 
   /* Aurora Agent Class */
   class_aurora_agent =
@@ -647,9 +660,6 @@ void TestBattle::createClasses()
   class_aurora_agent->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_agent->setQDRegenRate(RegenRate::WEAK);
   class_aurora_agent->setDescription("A less than smart agent");
-  // class_aurora_agent->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_aurora_agent->setFlag(CategoryState::GRD_ENABLED, true);
-  // class_aurora_agent->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Heavy Classs */
   class_aurora_heavy =
@@ -658,9 +668,6 @@ void TestBattle::createClasses()
   class_aurora_heavy->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_heavy->setQDRegenRate(RegenRate::WEAK);
   class_aurora_heavy->setDescription("He weighs more than your house");
-  // class_aurora_heavy->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_aurora_heavy->setFlag(CategoryState::GRD_ENABLED, true);
-  // class_aurora_heavy->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Drone Class */
   class_aurora_drone =
@@ -669,10 +676,7 @@ void TestBattle::createClasses()
   class_aurora_drone->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_drone->setQDRegenRate(RegenRate::WEAK);
   class_aurora_drone->setDescription("Cannon fodder");
-  // class_aurora_drone->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_aurora_drone->setFlag(CategoryState::GRD_ENABLED, true);
   class_aurora_drone->setFlag(CategoryState::IMP_ENABLED, true);
-  // class_aurora_drone->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Engineer Class */
   class_aurora_engg =
@@ -681,9 +685,6 @@ void TestBattle::createClasses()
   class_aurora_engg->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_engg->setQDRegenRate(RegenRate::WEAK);
   class_aurora_engg->setDescription("An engineer and much smarter than you");
-  // class_aurora_engg->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_aurora_engg->setFlag(CategoryState::GRD_ENABLED, true);
-  // class_aurora_engg->setFlag(CategoryState::E_SWORD, true);
 
   /* Player Class */
   class_player = new Category(200, "Bearanator", "player", stats_player_min,
@@ -691,9 +692,6 @@ void TestBattle::createClasses()
   class_player->setVitaRegenRate(RegenRate::ZERO);
   class_player->setQDRegenRate(RegenRate::WEAK);
   class_player->setDescription("This is me and I am awesome");
-  // class_player->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_player->setFlag(CategoryState::GRD_ENABLED, true);
-  // class_player->setFlag(CategoryState::E_CLAWS, true);
 
   /* Reverdile Class */
   class_reverdile =
@@ -702,9 +700,6 @@ void TestBattle::createClasses()
   class_reverdile->setVitaRegenRate(RegenRate::WEAK);
   class_reverdile->setQDRegenRate(RegenRate::WEAK);
   class_reverdile->setDescription("What is the master of crap called");
-  // class_reverdile->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_reverdile->setFlag(CategoryState::GRD_ENABLED, true);
-  // class_reverdile->setFlag(CategoryState::E_CLAWS, true);
 
   /* Reverdling Class */
   class_reverdling =
@@ -713,9 +708,6 @@ void TestBattle::createClasses()
   class_reverdling->setVitaRegenRate(RegenRate::WEAK);
   class_reverdling->setQDRegenRate(RegenRate::WEAK);
   class_reverdling->setDescription("He's about as useful as fried turd");
-  // class_reverdling->setFlag(CategoryState::DEF_ENABLED, true);
-  // class_reverdling->setFlag(CategoryState::GRD_ENABLED, true);
-  // class_reverdling->setFlag(CategoryState::E_CLAWS, true);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -971,7 +963,7 @@ void TestBattle::createSkills()
   /* Shatter Shot */
   Skill *shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
                                   act_dmg[3], 95, 15);
-  shatter_shot->addAction(act_dmg[22]);
+  shatter_shot->addAction(act_dmg[2]);
   shatter_shot->setDescription("This description sucks.");
   shatter_shot->setPrimary(Element::ELECTRIC);
   shatter_shot->setFlag(SkillFlags::OFFENSIVE);
@@ -997,7 +989,7 @@ void TestBattle::createSkills()
 
   /* Locked Shot */
   Skill *locked_shot = new Skill(181, "Locked Shot", ActionScope::ONE_ENEMY,
-                                 act_dmg[23], 100, 25);
+                                 act_dmg[8], 100, 25);
   locked_shot->setDescription("A charged-based attack that will not miss.");
   locked_shot->setPrimary(Element::ELECTRIC);
   locked_shot->setFlag(SkillFlags::OFFENSIVE);
@@ -1032,8 +1024,8 @@ void TestBattle::createSkills()
 
   /* Updraft */
   Skill *updraft = new Skill(221, "Updraft", ActionScope::ONE_ALLY_NOT_USER,
-                             act_inf[12], 90, 10);
-  updraft->setDescription("Ally speed up");
+                             act_inf[5], 90, 10);
+  updraft->setDescription("Ally dodge up");
   updraft->setPrimary(Element::PHYSICAL);
   updraft->setFlag(SkillFlags::DEFENSIVE);
   skills.push_back(updraft);
@@ -1048,16 +1040,16 @@ void TestBattle::createSkills()
 
   /* Numbing Sting */
   Skill *numbing = new Skill(240, "Numbing Sting", ActionScope::ONE_ENEMY,
-                             act_inf[16], 90, 5);
+                             act_inf[6], 90, 5);
   numbing->setDescription("Paralysis Inflict");
   numbing->setPrimary(Element::PHYSICAL);
   // numbing->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(numbing);
 
   /* Hypnotic Sting */
-  Skill *hypnotic = new Skill(241, "Hypnotic Sting", ActionScope::ONE_ENEMY,
-                              act_inf[18], 90, 5);
-  hypnotic->setDescription("Hypnotic Inflict");
+  Skill *hypnotic = new Skill(241, "Sullen Sting", ActionScope::ONE_ENEMY,
+                              act_inf[2], 90, 5);
+  hypnotic->setDescription("Silencing sting");
   hypnotic->setPrimary(Element::PHYSICAL);
   // hypnotic->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(hypnotic);
@@ -1080,8 +1072,8 @@ void TestBattle::createSkills()
 
   /* Cunning */
   Skill *cunning =
-      new Skill(1000, "Cunning", ActionScope::USER, act_inf[12], 90, 5);
-  cunning->addAction(act_inf[3]);
+      new Skill(1000, "Cunning", ActionScope::USER, act_inf[4], 90, 5);
+  cunning->addAction(act_inf[5]);
   cunning->setDescription("Self dodge and defense up");
   cunning->setPrimary(Element::PHYSICAL);
   cunning->setFlag(SkillFlags::DEFENSIVE);
@@ -1124,7 +1116,7 @@ void TestBattle::createSkills()
 
   /* Hibernate */
   Skill *hibernate =
-      new Skill(1023, "Hibernate", ActionScope::USER, act_inf[17], 100, 5);
+      new Skill(1023, "Hibernate", ActionScope::USER, act_inf[7], 100, 5);
   hibernate->setDescription("Heal self");
   hibernate->setPrimary(Element::PHYSICAL);
   hibernate->setFlag(SkillFlags::DEFENSIVE);

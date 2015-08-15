@@ -57,7 +57,8 @@ enum class CombatState
   CURRENT_AILMENT_STARTED    = 1 << 13, /* Curr. ailment processing begun */
   CURRENT_AILMENT_COMPLETE   = 1 << 14, /* Curr person ailment check stage */
   COMPLETE_AILMENT_UPKEEPS   = 1 << 15, /* Curr person ailment check done  */
-  ALL_UPKEEPS_COMPLETE       = 1 << 16  /* Upkeep checking stage complete */
+  ALL_UPKEEPS_COMPLETE       = 1 << 16, /* Upkeep checking stage complete */
+  CURR_TARG_DEAD             = 1 << 17
 };
 
 ENUM_FLAGS(IgnoreState)
