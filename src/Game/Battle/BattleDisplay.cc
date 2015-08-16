@@ -2623,6 +2623,8 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     if(rendering_state == TurnState::BEGIN)
     {
+      bar_offset = 0;
+
       setRenderFlag(RenderState::BEGIN_RENDERING, false);
 
       rendering_state = battle_state;
@@ -2632,6 +2634,8 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::GENERAL_UPKEEP)
     {
+      bar_offset = 0;
+
       /* Upon general upkeep state, the screen needs to be dimmed and the text
        * "Turn X: Decide Your Fate" displayed on the screen. This screen dim
        * will use a RGB_Overlay RenderElement with fade-in and fade-out
@@ -2719,6 +2723,8 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::UPKEEP)
     {
+      bar_offset = 0;
+
       if(!getRenderFlag(RenderState::BEGIN_RENDERING))
       {
         setRenderFlag(RenderState::BEGIN_RENDERING, true);
@@ -2805,6 +2811,7 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::ORDER_ACTIONS)
     {
+      bar_offset = 0;
       rendering_state = battle_state;
     }
     /*-------------------------------------------------------------------------
@@ -2812,6 +2819,7 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
+      bar_offset = 0;
       rendering_state = battle_state;
 
       if(!getRenderFlag(RenderState::BEGIN_RENDERING))
@@ -2845,6 +2853,8 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::CLEAN_UP)
     {
+      bar_offset = 0;
+
       /* Delay in clean up */
       if(rendering_state != battle_state)
       {

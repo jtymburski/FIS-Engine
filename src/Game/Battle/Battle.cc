@@ -2856,6 +2856,17 @@ bool Battle::processPersonDeath(bool ally_target)
     party_death = true;
   }
 
+  auto person_ailments = getPersonAilments(curr_target);
+
+  for(auto ailment : person_ailments)
+  {
+    if(ailment->getFlag(AilState::CURE_ON_DEATH))
+    {
+      event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, curr_user,
+                                       curr_target, curr_action, ailment);
+    }
+  }
+
   return party_death;
 }
 
