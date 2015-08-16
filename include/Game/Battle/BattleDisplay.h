@@ -2,7 +2,7 @@
  * Class Name: BattleDisplay [Declaration]
  * Date Created: December 16, 2014
  * Inheritance: None
- * Description: 
+ * Description:
  *
  * Notes
  * -----
@@ -13,7 +13,7 @@
  *
  * TODO
  * ----
- * 
+ *
  * QUIRKS
  * ------
  * - Multi-targets action processing... how to show damage at the same time?
@@ -99,10 +99,10 @@ private:
 
   /* Background sprite */
   Sprite* background;
-  
+
   /* Bar variables - for rendering */
   uint16_t bar_offset;
-  
+
   /* Battle to be displayed */
   Battle* battle;
 
@@ -115,7 +115,7 @@ private:
 
   /* Element frames */
   std::vector<Frame> elements;
-  
+
   /* The rendering enemy info bar */
   Frame* foes_backdrop;
   std::vector<PersonState*> foes_state;
@@ -156,7 +156,7 @@ private:
   /* Rendering turn state */
   RenderState  render_flags;
   TurnState rendering_state;
-  
+
   /* Action scope frames */
   std::vector<Frame> scopes;
 
@@ -187,7 +187,7 @@ private:
   const static uint8_t kAILMENT_BORDER; /* Ailment border width */
   const static uint8_t kAILMENT_GAP; /* Ailment gap between edges of space */
   const static uint8_t kAILMENT_OPACITY; /* Ailment background opacity */
-  
+
   const static uint8_t kALLY_HEALTH_H; /* Ally health bar height */
   const static uint8_t kALLY_HEALTH_TRIANGLE; /* Ally health triangle width */
   const static uint8_t kALLY_HEALTH_W; /* Ally health bar width */
@@ -196,9 +196,9 @@ private:
   const static uint8_t kALLY_QD_OFFSET; /* Ally qd bar offset off health */
   const static uint8_t kALLY_QD_TRIANGLE; /* Ally qd triangle width */
   const static uint8_t kALLY_QD_W; /* Ally qd bar width */
-  
+
   const static uint16_t kANIMATION_PROCESS; /* Time to process actions */
-  
+
   const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
   const static float kBIGBAR_L; /* The percentage of the left section */
   const static float kBIGBAR_M1; /* The percentage of the middle section */
@@ -214,7 +214,7 @@ private:
   const static uint16_t kRUN_AMOUNT;
   const static float kRUN_RATE;
   const static uint32_t kRUN_TIME;
-  
+
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
   const static float kCYCLE_RATE; /* Rate of cycling for selecting persons */
 
@@ -227,7 +227,7 @@ private:
   const static uint8_t kINFO_OPACITY; /* Opacity of black background in info */
   const static uint8_t kINFO_TRIANGLE; /* Height of triangle in info corner */
   const static uint16_t kINFO_W; /* Width of enemy info bar */
-  
+
   const static uint8_t kFOE_BAR_H; /* Height of health bar for foes */
   const static uint8_t kFOE_BAR_OFFSET; /* Offset of foe health off center */
   const static uint8_t kFOE_BAR_TRIANGLE; /* Width of foe health triangle */
@@ -235,16 +235,16 @@ private:
   const static uint16_t kFOES_BAR_GAP; /* Offset of bar above foes */
   const static uint16_t kFOES_OFFSET; /* Offset of foes from top */
   const static uint16_t kFRIENDS_OFFSET; /* Offset of friends from bottom */
-  
+
   const static uint8_t kMAX_CHARS; /* Max number of foes in battle */
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
   const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
-  const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */ 
+  const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
   const static uint8_t kPERSON_KO_ALPHA; /* Opacity of a person at death */
   const static uint8_t kSCROLL_R; /* Radius on scroll renders */
-  
+
   const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
   const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
   const static uint8_t kSKILL_DESC_GAP; /* Gap between name and description */
@@ -256,7 +256,7 @@ private:
   const static uint8_t kSKILL_SEP; /* Separator between image and text */
   const static uint8_t kSKILL_SUCCESS; /* Gap between success and cooldown */
   const static uint8_t kSKILL_TIME_GAP; /* Gap between cooldown and bottom */
-  
+
   const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
   const static uint8_t kTYPE_MAX; /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
@@ -269,6 +269,7 @@ private:
   const static SDL_Color kBURN_DMG_COLOR;
   const static SDL_Color kVITA_REGEN_COLOR;
   const static SDL_Color kQTDR_REGEN_COLOR;
+  const static SDL_Color kHIBERNATION_REGEN_COLOR;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -313,20 +314,20 @@ private:
 
 
   /* Generates info for the skills of the selecting person in battle */
-  SDL_Texture* createSkill(SDL_Renderer* renderer, Skill* skill, 
+  SDL_Texture* createSkill(SDL_Renderer* renderer, Skill* skill,
                            uint16_t width, uint16_t height);
-  bool createSkills(SDL_Renderer* renderer, BattleMenu* menu, 
+  bool createSkills(SDL_Renderer* renderer, BattleMenu* menu,
                     uint16_t width_left, uint16_t width_right);
-  
+
   /* Deletes the rendering fonts, if they've been created */
   void deleteFonts();
-  
+
   /* Deletes the rendering skills, for the menu */
   void deleteSkills();
 
   /* Handles delay processing */
   bool handleDelayProcessing(int32_t cycle_time, bool change_state);
-  
+
   /* Render the action skills */
   bool renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,
       uint16_t y, uint16_t width, uint16_t height);
@@ -335,16 +336,16 @@ private:
   void renderFizzleText();
 
   /* Render the action categories */
-  bool renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x, 
+  bool renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,
                          uint16_t y, uint16_t width, uint16_t height);
 
   /* Renders the ailments for a given person at a given location */
-  bool renderAilment(SDL_Renderer* renderer, Person* person, 
-                     uint16_t x, uint16_t y, bool foe = false, 
+  bool renderAilment(SDL_Renderer* renderer, Person* person,
+                     uint16_t x, uint16_t y, bool foe = false,
                      bool full_border = false);
 
   /* Renders the battle bar */
-  bool renderBar(SDL_Renderer* renderer, uint16_t screen_width, 
+  bool renderBar(SDL_Renderer* renderer, uint16_t screen_width,
                                          uint16_t screen_height);
 
   /* Renders the foes */
@@ -359,7 +360,7 @@ private:
   bool renderFriendsInfo(SDL_Renderer* renderer, uint16_t screen_height);
 
   /* Render menu at bottom of screen - for skill selecting */
-  bool renderMenu(SDL_Renderer* renderer, PersonState* state, 
+  bool renderMenu(SDL_Renderer* renderer, PersonState* state,
       uint16_t screen_width, uint16_t screen_height);
 
   /* Start battle - fires up the variables */
@@ -370,7 +371,7 @@ private:
 
   /* Calculates the proper opacity for the sprite of a given Person */
   uint8_t updatePersonOpacity(Person* test_person, int32_t cycle_time);
-  
+
   /* Updates the render elements */
   bool updateElements(int cycle_time);
 
@@ -412,11 +413,11 @@ private:
   /* Assigns the value of a RenderState flag */
   void setRenderFlag(RenderState flags, const bool &set_value = true);
 
-  void setStateBrightness(std::vector<PersonState*> states, bool fp, 
+  void setStateBrightness(std::vector<PersonState*> states, bool fp,
       int32_t amount);
 
   /* Set person state */
-  bool setPersonState(Person* person, uint8_t index, SDL_Renderer* renderer, 
+  bool setPersonState(Person* person, uint8_t index, SDL_Renderer* renderer,
                       bool foe = false);
 
 /*=============================================================================
@@ -496,7 +497,7 @@ public:
 
   /* Sets the action scope frame */
   bool setScope(ActionScope scope, std::string path, SDL_Renderer* renderer);
-  
+
   /* Unsets the background sprite */
   void unsetBackground();
 

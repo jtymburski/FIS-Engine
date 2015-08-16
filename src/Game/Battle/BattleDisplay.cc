@@ -114,6 +114,7 @@ const SDL_Color BattleDisplay::kPOIS_DMG_COLOR = {138, 43, 226, 255};
 const SDL_Color BattleDisplay::kBURN_DMG_COLOR = {172, 0, 0, 255};
 const SDL_Color BattleDisplay::kVITA_REGEN_COLOR = {50, 205, 50, 255};
 const SDL_Color BattleDisplay::kQTDR_REGEN_COLOR = {0, 128, 255, 255};
+const SDL_Color BattleDisplay::kHIBERNATION_REGEN_COLOR = {75, 205, 50, 255};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -1298,6 +1299,8 @@ void BattleDisplay::createRegenValue(Person *target, uint64_t amount)
     shadow_color = kVITA_REGEN_COLOR;
   else if (curr_event->type == EventType::REGEN_QTDR)
     shadow_color = kQTDR_REGEN_COLOR;
+  else if (curr_event->type == EventType::HIBERNATION)
+    shadow_color = kHIBERNATION_REGEN_COLOR;
 
   RenderElement *element =
       new RenderElement(RenderType::DAMAGE_VALUE, 650, 150, 150);
@@ -3042,6 +3045,16 @@ bool BattleDisplay::updateEvent()
 
     processing_delay = kDELAY_SKILL;
   }
+  else if (curr_event->type == EventType::HIBERNATION)
+  {
+    // TODO Hibernation update plep.
+
+    if (curr_event->targets.size() > 0 && curr_event->targets.at(0))
+    {
+      createRegenValue(curr_event->targets.at(0), curr_event->amount);
+      processing_delay = 950;
+    }
+  }
   else if (curr_event->type == EventType::PASS)
   {
     if (curr_event->user)
@@ -3093,13 +3106,25 @@ bool BattleDisplay::updateEvent()
     if (curr_event->targets.size() > 0 && curr_event->targets.at(0) &&
         curr_event->action_use)
     {
-      auto plep = getAilmentPlep(curr_event->action_use->getAilment());
+      auto infliction = curr_event->action_use->getAilment();
+      auto plep = getAilmentPlep(infliction);
+      SDL_Color flash_color = {100, 100, 100, 235};
 
       if (plep)
         createPlep(curr_event->targets.at(0), plep);
 
-      createSpriteFlash(curr_event->targets.at(0), {0, 255, 255, 255}, 450);
-      processing_delay = 400;
+      if (infliction == Infliction::POISON)
+        flash_color = kPOIS_DMG_COLOR;
+      else if (infliction == Infliction::HIBERNATION)
+        flash_color = kHIBERNATION_REGEN_COLOR;
+      else if (infliction == Infliction::CONFUSE)
+        flash_color = {0, 75, 75, 235};
+      else if (infliction == Infliction::PARALYSIS)
+        flash_color = {0, 255, 255, 235};
+
+
+      createSpriteFlash(curr_event->targets.at(0), flash_color, 450);
+      processing_delay = 700;
     }
   }
   else if (curr_event->type == EventType::INFLICTION_FIZZLE)

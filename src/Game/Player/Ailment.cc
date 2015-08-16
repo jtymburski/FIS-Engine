@@ -105,7 +105,7 @@ const double Ailment::kMOMBUFF_PC = 1.01;
 const double Ailment::kVITBUFF_PC = 1.20;
 const double Ailment::kQDBUFF_PC = 1.15;
 const double Ailment::kROOTBOUND_PC = 0.15;
-const double Ailment::kHIBERNATION_INIT = 0.10;
+const double Ailment::kHIBERNATION_INIT = 0.17;
 const double Ailment::kHIBERNATION_INCR = 0.03;
 const double Ailment::kMETABOLIC_PC = 0.25;
 const double Ailment::kMETABOLIC_DMG = 0.25;
@@ -511,12 +511,16 @@ bool Ailment::apply()
    */
   else if(type == Infliction::HIBERNATION)
   {
-    uint32_t gain_pc = kHIBERNATION_INIT;
+    float gain_pc = kHIBERNATION_INIT;
+
     for(uint32_t i = 0; i < turns_occured; i++)
       gain_pc += kHIBERNATION_INCR;
 
-    stats.setStat(Attribute::VITA,
-                  stats.getStat(Attribute::VITA) * (1 + gain_pc));
+    damage = stats.getStat(Attribute::VITA) * gain_pc;
+
+    setFlag(AilState::DEALS_DAMAGE, true);
+
+    victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, true);
   }
 
   /* Reflect - turn on Person flag to show they reflect skills */
@@ -540,15 +544,20 @@ bool Ailment::apply()
     //    emit victimDeath(victim->getName(), EnumDb::METABOLIC_DMG);
   }
 
-    /* Modulate - Modulates a persons sprite and improves their stats by
-     *            some factor.
-     *
-     * Constants:
-     */
-    else if(type == Infliction::MODULATE) {}
+  /* Modulate - Modulates a persons sprite and improves their stats by
+   *            some factor.
+   *
+   * Constants:
+   */
+  else if(type == Infliction::MODULATE)
+  {
 
-    return true;
   }
+
+  return true;
+  }
+
+
 
   /*
    * Description: Checks the immunity of a potential victim given the type of

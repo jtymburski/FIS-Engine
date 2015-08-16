@@ -80,6 +80,26 @@ private:
   Category* class_reverdile;
   Category* class_reverdling;
 
+  Sprite* sprite_paralysis;
+  Sprite* sprite_confusion;
+  Sprite* sprite_buff;
+  Sprite* sprite_poison;
+  Sprite* sprite_hibernation;
+
+  Sprite* plep_light_push;
+  Sprite* plep_light_shot;
+  Sprite* plep_prismatic_shot;
+  Sprite* plep_rail_shot;
+  Sprite* plep_shatter_shot;
+  Sprite* plep_static_shot;
+  Sprite* plep_locked_shot;
+  Sprite* plep_strike;
+  Sprite* plep_paw_strike;
+  Sprite* plep_maul;
+  Sprite* plep_multi_strike;
+  Sprite* plep_ensnare;
+  Sprite* plep_enrich;
+
   /* First run trigger */
   bool first_run;
 

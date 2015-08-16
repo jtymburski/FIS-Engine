@@ -267,7 +267,10 @@ enum class EventType : std::uint8_t
   GAIN_ITEM = 52,
   GAIN_MONEY = 53,
   ACTION_END = 54,
-  NONE = 55
+  HIBERNATION = 55,
+
+
+  NONE = 56
 };
 
 /*

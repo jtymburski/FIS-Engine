@@ -2,9 +2,9 @@
  * Class Name: Application
  * Date Created: November 17, 2013
  * Inheritance: none
- * Description: The Main Application that handles all the displays for the 
- *              entire game. This includes the primary switching mechanism to 
- *              switch between views as needed according to the selection on 
+ * Description: The Main Application that handles all the displays for the
+ *              entire game. This includes the primary switching mechanism to
+ *              switch between views as needed according to the selection on
  *              the screen.
  ******************************************************************************/
 #include "Application.h"
@@ -25,16 +25,16 @@ Application::Application(std::string base_path)
   renderer = NULL;
   system_options = new Options(base_path);
   window = NULL;
-  
+
   /* Initialize update variables */
   update_rate = kUPDATE_RATE;
   update_sync = 0;
-  
+
   /* Set the title screen parameters */
   game_handler.setConfiguration(system_options);
   test_battle.setConfiguration(system_options);
   title_screen.setConfiguration(system_options);
-  
+
   /* Sets the current mode */
   title_screen.setMusic();
   changeMode(TITLESCREEN);
@@ -56,29 +56,29 @@ Application::~Application()
 bool Application::changeMode(AppMode mode)
 {
   bool allow = true;
-  
+
   /* Run logic to determine if mode switch is allowed - currently empty */
-  
+
   /* If allowed, make change */
   if(allow && this->mode != mode)
   {
     /* Changes to execute on the views closing */
     if(this->mode == TITLESCREEN)
       title_screen.enableView(false);
-    
+
     this->temp_mode = this->mode;
     this->mode      = mode;
-    
+
     /* Changes to execute on the views opening */
     if(this->mode == TITLESCREEN)
       title_screen.enableView(true);
-    
+
     if (this->mode == PAUSED)
       Sound::pauseAllChannels();
     else
       Sound::resumeAllChannels();
   }
-    
+
   return allow;
 }
 
@@ -95,7 +95,7 @@ void Application::handleEvents()
       changeMode(EXIT);
     }
     // PAUSE ON LOSS FOCUS (TOO WEIRD)
-    // else if (event.type == SDL_WINDOWEVENT && event.window.event == 
+    // else if (event.type == SDL_WINDOWEVENT && event.window.event ==
     //     SDL_WINDOWEVENT_LEAVE)
     // {
     //   changeMode(PAUSED);
@@ -110,7 +110,7 @@ void Application::handleEvents()
     else if(event.type == SDL_KEYDOWN)
     {
       SDL_KeyboardEvent press_event = event.key;
-      
+
       if (press_event.keysym.sym == SDLK_F3)
       {
         system_options->setAudioLevel(system_options->getAudioLevel() - 5);
@@ -161,7 +161,7 @@ void Application::handleEvents()
     else if(event.type == SDL_KEYUP)
     {
       SDL_KeyboardEvent release_event = event.key;
-      
+
       /* Send the key to the relevant view */
       if(mode == TITLESCREEN)
         title_screen.keyUpEvent(release_event);
@@ -187,7 +187,7 @@ void Application::handleEvents()
     }
   }
 }
-  
+
 void Application::render(uint32_t cycle_time)
 {
   /* Handle the individual action items, depending on whats running */
@@ -216,7 +216,7 @@ int Application::updateCycleTime(int cycle_time)
   // uint8_t update_step = kUPDATE_RATE / 2;
   uint8_t update_time = 0;
   //std::cout << "Cycle time: " << cycle_time << std::endl;
-  
+
   /* Parse the cycle time and find the category */
   if(cycle_time < 0)
   {
@@ -228,7 +228,7 @@ int Application::updateCycleTime(int cycle_time)
   }
   else
   {
-    update_time = ((cycle_time + kUPDATE_RATE / 2) / kUPDATE_RATE) 
+    update_time = ((cycle_time + kUPDATE_RATE / 2) / kUPDATE_RATE)
                                                    * kUPDATE_RATE;
   }
 
@@ -242,7 +242,7 @@ int Application::updateCycleTime(int cycle_time)
   // {
     // update_sync++;
   // }
-  
+
   // /* Determine if an update is required */
   // if(update_sync > kUPDATE_CHANGE_LIMIT)
   // {
@@ -256,7 +256,7 @@ int Application::updateCycleTime(int cycle_time)
 bool Application::updateViews(int cycle_time)
 {
   bool quit = false;
-  
+
   /* Handle any appropriate actions of the individual views */
   if(mode == TITLESCREEN)
   {
@@ -286,13 +286,13 @@ bool Application::updateViews(int cycle_time)
     if(test_battle.update(cycle_time))
       changeMode(TITLESCREEN);
   }
-  /* If exit, return true to notify the running thread the application is 
+  /* If exit, return true to notify the running thread the application is
    * done */
   else if(mode == EXIT)
   {
     quit = true;
   }
-  
+
   return quit;
 }
 
@@ -312,19 +312,19 @@ bool Application::initialize()
     uint32_t flags = SDL_WINDOW_SHOWN;
     if(system_options->isFullScreen())
       flags |= SDL_WINDOW_FULLSCREEN;
-    window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED, 
-                              SDL_WINDOWPOS_CENTERED, 
-                              system_options->getScreenWidth(), 
-                              system_options->getScreenHeight(), 
+    window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED,
+                              SDL_WINDOWPOS_CENTERED,
+                              system_options->getScreenWidth(),
+                              system_options->getScreenHeight(),
                               flags);
     if(window == NULL)
     {
-      std::cerr << "[ERROR] Window could not be created. SDL error: " 
+      std::cerr << "[ERROR] Window could not be created. SDL error: "
                 << SDL_GetError() << std::endl;
       success = false;
     }
   }
-  
+
   /* Create the renderer for the window */
   if(success)
   {
@@ -343,8 +343,8 @@ bool Application::initialize()
       std::string open_gl = "opengl";
 
       /* Loop through each driver, comparing its value to "opengl" */
-      for (int32_t i = 0; 
-           i < SDL_GetNumRenderDrivers() && driver_index == -1; 
+      for (int32_t i = 0;
+           i < SDL_GetNumRenderDrivers() && driver_index == -1;
            i++)
       {
         auto renderer_info = new SDL_RendererInfo;
@@ -358,7 +358,7 @@ bool Application::initialize()
         }
         else
         {
-          std::cerr << "[ERROR]: Error attempting to discern ren. driver" 
+          std::cerr << "[ERROR]: Error attempting to discern ren. driver"
               << std::endl;
         }
 
@@ -374,12 +374,12 @@ bool Application::initialize()
         auto renderer_info = new SDL_RendererInfo;
         SDL_GetRenderDriverInfo(0, renderer_info);
         auto error_index = SDL_GetRendererInfo(renderer, renderer_info);
-    
+
         if (error_index > -1 && renderer_info != nullptr)
           std::cout << "Rendering Driver: " << renderer_info->name << std::endl;
         else
           std::cerr<<"[ERROR] Unable to get rendering driver info."<< std::endl;
-       
+
         delete renderer_info;
       }
 
@@ -406,28 +406,28 @@ bool Application::initialize()
 
       /* Create helper graphical portions */
       Helpers::createWhiteMask(renderer);
-      
+
       SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
-      
+
       /* Render logo */
       Frame logo;
-      logo.setTexture(system_options->getBasePath() + "sprites/Title/logo.png", 
+      logo.setTexture(system_options->getBasePath() + "sprites/Title/logo.png",
                       renderer);
-      logo.render(renderer, 0, 0, system_options->getScreenWidth(), 
+      logo.render(renderer, 0, 0, system_options->getScreenWidth(),
                   system_options->getScreenHeight());
       SDL_RenderPresent(renderer);
     }
   }
-  
+
   /* Test the font engine */
   if(!system_options->confirmFontSetup())
   {
     std::cerr << "[ERROR] Could not create font. This is either a library "
-              << "issue or the font files are missing or invalid." 
+              << "issue or the font files are missing or invalid."
               << std::endl;
     success = false;
   }
-  
+
   /* If successful, confirm the initialization */
   initialized = true;
   if(success)
@@ -440,7 +440,7 @@ bool Application::initialize()
   {
     uninitialize();
   }
-  
+
 	return success;
 }
 
@@ -457,7 +457,7 @@ bool Application::run(std::string test_map)
   uint32_t cycle_time = kUPDATE_RATE;
   bool quit = false;
   uint32_t ticks = 0;
-  
+
   /* Font testing - TODO: Remove */
   Text text1;
   text1.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
@@ -466,7 +466,7 @@ bool Application::run(std::string test_map)
   text2.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
   TTF_SetFontOutline(text2.getFont(), 2);
   text2.setText(renderer, "341", {0, 0, 0, 255});
-  
+
   if(isInitialized())
   {
     /* If the test map isn't empty, jump straight to game map */
@@ -494,7 +494,7 @@ bool Application::run(std::string test_map)
       //ticks = new_ticks;
       //if(system_options->isVsyncEnabled())
       //  cycle_time = updateCycleTime(cycle_time);
-      
+
       /* Handle events - key press, window events, and such */
       handleEvents();
 
@@ -509,14 +509,14 @@ bool Application::run(std::string test_map)
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
       }
-      
+
       /* Render the application view */
       render(cycle_time);
 
       // Font testing - TODO: Remove
       // text2.render(renderer, 48, 48);
       // text1.render(renderer, 50, 50);
-     
+
       /* Update screen */
       if (mode != PAUSED)
         SDL_RenderPresent(renderer);
@@ -525,18 +525,18 @@ bool Application::run(std::string test_map)
 
       Sound::setMusicVolumes(system_options->getMusicLevel());
       Sound::setAudioVolumes(system_options->getAudioLevel());
-      
+
       /* Delay if VSync is not enabled */
       if(!system_options->isVsyncEnabled())
         SDL_Delay(12);
     }
-        
+
     return true;
   }
-  
+
   return false;
 }
-  
+
 void Application::uninitialize()
 {
   if(initialized)
@@ -548,12 +548,12 @@ void Application::uninitialize()
       SDL_DestroyRenderer(renderer);
     }
     renderer = NULL;
-  
+
     /* Clean up the window */
     if(window != NULL)
       SDL_DestroyWindow(window);
     window = NULL;
-    
+
     initialized = false;
   }
 }
