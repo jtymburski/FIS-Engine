@@ -197,8 +197,6 @@ void Skill::flagSetup()
  */
 bool Skill::addAction(Action* new_action, const bool &single)
 {
-  std::cout << " Adding action " << std::endl;
-
   if (new_action != nullptr && effects.size() < kMAX_ACTIONS)
   {
     effects.push_back(new_action);

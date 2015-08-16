@@ -198,7 +198,11 @@ Battle::~Battle()
 
 /* Description: Attempts to add an ailment to the vector of ailments
  *
- * Inputs: Ailment* const new_ailment - pointer to a new ailment object.
+ * Inputs: Infliction infliction_type - the type of infliction to create
+ *         Person* inflictor - the person inflicting this ailment upon a victim
+ *         uint16_t min_turns - the minimum # of turns to run the ailment for
+ *         uint16_t max_turns - the amximum # of turns to run the ailment for
+ *         int32_t chance - the chance the ailment has to cure each turn
  * Output: bool true if the ailment infliction was kosher
  */
 bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
@@ -1936,7 +1940,11 @@ void Battle::performEvents()
     }
     else if(event->type == EventType::INFLICTION)
     {
-      addAilment(event->action_use->getAilment(), curr_target,
+      assert(event->targets.size() > 0 && event->targets.at(0));
+
+      curr_target = event->targets.at(0);
+
+      addAilment(event->action_use->getAilment(), event->user,
                  event->action_use->getMin(), event->action_use->getMax(),
                  event->action_use->getBase());
     }
