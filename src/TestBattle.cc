@@ -1106,7 +1106,7 @@ void TestBattle::createSkills()
   /* Engineer Upgrade */
   Skill* eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER,
                                  act_inf[4], 100, 5);
-  eng_upgrade->addAction(act_alt[12]);
+  eng_upgrade->addAction(act_inf[5]);
   eng_upgrade->setDescription("Team upgrade to ally for defense and speed");
   eng_upgrade->setPrimary(Element::ELECTRIC);
   eng_upgrade->setFlag(SkillFlags::DEFENSIVE);
