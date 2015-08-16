@@ -492,7 +492,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     8, 8, 6, 6,
     0, 0, 0, 0,
-    10, 10, 10, 0
+    10, 12, 10, 0
   }, true);
 
   stats_bear_max = AttributeSet(
@@ -528,7 +528,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     5, 5, 5, 5,
     0, 0, 0, 0,
-    15, 15, 15, 0
+    15, 10, 15, 0
   }, true);
 
   stats_robot_max = AttributeSet(
@@ -546,7 +546,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     6, 5, 3, 2,
     0, 0, 0, 0,
-    15, 15, 10, 1
+    15, 20, 10, 1
   }, true);
 
   stats_player_max = AttributeSet(
@@ -555,7 +555,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     12, 12, 7, 7,
     0, 0, 0, 0,
-    20, 20, 15, 2
+    20, 25, 15, 2
   }, true);
 
   stats_aurora_heavy_min = AttributeSet(
@@ -757,21 +757,22 @@ void TestBattle::createActions()
   /* Hibernation */
   act_inf.push_back(new Action("507,INFLICT,2.3,,,HIBERNATION,,,VITA,100"));
 
-  for(const auto& action : act_alt)
-  {
-    std::cout << "Alt Valid: " << action->actionFlag(ActionFlags::VALID)
-              << std::endl;
-  }
-  for(const auto& action : act_dmg)
-  {
-    std::cout << "Dmg Valid: " << action->actionFlag(ActionFlags::VALID)
-              << std::endl;
-  }
-  for(const auto& action : act_inf)
-  {
-    std::cout << "Inf Valid: " << action->actionFlag(ActionFlags::VALID)
-              << std::endl;
-  }
+  /* Check to check all the actions are checked [checkingly] */
+  // for(const auto& action : act_alt)
+  // {
+  //   std::cout << "Alt Valid: " << action->actionFlag(ActionFlags::VALID)
+  //             << std::endl;
+  // }
+  // for(const auto& action : act_dmg)
+  // {
+  //   std::cout << "Dmg Valid: " << action->actionFlag(ActionFlags::VALID)
+  //             << std::endl;
+  // }
+  // for(const auto& action : act_inf)
+  // {
+  //   std::cout << "Inf Valid: " << action->actionFlag(ActionFlags::VALID)
+  //             << std::endl;
+  // }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1300,6 +1301,7 @@ void TestBattle::createSkills()
   enrich->setDescription("Small amount of heal to self");
   enrich->setPrimary(Element::FOREST);
   enrich->setFlag(SkillFlags::DEFENSIVE);
+  enrich->setFlag(SkillFlags::HEALING);
   skills.push_back(enrich);
 }
 

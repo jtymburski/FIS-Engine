@@ -24,6 +24,10 @@ Application::Application(std::string base_path)
   initialized = false;
   renderer = NULL;
   system_options = new Options(base_path);
+
+  system_options->setMusicLevel(50);
+  system_options->setAudioLevel(50);
+
   window = NULL;
 
   /* Initialize update variables */

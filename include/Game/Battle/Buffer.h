@@ -2,7 +2,7 @@
 * Class Name: Battle [Declaration]
 * Date Created: February 23rd, 2014
 * Inheritance: None
-* Description: 
+* Description:
 *
 * Notes
 * -----
@@ -88,7 +88,7 @@ private:
   BufferAction& getIndex(const uint32_t &index);
 
   /* Sorts a vector of Buffer actions by a given buffer sort */
-  std::vector<BufferAction> sort(std::vector<BufferAction> actions, 
+  std::vector<BufferAction> sort(std::vector<BufferAction> actions,
       BufferSorts buffer_sorts);
 
 /*=============================================================================
@@ -96,12 +96,12 @@ private:
  *============================================================================*/
 public:
   /* Creates and adds a new Skill BufferAction element given params */
-  bool add(Person* const user, Skill* const skill_used, 
+  bool add(Person* const user, Skill* const skill_used,
       std::vector<Person*> targets, const uint32_t &cooldown = 0,
       const uint32_t &initial_turn = 0);
 
   /* Creates and adds a new Item BufferAction element given params */
-  bool add(Person* const user, Item* const item_used, 
+  bool add(Person* const user, Item* const item_used,
       std::vector<Person*> targets, const uint32_t &cooldown = 0,
       const uint32_t &initial_turn = 0);
 
@@ -144,7 +144,7 @@ public:
 
   /* Returns the action type for the current index */
   ActionType getActionType();
-  
+
   /* Returns the value for the cooldown at the current element index */
   int32_t getCooldown();
 
