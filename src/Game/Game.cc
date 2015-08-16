@@ -13,7 +13,33 @@
  *  2. Talk to Mike about Battle and how we should keep it constructed and then
  *     just change the player and foes when it switches. This is primarily
  *     for dealing with the stacked widget.
+ *
+ *     - Construct Battle object empty.
+ *     - after battle transition, map sends:
+ *     - eventStartBattle()
+ *          -> battle prep friends -> load into Battle
+ *          -> battle prep foes -> load into battle
+ *          -> assert ai check
+ *          -> battle->begin()
+ *               -  setup class, determine turn mode, load flags, create objects
+ *          -> swap display/updating to battle
+ *     - victory conditions->
+ *        - battle sends victory "signal"
+ *        - allies clean-up
+ *        - foes, delete if created as copies of base persons from map
+ *     - run conditions->
+ *        - battle sends run "signal"
+ *        - allies clean up
+ *        - turn back to map
+ *     - defeat
+ *       - battle sends defeat "signal"
+ *       - back to Title.
+ *
  *  3. Add victory screen logic
+ *
+ *     -- I wanted to do this just inside of Battle while all the info is
+ *        available, and event handler just has to handle post-victory screen.
+*
  *  4. Add speed up button to allow the game to accelerate movement and
  *     everything else. Do it by multiplying the time elapsed.
  ******************************************************************************/
@@ -33,7 +59,7 @@ const uint32_t Game::kMONEY_ITEM_ID{0};
 Game::Game(Options* running_config)
 {
   num_ticks = 0;
-  
+
   /* Initalize class variables */
   active_renderer = nullptr;
   base_path = "";
@@ -126,151 +152,151 @@ void Game::buildBattleDisplayFrames(SDL_Renderer* renderer)
   if (battle_display != nullptr)
   {
     /* Set the ailments */
-    battle_display->setAilment(Infliction::POISON, 
+    battle_display->setAilment(Infliction::POISON,
         base_path + "sprites/Battle/Ailments/Poison_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::BURN, 
+    battle_display->setAilment(Infliction::BURN,
         base_path + "sprites/Battle/Ailments/Burn01_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::SCALD, 
+    battle_display->setAilment(Infliction::SCALD,
         base_path + "sprites/Battle/Ailments/Burn02_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::CHARR, 
+    battle_display->setAilment(Infliction::CHARR,
         base_path + "sprites/Battle/Ailments/Burn03_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::BERSERK, 
+    battle_display->setAilment(Infliction::BERSERK,
         base_path + "sprites/Battle/Ailments/Berserk_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::CONFUSE, 
+    battle_display->setAilment(Infliction::CONFUSE,
         base_path + "sprites/Battle/Ailments/Confused_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::SILENCE, 
+    battle_display->setAilment(Infliction::SILENCE,
         base_path + "sprites/Battle/Ailments/Silence_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::BUBBIFY, 
+    battle_display->setAilment(Infliction::BUBBIFY,
         base_path + "sprites/Battle/Ailments/Bubbified_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::DEATHTIMER, 
+    battle_display->setAilment(Infliction::DEATHTIMER,
         base_path + "sprites/Battle/Ailments/DeathTimer_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::PARALYSIS, 
+    battle_display->setAilment(Infliction::PARALYSIS,
         base_path + "sprites/Battle/Ailments/Paralysis_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::BLINDNESS, 
+    battle_display->setAilment(Infliction::BLINDNESS,
         base_path + "sprites/Battle/Ailments/Blind_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::DREADSTRUCK, 
+    battle_display->setAilment(Infliction::DREADSTRUCK,
         base_path + "sprites/Battle/Ailments/DreadStruck_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::DREAMSNARE, 
+    battle_display->setAilment(Infliction::DREAMSNARE,
         base_path + "sprites/Battle/Ailments/DreamSnare_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::HELLBOUND, 
+    battle_display->setAilment(Infliction::HELLBOUND,
         base_path + "sprites/Battle/Ailments/HellBound_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::BOND, 
+    battle_display->setAilment(Infliction::BOND,
         base_path + "sprites/Battle/Ailments/Bond02_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::BONDED, 
+    battle_display->setAilment(Infliction::BONDED,
         base_path + "sprites/Battle/Ailments/Bond01_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::ALLATKBUFF, 
+    battle_display->setAilment(Infliction::ALLATKBUFF,
         base_path + "sprites/Battle/Ailments/AllAtkBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::ALLDEFBUFF, 
+    battle_display->setAilment(Infliction::ALLDEFBUFF,
         base_path + "sprites/Battle/Ailments/AllDefBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::PHYBUFF, 
+    battle_display->setAilment(Infliction::PHYBUFF,
         base_path + "sprites/Battle/Ailments/PhyBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::THRBUFF, 
+    battle_display->setAilment(Infliction::THRBUFF,
         base_path + "sprites/Battle/Ailments/ThrBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::POLBUFF, 
+    battle_display->setAilment(Infliction::POLBUFF,
         base_path + "sprites/Battle/Ailments/PolBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::PRIBUFF, 
+    battle_display->setAilment(Infliction::PRIBUFF,
         base_path + "sprites/Battle/Ailments/PriBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::CHGBUFF, 
+    battle_display->setAilment(Infliction::CHGBUFF,
         base_path + "sprites/Battle/Ailments/ChgBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::CYBBUFF, 
+    battle_display->setAilment(Infliction::CYBBUFF,
         base_path + "sprites/Battle/Ailments/CybBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::NIHBUFF, 
+    battle_display->setAilment(Infliction::NIHBUFF,
         base_path + "sprites/Battle/Ailments/NihBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::LIMBUFF, 
+    battle_display->setAilment(Infliction::LIMBUFF,
         base_path + "sprites/Battle/Ailments/LimBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::UNBBUFF, 
+    battle_display->setAilment(Infliction::UNBBUFF,
         base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
-    battle_display->setAilment(Infliction::VITBUFF, 
+    battle_display->setAilment(Infliction::VITBUFF,
         base_path + "sprites/Battle/Ailments/VitBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::QDBUFF, 
+    battle_display->setAilment(Infliction::QDBUFF,
         base_path + "sprites/Battle/Ailments/QDBuff_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::ROOTBOUND, 
+    battle_display->setAilment(Infliction::ROOTBOUND,
         base_path + "sprites/Battle/Ailments/RootBound_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::DOUBLECAST, 
+    battle_display->setAilment(Infliction::DOUBLECAST,
         base_path + "sprites/Battle/Ailments/DoubleCast_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::TRIPLECAST, 
+    battle_display->setAilment(Infliction::TRIPLECAST,
         base_path + "sprites/Battle/Ailments/TripleCast_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::HALFCOST, 
+    battle_display->setAilment(Infliction::HALFCOST,
         base_path + "sprites/Battle/Ailments/HalfCost_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::REFLECT, 
+    battle_display->setAilment(Infliction::REFLECT,
         base_path + "sprites/Battle/Ailments/Reflect_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::HIBERNATION, 
+    battle_display->setAilment(Infliction::HIBERNATION,
         base_path + "sprites/Battle/Ailments/Hibernation_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::CURSE, 
+    battle_display->setAilment(Infliction::CURSE,
         base_path + "sprites/Battle/Ailments/Curse_AA_A00.png", renderer);
-    battle_display->setAilment(Infliction::METATETHER, 
+    battle_display->setAilment(Infliction::METATETHER,
         base_path + "sprites/Battle/Ailments/MetaTether_AA_A00.png", renderer);
 
     /* Set the elements */
-    battle_display->setElement(Element::PHYSICAL, base_path + 
+    battle_display->setElement(Element::PHYSICAL, base_path +
             "sprites/Battle/Skills/Elements/Physical_AA_A00.png", renderer);
-    battle_display->setElement(Element::FIRE, base_path + 
+    battle_display->setElement(Element::FIRE, base_path +
             "sprites/Battle/Skills/Elements/Thermal_AA_A00.png", renderer);
-    battle_display->setElement(Element::ICE, base_path + 
+    battle_display->setElement(Element::ICE, base_path +
             "sprites/Battle/Skills/Elements/Polar_AA_A00.png", renderer);
-    battle_display->setElement(Element::FOREST, base_path + 
+    battle_display->setElement(Element::FOREST, base_path +
             "sprites/Battle/Skills/Elements/Primal_AA_A00.png", renderer);
-    battle_display->setElement(Element::ELECTRIC, base_path + 
+    battle_display->setElement(Element::ELECTRIC, base_path +
             "sprites/Battle/Skills/Elements/Charge_AA_A00.png", renderer);
-    battle_display->setElement(Element::DIGITAL, base_path + 
+    battle_display->setElement(Element::DIGITAL, base_path +
             "sprites/Battle/Skills/Elements/Cyber_AA_A00.png", renderer);
-    battle_display->setElement(Element::NIHIL, base_path + 
+    battle_display->setElement(Element::NIHIL, base_path +
             "sprites/Battle/Skills/Elements/Nihil_AA_A00.png", renderer);
 
     /* Set the action scopes */
-    battle_display->setScope(ActionScope::USER, base_path + 
+    battle_display->setScope(ActionScope::USER, base_path +
         "sprites/Battle/Skills/Targets/user_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ONE_TARGET, base_path + 
+    battle_display->setScope(ActionScope::ONE_TARGET, base_path +
         "sprites/Battle/Skills/Targets/single_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ONE_ENEMY, base_path + 
+    battle_display->setScope(ActionScope::ONE_ENEMY, base_path +
         "sprites/Battle/Skills/Targets/singleenemy_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::TWO_ENEMIES, base_path + 
+    battle_display->setScope(ActionScope::TWO_ENEMIES, base_path +
         "sprites/Battle/Skills/Targets/twoenemies_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ALL_ENEMIES, base_path + 
+    battle_display->setScope(ActionScope::ALL_ENEMIES, base_path +
         "sprites/Battle/Skills/Targets/allenemies_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ONE_ALLY, base_path + 
+    battle_display->setScope(ActionScope::ONE_ALLY, base_path +
         "sprites/Battle/Skills/Targets/singleally_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ONE_ALLY_NOT_USER, base_path + 
+    battle_display->setScope(ActionScope::ONE_ALLY_NOT_USER, base_path +
         "sprites/Battle/Skills/Targets/singlenotuserally_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::TWO_ALLIES, base_path + 
+    battle_display->setScope(ActionScope::TWO_ALLIES, base_path +
         "sprites/Battle/Skills/Targets/twoallies_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ALL_ALLIES, base_path + 
+    battle_display->setScope(ActionScope::ALL_ALLIES, base_path +
         "sprites/Battle/Skills/Targets/allallies_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ONE_ALLY_KO, base_path + 
+    battle_display->setScope(ActionScope::ONE_ALLY_KO, base_path +
         "sprites/Battle/Skills/Targets/singlekoedally_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ALL_ALLIES_KO, base_path + 
+    battle_display->setScope(ActionScope::ALL_ALLIES_KO, base_path +
         "sprites/Battle/Skills/Targets/allkoedallies_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ONE_PARTY, base_path + 
+    battle_display->setScope(ActionScope::ONE_PARTY, base_path +
         "sprites/Battle/Skills/Targets/singleparty_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::ALL_TARGETS, base_path + 
+    battle_display->setScope(ActionScope::ALL_TARGETS, base_path +
         "sprites/Battle/Skills/Targets/all_AA_A00.png", renderer);
-    battle_display->setScope(ActionScope::NOT_USER, base_path + 
-        "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png", renderer); 
-    battle_display->setScope(ActionScope::ALL_NOT_USER, base_path + 
+    battle_display->setScope(ActionScope::NOT_USER, base_path +
+        "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png", renderer);
+    battle_display->setScope(ActionScope::ALL_NOT_USER, base_path +
         "sprites/Battle/Skills/Targets/allnotuser_AA_A00.png", renderer);
 
     /* Set up the extram frames */
-    battle_display->setFramePercent(base_path + 
+    battle_display->setFramePercent(base_path +
                   "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png", renderer);
-    battle_display->setFrameQD(base_path + 
+    battle_display->setFrameQD(base_path +
                   "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png", renderer);
-    battle_display->setFrameTime(base_path + 
+    battle_display->setFrameTime(base_path +
                   "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png", renderer);
-  
+
     /* Set up the Ailment pleps */
     //TODO: Temporary
-    auto temp_sprite = new Sprite(game_config->getBasePath() + 
+    auto temp_sprite = new Sprite(game_config->getBasePath() +
         "sprites/Battle/Pleps/hibernationplep_AA_A", 4, ".png", renderer);
-    temp_sprite->insertTail(game_config->getBasePath() + 
+    temp_sprite->insertTail(game_config->getBasePath() +
                             "sprites/Battle/Pleps/hibernationplep_AA_A00.png", renderer);
-    temp_sprite->insertTail(game_config->getBasePath() + 
+    temp_sprite->insertTail(game_config->getBasePath() +
                             "sprites/Battle/Pleps/hibernationplep_AA_A01.png", renderer);
-    temp_sprite->insertTail(game_config->getBasePath() + 
+    temp_sprite->insertTail(game_config->getBasePath() +
                             "sprites/Battle/Pleps/hibernationplep_AA_A02.png", renderer);
-    temp_sprite->insertTail(game_config->getBasePath() + 
+    temp_sprite->insertTail(game_config->getBasePath() +
                             "sprites/Battle/Pleps/hibernationplep_AA_A03.png", renderer);
     for(uint16_t i = 0; i < 5; i++)
-      temp_sprite->insertTail(game_config->getBasePath() + 
+      temp_sprite->insertTail(game_config->getBasePath() +
                               "sprites/blank.png", renderer);
     temp_sprite->setAnimationTime(180);
 
@@ -292,7 +318,7 @@ bool Game::eventGiveItem(int id, int count)
   {
     // TODO: Attempt insert. For now, according to variable
     bool inserted = true;
-    
+
     /* If inserted, notify that the pickup was a success */
     if(inserted)
     {
@@ -304,15 +330,15 @@ bool Game::eventGiveItem(int id, int count)
     else
     {
       if(game_map != nullptr)
-        game_map->initNotification("Insufficient room in inventory to fit " + 
-                                   std::to_string(count) + " " + 
+        game_map->initNotification("Insufficient room in inventory to fit " +
+                                   std::to_string(count) + " " +
                                    found_item->getName());
     }
   }
-  
+
   return false;
 }
-  
+
  /* Initiates a conversation event */
  void Game::eventInitConversation(Conversation* convo, MapThing* source)
 {
@@ -354,13 +380,13 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
   if(game_map != nullptr)
     game_map->teleportThing(thing_id, x, y, section_id);
 }
-  
+
 void Game::pollEvents()
 {
   do
   {
     EventClassifier classification = event_handler.pollEventType();
-    
+
     /* Poll classification */
     if(classification == EventClassifier::GIVEITEM)
     {
@@ -388,7 +414,7 @@ void Game::pollEvents()
     }
     else if(classification == EventClassifier::RUNMAP)
     {
-    
+
     }
     else if(classification == EventClassifier::STARTCONVO)
     {
@@ -405,7 +431,7 @@ void Game::pollEvents()
     }
 
   } while(event_handler.pollEvent());
-  
+
   event_handler.pollClear();
 }
 
@@ -413,77 +439,77 @@ void Game::pollEvents()
 void Game::setupBattle()
 {
   // Test Actions
-  std::vector<Action*> damage_actions;
-  damage_actions.push_back(new Action("1,DAMAGE,,,,,AMOUNT.1,AMOUNT.1,,95"));
-  damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
-  damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
-  damage_actions.push_back(new Action("4,DAMAGE,,,,,AMOUNT.20,AMOUNT.5,,95"));
-  damage_actions.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.20,,95"));
-  damage_actions.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,95"));
-  damage_actions.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
-  damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
-  damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
-  damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.500,AMOUNT.50,,95"));
-  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.40,PC.1,,95"));
-  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.110,PC.5,,95"));
-  damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
-  damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
-  damage_actions.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
-  damage_actions.push_back(new Action("16,DAMAGE,,,,VITA,AMOUNT.150,PC.30,,95"));
-  damage_actions.push_back(new Action("17,DAMAGE,,,,VITA,PC.2,PC.1,,95"));
-  damage_actions.push_back(new Action("18,DAMAGE,,,,VITA,PC.5,PC.2,,95"));
-  damage_actions.push_back(new Action("19,DAMAGE,,,,VITA,PC.10,PC.5,,95"));
-  damage_actions.push_back(new Action("20,DAMAGE,,,,VITA,PC.10,PC.9,,95"));
-  damage_actions.push_back(new Action("22,DAMAGE,,,,VITA,PC.10,PC.20,,95"));
-  damage_actions.push_back(new Action("23,DAMAGE,,,,VITA,PC.15,PC.25,,95"));
+  // std::vector<Action*> damage_actions;
+  // damage_actions.push_back(new Action("1,DAMAGE,,,,,AMOUNT.1,AMOUNT.1,,95"));
+  // damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  // damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  // damage_actions.push_back(new Action("4,DAMAGE,,,,,AMOUNT.20,AMOUNT.5,,95"));
+  // damage_actions.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.20,,95"));
+  // damage_actions.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,95"));
+  // damage_actions.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
+  // damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
+  // damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
+  // damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.500,AMOUNT.50,,95"));
+  // damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.40,PC.1,,95"));
+  // damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.110,PC.5,,95"));
+  // damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
+  // damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
+  // damage_actions.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
+  // damage_actions.push_back(new Action("16,DAMAGE,,,,VITA,AMOUNT.150,PC.30,,95"));
+  // damage_actions.push_back(new Action("17,DAMAGE,,,,VITA,PC.2,PC.1,,95"));
+  // damage_actions.push_back(new Action("18,DAMAGE,,,,VITA,PC.5,PC.2,,95"));
+  // damage_actions.push_back(new Action("19,DAMAGE,,,,VITA,PC.10,PC.5,,95"));
+  // damage_actions.push_back(new Action("20,DAMAGE,,,,VITA,PC.10,PC.9,,95"));
+  // damage_actions.push_back(new Action("22,DAMAGE,,,,VITA,PC.10,PC.20,,95"));
+  // damage_actions.push_back(new Action("23,DAMAGE,,,,VITA,PC.15,PC.25,,95"));
 
-  std::vector<Action*> alter_actions;
-  alter_actions.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
-  alter_actions.push_back(new Action("201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99"));
-  alter_actions.push_back(new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,100"));
-  alter_actions.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
-  alter_actions.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
-  alter_actions.push_back(new Action("204,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
-  alter_actions.push_back(new Action("205,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,100"));
+  // std::vector<Action*> alter_actions;
+  // alter_actions.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
+  // alter_actions.push_back(new Action("201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99"));
+  // alter_actions.push_back(new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,100"));
+  // alter_actions.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
+  // alter_actions.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
+  // alter_actions.push_back(new Action("204,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
+  // alter_actions.push_back(new Action("205,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,100"));
 
-  std::vector<Action*> assign_actions;
-  assign_actions.push_back(new Action("300,ASSIGN,,,,VITA,AMOUNT.1,AMOUNT.0,,100"));
-  assign_actions.push_back(new Action("301,ASSIGN,,,,VITA,AMOUNT.0,AMOUNT.0,,100"));
-  assign_actions.push_back(new Action("302,ASSIGN,,,,,PC.20,PC.5,VITA,1"));
-  assign_actions.push_back(new Action("303,ASSIGN-FLIP,,,,VITA,PC.20,PC.5,QTDR,1"));
-  assign_actions.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
+  // std::vector<Action*> assign_actions;
+  // assign_actions.push_back(new Action("300,ASSIGN,,,,VITA,AMOUNT.1,AMOUNT.0,,100"));
+  // assign_actions.push_back(new Action("301,ASSIGN,,,,VITA,AMOUNT.0,AMOUNT.0,,100"));
+  // assign_actions.push_back(new Action("302,ASSIGN,,,,,PC.20,PC.5,VITA,1"));
+  // assign_actions.push_back(new Action("303,ASSIGN-FLIP,,,,VITA,PC.20,PC.5,QTDR,1"));
+  // assign_actions.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
 
-  std::vector<Action*> inflict_actions;
-  inflict_actions.push_back(new Action("500,INFLICT,4.7,,,POISON,,,VITA,90"));
-  inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.50,,VITA,90"));
-  inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
-  inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
-  inflict_actions.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
-  inflict_actions.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
-  inflict_actions.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
-  inflict_actions.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
-  inflict_actions.push_back(new Action("508,INFLICT,2.5,,,ALLATKBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("509,INFLICT,2.5,,,ALLDEFBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("510,INFLICT,2.5,,,PHYBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("511,INFLICT,2.5,,,THRBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("512,INFLICT,2.5,,,POLBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("513,INFLICT,2.5,,,PRIBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("514,INFLICT,2.5,,,CHGBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("515,INFLICT,2.5,,,CYBBUFF,AMOUNT.0,,VITA,99")); 
-  inflict_actions.push_back(new Action("516,INFLICT,2.5,,,NIHBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("517,INFLICT,2.5,,,LIMBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("518,INFLICT,2.5,,,UNBBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("521,INFLICT,5.5,,,DEATHTIMER,AMOUNT.0,,VITA,99"));
-  inflict_actions.push_back(new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
-  inflict_actions.push_back(new Action("523,INFLICT,2.5,,,BLINDNESS,AMOUNT.20,,VITA,99"));
-  inflict_actions.push_back(new Action("524,INFLICT,2.4,,,DREADSTRUCK,AMOUNT.25,,VITA,99"));
-  inflict_actions.push_back(new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
-  inflict_actions.push_back(new Action("526,INFLICT,4.8,,,MODULATE,AMOUNT.10,,VITA,99"));
+  // std::vector<Action*> inflict_actions;
+  // inflict_actions.push_back(new Action("500,INFLICT,4.7,,,POISON,,,VITA,90"));
+  // inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.50,,VITA,90"));
+  // inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
+  // inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
+  // inflict_actions.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
+  // inflict_actions.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
+  // inflict_actions.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
+  // inflict_actions.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
+  // inflict_actions.push_back(new Action("508,INFLICT,2.5,,,ALLATKBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("509,INFLICT,2.5,,,ALLDEFBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("510,INFLICT,2.5,,,PHYBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("511,INFLICT,2.5,,,THRBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("512,INFLICT,2.5,,,POLBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("513,INFLICT,2.5,,,PRIBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("514,INFLICT,2.5,,,CHGBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("515,INFLICT,2.5,,,CYBBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("516,INFLICT,2.5,,,NIHBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("517,INFLICT,2.5,,,LIMBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("518,INFLICT,2.5,,,UNBBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("521,INFLICT,5.5,,,DEATHTIMER,AMOUNT.0,,VITA,99"));
+  // inflict_actions.push_back(new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
+  // inflict_actions.push_back(new Action("523,INFLICT,2.5,,,BLINDNESS,AMOUNT.20,,VITA,99"));
+  // inflict_actions.push_back(new Action("524,INFLICT,2.4,,,DREADSTRUCK,AMOUNT.25,,VITA,99"));
+  // inflict_actions.push_back(new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
+  // inflict_actions.push_back(new Action("526,INFLICT,4.8,,,MODULATE,AMOUNT.10,,VITA,99"));
 
-  std::vector<Action*> relieve_actions;
-  relieve_actions.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,100"));
+  // std::vector<Action*> relieve_actions;
+  // relieve_actions.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,100"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -496,55 +522,55 @@ void Game::setupBattle()
 
   //for (auto& inflict_action : inflict_actions)
   //  std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
-  
-  for (auto& relieve_action : relieve_actions)
-    std::cout << relieve_action->actionFlag(ActionFlags::VALID) << std::endl;
 
-  // Test Skills
-  Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
-      relieve_actions[0], 95, 0);
-  cure_poison->setPrimary(Element::PHYSICAL);
-  cure_poison->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
-  cure_poison->setDescription("Cures an inflicted person from poison!");
-  cure_poison->setFlag(SkillFlags::DEFENSIVE);
+  // for (auto& relieve_action : relieve_actions)
+  //   std::cout << relieve_action->actionFlag(ActionFlags::VALID) << std::endl;
 
-  Skill* physical_01 = new Skill(100, "Paw Strike", ActionScope::ONE_ENEMY, 
-      damage_actions[10], 95, 0);
-  physical_01->setThumbnail(new Frame(base_path + "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
-  physical_01->setDescription("A standard, physical hit against a single foe.");
-  physical_01->setPrimary(Element::PHYSICAL);
-  physical_01->setFlag(SkillFlags::OFFENSIVE);
+  // // Test Skills
+  // Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
+  //     relieve_actions[0], 95, 0);
+  // cure_poison->setPrimary(Element::PHYSICAL);
+  // cure_poison->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  // cure_poison->setDescription("Cures an inflicted person from poison!");
+  // cure_poison->setFlag(SkillFlags::DEFENSIVE);
 
-  Skill* physical_02 = new Skill(101, "Firmament Alteration", ActionScope::ONE_ENEMY, 
-      damage_actions[0],  95, 45);
+  // Skill* physical_01 = new Skill(100, "Paw Strike", ActionScope::ONE_ENEMY,
+  //     damage_actions[10], 95, 0);
+  // physical_01->setThumbnail(new Frame(base_path + "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  // physical_01->setDescription("A standard, physical hit against a single foe.");
+  // physical_01->setPrimary(Element::PHYSICAL);
+  // physical_01->setFlag(SkillFlags::OFFENSIVE);
 
-  for (int i = 0; i < 100; i++)
-    physical_02->addAction(damage_actions[0]);
-  
+  // Skill* physical_02 = new Skill(101, "Firmament Alteration", ActionScope::ONE_ENEMY,
+  //     damage_actions[0],  95, 45);
 
-  physical_02->addAction(damage_actions[0]);
-  physical_02->setThumbnail(new Frame(base_path + "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
-  physical_02->setDescription("Swing your bear arms at your enemies not just one time, but two (2) times against not one, but two (2) enemies!");
-  physical_02->setPrimary(Element::PHYSICAL);
-  physical_02->setFlag(SkillFlags::OFFENSIVE);
-
-  Skill* physical_03 = new Skill(102, "Sexy Dance", ActionScope::ONE_TARGET, damage_actions[10], 95, 15);
-  physical_02->setPrimary(Element::PHYSICAL);
+  // for (int i = 0; i < 100; i++)
+  //   physical_02->addAction(damage_actions[0]);
 
 
-  Skill* fire_01 = new Skill(110, "Aura of Foot Odor", 
-      ActionScope::ALL_ENEMIES, damage_actions[11], 85, 25);
-  fire_01->setCooldown(1);
-  fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", active_renderer));
-  fire_01->setPrimary(Element::FIRE);
-  fire_01->setSecondary(Element::PHYSICAL);
-  fire_01->setFlag(SkillFlags::OFFENSIVE);
+  // physical_02->addAction(damage_actions[0]);
+  // physical_02->setThumbnail(new Frame(base_path + "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  // physical_02->setDescription("Swing your bear arms at your enemies not just one time, but two (2) times against not one, but two (2) enemies!");
+  // physical_02->setPrimary(Element::PHYSICAL);
+  // physical_02->setFlag(SkillFlags::OFFENSIVE);
+
+  // Skill* physical_03 = new Skill(102, "Sexy Dance", ActionScope::ONE_TARGET, damage_actions[10], 95, 15);
+  // physical_02->setPrimary(Element::PHYSICAL);
+
+
+  // Skill* fire_01 = new Skill(110, "Aura of Foot Odor",
+  //     ActionScope::ALL_ENEMIES, damage_actions[11], 85, 25);
+  // fire_01->setCooldown(1);
+  // fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", active_renderer));
+  // fire_01->setPrimary(Element::FIRE);
+  // fire_01->setSecondary(Element::PHYSICAL);
+  // fire_01->setFlag(SkillFlags::OFFENSIVE);
 
   // Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
   //                              damage_actions[4], 91, 4);
   // forest_01->setPrimary(Element::FOREST);
 
-  // Skill* ice_01 = new Skill(112, "Frosty Spray", ActionScope::TWO_ENEMIES, 
+  // Skill* ice_01 = new Skill(112, "Frosty Spray", ActionScope::TWO_ENEMIES,
   //   damage_actions[5], 99, 5);
   // ice_01->setPrimary(Element::ICE);
 
@@ -591,10 +617,10 @@ void Game::setupBattle()
   // life_steal->addAction(alter_actions[6], true);
   // life_steal->setFlag(SkillFlags::DEFENSIVE);
 
-  Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
-    inflict_actions[0], 100, 10);
-  poison->setPrimary(Element::FOREST);
-  poison->setFlag(SkillFlags::OFFENSIVE);
+  // Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
+  //   inflict_actions[0], 100, 10);
+  // poison->setPrimary(Element::FOREST);
+  // poison->setFlag(SkillFlags::OFFENSIVE);
 
   // Skill* burn = new Skill(141, "Inflict Burn", ActionScope::ONE_TARGET,
   //   inflict_actions[1], 100, 10);
@@ -641,7 +667,7 @@ void Game::setupBattle()
 
   // Skill* paralysis = new Skill(152, "Paralysis", ActionScope::ONE_ENEMY,
   //   inflict_actions[22], 100, 10);
-  
+
   // Skill* blindness = new Skill(153, "Blindness", ActionScope::ONE_TARGET,
   //   inflict_actions[23], 100, 10);
 
@@ -651,7 +677,7 @@ void Game::setupBattle()
   // Skill* dreamsnare = new Skill(155, "Dreamsnare", ActionScope::ONE_TARGET,
   //   inflict_actions[25], 100, 10);
 
-  // Skill* modulate = new Skill(156, "Modulate", ActionScope::USER, 
+  // Skill* modulate = new Skill(156, "Modulate", ActionScope::USER,
   //   inflict_actions[26], 100, 10);
   // modulate->setFlag(SkillFlags::DEFENSIVE, true);
   // modulate->setPrimary(Element::PHYSICAL);
@@ -661,13 +687,13 @@ void Game::setupBattle()
   // life_all->setFlag(SkillFlags::DEFENSIVE, true);
   // life_all->setPrimary(Element::PHYSICAL);
 
-  // Test Skill Sets
-  SkillSet* physical_skills = new SkillSet(physical_01, 1);
+  // // Test Skill Sets
+  // SkillSet* physical_skills = new SkillSet(physical_01, 1);
+  // // physical_skills->addSkill(cure_poison, 1);
+  // physical_skills->addSkill(physical_02, 1);
   // physical_skills->addSkill(cure_poison, 1);
-  physical_skills->addSkill(physical_02, 1);
-  physical_skills->addSkill(cure_poison, 1);
 
-  SkillSet* physical_skills2 = new SkillSet(physical_01, 1);
+  // SkillSet* physical_skills2 = new SkillSet(physical_01, 1);
 
   // physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(physical_03, 1);
@@ -678,30 +704,30 @@ void Game::setupBattle()
   // physical_skills->addSkill(self_heal, 1);
   // physical_skills->addSkill(ally_heal, 1);
   // physical_skills->addSkill(revive_ally, 1);
-  // physical_skills->addSkill(life_steal, 1);
-  physical_skills->addSkill(poison, 1);
-  // physical_skills->addSkill(burn, 1);
-  // physical_skills->addSkill(paralysis, 1);
-  // physical_skills->addSkill(scald, 1);
-  // physical_skills->addSkill(charr, 1);
-  // physical_skills->addSkill(berserk, 1);
-  // physical_skills->addSkill(confuse, 1);
-  // physical_skills->addSkill(bubbinate, 1);
-  // physical_skills->addSkill(all_atk_buff, 1);
-  // physical_skills->addSkill(all_def_buff, 1);
-  // physical_skills->addSkill(thermal_buff, 1);
-  // physical_skills->addSkill(deathtimer, 1);
-  // physical_skills->addSkill(blindness, 1);
-  // physical_skills->addSkill(dreadstruck, 1);
-  // physical_skills->addSkill(dreamsnare, 1);
+  // // physical_skills->addSkill(life_steal, 1);
+  // physical_skills->addSkill(poison, 1);
+  // // physical_skills->addSkill(burn, 1);
+  // // physical_skills->addSkill(paralysis, 1);
+  // // physical_skills->addSkill(scald, 1);
+  // // physical_skills->addSkill(charr, 1);
+  // // physical_skills->addSkill(berserk, 1);
+  // // physical_skills->addSkill(confuse, 1);
+  // // physical_skills->addSkill(bubbinate, 1);
+  // // physical_skills->addSkill(all_atk_buff, 1);
+  // // physical_skills->addSkill(all_def_buff, 1);
+  // // physical_skills->addSkill(thermal_buff, 1);
+  // // physical_skills->addSkill(deathtimer, 1);
+  // // physical_skills->addSkill(blindness, 1);
+  // // physical_skills->addSkill(dreadstruck, 1);
+  // // physical_skills->addSkill(dreamsnare, 1);
 
-  // physical_skills->addSkill(silence, 1);
-  physical_skills->addSkill(fire_01, 1);
+  // // physical_skills->addSkill(silence, 1);
+  // physical_skills->addSkill(fire_01, 1);
 
-  SkillSet* elemental_skills = new SkillSet(fire_01, 1);
+  // SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
-  elemental_skills->addSkill(physical_01, 1);
-  // elemental_skills->addSkill(forest_01, 1);
+  // elemental_skills->addSkill(physical_01, 1);
+  // // elemental_skills->addSkill(forest_01, 1);
   // elemental_skills->addSkill(life_all, 10);
   // elemental_skills->addSkill(modulate, 15);
   // elemental_skills->addSkill(ice_01, 1);
@@ -709,70 +735,70 @@ void Game::setupBattle()
   // elemental_skills->addSkill(digital_01, 1);
   // elemental_skills->addSkill(void_01, 1);
 
-  bubbified_skills = new SkillSet(physical_01, 1);
+  // bubbified_skills = new SkillSet(physical_01, 1);
   // bubbified_skills->addSkill(physical_02, 2);
 
   // Test Attribute Sets
-  AttributeSet weak_stats        = AttributeSet(1, true, false);
-  AttributeSet not_as_weak_stats = AttributeSet(2, true, false);
-  AttributeSet normal_stats      = AttributeSet(3, true, false);
-  AttributeSet medium_stats      = AttributeSet(4, true, false);
-  AttributeSet top_stats         = AttributeSet(5, true, false);
-  AttributeSet boss_stats        = AttributeSet(6, true, false);
-  AttributeSet boss_stats2       = AttributeSet(7, true, false);
+  // AttributeSet weak_stats        = AttributeSet(1, true, false);
+  // AttributeSet not_as_weak_stats = AttributeSet(2, true, false);
+  // AttributeSet normal_stats      = AttributeSet(3, true, false);
+  // AttributeSet medium_stats      = AttributeSet(4, true, false);
+  // AttributeSet top_stats         = AttributeSet(5, true, false);
+  // AttributeSet boss_stats        = AttributeSet(6, true, false);
+  // AttributeSet boss_stats2       = AttributeSet(7, true, false);
 
   // Test Categories
-  Category* human = new Category(200, "Human", "human", normal_stats, 
-      top_stats, physical_skills2);
-  human->setVitaRegenRate(RegenRate::WEAK);
-  human->setQDRegenRate(RegenRate::WEAK);
-  human->setDescription("A regular old joe from Earth.");
-  human->setFlag(CategoryState::DEF_ENABLED, true);
-  human->setFlag(CategoryState::GRD_ENABLED, true);
-  human->setFlag(CategoryState::E_SWORD, true);
+  // Category* human = new Category(200, "Human", "human", normal_stats,
+  //     top_stats, physical_skills2);
+  // human->setVitaRegenRate(RegenRate::WEAK);
+  // human->setQDRegenRate(RegenRate::WEAK);
+  // human->setDescription("A regular old joe from Earth.");
+  // human->setFlag(CategoryState::DEF_ENABLED, true);
+  // human->setFlag(CategoryState::GRD_ENABLED, true);
+  // human->setFlag(CategoryState::E_SWORD, true);
 
-  Category* bear = new Category(201, "Bear", "bear", normal_stats,
-    top_stats, physical_skills);
-  bear->setQDRegenRate(RegenRate::WEAK);
-  bear->setDescription("A sentient and intelligent bear!");
-  bear->setFlag(CategoryState::DEF_ENABLED, true);
-  bear->setFlag(CategoryState::GRD_ENABLED, true);
-  bear->setFlag(CategoryState::E_CLAWS, true);
+  // Category* bear = new Category(201, "Bear", "bear", normal_stats,
+  //   top_stats, physical_skills);
+  // bear->setQDRegenRate(RegenRate::WEAK);
+  // bear->setDescription("A sentient and intelligent bear!");
+  // bear->setFlag(CategoryState::DEF_ENABLED, true);
+  // bear->setFlag(CategoryState::GRD_ENABLED, true);
+  // bear->setFlag(CategoryState::E_CLAWS, true);
 
-  Category* bloodclaw_scion = new Category(251, "Bloodclaw Scion", "scions", 
-      boss_stats2, boss_stats, elemental_skills);
-  bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
-  bloodclaw_scion->setDescription("A class of soldier excelling in physical combat.");
-  bloodclaw_scion->setFlag(CategoryState::DEF_ENABLED, true);
-  bloodclaw_scion->setFlag(CategoryState::POWER_DEFENDER, false);
-  bloodclaw_scion->setFlag(CategoryState::POWER_GUARDER, false);
-  bloodclaw_scion->setFlag(CategoryState::E_SWORD, true);
-  bloodclaw_scion->setFlag(CategoryState::E_CLAWS, true);
+  // Category* bloodclaw_scion = new Category(251, "Bloodclaw Scion", "scions",
+  //     boss_stats2, boss_stats, elemental_skills);
+  // bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
+  // bloodclaw_scion->setDescription("A class of soldier excelling in physical combat.");
+  // bloodclaw_scion->setFlag(CategoryState::DEF_ENABLED, true);
+  // bloodclaw_scion->setFlag(CategoryState::POWER_DEFENDER, false);
+  // bloodclaw_scion->setFlag(CategoryState::POWER_GUARDER, false);
+  // bloodclaw_scion->setFlag(CategoryState::E_SWORD, true);
+  // bloodclaw_scion->setFlag(CategoryState::E_CLAWS, true);
 
-  Category* tactical_samurai = new Category(252, "Tactical Samurai", "samurai",
-      not_as_weak_stats, medium_stats, physical_skills);
-  tactical_samurai->setVitaRegenRate(RegenRate::WEAK);
-  tactical_samurai->setDescription("A class of swordsman like no other.");
-  tactical_samurai->setFlag(CategoryState::DEF_ENABLED, true);
-  tactical_samurai->setFlag(CategoryState::POWER_DEFENDER, true);
-  tactical_samurai->setFlag(CategoryState::POWER_GUARDER, false);
-  tactical_samurai->setFlag(CategoryState::E_SWORD, true);
-  tactical_samurai->setFlag(CategoryState::E_CLAWS, false);
+  // Category* tactical_samurai = new Category(252, "Tactical Samurai", "samurai",
+  //     not_as_weak_stats, medium_stats, physical_skills);
+  // tactical_samurai->setVitaRegenRate(RegenRate::WEAK);
+  // tactical_samurai->setDescription("A class of swordsman like no other.");
+  // tactical_samurai->setFlag(CategoryState::DEF_ENABLED, true);
+  // tactical_samurai->setFlag(CategoryState::POWER_DEFENDER, true);
+  // tactical_samurai->setFlag(CategoryState::POWER_GUARDER, false);
+  // tactical_samurai->setFlag(CategoryState::E_SWORD, true);
+  // tactical_samurai->setFlag(CategoryState::E_CLAWS, false);
 
-  Category* modulator = new Category(253, "Modulator", "modulator",
-    weak_stats, boss_stats, elemental_skills);
-  modulator->setVitaRegenRate(RegenRate::WEAK);
-  modulator->setQDRegenRate(RegenRate::NORMAL);
-  human->setQDRegenRate(RegenRate::NORMAL);
+  // Category* modulator = new Category(253, "Modulator", "modulator",
+  //   weak_stats, boss_stats, elemental_skills);
+  // modulator->setVitaRegenRate(RegenRate::WEAK);
+  // modulator->setQDRegenRate(RegenRate::NORMAL);
+  // human->setQDRegenRate(RegenRate::NORMAL);
 
-  // Test Persons
-  base_person_list.push_back(new Person(300, "Malgidus", bear,
-      tactical_samurai));
-  getPerson(300)->addExp(100);
-  getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
-                            Element::FOREST, ElementCurve::D, true);
+  // // Test Persons
+  // base_person_list.push_back(new Person(300, "Malgidus", bear,
+  //     tactical_samurai));
+  // getPerson(300)->addExp(100);
+  // getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
+  //                           Element::FOREST, ElementCurve::D, true);
 
-  // base_person_list.push_back(new Person(301, "Arcadius", bear, 
+  // base_person_list.push_back(new Person(301, "Arcadius", bear,
   //   tactical_samurai));
   // getPerson(301)->addExp(2800);
   // getPerson(301)->setCurves(Element::FIRE, ElementCurve::B,
@@ -789,18 +815,18 @@ void Game::setupBattle()
   // getPerson(303)->addExp(2800);
   // getPerson(303)->setCurves(Element::FOREST, ElementCurve::A,
   //                           Element::ICE, ElementCurve::C, true);
-  
-  base_person_list.push_back(new Person(304, "Kevin", bear,
-    tactical_samurai));
-  getPerson(304)->addExp(100);
-  getPerson(304)->setCurves(Element::FOREST, ElementCurve::A,
-                            Element::ICE, ElementCurve::C, true);
-  std::vector<BattleItem> items;
 
-  base_person_list.push_back(new Person(310, "Fale", human, bloodclaw_scion));
-  getPerson(310)->addExp(200);
-  getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
-                            Element::PHYSICAL, ElementCurve::D, true);
+  // base_person_list.push_back(new Person(304, "Kevin", bear,
+  //   tactical_samurai));
+  // getPerson(304)->addExp(100);
+  // getPerson(304)->setCurves(Element::FOREST, ElementCurve::A,
+  //                           Element::ICE, ElementCurve::C, true);
+  // std::vector<BattleItem> items;
+
+  // base_person_list.push_back(new Person(310, "Fale", human, bloodclaw_scion));
+  // getPerson(310)->addExp(200);
+  // getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
+  //                           Element::PHYSICAL, ElementCurve::D, true);
 
   // base_person_list.push_back(new Person(311, "Bago Bago", human, bloodclaw_scion));
   // getPerson(311)->addExp(2200);
@@ -824,9 +850,9 @@ void Game::setupBattle()
   // getPerson(314)->setCurves(Element::NIHIL, ElementCurve::A,
   //                           Element::PHYSICAL, ElementCurve::B, true);
 
-  AIModule* frosty_module = new AIModule();
-  frosty_module->setParent(getPerson(310));
-  getPerson(310)->setAI(frosty_module);
+  // AIModule* frosty_module = new AIModule();
+  // frosty_module->setParent(getPerson(310));
+  // getPerson(310)->setAI(frosty_module);
 
   // AIModule* cloud_module = new AIModule();
   // cloud_module->setParent(getPerson(311));
@@ -857,24 +883,24 @@ void Game::setupBattle()
   // swiss_cheese->setAI(swiss_cheese_module);
 
   // Inventory Testing
-  Inventory* friends_pouch = new Inventory(401, "Teh Pouch");
-  Inventory* foes_pouch = new Inventory(402, "Der Pouch");
+  // Inventory* friends_pouch = new Inventory(401, "Teh Pouch");
+  // Inventory* foes_pouch = new Inventory(402, "Der Pouch");
 
-  // Party Testing
-  Party* friends = new Party(401, getPerson(300), PartyType::SLEUTH, 10,
-      friends_pouch);
+  // // Party Testing
+  // Party* friends = new Party(401, getPerson(300), PartyType::SLEUTH, 10,
+  //     friends_pouch);
   // friends->addMember(getPerson(301));
   // friends->addMember(getPerson(302));
   // friends->addMember(getPerson(303));
-  friends->addMember(getPerson(304));
+  // friends->addMember(getPerson(304));
   // friends->addMember(george);
   // friends->addMember(gregory);
   // friends->addMember(georgina);
   // friends->addMember(gerald);
   // friends->addMember(geoff);
 
-  Party* enemies = new Party(402, getPerson(310), PartyType::REGULAR_FOE, 
-      10, foes_pouch);
+  // Party* enemies = new Party(402, getPerson(310), PartyType::REGULAR_FOE,
+  //     10, foes_pouch);
   // enemies->addMember(getPerson(311));
   // enemies->addMember(getPerson(312));
   // enemies->addMember(getPerson(312));
@@ -883,37 +909,37 @@ void Game::setupBattle()
   // enemies->addMember(schwep);
   // enemies->addMember(hamburger);
   // enemies->addMember(swiss_cheese);
-  
-  // Battle Testing
-  for (uint32_t i = 0; i < friends->getSize(); i++)
-    friends->getMember(i)->battlePrep();
-  for (uint32_t i = 0; i < enemies->getSize(); i++)
-    enemies->getMember(i)->battlePrep();
+
+  // // Battle Testing
+  // for (uint32_t i = 0; i < friends->getSize(); i++)
+  //   friends->getMember(i)->battlePrep();
+  // for (uint32_t i = 0; i < enemies->getSize(); i++)
+  //   enemies->getMember(i)->battlePrep();
 
   //getPerson(300)->print(false, false, true, true);
 
-  game_battle = new Battle(friends, enemies, bubbified_skills, &event_handler);
+  // game_battle = new Battle(friends, enemies, bubbified_skills, &event_handler);
 
-  if(battle_display == nullptr)
-  {
-    battle_display = new BattleDisplay(game_config);
-    buildBattleDisplayFrames(active_renderer);
-    SDL_Renderer* renderer = active_renderer;
+  // if(battle_display == nullptr)
+  // {
+  //   battle_display = new BattleDisplay(game_config);
+  //   buildBattleDisplayFrames(active_renderer);
+  //   SDL_Renderer* renderer = active_renderer;
 
 
-    /* Sprites */
-    Sprite* background = new Sprite(
-           base_path + "sprites/Battle/Backdrop/battlebg", 7, ".png", renderer);
-    // background->setDirectionReverse();
-    background->shiftNext();
-    background->shiftNext();
-    background->shiftNext();
-    background->shiftNext();
-    background->shiftNext();
-    background->shiftNext();
+  //   /* Sprites */
+  //   Sprite* background = new Sprite(
+  //          base_path + "sprites/Battle/Backdrop/battlebg", 7, ".png", renderer);
+  //   // background->setDirectionReverse();
+  //   background->shiftNext();
+  //   background->shiftNext();
+  //   background->shiftNext();
+  //   background->shiftNext();
+  //   background->shiftNext();
+  //   background->shiftNext();
 
-    background->setAnimationTime(31000);
-    
+  //   background->setAnimationTime(31000);
+
     // Sprite* midlay = new Sprite(
     //             base_path + "sprites/Battle/Midlays/rain", 6, ".png", renderer);
     // midlay->setAnimationTime(64);
@@ -924,81 +950,80 @@ void Game::setupBattle()
     // midlay2->setColorRed(150);
     // midlay2->setColorGreen(150);
 
-    /* Display */
-    battle_display->setBackground(background);
-    // battle_display->setMidlay(midlay2);
-    // battle_display->addMidlay(midlay);
-    battle_display->setBattleBar(new Frame(
-                           base_path + "sprites/Overlay/battle.png", renderer));
+    // /* Display */
+    // battle_display->setBackground(background);
+    // // // battle_display->setMidlay(midlay2);
+    // // battle_display->addMidlay(midlay);
+    // battle_display->setBattleBar(new Frame(
+    //                        base_path + "sprites/Overlay/battle.png", renderer));
 
-    /* Set the character sprites */
-    // auto bsian_sprite_fp = new Sprite(base_path + "sprites/Battle/Backs/bsian0.png", renderer);
-    auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/fale.png", renderer);
-    auto bsian_sprite_ds = new Sprite(base_path + "sprites/Overlay/DialogChar/necrosshoardmaster.png", renderer);
-    getPerson(310)->setSprites(nullptr, bsian_sprite_tp, bsian_sprite_ds, nullptr);
+    // /* Set the character sprites */
+    // // auto bsian_sprite_fp = new Sprite(base_path + "sprites/Battle/Backs/bsian0.png", renderer);
+    // auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/fale.png", renderer);
+    // auto bsian_sprite_ds = new Sprite(base_path + "sprites/Overlay/DialogChar/necrosshoardmaster.png", renderer);
+    // getPerson(310)->setSprites(nullptr, bsian_sprite_tp, bsian_sprite_ds, nullptr);
 
     // getPerson(311)->setSprites(nullptr, new Sprite(
     //         base_path + "sprites/Battle/Battle_Persons/auroraheavy.png", renderer));
     // getPerson(312)->setSprites(nullptr, new Sprite(
-    //            base_path + "sprites/Battle/Battle_Persons/raihan.png", 
+    //            base_path + "sprites/Battle/Battle_Persons/raihan.png",
     //            renderer));
     // getPerson(313)->setSprites(nullptr, new Sprite(
     //       base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
     // getPerson(314)->setSprites(nullptr, new Sprite(
     //         base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
 
-    // getPerson(300)->setSprites(new Sprite(base_path + 
-    //     "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr, 
-    //     new Sprite(base_path + "sprites/Map/Dialog/manbear_brown_grey.png", 
+    // getPerson(300)->setSprites(new Sprite(base_path +
+    //     "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr,
+    //     new Sprite(base_path + "sprites/Map/Dialog/manbear_brown_grey.png",
     //     renderer));
-    // getPerson(301)->setSprites(new Sprite(base_path + 
-    //     "sprites/Battle/Backs/arcadius0.png", renderer), nullptr, 
-    //     new Sprite(base_path + "sprites/Map/Dialog/arcadius.png", 
-    //     renderer));
-
-    auto player_sprite_fp = new Sprite(base_path + 
-        "sprites/Battle/Backs/player0.png", renderer);
-    auto player_sprite_tp = new Sprite(base_path +
-        "sprites/Battle/Battle_Persons/player.png", renderer);
-    auto player_sprite_af = new Sprite(base_path +
-        "sprites/Overlay/DialogChar/player.png", renderer);
-    auto player_sprite_ds = new Sprite(base_path +
-        "sprites/Battle/Backs/player1.png", renderer);
-    getPerson(300)->setSprites(player_sprite_fp, player_sprite_tp, 
-        player_sprite_af, player_sprite_ds);
-
-
-    getPerson(304)->setSprites(
-        new Sprite(base_path + "sprites/Battle/Backs/fembear1_black_yellow.png", renderer),
-        nullptr,
-        new Sprite(base_path + "sprites/Overlay/DialogChar/fembear_black_yellow.png", renderer),
-        new Sprite(base_path + "sprites/Battle/Backs/fembear_black_yellow.png", renderer));
-
-    // getPerson(303)->setSprites(new Sprite(base_path + 
-    //     "sprites/Battle/Backs/sarkova0.png", renderer), nullptr, 
-    //     new Sprite(base_path + "sprites/Battle/Battle_Persons/sarkova.png", 
+    // getPerson(301)->setSprites(new Sprite(base_path +
+    //     "sprites/Battle/Backs/arcadius0.png", renderer), nullptr,
+    //     new Sprite(base_path + "sprites/Map/Dialog/arcadius.png",
     //     renderer));
 
-    // getPerson(304)->setSprites(new Sprite(base_path + 
-    //     "sprites/Battle/Backs/subleezer0.png", renderer), nullptr, 
-    //     new Sprite(base_path + "sprites/Battle/Battle_Persons/subleezer.png", 
+    // auto player_sprite_fp = new Sprite(base_path +
+    //     "sprites/Battle/Backs/player0.png", renderer);
+    // auto player_sprite_tp = new Sprite(base_path +
+    //     "sprites/Battle/Battle_Persons/player.png", renderer);
+    // auto player_sprite_af = new Sprite(base_path +
+    //     "sprites/Overlay/DialogChar/player.png", renderer);
+    // auto player_sprite_ds = new Sprite(base_path +
+    //     "sprites/Battle/Backs/player1.png", renderer);
+    // getPerson(300)->setSprites(player_sprite_fp, player_sprite_tp,
+    //     player_sprite_af, player_sprite_ds);
+
+
+    // getPerson(304)->setSprites(
+    //     new Sprite(base_path + "sprites/Battle/Backs/fembear1_black_yellow.png", renderer),
+    //     nullptr,
+    //     new Sprite(base_path + "sprites/Overlay/DialogChar/fembear_black_yellow.png", renderer),
+    //     new Sprite(base_path + "sprites/Battle/Backs/fembear_black_yellow.png", renderer));
+
+    // getPerson(303)->setSprites(new Sprite(base_path +
+    //     "sprites/Battle/Backs/sarkova0.png", renderer), nullptr,
+    //     new Sprite(base_path + "sprites/Battle/Battle_Persons/sarkova.png",
+    //     renderer));
+
+    // getPerson(304)->setSprites(new Sprite(base_path +
+    //     "sprites/Battle/Backs/subleezer0.png", renderer), nullptr,
+    //     new Sprite(base_path + "sprites/Battle/Battle_Persons/subleezer.png",
     //     renderer));
 
     /* Set der pleps yo */
-    Sprite* damage_plep = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", active_renderer);
-    damage_plep->setAnimationTime(150);
-    Sprite* burn_plep = new Sprite(base_path + "sprites/Battle/Pleps/burnplep_AA_A", 5, ".png", active_renderer);
-    burn_plep->setAnimationTime(150);
-    Sprite* sexy_plep = new Sprite(base_path + "sprites/Battle/Pleps/lowerplep_AA_A", 9, ".png", active_renderer);
-    sexy_plep->setAnimationTime(150);
 
-    physical_01->setAnimation(damage_plep);
-    physical_02->setAnimation(damage_plep);
-    fire_01->setAnimation(burn_plep);
-    physical_03->setAnimation(sexy_plep);
+    // Sprite* burn_plep = new Sprite(base_path + "sprites/Battle/Pleps/burnplep_AA_A", 5, ".png", active_renderer);
+    // burn_plep->setAnimationTime(150);
+    // Sprite* sexy_plep = new Sprite(base_path + "sprites/Battle/Pleps/lowerplep_AA_A", 9, ".png", active_renderer);
+    // sexy_plep->setAnimationTime(150);
 
-  /* Set the battle */
-  battle_display->setBattle(game_battle, active_renderer);
+    // physical_01->setAnimation(damage_plep);
+    // physical_02->setAnimation(damage_plep);
+    // fire_01->setAnimation(burn_plep);
+    // physical_03->setAnimation(sexy_plep);
+
+  // /* Set the battle */
+  // battle_display->setBattle(game_battle, active_renderer);
 
   //malgidus->print(false, false, true, true);
   //frosty->print(false, false, true, true);
@@ -1125,7 +1150,7 @@ void Game::setupBattle()
 
   // for (auto it = begin(key_items); it != end(key_items); ++it)
   // {
-  //  std::cout << "Item: " << (*it).first->getName() << " " 
+  //  std::cout << "Item: " << (*it).first->getName() << " "
   //           << static_cast<int>((*it).second) << "\n";
   // }
 
@@ -1136,7 +1161,7 @@ void Game::setupBattle()
 
   // new_potion->setUseSkill(medium_attack);
   // new_bubby_bomb->setUseSkill(normal_attack);
-  }
+  // }
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */
@@ -1145,7 +1170,7 @@ void Game::setupMap()
   /* Create the map */
   game_map = new Map(game_config, &event_handler);
   mode = MAP;
-  
+
 //  /* Load the map - temporary location */
 //  game_map->loadMap("maps/test_04");
 }
@@ -1180,7 +1205,7 @@ Action* Game::getAction(const int32_t &index, const bool& by_id)
   {
     return action_list.at(index);
   }
- 
+
   return nullptr;
 }
 
@@ -1303,7 +1328,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     if(game_battle != nullptr)
     {
       delete game_battle;
-      game_battle = nullptr; 
+      game_battle = nullptr;
     }
   }
   /* Switch the view to the battle */
@@ -1331,7 +1356,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       cost_modifiers.push_back(0);
       cost_modifiers.push_back(10);
 
-      game_map->initStore(ItemStore::BUY, items, counts, 
+      game_map->initStore(ItemStore::BUY, items, counts,
                           cost_modifiers, "Kevin's Store", false);
     }
   }
@@ -1352,7 +1377,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
         return game_battle->keyDownEvent(event);
     }
   }
-  
+
   return false;
 }
 
@@ -1377,14 +1402,14 @@ bool Game::render(SDL_Renderer* renderer)
   if(base_item_list.empty())
   {
     Item* item1 = new Item(0, "Bubby Saber", 125, new Frame(
-        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/02_Uncommon/BubbySaber01_AA_A00.png", 
+        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/02_Uncommon/BubbySaber01_AA_A00.png",
         renderer));
     Item* item2 = new Item(1, "Frost Bubby", 5, new Frame(
                            "sprites/Battle/Bubbies/frosty_t1.png", renderer));
     Item* item3 = new Item(2, "Coins", 1, new Frame(
                            "sprites/Map/_TEST/coins_AA_A00.png", renderer));
     Item* item4 = new Item(3, "Ravizer Sword", 250, new Frame(
-        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/03_Rare/RavizerSword07_AA_A00.png", 
+        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/03_Rare/RavizerSword07_AA_A00.png",
         renderer));
     Item* item5 = new Item(4, "Blazing Bubby", 4, new Frame(
                             "sprites/Battle/Bubbies/blazing_t1.png", renderer));
@@ -1394,12 +1419,12 @@ bool Game::render(SDL_Renderer* renderer)
     base_item_list.push_back(item4);
     base_item_list.push_back(item5);
   }
-  
+
   /* Make sure the active renderer is set up */
   // TODO: Possibly revise. Change how the game handles maps and changing
   if(active_renderer == NULL)
     active_renderer = renderer;
- 
+
   /* Map initialization location */
   if(!game_map->isLoaded())
   {
@@ -1413,7 +1438,7 @@ bool Game::render(SDL_Renderer* renderer)
     return game_map->render(renderer);
   else if(mode == BATTLE)
     return battle_display->render(renderer);
-  
+
   return true;
 }
 
@@ -1424,7 +1449,7 @@ bool Game::setConfiguration(Options* running_config)
   {
     game_config = running_config;
     base_path   = game_config->getBasePath();
-    
+
     /* Set in secondary classes */
     if(game_map != nullptr)
       game_map->setConfiguration(running_config);
@@ -1435,7 +1460,7 @@ bool Game::setConfiguration(Options* running_config)
 
     return true;
   }
-  
+
   return false;
 }
 
