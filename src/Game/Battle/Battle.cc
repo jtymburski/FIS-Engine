@@ -892,12 +892,27 @@ int32_t Battle::calcBaseDamage(const float& crit_factor)
 
   action_power = Helpers::randU(action_power - var_val, action_power + var_val);
 
-  int32_t base_damage = 0;
+  float base_damage = 0;
 
-  if(base_user_pow > base_targ_def)
-    base_damage = base_user_pow + action_power - base_targ_def;
-  else if(base_user_pow <= base_targ_def)
-    base_damage = action_power;
+  auto attack_modifier = 1.0 / (1.0 + std::exp(-base_user_pow / 255));
+  auto attack_power = action_power * (1.0 + attack_modifier);
+
+  auto defense_modifier = 0.0f;
+
+  if (action_power + base_targ_def >= 0)
+  {
+    defense_modifier = (float)base_targ_def / (float)(action_power + base_targ_def);
+  }
+
+  base_damage = attack_power * (1 - defense_modifier);
+
+#ifdef UDEBUG
+  std::cout << "Attack Modifier: " << attack_modifier << std::endl;
+  std::cout << "Action Power: " << action_power << std::endl;
+  std::cout << "Attack Power: " << attack_power << std::endl;
+  std::cout << "Defense Modifier: " << defense_modifier << std::endl;
+  std::cout << "Base Damage: " << base_damage << std::endl;
+#endif
 
   /* If the user is defending, shielded or guarded  decrease the damage taken by
    * the respective modifier values */
@@ -912,27 +927,15 @@ int32_t Battle::calcBaseDamage(const float& crit_factor)
   //   base_damage *= kGUARD_MODIFIER;
 
   base_damage *= crit_factor;
-  base_damage =
-      Helpers::setInRange(base_damage, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
+
+  int32_t damage_round = std::round(base_damage);
+  damage_round = Helpers::setInRange(damage_round, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
 
 #ifdef UDEBUG
-  std::cout << "Phys Pow Val: " << phys_pow_val << std::endl;
-  std::cout << "Prim Pow Val: " << elm1_pow_val << std::endl;
-  std::cout << "Secd Pow Val: " << elm2_pow_val << std::endl;
-  std::cout << "Luck Pow Val: " << luck_pow_val << std::endl;
-  std::cout << "Total User Power: " << base_user_pow << std::endl;
-  std::cout << "Action Power: --- " << action_power << std::endl;
-  std::cout << "Phys Def Val: " << phys_def_val << std::endl;
-  std::cout << "Prim Def Val: " << elm1_def_val << std::endl;
-  std::cout << "Secd Def Val: " << elm2_def_val << std::endl;
-  std::cout << "Luck Def Val: " << luck_def_val << std::endl;
-  std::cout << "Total Defense:   " << base_targ_def << std::endl;
-  std::cout << "Crit Factor: ---- " << crit_factor << std::endl;
-  std::cout << "Base Damage: ---- " << base_damage << std::endl
-            << std::endl;
+  std::cout << "Modified Damage: " << damage_round << std::endl;
 #endif
 
-  return base_damage;
+  return damage_round;
 }
 
 /*
