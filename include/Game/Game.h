@@ -9,7 +9,7 @@
  *              data highway / event handler.
  *
  *
- * //TODO: Starting inventory items [01-11-14]
+ * // TODO: Starting inventory items [01-11-14]
  ******************************************************************************/
 #ifndef GAME_H
 #define GAME_H
@@ -26,7 +26,7 @@
 #include "Game/Player/Player.h"
 #include "Game/Player/Bubby.h"
 //#include "Game/VictoryScreen.h"
-#include "Game/Player/Inventory.h" //TODO
+#include "Game/Player/Inventory.h" // TODO
 #include "Options.h"
 
 using std::begin;
@@ -68,10 +68,10 @@ private:
   Options* game_config;
 
   /* The current loaded map */
-  Map* game_map; // TODO: Make non-pointer?
+  Map* game_map; // TODO: Make non-pointer? - maybe
 
   /* The game starting inventory */
-  Inventory* game_inventory; //TODO: Make part of player?
+  Inventory* game_inventory; // TODO: Make part of bearacks party
 
   /* List of all actions */
   std::vector<Action*> action_list;
@@ -166,7 +166,7 @@ private:
  *===========================================================================*/
 public:
   /* Pauses der game in der Wald, ja ja ja */
-  void pause();
+  //void pause(); // TODO: Is this required?
   
   /* Returns a pointer to an action by index or by ID */
   Action* getAction(const int32_t &index, const bool &by_id = true);
@@ -196,16 +196,14 @@ public:
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
   
-  /* Runs the test battle */
-  void runTestBattle();
-
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 
   /* Sets the test map to run instead of current default */
   void setTestMap(std::string test_map);
 
-  void unpause();
+  /* Unpause the game */
+  //void unpause(); // TODO: See associated pause()
 
   /* Updates the game state */
   bool update(int cycle_time);
