@@ -2,7 +2,7 @@
 * Class Name: Inventory [Declaration]
 * Date Created: December 17th, 2013
 * Inheritance: None
-* Description: 
+* Description:
 *
 * Notes
 * -----
@@ -29,10 +29,6 @@
 #include "Helpers.h"
 #include "StringDb.h"
 
-using Bubby_It  = std::vector<std::pair<Bubby*, uint16_t>>::iterator;
-using Equip_It  = std::vector<std::pair<Equipment*, uint16_t>>::iterator;
-using Item_It   = std::vector<std::pair<Item*, uint16_t>>::iterator;
-
 ENUM_FLAGS(InvState)
 enum class InvState
 {
@@ -49,7 +45,7 @@ class Inventory
 {
 public:
 	/* Constructs an Inventory using an ID, name, and Icon image */
-  Inventory(const uint32_t game_id, const std::string name = "", 
+  Inventory(const uint32_t game_id, const std::string name = "",
   	        Frame* thumb = nullptr);
 
   /* Annihilates an Inventory object */
@@ -120,15 +116,15 @@ private:
  *============================================================================*/
 public:
 	/* Attempts to add a Bubby */
-	AddStatus add(Bubby* new_bubby, const uint32_t &amount = 1, 
+	AddStatus add(Bubby* new_bubby, const uint32_t &amount = 1,
                 bool bypass = false);
 
   /* Attempts to add an equipment */
-	AddStatus add(Equipment* new_equipment, const uint32_t &amount = 1, 
+	AddStatus add(Equipment* new_equipment, const uint32_t &amount = 1,
                 bool bypass = false);
 
   /* Adds an item to the Inventory */
-	AddStatus add(Item* new_item, const uint32_t &amount = 1, 
+	AddStatus add(Item* new_item, const uint32_t &amount = 1,
                     bool bypass = false);
 
   /* Clears the memory of the inventory and the vectors of data */
@@ -169,10 +165,10 @@ public:
 
   /* Removes an equipment by a game ID */
   bool removeEquipID(const uint32_t &game_id, const uint16_t &amount = 1);
- 
+
   /* Remove an equipment from the Inventory by a given unique item ID value */
   bool removeEquipUID(const uint32_t &unique_id, const uint16_t &amount = 1);
-  
+
   /* Removes an item at a given index */
   bool removeItemIndex(const uint32_t &index, const uint16_t &amount = 1);
 
@@ -181,9 +177,9 @@ public:
 
   /* Remove an item from the Inventory by a given unique item ID value */
   bool removeItemUID(const uint32_t &unique_id, const uint16_t &amount = 1);
-  
+
   /* Sorts an object in the inventory a certain way */
-	bool sort(SortType sort_by, SortObjects object_to_sort, 
+	bool sort(SortType sort_by, SortObjects object_to_sort,
 		        const bool ascending = false);
 
 	/* Evaluates and returns the value of a given Inventory flag */
@@ -252,7 +248,7 @@ public:
 
   /* Calculates and returns the mass */
   double getMass();
-  
+
   /* Returns the mass limit */
   double getMassLimit();
 
@@ -274,8 +270,8 @@ public:
 	bool setImages(Frame* const new_backdrop, Frame* const new_thumbnail);
 
   /* Assigns new limits given parameters */
-  void setLimits(const uint32_t bubby_lim, const uint32_t equip_lim, 
-  	             const uint32_t item_lim, const uint16_t item_e, 
+  void setLimits(const uint32_t bubby_lim, const uint32_t equip_lim,
+  	             const uint32_t item_lim, const uint16_t item_e,
   	             const double mass_lim);
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

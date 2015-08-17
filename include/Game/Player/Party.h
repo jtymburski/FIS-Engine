@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 * Class Name: Party [Declaration]
 * Date Created: January 11th, 2014
@@ -13,6 +14,8 @@
 *
 * TODO
 * ----
+* [08-17-15] - Method to determine inventory name. Needed?
+* [08-17-15] - Thumbanils for inventory.
 *******************************************************************************/
 #ifndef PARTY_H
 #define PARTY_H
@@ -27,13 +30,13 @@
 ENUM_FLAGS(PartyState)
 enum class PartyState
 {
-  CAN_ADD_MEMBERS    = 1 << 0,
+  CAN_ADD_MEMBERS = 1 << 0,
   CAN_REMOVE_MEMBERS = 1 << 1,
-  ITEM_USE_ENABLED   = 1 << 2,
-  CAN_ADD_ITEMS      = 1 << 3,
-  CAN_REMOVE_ITEMS   = 1 << 4,
+  ITEM_USE_ENABLED = 1 << 2,
+  CAN_ADD_ITEMS = 1 << 3,
+  CAN_REMOVE_ITEMS = 1 << 4,
   ENCOUNTERS_ENABLED = 1 << 5,
-  HAS_BOND           = 1 << 6
+  HAS_BOND = 1 << 6
 };
 
 class Party
@@ -43,12 +46,14 @@ public:
   Party();
 
   /* Constructs a Party given a main character and a type of Party */
-  Party(const int32_t &my_id, Person* const main, const PartyType &type, 
-        const uint8_t &max, Inventory* const inv = nullptr);
+  Party(const int32_t &my_id, Person *const main, const PartyType &type,
+        const uint16_t &max);
 
   /* Constructs a Party given a vector of Person ptrs as members */
-  Party(const int32_t &my_id, std::vector<Person*> members, const uint8_t &max, 
-        const PartyType &type, Inventory* const inv = nullptr);
+  Party(const int32_t &my_id, std::vector<Person *> members, const uint16_t &max,
+        const PartyType &type);
+
+  ~Party();
 
 private:
   /* Party flag set */
@@ -58,51 +63,54 @@ private:
   int32_t id;
 
   /* The members who are currently in the Party */
-  std::vector<Person*> members;
-  std::vector<Person*> reserve_members;
- 
+  std::vector<Person *> members;
+  std::vector<Person *> reserve_members;
+
   /* The maximum size of the party */
-  uint8_t max_size;
+  uint16_t max_size;
 
   /* The type of the Party */
   PartyType party_type;
 
   /* The inventory for the party */
-  Inventory* pouch;
-  
+  Inventory *pouch;
+
   /* ------------ Constants --------------- */
-  static const uint8_t kMAX_MEMBERS_BEARACKS;
-  static const uint8_t kMAX_MEMBERS_SLEUTH;
-  static const uint8_t kMAX_MEMBERS_FOES;
+  static const uint16_t kMAX_MEMBERS_BEARACKS;
+  static const uint16_t kMAX_MEMBERS_SLEUTH;
+  static const uint16_t kMAX_MEMBERS_FOES;
   static const int32_t kUNSET_ID; /* The unset ID for the party */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
+  /* Create the inventory */
+  void createInventory();
+
   /* Loads the default settings for a Party */
   void loadDefaults();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Attempts to add a person to the party */
-  bool addMember(Person* const new_member);
+  bool addMember(Person *const new_member);
 
   /* Clears all members of the party except the primary member */
   bool clearParty();
 
   /* Returns all the persons in the party except a given user */
-  std::vector<Person*> findMembersExcept(Person* const member, 
-      const bool &only_living = false);
+  std::vector<Person *> findMembersExcept(Person *const member,
+                                          const bool &only_living = false);
 
   /* Checks if a given person is in the party */
-  bool isInParty(Person* const check_person);
+  bool isInParty(Person *const check_person);
 
   /* Move a member between the Reserve and the Standard party */
-  bool moveMemberToReserve(Person* test_member);
-  bool moveReserveMember(Person* test_member);
+  bool moveMemberToReserve(Person *test_member);
+  bool moveReserveMember(Person *test_member);
 
   /* Prints out the state of the Party */
   void print(const bool &simple = false, const bool &flags = false);
@@ -126,28 +134,28 @@ public:
   int32_t getID() const;
 
   /* Returns the pointer to the current inventory of the Party */
-  Inventory* getInventory();
+  Inventory *getInventory();
 
   /* Returns a vector of the indexes of all non-KO'd party members */
   std::vector<uint32_t> getLivingMembers();
 
   /* Returns a vector of pointers to the all living party members */
-  std::vector<Person*> getLivingMemberPtrs();
+  std::vector<Person *> getLivingMemberPtrs();
 
   /* Returns the current maximum size of the party */
   uint32_t getMaxSize();
 
   /* Obtains a ptr to a member of a given index, if the index is valid */
-  Person* getMember(const uint8_t &index);
+  Person *getMember(const uint32_t &index);
 
   /* Returns the string name a party member at a given index, if valid */
-  std::string getMemberName(const uint8_t &index);
+  std::string getMemberName(const uint32_t &index);
 
   /* Get all members */
-  std::vector<Person*> getMembers();
+  std::vector<Person *> getMembers();
 
   /* Get the reserve members */
-  std::vector<Person*> getReserveMembers();
+  std::vector<Person *> getReserveMembers();
 
   /* Returns the enumerated type of the Party */
   PartyType getPartyType();
@@ -165,26 +173,26 @@ public:
   void setID(int id);
 
   /* Assigns a new inventory to the Party */
-  bool setInventory(Inventory* const new_inventory);
+  bool setInventory(Inventory *const new_inventory);
 
   /* Attempts to assign a new primary member of the Party */
-  bool setMainMember(const uint8_t &new_main);
-  
-  /* Attempts to assign a new maximum size of the Party */
-  bool setMaxSize(const uint8_t &new_max_size);
+  bool setMainMember(const uint32_t &new_main);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /* Attempts to assign a new maximum size of the Party */
+  bool setMaxSize(const uint32_t &new_max_size);
+
+  /*=============================================================================
+   * PUBLIC STATIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Returns the maximum size of the Bearacks */
-  static uint8_t getMaxBearacks();
+  static uint32_t getMaxBearacks();
 
   /* Returns the maximum size of the Sleuth */
-  static uint8_t getMaxSleuth();
+  static uint32_t getMaxSleuth();
 
   /* Returns the maximum size of the foes */
-  static uint8_t getMaxFoes();
+  static uint32_t getMaxFoes();
 };
 
-#endif //PARTY_H
+#endif // PARTY_H

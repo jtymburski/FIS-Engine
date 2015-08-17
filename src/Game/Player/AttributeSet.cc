@@ -21,43 +21,43 @@
 
 const std::vector<std::string> AttributeSet::kSHORT_NAMES =
 {
-  "VITA", "QTDR", "PHAG", "PHFD", 
-  "THAG", "THFD", "POAG", "POFD", 
-  "PIAG", "PIFD", "CHAG", "CHFD", 
-  "CYAG", "CYFD", "NIAG", "NIFD", 
+  "VITA", "QTDR", "PHAG", "PHFD",
+  "THAG", "THFD", "POAG", "POFD",
+  "PIAG", "PIFD", "CHAG", "CHFD",
+  "CYAG", "CYFD", "NIAG", "NIFD",
   "LIMB", "MMTM", "UNBR", "MANN"
 };
 
 const std::vector<std::string> AttributeSet::kLONG_NAMES =
 {
-  "VITALITY", 
-  "QUANTUM DRIVE", 
+  "VITALITY",
+  "QUANTUM DRIVE",
   "PHYSICIAL AGGRESSION",
   "PHYSICIAL FORTITUDE",
-  "THERMAL AGGRESSION", 
-  "THERMAL FORTITUDE", 
-  "POLAR AGGRESSION", 
-  "POLAR FORTITUDE", 
-  "PRIMAL AGGRESSION", 
-  "PRIMAL FORTITUDE", 
+  "THERMAL AGGRESSION",
+  "THERMAL FORTITUDE",
+  "POLAR AGGRESSION",
+  "POLAR FORTITUDE",
+  "PRIMAL AGGRESSION",
+  "PRIMAL FORTITUDE",
   "CHARGED AGGRESSION",
   "CHARGED FORTITUDE",
-  "CYBERNETIC AGGRESSION", 
-  "CYBERNETIC FORTITUDE", 
-  "NIHIL AGGRESSION", 
+  "CYBERNETIC AGGRESSION",
+  "CYBERNETIC FORTITUDE",
+  "NIHIL AGGRESSION",
   "NIHIL FORTITUDE",
-  "LIMBERTUDE", 
-  "MOMENTUM", 
-  "UNBEARABILITY", 
+  "LIMBERTUDE",
+  "MOMENTUM",
+  "UNBEARABILITY",
   "MANNA"
 };
 
 const std::vector<std::vector<int32_t>> AttributeSet::kPRESETS =
 {
   {100, 25, 5, 5, /* Weak Stats */
-    5, 3, 5, 3, 
-    5, 3, 5, 3, 
-    5, 3, 5, 3, 
+    5, 3, 5, 3,
+    5, 3, 5, 3,
+    5, 3, 5, 3,
     5, 5, 3, 1},
 
   {150, 30, 15, 15, /* Not as Weak Stats */
@@ -91,10 +91,10 @@ const std::vector<std::vector<int32_t>> AttributeSet::kPRESETS =
    2000, 2000, 2000, 200}
 };
 
-const  int32_t AttributeSet::kDEFAULT     =      0; 
-const  int32_t AttributeSet::kMIN_VALUE   =  -9999; 
-const  int32_t AttributeSet::kMIN_P_VALUE =      0; 
-const uint32_t AttributeSet::kMAX_VALUE   = 999999; 
+const  int32_t AttributeSet::kDEFAULT     =      0;
+const  int32_t AttributeSet::kMIN_VALUE   =  -9999;
+const  int32_t AttributeSet::kMIN_P_VALUE =      0;
+const uint32_t AttributeSet::kMAX_VALUE   = 999999;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -103,7 +103,7 @@ const uint32_t AttributeSet::kMAX_VALUE   = 999999;
 /*
  * Description: Default constructor, intitializes a default Attribute set
  *
- * Inputs: none 
+ * Inputs: none
  */
 AttributeSet::AttributeSet()
 {
@@ -138,12 +138,12 @@ AttributeSet::AttributeSet(const int32_t &preset_level, const bool &personal,
  *
  * Inputs: std::vector<int> new_values - vector of values to be set
  */
-AttributeSet::AttributeSet(const std::vector<int32_t> &new_values, 
+AttributeSet::AttributeSet(const std::vector<int32_t> &new_values,
     const bool &personal, const bool &constant)
 {
   if (new_values.size() == kSHORT_NAMES.size())
     values = new_values;
-  else 
+  else
     for (size_t i = 0; i < kSHORT_NAMES.size(); i++)
       values.push_back(kDEFAULT);
 
@@ -176,7 +176,7 @@ void AttributeSet::classSetup(const bool &personal, const bool &constant)
  *============================================================================*/
 
 /*
- * Description: Constructs an AttributeSet based on presets which are 
+ * Description: Constructs an AttributeSet based on presets which are
  *              pre-initialized and configured values of stats.
  *
  * Inputs: const size_t &level - const ref to which preset to use
@@ -220,7 +220,7 @@ void AttributeSet::cleanUp()
  * Description: Prints [std::cout] the values of the AttributeSet
  *
  * Inputs: simple - boolean value whether to show simple or large format
- * Output: 
+ * Output:
  */
 void AttributeSet::print(const bool &simple)
 {
@@ -270,7 +270,7 @@ bool AttributeSet::alterStat(const int32_t &index, const int32_t &amount)
  *              Calls the alterStat(index, amount) function.
  *
  * Inputs: const Attribute &stat - enumerated Attribute value to be altered
- *         const int &amount - the amount by which to alter the stat (+/-) 
+ *         const int &amount - the amount by which to alter the stat (+/-)
  * Output: bool - true if the enumeration was a valid attribute
  */
 bool AttributeSet::alterStat(const Attribute &stat, const int32_t &amount)
@@ -280,11 +280,11 @@ bool AttributeSet::alterStat(const Attribute &stat, const int32_t &amount)
 
 /*
  * Description: Alters the stat of a given name (short or long name) by an
- *              amount. Uses the alterStat function above after obtaining 
+ *              amount. Uses the alterStat function above after obtaining
  *              the right index.
  *
  * Inputs: const std::string &name - the name form of the attribute
- *         const int &amount - the amount by which to alter the stat 
+ *         const int &amount - the amount by which to alter the stat
  * Output: bool - true if the name relates to a valid stat
  */
 bool AttributeSet::alterStat(const std::string &name, const int32_t &amount)
@@ -506,11 +506,11 @@ int32_t AttributeSet::getIndex(const std::string &name)
       return i;
 
   /* Else return an invalid index */
-  return -1; 
+  return -1;
 }
 
 /*
- * Description: Returns the size of an attribute set (the value of 
+ * Description: Returns the size of an attribute set (the value of
  *              kSHORT_NAMES.size())
  *
  * Inputs: none
@@ -555,7 +555,7 @@ std::string AttributeSet::getLongName(const Attribute &s)
  * Inputs: const size_t &index - the index to return the long-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getLongName(const size_t &index) 
+std::string AttributeSet::getLongName(const size_t &index)
 {
   if (index < kSHORT_NAMES.size())
     return kLONG_NAMES[index];
@@ -570,7 +570,7 @@ std::string AttributeSet::getLongName(const size_t &index)
  * Inputs: const Attribute &stat - the enumerated attribute to find the name for
  * Output: std::string - the short version of the attributes name (if it exists)
  */
-std::string AttributeSet::getName(const Attribute &stat) 
+std::string AttributeSet::getName(const Attribute &stat)
 {
   auto index = getIndex(stat);
 
@@ -586,7 +586,7 @@ std::string AttributeSet::getName(const Attribute &stat)
  * Inputs: const size_t &index - the index to return the short-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getName(const size_t &index) 
+std::string AttributeSet::getName(const size_t &index)
 {
   if (index < kSHORT_NAMES.size())
     return kSHORT_NAMES[index];
@@ -599,7 +599,7 @@ std::string AttributeSet::getName(const size_t &index)
  *============================================================================*/
 
 /*
- * Description: Overloaded compound assignment operator. Adds a given 
+ * Description: Overloaded compound assignment operator. Adds a given
  *              AttributeSet (rhs) to the current object and returns itself.
  *
  * Inputs: const AttributeSet& rhs - the set to be added to the current set
@@ -608,7 +608,7 @@ std::string AttributeSet::getName(const size_t &index)
 AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
 {
   /* Inherit flags from rhs */
-  this->classSetup(rhs.getFlag(AttributeState::PERSONAL), 
+  this->classSetup(rhs.getFlag(AttributeState::PERSONAL),
                    rhs.getFlag(AttributeState::CONSTANT));
 
   if (!this->getFlag(AttributeState::CONSTANT))
@@ -634,7 +634,7 @@ AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
 AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
 {
   /* Inherit flags from rhs */
-  this->classSetup(rhs.getFlag(AttributeState::PERSONAL), 
+  this->classSetup(rhs.getFlag(AttributeState::PERSONAL),
                    rhs.getFlag(AttributeState::CONSTANT));
 
   if (!this->getFlag(AttributeState::CONSTANT))

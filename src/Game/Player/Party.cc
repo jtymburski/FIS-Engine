@@ -1,7 +1,7 @@
 /*******************************************************************************
 * Class Name: Party [Implementation]
 * Date Created: January 11th, 2014
-* Inheritance: None 
+* Inheritance: None
 * Description: Party is an object designed to hold a number of persons, such as
 *              your sleuth (maximum of five members) or the members of your
 *              barracks on the ship, or a group of foes you will face in battle
@@ -13,17 +13,16 @@
 *
 * See .h file for TODOs
 *******************************************************************************/
-
 #include "Game/Player/Party.h"
 
 /*=============================================================================
  * CONSTANTS - See header declaration for details.
  *============================================================================*/
 
-const uint8_t Party::kMAX_MEMBERS_BEARACKS{50};
-const uint8_t Party::kMAX_MEMBERS_SLEUTH{10};
-const uint8_t Party::kMAX_MEMBERS_FOES{10};
-const int32_t Party::kUNSET_ID = -1;
+const uint16_t Party::kMAX_MEMBERS_BEARACKS{50};
+const uint16_t Party::kMAX_MEMBERS_SLEUTH{5};
+const uint16_t Party::kMAX_MEMBERS_FOES{5};
+const int32_t Party::kUNSET_ID{-1};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -34,10 +33,10 @@ const int32_t Party::kUNSET_ID = -1;
  *
  * Inputs: none
  */
-Party::Party()
-     : id{kUNSET_ID}
+Party::Party() : id{kUNSET_ID}
 {
   loadDefaults();
+  createInventory();
 }
 
 /*
@@ -48,60 +47,71 @@ Party::Party()
  * Inputs: int32_t my_id - ID of the party to be created.
  *         Person* main - member member to be added to the inventory.
  *         PartyType type - enumerated type of the party.
- *         uint8_t max - maximum size of the party.
- *         Inventory* - pointer to the inventory pouch.
+ *         uint16_t max - maximum size of the party.
  */
-Party::Party(const int32_t &my_id, Person* const main, const PartyType &type, 
-    const uint8_t &max, Inventory* const inv)
-      : id{my_id}
+Party::Party(const int32_t &my_id, Person *const main, const PartyType &type,
+             const uint16_t &max)
+    : id{my_id}
 {
+  assert(main);
   loadDefaults();
 
-  if (main == nullptr)
-    std::cerr << "[Error] Creating party with null main member" << std::endl;
-  else
-  {
-    members.push_back(main);
-    party_type = type;
-    setMaxSize(max);
-    pouch = inv;
-  }
+  members.push_back(main);
+
+  party_type = type;
+  setMaxSize(max);
+  createInventory();
 }
 
 /*
- * Description: Genertal party construction which constructs a party given an
+ * Description: Genertal party construction which constructs a party given
+ *an
  *              ID, a vector of Persons, a maximum size and an enumerated
  *              Party type with a pointer to an inventory.
  *
  * Inputs: int32_t my_id - ID of the party to be created.
  *         std::vector<Person*> - pointers to the members of the Party.
- *         uint8_t max - the maximum size of the party.
- *         Inventory* - pointer to the Inventory object.
+ *         uint16_t max - the maximum size of the party.
  */
-Party::Party(const int32_t &my_id, std::vector<Person*> members, 
-    const uint8_t &max, const PartyType &type, Inventory* const inv)
-      : id{my_id}
+Party::Party(const int32_t &my_id, std::vector<Person *> members,
+             const uint16_t &max, const PartyType &type)
+    : id{my_id}
 {
+  assert(members.size() < max_size);
+  assert(members.size() > 0);
+  assert(members.at(0));
+
   loadDefaults();
 
-  for (auto member : members)
-  {
-    if (member == nullptr)
-      std::cerr << "Error: Creating party with null members\n";
-    if (members.size() < max_size)
-      members.push_back(member);
-    else
-      std::cerr << "Error: Creating party with too large of size\n";
-  }
+  for(const auto &member : members)
+    members.push_back(member);
 
   party_type = type;
   setMaxSize(max);
-  pouch = inv;
+  createInventory();
+}
+
+Party::~Party()
+{
+  if(pouch != nullptr)
+    delete pouch;
+
+  pouch = nullptr;
 }
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+void Party::createInventory()
+{
+  if(pouch != nullptr)
+    delete pouch;
+
+  // TODO: Method to determine name of inventory? [08-17-15]
+  // TODO: Thumbnail for inventory. [08-17-15]
+  pouch = new Inventory(id);
+}
 
 /*
  * Description: Loads the default state of the Party, including the default
@@ -123,6 +133,7 @@ void Party::loadDefaults()
   setFlag(PartyState::CAN_ADD_ITEMS, true);
   setFlag(PartyState::CAN_REMOVE_ITEMS, true);
   setFlag(PartyState::ENCOUNTERS_ENABLED, true);
+  setFlag(PartyState::HAS_BOND, false);
 }
 
 /*=============================================================================
@@ -135,10 +146,10 @@ void Party::loadDefaults()
  * Inputs: Person* - member to be added to the party.
  * Output: bool - true if the person was added successfully.
  */
-bool Party::addMember(Person* const new_member)
+bool Party::addMember(Person *const new_member)
 {
-  if(getFlag(PartyState::CAN_ADD_MEMBERS) && members.size() < max_size && 
-      new_member)
+  if(getFlag(PartyState::CAN_ADD_MEMBERS) && members.size() < max_size &&
+     new_member)
   {
     members.push_back(new_member);
 
@@ -149,7 +160,8 @@ bool Party::addMember(Person* const new_member)
 }
 
 /*
- * Description: Clears all members of the party except for the primary leader.
+ * Description: Clears all members of the party except for the primary
+ *leader.
  *
  * Inputs: none
  * Output: bool - true if the party was cleared succesfully.
@@ -173,7 +185,7 @@ bool Party::clearParty()
  * Inputs: Person* - person to be checked whether they are in the party.
  * Output: bool - true if the person is in the party.
  */
-bool Party::isInParty(Person* const check_person)
+bool Party::isInParty(Person *const check_person)
 {
   for(const auto &member : members)
     if(member == check_person)
@@ -185,10 +197,10 @@ bool Party::isInParty(Person* const check_person)
 /*
  * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
-bool Party::moveMemberToReserve(Person* test_member)
+bool Party::moveMemberToReserve(Person *test_member)
 {
   auto success = false;
 
@@ -214,7 +226,7 @@ bool Party::moveMemberToReserve(Person* test_member)
  * Inputs:
  * Output:
  */
-bool Party::moveReserveMember(Person* test_member)
+bool Party::moveReserveMember(Person *test_member)
 {
   auto success = false;
 
@@ -237,7 +249,7 @@ bool Party::moveReserveMember(Person* test_member)
 /*
  * Description: Prints out the state of the Party.
  *
- * Inputs: const bool simple - whether to print out just simple info 
+ * Inputs: const bool simple - whether to print out just simple info
  *         const bool flags  - whether to print out the value of the flags.
  * Output: none
  */
@@ -253,9 +265,9 @@ void Party::print(const bool &simple, const bool &flags)
     std::cout << "----- Members -----\n";
 
     for(const auto &member : members)
-       std::cout << "Member: " << member->getName() << "\n";
+      std::cout << "Member: " << member->getName() << "\n";
     std::cout << "----- Reserve Members -----\n";
-    for(const auto& member : reserve_members)
+    for(const auto &member : reserve_members)
       std::cout << "Reserve Member: " << member->getName() << "\n";
 
     std::cout << "--------" << std::endl;
@@ -297,7 +309,8 @@ bool Party::removeMember(const uint8_t &index)
 }
 
 /*
- * Description: Attempts to remove a member of the party by a given string name.
+ * Description: Attempts to remove a member of the party by a given string
+ *name.
  *
  * Inputs: const std::string - name of the party member to be removed.
  * Output: bool - true if the removal was successful.
@@ -326,13 +339,11 @@ bool Party::removeMember(const std::string &name)
  * Inputs: none
  * Output: uint32_t - the size of the party
  */
-uint32_t Party::getSize()
-{
-  return members.size();
-}
+uint32_t Party::getSize() { return members.size(); }
 
 /*
- * Description: Calculates and returns the average speed among members of the
+ * Description: Calculates and returns the average speed among members of
+ *the
  *              party.
  *
  * Inputs: none
@@ -344,7 +355,7 @@ int32_t Party::getAverageSpeed()
 }
 
 /*
- * Description: Returns a vector of indexes of all KO'd party members 
+ * Description: Returns a vector of indexes of all KO'd party members
  *
  * Inputs: none
  * Output: std::vector<uint32_t> - the indexes of all dead members
@@ -379,10 +390,7 @@ bool Party::getFlag(const PartyState &test_flag)
  * Inputs: none
  * Output: int32_t - the party id
  */
-int32_t Party::getID() const
-{
-  return id;
-}
+int32_t Party::getID() const { return id; }
 
 /*
  * Description: Returns the pointer to the current inventory object.
@@ -390,10 +398,7 @@ int32_t Party::getID() const
  * Inputs: none
  * Output: Inventory* - pointer to the Inventory object.
  */
-Inventory* Party::getInventory()
-{
-  return pouch;
-}
+Inventory *Party::getInventory() { return pouch; }
 
 /*
  * Description: Returns the vector of indexes along the party which are
@@ -421,9 +426,9 @@ std::vector<uint32_t> Party::getLivingMembers()
  * Inputs: none
  * Output: std::vector<Person*> - living party memebr pointers
  */
-std::vector<Person*> Party::getLivingMemberPtrs()
+std::vector<Person *> Party::getLivingMemberPtrs()
 {
-  std::vector<Person*> living_member_ptrs;
+  std::vector<Person *> living_member_ptrs;
 
   for(const auto &member : members)
     if(member->getBFlag(BState::ALIVE))
@@ -438,19 +443,17 @@ std::vector<Person*> Party::getLivingMemberPtrs()
  * Inputs: none
  * Output: int32_t - the maximum size for the party.
  */
-uint32_t Party::getMaxSize()
-{
-  return max_size;
-}
+uint32_t Party::getMaxSize() { return max_size; }
 
 /*
- * Description: Obtains a pointer to the member person at a given index in the
+ * Description: Obtains a pointer to the member person at a given index in
+ *the
  *              party.
  *
  * Inputs: uint8_t - index to check member for.
  * Output: Person* - pointer to a the person at the given index (or nullptr)
  */
-Person* Party::getMember(const uint8_t &index)
+Person *Party::getMember(const uint32_t &index)
 {
   if(index < members.size())
     return members.at(index);
@@ -459,17 +462,19 @@ Person* Party::getMember(const uint8_t &index)
 }
 
 /*
- * Description: Attempts to return a vector of all members in the party except
+ * Description: Attempts to return a vector of all members in the party
+ *except
  *              a given member. If this member is not found, a vector of all
  *              the members of the party will be found.
  *
  * Inputs: Person* member - the member to be excluded from all members
- * Output: std::vector<Person*> - a vector of members with all but given member
+ * Output: std::vector<Person*> - a vector of members with all but given
+ *member
  */
-std::vector<Person*> Party::findMembersExcept(Person* const member,
-    const bool &only_living)
+std::vector<Person *> Party::findMembersExcept(Person *const member,
+                                               const bool &only_living)
 {
-  std::vector<Person*> temp_members;
+  std::vector<Person *> temp_members;
 
   for(const auto &person : members)
     if(person == member)
@@ -480,41 +485,36 @@ std::vector<Person*> Party::findMembersExcept(Person* const member,
 }
 
 /*
- * Description: Returns the string name of a party member at a given index, if
+ * Description: Returns the string name of a party member at a given index,
+ *if
  *              it is valid.
  *
- * Inputs: uint8_t - index of the party member to find the name of.
+ * Inputs: uint32_t - index of the party member to find the name of.
  * Output: std::string - string name of hte member.
  */
-std::string Party::getMemberName(const uint8_t &index)
+std::string Party::getMemberName(const uint32_t &index)
 {
   if(index < members.size())
     return members.at(index)->getName();
 
   return "";
 }
-  
+
 /*
  * Description: Returns the stack of all persons within the party.
  *
  * Inputs: none
  * Output: std::vector<Person*> - stack of persons
  */
-std::vector<Person*> Party::getMembers()
-{
-  return members;
-}
+std::vector<Person *> Party::getMembers() { return members; }
 
 /*
  * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
-std::vector<Person*> Party::getReserveMembers()
-{
-  return reserve_members;
-}
+std::vector<Person *> Party::getReserveMembers() { return reserve_members; }
 
 /*
  * Description: Returns the enumerated PartyType of the Party (ex. sleuth,
@@ -523,13 +523,11 @@ std::vector<Person*> Party::getReserveMembers()
  * Inputs: none
  * Output: PartyType - enumerated party type.
  */
-PartyType Party::getPartyType()
-{
-  return party_type;
-}
+PartyType Party::getPartyType() { return party_type; }
 
 /*
- * Description: Calculates and returns the total speed of all the party members.
+ * Description: Calculates and returns the total speed of all the party
+ *members.
  *
  * Inputs: none
  * Output: int64_t the calculated total speed of the Party.
@@ -538,7 +536,7 @@ PartyType Party::getPartyType()
 int64_t Party::getTotalSpeed()
 {
   int64_t total_speed{0};
-  
+
   for(const auto &member : members)
     total_speed += member->getCurr().getStat(Attribute::MMNT);
 
@@ -577,8 +575,11 @@ void Party::setID(int id)
  * Inputs: Inventory* - new inventory for the Party.
  * Output: bool- true if the inventory assignment was successful.
  */
-bool Party::setInventory(Inventory* const new_inventory)
+bool Party::setInventory(Inventory *const new_inventory)
 {
+  if(pouch != nullptr)
+    delete pouch;
+
   pouch = new_inventory;
 
   return (pouch != nullptr);
@@ -590,13 +591,13 @@ bool Party::setInventory(Inventory* const new_inventory)
  * Inputs: uin8_t - index of party member to be assigned as the leader.
  * Output: bool - true if a main member was successfully assigned
  */
-bool Party::setMainMember(const uint8_t &new_main)
+bool Party::setMainMember(const uint32_t &new_main)
 {
   if(new_main != 0 && new_main < members.size())
   {
     auto old_main = members.at(0);
 
-    members[0]        =  members.at(new_main);
+    members[0] = members.at(new_main);
     members[new_main] = old_main;
 
     return true;
@@ -611,18 +612,18 @@ bool Party::setMainMember(const uint8_t &new_main)
  * Inputs: const uin8_t - new maximum size for the Party.
  * Output: bool - true if the maximum size was assigned succesfully
  */
-bool Party::setMaxSize(const uint8_t &new_max_size)
+bool Party::setMaxSize(const uint32_t &new_max_size)
 {
-  auto limit = 0;
+  uint32_t limit = 0;
 
-  if (party_type == PartyType::SLEUTH)
+  if(party_type == PartyType::SLEUTH)
     limit = kMAX_MEMBERS_SLEUTH;
-  else if (party_type == PartyType::BEARACKS)
+  else if(party_type == PartyType::BEARACKS)
     limit = kMAX_MEMBERS_BEARACKS;
   else
     limit = kMAX_MEMBERS_FOES;
 
-  if (new_max_size <= limit && members.size() <= new_max_size)
+  if(new_max_size <= limit && members.size() <= new_max_size)
   {
     max_size = new_max_size;
 
@@ -640,32 +641,23 @@ bool Party::setMaxSize(const uint8_t &new_max_size)
  * Description: Returns the static maximum size of the Bearacks.
  *
  * Inputs: none
- * Output: uint8_t - the static maximum size of the Bearacks
+ * Output: uint32_t - the static maximum size of the Bearacks
  */
 /* Returns the maximum size of the Bearacks */
-uint8_t Party::getMaxBearacks()
-{
-  return kMAX_MEMBERS_BEARACKS;
-}
+uint32_t Party::getMaxBearacks() { return kMAX_MEMBERS_BEARACKS; }
 
 /*
  * Description: Retuns the static maximum size of the sleuth.
  *
  * Inputs: none
- * Output: uint8_t - the static maximum size of the sleuth.
+ * Output: uint32_t - the static maximum size of the sleuth.
  */
-uint8_t Party::getMaxSleuth()
-{
-  return kMAX_MEMBERS_SLEUTH;
-}
+uint32_t Party::getMaxSleuth() { return kMAX_MEMBERS_SLEUTH; }
 
 /*
  * Description: Retunrs the static maximum size of a foes party.
  *
  * Inputs: none
- * Output: uint8_t - the static maximum size of the foes.
+ * Output: uint32_t - the static maximum size of the foes.
  */
-uint8_t Party::getMaxFoes()
-{
-  return kMAX_MEMBERS_FOES;
-}
+uint32_t Party::getMaxFoes() { return kMAX_MEMBERS_FOES; }

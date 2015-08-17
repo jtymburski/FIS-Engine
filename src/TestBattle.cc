@@ -26,7 +26,7 @@ const uint8_t TestBattle::kNUM_MENU_ITEMS = 16;
 /* ------------------------------------------------------------------------- */
 /* Constructor function */
 /* ------------------------------------------------------------------------- */
-TestBattle::TestBattle(Options* running_config)
+TestBattle::TestBattle(Options *running_config)
     : sprite_paralysis{nullptr},
       sprite_confusion{nullptr},
       sprite_buff{nullptr},
@@ -97,7 +97,7 @@ TestBattle::~TestBattle()
 /* ------------------------------------------------------------------------- */
 /* Builds the ailment frames */
 /* ------------------------------------------------------------------------- */
-void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
+void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
 {
   /* Render fonts */
   for(uint8_t i = 0; i < menu_items.size(); i++)
@@ -436,7 +436,7 @@ void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
   battle_display->setAilmentPlep(Infliction::HIBERNATION, sprite_hibernation);
 
   /* Background and bar */
-  Sprite* background = new Sprite(
+  Sprite *background = new Sprite(
       base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
   battle_display->setBackground(background);
   battle_display->setBattleBar(
@@ -546,7 +546,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     6, 5, 3, 2,
     0, 0, 0, 0,
-    15, 20, 10, 1
+    15, 27, 10, 1
   }, true);
 
   stats_player_max = AttributeSet(
@@ -555,7 +555,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     12, 12, 7, 7,
     0, 0, 0, 0,
-    20, 25, 15, 2
+    20, 32, 15, 2
   }, true);
 
   stats_aurora_heavy_min = AttributeSet(
@@ -691,7 +691,7 @@ void TestBattle::createActions()
   /* Damage actions */
 
   /* Light Push (~5000 Damage) */
-  act_dmg.push_back(new Action("0,DAMAGE,,,,VITA,AMOUNT.4000,AMOUNT.200,,100"));
+  act_dmg.push_back(new Action("0,DAMAGE,,,,VITA,AMOUNT.2000,AMOUNT.200,,100"));
 
   /* Prismatic Shot (~20 Damage / Hit) */
   act_dmg.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.50,AMOUNT.2,,95"));
@@ -853,7 +853,7 @@ void TestBattle::createFonts()
   if(game_config != nullptr)
   {
     /* Try and create the new fonts */
-    TTF_Font* regular_font =
+    TTF_Font *regular_font =
         Text::createFont(game_config->getBasePath() + game_config->getFont(),
                          16, TTF_STYLE_BOLD);
 
@@ -887,20 +887,20 @@ void TestBattle::createMenu()
 /* ------------------------------------------------------------------------- */
 /* Create person of type */
 /* ------------------------------------------------------------------------- */
-Person* TestBattle::createPerson(int id, TestPerson type,
-                                 SDL_Renderer* renderer, uint8_t level,
+Person *TestBattle::createPerson(int id, TestPerson type,
+                                 SDL_Renderer *renderer, uint8_t level,
                                  bool include_ai)
 {
-  Person* new_person = nullptr;
-  Sprite* as = nullptr;
-  Sprite* ds = nullptr;
-  Sprite* fp = nullptr;
-  Sprite* tp = nullptr;
+  Person *new_person = nullptr;
+  Sprite *as = nullptr;
+  Sprite *ds = nullptr;
+  Sprite *fp = nullptr;
+  Sprite *tp = nullptr;
 
   /* Create person based on enum - custom logic based on type */
   if(type == ARCADIUS)
   {
-    new_person = new Person(id, "Arcadius", race_bear, class_arcadius1);
+    new_person = new Person(id, "Arcadius", race_arcadius, class_arcadius1);
     new_person->setCurves(Element::FOREST, ElementCurve::S, Element::PHYSICAL,
                           ElementCurve::S, true);
 
@@ -913,9 +913,9 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   {
     std::string name = "Agent";
 
-    if (id == 301)
+    if(id == 301)
       name = "Agent B";
-    else if (id == 302)
+    else if(id == 302)
       name = "Agent C";
 
     new_person = new Person(id, name, race_human, class_aurora_agent);
@@ -954,9 +954,9 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   {
     std::string name = "Drone";
 
-    if (id == 401)
+    if(id == 401)
       name = "Drone B";
-    else if (id == 402)
+    else if(id == 402)
       name = "Drone C";
 
     new_person = new Person(id, name, race_robot, class_aurora_drone);
@@ -1019,7 +1019,7 @@ Person* TestBattle::createPerson(int id, TestPerson type,
 
   if(include_ai)
   {
-    AIModule* ai_module = new AIModule();
+    AIModule *ai_module = new AIModule();
     ai_module->setParent(new_person);
     new_person->setAI(ai_module);
   }
@@ -1085,16 +1085,16 @@ void TestBattle::createRaces()
 void TestBattle::createSkills()
 {
   /* Light Push */
-  Skill* light_push =
+  Skill *light_push =
       new Skill(100, "Light Push", ActionScope::ONE_ENEMY, act_dmg[0], 100, 0);
   light_push->setDescription("A weak, physical hit with a long cool down");
   light_push->setPrimary(Element::PHYSICAL);
   light_push->setFlag(SkillFlags::OFFENSIVE);
-  light_push->setCooldown(5);
+  light_push->setCooldown(3);
   skills.push_back(light_push);
 
   /* Light Shot */
-  Skill* light_shot =
+  Skill *light_shot =
       new Skill(120, "Light Shot", ActionScope::ONE_ENEMY, act_dmg[7], 95, 0);
   light_shot->setDescription("A standard, electric hit against a single foe");
   light_shot->setPrimary(Element::ELECTRIC);
@@ -1102,7 +1102,7 @@ void TestBattle::createSkills()
   skills.push_back(light_shot);
 
   /* Prismatic Shot */
-  Skill* prismatic_shot = new Skill(121, "Prismatic Shot",
+  Skill *prismatic_shot = new Skill(121, "Prismatic Shot",
                                     ActionScope::ONE_ENEMY, act_dmg[1], 90, 15);
   prismatic_shot->addAction(act_dmg[1]);
   prismatic_shot->addAction(act_dmg[1]);
@@ -1113,7 +1113,7 @@ void TestBattle::createSkills()
   skills.push_back(prismatic_shot);
 
   /* Rail Shot */
-  Skill* rail_shot =
+  Skill *rail_shot =
       new Skill(140, "Rail Shot", ActionScope::ONE_ENEMY, act_dmg[2], 95, 0);
   rail_shot->setDescription("A heavy damage electric hit against a foe");
   rail_shot->setPrimary(Element::ELECTRIC);
@@ -1121,7 +1121,7 @@ void TestBattle::createSkills()
   skills.push_back(rail_shot);
 
   /* Shatter Shot */
-  Skill* shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
+  Skill *shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
                                   act_dmg[3], 95, 15);
   shatter_shot->addAction(act_dmg[2]);
   shatter_shot->setDescription("This description sucks.");
@@ -1130,7 +1130,7 @@ void TestBattle::createSkills()
   skills.push_back(shatter_shot);
 
   /* Engineer Upgrade */
-  Skill* eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER,
+  Skill *eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER,
                                  act_inf[4], 100, 5);
   eng_upgrade->addAction(act_inf[5]);
   eng_upgrade->setDescription("Team upgrade to ally for defense and speed");
@@ -1140,7 +1140,7 @@ void TestBattle::createSkills()
 
   /* Static Shot */
 
-  Skill* static_shot =
+  Skill *static_shot =
       new Skill(180, "Static Shot", ActionScope::ONE_ENEMY, act_dmg[4], 95, 0);
   static_shot->setDescription("A weak charged-based attack.");
   static_shot->setPrimary(Element::ELECTRIC);
@@ -1148,7 +1148,7 @@ void TestBattle::createSkills()
   skills.push_back(static_shot);
 
   /* Locked Shot */
-  Skill* locked_shot = new Skill(181, "Locked Shot", ActionScope::ONE_ENEMY,
+  Skill *locked_shot = new Skill(181, "Locked Shot", ActionScope::ONE_ENEMY,
                                  act_dmg[8], 100, 25);
   locked_shot->setDescription("A charged-based attack that will not miss.");
   locked_shot->setPrimary(Element::ELECTRIC);
@@ -1159,7 +1159,7 @@ void TestBattle::createSkills()
   // TODO: Implement imploding
 
   /* Hidden Amplification */
-  Skill* hidden_amp = new Skill(200, "Hidden Amplification", ActionScope::USER,
+  Skill *hidden_amp = new Skill(200, "Hidden Amplification", ActionScope::USER,
                                 act_inf[3], 90, 5);
   // hidden_amp->addAction(act_inf[4]);
   hidden_amp->setDescription("Raises one's attacking power.");
@@ -1176,7 +1176,7 @@ void TestBattle::createSkills()
   //   act_alt[0], 90, 25);
 
   /* Canopy */
-  Skill* canopy =
+  Skill *canopy =
       new Skill(220, "Canopy", ActionScope::ALL_ALLIES, act_inf[4], 90, 5);
   canopy->setDescription("Entire team DEF up.");
   canopy->setPrimary(Element::PHYSICAL);
@@ -1184,7 +1184,7 @@ void TestBattle::createSkills()
   skills.push_back(canopy);
 
   /* Updraft */
-  Skill* updraft = new Skill(221, "Updraft", ActionScope::ONE_ALLY_NOT_USER,
+  Skill *updraft = new Skill(221, "Updraft", ActionScope::ONE_ALLY_NOT_USER,
                              act_inf[5], 90, 10);
   updraft->setDescription("Ally dodge up");
   updraft->setPrimary(Element::PHYSICAL);
@@ -1192,7 +1192,7 @@ void TestBattle::createSkills()
   skills.push_back(updraft);
 
   /* Chlorophona */
-  Skill* chlorophona = new Skill(222, "Chlorophona", ActionScope::ALL_ALLIES,
+  Skill *chlorophona = new Skill(222, "Chlorophona", ActionScope::ALL_ALLIES,
                                  act_alt[0], 90, 15);
   chlorophona->setDescription("Team health up");
   chlorophona->setPrimary(Element::PHYSICAL);
@@ -1200,7 +1200,7 @@ void TestBattle::createSkills()
   skills.push_back(chlorophona);
 
   /* Numbing Sting */
-  Skill* numbing = new Skill(240, "Numbing Sting", ActionScope::ONE_ENEMY,
+  Skill *numbing = new Skill(240, "Numbing Sting", ActionScope::ONE_ENEMY,
                              act_inf[6], 90, 5);
   numbing->setDescription("Paralysis Inflict");
   numbing->setPrimary(Element::PHYSICAL);
@@ -1208,7 +1208,7 @@ void TestBattle::createSkills()
   skills.push_back(numbing);
 
   /* Hypnotic Sting */
-  Skill* hypnotic =
+  Skill *hypnotic =
       new Skill(241, "Sullen Sting", ActionScope::ONE_ENEMY, act_inf[2], 90, 5);
   hypnotic->setDescription("Silencing sting");
   hypnotic->setPrimary(Element::PHYSICAL);
@@ -1216,7 +1216,7 @@ void TestBattle::createSkills()
   skills.push_back(hypnotic);
 
   /* Toxic Sting */
-  Skill* toxic =
+  Skill *toxic =
       new Skill(242, "Toxic Sting", ActionScope::ONE_ENEMY, act_inf[0], 90, 5);
   toxic->setDescription("Poision Inflict");
   toxic->setPrimary(Element::PHYSICAL);
@@ -1224,7 +1224,7 @@ void TestBattle::createSkills()
   skills.push_back(toxic);
 
   /* Befuddling Sting */
-  Skill* befuddling = new Skill(243, "Befuddling Sting", ActionScope::ONE_ENEMY,
+  Skill *befuddling = new Skill(243, "Befuddling Sting", ActionScope::ONE_ENEMY,
                                 act_inf[1], 90, 5);
   befuddling->setDescription("Confusion Inflict");
   befuddling->setPrimary(Element::PHYSICAL);
@@ -1232,7 +1232,7 @@ void TestBattle::createSkills()
   skills.push_back(befuddling);
 
   /* Cunning */
-  Skill* cunning =
+  Skill *cunning =
       new Skill(1000, "Cunning", ActionScope::USER, act_inf[4], 90, 5);
   cunning->addAction(act_inf[5]);
   cunning->setDescription("Self dodge and defense up");
@@ -1241,7 +1241,7 @@ void TestBattle::createSkills()
   skills.push_back(cunning);
 
   /* Strike */
-  Skill* strike =
+  Skill *strike =
       new Skill(1001, "Strike", ActionScope::ONE_ENEMY, act_dmg[6], 90, 15);
   strike->setDescription("Physical strike against one foe");
   strike->setPrimary(Element::PHYSICAL);
@@ -1250,7 +1250,7 @@ void TestBattle::createSkills()
   skills.push_back(strike);
 
   /* Paw Strike */
-  Skill* paw_strike =
+  Skill *paw_strike =
       new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[9], 95, 0);
   paw_strike->setDescription("A standard, physical hit against a single foe");
   paw_strike->setPrimary(Element::PHYSICAL);
@@ -1259,7 +1259,7 @@ void TestBattle::createSkills()
   skills.push_back(paw_strike);
 
   /* Maul */
-  Skill* maul =
+  Skill *maul =
       new Skill(1021, "Maul", ActionScope::ONE_ENEMY, act_dmg[10], 95, 10);
   maul->setDescription("A stronger, physical hit against a single foe");
   maul->setPrimary(Element::PHYSICAL);
@@ -1268,7 +1268,7 @@ void TestBattle::createSkills()
   skills.push_back(maul);
 
   /* Multi-Strike */
-  Skill* multi_strike = new Skill(1022, "Multi-Strike", ActionScope::ONE_ENEMY,
+  Skill *multi_strike = new Skill(1022, "Multi-Strike", ActionScope::ONE_ENEMY,
                                   act_dmg[9], 90, 15);
   multi_strike->addAction(act_dmg[9]);
   multi_strike->setDescription("What");
@@ -1278,7 +1278,7 @@ void TestBattle::createSkills()
   skills.push_back(multi_strike);
 
   /* Hibernate */
-  Skill* hibernate =
+  Skill *hibernate =
       new Skill(1023, "Hibernate", ActionScope::USER, act_inf[7], 100, 5);
   hibernate->setDescription("Heal self");
   hibernate->setPrimary(Element::PHYSICAL);
@@ -1287,7 +1287,7 @@ void TestBattle::createSkills()
 
   /* Ensnare */
   // TODO: Slow down portion of ensnare? Ehhh...
-  Skill* ensnare =
+  Skill *ensnare =
       new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY, act_dmg[11], 80, 5);
   ensnare->setDescription("Damage enemy");
   ensnare->setPrimary(Element::FOREST);
@@ -1296,7 +1296,7 @@ void TestBattle::createSkills()
 
   /* Enrich */
   // TODO: Healing plep
-  Skill* enrich =
+  Skill *enrich =
       new Skill(1041, "Enrich", ActionScope::USER, act_alt[0], 100, 5);
   enrich->setDescription("Small amount of heal to self");
   enrich->setPrimary(Element::FOREST);
@@ -1313,54 +1313,54 @@ void TestBattle::createSkillSets()
   /* ---- CLASSES ---- */
 
   /* The {} Set */
-  SkillSet* set_empty = new SkillSet(101);
+  SkillSet *set_empty = new SkillSet(101);
   skillsets.push_back(set_empty);
 
   /* Arcadius Class */
-  SkillSet* set_arcadius = new SkillSet(100);
+  SkillSet *set_arcadius = new SkillSet(100);
   set_arcadius->addSkill(getSkill(100), 1);
   skillsets.push_back(set_arcadius);
 
   /* Aurora Agent Class */
-  SkillSet* set_agent = new SkillSet(120);
+  SkillSet *set_agent = new SkillSet(120);
   set_agent->addSkill(getSkill(120), 1);
   set_agent->addSkill(getSkill(121), 12);
   skillsets.push_back(set_agent);
 
   /* Aurora Heavy Class */
-  SkillSet* set_heavy = new SkillSet(140);
+  SkillSet *set_heavy = new SkillSet(140);
   set_heavy->addSkill(getSkill(140), 1);
   set_heavy->addSkill(getSkill(141), 12);
   skillsets.push_back(set_heavy);
 
   /* Aurora Engineer Class */
-  SkillSet* set_engineer = new SkillSet(160);
+  SkillSet *set_engineer = new SkillSet(160);
   set_engineer->addSkill(getSkill(160), 1);
   set_engineer->addSkill(getSkill(120), 12);
   skillsets.push_back(set_engineer);
 
   /* Aurora Drone Class */
-  SkillSet* set_drone = new SkillSet(180);
+  SkillSet *set_drone = new SkillSet(180);
   set_drone->addSkill(getSkill(180), 1);
   set_drone->addSkill(getSkill(181), 5);
   set_drone->addSkill(getSkill(182), 13);
   skillsets.push_back(set_drone);
 
   /* Player Class */
-  SkillSet* set_player = new SkillSet(200);
+  SkillSet *set_player = new SkillSet(200);
   set_player->addSkill(getSkill(200), 1);
   set_player->addSkill(getSkill(201), 15);
   skillsets.push_back(set_player);
 
   /* Reverdile */
-  SkillSet* set_reverdile = new SkillSet(220);
+  SkillSet *set_reverdile = new SkillSet(220);
   set_reverdile->addSkill(getSkill(220), 1);
   set_reverdile->addSkill(getSkill(221), 5);
   set_reverdile->addSkill(getSkill(222), 8);
   skillsets.push_back(set_reverdile);
 
   /* Reverdling */
-  SkillSet* set_reverdling = new SkillSet(240);
+  SkillSet *set_reverdling = new SkillSet(240);
   set_reverdling->addSkill(getSkill(240), 1);
   set_reverdling->addSkill(getSkill(241), 1);
   set_reverdling->addSkill(getSkill(242), 1);
@@ -1370,13 +1370,13 @@ void TestBattle::createSkillSets()
   /* ---- RACES ---- */
 
   /* Human Race */
-  SkillSet* set_human = new SkillSet(1000);
+  SkillSet *set_human = new SkillSet(1000);
   set_human->addSkill(getSkill(1000), 1);
   set_human->addSkill(getSkill(1001), 6);
   skillsets.push_back(set_human);
 
   /* Bear Race */
-  SkillSet* set_bear = new SkillSet(1020);
+  SkillSet *set_bear = new SkillSet(1020);
   set_bear->addSkill(getSkill(1020), 1);
   set_bear->addSkill(getSkill(1021), 5);
   set_bear->addSkill(getSkill(1022), 8);
@@ -1384,13 +1384,13 @@ void TestBattle::createSkillSets()
   skillsets.push_back(set_bear);
 
   /* Treefolk Race */
-  SkillSet* set_treefolk = new SkillSet(1040);
+  SkillSet *set_treefolk = new SkillSet(1040);
   set_treefolk->addSkill(getSkill(1040), 1);
   set_treefolk->addSkill(getSkill(1041), 6);
   skillsets.push_back(set_treefolk);
 
   /* ---- BUBBIFIED SKILL SET ---- */
-  SkillSet* set_bubbified = new SkillSet(1);
+  SkillSet *set_bubbified = new SkillSet(1);
   set_bubbified->addSkill(getSkill(1020), 1);
   skillsets.push_back(set_bubbified);
 }
@@ -1505,7 +1505,7 @@ void TestBattle::deleteRaces()
 /* ------------------------------------------------------------------------- */
 void TestBattle::deleteSkills()
 {
-  for(auto& skill : skills)
+  for(auto &skill : skills)
     delete skill;
   skills.clear();
 }
@@ -1515,7 +1515,7 @@ void TestBattle::deleteSkills()
 /* ------------------------------------------------------------------------- */
 void TestBattle::deleteSkillSets()
 {
-  for(auto& skillset : skillsets)
+  for(auto &skillset : skillsets)
     delete skillset;
   skillsets.clear();
 }
@@ -1559,7 +1559,7 @@ void TestBattle::destroyBattle()
   /* Foe party list delete */
   if(party_foes != nullptr)
   {
-    std::vector<Person*> foe_list = party_foes->getMembers();
+    std::vector<Person *> foe_list = party_foes->getMembers();
     for(uint8_t i = 0; i < foe_list.size(); i++)
       delete foe_list[i];
     foe_list.clear();
@@ -1571,7 +1571,7 @@ void TestBattle::destroyBattle()
   /* Friend party list delete */
   if(party_friends != nullptr)
   {
-    std::vector<Person*> friend_list = party_friends->getMembers();
+    std::vector<Person *> friend_list = party_friends->getMembers();
     for(uint8_t i = 0; i < friend_list.size(); i++)
       delete friend_list[i];
     friend_list.clear();
@@ -1584,9 +1584,9 @@ void TestBattle::destroyBattle()
 /* ------------------------------------------------------------------------- */
 /* Get call for Skill by ID */
 /* ------------------------------------------------------------------------- */
-Skill* TestBattle::getSkill(int id)
+Skill *TestBattle::getSkill(int id)
 {
-  Skill* found_skill = nullptr;
+  Skill *found_skill = nullptr;
 
   for(uint16_t i = 0; i < skills.size(); i++)
     if(skills[i]->getID() == id)
@@ -1598,9 +1598,9 @@ Skill* TestBattle::getSkill(int id)
 /* ------------------------------------------------------------------------- */
 /* Get call for Skill Set by ID */
 /* ------------------------------------------------------------------------- */
-SkillSet* TestBattle::getSkillSet(int id)
+SkillSet *TestBattle::getSkillSet(int id)
 {
-  SkillSet* found_set = nullptr;
+  SkillSet *found_set = nullptr;
 
   for(uint16_t i = 0; i < skillsets.size(); i++)
     if(skillsets[i]->getID() == id)
@@ -1612,42 +1612,42 @@ SkillSet* TestBattle::getSkillSet(int id)
 /* ------------------------------------------------------------------------- */
 /* Set up the battle */
 /* ------------------------------------------------------------------------- */
-void TestBattle::initBattle(SDL_Renderer* renderer)
+void TestBattle::initBattle(SDL_Renderer *renderer)
 {
   MenuItems ref = (MenuItems)menu_index;
 
   /* Set up FRIEND party */
-  Person* player = createPerson(100, PLAYER, renderer, lvl_friend, false);
-  party_friends = new Party(200, player, PartyType::SLEUTH, 5, pouch_foes);
+  Person *player = createPerson(100, PLAYER, renderer, lvl_friend, false);
+  party_friends = new Party(200, player, PartyType::SLEUTH, 5);
 
   /* Set up FOE party based on menu index */
   if(ref == AC)
   {
-    Person* arc = createPerson(300, ARCADIUS, renderer, lvl_foe);
-    party_foes = new Party(400, arc, PartyType::REGULAR_FOE, 5, pouch_foes);
+    Person *arc = createPerson(300, ARCADIUS, renderer, lvl_foe);
+    party_foes = new Party(400, arc, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AA)
   {
-    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5, pouch_foes);
+    Person *aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AAx2)
   {
-    Person* aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
+    Person *aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person *aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
 
-    party_foes = new Party(400, aa1, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, aa1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(aa2);
   }
   else if(ref == AAx5)
   {
-    Person* aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
-    Person* aa3 = createPerson(302, AURORAAGENT, renderer, lvl_foe);
+    Person *aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person *aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
+    Person *aa3 = createPerson(302, AURORAAGENT, renderer, lvl_foe);
     // Person *aa4 = createPerson(303, AURORAAGENT, renderer, lvl_foe);
     // Person *aa5 = createPerson(304, AURORAAGENT, renderer, lvl_foe);
 
-    party_foes = new Party(400, aa1, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, aa1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(aa2);
     party_foes->addMember(aa3);
     // party_foes->addMember(aa4);
@@ -1655,34 +1655,34 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == AAnAH)
   {
-    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
+    Person *aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person *ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
 
-    party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ah);
   }
   else if(ref == AH)
   {
-    Person* ah = createPerson(300, AURORAHEAVY, renderer, lvl_foe);
-    party_foes = new Party(400, ah, PartyType::REGULAR_FOE, 5, pouch_foes);
+    Person *ah = createPerson(300, AURORAHEAVY, renderer, lvl_foe);
+    party_foes = new Party(400, ah, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AEnAD)
   {
-    Person* ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
-    Person* ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
+    Person *ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
+    Person *ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
 
-    party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ad);
   }
   else if(ref == AEnADx4)
   {
-    Person* ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
-    Person* ad1 = createPerson(400, AURORADRONE, renderer, lvl_foe);
-    Person* ad2 = createPerson(401, AURORADRONE, renderer, lvl_foe);
-    Person* ad3 = createPerson(402, AURORADRONE, renderer, lvl_foe);
+    Person *ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
+    Person *ad1 = createPerson(400, AURORADRONE, renderer, lvl_foe);
+    Person *ad2 = createPerson(401, AURORADRONE, renderer, lvl_foe);
+    Person *ad3 = createPerson(402, AURORADRONE, renderer, lvl_foe);
     // Person *ad4 = createPerson(304, AURORADRONE, renderer, lvl_foe);
 
-    party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ad1);
     party_foes->addMember(ad2);
     party_foes->addMember(ad3);
@@ -1690,43 +1690,43 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == AAnAHnADnAE)
   {
-    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
-    Person* ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
-    Person* ae = createPerson(303, AURORAENGG, renderer, lvl_foe);
+    Person *aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person *ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
+    Person *ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
+    Person *ae = createPerson(303, AURORAENGG, renderer, lvl_foe);
 
-    party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ah);
     party_foes->addMember(ad);
     party_foes->addMember(ae);
   }
   else if(ref == REnRG)
   {
-    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person* rg = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person *re = createPerson(300, REVERDILE, renderer, lvl_foe);
+    Person *rg = createPerson(500, REVERDLING, renderer, lvl_foe);
 
-    party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg);
   }
   else if(ref == REnRGx2)
   {
-    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person *re = createPerson(300, REVERDILE, renderer, lvl_foe);
+    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
 
-    party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg1);
     party_foes->addMember(rg2);
   }
   else if(ref == REnRGx4)
   {
-    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
-    Person* rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
+    Person *re = createPerson(300, REVERDILE, renderer, lvl_foe);
+    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person *rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
     // Person *rg4 = createPerson(304, REVERDLING, renderer, lvl_foe);
 
-    party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg1);
     party_foes->addMember(rg2);
     party_foes->addMember(rg3);
@@ -1734,26 +1734,26 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == RG)
   {
-    Person* rg = createPerson(300, REVERDLING, renderer, lvl_foe);
-    party_foes = new Party(400, rg, PartyType::REGULAR_FOE, 5, pouch_foes);
+    Person *rg = createPerson(300, REVERDLING, renderer, lvl_foe);
+    party_foes = new Party(400, rg, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == RGx2)
   {
-    Person* rg1 = createPerson(300, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(301, REVERDLING, renderer, lvl_foe);
+    Person *rg1 = createPerson(300, REVERDLING, renderer, lvl_foe);
+    Person *rg2 = createPerson(301, REVERDLING, renderer, lvl_foe);
 
-    party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg2);
   }
   else if(ref == RGx5)
   {
-    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
-    Person* rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
-    Person* rg4 = createPerson(503, REVERDLING, renderer, lvl_foe);
-    Person* rg5 = createPerson(504, REVERDLING, renderer, lvl_foe);
+    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person *rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
+    Person *rg4 = createPerson(503, REVERDLING, renderer, lvl_foe);
+    Person *rg5 = createPerson(504, REVERDLING, renderer, lvl_foe);
 
-    party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5, pouch_foes);
+    party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg2);
     party_foes->addMember(rg3);
     party_foes->addMember(rg4);
@@ -1761,9 +1761,9 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
 
   /* Battle Prep */
-  for(auto& member : party_friends->getMembers())
+  for(auto &member : party_friends->getMembers())
     member->battlePrep();
-  for(auto& member : party_foes->getMembers())
+  for(auto &member : party_foes->getMembers())
     member->battlePrep();
 
   /* Set up battle */
@@ -1874,7 +1874,7 @@ void TestBattle::keyUpEvent(SDL_KeyboardEvent event) { (void)event; }
 /* ------------------------------------------------------------------------- */
 /* Renders the title screen */
 /* ------------------------------------------------------------------------- */
-bool TestBattle::render(SDL_Renderer* renderer)
+bool TestBattle::render(SDL_Renderer *renderer)
 {
   if(renderer != nullptr)
   {
@@ -1935,7 +1935,7 @@ bool TestBattle::render(SDL_Renderer* renderer)
 /* ------------------------------------------------------------------------- */
 /* Set the running configuration, from the options class */
 /* ------------------------------------------------------------------------- */
-bool TestBattle::setConfiguration(Options* running_config)
+bool TestBattle::setConfiguration(Options *running_config)
 {
   if(running_config != nullptr)
   {
