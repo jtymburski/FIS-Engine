@@ -1361,10 +1361,10 @@ void TestBattle::createSkillSets()
 
   /* Reverdling */
   SkillSet *set_reverdling = new SkillSet(240);
-  set_reverdling->addSkill(getSkill(240), 1);
+  //set_reverdling->addSkill(getSkill(240), 1);
   set_reverdling->addSkill(getSkill(241), 1);
-  set_reverdling->addSkill(getSkill(242), 1);
-  set_reverdling->addSkill(getSkill(243), 1);
+  //set_reverdling->addSkill(getSkill(242), 1);
+  //set_reverdling->addSkill(getSkill(243), 1);
   skillsets.push_back(set_reverdling);
 
   /* ---- RACES ---- */
@@ -1739,8 +1739,8 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   }
   else if(ref == RGx2)
   {
-    Person *rg1 = createPerson(300, REVERDLING, renderer, lvl_foe);
-    Person *rg2 = createPerson(301, REVERDLING, renderer, lvl_foe);
+    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg2);

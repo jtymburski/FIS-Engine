@@ -1729,6 +1729,12 @@ SkillSet* Person::getUseableSkills()
   {
     auto add_skill = true;
 
+    std::cout << "------------" << std::endl;
+    std::cout << "Skill Name: " << (*it).skill->getName() << std::endl;
+    std::cout << "Enabled: " << (*it).enabled << std::endl;
+    std::cout << "Silenced: " << (*it).silenced << std::endl;
+    std::cout << "------------" << std::endl;
+
     if((*it).enabled && !(*it).silenced)
     {
       auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
@@ -1749,12 +1755,21 @@ SkillSet* Person::getUseableSkills()
 
       /* If the skill can still be added, push it to the useable elements */
       if(add_skill)
+      {
+        std::cout << "Adding skill!" << std::endl;
         useable_skills.push_back(*it);
+      }
     }
   }
 
   if(temp_skills->addSkills(useable_skills))
+  {
     return temp_skills;
+  }
+  else
+  {
+    std::cerr << "[Eror] Creating temp skill values." << std::endl;
+  }
 
   return nullptr;
 }

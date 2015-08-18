@@ -2,7 +2,7 @@
 * Class Name: KeyHandler [Implementation]
 * Date Created: April 9, 2015
 * Inheritance: None
-* Description: KeyHandler manages the state of the Keyboard. It contains a 
+* Description: KeyHandler manages the state of the Keyboard. It contains a
 *              vector of keys which map an enumerated GameKey (or game function
 *              key) to physical SDL_Keycode key(s) and keeps track of which
 *              keeps are depressed and how long they have been depressed for.
@@ -41,18 +41,18 @@ Key::Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled)
  * CONSTANTS
  *============================================================================*/
 
-const SDL_Keycode KeyHandler::kMoveLeftDefault  = SDLK_LEFT;
-const SDL_Keycode KeyHandler::kMoveRightDefault = SDLK_RIGHT;
-const SDL_Keycode KeyHandler::kMoveUpDefault    = SDLK_UP;
-const SDL_Keycode KeyHandler::kMoveDownDefault  = SDLK_DOWN;
-const SDL_Keycode KeyHandler::kMenuDefault      = SDLK_d;
-const SDL_Keycode KeyHandler::kActionDefault    = SDLK_SPACE;
-const SDL_Keycode KeyHandler::kCancelDefault    = SDLK_ESCAPE;
-const SDL_Keycode KeyHandler::kRunDefault       = SDLK_LSHIFT;
-const SDL_Keycode KeyHandler::kDebugDefault     = SDLK_f;
+const SDL_Keycode KeyHandler::kMOVE_LEFT_DEFAULT  = SDLK_LEFT;
+const SDL_Keycode KeyHandler::kMOVE_RIGHT_DEFAULT = SDLK_RIGHT;
+const SDL_Keycode KeyHandler::kMOVE_UP_DEFAULT    = SDLK_UP;
+const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT  = SDLK_DOWN;
+const SDL_Keycode KeyHandler::kMENU_DEFAULT      = SDLK_d;
+const SDL_Keycode KeyHandler::kACTION_DEFAULT    = SDLK_SPACE;
+const SDL_Keycode KeyHandler::kCANCEL_DEFAULT    = SDLK_ESCAPE;
+const SDL_Keycode KeyHandler::kRUN_DEFAULT       = SDLK_LSHIFT;
+const SDL_Keycode KeyHandler::kDEBUG_DEFAULT     = SDLK_f;
 
-const bool    KeyHandler::kMultipleMappings = false;
-const int32_t KeyHandler::kMinHeldTime      = 1000;
+const bool    KeyHandler::kMULTIPLE_MAPPINGS = false;
+const int32_t KeyHandler::kMIN_HELD_TIME      = 1000;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -65,7 +65,7 @@ const int32_t KeyHandler::kMinHeldTime      = 1000;
  */
 KeyHandler::KeyHandler()
 {
-  loadDefaults(); 
+  loadDefaults();
 }
 
 /*=============================================================================
@@ -100,7 +100,7 @@ bool KeyHandler::isHeld(GameKey game_key)
 {
   auto& key = getKey(game_key);
 
-  if (key.time_depressed >= kMinHeldTime)
+  if (key.time_depressed >= kMIN_HELD_TIME)
     return true;
 
   return false;
@@ -118,14 +118,14 @@ bool KeyHandler::isHeld(SDL_Keycode keycode, bool* found)
 {
   auto& key = getKey(keycode, found);
 
-  if (*found && key.time_depressed >= kMinHeldTime)
+  if (*found && key.time_depressed >= kMIN_HELD_TIME)
     return true;
 
   return false;
 }
 
 /*
- * Description: Gets the depressed state of a Key matching an enumerated Game 
+ * Description: Gets the depressed state of a Key matching an enumerated Game
  *              function key.
  *
  * Inputs: GameKey game_key - enumerated game function key
@@ -149,7 +149,7 @@ bool KeyHandler::isDepressed(GameKey game_key)
 bool KeyHandler::isDepressed(SDL_Keycode keycode, bool* found)
 {
   auto& key = getKey(keycode, found);
-  
+
   if (found)
     return key.depressed;
 
@@ -176,7 +176,7 @@ bool KeyHandler::isEnabled(GameKey game_key)
  * Description: Searches for a Key matching a given keycode to find whether the
  *              key is Enabled.
  *
- * Inputs: SDL_Keycode keycode - the keycode to find a matching Key for 
+ * Inputs: SDL_Keycode keycode - the keycode to find a matching Key for
  *         bool* found - assigned true if a Key matcing the keycode was found
  * Output:  bool - true if the desired Key is currently enabled
  */
@@ -221,15 +221,15 @@ void KeyHandler::loadDefaults()
 {
   keys.clear();
 
-  keys.push_back(Key(GameKey::MOVE_LEFT,   kMoveLeftDefault));
-  keys.push_back(Key(GameKey::MOVE_RIGHT,  kMoveRightDefault));
-  keys.push_back(Key(GameKey::MOVE_UP,     kMoveUpDefault));
-  keys.push_back(Key(GameKey::MOVE_DOWN,   kMoveDownDefault));
-  keys.push_back(Key(GameKey::MENU,   kMenuDefault));
-  keys.push_back(Key(GameKey::ACTION, kActionDefault));
-  keys.push_back(Key(GameKey::CANCEL, kCancelDefault));
-  keys.push_back(Key(GameKey::RUN, kRunDefault));
-  keys.push_back(Key(GameKey::DEBUG,  kDebugDefault));
+  keys.push_back(Key(GameKey::MOVE_LEFT,   kMOVE_LEFT_DEFAULT));
+  keys.push_back(Key(GameKey::MOVE_RIGHT,  kMOVE_RIGHT_DEFAULT));
+  keys.push_back(Key(GameKey::MOVE_UP,     kMOVE_UP_DEFAULT));
+  keys.push_back(Key(GameKey::MOVE_DOWN,   kMOVE_DOWN_DEFAULT));
+  keys.push_back(Key(GameKey::MENU,   kMENU_DEFAULT));
+  keys.push_back(Key(GameKey::ACTION, kACTION_DEFAULT));
+  keys.push_back(Key(GameKey::CANCEL, kCANCEL_DEFAULT));
+  keys.push_back(Key(GameKey::RUN, kRUN_DEFAULT));
+  keys.push_back(Key(GameKey::DEBUG,  kDEBUG_DEFAULT));
 }
 
 /*
@@ -293,7 +293,7 @@ bool KeyHandler::update(int32_t cycle_time)
       {
         /* Assign the element to be a depressed state */
         element.depressed = true;
-        element.time_depressed += cycle_time; 
+        element.time_depressed += cycle_time;
       }
       else
       {
@@ -301,9 +301,9 @@ bool KeyHandler::update(int32_t cycle_time)
         element.depressed = false;
         element.time_depressed = 0;
       }
-    } 
+    }
   }
- 
+
   return false;
 }
 
@@ -346,8 +346,8 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
 
 /*
  * Description: Assigns a given enumerated GameKey to be mapped to a given SDL
- *              Keycode if a match can be made. A GameKey cannot be mapped to 
- *              
+ *              Keycode if a match can be made. A GameKey cannot be mapped to
+ *
  * Inputs: GameKey game_key - enumerated game function key to map keycode to
  *         SDL_Keycode new_keycode - the keycode to map the game function key to
  * Output: bool - true if a Key matching the game key was found.
@@ -368,7 +368,7 @@ bool KeyHandler::setKey(GameKey game_key, SDL_Keycode new_keycode)
 /*
  * Description: Assigns a Key matching a given GameKey enumerated to the desired
  *              enabled State, as well as all other Keys matching the GameKey.
- *              
+ *
  * Inputs: GameKey game_key - enumerated game key to set to enabled
  *         bool enabled - the enabled value to assign the key to
  * Output: none
@@ -383,7 +383,7 @@ void KeyHandler::setEnabled(GameKey game_key, bool enabled)
 /*
  * Description: Assigns a Key matching a given SDL_Keycode to a desired enabled
  *              state, if such a Key can be found.
- *              
+ *
  * Inputs: SDL_Keycode keycode - the keycode to find a Key for
  *         bool enabled - the enabled value to assign the Key to
  * Output: bool - true if a Key matching the keycode was found
@@ -411,9 +411,9 @@ bool KeyHandler::setEnabled(SDL_Keycode keycode, bool enabled)
  * Description: Static function to return the value of min held time
  *
  * Inputs: none
- * Output: int32_t - the kMinHeldTime constant value 
+ * Output: int32_t - the kMIN_HELD_TIME constant value
  */
 int32_t KeyHandler::getMinHeldTime()
 {
-  return kMinHeldTime;
+  return kMIN_HELD_TIME;
 }

@@ -32,7 +32,7 @@ const int    SkillSet::kUNSET_ID         =    -1;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-/* 
+/*
  * Description: Default constructor. Default.
  *
  * Inputs: int new_id - starting ID. Defualt to 0.
@@ -63,7 +63,7 @@ SkillSet::SkillSet(Skill* skill, const uint32_t &level) : SkillSet()
  * Inputs: skills - vector of skill pointers to be used
  *         levels - vector of req. levels corresponding to the vector of skills
  */
-SkillSet::SkillSet(const std::vector<Skill*> &skills, 
+SkillSet::SkillSet(const std::vector<Skill*> &skills,
                    const std::vector<uint32_t> &levels) : SkillSet()
 {
   std::vector<bool> enabled_values(levels.size(), kENABLED_DEFAULT);
@@ -75,7 +75,7 @@ SkillSet::SkillSet(const std::vector<Skill*> &skills,
  *============================================================================*/
 
 /*
- * Description: Calculates the lowest level of a Skill of a given ID in the 
+ * Description: Calculates the lowest level of a Skill of a given ID in the
  *              SkillSet (ex. Maul - Lv. 5 and Maul Lv. 4 - the Maul Lv. 4 will
  *              be the lowest level)
  *
@@ -92,11 +92,11 @@ uint32_t SkillSet::calcLowestLevel(const uint32_t &skill_id)
     if (element.skill->getID() == static_cast<int>(skill_id))
       if (element.level_available < min_level)
         min_level = element.level_available;
-  
+
   return min_level;
 }
 
-/* 
+/*
  * Description: Calculates a unique set of SetElements by checking all the IDs
  *              of Skills in the SkillSet and only adding the first occurence of
  *              each ID, then returns the resultant vector.
@@ -104,7 +104,7 @@ uint32_t SkillSet::calcLowestLevel(const uint32_t &skill_id)
  * Inputs: std::vector<SetElement> - a vector of set elements to find uniques of
  * Output: std::vector<SetElement> - a vector of unique set elements
  */
-std::vector<SetElement> SkillSet::calcUniques(const std::vector<SetElement> 
+std::vector<SetElement> SkillSet::calcUniques(const std::vector<SetElement>
                                               &check_elements)
 {
   std::vector<uint32_t> uniques;
@@ -126,13 +126,13 @@ std::vector<SetElement> SkillSet::calcUniques(const std::vector<SetElement>
   return unique_elements;
 }
 
-/* 
+/*
  * Description: Cleans up the SkillSet by erasing Skills which are invalid. This
  *              function checks the validity of each Skill by running its valid
  *              function again.
  *
  * Inputs: none
- * Output: none 
+ * Output: none
  */
 void SkillSet::cleanUp()
 {
@@ -151,7 +151,7 @@ void SkillSet::cleanUp()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-/* 
+/*
  * Description: Adds a Single skill to the SkillSet given a pointer to a Skill,
  *              a level required, and a starting enabled value.
  *
@@ -160,7 +160,7 @@ void SkillSet::cleanUp()
  *         enabled - whether the Skill will initially be useable
  * Output: bool - true if the Skill was added successfully
  */
-bool SkillSet::addSkill(Skill* skill, const uint32_t &req_level, 
+bool SkillSet::addSkill(Skill* skill, const uint32_t &req_level,
   	                    const bool enabled)
 {
   if (skill != nullptr && skill_elements.size() < kMAX_SKILLS)
@@ -188,7 +188,7 @@ bool SkillSet::addSkill(Skill* skill, const uint32_t &req_level,
   return false;
 }
 
-/* 
+/*
  * Description: Adds multiple skills to the SkillSet given a vector of Skill
  *              pointers, a vector of required levels and a vector of enabled
  *              values. cleanUp is called at the end of this to check for
@@ -199,7 +199,7 @@ bool SkillSet::addSkill(Skill* skill, const uint32_t &req_level,
  *         enabled - vector of enabled values
  * Output: bool - true if all skills were added successfully.
  */
-bool SkillSet::addSkills(const std::vector<Skill*> skills, 
+bool SkillSet::addSkills(const std::vector<Skill*> skills,
   	                     const std::vector<uint32_t> &req_levels,
   	                     const std::vector<bool> &enabled)
 {
@@ -230,12 +230,12 @@ bool SkillSet::addSkills(const std::vector<Skill*> skills,
   return success;
 }
 
-/* 
+/*
  * Description: Adds skills by vector of SetElements (useful for operator
  *              overloading). May bypas the kMAX_SKILLS check when temporarily
  *              combining mass amounts of skils.
  *
- * Inputs: new_elements - vector of SetElements to be added 
+ * Inputs: new_elements - vector of SetElements to be added
  * Output: bool - true if all SetElements were added successfully
  */
 bool SkillSet::addSkills(const std::vector<SetElement> &new_elements,
@@ -257,10 +257,10 @@ bool SkillSet::addSkills(const std::vector<SetElement> &new_elements,
   return false;
 }
 
-/* 
+/*
  * Description: Clears all the SetElements from the vector.
  *
- * Inputs: none 
+ * Inputs: none
  * Output: none
  */
 void SkillSet::clear()
@@ -268,7 +268,7 @@ void SkillSet::clear()
   skill_elements.clear();
 }
 
-/* 
+/*
  * Description: Prints out the state of the object
  *
  * Inputs: simple - boolean whether to output a simplified version
@@ -285,7 +285,7 @@ void SkillSet::print(const bool &simple)
   {
     if (simple)
     {
-      std::cout << index++ << " ID: " << element.skill->getID() << " N: " 
+      std::cout << index++ << " ID: " << element.skill->getID() << " N: "
                 << element.skill->getName() << std::endl;
     }
     else
@@ -301,7 +301,7 @@ void SkillSet::print(const bool &simple)
   std::cout << "--- / Skill Set ---" << std::endl;
 }
 
-/* 
+/*
  * Description: Returns the index on the vector of a Skill of a given ID or if
  *              not found, returns -1.
  *
@@ -319,7 +319,7 @@ int32_t SkillSet::getIndexOfID(const uint32_t &id)
   return -1;
 }
 
-/* 
+/*
  * Description: Returns the index along the vector of skill elements whose name
  *              matches the given char.
  *
@@ -342,8 +342,8 @@ int32_t SkillSet::getIndexOfAlpha(const char &alpha)
   return -1;
 }
 
-/* 
- * Description: Removes a SetElement from the vector at a given index and 
+/*
+ * Description: Removes a SetElement from the vector at a given index and
  *              returns true if the element was removed.
  *
  * Inputs: index - index of the vector of the SetElement to be removed
@@ -361,7 +361,7 @@ bool SkillSet::removeIndex(const uint32_t &index)
   return false;
 }
 
-/* 
+/*
  * Description: Removes a SetElement from the vector by a given ID value and
  *              returns true if the element was found and removed.
  *
@@ -378,7 +378,7 @@ bool SkillSet::removeID(const uint32_t &id)
   return !(index == -1);
 }
 
-/* 
+/*
  * Description: Sorts the vector of skills by a given sort type, and either in
  *              an ascending or descending manner.
  *
@@ -393,49 +393,49 @@ bool SkillSet::sort(const SkillSorts &sort_type, bool ascending)
   /* Sort the SSEs by their Skill's cooldown value */
   if (sort_type == SkillSorts::COOLDOWN)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompSkillCooldown());
     sort_status = true;
   }
- 
+
   /* Sort the SSEs by their Skill's QD cost */
   else if (sort_type == SkillSorts::COST)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompSkillCost());
     sort_status = true;
   }
-  
+
   /* Sort the SSEs by their Skill's ID # */
   else if (sort_type == SkillSorts::ID)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompSkillID());
     sort_status = true;
   }
-  
+
   /* Sort the SSEs by their Skill's name */
   else if (sort_type == SkillSorts::NAME)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompSkillName());
     sort_status = true;
   }
-  
+
   /* Sort the SSEs by their Skill's primary elemental attribute
        Ascending Order: NONE, PHYS, TH, PO, PR, CY, DI, VO */
   else if (sort_type == SkillSorts::PRIMARY)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompSkillPrimary());
     sort_status = true;
   }
-  
+
   /* Sort the SSEs by their Skill's secondary elemental attribute
        Ascending Order: NONE, PHYS, TH, PO, PR, CY, DI, VO */
   else if (sort_type == SkillSorts::SECONDARY)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompSkillSecondary());
     sort_status = true;
   }
@@ -443,7 +443,7 @@ bool SkillSet::sort(const SkillSorts &sort_type, bool ascending)
   /* Sort the SSEs by their Skill's arbitrary point value */
   else if (sort_type == SkillSorts::POINT_VALUE)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompSkillPoint());
     sort_status = true;
   }
@@ -451,7 +451,7 @@ bool SkillSet::sort(const SkillSorts &sort_type, bool ascending)
   /* Sort the SSEs by the level required for their use */
   else if (sort_type == SkillSorts::LEVEL_REQ)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompLevelRequired());
     sort_status = true;
   }
@@ -459,7 +459,7 @@ bool SkillSet::sort(const SkillSorts &sort_type, bool ascending)
   /* Sort the SSEs by their enabled value. Ascending Order: Enable, Disable */
   else if (sort_type == SkillSorts::ENABLED)
   {
-    std::sort(begin(skill_elements), end(skill_elements), 
+    std::sort(begin(skill_elements), end(skill_elements),
               Helpers::CompEnabled());
     sort_status = true;
   }
@@ -470,7 +470,7 @@ bool SkillSet::sort(const SkillSorts &sort_type, bool ascending)
   return sort_status;
 }
 
-/* 
+/*
  * Description: Compiles and returns a vector of the enabled values.
  *
  * Inputs: none
@@ -486,7 +486,7 @@ std::vector<bool> SkillSet::getAllEnabled()
   return enabled;
 }
 
-/* 
+/*
  * Description: Returns a set element at a given index if it exists.
  *
  * Inputs: index - index to check for a skill set element
@@ -501,7 +501,7 @@ SetElement SkillSet::getElement(const uint32_t &index)
   return empty;
 }
 
-/* 
+/*
  * Description: Compiles and returns a vector of SetElements which have
  *              level required values at or below a given value.
  *
@@ -519,7 +519,7 @@ std::vector<SetElement> SkillSet::getElements(const uint32_t &at_level)
   return skills;
 }
 
-/* 
+/*
  * Description: Returns the enabled value at a given index.
  *
  * Inputs: index - index to find the enabled value for
@@ -533,7 +533,7 @@ bool SkillSet::getEnabled(const uint32_t &index)
   return false;
 }
 
-/* 
+/*
  * Description: Returns the silenced value at a given index.
  *
  * Inputs: index - index to find the enabled value for
@@ -547,7 +547,7 @@ bool SkillSet::getSilenced(const uint32_t &index)
   return false;
 }
 
-/* 
+/*
  * Description: Returns whether a SkillSet element is currently useable by
  *              a person. This means the skill must both be enabled and not
  *              be silenced.
@@ -579,7 +579,7 @@ int SkillSet::getID()
   return id;
 }
 
-/* 
+/*
  * Description: Returns the string name at a given index
  *
  * Inputs: index - the index to find the name of the skill of
@@ -593,7 +593,7 @@ std::string SkillSet::getName(const uint32_t &index)
   return "";
 }
 
-/* 
+/*
  * Description: Returns the vector of string names of all Skills
  *
  * Inputs: none
@@ -609,7 +609,7 @@ std::vector<std::string> SkillSet::getNames()
   return names;
 }
 
-/* 
+/*
  * Description: Returns the required level at a given index
  *
  * Inputs: index - index to find the required level for
@@ -623,7 +623,7 @@ uint32_t SkillSet::getLevel(const uint32_t &index)
   return kMAX_UNLOCK_LEVEL + 1;
 }
 
-/* 
+/*
  * Description: Compiles and returns the vector of required levels for all
  *              Skills
  *
@@ -640,7 +640,7 @@ std::vector<uint32_t> SkillSet::getLevels()
   return levels;
 }
 
-/* 
+/*
  * Description: Returns the number of elements in the skill set
  *
  * Inputs: none
@@ -651,7 +651,7 @@ uint32_t SkillSet::getSize()
   return skill_elements.size();
 }
 
-/* 
+/*
  * Description: Returns the vector of values in the SkillSet
  *
  * Inputs: none
@@ -668,7 +668,7 @@ std::vector<uint32_t> SkillSet::getValues()
   return skill_values;
 }
 
-/* 
+/*
  * Description: Assigns a SetElement of a given index a given enabled state
  *
  * Inputs: index - the index to assign the enabled state
@@ -701,7 +701,7 @@ void SkillSet::setID(const int &new_id)
     id = kUNSET_ID;
 }
 
-/* 
+/*
  * Description: Assigns a SetElement element at a given index to a given
  *              silenced state (when silence is inflicted or relieved)
  *
@@ -725,8 +725,8 @@ bool SkillSet::setSilenced(const uint32_t &index, const bool &state)
  * OPERATOR FUNCTIONS
  *============================================================================*/
 
-/* 
- * Description: Compound assignment operator - adds another SkillSet to the 
+/*
+ * Description: Compound assignment operator - adds another SkillSet to the
  *              current object. If kADDITION_BYPASS is set, it will bypass
  *              the maximum number of SetElements possible.
  *
@@ -740,9 +740,9 @@ SkillSet& SkillSet::operator+=(const SkillSet &rhs)
   return *this;
 }
 
-/* 
+/*
  * Description: Compound subtraction operator - subtracts a SkillSet from
- *              the corrent object. This will remove  all Skills from the 
+ *              the corrent object. This will remove  all Skills from the
  *              current object whose IDs match those in the rhs object.
  *
  * Inputs: rhs - const ref to the SkillSet to be subtracted
@@ -756,7 +756,7 @@ SkillSet& SkillSet::operator-=(const SkillSet &rhs)
   return *this;
 }
 
-/* 
+/*
  * Description: See compound assignment operator
  *
  * Inputs: rhs - const ref. to the SkillSet to be added
@@ -769,7 +769,7 @@ SkillSet& SkillSet::operator+(const SkillSet &rhs)
   return *this;
 }
 
-/* 
+/*
  * Description: See compound subtraction operator
  *
  * Inputs: rhs - const ref. to the SkillSet to be subtracted

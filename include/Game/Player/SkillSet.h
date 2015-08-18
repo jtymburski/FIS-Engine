@@ -7,7 +7,7 @@
 *              Race, Category, Person, Equipment, Item. A SkillList can be
 *              sorted by level, by cost of the skill, by the assigned point
 *              value (for AI), by the elements the skill uses, etc.
-*              
+*
 * Notes
 * -----
 *
@@ -49,8 +49,8 @@ public:
   SkillSet(Skill* skill, const uint32_t &level);
 
   /* Multi-skill constructor */
-  SkillSet(const std::vector<Skill*> &skills, 
-           const std::vector<uint32_t> &levels); 
+  SkillSet(const std::vector<Skill*> &skills,
+           const std::vector<uint32_t> &levels);
 
   /* Annihilates a SkillSet object - default destructor */
   ~SkillSet() = default;
@@ -78,9 +78,9 @@ private:
   uint32_t calcLowestLevel(const uint32_t &skill_id);
 
   /* Returns unique set elements (by unique Skill IDs) */
-  static std::vector<SetElement> 
+  static std::vector<SetElement>
                 calcUniques(const std::vector<SetElement> &check_elements);
-  
+
   /* Cleans up the skill set */
   void cleanUp();
 
@@ -89,11 +89,11 @@ private:
  *============================================================================*/
 public:
   /* Attempts to add a single skill */
-  bool addSkill(Skill* skill, const uint32_t &req_level = 200, 
+  bool addSkill(Skill* skill, const uint32_t &req_level = 200,
   	            const bool enabled = true);
 
   /* Attempts to add a vector of skills */
-  bool addSkills(const std::vector<Skill*> skills, 
+  bool addSkills(const std::vector<Skill*> skills,
   	             const std::vector<uint32_t> &req_levels,
   	             const std::vector<bool> &enabled);
 
@@ -130,10 +130,10 @@ public:
 
   /* Returns the silenced value at a given index */
   bool getSilenced(const uint32_t &index);
-  
+
   /* Returns the useable value at a given index */
   bool getUseable(const uint32_t &index);
-  
+
   /* Returns the ID of the Skill Set */
   int getID(); // TODO
 
@@ -160,7 +160,7 @@ public:
 
   /* Assigns an enabled state to a SetElement at a given index */
   bool setEnabled(const uint32_t &index, const bool &state = true);
-  
+
   /* Assigns an ID to the Skill Set */
   void setID(const int &new_id);
 

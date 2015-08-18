@@ -819,7 +819,6 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
 {
   SDL_Color color = {255, 255, 255, 255};
   SDL_Color invalid_color = {100, 100, 100, 255};
-  std::vector<BattleSkill> skills = menu->getMenuSkills();
   bool success = true;
   Text* t = new Text(font_header);
   uint16_t text_height = 0;
@@ -827,6 +826,9 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
 
   /* Delete if skills are already rendered */
   deleteSkills();
+
+  auto skills = menu->getMenuSkills();
+  std::cout << "Battle display skills size: " << skills.size() << std::endl;
 
   /* Loop through all skills */
   for(uint16_t i = 0; i < skills.size(); i++)
@@ -921,14 +923,12 @@ void BattleDisplay::deleteFonts()
 // TODO: Comment
 void BattleDisplay::deleteSkills()
 {
-  /* Deletes skill info frames */
-  for(uint16_t i = 0; i < skill_info.size(); i++)
-    delete skill_info[i];
+  for(auto& skill : skill_info)
+    delete skill;
   skill_info.clear();
 
-  /* Deletes skill name frames */
-  for(uint16_t i = 0; i < skill_names.size(); i++)
-    delete skill_names[i];
+  for(auto& name : skill_names)
+    delete name;
   skill_names.clear();
 }
 
@@ -2273,7 +2273,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     if(to_render_menu)
     {
       /* Checks the index of the rendering person for if the skills need to be
-       * updated */
+       * updated*/
       if(index_person != menu->getPersonIndex())
       {
         createSkills(renderer, menu, width * kBIGBAR_M2, width * kBIGBAR_R);
@@ -2854,6 +2854,7 @@ bool BattleDisplay::update(int cycle_time)
     else if(rendering_state == TurnState::CLEAN_UP)
     {
       bar_offset = 0;
+      index_person = 0;
 
       /* Delay in clean up */
       if(rendering_state != battle_state)

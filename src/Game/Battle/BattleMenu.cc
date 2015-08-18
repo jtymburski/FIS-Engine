@@ -77,10 +77,10 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
     if (qtdr_cost_paid != 0)
     {
       #ifdef UDEBUG
-        std::cout << "Replacing " << qtdr_cost_paid << " QD paid for action." 
+        std::cout << "Replacing " << qtdr_cost_paid << " QD paid for action."
                   << std::endl;
       #endif
-      
+
       current_user->getCurr().alterStat("QTDR", qtdr_cost_paid);
       qtdr_cost_paid = 0;
     }
@@ -90,7 +90,7 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 
     action_scope  = ActionScope::NO_SCOPE;
     layer_index = 2;
-          
+
     success = true;
   }
 
@@ -139,7 +139,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
     setMenuFlag(MenuState::SELECTION_VERIFIED, true);
     setMenuFlag(MenuState::SKILL_SELECTED, true);
     setMenuFlag(MenuState::ACTION_SELECTED, true);
-    
+
     layer_index = 4;
 
     return true;
@@ -149,7 +149,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 }
 
 /*
- * Description: Adds a new target by inded value to the array of selected 
+ * Description: Adds a new target by inded value to the array of selected
  *              targets and removes this new target from the vector of remaining
  *              valid targets.
  *
@@ -179,7 +179,7 @@ bool BattleMenu::addTarget(const int32_t &new_target)
 /*
  * Description: Add all the targets of the same party of a given Index (based
  *              on whether the given index is positive or negative) to the
- *              vector of selected targets and remove them all from valid 
+ *              vector of selected targets and remove them all from valid
  *              targets (although the selection should be complete)
  *
  * Inputs: int32_t party_index - given index of member to be added to targets
@@ -196,7 +196,7 @@ bool BattleMenu::addPartyTargets(const int32_t &party_index)
  * Description:
  *
  * Inputs:
- * Output: 
+ * Output:
  */
 std::vector<int32_t> BattleMenu::getPartyTargets(int32_t party_index)
 {
@@ -325,10 +325,10 @@ void BattleMenu::keyDownCancel()
     if (action_type == ActionType::DEFEND || action_type == ActionType::RUN ||
         action_type == ActionType::PASS)
       decrement_to_layer = 1;
-    else 
+    else
       decrement_to_layer = 3;
   }
-  
+
   if (decrement_to_layer != -1)
     decrementLayer(decrement_to_layer);
 }
@@ -360,7 +360,7 @@ void BattleMenu::keyDownDecrement()
     if (action_type != ActionType::NONE && valid_targets.empty())
     {
       for (; !indexHasTargets() && element_index > 0; )
-        element_index--;  
+        element_index--;
     }
   }
 }
@@ -426,7 +426,7 @@ void BattleMenu::keyDownSelect()
       action_type = valid_actions.at(element_index);
 
     #ifdef UDEBUG
-      std::cout << "Attempting selection of current action t+pe: " 
+      std::cout << "Attempting selection of current action t+pe: "
                 << Helpers::actionTypeToStr(action_type)
                 << std::endl;
     #endif
@@ -442,8 +442,8 @@ void BattleMenu::keyDownSelect()
         action_type = ActionType::NONE;
 
         #ifdef UDEBUG
-          std::cout << "No valid skills available, please select another action" 
-                    << std::endl;            
+          std::cout << "No valid skills available, please select another action"
+                    << std::endl;
         #endif
       }
     }
@@ -479,7 +479,7 @@ void BattleMenu::keyDownSelect()
         #endif
       }
     }
-    
+
     /* DEFEND, RUN, PASS actions require no other menus -> done */
     else if (action_type == ActionType::DEFEND ||
              action_type == ActionType::RUN ||
@@ -488,7 +488,7 @@ void BattleMenu::keyDownSelect()
       layer_to_increment = 4;
     }
   }
-  
+
   else if (layer_index == 2)
   {
     /* Selection of skill index -> move to target menu */
@@ -535,7 +535,7 @@ void BattleMenu::keyDownSelect()
         layer_to_increment = 3;
 
         selected_item = menu_items.at(element_index).item;
-      } 
+      }
     }
   }
   else if (layer_index == 3)
@@ -578,7 +578,7 @@ void BattleMenu::keyDownSelect()
           addTarget(valid_targets.at(element_index));
           layer_to_increment = 4;
         }
-      } 
+      }
     }
     else if (action_type == ActionType::DEFEND ||
              action_type == ActionType::GUARD  ||
@@ -608,8 +608,8 @@ void BattleMenu::keyDownSelect()
 /*
  * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 int32_t BattleMenu::getPartyTargetIndex(bool opposite)
 {
@@ -777,7 +777,7 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 /*
  * Description: Selects a random action among the list of available menu.
  *              This function is used in lieu of the menu for ailments
- *              such as 
+ *              such as
  *
  * Inputs: none
  * Output: none
@@ -819,7 +819,7 @@ void BattleMenu::printValidActions()
 }
 
 /*
- * Description: Prints out the list of available skills for the current menu 
+ * Description: Prints out the list of available skills for the current menu
  *              setup.
  *
  * Inputs: none
@@ -838,12 +838,12 @@ void BattleMenu::printSkills()
         std::cout << "[X]";
       else
         std::cout << "[ ]";
-  
+
       std::cout << " -- [ " << (*it).skill->getCost() << " QD ] -- "
                 << (*it).skill->getName() << " -- [";
 
-      for (auto jt = begin((*it).all_targets); 
-           jt != end((*it).all_targets); 
+      for (auto jt = begin((*it).all_targets);
+           jt != end((*it).all_targets);
            ++jt)
       {
         if (jt == begin((*it).all_targets))
@@ -852,7 +852,7 @@ void BattleMenu::printSkills()
           std::cout << ", " << (*jt)->getName();
       }
 
-      std::cout << "] - [" << Helpers::actionScopeToStr((*it).skill->getScope()) 
+      std::cout << "] - [" << Helpers::actionScopeToStr((*it).skill->getScope())
                 << "]"<< std::endl;
 
     }
@@ -887,9 +887,9 @@ void BattleMenu::printTargets(const bool &print_selected)
      * highlighting, display an 'X' on it
      * The following action scopes will always choose all selectable targets:
      * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
-    if (action_scope == ActionScope::ALL_ALLIES    || 
+    if (action_scope == ActionScope::ALL_ALLIES    ||
         action_scope == ActionScope::ALL_ENEMIES   ||
-        action_scope == ActionScope::ALL_ALLIES_KO || 
+        action_scope == ActionScope::ALL_ALLIES_KO ||
         action_scope == ActionScope::ALL_TARGETS   ||
         action_scope == ActionScope::ALL_NOT_USER  ||
         index == element_index)
@@ -912,7 +912,7 @@ bool BattleMenu::isValidIndex(int32_t check_index)
 }
 
 /*
- * Description: 
+ * Description:
  *
  * Inputs: none
  * Output: none
@@ -950,7 +950,7 @@ void BattleMenu::mostLeftIndex()
 }
 
 /*
- * Description: 
+ * Description:
  *
  * Inputs: none
  * Output: none
@@ -986,7 +986,7 @@ void BattleMenu::mostRightIndex()
 }
 
 /*
- * Description: 
+ * Description:
  *
  * Inputs: none
  * Output: none
@@ -1028,16 +1028,16 @@ void BattleMenu::printItems()
     else
       std::cout << "[ ]";
 
-    std::cout << " --- " << (*it).item->getName() << " -- [ " 
+    std::cout << " --- " << (*it).item->getName() << " -- [ "
               << (*it).amount << " ] -- [";
 
-    for (auto jt = begin((*it).all_targets); 
-         jt != end((*it).all_targets); 
+    for (auto jt = begin((*it).all_targets);
+         jt != end((*it).all_targets);
          ++ jt)
     {
       std::cout << (*jt)->getName() << ", ";
     }
-    
+
     std::cout << "]" << std::endl;
   }
 }
@@ -1075,7 +1075,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     if (layer_index == 4)
       change_index = false;
   }
-  
+
   if (change_index)
   {
     if (event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_RIGHT)
@@ -1114,7 +1114,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
   #ifdef UDEBUG
     if (current_user != nullptr)
     {
-      std::cout << "Selecting action for person index: " << person_index 
+      std::cout << "Selecting action for person index: " << person_index
                 << " named: " << current_user->getName()  << std::endl;
     }
 
@@ -1126,7 +1126,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 }
 
 /*
- * Description: Prints out the state of the menu for a non-gui battle based 
+ * Description: Prints out the state of the menu for a non-gui battle based
  *              on the current layering index.
  *
  * Inputs: none
@@ -1147,7 +1147,7 @@ void BattleMenu::printMenuState()
     std::cout << "Action Type: " << Helpers::actionTypeToStr(action_type)
               << " with name: ";
 
-    if (action_type == ActionType::SKILL && 
+    if (action_type == ActionType::SKILL &&
         getMenuFlag(MenuState::SKILL_SELECTED))
     {
       std::cout << selected_skill.skill->getName();
@@ -1204,10 +1204,10 @@ std::vector<int32_t> BattleMenu::getActionTargets()
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 Person* BattleMenu::getCurrentUser()
 {
@@ -1215,16 +1215,16 @@ Person* BattleMenu::getCurrentUser()
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 int32_t BattleMenu::getElementIndex()
 {
   return element_index;
 }
-  
+
 /* Get targets hovered over during the selection process */
 // TODO: Comment
 std::vector<int32_t> BattleMenu::getHoverTargets()
@@ -1241,9 +1241,9 @@ std::vector<int32_t> BattleMenu::getHoverTargets()
      * highlighting, display an 'X' on it
      * The following action scopes will always choose all selectable targets:
      * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
-    if (action_scope == ActionScope::ALL_ALLIES    || 
+    if (action_scope == ActionScope::ALL_ALLIES    ||
         action_scope == ActionScope::ALL_ENEMIES   ||
-        action_scope == ActionScope::ALL_ALLIES_KO || 
+        action_scope == ActionScope::ALL_ALLIES_KO ||
         action_scope == ActionScope::ALL_TARGETS   ||
         action_scope == ActionScope::ALL_NOT_USER  ||
         (i == element_index && action_scope != ActionScope::ONE_PARTY))
@@ -1263,10 +1263,10 @@ std::vector<int32_t> BattleMenu::getHoverTargets()
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 int32_t BattleMenu::getLayerIndex()
 {
@@ -1419,7 +1419,7 @@ std::vector<int32_t> BattleMenu::getRandomTargets()
  * Description:
  *
  * Inputs:
- * Output: 
+ * Output:
  */
 int32_t BattleMenu::getQtdrCostPaid()
 {
@@ -1556,8 +1556,8 @@ bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
     std::iter_swap(neg_one, neg_two);
   }
 
-    if (action_type == ActionType::SKILL && 
-        getMenuFlag(MenuState::SKILL_SELECTED) && 
+    if (action_type == ActionType::SKILL &&
+        getMenuFlag(MenuState::SKILL_SELECTED) &&
         selected_skill.skill != nullptr)
     {
       /* Default offensive skills to opposing party, vice versa for defensive */

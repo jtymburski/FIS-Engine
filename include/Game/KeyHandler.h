@@ -2,7 +2,7 @@
 * Class Name: KeyHandler [Declaration]
 * Date Created: April 9, 2015
 * Inheritance: None
-* Description: KeyHandler manages the state of the Keyboard. It contains a 
+* Description: KeyHandler manages the state of the Keyboard. It contains a
 *              vector of keys which map an enumerated GameKey (or game function
 *              key) to physical SDL_Keycode key(s) and keeps track of which
 *              keeps are depressed and how long they have been depressed for.
@@ -63,18 +63,18 @@ private:
   std::vector<Key> keys;
 
   /* ------------ Constants --------------- */
-  static const SDL_Keycode kMoveLeftDefault;  /* Default moving left key */
-  static const SDL_Keycode kMoveRightDefault; /* Default moving right key */
-  static const SDL_Keycode kMoveUpDefault;    /* Default moving up key */
-  static const SDL_Keycode kMoveDownDefault;  /* Default moving down key */
-  static const SDL_Keycode kMenuDefault;      /* Default menu open key */
-  static const SDL_Keycode kActionDefault;    /* Default action key */
-  static const SDL_Keycode kCancelDefault;    /* Default cancel/close key */
-  static const SDL_Keycode kRunDefault;       /* Default run key */
-  static const SDL_Keycode kDebugDefault;     /* Default debug key */
+  static const SDL_Keycode kMOVE_LEFT_DEFAULT;  /* Default moving left key */
+  static const SDL_Keycode kMOVE_RIGHT_DEFAULT; /* Default moving right key */
+  static const SDL_Keycode kMOVE_UP_DEFAULT;    /* Default moving up key */
+  static const SDL_Keycode kMOVE_DOWN_DEFAULT;  /* Default moving down key */
+  static const SDL_Keycode kMENU_DEFAULT;      /* Default menu open key */
+  static const SDL_Keycode kACTION_DEFAULT;    /* Default action key */
+  static const SDL_Keycode kCANCEL_DEFAULT;    /* Default cancel/close key */
+  static const SDL_Keycode kRUN_DEFAULT;       /* Default run key */
+  static const SDL_Keycode kDEBUG_DEFAULT;     /* Default debug key */
 
-  static const int32_t kMinHeldTime; /* Amount of time for key to be 'Held' */
-  static const bool    kMultipleMappings; /* Can GameKeys be multi-mapped? */
+  static const int32_t kMIN_HELD_TIME; /* Amount of time for key to be 'Held' */
+  static const bool    kMULTIPLE_MAPPINGS; /* Can GameKeys be multi-mapped? */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -104,7 +104,7 @@ public:
 
   /* Load a default set of Keys */
   void loadDefaults();
-  
+
   /* Prints out the Key states of the KeyHandler */
   void print(bool only_depressed = false, bool only_held = false);
 

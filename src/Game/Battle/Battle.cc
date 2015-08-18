@@ -173,8 +173,6 @@ Battle::Battle(Party* const friends, Party* const foes,
  */
 Battle::~Battle()
 {
-  std::cout << "Destroying the Battle!" << std::endl;
-
   for(auto& ailment : ailments)
     delete ailment;
   ailments.clear();
@@ -632,10 +630,6 @@ bool Battle::bufferUserAction()
           action_type == ActionType::IMPLODE ||
           action_type == ActionType::RUN || action_type == ActionType::PASS)
   {
-    if(person_targets.size() == 0)
-      std::cout << "OH EM GEE EMPTY TARGETS" << std::endl;
-    else
-      std::cout << "CAN YOU SEEM E HEEEY OOO" << std::endl;
     buffered = action_buffer->add(curr_user, action_type, person_targets, 0,
                                   turns_elapsed);
   }
@@ -2162,7 +2156,6 @@ void Battle::personalUpkeep(Person* const target)
     setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   }
 
-  std::cout << "Setting ready to render!" << std::endl;
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
 
@@ -3251,7 +3244,6 @@ void Battle::processSkill(std::vector<Person*> targets)
     else
     {
       // End the skill processing here?
-      std::cout << "Reached maxed index" << std::endl;
       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
 
