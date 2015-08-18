@@ -14,6 +14,8 @@
 * TODO
 * ----
 *
+* [1]: Mass and value functions for setting and not const
+*
 *******************************************************************************/
 #ifndef FLAVOUR_H
 #define FLAVOUR_H
@@ -55,7 +57,7 @@ private:
   std::string description;
 
   /* The corresponding Game ID (non-unique) value for a Bubby of this flv */
-  const int game_id;
+  int game_id;
 
   /* Standing list of all flavours in the game */
   static std::vector<Flavour*> flavour_list;
@@ -126,6 +128,9 @@ public:
 
   /* Assigns a new description to the flavour */
   bool setDescription(const std::string& new_description);
+
+  /* Assigns a game ID to the flavour */
+  void setID(const int32_t &id);
 
   /* Assigns a new set of skills to the Flavour */
   bool setSkills(SkillSet* new_skills);

@@ -56,77 +56,104 @@ private:
   
   /* The computed base path for resources in the application */
   std::string base_path;
+    
+  /* Battle control and visual */
+  Battle* battle_ctrl;
+  BattleDisplay* battle_vis;
+  
+  /* The configuration for the display of the game */
+  Options* config;
   
   /* Handles all events throughout the game. */
   EventHandler event_handler;
-  
-  /* A current battle pointer */
-  Battle* game_battle;
-  BattleDisplay* battle_display;
-
-  /* The configuration for the display of the game */
-  Options* game_config;
-
-  /* The current loaded map */
-  Map* game_map; // TODO: Make non-pointer? - maybe
 
   /* The game starting inventory */
-  Inventory* game_inventory; // TODO: Make part of bearacks party
+  //Inventory* game_inventory; // TODO: Make part of bearacks party
+
+  /* List of objects */
+  std::vector<Action*> list_action;
+  std::vector<Category*> list_class;
+  std::vector<Flavour*> list_flavour;
+  std::vector<Item*> list_item;
+  std::vector<Party*> list_party;
+  std::vector<Person*> list_person_base;
+  std::vector<Person*> list_person_inst;
+  std::vector<Category*> list_race;
+  std::vector<SkillSet*> list_set;
+  std::vector<Skill*> list_skill;
 
   /* List of all actions */
-  std::vector<Action*> action_list;
+  //std::vector<Action*> action_list;
 
   /* List of all Battle Class categories */
-  std::vector<Category*> battle_class_list;
+  //std::vector<Category*> battle_class_list;
 
   /* List of all Race categories */
-  std::vector<Category*> race_list;
+  //std::vector<Category*> race_list;
 
   /* List of all flavours */
-  std::vector<Flavour*> flavour_list;
+  //std::vector<Flavour*> flavour_list;
 
   /* List of all skills */
-  std::vector<Skill*> skill_list;
+  //std::vector<Skill*> skill_list;
 
   /* List of all base persons */
-  std::vector<Person*> base_person_list;
+  //std::vector<Person*> base_person_list;
 
   /* List of all available items in the game */
-  std::vector<Item*> base_item_list;
+  //std::vector<Item*> base_item_list;
 
   /* The bubbified skill set */
-  SkillSet* bubbified_skills;
+  //SkillSet* bubbified_skills; // TODO: Make a const ID in skill set stack
   
   /* The maps in the game */
   // [09-07-14] TODO: Recommend Map*, std::string pair ?
   //std::vector<Map*> levels;
   //std::vector<std::string> level_list;
 
-  /* The level number currently on */
-  //int level_num;
+  /* Map variables */
+  Map* map_ctrl; /* Main class */
+  int map_lvl; /* Active level number */
 
-  /* The player */
-  //Player* main_player;
-
+  /* Test map path */
+  std::string map_test_path;
+  
   /* The mode that the game is currently running at */
   GameMode mode;
- 
-  /* Test map */
-  std::string test_map;
+  
+  /* The player */
+  Player* player_main; 
+  
+  /* Number of ticks since inception */
+  uint64_t ticks_total;
 
   /* A current victory screen pointer */
   //VictoryScreen* victory_screen;
 
-  /* Number of ticks since inception */
-  uint64_t num_ticks;
-
   /* ------------ Constants --------------- */
-  static const uint32_t kMONEY_ITEM_ID;
+  static const uint32_t kID_ITEM_MONEY; /* ID of money item */
+  static const uint32_t kID_PARTY_BEARACKS; /* ID of player bearacks party */
+  static const uint32_t kID_PARTY_SLEUTH; /* ID of player sleuth party */
+  static const uint32_t kID_PERSON_PLAYER; /* ID of player primary person */
+  static const uint32_t kID_SET_BUBBIFIED; /* ID of bubbified skillset */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Add functions for game objects */
+  Action* addAction(const std::string &raw);
+  Category* addClass(const int32_t &id);
+  Flavour* addFlavour(const int32_t &id);
+  Item* addItem(const int32_t &id, SortObjects type = SortObjects::ITEMS);
+  Party* addParty(const int32_t &id);
+  Person* addPersonBase(const int32_t &id);
+  Person* addPersonInst(const int32_t &base_id);
+  Person* addPersonInst(Person* base_person);
+  Category* addRace(const int32_t &id);
+  Skill* addSkill(const int32_t &id);
+  SkillSet* addSkillSet(const int32_t &id);
+
   /* Builds the ailment frames */
   void buildBattleDisplayFrames(SDL_Renderer* renderer);
 
@@ -152,47 +179,48 @@ private:
    * in the game */
   void pollEvents();
 
+  /* Remove functions for game objects */
+  void removeActions();
+  void removeAll(); /* Properly staged remove all call */
+  void removeClasses();
+  void removeFlavours();
+  void removeItems();
+  void removeParties();
+  void removePersonBases();
+  void removePersonInstances();
+  void removeRaces();
+  void removeSkills();
+  void removeSkillSets();
+
   /* Set up the battle */
   void setupBattle();
 
   /* Set up the map */
   void setupMap();
 
-  /* Sets up the default player inventory */
-  void setupPlayerInventory();
-
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Pauses der game in der Wald, ja ja ja */
-  //void pause(); // TODO: Is this required?
-  
-  /* Returns a pointer to an action by index or by ID */
+  /* Getter functions for game objects */
   Action* getAction(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a battle class by index or by ID */
-  Category* getBattleClass(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a race category by index or by ID */
-  Category* getCategory(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a flavour by index or by ID */
+  Category* getClass(const int32_t &index, const bool &by_id = true);
   Flavour* getFlavour(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a skill by index or by ID */
+  Item* getItem(const int32_t &index, const bool &by_id = true); 
+  Party* getParty(const int32_t &index, const bool &by_id = true);
+  Person* getPersonBase(const int32_t &index, const bool &by_id = true);
+  Person* getPersonInst(const int32_t &index, const bool &by_id = true);
+  Category* getRace(const int32_t &index, const bool &by_id = true);  
   Skill* getSkill(const int32_t &index, const bool &by_id = true);
+  SkillSet* getSkillSet(const int32_t &index, const bool &by_id = true);
 
-  /* Returns a pointer to a person by index or by ID */
-  Person* getPerson(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a person by index or by ID */
-  Item* getItem(const int32_t &index, const bool &by_id = true);
-  
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
-
+  
+  /* Pauses der game in der Wald, ja ja ja */
+  //void pause(); // TODO: implement
+  
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
   
@@ -203,7 +231,7 @@ public:
   void setTestMap(std::string test_map);
 
   /* Unpause the game */
-  //void unpause(); // TODO: See associated pause()
+  //void unpause(); // TODO: implement
 
   /* Updates the game state */
   bool update(int cycle_time);

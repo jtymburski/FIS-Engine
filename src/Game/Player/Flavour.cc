@@ -325,6 +325,20 @@ bool Flavour::setDescription(const std::string& new_description)
 
   return false;
 }
+  
+/*
+ * Description: Assigns a game ID to the flavours.
+ *
+ * Inputs: int32_t id - the new ID
+ * Output: none
+ */
+void Flavour::setID(const int32_t &id)
+{
+  if(id < 0)
+    game_id = kUNSET_ID;
+  else
+    game_id = id;
+}
 
 /*
  * Description: Assigns a new SkillSet (via pointer) to the flavours, and 
