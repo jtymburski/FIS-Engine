@@ -70,6 +70,9 @@ private:
   /* The game starting inventory */
   //Inventory* game_inventory; // TODO: Make part of bearacks party
 
+  /* Game file path */
+  std::string game_path;
+
   /* List of objects */
   std::vector<Action*> list_action;
   std::vector<Category*> list_class;
@@ -81,6 +84,9 @@ private:
   std::vector<Category*> list_race;
   std::vector<SkillSet*> list_set;
   std::vector<Skill*> list_skill;
+
+  /* Is the game loaded? */
+  bool loaded;
 
   /* List of all actions */
   //std::vector<Action*> action_list;
@@ -116,7 +122,7 @@ private:
   int map_lvl; /* Active level number */
 
   /* Test map path */
-  std::string map_test_path;
+  std::string map_test_path; // TODO: REMOVE
   
   /* The mode that the game is currently running at */
   GameMode mode;
@@ -136,6 +142,8 @@ private:
   static const uint32_t kID_PARTY_SLEUTH; /* ID of player sleuth party */
   static const uint32_t kID_PERSON_PLAYER; /* ID of player primary person */
   static const uint32_t kID_SET_BUBBIFIED; /* ID of bubbified skillset */
+  static const uint32_t kSTARTING_MAP; /* Starting map ID */
+  static const std::string kSTARTING_PATH; /* Starting game path */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -175,6 +183,13 @@ private:
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
 
+  /* Load game */
+  bool load(std::string base_file, SDL_Renderer* renderer, 
+            std::string inst_file, bool encryption = false);
+
+  /* Load game data */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer);
+
   /* Polls events running from the event handler. Triggered from other places
    * in the game */
   void pollEvents();
@@ -197,6 +212,9 @@ private:
 
   /* Set up the map */
   void setupMap();
+
+  /* Unload the game */
+  void unload();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

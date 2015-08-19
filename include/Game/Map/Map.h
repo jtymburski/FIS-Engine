@@ -224,7 +224,10 @@ public:
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
-  
+ 
+  /* Loads the map data */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer);
+
   /* Loads the map */
   bool loadMap(std::string file, SDL_Renderer* renderer, 
                                  bool encryption = false);

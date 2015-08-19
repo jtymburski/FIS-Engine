@@ -54,6 +54,8 @@ const uint32_t Game::kID_PARTY_BEARACKS = 1;
 const uint32_t Game::kID_PARTY_SLEUTH = 0;
 const uint32_t Game::kID_PERSON_PLAYER = 0;
 const uint32_t Game::kID_SET_BUBBIFIED = 0;
+const uint32_t Game::kSTARTING_MAP = 0;
+const std::string Game::kSTARTING_PATH = "maps/design_map.ugv";
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -70,7 +72,10 @@ Game::Game(Options* running_config)
   battle_ctrl = nullptr;
   battle_vis = nullptr;
   config = nullptr;
+  game_path = kSTARTING_PATH;
+  loaded = false;
   map_ctrl = nullptr;
+  map_lvl = kSTARTING_MAP;
   map_test_path = "";
   mode = DISABLED;
 
@@ -471,6 +476,84 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
   if(map_ctrl != nullptr)
     map_ctrl->teleportThing(thing_id, x, y, section_id);
 }
+  
+/* Load game */
+// TODO: Comment
+// Notes: Revise that when inst file is blank, it uses default starting map.
+//        Otherwise, determine current map from inst first, then load correct
+//        base followed by correct inst map and all associated data.
+bool Game::load(std::string base_file, SDL_Renderer* renderer, 
+                std::string inst_file, bool encryption)
+{
+  bool done = false;
+  bool read_success = true;
+  int index = 0;
+  std::string level = std::to_string(map_lvl);
+  bool success = true;
+
+  /* Ensure nothing is loaded */
+  unload();
+
+  /* Create the file handler */
+  FileHandler fh(base_file, false, true, encryption);
+  XmlData data;
+
+  /* Start the map read */
+  success &= fh.start();
+  std::cout << "Date: " << fh.getDate() << std::endl; // TODO: Remove
+ 
+  /* If file open was successful, move forward */
+  if(success)
+  {
+    do
+    {
+      /* Read set of XML data */
+      data = fh.readXmlData(&done, &read_success);
+      success &= read_success;
+
+      /* Only proceed if inside game */
+      if(data.getElement(index) == "game")
+      {
+        /* Core game data */
+        if(data.getElement(index + 1) == "core")
+        {
+          success &= loadData(data, index + 2, renderer);
+        }
+        /* Map data */
+        else if(data.getElement(index + 1) == "map" && 
+                data.getKeyValue(index + 1) == level)
+        {
+          success &= map_ctrl->loadData(data, index + 2, renderer);
+        }
+      }
+    } while(!done);// && success); // TODO: Success in loop??
+  }
+
+  success &= fh.stop();
+
+  /* If the load was successful, proceed to clean-up */
+  if(success)
+  {
+    // TODO: Game clean-up, if required
+
+    // TODO: Call to map for clean-up
+  }
+  /* If failed, unload */
+  else
+  {
+    unload();
+  }
+  loaded = success;
+
+  return success;
+}
+  
+/* Load game specific data */
+// TODO: Comment
+bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
+{
+  std::cout << "TODO: " << data.getElement(index) << std::endl;
+}
 
 // TODO: Comment
 void Game::pollEvents()
@@ -634,12 +717,25 @@ void Game::setupBattle()
 /* Set up the map - old map needs to be deleted prior to calling */
 void Game::setupMap()
 {
+  // TODO: Fix
+
   /* Create the map */
   map_ctrl = new Map(config, &event_handler);
   mode = MAP;
 
 //  /* Load the map - temporary location */
 //  map_ctrl->loadMap("maps/test_04");
+}
+  
+/* Unload the game */
+void Game::unload()
+{
+  if(loaded)
+  {
+    // TODO: Unload all resources
+
+    loaded = false;
+  }
 }
 
 /*============================================================================

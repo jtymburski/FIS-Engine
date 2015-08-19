@@ -1223,6 +1223,13 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
       player->keyUpEvent(event);
   }
 }
+  
+/* Loads the map data - called from game */
+bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer)
+{
+  // TODO: Transfer and re-appropriate the loadMap() call to this
+  std::cout << "TODO: " << data.getElement(index) << std::endl;
+}
 
 // TODO: Separate file add success and XML read success to parse error
 bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
@@ -1237,7 +1244,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   /* Start the map read */
   success &= fh.start();
   std::cout << "Date: " << fh.getDate() << std::endl; // TODO: Remove
-  
+ 
   /* If file open was successful, move forward */
   if(success)
   {

@@ -2,10 +2,10 @@
  * Class Name: FileHandler
  * Date Created: February 16, 2012
  * Inheritance: none
- * Description: Handles all files that enter and leave the game. Will be 
+ * Description: Handles all files that enter and leave the game. Will be
  *              writing everything into a specific XML format and will allow
- *              for encrypting and decrypting the file using an implementation 
- *              of XXTEA. 
+ *              for encrypting and decrypting the file using an implementation
+ *              of XXTEA.
  *
  * Example: REGULAR file read
  *          -----------------
@@ -36,7 +36,7 @@
  *          // Result: <person id="1">
  *          //           <name type="3">john</name> // type 3 is string
  *          //         </person>
- *          
+ *
  *          stop();
  *****************************************************************************/
 #include "FileHandler.h"
@@ -63,7 +63,7 @@ const int      FileHandler::kXXTEA_ROUNDS    = 19;
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* 
+/*
  * Description: Constructor function - Set up the file handler class with
  *              just initial values and empty initialization.
  *
@@ -86,20 +86,20 @@ FileHandler::FileHandler()
   xml_node = NULL;
 }
 
-/* 
+/*
  * Description: Constructor function - Set up the file handler class with
  *              just initial values and the initialization of the variables
- *              outlined below. Allows for quick initialization of the 
+ *              outlined below. Allows for quick initialization of the
  *              class.
  *
  * Input: std::string filename - the filename to read/write data to.
  *        bool write - set the class to write instead of read (default false)
  *        bool xml - set the file type to xml instead of regular line format
  *                   (default false)
- *        bool encryption - enables encryption for reading and writing 
+ *        bool encryption - enables encryption for reading and writing
  *                          (default false)
  */
-FileHandler::FileHandler(std::string filename, bool write, 
+FileHandler::FileHandler(std::string filename, bool write,
                          bool xml, bool encryption) : FileHandler()
 {
   setEncryptionEnabled(encryption);
@@ -108,7 +108,7 @@ FileHandler::FileHandler(std::string filename, bool write,
   xml ? setFileType(XML) : setFileType(REGULAR);
 }
 
-/* 
+/*
  * Description: Destructor function
  */
 FileHandler::~FileHandler()
@@ -120,7 +120,7 @@ FileHandler::~FileHandler()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-/* 
+/*
  * Description: Cleans up the dynamic memory in the class.
  *
  * Inputs: none
@@ -137,7 +137,7 @@ void FileHandler::cleanUp()
   element_count = 0;
 }
 
-/* 
+/*
  * Description: Takes a sequence of 32 bit data (4 in the array) and decrypts
  *              the data, as per XXTEA algorithm. The data is returned on the
  *              same path and returns a status.
@@ -160,7 +160,7 @@ bool FileHandler::decryptData(uint32_t* data)
     {
       e = (sum >> 2) & 3;
 
-      for (p=3; p>0; p--) 
+      for (p=3; p>0; p--)
       {
         z = data[p-1];
         y = data[p] -= MX;
@@ -170,7 +170,7 @@ bool FileHandler::decryptData(uint32_t* data)
       y = data[0] -= MX;
 
     } while((sum -= kDELTA) != 0);
-    
+
     return true;
   }
 
@@ -189,7 +189,7 @@ void FileHandler::determineCount()
 {
   int total = 0;
   bool done = false;
-  
+
   /* Loop through elements */
   while(!done)
   {
@@ -199,12 +199,12 @@ void FileHandler::determineCount()
 
   /* Return to root xml element */
   xmlToHead();
-  
+
   /* Set the total */
   element_count = total;
 }
 
-/* 
+/*
  * Description: Decrypts a line of data. This line must conform to the length
  *              requirements and must be greater than the minimum line length.
  *              The line needs to be a divisor of 4 in terms of the number
@@ -244,7 +244,7 @@ std::string FileHandler::decryptLine(std::string line, bool* success)
 
       /* Decrypt snapshot of data */
       status &= decryptData(decrypt_data);
-   
+
       /* Dump the decrypted data back into the array */
       for(int j = 0; j < kENCRYPTION_MIN; j++)
         compressed_data[wrapNumber(i+j, compressed_length)] = decrypt_data[j];
@@ -266,7 +266,7 @@ std::string FileHandler::decryptLine(std::string line, bool* success)
   {
     status = false;
     decrypted_line = "";
-    std::cerr << "[ERROR] Invalid data from file for line decrypt." 
+    std::cerr << "[ERROR] Invalid data from file for line decrypt."
               << std::endl;
   }
 
@@ -291,7 +291,7 @@ std::string FileHandler::decryptLine(std::string line, bool* success)
   return decrypted_line;
 }
 
-/* 
+/*
  * Description: Takes a sequence of 32 bit data (4 in the array) and encrypts
  *              the data, as per XXTEA algorithm. The data is returned on the
  *              same path and returns a status.
@@ -320,20 +320,20 @@ bool FileHandler::encryptData(uint32_t* data)
         y = data[p+1];
         z = data[p] += MX;
       }
-    
+
       y = data[0];
       z = data[3] += MX;
 
     } while(--rounds);
-    
+
     return true;
   }
-  
+
   std::cerr << "[ERROR] File block encryption failed on null data" << std::endl;
   return false;
 }
 
-/* 
+/*
  * Description: Encrypts a line of data. This line must conform to the length
  *              requirements and must be greater than the minimum line length.
  *              The line needs to be a divisor of 4 in terms of the number
@@ -390,7 +390,7 @@ std::string FileHandler::encryptLine(std::string line, bool* success)
     else
     {
       encrypted_line = "";
-      std::cerr << "[ERROR] Invalid data from file for line encrypt." 
+      std::cerr << "[ERROR] Invalid data from file for line encrypt."
                 << std::endl;
     }
   }
@@ -398,7 +398,7 @@ std::string FileHandler::encryptLine(std::string line, bool* success)
   {
     status = false;
     encrypted_line = "";
-    std::cerr << "[ERROR] Data compression size encrypt computation failed." 
+    std::cerr << "[ERROR] Data compression size encrypt computation failed."
               << std::endl;
   }
 
@@ -423,7 +423,7 @@ std::string FileHandler::encryptLine(std::string line, bool* success)
   return encrypted_line;
 }
 
-/* 
+/*
  * Description: Closes the file stream pointer, if it was open.
  *
  * Inputs: none
@@ -440,14 +440,14 @@ bool FileHandler::fileClose()
     return true;
 
   /* If the strema close fails, notify the user */
-  std::cerr << "[ERROR] File close with \"" << file_name << "\" failed." 
+  std::cerr << "[ERROR] File close with \"" << file_name << "\" failed."
                                                          << std::endl;
   return false;
 }
 
-/* 
+/*
  * Description: Opens the file stream, with the stored file name within the
- *              class. 
+ *              class.
  *
  * Inputs: none
  * Output: bool - status is the file stream is open after the open procedure
@@ -456,7 +456,7 @@ bool FileHandler::fileOpen()
 {
   /* Attempt to open the file stream (for either open or close) */
   if(file_write)
-    file_stream.open(file_name_temp.c_str(), 
+    file_stream.open(file_name_temp.c_str(),
                      std::ios::out | std::ios::binary | std::ios::trunc);
   else
     file_stream.open(file_name.c_str(), std::ios::in | std::ios::binary);
@@ -466,14 +466,14 @@ bool FileHandler::fileOpen()
     return true;
 
   /* If the stream isn't good, reclose and return false */
-  std::cerr << "[ERROR] File open with \"" << file_name << "\" failed." 
+  std::cerr << "[ERROR] File open with \"" << file_name << "\" failed."
                                                         << std::endl;
   fileClose();
   return false;
 }
 
-/* 
- * Description: Converts an array of integers to an array of longs. This 
+/*
+ * Description: Converts an array of integers to an array of longs. This
  *              combines 4 ints into one 32 bit long. They're restricted to
  *              ASCII character integers which are 8 bits long. This class
  *              will fail if the length of the integer array is not a divisor
@@ -506,13 +506,13 @@ uint32_t* FileHandler::intToLong(int* line_data, int length)
     return long_data;
   }
 
-  std::cerr << "[ERROR] IntToLong conversion of file data line failed." 
+  std::cerr << "[ERROR] IntToLong conversion of file data line failed."
             << std::endl;
   return 0;
 }
 
-/* 
- * Description: Converts an array of integers into a string. The integers 
+/*
+ * Description: Converts an array of integers into a string. The integers
  *              represent ASCII codes and are converted into the appropriate
  *              character and appended to the return result.
  *
@@ -521,7 +521,7 @@ uint32_t* FileHandler::intToLong(int* line_data, int length)
  *         bool decrypting - Is this call decrypting the data
  * Output: std::string - the converted line of data
  */
-std::string FileHandler::intToString(int* line_data, int length, 
+std::string FileHandler::intToString(int* line_data, int length,
                                                      bool decrypting)
 {
   bool end_reached = false;
@@ -558,7 +558,7 @@ std::string FileHandler::intToString(int* line_data, int length,
     {
       for(int i = 0; i < length; i++)
       {
-        int val = ((line_data[i] >> kINT_BIT_SHIFT) & kINT_BUFFER) 
+        int val = ((line_data[i] >> kINT_BIT_SHIFT) & kINT_BUFFER)
                                                     + kENCRYPTION_PAD;
         line.push_back(val);
 
@@ -572,9 +572,9 @@ std::string FileHandler::intToString(int* line_data, int length,
   return line;
 }
 
-/* 
+/*
  * Description: Converts an array of longs into an array of integers where
- *              it splits one long into 4 integers. The long will be 
+ *              it splits one long into 4 integers. The long will be
  *              converted as follows: [int0][int1][int2][int3] = [long].
  *              The length corresponds to the long array.
  *
@@ -604,14 +604,14 @@ int* FileHandler::longToInt(uint32_t* line_data, int length)
 
     return int_data;
   }
-  
-  std::cerr << "[ERROR] LongToInt conversion of file data line failed." 
+
+  std::cerr << "[ERROR] LongToInt conversion of file data line failed."
             << std::endl;
   return 0;
 }
 
-/* 
- * Description: Reads the line from the file stream, if the file stream is 
+/*
+ * Description: Reads the line from the file stream, if the file stream is
  *              not complete. It takes said line, and decrypts it, if the
  *              current line is encrypted. Otherwise, it just returns the
  *              line.
@@ -654,7 +654,7 @@ std::string FileHandler::readLine(bool* done, bool* success)
   return "";
 }
 
-/* 
+/*
  * Description: This call determines if the file that is being read conforms
  *              to the MD5 value and if the file has been unchanged. Will be
  *              called before a read is allowed to check if the file is valid.
@@ -691,7 +691,7 @@ bool FileHandler::readMd5()
     {
       available = true;
       md5_value = readLine(&complete, &success);
-      
+
       while(!complete && success)
         file_data.append(readLine(&complete, &success));
     }
@@ -701,7 +701,7 @@ bool FileHandler::readMd5()
       success = true;
     else
       success = false;
-    
+
     /* Close the file */
     success &= fileClose();
     available = false;
@@ -716,9 +716,9 @@ bool FileHandler::readMd5()
   return success;
 }
 
-/* 
+/*
  * Description: Sets a temp file name for writing to during the duration of
- *              a write procedure. The file will be deleted after it is 
+ *              a write procedure. The file will be deleted after it is
  *              completed and is only used to not overwrite the primary
  *              file unless the write sequence was successful.
  *
@@ -732,10 +732,10 @@ bool FileHandler::setTempFileName()
     bool complete = false;
     int i = 0;
     std::string name;
-  
+
     while(!complete && i < kFILE_NAME_LIMIT)
     {
-      name = std::to_string(kFILE_START) + 
+      name = std::to_string(kFILE_START) +
              std::to_string(kFILE_NAME_LIMIT + i);
 
       if(!fileExists(name))
@@ -753,7 +753,7 @@ bool FileHandler::setTempFileName()
   return false;
 }
 
-/* 
+/*
  * Description: Converts a string line to an array of integers where each
  *              integer represents one character in the string line (via
  *              ASCII conversion). It returns the length of the array.
@@ -787,15 +787,15 @@ int FileHandler::stringToInt(std::string line, int** line_data, bool encrypting)
   if(final_length > 0)
   {
     /* Convert the line */
-    if(encryption_enabled && !encrypting) 
+    if(encryption_enabled && !encrypting)
     {
       final_length /= 2; /* Half length since combining two ints to one */
 
       *line_data = new int[final_length];
-      
+
       for(int i = 0; i < final_length; i++)
       {
-        (*line_data)[i] = ((line.at(i*2) - kENCRYPTION_PAD) 
+        (*line_data)[i] = ((line.at(i*2) - kENCRYPTION_PAD)
                                                & kINT_BUFFER) << kINT_BIT_SHIFT;
         (*line_data)[i] |= (line.at(i*2+1) - kENCRYPTION_PAD) & kINT_BUFFER;
       }
@@ -811,12 +811,12 @@ int FileHandler::stringToInt(std::string line, int** line_data, bool encrypting)
     return final_length;
   }
 
-  std::cerr << "[ERROR] StringToInt conversion of file data line failed." 
+  std::cerr << "[ERROR] StringToInt conversion of file data line failed."
             << std::endl;
   return 0;
 }
 
-/* 
+/*
  * Description: Returns the index in the file stream to the top of the file,
  *              for re-reading or writing the data.
  *
@@ -833,9 +833,9 @@ bool FileHandler::topOfFile()
   return false;
 }
 
-/* 
- * Description: Writes the given line to the file. If the line is to be 
- *              decrypted, that procedure is done first. 
+/*
+ * Description: Writes the given line to the file. If the line is to be
+ *              decrypted, that procedure is done first.
  *
  * Inputs: std::string line - the line to write to the file, if it exists
  *         bool md5_line - write indicates md5, which won't be saved
@@ -866,7 +866,7 @@ bool FileHandler::writeLine(std::string line, bool md5_line)
   return false;
 }
 
-/* 
+/*
  * Description: A wrap number call. This takes a value and a limit and wraps
  *              it around to determine what the value should be. For example:
  *                value=15,limit=10 -> 5
@@ -881,13 +881,13 @@ int FileHandler::wrapNumber(int value, int limit)
 {
   if(limit <= 0)
   {
-    std::cerr << "[ERROR] Invalid limit (" << limit << ") in wrapping call." 
+    std::cerr << "[ERROR] Invalid limit (" << limit << ") in wrapping call."
                                                     << std::endl;
     return -1;
   }
   else if(value < 0)
   {
-    std::cerr << "[ERROR] Invalid value (" << value << ") in wrapping call." 
+    std::cerr << "[ERROR] Invalid value (" << value << ") in wrapping call."
                                                     << std::endl;
     return -1;
   }
@@ -910,7 +910,7 @@ TinyXML2::XMLNode* FileHandler::xmlNextData(TinyXML2::XMLNode* starting_node)
 {
   TinyXML2::XMLNode* node = starting_node;
   bool search_done = false;
-  
+
   if(node != NULL)
   {
     /* Search through until data node is found */
@@ -940,7 +940,7 @@ TinyXML2::XMLNode* FileHandler::xmlNextData(TinyXML2::XMLNode* starting_node)
       }
     }
   }
-  
+
   return node;
 }
 
@@ -982,11 +982,11 @@ TinyXML2::XMLNode* FileHandler::xmlNextNode(TinyXML2::XMLNode* starting_node)
       }
     }
   }
-  
+
   return node;
 }
 
-/* 
+/*
  * Description: Starts the XML sequence. For writing, it sets the formatting
  *              and appropriate header detail. For the reading, it parses
  *              all the data in the file to move it into the QXmlStreamReader.
@@ -1004,7 +1004,7 @@ bool FileHandler::xmlReadStart()
   {
     while(!done && success)
       data.append(readLine(&done, &success));
-    
+
     /* Attempt to parse the document and then set the pointer to the head */
     success &= !xml_document->Parse(data.c_str());
     if(success)
@@ -1012,16 +1012,16 @@ bool FileHandler::xmlReadStart()
       file_date = xmlToHead();
       determineCount();
     }
-    
+
     return success;
   }
-  
+
   return false;
 }
 
-/* 
+/*
  * Description: Wrap up the XML sequence before proceding to write the data to
- *              the file. This includes writing the end to all XML tags and 
+ *              the file. This includes writing the end to all XML tags and
  *              writing the data to the file.
  *
  * Inputs: none
@@ -1030,17 +1030,17 @@ bool FileHandler::xmlReadStart()
 bool FileHandler::xmlWriteEnd()
 {
   bool success = true;
-  
+
   if(available)
   {
     /* Set up the printer and output the document */
     TinyXML2::XMLPrinter printer;
     xml_document->Print(&printer);
     std::string xml_output(printer.CStr());
-    
+
     /* Split it based on the new line character */
     std::vector<std::string> output_lines = Helpers::split(xml_output, '\n');
-    
+
     /* Write each line to the file */
     for(uint16_t i = 0; i < output_lines.size(); i++)
       success &= writeLine(output_lines[i]);
@@ -1067,7 +1067,7 @@ int FileHandler::getCount()
   return element_count;
 }
 
-/* 
+/*
  * Description: Returns the date stored in this class. It's in string format,
  *              like the following: [Month].[Day].[Year] [Hour]:[Minute]
  *              For example: 04.20.2013 09:56
@@ -1080,7 +1080,7 @@ std::string FileHandler::getDate()
   return file_date;
 }
 
-/* 
+/*
  * Description: Returns the file name that this class reads and writes from.
  *
  * Inputs: none
@@ -1091,7 +1091,7 @@ std::string FileHandler::getFilename()
   return file_name;
 }
 
-/* 
+/*
  * Description: Returns the file type that this class is configured for.
  *
  * Inputs: none
@@ -1102,9 +1102,9 @@ FileHandler::FileType FileHandler::getFileType()
   return file_type;
 }
 
-/* 
+/*
  * Description: Returns if the class is available to read or write from.
- *              If false is returned, the read and write calls will not 
+ *              If false is returned, the read and write calls will not
  *              work since the file has not been opened and configured.
  *
  * Inputs: none
@@ -1115,7 +1115,7 @@ bool FileHandler::isAvailable()
   return available;
 }
 
-/* 
+/*
  * Description: Check if the class is configured for encryption to be enabled.
  *
  * Inputs: none
@@ -1126,7 +1126,7 @@ bool FileHandler::isEncryptionEnabled()
   return encryption_enabled;
 }
 
-/* 
+/*
  * Description: Check if the class is configured for writing (or reading)
  *
  * Inputs: none
@@ -1137,7 +1137,7 @@ bool FileHandler::isWriteEnabled()
   return file_write;
 }
 
-/* 
+/*
  * Description: Reads a regular line of data from the file that has been
  *              configured for this class. This method only works for REGULAR
  *              file configurations.
@@ -1161,7 +1161,7 @@ std::string FileHandler::readRegularLine(bool* done, bool* success)
   return "";
 }
 
-/* 
+/*
  * Description: Reads the XML data from the appropriate file. The call will
  *              only succeed if it has been started and then if the class is
  *              configured for XML. The return will send back an XmlData class
@@ -1180,13 +1180,13 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
   XmlData data;
   bool failed = false;
   bool finished = false;
-  
+
   /* Only pass through if the XML can proceed */
   if(available && file_type == XML && !file_write)
   {
     /* Try and find the next node of data */
     xml_node = xmlNextData(xml_node);
-    
+
     /* Check to see if data was acquired */
     if(xml_node != NULL && xml_node->ToText() != NULL)
     {
@@ -1199,7 +1199,7 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
         std::string attribute_name = "";
         std::string attribute_value = "";
         TinyXML2::XMLElement* element = temp_node->ToElement();
-        
+
         if(element != NULL)
         {
           /* Get the attribute information, if relevant */
@@ -1209,20 +1209,20 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
             attribute_name = attribute->Name();
             attribute_value = attribute->Value();
           }
-          
+
           /* Prepend the data */
           data.addElement(element->Name(), attribute_name, attribute_value);
         }
-        
+
         /* Move to the next element node */
         temp_node = temp_node->Parent();
       }
-      
+
       /* Once complete, add the data */
       data.flipElements();
       data.addData(xml_node->Value());
-      
-      /* Shift off of the data node. If the next node is done, call is 
+
+      /* Shift off of the data node. If the next node is done, call is
        * finished */
       xml_node = xmlNextNode(xml_node);
       if(xml_node == NULL)
@@ -1238,7 +1238,7 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
   {
     failed = true;
   }
-  
+
   /* Set status', if the pointers are available */
   if(done != NULL)
     *done = finished;
@@ -1248,8 +1248,8 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
   return data;
 }
 
-/* 
- * Description: Sets the encryption status in the class. If enabled, only 
+/*
+ * Description: Sets the encryption status in the class. If enabled, only
  *              encrypted files can be read from and vice versa.
  *
  * Inputs: bool enabe - if encryption should be enabled
@@ -1266,14 +1266,14 @@ bool FileHandler::setEncryptionEnabled(bool enable)
   return false;
 }
 
-/* 
+/*
  * Description: Sets the filename string in the class. The read call will fail
- *              if the file doesn't exist or it doesn't conform to the 
+ *              if the file doesn't exist or it doesn't conform to the
  *              standard, as written from the write side of this class.
  *
  * Inputs: std::string path - the path to read or write from. Only works if the
  *                            path is not empty.
- * Output: bool - if the set was successful. Only fails if the class is 
+ * Output: bool - if the set was successful. Only fails if the class is
  *                currently off, which can be set after calling stop()
  */
 bool FileHandler::setFilename(std::string path)
@@ -1289,11 +1289,11 @@ bool FileHandler::setFilename(std::string path)
   return false;
 }
 
-/* 
+/*
  * Description: Sets the file type that this class is configured for.
  *
  * Inputs: FileType type - the type of the file to use (REGULAR, XML)
- * Output: bool - if the set was successful. Only fails if the class is 
+ * Output: bool - if the set was successful. Only fails if the class is
  *                currently off, which can be set after calling stop()
  */
 bool FileHandler::setFileType(FileType type)
@@ -1306,7 +1306,7 @@ bool FileHandler::setFileType(FileType type)
   return false;
 }
 
-/* 
+/*
  * Description: Sets if the class is being used for reading or writing.
  *
  * Inputs: bool enable - If true, write is enabled. Else, read is enabled.
@@ -1323,7 +1323,7 @@ bool FileHandler::setWriteEnabled(bool enable)
   return false;
 }
 
-/* 
+/*
  * Description: Start the class sequence to enable the set settings. After
  *              this call, the class can be accessed to write (or read) where
  *              appropriate (depending on the settings). This call will stop
@@ -1347,7 +1347,7 @@ bool FileHandler::start()
 
     /* Clear the file data array */
     file_data.clear();
-   
+
     /* If file_write, determine temporary file name */
     if(file_write)
       success &= setTempFileName();
@@ -1355,7 +1355,7 @@ bool FileHandler::start()
     /* If the system is in read and encryption, check validity of file */
     if(!file_write && encryption_enabled)
       success &= readMd5();
-    
+
     /* Open the file stream */
     if(success)
       success &= fileOpen();
@@ -1417,9 +1417,9 @@ bool FileHandler::start()
   return false;
 }
 
-/* 
+/*
  * Description: Stops the class, after it is was run. If the class was never
- *              started, this call does nothing except for a reclearing of 
+ *              started, this call does nothing except for a reclearing of
  *              all data elements stored within the class. Once the class
  *              is stopped, no more reads and writes can take place until it
  *              is started again. The class must be stopped before settings
@@ -1448,7 +1448,7 @@ bool FileHandler::stop(bool failed)
   /* Close the file stream */
   success &= fileClose();
   file_date = "";
-    
+
   /* If success, reopen the class availability */
   if(success)
   {
@@ -1467,7 +1467,7 @@ bool FileHandler::stop(bool failed)
   return success;
 }
 
-/* 
+/*
  * Description: Writes a regular line of data. Handles if the data is
  *              encrypted or not. If the internal file type is not set to
  *              REGULAR, this call fails.
@@ -1482,18 +1482,18 @@ bool FileHandler::writeRegularLine(std::string line)
   return false;
 }
 
-/* 
- * Description: Writes XML data to the class. This call only works if the 
+/*
+ * Description: Writes XML data to the class. This call only works if the
  *              class has been configured for XML file types. It takes an
  *              element name, a Variable type for data (BOOLEAN, INTEGER,
- *              FLOAT, or STRING) and the appropriate data. 
+ *              FLOAT, or STRING) and the appropriate data.
  *
  * Inputs: std::string element - the element name indicator
  *         VarType type - the type of variable being inputted into XML
  *         std::string data - the data encapsulated in XML
  * Output: bool - returns if the writing of XML data was successful
  */
-bool FileHandler::writeXmlData(std::string element, 
+bool FileHandler::writeXmlData(std::string element,
                                VarType type, std::string data)
 {
   /* Call only works if the file type is XML */
@@ -1502,16 +1502,16 @@ bool FileHandler::writeXmlData(std::string element,
     /* Only move foward if element string isn't empty */
     if(!element.empty() && !data.empty())
     {
-      TinyXML2::XMLElement* data_node = 
+      TinyXML2::XMLElement* data_node =
                                       xml_document->NewElement(element.c_str());
       data_node->SetAttribute("type", static_cast<int>(type));
       data_node->InsertEndChild(xml_document->NewText(data.c_str()));
-      
+
       xml_node->InsertEndChild(data_node);
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -1576,8 +1576,8 @@ bool FileHandler::writeXmlData(std::string element, std::string data)
 {
   return writeXmlData(element, STRING, data);
 }
-  
-/* 
+
+/*
  * Description: Writes the XML starting element tag, to encapsulate data in
  *              the XML class. There are option key - value pairs to add to
  *              the end of the start element.
@@ -1589,7 +1589,7 @@ bool FileHandler::writeXmlData(std::string element, std::string data)
  *         std::string value - the value tied to said key (default "")
  * Output: bool - returns if the writing of the XML element was successful
  */
-bool FileHandler::writeXmlElement(std::string element, 
+bool FileHandler::writeXmlElement(std::string element,
                                   std::string key, std::string value)
 {
   /* Call only works if the file type is XML */
@@ -1598,13 +1598,13 @@ bool FileHandler::writeXmlElement(std::string element,
     /* Only move forward if element string isn't empty */
     if(!element.empty())
     {
-      TinyXML2::XMLElement* element_node = 
+      TinyXML2::XMLElement* element_node =
                                       xml_document->NewElement(element.c_str());
-      
+
       /* Set the attribute if the key isn't empty */
       if(!key.empty())
         element_node->SetAttribute(key.c_str(), value.c_str());
-        
+
       /* Append the element, and shift the node up */
       xml_node->InsertEndChild(element_node);
       xml_node = element_node;
@@ -1614,7 +1614,7 @@ bool FileHandler::writeXmlElement(std::string element,
   return false;
 }
 
-/* 
+/*
  * Description: Writes the XML starting element tag, to encapsulate data in
  *              the XML class. This is the same as the string parameter one but
  *              allows for the key value to be an integer (convenience function)
@@ -1624,19 +1624,19 @@ bool FileHandler::writeXmlElement(std::string element,
  *         int value - the value tied to said key (default 0)
  * Output: bool - returns if the writing of the XML element was successful
  */
-bool FileHandler::writeXmlElement(std::string element, 
+bool FileHandler::writeXmlElement(std::string element,
                                   std::string key, int value)
 {
   return writeXmlElement(element, key, std::to_string(value));
 }
 
-/* 
+/*
  * Description: Ends the element in the XML sequence, if there is an element
  *              to complete. If all is triggered, the XML class is closed
- *              up entirely. 
+ *              up entirely.
  *              For example: <person> -> writeXmlElementEnd() -> </person>
  *
- * Inputs: bool all - if all, all open XML elements are closed (except the 
+ * Inputs: bool all - if all, all open XML elements are closed (except the
  *                    overall identifier)
  * Output: bool - if the close sequence was successful
  */
@@ -1657,7 +1657,7 @@ bool FileHandler::writeXmlElementEnd(bool all)
       if(parent_node != 0)
         xml_node = parent_node;
     }
-    
+
     return true;
   }
   return false;
@@ -1674,7 +1674,7 @@ bool FileHandler::writeXmlElementEnd(bool all)
 std::string FileHandler::xmlToHead()
 {
   std::string date = "";
-  
+
   if(available && !file_write && file_type == XML)
   {
     /* Return the node to the root of the document */
@@ -1692,7 +1692,7 @@ std::string FileHandler::xmlToHead()
       }
     }
   }
-  
+
   return date;
 }
 
@@ -1700,7 +1700,7 @@ std::string FileHandler::xmlToHead()
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 
-/* 
+/*
  * Description: A function to delete a given filename. Only works if the file
  *              already exists.
  *
@@ -1714,7 +1714,7 @@ bool FileHandler::fileDelete(std::string filename)
   return false;
 }
 
-/* 
+/*
  * Description: A function to check if the file exists on the file directory.
  *
  * Inputs: std::string filename - the filename to determine if it exists.
@@ -1726,7 +1726,7 @@ bool FileHandler::fileExists(std::string filename)
   return (bool)test_file;
 }
 
-/* 
+/*
  * Description: A file rename call to take an old filename and change it to a
  *              new filename. If the new filename already exists, the
  *              the overwrite call must be set or this won't rename the file.
@@ -1736,7 +1736,7 @@ bool FileHandler::fileExists(std::string filename)
  *         bool overwrite - overwrite the new_filename, if it exists
  * Output: bool - returns if the rename procedure was successful
  */
-bool FileHandler::fileRename(std::string old_filename, std::string new_filename, 
+bool FileHandler::fileRename(std::string old_filename, std::string new_filename,
                              bool overwrite)
 {
   if(overwrite)
