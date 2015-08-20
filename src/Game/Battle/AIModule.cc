@@ -2,7 +2,7 @@
 * Class Name: AI Module [Implementation]
 * Date Created: June 22, 2014
 * Inheritance: None
-* Description: The AI Module is an object describing the difficulty and 
+* Description: The AI Module is an object describing the difficulty and
 *              personality for enemy decision making in Battle.
 *
 * Notes
@@ -42,7 +42,7 @@ const float AIModule::kGAI_BASE_PASS_FACTOR{0.01};
  * Random AI Base Skill Factor
  * Random AI Base Item Factor
  * Random AI Lean To Item Factor
- * Random AI Default Target 
+ * Random AI Default Target
  */
 const float AIModule::kRAI_OFF_FACTOR{1.35};
 const float AIModule::kRAI_DEF_FACTOR{1.50};
@@ -56,7 +56,7 @@ const AITarget AIModule::kRAI_DEFAULT_TARGET{AITarget::RANDOM};
  * Priority AI Base Skill Factor
  * Priority AI Base Item Factor
  * Priority AI Lean To Item Factor
- * Priority AI Default Target 
+ * Priority AI Default Target
  */
 const float AIModule::kPAI_OFF_FACTOR{1.35};
 const float AIModule::kPAI_DEF_FACTOR{1.50};
@@ -108,7 +108,7 @@ AIModule::AIModule(const AIDifficulty &diff,
  *         prim_personality - the personality to make the AI
  *         secd_personality - minor personality effects for secd personality
  */
-AIModule::AIModule(const AIDifficulty &diff, 
+AIModule::AIModule(const AIDifficulty &diff,
                    const AIPersonality &prim_personality,
                    const AIPersonality &secd_personality)
   : AIModule(diff, prim_personality)
@@ -215,17 +215,17 @@ void AIModule::buildUniformSkills()
 {
   for (auto battle_skill : valid_skills)
   {
-    auto skill_pair = std::make_pair(battle_skill.skill, 
+    auto skill_pair = std::make_pair(battle_skill.skill,
                                      battle_skill.skill->getValue());
     skill_probabilities.push_back(skill_pair);
   }
 
-  Helpers::normalizePair(begin(skill_probabilities), end(skill_probabilities)); 
+  Helpers::normalizePair(begin(skill_probabilities), end(skill_probabilities));
 }
 
 /*
- * Description: Constructs a unfiorm probability distribution for the list of 
- *              possible items to use based upon each item's skill use's 
+ * Description: Constructs a unfiorm probability distribution for the list of
+ *              possible items to use based upon each item's skill use's
  *              arbitrary value.
  *
  * Inputs: none
@@ -245,7 +245,7 @@ bool AIModule::buildUniformItems()
 
       if (item_skill != nullptr)
       {
-        auto value = item_skill->getValue();  
+        auto value = item_skill->getValue();
         item_probabilities.push_back(std::make_pair(battle_item.item, value));
       }
       else
@@ -260,7 +260,7 @@ bool AIModule::buildUniformItems()
       error_occured = true;
     }
   }
-  
+
   if (!error_occured)
     Helpers::normalizePair(begin(item_probabilities), end(item_probabilities));
 
@@ -281,9 +281,9 @@ void AIModule::calculateActionTypeChances()
   auto can_choose_skill = canSelectSkill();
   auto can_choose_item  = canSelectItem();
   auto can_select_guard = canSelectGuard();
- 
+
   /* Compute the factors for choosing each available action type
-   * 
+   *
    * Skill - based on the base skill factor
    * Item  - the less QD the user has, the more lean to using an Item
    */
@@ -321,7 +321,7 @@ void AIModule::calculateActionTypeChances()
       item_lean_factor += (100 - qd_percent) * kPAI_LEAN_TO_ITEM_FACTOR;
       item_chance       = item_lean_factor;
     }
-  
+
     /* Adjust item lean factor with variance and apply to item chance */
     item_chance = calcFloatValVariance(item_lean_factor);
     act_typ_chances.push_back(std::make_pair(ActionType::ITEM, item_chance));
@@ -336,14 +336,14 @@ void AIModule::calculateActionTypeChances()
   if (Helpers::enumVectorSearch(ActionType::DEFEND, valid_action_types))
   {
     defend_chance = kGAI_BASE_DEFEND_FACTOR;
-    act_typ_chances.push_back(std::make_pair(ActionType::DEFEND, 
+    act_typ_chances.push_back(std::make_pair(ActionType::DEFEND,
                                               defend_chance));
   }
 
   if (Helpers::enumVectorSearch(ActionType::IMPLODE, valid_action_types))
   {
     implode_chance = kGAI_BASE_IMPLODE_FACTOR;
-    act_typ_chances.push_back(std::make_pair(ActionType::IMPLODE, 
+    act_typ_chances.push_back(std::make_pair(ActionType::IMPLODE,
                                               implode_chance));
   }
 
@@ -352,7 +352,7 @@ void AIModule::calculateActionTypeChances()
     run_chance = kGAI_BASE_RUN_FACTOR;
     act_typ_chances.push_back(std::make_pair(ActionType::RUN, run_chance));
   }
-  
+
   if (Helpers::enumVectorSearch(ActionType::PASS, valid_action_types))
   {
     pass_chance = kGAI_BASE_PASS_FACTOR;
@@ -372,7 +372,7 @@ void AIModule::calculateActionTypeChances()
 
     /*  Assign the chosen action type */
 #ifdef UDEBUG
-    std::cout << "AIModule Chosen Action Type: " 
+    std::cout << "AIModule Chosen Action Type: "
               << Helpers::actionTypeToStr((*it).first) << std::endl;
 #endif
     chosen_action_type = (*it).first;
@@ -380,7 +380,7 @@ void AIModule::calculateActionTypeChances()
   else
   {
 #ifdef UDEBUG
-    std::cout << "[Warning] Enemy has no valid action types available." 
+    std::cout << "[Warning] Enemy has no valid action types available."
               << std::endl;
 #endif
   }
@@ -409,7 +409,7 @@ bool AIModule::canSelectAction()
 }
 
 /*
- * Description: 
+ * Description:
  *
  * Inputs:
  * Output:
@@ -420,13 +420,13 @@ bool AIModule::canSelectGuard()
 
   can_guard &= (parent->getGuard() == nullptr);
   can_guard &= Helpers::enumVectorSearch(ActionType::GUARD, valid_action_types);
-  
+
   if (can_guard)
   {
     auto alive_person = false;
-    
+
     for (auto it = begin(friend_targets); it != end(friend_targets); ++it)
-      alive_person &= (*it)->getBFlag(BState::ALIVE);  
+      alive_person &= (*it)->getBFlag(BState::ALIVE);
 
     if (!alive_person)
       can_guard = false;
@@ -443,7 +443,7 @@ bool AIModule::canSelectGuard()
  */
 bool AIModule::canSelectSkill()
 {
-  auto found_skill = Helpers::enumVectorSearch(ActionType::SKILL, 
+  auto found_skill = Helpers::enumVectorSearch(ActionType::SKILL,
                                                valid_action_types);
 
   if (found_skill)
@@ -455,7 +455,7 @@ bool AIModule::canSelectSkill()
 
     return target_found;
   }
-  
+
   return false;
 }
 
@@ -467,7 +467,7 @@ bool AIModule::canSelectSkill()
  */
 bool AIModule::canSelectItem()
 {
-  auto found_item = Helpers::enumVectorSearch(ActionType::ITEM, 
+  auto found_item = Helpers::enumVectorSearch(ActionType::ITEM,
                                               valid_action_types);
 
   if (found_item)
@@ -503,18 +503,18 @@ float AIModule::calcFloatValVariance(const float &base_value)
 }
 
 /*
- * Description: 
+ * Description:
  *
  * Inputs:
  * Output: bool - true
  */
 bool AIModule::clearInvalid()
 {
-  valid_items.erase(std::remove_if(begin(valid_items), end(valid_items), 
+  valid_items.erase(std::remove_if(begin(valid_items), end(valid_items),
       [&](const BattleItem &battle_item) -> bool
       {
         return !battleItemValid(battle_item);
-      }), 
+      }),
       end(valid_items));
   valid_skills.erase(std::remove_if(begin(valid_skills), end(valid_skills),
       [&](const BattleSkill &battle_skill) -> bool
@@ -591,7 +591,7 @@ bool AIModule::selectRandomTargets()
   {
     target_ptr = addRandomTarget(foe_targets);
   }
-  else if (action_scope == ActionScope::ONE_ALLY || 
+  else if (action_scope == ActionScope::ONE_ALLY ||
            action_scope == ActionScope::ONE_ALLY_NOT_USER ||
            action_scope == ActionScope::ONE_ALLY_KO)
   {
@@ -618,16 +618,16 @@ bool AIModule::selectRandomTargets()
     else if (action_scope == ActionScope::TWO_ENEMIES)
     {
       target_ptr = addRandomTarget(foe_targets);
-      
+
       if (target_ptr != nullptr)
       {
         for (size_t i = 0; i < foe_targets.size(); i++)
           if (foe_targets.at(i) == target_ptr)
             foe_targets.erase(begin(foe_targets) + i);
-        
+
         if (foe_targets.size() > 0)
           target_ptr = addRandomTarget(foe_targets);
-      } 
+      }
     }
     else if (action_scope == ActionScope::TWO_ALLIES)
     {
@@ -665,7 +665,7 @@ bool AIModule::selectRandomTargets()
              action_scope == ActionScope::ALL_NOT_USER)
     {
       chosen_targets = friend_targets;
-      chosen_targets.insert(end(chosen_targets), begin(foe_targets), 
+      chosen_targets.insert(end(chosen_targets), begin(foe_targets),
                             end(foe_targets));
       successful = true;
     }
@@ -830,7 +830,7 @@ void AIModule::loadDefaults()
   chosen_action_index = -1;
   chosen_skill = nullptr;
   chosen_item  = nullptr;
-  
+
   parent = nullptr;
 
   friend_targets.clear();
@@ -880,7 +880,7 @@ bool AIModule::addActionToRecord()
     if (valid_action)
     {
       ActionRecord new_action;
- 
+
       new_action.action_type  = chosen_action_type;
       new_action.qd_cost_paid = qd_cost_paid;
       new_action.targets      = chosen_targets;
@@ -1003,19 +1003,19 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     else
       std::cout << parent->getName() << "\n";
 
-    std::cout << "D: " << Helpers::aiDifficultyToStr(difficulty) << " PP: " 
+    std::cout << "D: " << Helpers::aiDifficultyToStr(difficulty) << " PP: "
               << Helpers::aiPersonalityToStr(prim_personality) << " SP: "
               << Helpers::aiPersonalityToStr(secd_personality) << "\n";
-  
+
     std::cout << "VAT Size: " << valid_action_types.size() << " Chosen AT: "
               << Helpers::actionTypeToStr(chosen_action_type) << "\n";
 
     // if (valid_skills != nullptr)
     // {
-    //   std::cout << "Sk Size: " << valid_skills->getSize() << " It Size: " 
+    //   std::cout << "Sk Size: " << valid_skills->getSize() << " It Size: "
     //             << valid_items.size() << "\n";
     // }
-    std::cout << "QD Paid: " << qd_cost_paid << " Action Index: " 
+    std::cout << "QD Paid: " << qd_cost_paid << " Action Index: "
               << chosen_action_index << "\n";
 
     if (chosen_skill != nullptr)
@@ -1028,9 +1028,9 @@ void AIModule::print(const bool &simple, const bool &print_flags,
               << "C. Targets Size: " << chosen_targets.size()
               << " A.R. Size: "       << action_record.size() << "\n";
 
-    std::cout << "Sk. Ch: " << skill_chance << " It. Ch: " << item_chance 
-              << "\n" << "Gr. Ch: " << guard_chance << " Df. Ch: " 
-              << defend_chance << "\n" << "Im. Ch: " << implode_chance 
+    std::cout << "Sk. Ch: " << skill_chance << " It. Ch: " << item_chance
+              << "\n" << "Gr. Ch: " << guard_chance << " Df. Ch: "
+              << defend_chance << "\n" << "Im. Ch: " << implode_chance
               << " Rn. Ch: " << run_chance << "\n";
   }
   else
@@ -1044,7 +1044,7 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     std::cout << "Pass Chance: "    << pass_chance << "\n";
 
     std::cout << "Difficulty: " << Helpers::aiDifficultyToStr(difficulty);
-    std::cout << "\nPrimary Personality: " 
+    std::cout << "\nPrimary Personality: "
               << Helpers::aiPersonalityToStr(prim_personality) << "\n";
     std::cout << "Secondary Personality: "
               << Helpers::aiPersonalityToStr(secd_personality) << "\n";
@@ -1054,12 +1054,12 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     for (auto valid_action_type : valid_action_types)
       std::cout << Helpers::actionTypeToStr(valid_action_type ) << "\n";
 
-    std::cout << "Chosen Action Type: " 
+    std::cout << "Chosen Action Type: "
               << Helpers::actionTypeToStr(chosen_action_type) << "\n";
     std::cout << "Action Scope: " << Helpers::actionScopeToStr(action_scope);
 
     std::cout << "\nValid Skills: " << "\n";
- 
+
     if (parent != nullptr)
     {
       // auto set_elements = valid_skills->getElements(parent->getLevel());
@@ -1105,7 +1105,7 @@ void AIModule::print(const bool &simple, const bool &print_flags,
 
     for (auto target : chosen_targets)
       std::cout << target->getName() << "\n";
-   
+
     std::cout << "Actions Elapsed Total: " << actions_elapsed_total << "\n";
     std::cout << "Turns Elapsed Total: " << turns_elapsed_total << "\n";
     std::cout << "Actions Elapsed Battle: " << actions_elapsed_battle << "\n";
@@ -1118,9 +1118,9 @@ void AIModule::print(const bool &simple, const bool &print_flags,
   if (print_flags)
   {
     std::cout << "ACTION TYPE CHOSEN" << getFlag(AIState::ACTION_TYPE_CHOSEN);
-    std::cout << "\nACTION INDEX CHOSEN" 
+    std::cout << "\nACTION INDEX CHOSEN"
               << getFlag(AIState::ACTION_INDEX_CHOSEN);
-    std::cout << "\nACTION TARGETS CHOSEN" 
+    std::cout << "\nACTION TARGETS CHOSEN"
               << getFlag(AIState::ACTION_TARGETS_CHOSEN);
     std::cout << "\nSCOPE ASSIGNED" << getFlag(AIState::SCOPE_ASSIGNED);
     std::cout << "\nTARGETS ASSIGNED" << getFlag(AIState::TARGETS_ASSIGNED) ;
@@ -1144,7 +1144,7 @@ void AIModule::print(const bool &simple, const bool &print_flags,
       for (auto target : record.targets)
         std::cout << target->getName() << " ";
 
-      
+
       std::cout << "\nSkill Used: ";
 
       if (record.skill_used == nullptr)
@@ -1161,7 +1161,7 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     }
 
   }
-  
+
   std::cout << " === // AI Module ===\n" << std::endl;
 }
 
@@ -1324,7 +1324,7 @@ AIPersonality AIModule::getSecdPersonality()
  */
 Skill* AIModule::getSelectedSkill()
 {
-  return chosen_skill; 
+  return chosen_skill;
 }
 
 /*

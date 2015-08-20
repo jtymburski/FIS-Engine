@@ -1299,7 +1299,8 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
     shadow_color = kVITA_REGEN_COLOR;
   else if(curr_event->type == EventType::REGEN_QTDR)
     shadow_color = kQTDR_REGEN_COLOR;
-  else if(curr_event->type == EventType::HIBERNATION)
+  else if(curr_event->type == EventType::HIBERNATION ||
+      curr_event->type == EventType::HEAL_HEALTH)
     shadow_color = kHIBERNATION_REGEN_COLOR;
 
   RenderElement* element =
@@ -3054,6 +3055,14 @@ bool BattleDisplay::updateEvent()
 
     processing_delay = kDELAY_SKILL;
   }
+  else if(curr_event->type == EventType::HEAL_HEALTH)
+  {
+    if(curr_event->targets.size() > 0 && curr_event->targets.at(0))
+    {
+      createRegenValue(curr_event->targets.at(0), curr_event->amount);
+      processing_delay = 750;
+    }
+  }
   else if(curr_event->type == EventType::HIBERNATION)
   {
     // TODO Hibernation update plep.
@@ -3061,7 +3070,7 @@ bool BattleDisplay::updateEvent()
     if(curr_event->targets.size() > 0 && curr_event->targets.at(0))
     {
       createRegenValue(curr_event->targets.at(0), curr_event->amount);
-      processing_delay = 950;
+      processing_delay = 750;
     }
   }
   else if(curr_event->type == EventType::PASS)
@@ -3233,7 +3242,7 @@ bool BattleDisplay::updateEvent()
         getState(curr_event->targets.at(0))->dying = true;
 
     createDeath(curr_event->targets.at(0));
-    processing_delay = 3100;
+    processing_delay = 1100;
   }
   else if(curr_event->type == EventType::REGEN_VITA ||
           curr_event->type == EventType::REGEN_QTDR)

@@ -144,8 +144,8 @@ const int16_t Battle::kRUN_PC_EXP_PENALTY = 5;
  *         SkillSet* bubbified_skills - skills for a Bubbified person
  *         EventHandler* event_handler - the event handler for hte Battlec
  */
-Battle::Battle(Party* const friends, Party* const foes,
-               SkillSet* const bubbified_skills, EventHandler* event_handler)
+Battle::Battle(Party *const friends, Party *const foes,
+               SkillSet *const bubbified_skills, EventHandler *event_handler)
     : bubbified_skills{bubbified_skills},
       event_handler{event_handler},
       friends{friends},
@@ -173,7 +173,7 @@ Battle::Battle(Party* const friends, Party* const foes,
  */
 Battle::~Battle()
 {
-  for(auto& ailment : ailments)
+  for(auto &ailment : ailments)
     delete ailment;
   ailments.clear();
 
@@ -203,7 +203,7 @@ Battle::~Battle()
  *         int32_t chance - the chance the ailment has to cure each turn
  * Output: bool true if the ailment infliction was kosher
  */
-bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
+bool Battle::addAilment(Infliction infliction_type, Person *inflictor,
                         uint16_t min_turns, uint16_t max_turns, int32_t chance)
 {
   auto success = false;
@@ -256,7 +256,7 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
  *         Ailment* ail   - the ailment being unapplied
  * Output: bool - true if the ailment flags were being recalculated.
  */
-bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
+bool Battle::reCalcAilmentFlags(Person *target, Ailment *ail)
 {
   if(target != nullptr && ail != nullptr && ail->getVictim() == target)
   {
@@ -267,7 +267,7 @@ bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
     /* For all other ailments inflicted upon the given target, iterate through
      * and recalculate the necessary flag and stats values */
     auto person_ailments = getPersonAilments(target);
-    std::vector<std::tuple<Ailment*, bool>> reapply_values;
+    std::vector<std::tuple<Ailment *, bool>> reapply_values;
 
     for(auto ill : person_ailments)
     {
@@ -282,7 +282,7 @@ bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
     target->resetActionFlags();
 
     /* Reapply each ailment needed */
-    for(auto& ill_tuple : reapply_values)
+    for(auto &ill_tuple : reapply_values)
     {
       if(std::get<0>(ill_tuple) != nullptr && std::get<1>(ill_tuple))
       {
@@ -303,7 +303,7 @@ bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
  * Inputs: none
  * Output: Ailment* - pointer to the most recently created ailment
  */
-Ailment* Battle::getLastAilment()
+Ailment *Battle::getLastAilment()
 {
   if(ailments.size() > 0)
     return ailments.at(ailments.size() - 1);
@@ -317,12 +317,12 @@ Ailment* Battle::getLastAilment()
  * Inputs: Ailment* remove_ailment - the ailment set to be removed
  * Output: bool - true if the ailment was found and removed, false otherwise
  */
-bool Battle::removeAilment(Ailment* remove_ailment)
+bool Battle::removeAilment(Ailment *remove_ailment)
 {
   auto found = false;
   auto success = false;
 
-  for(auto& ailment : ailments)
+  for(auto &ailment : ailments)
   {
     if(ailment == remove_ailment)
     {
@@ -436,7 +436,7 @@ void Battle::battleWon()
   // TODO - the following code is temporary [04-03-15]
   auto living_members = friends->getLivingMemberPtrs();
 
-  for(auto& member : living_members)
+  for(auto &member : living_members)
   {
     auto exp_to_add = calcExperience(member);
     member->addExp(exp_to_add);
@@ -593,7 +593,7 @@ bool Battle::bufferUserAction()
     action_targets = menu->getRandomTargets();
 
   /* Build the vector Person ptrs from the target index vector */
-  std::vector<Person*> person_targets;
+  std::vector<Person *> person_targets;
 
   for(auto it = begin(action_targets); it != end(action_targets); ++it)
     person_targets.push_back(getPerson(*it));
@@ -669,8 +669,8 @@ bool Battle::bufferUserAction()
  * Output: std::vector<BattleItem> - the construced vector of BattleItems
  */
 std::vector<BattleItem>
-Battle::buildBattleItems(const int32_t& p_index,
-                         std::vector<std::pair<Item*, uint16_t>> items)
+Battle::buildBattleItems(const int32_t &p_index,
+                         std::vector<std::pair<Item *, uint16_t>> items)
 {
   curr_user = getPerson(p_index);
   std::vector<BattleItem> battle_items;
@@ -684,8 +684,8 @@ Battle::buildBattleItems(const int32_t& p_index,
           getValidTargets(p_index, (*it).first->getUseSkill()->getScope());
 
       auto all_targets = getPersonsFromIndexes(targets);
-      std::vector<Person*> friends_targets;
-      std::vector<Person*> foes_targets;
+      std::vector<Person *> friends_targets;
+      std::vector<Person *> foes_targets;
 
       for(auto target : all_targets)
       {
@@ -719,8 +719,8 @@ Battle::buildBattleItems(const int32_t& p_index,
  * Output: std::vetor<BattleSkill> - constructed vector of BattleSkills
  */
 std::vector<BattleSkill>
-Battle::buildBattleSkills(const int32_t& p_index,
-                          SkillSet* const useable_skills)
+Battle::buildBattleSkills(const int32_t &p_index,
+                          SkillSet *const useable_skills)
 {
   curr_user = getPerson(p_index);
   std::vector<BattleSkill> battle_skills;
@@ -734,9 +734,9 @@ Battle::buildBattleSkills(const int32_t& p_index,
       auto targets = getValidTargets(p_index, (*it).skill->getScope());
       auto all_targets = getPersonsFromIndexes(targets);
 
-      std::vector<Person*> friends_targets;
+      std::vector<Person *> friends_targets;
 
-      std::vector<Person*> foes_targets;
+      std::vector<Person *> foes_targets;
 
       for(auto target : all_targets)
       {
@@ -768,7 +768,7 @@ Battle::buildBattleSkills(const int32_t& p_index,
  * Inputs: float crit_factor - the already determined crit factor to use
  * Output: int32_t - the base damage of the current action
  */
-int32_t Battle::calcBaseDamage(const float& crit_factor)
+int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
   auto targ_attrs = temp_target_stats.at(pro_index);
 
@@ -897,9 +897,10 @@ int32_t Battle::calcBaseDamage(const float& crit_factor)
 
   auto defense_modifier = 0.0f;
 
-  if (action_power + base_targ_def >= 0)
+  if(action_power + base_targ_def >= 0)
   {
-    defense_modifier = (float)base_targ_def / (float)(action_power + base_targ_def);
+    defense_modifier =
+        (float)base_targ_def / (float)(action_power + base_targ_def);
   }
 
   base_damage = attack_power * (1 - defense_modifier);
@@ -927,7 +928,8 @@ int32_t Battle::calcBaseDamage(const float& crit_factor)
   base_damage *= crit_factor;
 
   int32_t damage_round = std::round(base_damage);
-  damage_round = Helpers::setInRange(damage_round, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
+  damage_round =
+      Helpers::setInRange(damage_round, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
 
 #ifdef UDEBUG
   std::cout << "Modified Damage: " << damage_round << std::endl;
@@ -1065,7 +1067,7 @@ float Battle::calcCritFactor()
   crit_factor += unbr * kCRIT_MODIFIER;
 
   /* Level difference modifier */
-  std::vector<Person*> target_vec = {curr_target};
+  std::vector<Person *> target_vec = {curr_target};
   crit_factor += calcLevelDifference(target_vec) * kCRIT_LVL_MODIFIER;
 
   if(curr_target->getBFlag(BState::DEFENDING))
@@ -1086,13 +1088,13 @@ float Battle::calcCritFactor()
  * Inputs: Person* ally - the ally to calculate the experience for
  * Output: int32_t - the amount of experience the Person will earn
  */
-int32_t Battle::calcExperience(Person* ally)
+int32_t Battle::calcExperience(Person *ally)
 {
   int32_t exp = 0;
 
   auto foes_members = foes->getMembers();
 
-  for(auto& foe : foes_members)
+  for(auto &foe : foes_members)
     exp += foe->getExpDrop();
 
   return static_cast<int32_t>(exp * ally->getExpMod());
@@ -1213,13 +1215,13 @@ bool Battle::calcIgnoreState()
  * Inputs: none
  * Output: int16_t - the [average] difference in level value
  */
-int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
+int16_t Battle::calcLevelDifference(std::vector<Person *> targets)
 {
   if(curr_user)
   {
     auto total_lvl = 0;
 
-    for(const auto& target : targets)
+    for(const auto &target : targets)
       if(target)
         total_lvl += target->getLevel();
 
@@ -1240,7 +1242,7 @@ int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
  *         Attribtue attr - the attribute to calculate the regen value for
  * Output: int32_t - the value of the turn regen rate
  */
-int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
+int32_t Battle::calcTurnRegen(Person *const target, const Attribute &attr)
 {
   auto regen_amt = 0;
   auto can_process = (target != nullptr);
@@ -1306,7 +1308,7 @@ bool Battle::checkAIModules()
  * Inputs: Person* - person to check whether to increment action selection for
  * Output: bool - true if action selection should be incremented
  */
-bool Battle::canIncrementIndex(Person* check_person)
+bool Battle::canIncrementIndex(Person *check_person)
 {
   if((check_person->getBFlag(BState::SELECTED_ACTION) &&
       !check_person->getAilFlag(PersonAilState::TWO_SKILLS) &&
@@ -1362,7 +1364,7 @@ void Battle::clearActionVariables()
  * Inputs: Party* - party to check death for.
  * Output: bool - true if the size of the living members vector is zero
  */
-bool Battle::checkPartyDeath(Party* const check_party, Person* target)
+bool Battle::checkPartyDeath(Party *const check_party, Person *target)
 {
   auto party_death = false;
 
@@ -1530,7 +1532,7 @@ bool Battle::doesActionCrit()
  * Inputs: none
  * Output: bool - true if the current skill will hit
  */
-bool Battle::doesSkillHit(std::vector<Person*> targets)
+bool Battle::doesSkillHit(std::vector<Person *> targets)
 {
   auto can_process = true;
   auto hits = true;
@@ -1640,8 +1642,8 @@ bool Battle::doesCurrPersonRun()
      * momentum will have a higher chance of running. Parties with higher
      * momentum will have a higher chance of running. Enemies with higher
      * momentum will decrease the chance of a successful run */
-    std::vector<Person*> other_allies;
-    Party* other_enemies;
+    std::vector<Person *> other_allies;
+    Party *other_enemies;
     double mmnt_p = 0;
 
     if(person_index < 0)
@@ -1659,7 +1661,7 @@ bool Battle::doesCurrPersonRun()
         curr_user->getCurr().getStat(Attribute::MMNT) * kUSER_RUN_MODIFIER;
 
     /* Add each other allies momentum by the factor of ally run modifier */
-    for(const auto& ally : other_allies)
+    for(const auto &ally : other_allies)
       mmnt_p += ally->getCurr().getStat(Attribute::MMNT) * kALLY_RUN_MODIFIER;
 
     /* Add each enemies momentum by the factor of enemy run modifier */
@@ -1997,13 +1999,17 @@ void Battle::performEvents()
     }
     else if(event->type == EventType::HEAL_HEALTH)
     {
-      auto new_val =
-          event->user->getCurr().getStat(Attribute::VITA) + event->amount;
+      if(event->targets.size() > 0 && event->targets.at(0))
+      {
+        auto new_val =
+            event->targets.at(0)->getCurr().getStat(Attribute::VITA) +
+            event->amount;
 
-      event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
+        event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
+      }
     }
     else if(event->type == EventType::REGEN_VITA ||
-      event->type == EventType::HIBERNATION)
+            event->type == EventType::HIBERNATION)
     {
       auto new_val = event->targets.at(0)->getCurr().getStat(Attribute::VITA) +
                      event->amount;
@@ -2052,7 +2058,7 @@ void Battle::performEvents()
  * Inputs: none
  * Output: none
  */
-void Battle::performDamageEvent(BattleEvent* event)
+void Battle::performDamageEvent(BattleEvent *event)
 {
 #ifdef UDEBUG
   auto str_damage = "";
@@ -2093,7 +2099,7 @@ void Battle::performDamageEvent(BattleEvent* event)
  * Inputs: Person* - user to reset turn flags for.
  * Output: none
  */
-void Battle::resetTurnFlags(Person* user)
+void Battle::resetTurnFlags(Person *user)
 {
   user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
   user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
@@ -2106,7 +2112,7 @@ void Battle::resetTurnFlags(Person* user)
  * Inputs: Person* - target perswon to perform upkeep for
  * Output: none
  */
-void Battle::personalUpkeep(Person* const target)
+void Battle::personalUpkeep(Person *const target)
 {
   curr_target = target;
 
@@ -2301,7 +2307,7 @@ void Battle::processBuffer()
  * Inputs: RegenRate - the enumerated rate of regeneration
  * Output: int16_t - the corresponding factor of regeneration
  */
-int16_t Battle::getRegenFactor(const RegenRate& regen_rate)
+int16_t Battle::getRegenFactor(const RegenRate &regen_rate)
 {
   if(regen_rate == RegenRate::WEAK)
     return kREGEN_RATE_WEAK_PC;
@@ -2357,7 +2363,7 @@ bool Battle::processGuard()
  * Inputs: none
  * Output: bool - whether the guarding was performed successfully
  */
-bool Battle::performGuard(BattleEvent* guard_event)
+bool Battle::performGuard(BattleEvent *guard_event)
 {
   /* If a guard ca be made, attempt to assign guardee and guarding persons.
    * This should assign the GUARDING/GUARDED flags properly */
@@ -2383,12 +2389,12 @@ bool Battle::performGuard(BattleEvent* guard_event)
  * Inputs: BattleEvent* battle_event - pointer to the begin action event
  * Output: bool - true if a party death has occured
  */
-bool Battle::processAction(BattleEvent* battle_event)
+bool Battle::processAction(BattleEvent *battle_event)
 {
   auto can_process = false;
   auto done = false;
   auto target_alive = curr_target->getBFlag(BState::ALIVE);
-  std::vector<Person*> target_vec{curr_target};
+  std::vector<Person *> target_vec{curr_target};
 
   /* Non-revive actions can only be processed against targets who are alive */
   if(!target_alive && curr_action->actionFlag(ActionFlags::REVIVE))
@@ -2587,7 +2593,7 @@ bool Battle::processAilment()
  * Inputs: Ailment* ail - the ailment to perform updating for
  * Output: bool - true if the damage from updateing causes party death
  */
-bool Battle::processAilmentUpdate(Ailment* ail)
+bool Battle::processAilmentUpdate(Ailment *ail)
 {
   /* Update the ailment with turn updating true (this sets the update
    * processed flag in the update call which is cleaned up in cleanUp() */
@@ -2629,8 +2635,8 @@ bool Battle::processAilmentUpdate(Ailment* ail)
  *
  * Output: bool - true if a party death (vic. cond.) occured during operation
  */
-bool Battle::processAlterAction(BattleEvent* alter_event, Person* action_target,
-                                Person* factor_target)
+bool Battle::processAlterAction(BattleEvent *alter_event, Person *action_target,
+                                Person *factor_target)
 {
   auto ally_target = friends->isInParty(curr_target);
   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
@@ -2664,6 +2670,10 @@ bool Battle::processAlterAction(BattleEvent* alter_event, Person* action_target,
     alt_value = max_value - cur_value;
   }
 
+  /* Assign the alteration amount to the alter event */
+  if(alt_value > 0 && event_buffer->getLastEvent())
+    event_buffer->getLastEvent()->type = EventType::HEAL_HEALTH;
+
   /* The altered amount cannot be such that it would decrease a stat to neg */
   else if(alt_value < 0 && alt_value < -cur_value)
   {
@@ -2682,7 +2692,6 @@ bool Battle::processAlterAction(BattleEvent* alter_event, Person* action_target,
     }
   }
 
-  /* Assign the alteration amount to the alter event */
   alter_event->amount = alt_value;
   alter_event->happens = true;
 
@@ -2699,8 +2708,8 @@ bool Battle::processAlterAction(BattleEvent* alter_event, Person* action_target,
  *         factor_target - the person who by which the action target changes
  * Output: bool - true if a party death occurs
  */
-bool Battle::processAssignAction(BattleEvent* assign_event,
-                                 Person* action_target, Person* factor_target)
+bool Battle::processAssignAction(BattleEvent *assign_event,
+                                 Person *action_target, Person *factor_target)
 {
   auto ally_target = friends->isInParty(action_target);
   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
@@ -2752,7 +2761,7 @@ bool Battle::processAssignAction(BattleEvent* assign_event,
  * Inputs: BattleEvent* damage_event - the incoming damage event
  * Output: bool - true if a party death occurs during processing
  */
-bool Battle::processDamageAction(BattleEvent* damage_event)
+bool Battle::processDamageAction(BattleEvent *damage_event)
 {
   auto party_death = false;
   auto actual_crit_factor = 1.00;
@@ -2836,7 +2845,7 @@ bool Battle::processDamageAmount(int32_t amount)
  */
 bool Battle::processPersonDeath(bool ally_target)
 {
-  std::vector<Person*> living_members;
+  std::vector<Person *> living_members;
 
   if(ally_target)
     living_members = friends->getLivingMemberPtrs();
@@ -2847,7 +2856,7 @@ bool Battle::processPersonDeath(bool ally_target)
    * matching each living friend member, then a party death will occur. */
   auto party_death = true;
 
-  for(const auto& member : living_members)
+  for(const auto &member : living_members)
     party_death &= event_buffer->hasPersonDeathEvent(member);
 
   if(party_death)
@@ -2902,7 +2911,7 @@ bool Battle::processRelieveAction()
    * infliction fizzle event on the buffer */
   else
   {
-    std::vector<Person*> targets{curr_target};
+    std::vector<Person *> targets{curr_target};
     event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE, curr_user,
                                     targets);
   }
@@ -2916,7 +2925,7 @@ bool Battle::processRelieveAction()
  * Inputs: BattleEvent* - pointer to the revive event to work with
  * Output: bool - true if a party death occurs (always false?)
  */
-bool Battle::processReviveAction(BattleEvent* revive_event)
+bool Battle::processReviveAction(BattleEvent *revive_event)
 {
   auto heal_value = 1;
   auto one_pc = curr_target->getTemp().getStat(Attribute::VITA);
@@ -3044,14 +3053,14 @@ bool Battle::canRelieve(Infliction test_infliction)
  *         Person* check - the person to check
  * Output: bool - true if the given person has the given infliction
  */
-bool Battle::hasInfliction(Infliction type, Person* check)
+bool Battle::hasInfliction(Infliction type, Person *check)
 {
   bool has_infliction = false;
 
   if(check == nullptr)
     return false;
 
-  for(auto& ailment : ailments)
+  for(auto &ailment : ailments)
     if(ailment->getType() == type && ailment->getVictim() == check)
       has_infliction = true;
 
@@ -3066,7 +3075,7 @@ bool Battle::hasInfliction(Infliction type, Person* check)
 * Inputs: std::vetor<Person*> targets - the targets for the item
 * Output: none
 */
-void Battle::processItem(std::vector<Person*> targets)
+void Battle::processItem(std::vector<Person *> targets)
 {
   // TODO [04-10-15]
   (void)targets;
@@ -3102,7 +3111,7 @@ void Battle::processItem(std::vector<Person*> targets)
  * Inputs: std::vector<Person*> - vector of targets for processing of curr Skill
  * Output: none
  */
-void Battle::processSkill(std::vector<Person*> targets)
+void Battle::processSkill(std::vector<Person *> targets)
 {
   /* Grab the current skill from the action buffer */
   curr_skill = action_buffer->getSkill();
@@ -3270,7 +3279,7 @@ void Battle::processSkill(std::vector<Person*> targets)
  * Inputs: Person* - person to recalculate ailment modification factors for
  * Output: none
  */
-void Battle::reCalcAilments(Person* const target)
+void Battle::reCalcAilments(Person *const target)
 {
   auto temp_vita = target->getCurr().getStat(0);
   auto temp_qtdr = target->getCurr().getStat(1);
@@ -3454,7 +3463,7 @@ bool Battle::setupClass()
  * Inputs: int32_t - the person index to test if it is valid for action sel.
  * Output: bool - the validity of the person index for action selection
  */
-bool Battle::testPersonIndex(const int32_t& test_index)
+bool Battle::testPersonIndex(const int32_t &test_index)
 {
   auto test_person = getPerson(test_index);
 
@@ -3688,8 +3697,8 @@ void Battle::updateEnemySelection()
 #endif
 
       auto valid_targets = getValidTargets(person_index, scope);
-      std::vector<Person*> friends_persons;
-      std::vector<Person*> foes_persons;
+      std::vector<Person *> friends_persons;
+      std::vector<Person *> foes_persons;
 
       for(auto target : valid_targets)
       {
@@ -3719,7 +3728,7 @@ void Battle::updateEnemySelection()
  * Inputs: none
  * Output: bool - true if a party death has occured
  */
-bool Battle::updatePartyDeaths(Person* target)
+bool Battle::updatePartyDeaths(Person *target)
 {
   if(target != nullptr)
     return (checkPartyDeath(friends, target) || checkPartyDeath(foes, target));
@@ -3730,10 +3739,10 @@ bool Battle::updatePartyDeaths(Person* target)
 // TODO: Comment
 void Battle::unsetActorsAttacking()
 {
-  for(auto& ally : friends->getMembers())
+  for(auto &ally : friends->getMembers())
     if(ally)
       ally->setBFlag(BState::IS_ATTACKING, false);
-  for(auto& foe : foes->getMembers())
+  for(auto &foe : foes->getMembers())
     if(foe)
       foe->setBFlag(BState::IS_ATTACKING, false);
 }
@@ -3741,10 +3750,10 @@ void Battle::unsetActorsAttacking()
 // TODO: Comment
 void Battle::unsetActorsSelecting()
 {
-  for(auto& ally : friends->getMembers())
+  for(auto &ally : friends->getMembers())
     if(ally)
       ally->setBFlag(BState::IS_SELECTING, false);
-  for(auto& foe : foes->getMembers())
+  for(auto &foe : foes->getMembers())
     if(foe)
       foe->setBFlag(BState::IS_SELECTING, false);
 }
@@ -3798,7 +3807,7 @@ bool Battle::updateTargetDefense()
  * Inputs: BattleOptions - new enumerated options for Battle
  * Output: none
  */
-void Battle::setAilmentUpdateMode(const BattleOptions& new_value)
+void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
 {
   ailment_update_mode = new_value;
 }
@@ -3809,7 +3818,7 @@ void Battle::setAilmentUpdateMode(const BattleOptions& new_value)
  * Inputs:
  * Output:
  */
-void Battle::setUserAttacking(Person* target)
+void Battle::setUserAttacking(Person *target)
 {
   unsetActorsAttacking();
 
@@ -3823,7 +3832,7 @@ void Battle::setUserAttacking(Person* target)
  * Inputs: Party* - pointer to friends party
  * Output: bool - true if the new pointer was not null
  */
-bool Battle::setFriends(Party* const new_friends)
+bool Battle::setFriends(Party *const new_friends)
 {
   if(new_friends != nullptr)
   {
@@ -3841,7 +3850,7 @@ bool Battle::setFriends(Party* const new_friends)
  * Inputs: Party* foes - new foes party
  * Output: bool - true if the foes party was not nullptr
  */
-bool Battle::setFoes(Party* const new_foes)
+bool Battle::setFoes(Party *const new_foes)
 {
   if(new_foes != nullptr)
   {
@@ -4062,7 +4071,7 @@ bool Battle::setNextPersonIndex()
  * Inputs: int32-t new_value - new value for total time elapsed in battle
  * Output: none
  */
-void Battle::setTimeElapsed(const int32_t& new_value)
+void Battle::setTimeElapsed(const int32_t &new_value)
 {
   time_elapsed = new_value;
 }
@@ -4073,7 +4082,7 @@ void Battle::setTimeElapsed(const int32_t& new_value)
  * Inputs: int32_t - new value for time elapsed this turn
  * Output: none
  */
-void Battle::setTimeElapsedThisTurn(const int32_t& new_value)
+void Battle::setTimeElapsedThisTurn(const int32_t &new_value)
 {
   time_elapsed_this_turn = new_value;
 }
@@ -4084,7 +4093,7 @@ void Battle::setTimeElapsedThisTurn(const int32_t& new_value)
  * Inputs: uint16_t new_value - the new value for the turns elapsed
  * Output: none
  */
-void Battle::setTurnsElapsed(const uint16_t& new_value)
+void Battle::setTurnsElapsed(const uint16_t &new_value)
 {
   turns_elapsed = new_value;
 }
@@ -4095,7 +4104,7 @@ void Battle::setTurnsElapsed(const uint16_t& new_value)
  * Inputs: TurnMode - new enumerated turn mode (FRIENDS_FIRST, etc.)
  * Output: none
  */
-void Battle::setTurnMode(const TurnMode& new_turn_mode)
+void Battle::setTurnMode(const TurnMode &new_turn_mode)
 {
   turn_mode = new_turn_mode;
 }
@@ -4106,7 +4115,7 @@ void Battle::setTurnMode(const TurnMode& new_turn_mode)
  * Inputs: TurnState - new enumerated turn state for the Battle (UPKEEP, etc.)
  * Output: none
  */
-void Battle::setTurnState(const TurnState& new_turn_state)
+void Battle::setTurnState(const TurnState &new_turn_state)
 {
   turn_state = new_turn_state;
 
@@ -4125,11 +4134,11 @@ void Battle::setTurnState(const TurnState& new_turn_state)
  * Inputs: Person* - pointer to Person to check allied-ness for
  * Output: bool - true if the given Person pointer is a member of allies party
  */
-bool Battle::isAlly(Person* check_person)
+bool Battle::isAlly(Person *check_person)
 {
   auto allies = friends->getMembers();
 
-  for(const auto& elm : allies)
+  for(const auto &elm : allies)
     if(elm == check_person)
       return true;
 
@@ -4142,11 +4151,11 @@ bool Battle::isAlly(Person* check_person)
  * Inputs: Person* - pointer to Person to check foe-ness for
  * Output: bool - true if the given Person pointer is a member of foes party
  */
-bool Battle::isFoe(Person* check_person)
+bool Battle::isFoe(Person *check_person)
 {
   auto enemies = foes->getMembers();
 
-  for(const auto& elm : enemies)
+  for(const auto &elm : enemies)
     if(elm == check_person)
       return true;
 
@@ -4219,7 +4228,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
  *         bool party - true if to print out party state
  * Output: none
  */
-void Battle::printAll(const bool& flags, const bool& party)
+void Battle::printAll(const bool &flags, const bool &party)
 {
   std::cout << "==== Battle ====\n";
 
@@ -4283,7 +4292,7 @@ void Battle::printPartyState()
  *         int32_t - the person index of the person (only for display purposes)
  * Output: none
  */
-void Battle::printPersonState(Person* const member, const int32_t& person_index)
+void Battle::printPersonState(Person *const member, const int32_t &person_index)
 {
   if(member != nullptr)
   {
@@ -4299,7 +4308,7 @@ void Battle::printPersonState(Person* const member, const int32_t& person_index)
 
     auto person_ailments = getPersonAilments(member);
 
-    for(auto& ailment : person_ailments)
+    for(auto &ailment : person_ailments)
       std::cout << Helpers::ailmentToStr(ailment->getType()) << " ";
     std::cout << "\n\n";
   }
@@ -4375,7 +4384,7 @@ void Battle::printProcessingState(bool basic)
  * Inputs: Party* - pointer to print the inventory information for
  * Output: none
  */
-void Battle::printInventory(Party* const target_party)
+void Battle::printInventory(Party *const target_party)
 {
   if(target_party != nullptr && target_party->getInventory() != nullptr)
   {
@@ -4533,7 +4542,7 @@ bool Battle::update(int32_t cycle_time)
   return false;
 }
 
-Skill* Battle::getCurrSkill() { return curr_skill; }
+Skill *Battle::getCurrSkill() { return curr_skill; }
 
 /*
  * Description: Returns the ailment update mode currently set
@@ -4549,7 +4558,7 @@ BattleOptions Battle::getAilmentUpdateMode() { return ailment_update_mode; }
  * Inputs: none
  * Output: BattleMenu* - pointer to the BattleMenu
  */
-BattleMenu* Battle::getBattleMenu() { return menu; }
+BattleMenu *Battle::getBattleMenu() { return menu; }
 
 /*
  * Description: Return the value of a given CombatState flag
@@ -4557,7 +4566,7 @@ BattleMenu* Battle::getBattleMenu() { return menu; }
  * Inputs: CombatState test_flag - flag which to find the value for
  * Output: bool - boolean value of the given flag
  */
-bool Battle::getBattleFlag(const CombatState& test_flag)
+bool Battle::getBattleFlag(const CombatState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
@@ -4568,7 +4577,7 @@ bool Battle::getBattleFlag(const CombatState& test_flag)
  * Inputs: IgnoreState - flag which to find the value for
  * Output: bool - boolean value of the given flag
  */
-bool Battle::getIgnoreFlag(const IgnoreState& test_flag)
+bool Battle::getIgnoreFlag(const IgnoreState &test_flag)
 {
   return static_cast<bool>((ignore_flags & test_flag) == test_flag);
 }
@@ -4579,14 +4588,14 @@ bool Battle::getIgnoreFlag(const IgnoreState& test_flag)
  * Inputs: none
  * Output: Party* - pointer to the Friends party
  */
-Party* Battle::getFriends() { return friends; }
+Party *Battle::getFriends() { return friends; }
 /*
  * Description: Returns the event buffer pointer
  *
  * Inputs: none
  * Output: EventBuffer* - pointer to the event buffer
  */
-EventBuffer* Battle::getEventBuffer() { return event_buffer; }
+EventBuffer *Battle::getEventBuffer() { return event_buffer; }
 
 /*
  * Description: Returns the foes pointer of the Battle
@@ -4594,7 +4603,7 @@ EventBuffer* Battle::getEventBuffer() { return event_buffer; }
  * Inputs: none
  * Output: Party* - pointer to the Foes party
  */
-Party* Battle::getFoes() { return foes; }
+Party *Battle::getFoes() { return foes; }
 
 // TODO: Conventions [04-11-15]
 OutcomeType Battle::getOutcome() { return outcome; }
@@ -4605,11 +4614,11 @@ OutcomeType Battle::getOutcome() { return outcome; }
  * Inputs: Person* - person pointer to find all the ailment pointers for
  * Output: std::vector<Ailment*> - vector of ailments inflicting the Person
  */
-std::vector<Ailment*> Battle::getPersonAilments(const Person* const target)
+std::vector<Ailment *> Battle::getPersonAilments(const Person *const target)
 {
-  std::vector<Ailment*> person_ailments;
+  std::vector<Ailment *> person_ailments;
 
-  for(const auto& ailment : ailments)
+  for(const auto &ailment : ailments)
     if(ailment->getVictim() == target && target != nullptr)
       person_ailments.push_back(ailment);
 
@@ -4648,7 +4657,7 @@ TurnState Battle::getTurnState() { return turn_state; }
  * Inputs: Person* - returns the corresponding index of a given Person pointer
  * Output: int32_t - the corresponding index of the given pointer
  */
-int32_t Battle::getTarget(Person* battle_member)
+int32_t Battle::getTarget(Person *battle_member)
 {
   for(uint32_t i = 0; i < friends->getSize(); i++)
     if(friends->getMember(i) == battle_member)
@@ -4668,7 +4677,7 @@ int32_t Battle::getTarget(Person* battle_member)
  * Inputs: index - the index given for wanting the corresponding Person ptr
  * Output: Person* - pointer for the given index
  */
-Person* Battle::getPerson(const int32_t& index)
+Person *Battle::getPerson(const int32_t &index)
 {
   if(index < 0)
   {
@@ -4708,7 +4717,7 @@ std::vector<int32_t> Battle::getAllTargets()
  * Inputs: ko - whether to grab dead members. If false, will grab living members
  * Output: std::vector<int32_t> - indexes of needed persons in the Friends party
  */
-std::vector<int32_t> Battle::getFriendsTargets(const bool& ko)
+std::vector<int32_t> Battle::getFriendsTargets(const bool &ko)
 {
   std::vector<int32_t> friends_targets;
 
@@ -4734,7 +4743,7 @@ std::vector<int32_t> Battle::getFriendsTargets(const bool& ko)
  * Inputs: ko - whether to grab dead members. If false, will grab living members
  * Output: std::vector<int32_t> - indexes of needed persons in the Foes party
  */
-std::vector<int32_t> Battle::getFoesTargets(const bool& ko)
+std::vector<int32_t> Battle::getFoesTargets(const bool &ko)
 {
   std::vector<int32_t> foes_targets;
 
@@ -4779,9 +4788,10 @@ std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
  * Inputs: std::vector<int32_t> - vector of integer person indexes
  * Output: std::vector<Person*> - vector of corresponding Person pointers
  */
-std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
+std::vector<Person *>
+Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
 {
-  std::vector<Person*> persons;
+  std::vector<Person *> persons;
 
   for(auto it = begin(indexes); it != end(indexes); ++it)
     if(getPerson(*it) != nullptr)
@@ -4797,11 +4807,11 @@ std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
  * Inputs: std::vector<Person*> - vector of Person pointers to find indexes of
  * Output: std::vector<int32_t> - vector of corresponding integer indexes
  */
-std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person*> persons)
+std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person *> persons)
 {
   std::vector<int32_t> indexes;
 
-  for(const auto& person : persons)
+  for(const auto &person : persons)
     if(getIndexOfPerson(person) != 0)
       indexes.push_back(getIndexOfPerson(person));
 
@@ -4814,7 +4824,7 @@ std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person*> persons)
  * Inputs: Person* check_person - the person pointer to find the index of
  * Output: int32_t - the corresponding integer person index
  */
-int32_t Battle::getIndexOfPerson(Person* check_person)
+int32_t Battle::getIndexOfPerson(Person *check_person)
 {
   /* For Friends members, their person index is party_index + 1  (1 - 5) */
   for(uint32_t i = 0; i < friends->getSize(); i++)
@@ -4907,7 +4917,7 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
  *         set_value - boolean value to assign to given flag
  * Output: none
  */
-void Battle::setBattleFlag(CombatState flag, const bool& set_value)
+void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
@@ -4919,7 +4929,7 @@ void Battle::setBattleFlag(CombatState flag, const bool& set_value)
  *         set_value - boolean value to assign to given flag
  * Output: none
  */
-void Battle::setIgnoreFlag(IgnoreState flag, const bool& set_value)
+void Battle::setIgnoreFlag(IgnoreState flag, const bool &set_value)
 {
   (set_value) ? (ignore_flags |= flag) : (ignore_flags &= ~flag);
 }

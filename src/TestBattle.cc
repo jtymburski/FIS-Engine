@@ -683,7 +683,7 @@ void TestBattle::createActions()
   /* Alter Actions */
 
   /* Enrich - healing */
-  act_alt.push_back(new Action("200,ALTER,,,,VITA,PC.20,AMOUNT.10,,100"));
+  act_alt.push_back(new Action("200,ALTER,,,,VITA,AMOUNT.40,AMOUNT.10,,100"));
 
   /* Chlorophona - healing */
   act_alt.push_back(new Action("201,ALTER,,,,VITA,PC.15,AMOUNT.10,,100"));
@@ -694,7 +694,7 @@ void TestBattle::createActions()
   act_dmg.push_back(new Action("0,DAMAGE,,,,VITA,AMOUNT.2000,AMOUNT.200,,100"));
 
   /* Prismatic Shot (~20 Damage / Hit) */
-  act_dmg.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.50,AMOUNT.2,,95"));
+  act_dmg.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.25,AMOUNT.2,,95"));
 
   /* Rail Shot (~35 Damage) */
   act_dmg.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.5,,100"));
