@@ -148,6 +148,9 @@ void Category::classSetup()
   setFlag(CategoryState::POWER_GUARDER, false);
   setFlag(CategoryState::E_STAFF, false);
   setFlag(CategoryState::E_SWORD, false);
+
+  vita_regen_rate = RegenRate::ZERO;
+  qtdr_regen_rate = RegenRate::ZERO;
 }
 
 /*
@@ -257,6 +260,115 @@ bool Category::isImmune(const Infliction &check_immunity)
 
  return false;
 }
+  
+/*
+ * Description: Loads the data from file associated with the category.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         SDL_Renderer* renderer - the rendering engine
+ * Output: bool - true if load was successful
+ */
+bool Category::loadData(XmlData data, int index, SDL_Renderer* renderer)
+{
+  (void)renderer;
+  bool success = true;
+
+  /* ---- DENONYM ---- */
+  if(data.getElement(index) == "denonym")
+  {
+    setDenonym(data.getDataString(&success));
+  }
+  /* ---- DESCRIPTION ---- */
+  else if(data.getElement(index) == "description")
+  {
+    setDescription(data.getDataString(&success));
+  }
+  /* ---- IMMUNITIES ---- */
+  else if(data.getElement(index) == "immunities")
+  {
+    bool status = data.getDataBool(&success);
+    if(status)
+      addImmunity(Helpers::ailmentFromStr(data.getElement(index + 1)));
+    else
+      removeImmunity(Helpers::ailmentFromStr(data.getElement(index + 1)));
+  }
+  /* ---- FLAGS ---- */
+  else if(data.getElement(index) == "flags")
+  {
+    /* -- DEF ENABLED -- */
+    if(data.getElement(index + 1) == "def_enabled")
+      setFlag(CategoryState::DEF_ENABLED, data.getDataBool(&success));
+    /* -- E-BIG-ARMS -- */
+    else if(data.getElement(index + 1) == "e_big_arms")
+      setFlag(CategoryState::E_BIG_ARMS, data.getDataBool(&success));
+    /* -- E-CLAWS -- */
+    else if(data.getElement(index + 1) == "e_claws")
+      setFlag(CategoryState::E_CLAWS, data.getDataBool(&success));
+    /* -- E-HEAVY-ARMOUR -- */
+    else if(data.getElement(index + 1) == "e_heavy_armor")
+      setFlag(CategoryState::E_HEAVY_ARMOR, data.getDataBool(&success));
+    /* -- E-LIGHT-ARMOUR -- */
+    else if(data.getElement(index + 1) == "e_light_armor")
+      setFlag(CategoryState::E_LIGHT_ARMOR, data.getDataBool(&success));
+    /* -- E-LONG-ARMS -- */
+    else if(data.getElement(index + 1) == "e_long_arms")
+      setFlag(CategoryState::E_LONG_ARMS, data.getDataBool(&success));
+    /* -- E-MID-ARMOUR -- */
+    else if(data.getElement(index + 1) == "e_mid_armor")
+      setFlag(CategoryState::E_MID_ARMOR, data.getDataBool(&success));
+    /* -- E-SMALL-ARMS -- */
+    else if(data.getElement(index + 1) == "e_small_arms")
+      setFlag(CategoryState::E_SMALL_ARMS, data.getDataBool(&success));
+    /* -- E-STAFF -- */
+    else if(data.getElement(index + 1) == "e_staff")
+      setFlag(CategoryState::E_STAFF, data.getDataBool(&success));
+    /* -- E-SWORD -- */
+    else if(data.getElement(index + 1) == "e_sword")
+      setFlag(CategoryState::E_SWORD, data.getDataBool(&success));
+    /* -- GRD ENABLED -- */
+    else if(data.getElement(index + 1) == "grd_enabled")
+      setFlag(CategoryState::GRD_ENABLED, data.getDataBool(&success));
+    /* -- IMP ENABLED -- */
+    else if(data.getElement(index + 1) == "imp_enabled")
+      setFlag(CategoryState::IMP_ENABLED, data.getDataBool(&success));
+    /* -- POWER DEFENDER -- */
+    else if(data.getElement(index + 1) == "power_defender")
+      setFlag(CategoryState::POWER_DEFENDER, data.getDataBool(&success));
+    /* -- POWER GUARDER -- */
+    else if(data.getElement(index + 1) == "power_guarder")
+      setFlag(CategoryState::POWER_GUARDER, data.getDataBool(&success));
+  }
+  /* ---- NAME ---- */
+  else if(data.getElement(index) == "name")
+  {
+    setName(data.getDataString(&success));
+  }
+  /* ---- QD REGEN ---- */
+  else if(data.getElement(index) == "qd_regen")
+  {
+    setQDRegenRate(Helpers::regenRateFromStr(data.getDataString(&success)));
+  }
+  /* ---- STATS BASE ---- */
+  else if(data.getElement(index) == "stats_base")
+  {
+    base_stats = AttributeSet::setFromStr(data.getDataString(&success));
+    cleanUpStats();
+  }
+  /* ---- STATS MAX ---- */
+  else if(data.getElement(index) == "stats_max")
+  {
+    top_stats = AttributeSet::setFromStr(data.getDataString(&success));
+    cleanUpStats();
+  }
+  /* ---- VITALITY REGEN ---- */
+  else if(data.getElement(index) == "vita_regen")
+  {
+    setVitaRegenRate(Helpers::regenRateFromStr(data.getDataString(&success)));
+  }
+
+  return success;
+}
 
 /*
  * Description: Attempts to remove a given Infliction enumeration from
@@ -305,6 +417,12 @@ void Category::print(const bool &simple, const bool &flags)
     std::cout << "\nTop Stats: \n";
     top_stats.print(true);
     std::cout << "\n";
+
+    std::cout << "Vita Regen: " << Helpers::regenRateToStr(vita_regen_rate)
+              << std::endl;
+    std::cout << "QD Regen: " << Helpers::regenRateToStr(qtdr_regen_rate)
+              << std::endl;
+    std::cout << std::endl;
   }
 
   if (flags)
@@ -316,7 +434,7 @@ void Category::print(const bool &simple, const bool &flags)
     std::cout << "\nPOWER_GUARDER? " << getFlag(CategoryState::POWER_GUARDER);
     std::cout << "\nE_STAFF? " << getFlag(CategoryState::E_STAFF);
     std::cout << "\nE_SWORD? " << getFlag(CategoryState::E_SWORD);
-    std::cout << "\nE_CLAWS? " << getFlag(CategoryState::E_SWORD) << "\n";
+    std::cout << "\nE_CLAWS? " << getFlag(CategoryState::E_CLAWS) << "\n";
   }
 }
 
@@ -513,6 +631,17 @@ void Category::setName(const std::string &name)
 void Category::setQDRegenRate(const RegenRate &new_regen_rate)
 {
   qtdr_regen_rate = new_regen_rate;
+}
+  
+/*
+ * Description: Sets the skill set which the category unlocks.
+ *
+ * Inputs: Skillset* set - the set to add to the category
+ * Output: none
+ */
+void Category::setSkills(SkillSet* set)
+{
+  skill_set = set;
 }
 
 /*

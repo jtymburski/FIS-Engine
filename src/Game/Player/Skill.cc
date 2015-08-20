@@ -136,53 +136,6 @@ Skill::~Skill()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-/*
- * Description: Assigns the SkillFlag (categorization of Skill types) based
- *              on the ActionKeywords and related of each action effect
- *              contained in the Skill.
- *
- * Inputs: none
- * Output: none
- */
-void Skill::flagSetup()
-{
-  for (auto it = effects.begin(); it != effects.end(); ++it)
-  {
-    if ((*it)->actionFlag(ActionFlags::ALTER))
-    {
-      setFlag(SkillFlags::ALTERING);
-
-      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
-        setFlag(SkillFlags::HEALING);
-    }
-
-    else if ((*it)->actionFlag(ActionFlags::DAMAGE))
-      setFlag(SkillFlags::DAMAGING);
-
-    else if ((*it)->actionFlag(ActionFlags::INFLICT))
-      setFlag(SkillFlags::INFLICTING);
-
-    else if ((*it)->actionFlag(ActionFlags::RELIEVE))
-      setFlag(SkillFlags::RELIEVING);
-
-    else if ((*it)->actionFlag(ActionFlags::REVIVE))
-    {
-      setFlag(SkillFlags::REVIVING);
-      setFlag(SkillFlags::HEALING);
-    }
-
-    else if ((*it)->actionFlag(ActionFlags::ASSIGN))
-    {
-      setFlag(SkillFlags::ASSIGNING);
-
-      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
-        setFlag(SkillFlags::HEALING);
-    }
-  }
-
-  setFlag(SkillFlags::VALID, this->isValid());
-}
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -239,6 +192,64 @@ bool Skill::addActions(const std::vector<Action*> &new_actions)
 }
 
 /*
+ * Description: Assigns the SkillFlag (categorization of Skill types) based
+ *              on the ActionKeywords and related of each action effect
+ *              contained in the Skill.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Skill::flagSetup()
+{
+  /* Clear flags first */
+  setFlag(SkillFlags::ALTERING, false);
+  setFlag(SkillFlags::DAMAGING, false);
+  setFlag(SkillFlags::HEALING, false);
+  setFlag(SkillFlags::INFLICTING, false);
+  setFlag(SkillFlags::RELIEVING, false);
+  setFlag(SkillFlags::REVIVING, false);
+  setFlag(SkillFlags::ASSIGNING, false);
+  setFlag(SkillFlags::VALID, false);
+
+  /* Set flags */
+  for (auto it = effects.begin(); it != effects.end(); ++it)
+  {
+    if ((*it)->actionFlag(ActionFlags::ALTER))
+    {
+      setFlag(SkillFlags::ALTERING);
+
+      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+        setFlag(SkillFlags::HEALING);
+    }
+
+    else if ((*it)->actionFlag(ActionFlags::DAMAGE))
+      setFlag(SkillFlags::DAMAGING);
+
+    else if ((*it)->actionFlag(ActionFlags::INFLICT))
+      setFlag(SkillFlags::INFLICTING);
+
+    else if ((*it)->actionFlag(ActionFlags::RELIEVE))
+      setFlag(SkillFlags::RELIEVING);
+
+    else if ((*it)->actionFlag(ActionFlags::REVIVE))
+    {
+      setFlag(SkillFlags::REVIVING);
+      setFlag(SkillFlags::HEALING);
+    }
+
+    else if ((*it)->actionFlag(ActionFlags::ASSIGN))
+    {
+      setFlag(SkillFlags::ASSIGNING);
+
+      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+        setFlag(SkillFlags::HEALING);
+    }
+  }
+
+  setFlag(SkillFlags::VALID, this->isValid());
+}
+
+/*
  * Description: Determines the validity of a skill used for person while
  *              Berserked.
  *
@@ -263,7 +274,7 @@ bool Skill::isBerserkSkill()
 }
 
 /*
- * Description: Evaluates and returns  the validity of the current Skill object.
+ * Description: Evaluates and returns the validity of the current Skill object.
  *
  * Inputs: none
  * Output: bool - validity of the current Skill object
@@ -282,6 +293,108 @@ bool Skill::isValid()
 }
 
 /*
+ * Description: Loads the data from file associated with the category.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         SDL_Renderer* renderer - the rendering engine
+ * Output: bool - true if load was successful
+ */
+bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
+                     std::string base_path)
+{
+  bool success = true;
+
+  /* ---- ANIMATION ---- */
+  if(data.getElement(index) == "animation")
+  {
+    /* If null, create */
+    if(animation == nullptr)
+      animation = new Sprite();
+
+    /* Add data */
+    success &= animation->addFileInformation(data, index + 1, 
+                                             renderer, base_path);
+  }
+  /* ---- CHANCE ---- */
+  else if(data.getElement(index) == "chance")
+  {
+    setChance(data.getDataFloat(&success));
+  }
+  /* ---- COOLDOWN ---- */
+  else if(data.getElement(index) == "cooldown")
+  {
+    setCooldown(data.getDataInteger(&success));
+  }
+  /* ---- COST ---- */
+  else if(data.getElement(index) == "cost")
+  {
+    setCost(data.getDataInteger(&success));
+  }
+  /* ---- DESCRIPTION ---- */
+  else if(data.getElement(index) == "description")
+  {
+    setDescription(data.getDataString(&success));
+  }
+  /* ---- ELEMENT PRIMARY ---- */
+  else if(data.getElement(index) == "elem_pri")
+  {
+    setPrimary(Helpers::elementFromString(data.getDataString(&success)));
+  }
+  /* ---- ELEMENT SECONDARY ---- */
+  else if(data.getElement(index) == "elem_sec")
+  {
+    setSecondary(Helpers::elementFromString(data.getDataString(&success)));
+  }
+  /* ---- FLAGS ---- */
+  else if(data.getElement(index) == "flags")
+  {
+    /* -- OFFENSIVE -- */
+    if(data.getElement(index + 1) == "offensive")
+      setFlag(SkillFlags::OFFENSIVE, data.getDataBool(&success));
+    /* -- DEFENSIVE -- */
+    else if(data.getElement(index + 1) == "defensive")
+      setFlag(SkillFlags::DEFENSIVE, data.getDataBool(&success));
+    /* -- NEUTRAL -- */
+    else if(data.getElement(index + 1) == "neutral")
+      setFlag(SkillFlags::NEUTRAL, data.getDataBool(&success));
+  }
+  /* ---- MESSAGE ---- */
+  else if(data.getElement(index) == "message")
+  {
+    setMessage(data.getDataString(&success));
+  }
+  /* ---- NAME ---- */
+  else if(data.getElement(index) == "name")
+  {
+    setName(data.getDataString(&success));
+  }
+  /* ---- SCOPE ---- */
+  else if(data.getElement(index) == "scope")
+  {
+    setScope(Helpers::actionScopeFromStr(data.getDataString(&success)));
+  }
+  /* ---- THUMBNAIL ---- */
+  else if(data.getElement(index) == "thumb")
+  {
+    /* If null, create */
+    if(thumbnail == nullptr)
+      thumbnail = new Frame();
+
+    /* Add data */
+    success &= thumbnail->setTexture(base_path + 
+                                     data.getDataString(&success), renderer);
+  }
+  /* ---- VALUE ---- */
+  else if(data.getElement(index) == "value")
+  {
+    setValue(data.getDataInteger(&success));
+  }
+
+  return success;
+}
+
+/*
  * Description: Outputs [std::cout] the current state of the Skill
  *
  * Inputs: none
@@ -294,6 +407,8 @@ void Skill::print(bool flags)
   std::cout << "\nAction Scope: " << Helpers::actionScopeToStr(scope);
   std::cout << "\nName: " << name << std::endl;
   std::cout << "Animation: " << animation << std::endl;
+  if(animation != nullptr)
+    std::cout << "  > " << animation->getSize() << std::endl;
   std::cout << "Chance: " << chance << std::endl;
   std::cout << "Cooldown: " << cooldown << std::endl;
   std::cout << "Cost: " << cost << std::endl;
@@ -302,7 +417,9 @@ void Skill::print(bool flags)
   std::cout << "Primary Element " << Helpers::elementToString(primary);
   std::cout << "\nSecondary Element " << Helpers::elementToString(secondary);
   std::cout << "\nThumbnail: " << thumbnail << std::endl;
-  std::cout << "Effect Chances: " << std::endl;
+  if(thumbnail != nullptr)
+    std::cout << "  > " << thumbnail->isTextureSet() << std::endl;
+  std::cout << std::endl << "Effect Chances: " << std::endl;
   std::cout << "\nSound effect set? " << sound_effect << std::endl;
 
   for (const auto& effect : effects)

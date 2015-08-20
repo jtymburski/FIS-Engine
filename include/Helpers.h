@@ -102,6 +102,7 @@ public:
   static std::string actionTypeToStr(const ActionType &action_type);
 
   /* Convert enumerated Action Scope to String */
+  static ActionScope actionScopeFromStr(const std::string scope);
   static std::string actionScopeToStr(const ActionScope &action_scope);
 
   /* Convert enumerated AI Difficulty to String */
@@ -111,6 +112,7 @@ public:
   static std::string aiPersonalityToStr(const AIPersonality &ai_personality);
 
   /* Return enumerated Ailment to String */
+  static Infliction ailmentFromStr(const std::string &ail);
   static std::string ailmentToStr(const Infliction &ail);
 
   /* Returns the enumerated Attribute to String */
@@ -120,6 +122,7 @@ public:
   static std::string cellToStr(const CellState &cell_state);
 
   /* Converts an enumerated element to a String */
+  static Element elementFromString(const std::string &element);
   static uint16_t elementToInt(Element element);
   static std::string elementToString(const Element &element);
 
@@ -130,8 +133,9 @@ public:
   static std::string numToRoman(int value);
 
   /* Returns the enumerated regen rate in string form */
+  static RegenRate regenRateFromStr(const std::string &regen_rate);
   static std::string regenRateToStr(const RegenRate &regen_rate);
-
+  
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

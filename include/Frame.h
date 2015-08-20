@@ -17,9 +17,6 @@
 #include <string>
 #include <vector>
 
-/* Skips the expensive title */
-//#define TITLE_SKIP 1
-
 class Frame
 {
 public:

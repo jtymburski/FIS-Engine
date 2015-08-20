@@ -203,6 +203,10 @@ public:
 public:
   /* Evaluates and returns whether the cur. object is a base item */
   bool isBaseItem();
+  
+  /* Load data from file */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
+                std::string base_path);
 
   /* Prints the value of the flags of the Item */
   void printFlags();

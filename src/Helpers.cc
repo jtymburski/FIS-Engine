@@ -357,6 +357,35 @@ bool Helpers::isVowel(const char &c)
 }
 
 /*
+ * Description: Elemental enum form of an string element.
+ *
+ * Inputs: std::string element - string form of element
+ * Output: Element - enum form of the element
+ */
+Element Helpers::elementFromString(const std::string &element)
+{
+  std::string ele_up = element;
+  std::transform(ele_up.begin(), ele_up.end(), ele_up.begin(), toupper);
+
+  /* Parse */
+  if(ele_up == "PHYSICAL")
+    return Element::PHYSICAL;
+  else if(ele_up == "FIRE")
+    return Element::FIRE;
+  else if(ele_up == "FOREST")
+    return Element::FOREST;
+  else if(ele_up == "ICE")
+    return Element::ICE;
+  else if(ele_up == "ELECTRIC")
+    return Element::ELECTRIC;
+  else if(ele_up == "DIGITAL")
+    return Element::DIGITAL;
+  else if(ele_up == "VOID")
+    return Element::NIHIL;
+  return Element::NONE;
+}
+
+/*
  * Description: Elemental integer form of an enumerated element. Invalid element
  *              will always return the number of valid elements.
  *
@@ -393,7 +422,7 @@ uint16_t Helpers::elementToInt(Element element)
 std::string Helpers::elementToString(const Element &element)
 {
   if (element == Element::PHYSICAL)
-    return "PHYSICIAL";
+    return "PHYSICAL";
   else if (element == Element::FIRE)
     return "FIRE";
   else if (element == Element::FOREST)
@@ -483,6 +512,51 @@ std::string Helpers::actionTypeToStr(const ActionType &action_type)
     return "None";
 
   return "";
+}
+
+/*
+ * Description: Returns the enum form a given ActionScope string
+ *
+ * Inputs: std::string scope - the string version of the scope
+ * Output: ActionScope - enum of scope corresponding to string
+ */
+ActionScope Helpers::actionScopeFromStr(const std::string scope)
+{
+  std::string scope_up = scope;
+  std::transform(scope_up.begin(), scope_up.end(), scope_up.begin(), toupper);
+
+  /* Parse */
+  if(scope_up == "USER")
+    return ActionScope::USER;
+  else if(scope_up == "ONE_TARGET")
+    return ActionScope::ONE_TARGET;
+  else if(scope_up == "ONE_ENEMY")
+    return ActionScope::ONE_ENEMY;
+  else if(scope_up == "TWO_ENEMIES")
+    return ActionScope::TWO_ENEMIES;
+  else if(scope_up == "ALL_ENEMIES")
+    return ActionScope::ALL_ENEMIES;
+  else if(scope_up == "ONE_ALLY")
+    return ActionScope::ONE_ALLY;
+  else if(scope_up == "ONE_ALLY_NOT_USER")
+    return ActionScope::ONE_ALLY_NOT_USER;
+  else if(scope_up == "TWO_ALLIES")
+    return ActionScope::TWO_ALLIES;
+  else if(scope_up == "ALL_ALLIES")
+    return ActionScope::ALL_ALLIES;
+  else if(scope_up == "ONE_ALLY_KO")
+    return ActionScope::ONE_ALLY_KO;
+  else if(scope_up == "ALL_ALLIES_KO")
+    return ActionScope::ALL_ALLIES_KO;
+  else if(scope_up == "ONE_PARTY")
+    return ActionScope::ONE_PARTY;
+  else if(scope_up == "ALL_TARGETS")
+    return ActionScope::ALL_TARGETS;
+  else if(scope_up == "NOT_USER")
+    return ActionScope::NOT_USER;
+  else if(scope_up == "ALL_NOT_USER")
+    return ActionScope::ALL_NOT_USER;
+  return ActionScope::NO_SCOPE;
 }
 
 /*
@@ -580,6 +654,97 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
     return "NONE";
 
   return "";
+}
+ 
+/*
+ * Description: Returns the enum form of an ailment (string)
+ *
+ * Inputs: std::string ail - string form of ailment
+ * Output: Infliction - ailment enumeration
+ */ 
+Infliction Helpers::ailmentFromStr(const std::string &ail)
+{
+  std::string ail_up = ail;
+  std::transform(ail_up.begin(), ail_up.end(), ail_up.begin(), toupper);
+
+  /* Parse */
+  if(ail_up == "POISON")
+    return Infliction::POISON;
+  else if(ail_up == "BURN")
+    return Infliction::BURN;
+  else if(ail_up == "SCALD")
+    return Infliction::SCALD;
+  else if(ail_up == "CHARR")
+    return Infliction::CHARR;
+  else if(ail_up == "BERSERK")
+    return Infliction::BERSERK;
+  else if(ail_up == "CONFUSE")
+    return Infliction::CONFUSE;
+  else if(ail_up == "SILENCE")
+    return Infliction::SILENCE;
+  else if(ail_up == "BUBBIFY")
+    return Infliction::BUBBIFY;
+  else if(ail_up == "DEATHTIMER")
+    return Infliction::DEATHTIMER;
+  else if(ail_up == "PARALYSIS")
+    return Infliction::PARALYSIS;
+  else if(ail_up == "BLINDNESS")
+    return Infliction::BLINDNESS;
+  else if(ail_up == "DREADSTRUCK")
+    return Infliction::DREADSTRUCK;
+  else if(ail_up == "DREAMSNARE")
+    return Infliction::DREAMSNARE;
+  else if(ail_up == "HELLBOUND")
+    return Infliction::HELLBOUND;
+  else if(ail_up == "BOND")
+    return Infliction::BOND;
+  else if(ail_up == "BONDED")
+    return Infliction::BONDED;
+  else if(ail_up == "ALLATKBUFF")
+    return Infliction::ALLATKBUFF;
+  else if(ail_up == "ALLDEFBUFF")
+    return Infliction::ALLDEFBUFF;
+  else if(ail_up == "PHYBUFF")
+    return Infliction::PHYBUFF;
+  else if(ail_up == "THRBUFF")
+    return Infliction::THRBUFF;
+  else if(ail_up == "POLBUFF")
+    return Infliction::POLBUFF;
+  else if(ail_up == "PRIBUFF")
+    return Infliction::PRIBUFF;
+  else if(ail_up == "CHGBUFF")
+    return Infliction::CHGBUFF;
+  else if(ail_up == "CYBBUFF")
+    return Infliction::CYBBUFF;
+  else if(ail_up == "NIHBUFF")
+    return Infliction::NIHBUFF;
+  else if(ail_up == "LIMBUFF")
+    return Infliction::LIMBUFF;
+  else if(ail_up == "UNBBUFF")
+    return Infliction::UNBBUFF;
+  else if(ail_up == "VITBUFF")
+    return Infliction::VITBUFF;
+  else if(ail_up == "QDBUFF")
+    return Infliction::QDBUFF;
+  else if(ail_up == "ROOTBOUND")
+    return Infliction::ROOTBOUND;
+  else if(ail_up == "DOUBLECAST")
+    return Infliction::DOUBLECAST;
+  else if(ail_up == "TRIPLECAST")
+    return Infliction::TRIPLECAST;
+  else if(ail_up == "HALFCOST")
+    return Infliction::HALFCOST;
+  else if(ail_up == "REFLECT")
+    return Infliction::REFLECT;
+  else if(ail_up == "HIBERNATION")
+    return Infliction::HIBERNATION;
+  else if(ail_up == "CURSE")
+    return Infliction::CURSE;
+  else if(ail_up == "METATETHER")
+    return Infliction::METATETHER;
+  else if(ail_up == "MODULATE")
+    return Infliction::MODULATE;
+  return Infliction::INVALID;
 }
 
 /*
@@ -769,6 +934,35 @@ std::string Helpers::numToRoman(int value)
   return result;
 }
 
+/*
+ * Description: Returns the enum form of an regen rate (string)
+ *
+ * Inputs: std::string regen_rate - string representation of RegenRate
+ * Output: RegenRate - the enumeration of the string
+ */
+RegenRate Helpers::regenRateFromStr(const std::string &regen_rate)
+{
+  std::string regen_up = regen_rate;
+  std::transform(regen_up.begin(), regen_up.end(), regen_up.begin(), toupper);
+
+  /* Parse */
+  if(regen_up == "WEAK")
+    return RegenRate::WEAK;
+  else if(regen_up == "NORMAL")
+    return RegenRate::NORMAL;
+  else if(regen_up == "STRONG")
+    return RegenRate::STRONG;
+  else if(regen_up == "GRAND")
+    return RegenRate::GRAND;
+  return RegenRate::ZERO;
+}
+
+/*
+ * Description: Returns the string form of an regen rate (enum)
+ *
+ * Inputs: RegenRate - enumerated type of RegenRate
+ * Output: std::string - the string of the enumeration
+ */
 std::string Helpers::regenRateToStr(const RegenRate &regen_rate)
 {
   if (regen_rate == RegenRate::ZERO)

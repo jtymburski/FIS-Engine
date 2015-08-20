@@ -310,6 +310,42 @@ bool Item::isBaseItem()
 {
   return (base_item == nullptr);
 }
+  
+/*
+ * Description: Loads the data from file associated with the category.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         SDL_Renderer* renderer - the rendering engine
+ * Output: bool - true if load was successful
+ */
+bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
+                    std::string base_path)
+{
+  bool success = true;
+
+  /* ---- ANIMATION ---- */
+  if(data.getElement(index) == "animation")
+  {
+
+  }
+  /* ---- DESCRIPTION ---- */
+  else if(data.getElement(index) == "description")
+  {
+
+  }
+  /* ---- NAME ---- */
+  else if(data.getElement(index) == "name")
+  {
+
+  }
+
+  std::cout << "ITEM: " << data.getElement(index) << "," << success 
+            << std::endl;
+  printInfo();
+
+  return success;
+}
 
 /*
  * Description: Prints out the state of the both flags (regular and material)

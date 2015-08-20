@@ -131,10 +131,7 @@ private:
  *============================================================================*/
 private:
   /* Add effect data */
-  bool addEffectData();
-
-  /* Determines the Skill classification based on contained effects */
-  void flagSetup();
+  bool addEffectData(); // TODO: Remove? Unimplemented...
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -146,11 +143,18 @@ public:
   /* Attempts to add a vector of effects to the Skill */
   bool addActions(const std::vector<Action*> &new_actions);
 
+  /* Determines the Skill classification based on contained effects */
+  void flagSetup();
+
   /* Determines if a Skill is able to be used with Berserk */
   bool isBerserkSkill();
 
   /* Determines if the Skill is valid */
   bool isValid();
+
+  /* Load data from file */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
+                std::string base_path);
 
   /* Prints out the information about the current Skill state */
   void print(bool flags);

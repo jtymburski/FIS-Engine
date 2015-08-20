@@ -185,7 +185,7 @@ private:
 
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer, 
-            std::string inst_file, bool encryption = false);
+            std::string inst_file = "", bool encryption = false);
 
   /* Load game data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer);
@@ -209,9 +209,6 @@ private:
 
   /* Set up the battle */
   void setupBattle();
-
-  /* Set up the map */
-  void setupMap();
 
   /* Unload the game */
   void unload();

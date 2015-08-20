@@ -79,11 +79,12 @@ Game::Game(Options* running_config)
   map_test_path = "";
   mode = DISABLED;
 
+  /* Set up battle and map classes - initial */
+  map_ctrl = new Map(config, &event_handler);
+  battle_vis = new BattleDisplay(config);
+
   /* Set game configuration */
   setConfiguration(running_config);
-
-  /* Set up the render classes */
-  setupMap();
 }
 
 /* Destructor function */
@@ -241,10 +242,10 @@ SkillSet* Game::addSkillSet(const int32_t &id)
 }
 
 //TODO: Battle display data container, instead of instantiating upon
-// display creation? [07-18-15]
+// display creation? [07-18-15] - from file??
 void Game::buildBattleDisplayFrames(SDL_Renderer* renderer)
 {
-  if (battle_vis != nullptr)
+  if(battle_vis != nullptr)
   {
     /* Set the ailments */
     battle_vis->setAilment(Infliction::POISON,
@@ -537,6 +538,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
     // TODO: Game clean-up, if required
 
     // TODO: Call to map for clean-up
+
+    mode = MAP;
   }
   /* If failed, unload */
   else
@@ -547,12 +550,127 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
   return success;
 }
-  
+
 /* Load game specific data */
 // TODO: Comment
 bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
 {
-  std::cout << "TODO: " << data.getElement(index) << std::endl;
+  bool success = true;
+
+  /* ID index */
+  int id = -1;
+  std::string id_str = data.getKeyValue(index);
+  if(!id_str.empty())
+    id = std::stoi(id_str);
+
+  /* ---- ACTIONS ---- */
+  if(data.getElement(index) == "action")
+  {
+    addAction(data.getDataString());
+  }
+  /* ---- CLASSES ---- */
+  else if(data.getElement(index) == "class")
+  {
+    Category* edit_class = getClass(id);
+    if(edit_class == nullptr)
+      edit_class = addClass(id);
+
+    /* Data for class */
+    if(data.getElement(index + 1) == "skillset")
+      edit_class->setSkills(getSkillSet(data.getDataInteger(&success)));
+    else
+      success &= edit_class->loadData(data, index + 1, renderer);
+  }
+  /* ---- ITEMS ---- */
+  else if(data.getElement(index) == "item")
+  {
+    Item* edit_item = getItem(id);
+    if(edit_item == nullptr)
+      edit_item = addItem(id);
+
+    /* Data for skill */
+    if(data.getElement(index + 1) == "skill")
+      edit_item->setUseSkill(getSkill(data.getDataInteger(&success)));
+    else
+      success &= edit_item->loadData(data, index + 1, renderer, base_path);
+  }
+  /* ---- PARTIES ---- */
+  else if(data.getElement(index) == "party")
+  {
+    Party* edit_party = getParty(id);
+    if(edit_party == nullptr)
+      edit_party = addParty(id);
+
+    std::cout << "TODO PARTY: " << edit_party << std::endl;
+  }
+  /* ---- PERSONS ---- */
+  else if(data.getElement(index) == "person")
+  {
+    Person* edit_person = getPersonBase(id);
+    if(edit_person == nullptr)
+      edit_person = addPersonBase(id);
+
+    std::cout << "TODO PERSON: " << edit_person << std::endl;
+  }
+  /* ---- RACES ---- */
+  else if(data.getElement(index) == "race")
+  {
+    Category* edit_race = getRace(id);
+    if(edit_race == nullptr)
+      edit_race = addRace(id);
+
+    /* Data for race */
+    if(data.getElement(index + 1) == "skillset")
+      edit_race->setSkills(getSkillSet(data.getDataInteger(&success)));
+    else
+      success &= edit_race->loadData(data, index + 1, renderer);
+  }
+  /* ---- SKILLS ---- */
+  else if(data.getElement(index) == "skill")
+  {
+    Skill* edit_skill = getSkill(id);
+    if(edit_skill == nullptr)
+      edit_skill = addSkill(id);
+
+    /* Data for skill */
+    if(data.getElement(index + 1) == "action")
+      edit_skill->addAction(getAction(data.getDataInteger(&success)), false);
+    else
+      success &= edit_skill->loadData(data, index + 1, renderer, base_path);
+
+    /* Flag setup after changes */
+    edit_skill->flagSetup();
+  }
+  /* ---- SKILLSETS ---- */
+  else if(data.getElement(index) == "skillset")
+  {
+    SkillSet* edit_set = getSkillSet(id);
+    if(edit_set == nullptr)
+      edit_set = addSkillSet(id);
+
+    /* Data for skill set */
+    if(data.getElement(index + 1) == "skill")
+    {
+      std::string str_pair = data.getDataString(&success);
+      if(success)
+      {
+        /* Split on the comma */
+        std::vector<std::string> pair_split = Helpers::split(str_pair, ',');
+        if(pair_split.size() == 2)
+        {
+          int first = std::stoi(pair_split.front());
+          int second = std::stoi(pair_split.back());
+
+          // TODO: Do I need to take 'enabled' flag into account??
+          edit_set->addSkill(getSkill(first), second);
+        }
+      }
+    }
+
+    edit_set->print();
+  }
+
+  return success;
 }
 
 // TODO: Comment
@@ -710,23 +828,10 @@ void Game::removeSkillSets()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  // TODO
+  // TODO: Add parameters?
   std::cout << "Battle TODO - in game" << std::endl;
 }
 
-/* Set up the map - old map needs to be deleted prior to calling */
-void Game::setupMap()
-{
-  // TODO: Fix
-
-  /* Create the map */
-  map_ctrl = new Map(config, &event_handler);
-  mode = MAP;
-
-//  /* Load the map - temporary location */
-//  map_ctrl->loadMap("maps/test_04");
-}
-  
 /* Unload the game */
 void Game::unload()
 {
@@ -735,6 +840,7 @@ void Game::unload()
     // TODO: Unload all resources
 
     loaded = false;
+    mode = DISABLED;
   }
 }
 
@@ -916,7 +1022,7 @@ SkillSet* Game::getSkillSet(const int32_t &index, const bool &by_id)
 bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
   /* Exit the game, game has finished processing */
-  if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
+  if(event.keysym.sym == SDLK_ESCAPE)
   {
     return true;
   }
@@ -940,7 +1046,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   }
   else if(event.keysym.sym == SDLK_F5 && mode == MAP && map_ctrl != nullptr)
   {
-    map_ctrl->reloadMap(active_renderer);
+    // TODO: REVISE - reload game
+    //map_ctrl->reloadMap(active_renderer);
   }
   /* Show item store dialog in map */
   else if(event.keysym.sym == SDLK_5)
@@ -975,7 +1082,6 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     else if(mode == BATTLE)
     {
       if(battle_vis->getRenderingState() == battle_ctrl->getTurnState())
-         // !battle_vis->getRenderFlag(RenderState::SHOW_INFO))
         return battle_ctrl->keyDownEvent(event);
     }
   }
@@ -1023,17 +1129,27 @@ bool Game::render(SDL_Renderer* renderer)
 //  }
 
   /* Make sure the active renderer is set up */
-  // TODO: Possibly revise. Change how the game handles maps and changing
   if(active_renderer == NULL)
-    active_renderer = renderer;
+  {
+    buildBattleDisplayFrames(renderer);
 
-  /* Map initialization location */
+    active_renderer = renderer;
+  }
+
+  /* Game initialization location */
+  //if(!loaded)
+  //{
+  //  load(game_path, renderer);
+  //}
+
+  /* Map initialization location */ // TODO: Future remove
   if(!map_ctrl->isLoaded())
   {
     if(map_test_path.empty())
       map_ctrl->loadMap(base_path + "maps/Univursa.ugv", renderer);
     else
       map_ctrl->loadMap(map_test_path, renderer);
+    mode = MAP;
   }
 
   if(mode == MAP)
@@ -1083,10 +1199,11 @@ bool Game::update(int32_t cycle_time)
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
 
+  /* MAP MODE */
   if(mode == MAP && map_ctrl != nullptr)
     return map_ctrl->update(cycle_time);
-
-  if(mode == BATTLE)
+  /* BATTLE MODE */
+  else if(mode == BATTLE)
   {
     bool success = true;
 

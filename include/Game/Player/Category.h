@@ -133,6 +133,9 @@ public:
   /* Checks if a person of this cat. is immune to a given infliction */
   bool isImmune(const Infliction &check_immunity);
 
+  /* Load data from file */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer);
+
   /* Removes a given infliction from the list of immunities (if it exists) */
   bool removeImmunity(const Infliction &rem_immunity);
 
@@ -186,6 +189,9 @@ public:
 
   /* Assign a new enumerated quantum drive regeneration rate */
   void setQDRegenRate(const RegenRate &new_regen_rate);
+
+  /* Assign a skill set */
+  void setSkills(SkillSet* set);
 
   /* Assign a new enumerated vitality regeneration rate */
   void setVitaRegenRate(const RegenRate &new_regen_rate);

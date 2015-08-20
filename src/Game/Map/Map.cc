@@ -1228,7 +1228,7 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
 bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer)
 {
   // TODO: Transfer and re-appropriate the loadMap() call to this
-  std::cout << "TODO: " << data.getElement(index) << std::endl;
+  std::cout << "TODO-M: " << data.getElement(index) << std::endl;
 }
 
 // TODO: Separate file add success and XML read success to parse error

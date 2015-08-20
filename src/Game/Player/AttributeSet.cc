@@ -91,10 +91,11 @@ const std::vector<std::vector<int32_t>> AttributeSet::kPRESETS =
    2000, 2000, 2000, 200}
 };
 
-const  int32_t AttributeSet::kDEFAULT     =      0;
-const  int32_t AttributeSet::kMIN_VALUE   =  -9999;
-const  int32_t AttributeSet::kMIN_P_VALUE =      0;
-const uint32_t AttributeSet::kMAX_VALUE   = 999999;
+const  int32_t AttributeSet::kDEFAULT      =      0;
+const  int32_t AttributeSet::kMIN_VALUE    =  -9999;
+const  int32_t AttributeSet::kMIN_P_VALUE  =      0;
+const uint32_t AttributeSet::kMAX_VALUE    = 999999;
+const uint32_t AttributeSet::kNUM_ELEMENTS =     20;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -592,6 +593,36 @@ std::string AttributeSet::getName(const size_t &index)
     return kSHORT_NAMES[index];
 
   return "";
+}
+
+/* Create set from comma delimited string */
+/* 50,100,8,8,0,0,0,0,5,5,5,5,0,0,0,0,9,9,10,0,T,F */
+AttributeSet AttributeSet::setFromStr(const std::string &str)
+{
+  std::vector<std::string> set = Helpers::split(str, ',');
+  std::vector<int> value_set;
+
+  if(set.size() == (kNUM_ELEMENTS + 2))
+  {
+    /* Get numbers first */
+    for(uint32_t i = 0; i < kNUM_ELEMENTS; i++)
+      value_set.push_back(std::stoi(set[i]));
+
+    /* Parse personal boolean */
+    bool personal = false;
+    if(set[kNUM_ELEMENTS] == "T")
+      personal = true;
+
+    /* Parse constant boolean */
+    bool constant = false;
+      if(set[kNUM_ELEMENTS + 1] == "T")
+        constant = true;
+
+    /* Return object */
+    return AttributeSet(value_set, personal, constant);
+  }
+
+  return AttributeSet();
 }
 
 /*=============================================================================

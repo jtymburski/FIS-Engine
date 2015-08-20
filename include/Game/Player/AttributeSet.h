@@ -67,11 +67,11 @@ private:
   static const std::vector<std::string> kLONG_NAMES;   /* Full names of Attrs */
   static const std::vector<std::vector<int32_t>> kPRESETS; /* Pre-built stats */
 
-  static const  int32_t kDEFAULT;     /* Default value for a min stat   */
-  static const  int32_t kMIN_P_VALUE; /* The minimum value for a p. set */
-  static const  int32_t kMIN_VALUE;   /* The minimum value of any stat  */
-  static const uint32_t kMAX_VALUE;   /* The maximum value of any stat  */
-
+  static const  int32_t kDEFAULT;      /* Default value for a min stat   */
+  static const  int32_t kMIN_P_VALUE;  /* The minimum value for a p. set */
+  static const  int32_t kMIN_VALUE;    /* The minimum value of any stat  */
+  static const uint32_t kMAX_VALUE;    /* The maximum value of any stat  */
+  static const uint32_t kNUM_ELEMENTS; /* Number of elements in set */
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -146,6 +146,9 @@ public:
 
   /* Returns the short name form of a stat at a given index */
   static std::string getName(const size_t &index);
+
+  /* Create set from comma delimited string */
+  static AttributeSet setFromStr(const std::string &str);
 
 /*============================================================================
  * OPERATOR FUNCTIONS

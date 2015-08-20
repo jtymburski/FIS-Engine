@@ -279,6 +279,7 @@ void SkillSet::print(const bool &simple)
   uint32_t index = 0;
 
   std::cout << "--- Skill Set ---" << std::endl;
+  std::cout << "ID: " << id << std::endl;
   std::cout << "Skill Set Elements: " << skill_elements.size() << std::endl;
 
   for (SetElement element : skill_elements)
