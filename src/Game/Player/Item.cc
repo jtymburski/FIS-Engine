@@ -2,7 +2,7 @@
  * Class Name: Item [Implementation]
  * Date Created: December 9th, 2013
  * Inheritance: none
- * Description: An Item is an object contained within the inventory of a party. 
+ * Description: An Item is an object contained within the inventory of a party.
  *              An Item may be a key item which is important for the progression
  *              through the game, some sort of material or component, an item
  *              that has a use in Battle or Menu (does some skill, etc.), or
@@ -46,7 +46,12 @@ Item::Item()
     , my_id{++id}
     , base_item{nullptr}
     , thumbnail{nullptr}
+    , value{0}
 {
+  setDurability(kMAX_DURABILITY, true);
+  setMass(kMIN_MASS);
+
+  setupClass();
 }
 
 /*
@@ -87,7 +92,7 @@ Item::Item(Item* const source)
 }
 
 /*
- * Description: Base Item construction - constructs an Item with a game_id, 
+ * Description: Base Item construction - constructs an Item with a game_id,
  *              name, value, icon and mass.
  *
  * Inputs: game_id - the game ID (base ID of the item)
@@ -96,8 +101,8 @@ Item::Item(Item* const source)
  *         thumbnail - icon for the Item
  *         mass - base mass for the Item
  */
-Item::Item(const int32_t &game_id, const std::string &name, 
-    const uint32_t &value, Frame* thumbnail, const uint32_t &mass, 
+Item::Item(const int32_t &game_id, const std::string &name,
+    const uint32_t &value, Frame* thumbnail, const uint32_t &mass,
     const uint32_t &dura)
       : game_id{game_id}
       , my_id{++id}
@@ -157,13 +162,13 @@ void Item::setupClass()
 {
   /* Clear some variables that are the same between both */
   value_modifier = 0;
-  
+
   /* Setup the class as a standalone Item */
   if (base_item == nullptr)
   {
     buff_set = AttributeSet();
-    
-    brief_description = StringDb::kDEFAULT_ITEM_DESC;
+
+    brief_description = "";//StringDb::kDEFAULT_ITEM_DESC;
     description = StringDb::kDEFAULT_ITEM_DESC;
     composition = static_cast<Material>(0);
     durability = max_durability;
@@ -175,7 +180,7 @@ void Item::setupClass()
     using_skill     = nullptr;
     using_animation = nullptr;
     using_message   = "";
-    using_sound     = nullptr;  
+    using_sound     = nullptr;
   }
 
   /* Setup the class as a copy of the Base Item */
@@ -215,7 +220,11 @@ void Item::unsetAll()
   /* Unset the thumbnail, only if it's a base */
   if (base_item == nullptr && thumbnail != nullptr)
     delete thumbnail;
-  
+
+  /* Unset the using animation, only if it's a base */
+  if(base_item == nullptr && using_animation != nullptr)
+    delete using_animation;
+
   /* Clear variables in the class */
   id = 0;
   base_item = nullptr;
@@ -261,7 +270,7 @@ void Item::print()
  * Description: Virtual method which returns the current stats of the Item.
  *
  * Inputs: none
- * Output: AttributeSet - the stats of the 
+ * Output: AttributeSet - the stats of the
  */
 AttributeSet Item::getStats()
 {
@@ -288,7 +297,7 @@ uint32_t Item::getMass()
 uint32_t Item::getValue()
 {
   auto calc_value = value + value_modifier;
-  
+
   /* Check bounds (calc_value is unsigned) */
   if (calc_value > kMAX_VALUE)
     return kMAX_VALUE;
@@ -301,7 +310,7 @@ uint32_t Item::getValue()
  *============================================================================*/
 
 /*
- * Description: 
+ * Description:
  *
  * Inputs:
  * Output:
@@ -310,7 +319,7 @@ bool Item::isBaseItem()
 {
   return (base_item == nullptr);
 }
-  
+
 /*
  * Description: Loads the data from file associated with the category.
  *
@@ -327,20 +336,131 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- ANIMATION ---- */
   if(data.getElement(index) == "animation")
   {
+    /* If null, create */
+    if(using_animation == nullptr)
+    {
+      std::cout << "HERE" << std::endl;
+      using_animation = new Sprite();
+    }
 
+    /* Add data */
+    success &= using_animation->addFileInformation(data, index + 1,
+                                                   renderer, base_path);
+  }
+  /* ---- BRIEF DESCRIPTION ---- */
+  else if(data.getElement(index) == "brief_desc")
+  {
+    success &= setBriefDescription(data.getDataString(&success));
   }
   /* ---- DESCRIPTION ---- */
   else if(data.getElement(index) == "description")
   {
+    success &= setDescription(data.getDataString(&success));
+  }
+  /* ---- DURABILITY ---- */
+  else if(data.getElement(index) == "durability")
+  {
+    success &= setDurability(data.getDataInteger(&success), true);
+  }
+  /* ---- FLAGS ---- */
+  else if(data.getElement(index) == "flags")
+  {
+    // TODO: ENUM
+  }
+  /* ---- MASS ---- */
+  else if(data.getElement(index) == "mass")
+  {
+    success &= setMass(data.getDataInteger(&success));
+  }
+  /* ---- MATERIAL ---- */
+  else if(data.getElement(index) == "material")
+  {
+    bool state = data.getDataBool(&success);
 
+    if(success)
+    {
+      if(data.getElement(index + 1) == "wooden")
+        setMaterial(Material::WOODEN, state);
+      else if(data.getElement(index + 1) == "steel")
+        setMaterial(Material::STEEL, state);
+      else if(data.getElement(index + 1) == "brass")
+        setMaterial(Material::BRASS, state);
+      else if(data.getElement(index + 1) == "titanium")
+        setMaterial(Material::TITANIUM, state);
+      else if(data.getElement(index + 1) == "graphene")
+        setMaterial(Material::GRAPHENE, state);
+      else if(data.getElement(index + 1) == "physical")
+        setMaterial(Material::PHYSICAL, state);
+      else if(data.getElement(index + 1) == "non_physical")
+        setMaterial(Material::NON_PHYSICAL, state);
+      else if(data.getElement(index  + 1) == "fire")
+        setMaterial(Material::FIRE, state);
+      else if(data.getElement(index + 1) == "forest")
+        setMaterial(Material::FOREST, state);
+      else if(data.getElement(index + 1) == "ice")
+        setMaterial(Material::ICE, state);
+      else if(data.getElement(index + 1) == "electric")
+        setMaterial(Material::ELECTRIC, state);
+      else if(data.getElement(index + 1) == "digital")
+        setMaterial(Material::DIGITAL, state);
+      else if(data.getElement(index + 1) == "void")
+        setMaterial(Material::NIHIL, state);
+    }
+  }
+  /* ---- MESSAGE ---- */
+  else if(data.getElement(index) == "message")
+  {
+    success &= setUseMessage(data.getDataString(&success));
   }
   /* ---- NAME ---- */
   else if(data.getElement(index) == "name")
   {
+    success &= setName(data.getDataString(&success));
+  }
+  /* ---- PREFIX ---- */
+  else if(data.getElement(index) == "prefix")
+  {
+    success &= setPrefix(data.getDataString(&success));
+  }
+  /* ---- TIER ---- */
+  else if(data.getElement(index) == "tier")
+  {
+    // TODO: ENUM
+  }
+  /* ---- THUMBNAIL ---- */
+  else if(data.getElement(index) == "thumb")
+  {
+    /* If null, create */
+    if(thumbnail == nullptr)
+      thumbnail = new Frame();
 
+    /* Add data */
+    success &= thumbnail->setTexture(base_path +
+                                     data.getDataString(&success), renderer);
+  }
+  /* ---- USE ---- */
+  else if(data.getElement(index) == "use")
+  {
+    std::string state = data.getDataString(&success);
+    if(success)
+    {
+      if(state == "always")
+        setOccasion(ActionOccasion::ALWAYS);
+      else if(state == "battle")
+        setOccasion(ActionOccasion::BATTLE);
+      else if(state == "menu")
+        setOccasion(ActionOccasion::MENU);
+      else
+        setOccasion(ActionOccasion::NONE);
+    }
+  }
+  /* ---- VALUE ---- */
+  else if(data.getElement(index) == "value")
+  {
+    success &= setValue(data.getDataInteger(&success));
   }
 
-  std::cout << "ITEM: " << data.getElement(index) << "," << success 
+  std::cout << "ITEM: " << data.getElement(index) << "," << success
             << std::endl;
   printInfo();
 
@@ -398,7 +518,7 @@ void Item::printInfo(const bool &basic)
 {
   if (basic)
   {
-    std::cout << "ID: " << my_id << "Game ID: " << game_id << " N: " << name 
+    std::cout << "ID: " << my_id << "Game ID: " << game_id << " N: " << name
               << " M: " << mass << " V: " << value << "\n";
   }
   else
@@ -407,11 +527,13 @@ void Item::printInfo(const bool &basic)
     std::cout << "Base Item? " << isBaseItem() << "\n";
     std::cout << "Brief Description: " << brief_description << "\n";
     std::cout << "Description: " << description << "\n";
+    std::cout << "Durability: " << durability << "\n";
     std::cout << "Game ID: " << game_id << "\n";
     std::cout << "Mass: " << mass << "\n";
+    std::cout << "Material: " << (int)composition << "\n";
     std::cout << "Name: " << name << "\n";
     std::cout << "Prefix: " << prefix << "\n";
-    std::cout << "[void]Occasion: " << "\n";
+    std::cout << "Occasion: " << (int)occasion << "\n";
     std::cout << "Thumbnail? " << !(thumbnail == nullptr) << "\n";
     std::cout << "Use Skill? " << !(using_skill == nullptr) << "\n";
     std::cout << "Use Animation? " << !(using_animation == nullptr) << "\n";
@@ -419,7 +541,7 @@ void Item::printInfo(const bool &basic)
     std::cout << "Use Sound? " << !(using_sound == nullptr) << "\n";
     std::cout << "Value: " << value << "\n";
 
-    std::cout << "Buff_Set: " << "\n"; 
+    std::cout << "Buff_Set: " << "\n";
     buff_set.print(basic);
     std::cout << "\n";
   }
@@ -471,7 +593,7 @@ int32_t Item::getGameID() const
 
 /*
  * Description: Returns the actual unique ID (my_id) of the current Item.
- * 
+ *
  * Inputs: none
  * Output: int32_t - the actual unique ID of the current item
  */
@@ -482,8 +604,8 @@ int32_t Item::getID()
 
 /*
  * Description: Returns the assigned enumerated tier level for the item.
- * 
- * Inputs: 
+ *
+ * Inputs:
  * Output: ItemTier - enumerated Item tier for the item.
  */
 ItemTier Item::getItemTier()
@@ -591,10 +713,10 @@ std::string Item::getUseMessage()
 }
 
  /*
- * Description: 
+ * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 Skill* Item::getUseSkill()
 {
@@ -645,7 +767,7 @@ bool Item::setBriefDescription(const std::string &new_brief_description)
 /*
  * Description: Attempts to assign a new string description to the Item and
  *              returns the outcome of the assignment
- *  
+ *
  * Inputs: new_description - descripion of the Item
  * Output: bool - outcome of the description assignment
  */
@@ -654,7 +776,7 @@ bool Item::setDescription(const std::string &new_description)
   if (new_description.size() <= StringDb::kMAX_DESC)
   {
     description = new_description;
-    
+
     return true;
   }
 
@@ -665,18 +787,24 @@ bool Item::setDescription(const std::string &new_description)
  * Description: Attempts to assign a new current durability value to the Item,
  *              but will fail if the new durability value is beyond the Item's
  *              maximum durability.
- *  
+ *
  * Inputs: new_durability - new durability value for the Item
+ *         bool max - set the max as well with the durability
  * Output: bool- outcome of the description assignment
  */
-bool Item::setDurability(const uint32_t &new_durability)
+bool Item::setDurability(const uint32_t &new_durability, const bool &max)
 {
+  /* Max first */
+  if(max && new_durability <= kMAX_DURABILITY)
+    max_durability = kMAX_DURABILITY;
+
+  /* Then, normal dura */
   if (new_durability <= max_durability)
   {
     durability = new_durability;
     return true;
   }
-  
+
   return false;
 }
 
@@ -748,7 +876,7 @@ bool Item::setName(const std::string &new_name)
 }
 
  /*
- * Description: Attempts to assign a new prefix to the Item and returns the 
+ * Description: Attempts to assign a new prefix to the Item and returns the
  *              outcome of the assignment
  *
  * Inputs: new_prefix - string prefix for the Item
@@ -805,6 +933,11 @@ bool Item::setMass(uint32_t new_mass)
  */
 bool Item::setThumbnail(Frame* new_thumbnail)
 {
+  /* If not null, delete */
+  if(thumbnail != nullptr)
+    delete thumbnail;
+
+  /* Set */
   thumbnail = new_thumbnail;
 
   return (new_thumbnail != nullptr);
@@ -819,13 +952,18 @@ bool Item::setThumbnail(Frame* new_thumbnail)
  */
 bool Item::setUseAnimation(Sprite* new_animation)
 {
+  /* If not null, delete */
+  if(using_animation != nullptr)
+    delete using_animation;
+
+  /* Set */
   using_animation = new_animation;
 
   return (new_animation != nullptr);
 }
 
  /*
- * Description: Attempts to assign a new usage message to the Item and 
+ * Description: Attempts to assign a new usage message to the Item and
  *              returns the outcome of the assignment.
  *
  * Inputs: new_message - new message to attempted to be assigned
@@ -844,7 +982,7 @@ bool Item::setUseMessage(const std::string &new_message)
 }
 
  /*
- * Description: Attempts to assign a new skill use effect to the Item and 
+ * Description: Attempts to assign a new skill use effect to the Item and
  *              returns true if the new skill effect is not null.
  *
  * Inputs: new_skill - ptr to the new usage skill for the Item
@@ -892,7 +1030,7 @@ bool Item::setValue(const uint32_t &new_value)
 
 /*
  * Description: Assigns a modifier value which is computed against the value
- *              when getValue() is called. 
+ *              when getValue() is called.
  *              and returns the outcome of the assignment.
  *
  * Inputs: new_value - new value to assign for the Item

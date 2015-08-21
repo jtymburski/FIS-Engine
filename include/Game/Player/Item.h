@@ -275,7 +275,7 @@ public:
   bool setDescription(const std::string &new_description);
 
   /* Assigns a new durability to the item */
-  bool setDurability(const uint32_t &new_durability);
+  bool setDurability(const uint32_t &new_durability, const bool &max = false);
 
   /* Assigns a given ItemFlags flag to a given value */
   void setFlag(ItemFlags flag, const bool &set_value = true);

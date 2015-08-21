@@ -34,10 +34,10 @@
  */
 enum class ActionOccasion : std::uint8_t
 {
-  ALWAYS,
-  BATTLE,
-  MENU,
-  NONE
+  NONE = 0,
+  ALWAYS = 1,
+  BATTLE = 2,
+  MENU = 3
 };
 
 

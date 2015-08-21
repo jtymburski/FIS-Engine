@@ -661,13 +661,10 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
           int first = std::stoi(pair_split.front());
           int second = std::stoi(pair_split.back());
 
-          // TODO: Do I need to take 'enabled' flag into account??
           edit_set->addSkill(getSkill(first), second);
         }
       }
     }
-
-    edit_set->print();
   }
 
   return success;
