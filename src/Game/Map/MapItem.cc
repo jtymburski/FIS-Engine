@@ -27,7 +27,6 @@ const float MapItem::kMIN_BRIGHTNESS = 1.0;
 MapItem::MapItem() : MapThing()
 {
   brighter = false;
-  core_id = kUNSET_ID;
   walkover = false;
   
   /* Set the count to 0 since the map item is not configured */
@@ -146,13 +145,6 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
       }
     }
   }
-  /*--------------------- CORE ID --------------------*/
-  else if(identifier == "core_id" && elements.size() == 1)
-  {
-    int id = data.getDataInteger(&success);
-    if(success)
-      setCoreID(id);
-  }
   /*--------------------- COUNT --------------------*/
   else if(identifier == "count" && elements.size() == 1)
   {
@@ -231,25 +223,9 @@ void MapItem::clear()
   /* Clear out the item variables */
   setCount(0);
   setWalkover(false);
-  core_id = kUNSET_ID;
 
   /* Clear out parent */
   MapThing::clear();
-}
-
-/*
- * Description: Returns the core ID for the item. This is the ID that matches
- *              the player class (used for coordination on pickup and item
- *              giving.
- *
- * Inputs: none
- * Output: int - the integer ID. Less than 0 is unset.
- */
-int MapItem::getCoreID()
-{
-  if(base != NULL && base_category == ThingBase::ITEM)
-    return static_cast<MapItem*>(base)->core_id;
-  return core_id;
 }
 
 /*
@@ -320,22 +296,6 @@ bool MapItem::setBase(MapThing* base)
   }
 
   return success;
-}
-
-/*
- * Description: Sets the core ID for the item. This is the ID that matches
- *              the player class (used for coordination on pickup and item
- *              giving.
- *
- * Inputs: int id - the new ID. Invalid if below 0.
- * Output: none
- */
-void MapItem::setCoreID(int id)
-{
-  if(id >= 0)
-    core_id = id;
-  else
-    core_id = kUNSET_ID;
 }
 
 /*

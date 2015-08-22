@@ -26,9 +26,6 @@ private:
   /* Status if the item is being brightened. Otherwise, darken it */
   bool brighter;
   
-  /* The core ID that is connected to the game item */
-  int core_id;
-  
   /* The number of items available */
   uint32_t count;
 
@@ -72,9 +69,6 @@ public:
   /* Clears out the item construct, void of painting */
   void clear();
 
-  /* Returns the core (game representation) ID. -1 if unset */
-  int getCoreID();
-  
   /* Returns the count of how many of these items are available */
   uint32_t getCount();
   
@@ -86,9 +80,6 @@ public:
    
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
-  
-  /* Sets the core (game representation) ID. If invalid, sets to -1 */
-  void setCoreID(int id);
   
   /* Sets the number of this item */
   void setCount(uint32_t count);

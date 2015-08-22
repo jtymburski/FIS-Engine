@@ -85,9 +85,6 @@ private:
   /* Is the game loaded? */
   bool loaded;
 
-  /* The bubbified skill set */
-  //SkillSet* bubbified_skills; // TODO: Make a const ID in skill set stack
-
   /* Map variables */
   Map* map_ctrl; /* Main class */
   int map_lvl; /* Active level number */
@@ -145,15 +142,19 @@ private:
   /* The pickup item event - from walking over or triggering from action key */
   void eventPickupItem(MapItem* item, bool walkover);
 
-  /* Starts a battle event. Using the given information - TODO */
+  /* Starts a battle event. Using the given information */
   void eventStartBattle(int person_id, int source_id);
+  
+  /* Switch maps event. - utilizing a map ID */
+  void eventSwitchMap(int map_id);
 
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
 
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
-            std::string inst_file = "", bool encryption = false);
+            std::string inst_file = "", bool encryption = false, 
+            bool full_load = true);
 
   /* Load game data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer);
@@ -220,7 +221,7 @@ public:
   //void unpause(); // TODO: implement
 
   /* Unload game */
-  void unload();
+  void unload(bool full_unload = true);
 
   /* Updates the game state */
   bool update(int cycle_time);

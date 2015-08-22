@@ -423,8 +423,24 @@ bool Game::eventGiveItem(int id, int count)
   /* If the item was inserted, display pickup notification */
   if(found_item != nullptr)
   {
-    // TODO: Attempt insert. For now, according to variable
-    bool inserted = true;
+    /* Try and insert into sleuth inventory */
+    bool inserted = false;
+    if(player_main != nullptr && player_main->getSleuth() != nullptr && 
+       player_main->getSleuth()->getInventory() != nullptr)
+    {
+      Item* new_item = new Item(found_item);
+      AddStatus status = player_main->getSleuth()->getInventory()
+                                         ->add(new_item, count);
+      if(status == AddStatus::GOOD_DELETE)
+      {
+        delete new_item;
+        inserted = true;
+      }
+      else if(status == AddStatus::GOOD_KEEP)
+      {
+        inserted = true;
+      }
+    }
 
     /* If inserted, notify that the pickup was a success */
     if(inserted)
@@ -441,6 +457,8 @@ bool Game::eventGiveItem(int id, int count)
                                    std::to_string(count) + " " +
                                    found_item->getName());
     }
+
+    return inserted;
   }
 
   return false;
@@ -465,8 +483,7 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 {
   if(item != nullptr && item->isWalkover() == walkover)
   {
-    bool was_inserted = eventGiveItem(item->getCoreID(), item->getCount());
-    was_inserted = true; // TODO: Fix once give item is working
+    bool was_inserted = eventGiveItem(item->getGameID(), item->getCount());
 
     /* If the insert was successful, pickup the item */
     if(map_ctrl != nullptr && was_inserted)
@@ -483,6 +500,16 @@ void Game::eventStartBattle(int person_id, int source_id)
     mode = BATTLE;
   }
 }
+  
+/* Switch maps event. - utilizing a map ID */
+void Game::eventSwitchMap(int map_id)
+{
+  if(map_id >= 0 && map_id != map_lvl)
+  {
+    map_lvl = map_id;
+    load(game_path, active_renderer, "", false, false);
+  }
+}
 
 /* Teleport thing event, based on ID and coordinates */
 void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
@@ -497,7 +524,7 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 //        Otherwise, determine current map from inst first, then load correct
 //        base followed by correct inst map and all associated data.
 bool Game::load(std::string base_file, SDL_Renderer* renderer, 
-                std::string inst_file, bool encryption)
+                std::string inst_file, bool encryption, bool full_load)
 {
   (void)inst_file;
 
@@ -507,8 +534,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   std::string level = std::to_string(map_lvl);
   bool success = true;
 
-  /* Ensure nothing is loaded */
-  unload();
+  /* Ensure nothing is loaded - if full load is false, just unloads map */
+  unload(full_load);
 
   /* Create the file handler */
   FileHandler fh(base_file, false, true, encryption);
@@ -531,7 +558,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
       if(data.getElement(index) == "game")
       {
         /* Core game data */
-        if(data.getElement(index + 1) == "core")
+        if(data.getElement(index + 1) == "core" && full_load)
         {
           success &= loadData(data, index + 2, renderer);
         }
@@ -550,9 +577,12 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   /* If the load was successful, proceed to clean-up */
   if(success)
   {
-    /* Player set-up */
-    player_main = new Player(getParty(kID_PARTY_SLEUTH), 
-                             getParty(kID_PARTY_BEARACKS));
+    if(full_load)
+    {
+      /* Player set-up */
+      player_main = new Player(getParty(kID_PARTY_SLEUTH), 
+                               getParty(kID_PARTY_BEARACKS));
+    }
 
     /* Clean up map */
     map_ctrl->loadDataFinish(renderer);
@@ -783,7 +813,9 @@ void Game::pollEvents()
     }
     else if(classification == EventClassifier::RUNMAP)
     {
-
+      int id;
+      event_handler.pollStartMap(&id);
+      eventSwitchMap(id);
     }
     else if(classification == EventClassifier::STARTCONVO)
     {
@@ -1212,28 +1244,6 @@ bool Game::load(SDL_Renderer* renderer)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
-  // TODO: Create temporary list of items - Pull into file and remove */
-//  if(list_item.empty())
-//  {
-//    Item* item1 = new Item(0, "Bubby Saber", 125, new Frame(
-//        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/02_Uncommon/BubbySaber01_AA_A00.png",
-//        renderer));
-//    Item* item2 = new Item(1, "Frost Bubby", 5, new Frame(
-//                           "sprites/Battle/Bubbies/frosty_t1.png", renderer));
-//    Item* item3 = new Item(2, "Coins", 1, new Frame(
-//                           "sprites/Map/_TEST/coins_AA_A00.png", renderer));
-//    Item* item4 = new Item(3, "Ravizer Sword", 250, new Frame(
-//        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/03_Rare/RavizerSword07_AA_A00.png",
-//        renderer));
-//    Item* item5 = new Item(4, "Blazing Bubby", 4, new Frame(
-//                            "sprites/Battle/Bubbies/blazing_t1.png", renderer));
-//    list_item.push_back(item1);
-//    list_item.push_back(item2);
-//    list_item.push_back(item3);
-//    list_item.push_back(item4);
-//    list_item.push_back(item5);
-//  }
-
   /* Make sure the active renderer is set up */
   if(active_renderer == NULL)
   {
@@ -1284,8 +1294,8 @@ bool Game::setPath(std::string path, int level)
   return false;
 }
 
-/* Unload the game */
-void Game::unload()
+/* Unload the game - full unload = false will only unload map*/
+void Game::unload(bool full_unload)
 {
   if(loaded)
   {
@@ -1293,7 +1303,8 @@ void Game::unload()
     map_ctrl->unloadMap();
 
     /* Unload game data */
-    removeAll();
+    if(full_unload)
+      removeAll();
 
     loaded = false;
     mode = DISABLED;

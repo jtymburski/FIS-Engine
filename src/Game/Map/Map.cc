@@ -7,7 +7,7 @@
  *              of, it also holds pointers to all of the NPC's contained in the
  *              maps tiles. This also handles the viewport for the map.
  *
- * TODO: 
+ * TODO:
  *  1. If the tile image does not exist, disable the painting sequence
  *    - There seems to be a small glitch in this where it paints a white tile
  *  2. If mode is switched, end all notification animations and such. -> battle
@@ -46,13 +46,13 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   map_index = 0;
   player = NULL;
   system_options = NULL;
-  
+
   /* Configure the width / height of tiles and sets default zooming */
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
   zoom_in = false;
   zoom_out = false;
-  
+
   /* Set options configuration */
   viewport.setTileSize(tile_width, tile_height);
   setConfiguration(running_config);
@@ -72,14 +72,14 @@ Map::~Map()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-bool Map::addSpriteData(XmlData data, std::string id, 
+bool Map::addSpriteData(XmlData data, std::string id,
                         int file_index, SDL_Renderer* renderer)
 {
   int32_t access_id = -1;
   Sprite* access_sprite = NULL;
   int32_t copy_id = -1;
   Sprite* copy_sprite = NULL;
-  
+
   /* Get the ID information */
   std::vector<std::string> id_set = Helpers::split(id, '>');
   if(id_set.size() == 1)
@@ -108,16 +108,16 @@ bool Map::addSpriteData(XmlData data, std::string id,
       access_sprite = new Sprite();
       access_sprite->setId(access_id);
       tile_sprites.push_back(access_sprite);
-      
+
       /* If the copy sprite isn't null, copy the data into the new sprite */
       if(copy_sprite != NULL)
         *access_sprite = *copy_sprite;
     }
 
-    return access_sprite->addFileInformation(data, file_index, 
+    return access_sprite->addFileInformation(data, file_index,
                                              renderer, base_path);
   }
-  
+
   return false;
 }
 
@@ -126,7 +126,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
   std::string classifier = data.getElement(kFILE_CLASSIFIER);
   std::string element = data.getAllElements().back();
   bool success = true;
-  
+
   /* Split based on the element information if it's for a path */
   if(element == "sprite_id" || element == "sprite_matrix")
   {
@@ -135,14 +135,14 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
       id_matrix = splitIdString(data.getDataString());
     else
       id_matrix = splitIdString(data.getDataString(), true);
-    
+
     /* Go through all the available IDs, in the matrix */
     for(uint16_t i = 0; i < id_matrix.size(); i++)
     {
       for(uint16_t j = 0; j < id_matrix[i].size(); j++)
       {
         Sprite* found_sprite = NULL;
-        
+
         /* Try and find the id */
         if(id_matrix[i][j] >= 0)
         {
@@ -152,7 +152,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
               found_sprite = tile_sprites[k];
           }
         }
-        
+
         /* If the sprite is found, add it to the tile */
         // TODO: Review revising to incorporate new helper function.
         if(found_sprite != NULL)
@@ -160,9 +160,9 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
           std::vector<std::string> col_list =
                        Helpers::split(data.getKeyValue(kFILE_TILE_COLUMN), ',');
           uint16_t index = 0;
-          std::vector<std::string> row_list = 
+          std::vector<std::string> row_list =
                           Helpers::split(data.getKeyValue(kFILE_TILE_ROW), ',');
-          
+
           /* Loop through all the column and rows of the indexes */
           while(index < row_list.size() && index < col_list.size())
           {
@@ -172,13 +172,13 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
             uint16_t row_start = j;
             parseCoordinateInfo(row_list[index], col_list[index], section_index,
                                 &row_start, &row_end, &col_start, &col_end);
-            
+
             /* Add the sprite to all the applicable tiles */
             for(int r = row_start; r < row_end; r++)
               for(int c = col_start; c < col_end; c++)
                 success &= geography[section_index][r][c]->
-                                  addSprite(found_sprite, 
-                                            data.getElement(kFILE_CLASSIFIER), 
+                                  addSprite(found_sprite,
+                                            data.getElement(kFILE_CLASSIFIER),
                                             data.getKeyValue(kFILE_CLASSIFIER));
             index++;
           }
@@ -189,15 +189,15 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
     return success;
   }
   /* Otherwise, access the passability information for the tile */
-  else if(element == "passability" || 
+  else if(element == "passability" ||
           classifier == "tileevent")
   {
     std::vector<std::string> col_list =
                        Helpers::split(data.getKeyValue(kFILE_TILE_COLUMN), ',');
     uint16_t index = 0;
-    std::vector<std::string> row_list = 
+    std::vector<std::string> row_list =
                           Helpers::split(data.getKeyValue(kFILE_TILE_ROW), ',');
-    
+
     /* Loop through all the column and rows of the indexes */
     while(index < row_list.size() && index < col_list.size())
     {
@@ -207,7 +207,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
       uint16_t row_start = 0;
       parseCoordinateInfo(row_list[index], col_list[index], section_index,
                           &row_start, &row_end, &col_start, &col_end);
-      
+
       /* Add the sprite to all the applicable tiles */
       for(int r = row_start; r < row_end; r++)
       {
@@ -217,8 +217,8 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
           if(element == "passability")
           {
             success &= geography[section_index][r][c]->
-                    addPassability(data.getDataString(), 
-                                   data.getElement(kFILE_CLASSIFIER), 
+                    addPassability(data.getDataString(),
+                                   data.getElement(kFILE_CLASSIFIER),
                                    data.getKeyValue(kFILE_CLASSIFIER));
           }
           /* Otherwise, it's a tile event */
@@ -306,12 +306,12 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
 
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
-    return modified_thing->addThingInformation(data, file_index + 1, 0, 
+    return modified_thing->addThingInformation(data, file_index + 1, 0,
                                                renderer, base_path);
   return false;
 }
 
-bool Map::addThingData(XmlData data, uint16_t section_index, 
+bool Map::addThingData(XmlData data, uint16_t section_index,
                        SDL_Renderer* renderer)
 {
   int32_t base_id = -1;
@@ -409,7 +409,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   if(modified_thing != NULL)
   {
     success &= modified_thing->addThingInformation(
-                                      data, kFILE_CLASSIFIER + 1, section_index, 
+                                      data, kFILE_CLASSIFIER + 1, section_index,
                                       renderer, base_path);
     return success;
   }
@@ -501,7 +501,7 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
     if(*i >= 0)
     {
       MapThing* found_thing = NULL;
-      
+
       /* Check if is thing */
       found_thing = getThing(*i);
 
@@ -526,10 +526,10 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 
   return used_things;
 }
-  
+
 /* Returns a matrix of tiles that match the frames in the thing */
 // TODO: Comment
-std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing, 
+std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
                                                    Direction direction)
 {
   std::vector<std::vector<Tile*>> tile_set;
@@ -547,7 +547,7 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
       render_box.y++;
     else if(direction == Direction::WEST)
       render_box.x--;
-    return getTileMatrix(thing->getMapSection(), render_box.x, render_box.y, 
+    return getTileMatrix(thing->getMapSection(), render_box.x, render_box.y,
                          render_box.w, render_box.h);
   }
 
@@ -555,9 +555,9 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
 }
 
 // TODO: Comment
-std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section, 
-                                                   uint16_t x, uint16_t y, 
-                                                   uint16_t width, 
+std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section,
+                                                   uint16_t x, uint16_t y,
+                                                   uint16_t width,
                                                    uint16_t height)
 {
   std::vector<std::vector<Tile*>> tile_set;
@@ -565,14 +565,14 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section,
   uint16_t range_y = y + height - 1;
 
   /* Confirm range is within valid parameters of map */
-  if(geography.size() > section && geography[section].size() > range_x && 
+  if(geography.size() > section && geography[section].size() > range_x &&
      geography[section][range_x].size() > range_y)
   {
     /* Load the tiles that correspond to the thing */
     for(uint16_t i = x; i <= range_x; i++)
     {
       std::vector<Tile*> tile_col;
-          
+
       for(uint16_t j = y; j <= range_y; j++)
         tile_col.push_back(geography[section][i][j]);
       tile_set.push_back(tile_col);
@@ -604,12 +604,12 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
       {
         int height = geography[section_index][i].size();
         geography[section_index][i].push_back(
-                                   new Tile(event_handler, tile_width, 
+                                   new Tile(event_handler, tile_width,
                                             tile_height, i, height));
       }
     }
 
-    return true;    
+    return true;
   }
 
   return false;
@@ -657,14 +657,14 @@ void Map::initiateThingInteraction(MapPerson* initiator)
         for(uint16_t j = 0; !finished && j < thing_tiles[i].size(); j++)
         {
           /* If thing is not NULL, this is rendering depth 0 tile to check */
-          if(thing_tiles[i][j] != NULL && (starting_x + i) >= 0 
+          if(thing_tiles[i][j] != NULL && (starting_x + i) >= 0
                                        && (starting_y + j) >= 0)
           {
             /* Get the x and y of tile to check and confirm validity */
             uint16_t x = starting_x + i;
             uint16_t y = starting_y + j;
 
-            if(x < geography[map_index].size() && 
+            if(x < geography[map_index].size() &&
                y < geography[map_index][x].size())
             {
               /* Check for person */
@@ -725,8 +725,8 @@ void Map::initiateThingInteraction(MapPerson* initiator)
 
 /* Parse coordinate info from file to give the designated tile coordinates
  * to update */
-bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index, 
-                              uint16_t* r_start, uint16_t* r_end, 
+bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
+                              uint16_t* r_start, uint16_t* r_end,
                               uint16_t* c_start, uint16_t* c_end)
 {
   std::vector<std::string> row_list = Helpers::split(row, '-');
@@ -740,7 +740,7 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
       *r_start = geography[index].size();
     if(*r_end > geography[index].size())
       *r_end = geography[index].size();
-    
+
     /* Determine the column of parsing - limit to map size */
     *c_start += std::stoul(col_list.front());
     *c_end += std::stoul(col_list.back()) + 1;
@@ -748,10 +748,10 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
       *c_start = geography[index][*r_start].size();
     if(*c_end > geography[index][*r_start].size())
       *c_end = geography[index][*r_start].size();
-      
+
     return true;
   }
-  
+
   return false;
 }
 
@@ -762,15 +762,15 @@ bool Map::setSectionIndex(uint16_t index)
   {
     map_index = index;
     viewport.setMapSize(geography[index].size(), geography[index][0].size());
-    
+
     return true;
   }
-  
+
   return false;
 }
 
 /* Splits the ID into a vector of IDs */
-std::vector< std::vector<int32_t> > Map::splitIdString(std::string id, 
+std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
                                                        bool matrix)
 {
   std::vector< std::vector<int32_t> > id_stack;
@@ -786,7 +786,7 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
       uint16_t id_min = 0;
       uint16_t multiplier_max = 0;
       uint16_t multiplier_min = 0;
-    
+
       /* Work with the first element to determine the first and last row id */
       std::vector<std::string> x_split = Helpers::split(xy_split.front(), '-');
       if(x_split.size() > 0)
@@ -794,7 +794,7 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
         id_min = std::stoul(x_split.front());
         id_max = std::stoul(x_split.back());
       }
-      
+
       /* Check if there is a multiplier element to work with */
       if(xy_split.size() > 1)
       {
@@ -805,13 +805,13 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
           multiplier_max = std::stoul(y_split.back());
         }
       }
-      
+
       /* Loop through multipliers and id min and max to construct ID matrix */
       for(uint16_t mult = multiplier_min; mult <= multiplier_max; mult++)
       {
         uint16_t addition = (id_max - id_min + 1) * mult;
         std::vector<int32_t> id_row;
-        
+
         for(uint16_t id_x = id_min; id_x <= id_max; id_x++)
           id_row.push_back(id_x + addition);
         id_stack.push_back(id_row);
@@ -823,16 +823,16 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
       for(uint16_t i = 0; i < xy_split.size(); i++)
       {
         std::vector<int32_t> id_row;
-        
+
         std::vector<std::string> row_split = Helpers::split(xy_split[i], '.');
         for(uint16_t j = 0; j < row_split.size(); j++)
           id_row.push_back(std::stoul(row_split[j]));
-          
+
         id_stack.push_back(id_row);
       }
     }
   }
-  
+
   return id_stack;
 }
 
@@ -840,7 +840,7 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
 void Map::updateTileSize()
 {
   bool updated = false;
-  
+
   /* Try and zoom out the map */
   if(zoom_out)
   {
@@ -853,7 +853,7 @@ void Map::updateTileSize()
       tile_width = kZOOM_TILE_SIZE;
       zoom_out = false;
     }
-    
+
     updated = true;
   }
   /* Otherwise, try and zoom back in */
@@ -862,17 +862,17 @@ void Map::updateTileSize()
     /* Modify the tile height and width, limited by the constants */
     tile_height++;
     tile_width++;
-    if(tile_height > Helpers::getTileSize() || 
+    if(tile_height > Helpers::getTileSize() ||
        tile_width > Helpers::getTileSize())
     {
       tile_height = Helpers::getTileSize();
       tile_width = Helpers::getTileSize();
       zoom_in = false;
     }
-    
+
     updated = true;
   }
-  
+
   /* If updated, update the height and width everywhere */
   if(updated)
   {
@@ -884,7 +884,7 @@ void Map::updateTileSize()
           geography[i][j][k]->setHeight(tile_height);
           geography[i][j][k]->setWidth(tile_width);
         }
-        
+
     /* Update viewport */
     viewport.setTileSize(tile_width, tile_height);
   }
@@ -912,13 +912,13 @@ void Map::updateTileSize()
 
 bool Map::initConversation(Conversation* convo, MapThing* source)
 {
-  if(player != NULL && player->getTarget() == NULL 
+  if(player != NULL && player->getTarget() == NULL
                     && map_dialog.initConversation(convo, player, source))
   {
     /* Finalize conversation setup */
     std::vector<int> list = map_dialog.getConversationIDs();
     map_dialog.setConversationThings(getThingData(list));
-    
+
     /* Flush player keys */
     player->keyFlush();
 
@@ -956,13 +956,13 @@ bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
   (void)show_empty;
 
   //TODO: Fix
-  bool status = item_menu.initDisplay(mode, items, counts, 
+  bool status = item_menu.initDisplay(mode, items, counts,
                                       cost_modifiers, name);//, show_empty);
-  
+
   /* If successful, flush player keys */
   if(status)
     player->keyFlush();
-  
+
   return true;
 }
 
@@ -1008,7 +1008,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     if(geography.size() > 0)
     {
       player->keyFlush();
-      viewport.setMapSize(geography[map_index].size(), 
+      viewport.setMapSize(geography[map_index].size(),
                           geography[map_index][0].size());
       player = persons.front();
       setSectionIndex(player->getMapSection());
@@ -1020,7 +1020,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     if(geography.size() > 1)
     {
       player->keyFlush();
-      viewport.setMapSize(geography[map_index].size(), 
+      viewport.setMapSize(geography[map_index].size(),
                           geography[map_index][0].size());
       for(uint16_t i = 0; i < persons.size(); i++)
       {
@@ -1030,7 +1030,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
           setSectionIndex(player->getMapSection());
         }
       }
-      viewport.setMapSize(geography[map_index].size(), 
+      viewport.setMapSize(geography[map_index].size(),
                           geography[map_index][0].size());
     }
   }
@@ -1066,7 +1066,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_0)
   {
     Event blank_event = event_handler->createBlankEvent();
-    
+
     Conversation* convo = new Conversation;
     convo->category = DialogCategory::TEXT;
     convo->action_event = blank_event;
@@ -1085,7 +1085,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     test1.action_event = blank_event;
     test1.text = "This is a test to see how data runs. The line will split ";
     test1.text += "once unless it is an option based selection in which case ";
-    test1.text += "it will restrict."; 
+    test1.text += "it will restrict.";
     test1.thing_id = 3;
     test2.category = DialogCategory::TEXT;
     test2.action_event = blank_event;
@@ -1161,7 +1161,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 	{
 	  SDL_Rect bbox = player->getBoundingBox();
 	  SDL_Rect bpixel = player->getBoundingPixels();
-	  
+
 	  std::cout << "----" << std::endl;
 	  std::cout << "Location X: " << bbox.x << " - " << bpixel.x << std::endl;
 	  std::cout << "Location Y: " << bbox.y << " - " << bpixel.y << std::endl;
@@ -1188,7 +1188,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     else
       player->keyDownEvent(event);
   }
-  
+
   return false;
 }
 
@@ -1200,39 +1200,39 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
     map_dialog.keyUpEvent(event);
   else if(player != NULL)
   {
-    if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
+    if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) &&
        system_options != NULL && !system_options->isAutoRun())
       player->setRunning(false);
     else
       player->keyUpEvent(event);
   }
 }
-  
+
 /* Loads the map data - called from game */
-bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer, 
+bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
                    std::string base_path)
 {
   (void)base_path;
   bool success = true;
-  
+
   /* ---- BASE SPRITES ---- */
   if(data.getElement(index) == "sprite" && !data.getKeyValue(index).empty())
   {
-    success &= addSpriteData(data, data.getKeyValue(index), 
+    success &= addSpriteData(data, data.getKeyValue(index),
                              index + 1, renderer);
   }
   /* ---- BASE THINGS ---- */
-  else if((data.getElement(index) == "mapthing" || 
-           data.getElement(index) == "mapperson" || 
-           data.getElement(index) == "mapnpc" || 
-           data.getElement(index) == "mapitem" || 
-           data.getElement(index) == "mapio") && 
+  else if((data.getElement(index) == "mapthing" ||
+           data.getElement(index) == "mapperson" ||
+           data.getElement(index) == "mapnpc" ||
+           data.getElement(index) == "mapitem" ||
+           data.getElement(index) == "mapio") &&
           !data.getKeyValue(index).empty())
   {
     success &= addThingBaseData(data, index, renderer);
   }
   /* ---- SUB MAPS ---- */
-  else if(data.getElement(index) == "main" || 
+  else if(data.getElement(index) == "main" ||
           data.getElement(index) == "section")
   {
     int map_index = -1;
@@ -1248,7 +1248,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(map_index >= 0)
     {
       /* Determine current height and width */
-      if(geography.size() > static_cast<uint16_t>(map_index) && 
+      if(geography.size() > static_cast<uint16_t>(map_index) &&
          geography[map_index].size() > 0)
       {
         height = geography[map_index].front().size();
@@ -1302,21 +1302,21 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 void Map::loadDataFinish(SDL_Renderer* renderer)
 {
   /* Load the item menu sprites - TODO: In file? */
-  item_menu.loadImageBackend("sprites/Overlay/item_store_left.png", 
-                             "sprites/Overlay/item_store_right.png", 
+  item_menu.loadImageBackend("sprites/Overlay/item_store_left.png",
+                             "sprites/Overlay/item_store_right.png",
                              renderer);
 
   /* Load map dialog sprites - TODO: In file? */
   map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
-  map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png", 
-                                   "sprites/Overlay/dialog_extender.png", 
+  map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png",
+                                   "sprites/Overlay/dialog_extender.png",
                                    renderer);
   map_dialog.loadImageNameLeftRight(
                              "sprites/Overlay/dialog_corner.png", renderer);
-  map_dialog.loadImageOptions("sprites/Overlay/option_circle.png", 
-                              "sprites/Overlay/option_triangle.png", 
+  map_dialog.loadImageOptions("sprites/Overlay/option_circle.png",
+                              "sprites/Overlay/option_triangle.png",
                               renderer);
-  map_dialog.loadImagePickupTopBottom("sprites/Overlay/notification_corner.png", 
+  map_dialog.loadImagePickupTopBottom("sprites/Overlay/notification_corner.png",
                                       renderer);
 
   /* Clean up base things */
@@ -1337,14 +1337,14 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   for(uint16_t i = 0; i < things.size(); i++)
   {
     /* Clean the matrix - fixes up the rendering box */
-    if((things[i]->getBase() != NULL && 
-        things[i]->getBase()->getFrames().size() > 0) || 
+    if((things[i]->getBase() != NULL &&
+        things[i]->getBase()->getFrames().size() > 0) ||
        things[i]->cleanMatrix())
     {
       /* Get the tile matrix to match the frames and set */
       std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
       if(tile_set.size() > 0)
-        things[i]->setStartingTiles(tile_set, 
+        things[i]->setStartingTiles(tile_set,
                                     things[i]->getStartingSection(), true);
       else
         things[i]->unsetFrames(true);
@@ -1354,19 +1354,19 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
       things[i]->unsetFrames(true);
     }
   }
-    
+
   /* IO clean-up and tile set-up */
   for(uint16_t i = 0; i < ios.size(); i++)
   {
     /* Clean the matrix - fixes up the rendering box */
-    if((ios[i]->getBase() != NULL && 
-        ios[i]->getBase()->getFrames().size() > 0) || 
+    if((ios[i]->getBase() != NULL &&
+        ios[i]->getBase()->getFrames().size() > 0) ||
        ios[i]->cleanMatrix())
     {
       /* Get the tile matrix to match the frames and set */
       std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ios[i]);
       if(tile_set.size() > 0)
-        ios[i]->setStartingTiles(tile_set, 
+        ios[i]->setStartingTiles(tile_set,
                                  ios[i]->getStartingSection(), true);
       else
         ios[i]->unsetFrames(true);
@@ -1380,13 +1380,13 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   /* Person clean-up and tile set-up */
   for(uint16_t i = 0; i < persons.size(); i++)
   {
-    if((persons[i]->getBase() != NULL && 
-        persons[i]->getBase()->cleanMatrix(false))  || 
+    if((persons[i]->getBase() != NULL &&
+        persons[i]->getBase()->cleanMatrix(false))  ||
        persons[i]->cleanMatrix())
     {
       std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
       if(tile_set.size() > 0)
-        persons[i]->setStartingTiles(tile_set, 
+        persons[i]->setStartingTiles(tile_set,
                                      persons[i]->getStartingSection(), true);
       else
         persons[i]->unsetStates(true);
@@ -1401,25 +1401,25 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   for(uint16_t i = 0; i < items.size(); i++)
   {
     /* Clean the matrix - fixes up the rendering box */
-    if((items[i]->getBase() != NULL && 
+    if((items[i]->getBase() != NULL &&
         items[i]->getBase()->cleanMatrix(false)) ||  items[i]->cleanMatrix())
     {
       /* Get the tile matrix to match the frames and set */
       std::vector<std::vector<Tile*>> tile_set = getTileMatrix(items[i]);
       if(tile_set.size() > 0)
-        items[i]->setStartingTiles(tile_set, items[i]->getStartingSection(), 
+        items[i]->setStartingTiles(tile_set, items[i]->getStartingSection(),
                                    true);
       else
         items[i]->unsetFrames(true);
     }
   }
-    
+
   /* Modify the map index */
   if(player != NULL)
     map_index = player->getStartingSection();
   if(geography.size() > map_index && geography[map_index].size() > 0)
   {
-    viewport.setMapSize(geography[map_index].size(), 
+    viewport.setMapSize(geography[map_index].size(),
                         geography[map_index][0].size());
     if(player != NULL)
       viewport.lockOn(player);
@@ -1433,10 +1433,10 @@ bool Map::pickupItem(MapItem* item)
   {
     /* Set the on map count to 0 */
     item->setCount(0);
-    
+
     return true;
   }
-  
+
   return false;
 }
 
@@ -1444,7 +1444,7 @@ bool Map::pickupItem(MapItem* item)
 bool Map::render(SDL_Renderer* renderer)
 {
   bool success = true;
-  
+
   if(geography.size() > map_index)
   {
     /* Grab the variables for viewport */
@@ -1465,7 +1465,7 @@ bool Map::render(SDL_Renderer* renderer)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
       {
         Tile* ref_tile = geography[map_index][i][j];
-        
+
         /* Lower sprites */
         ref_tile->renderLower(renderer, x_offset, y_offset);
 
@@ -1488,12 +1488,12 @@ bool Map::render(SDL_Renderer* renderer)
         /* Base map thing, if relevant */
         MapThing* render_thing = geography[map_index][i][j]->getThing(0);
         if(render_thing != NULL)
-          render_thing->renderMain(renderer, geography[map_index][i][j], 0, 
+          render_thing->renderMain(renderer, geography[map_index][i][j], 0,
                                    x_offset, y_offset);
         /* Base map IO, if relevant */
         MapInteractiveObject* render_io = geography[map_index][i][j]->getIO(0);
         if(render_io != NULL)
-          render_io->renderMain(renderer, geography[map_index][i][j], 0, 
+          render_io->renderMain(renderer, geography[map_index][i][j], 0,
                                 x_offset, y_offset);
       }
     }
@@ -1510,8 +1510,8 @@ bool Map::render(SDL_Renderer* renderer)
           MapThing* render_thing = NULL;
 
           /* Acquire render things and continue forward if some are not null */
-          if(geography[map_index][i][j]->getRenderThings(index, render_person, 
-                                                         render_thing, 
+          if(geography[map_index][i][j]->getRenderThings(index, render_person,
+                                                         render_thing,
                                                          render_io))
           {
             /* Different indexes result in different rendering procedures
@@ -1520,12 +1520,12 @@ bool Map::render(SDL_Renderer* renderer)
             {
               if(render_person != NULL)
               {
-                if(render_person->getMovement() == Direction::EAST || 
+                if(render_person->getMovement() == Direction::EAST ||
                    render_person->getMovement() == Direction::SOUTH)
-                  render_person->renderPrevious(renderer, 
+                  render_person->renderPrevious(renderer,
                          geography[map_index][i][j], index, x_offset, y_offset);
                 else
-                  render_person->renderMain(renderer, 
+                  render_person->renderMain(renderer,
                          geography[map_index][i][j], index, x_offset, y_offset);
               }
             }
@@ -1534,17 +1534,17 @@ bool Map::render(SDL_Renderer* renderer)
             {
               if(render_person != NULL)
               {
-                if(render_person->getMovement() == Direction::EAST || 
+                if(render_person->getMovement() == Direction::EAST ||
                    render_person->getMovement() == Direction::SOUTH)
-                  render_person->renderPrevious(renderer, 
+                  render_person->renderPrevious(renderer,
                          geography[map_index][i][j], index, x_offset, y_offset);
                 else
-                  render_person->renderMain(renderer, 
+                  render_person->renderMain(renderer,
                          geography[map_index][i][j], index, x_offset, y_offset);
               }
 
               if(render_thing != NULL)
-                render_thing->renderMain(renderer, geography[map_index][i][j], 
+                render_thing->renderMain(renderer, geography[map_index][i][j],
                                          index, x_offset, y_offset);
 
               if(render_io != NULL)
@@ -1558,14 +1558,14 @@ bool Map::render(SDL_Renderer* renderer)
 
     /* Render the upper tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
-      for(uint16_t j = tile_y_start; j < tile_y_end; j++)    
+      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
-    
+
     /* Render the map dialogs / pop-ups */
     item_menu.render(renderer);
     map_dialog.render(renderer);
   }
-  
+
   return success;
 }
 
@@ -1576,9 +1576,9 @@ bool Map::setConfiguration(Options* running_config)
   {
     system_options = running_config;
     base_path = system_options->getBasePath();
-    
+
     /* Update the viewport information */
-    viewport.setSize(running_config->getScreenWidth(), 
+    viewport.setSize(running_config->getScreenWidth(),
                      running_config->getScreenHeight());
 
     /* Update the dialogs with options information */
@@ -1587,41 +1587,44 @@ bool Map::setConfiguration(Options* running_config)
 
     return true;
   }
-  
+
   return false;
 }
-  
+
 // Possibly make the teleport add the ability of shifting map thing
-// TODO: REVISE FOR TELEPORT OF ANY THING
 void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
 {
   /* If the section id is below 0, then set to internal map index */
   if(section_id < 0)
     section_id = map_index;
-  
-  if(tile_x >= 0 && tile_y >= 0 && section_id >= 0)
+
+  if(tile_x >= 0 && tile_y >= 0 && section_id >= 0 && id >= 0)
   {
     uint16_t x = tile_x;
     uint16_t y = tile_y;
     uint16_t section = section_id;
-    
+
     /* Ensure that the tile x and y is within the range */
-    if(section < geography.size() && geography[section].size() > x 
+    if(section < geography.size() && geography[section].size() > x
                                   && geography[section][x].size() > y)
     {
-      /* Change the starting tile for the thing */
-      for(auto i = persons.begin(); i != persons.end(); i++)
-      {
-        if((*i)->getID() == id)
-        {
-          std::vector<std::vector<Tile*>> matrix = 
-              getTileMatrix(section, x, y, (*i)->getWidth(), (*i)->getHeight());
+      /* Find the thing */
+      MapThing* found_thing = getPerson(id);
+      if(found_thing == nullptr)
+        found_thing = getThing(id);
+      if(found_thing == nullptr)
+        found_thing = getIO(id);
 
-          if((*i)->setStartingTiles(matrix, section))
-          {
-            if(map_index != section)
-              setSectionIndex(section);
-          }
+      /* Change the starting tile for the thing */
+      if(found_thing != nullptr)
+      {
+        std::vector<std::vector<Tile*>> matrix = getTileMatrix(section, x, y, 
+                             found_thing->getWidth(), found_thing->getHeight());
+
+        if(found_thing->setStartingTiles(matrix, section))
+        {
+          if(id == kPLAYER_ID && map_index != section)
+            setSectionIndex(section);
         }
       }
     }
@@ -1635,7 +1638,7 @@ void Map::unfocus()
   {
     player->keyFlush();
     player->setRunning(false);
-  } 
+  }
 }
 
 void Map::unloadMap()
@@ -1668,7 +1671,7 @@ void Map::unloadMap()
     persons[i] = NULL;
   }
   persons.clear();
- 
+
   /* Delete the IOs */
   for(uint16_t i = 0; i < ios.size(); i++)
   {
@@ -1692,7 +1695,7 @@ void Map::unloadMap()
     base_items[i] = NULL;
   }
   base_items.clear();
-  
+
   /* Delete the base persons */
   for(uint16_t i = 0; i < base_persons.size(); i++)
   {
@@ -1746,11 +1749,11 @@ void Map::unloadMap()
 bool Map::update(int cycle_time)
 {
   std::vector<std::vector<Tile*>> tile_set;
-  
+
   /* Check on player interaction */
-  if(player != NULL && player->getTarget() != NULL 
-                    && !map_dialog.isConversationActive() 
-                    && !map_dialog.isConversationReady() 
+  if(player != NULL && player->getTarget() != NULL
+                    && !map_dialog.isConversationActive()
+                    && !map_dialog.isConversationReady()
                     && !map_dialog.isConversationWaiting())
   {
     player->getTarget()->clearTarget();
@@ -1766,7 +1769,7 @@ bool Map::update(int cycle_time)
     base_items[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < items.size(); i++)
     items[i]->update(cycle_time, tile_set);
-    
+
   /* Update persons for movement and animation */
   for(uint16_t i = 0; i < persons.size(); i++)
   {
@@ -1774,21 +1777,21 @@ bool Map::update(int cycle_time)
        persons[i]->isTilesSet())
     {
       if(persons[i]->isMoving() || persons[i]->isMoveRequested())
-        tile_set = getTileMatrix(persons[i], 
+        tile_set = getTileMatrix(persons[i],
                                  persons[i]->getPredictedMoveRequest());
 
       /* Proceed to update the person */
       persons[i]->update(cycle_time, tile_set);
     }
   }
-  
+
   /* Update map things */
   for(uint16_t i = 0; i < base_things.size(); i++)
     base_things[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < things.size(); i++)
     if(things[i]->getBase() == NULL)
       things[i]->update(cycle_time, tile_set);
-  
+
   /* Update map interactive objects */
   for(uint16_t i = 0; i < ios.size(); i++)
     ios[i]->update(cycle_time, tile_set);
@@ -1798,6 +1801,6 @@ bool Map::update(int cycle_time)
   map_dialog.update(cycle_time);
   updateTileSize();
   viewport.update();
-  
+
   return false;
 }
