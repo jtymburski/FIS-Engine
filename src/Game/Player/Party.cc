@@ -153,6 +153,9 @@ bool Party::addMember(Person *const new_member)
   {
     members.push_back(new_member);
 
+    /* Ensure member is set up properly */
+    setPartyType(party_type);
+
     return true;
   }
 
@@ -192,6 +195,32 @@ bool Party::isInParty(Person *const check_person)
       return true;
 
   return false;
+}
+
+/*
+ * Description: Loads the data from file associated with the category.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         SDL_Renderer* renderer - the rendering engine
+ * Output: bool - true if load was successful
+ */
+bool Party::loadData(XmlData data, int index, SDL_Renderer* renderer,
+                     std::string base_path)
+{
+  bool success = true;
+  (void)renderer;
+  (void)base_path;
+
+  /* ---- TYPE ---- */
+  if(data.getElement(index) == "type")
+  {
+    success &= setPartyType(Helpers::partyTypeFromStr(
+                                             data.getDataString(&success)));
+  }
+  // TODO: FUTURE - PartyState flags editable?
+
+  return success;
 }
 
 /*
@@ -256,6 +285,7 @@ bool Party::moveReserveMember(Person *test_member)
 void Party::print(const bool &simple, const bool &flags)
 {
   std::cout << "=== Party ===\n";
+  std::cout << "ID: " << id << "\n";
   std::cout << "# Members: " << members.size() << "\n";
   std::cout << "Max Size: " << (int)max_size << "\n";
   std::cout << "Pouch Assigned? " << (pouch != nullptr) << "\n";
@@ -265,12 +295,17 @@ void Party::print(const bool &simple, const bool &flags)
     std::cout << "----- Members -----\n";
 
     for(const auto &member : members)
-      std::cout << "Member: " << member->getName() << "\n";
+      std::cout << "Member: " << member->getMyID() << " - " 
+                << member->getName() << ":" << member->getLevel() << "\n";
     std::cout << "----- Reserve Members -----\n";
     for(const auto &member : reserve_members)
-      std::cout << "Reserve Member: " << member->getName() << "\n";
+      std::cout << "Reserve Member: " << member->getMyID() << " - "
+                << member->getName() << ":" << member->getLevel() << "\n";
 
     std::cout << "--------" << std::endl;
+
+    if(pouch != nullptr)
+      pouch->print(false);
 
     std::cout << "Average Speed: " << getAverageSpeed() << "\n";
     std::cout << "Total Speed: " << getTotalSpeed() << "\n";
@@ -285,7 +320,7 @@ void Party::print(const bool &simple, const bool &flags)
     std::cout << "\nITEM USE: " << getFlag(PartyState::ITEM_USE_ENABLED);
     std::cout << "\nADD ITEMS: " << getFlag(PartyState::CAN_ADD_ITEMS);
     std::cout << "\nREMOVE ITEMS: " << getFlag(PartyState::CAN_REMOVE_ITEMS);
-    std::cout << "ENCOUNTERS: " << getFlag(PartyState::ENCOUNTERS_ENABLED);
+    std::cout << "\nENCOUNTERS: " << getFlag(PartyState::ENCOUNTERS_ENABLED);
     std::cout << "\n";
   }
 }
@@ -351,7 +386,9 @@ uint32_t Party::getSize() { return members.size(); }
  */
 int32_t Party::getAverageSpeed()
 {
-  return std::floor(getTotalSpeed() / members.size());
+  if(members.size() > 0)
+    return std::floor(getTotalSpeed() / members.size());
+  return 0;
 }
 
 /*
@@ -631,6 +668,52 @@ bool Party::setMaxSize(const uint32_t &new_max_size)
   }
 
   return false;
+}
+  
+/*
+ * Description: Attempts to assign a new type of the Party.
+ *
+ * Inputs: PartyType type - the new type of the party
+ * Output: bool - true if the type was set successfully
+ */
+bool Party::setPartyType(const PartyType &type)
+{
+  bool success = true;
+
+  /* Set type */
+  party_type = type;
+
+  /* Loop through all persons and set the type */
+  for(uint32_t i = 0; i < members.size(); i++)
+    members[i]->setPFlag(type);
+  for(uint32_t i = 0; i < reserve_members.size(); i++)
+    reserve_members[i]->setPFlag(type);
+
+  /* Clear inventory */
+  pouch->setFlag(InvState::PLAYER_STORAGE | InvState::SHIP_STORAGE | 
+                 InvState::ENEMY_STORAGE | InvState::SHOP_STORAGE, false);
+  
+  /* Set size based on type */
+  if(type == PartyType::SLEUTH)
+  {
+    success &= setMaxSize(kMAX_MEMBERS_SLEUTH);
+    pouch->setFlag(InvState::PLAYER_STORAGE, true);
+    pouch->setFlag(InvState::UPGRADEABLE, true);
+  }
+  else if(type == PartyType::BEARACKS)
+  {
+    success &= setMaxSize(kMAX_MEMBERS_BEARACKS);
+    pouch->setFlag(InvState::SHIP_STORAGE, true);
+    pouch->setFlag(InvState::UPGRADEABLE, true);
+  }
+  else
+  {
+    success &= setMaxSize(kMAX_MEMBERS_FOES);
+    pouch->setFlag(InvState::ENEMY_STORAGE, true);
+    pouch->setFlag(InvState::UPGRADEABLE, false);
+  }
+
+  return success;
 }
 
 /*=============================================================================

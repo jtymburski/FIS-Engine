@@ -88,42 +88,13 @@ private:
   /* Is the game loaded? */
   bool loaded;
 
-  /* List of all actions */
-  //std::vector<Action*> action_list;
-
-  /* List of all Battle Class categories */
-  //std::vector<Category*> battle_class_list;
-
-  /* List of all Race categories */
-  //std::vector<Category*> race_list;
-
-  /* List of all flavours */
-  //std::vector<Flavour*> flavour_list;
-
-  /* List of all skills */
-  //std::vector<Skill*> skill_list;
-
-  /* List of all base persons */
-  //std::vector<Person*> base_person_list;
-
-  /* List of all available items in the game */
-  //std::vector<Item*> base_item_list;
-
   /* The bubbified skill set */
   //SkillSet* bubbified_skills; // TODO: Make a const ID in skill set stack
   
-  /* The maps in the game */
-  // [09-07-14] TODO: Recommend Map*, std::string pair ?
-  //std::vector<Map*> levels;
-  //std::vector<std::string> level_list;
-
   /* Map variables */
   Map* map_ctrl; /* Main class */
   int map_lvl; /* Active level number */
 
-  /* Test map path */
-  std::string map_test_path; // TODO: REMOVE
-  
   /* The mode that the game is currently running at */
   GameMode mode;
   
@@ -156,8 +127,8 @@ private:
   Item* addItem(const int32_t &id, SortObjects type = SortObjects::ITEMS);
   Party* addParty(const int32_t &id);
   Person* addPersonBase(const int32_t &id);
-  Person* addPersonInst(const int32_t &base_id);
-  Person* addPersonInst(Person* base_person);
+  Person* addPersonInst(const int32_t &base_id, const uint32_t &lvl);
+  Person* addPersonInst(Person* base_person,const uint32_t &lvl);
   Category* addRace(const int32_t &id);
   Skill* addSkill(const int32_t &id);
   SkillSet* addSkillSet(const int32_t &id);
@@ -210,9 +181,6 @@ private:
   /* Set up the battle */
   void setupBattle();
 
-  /* Unload the game */
-  void unload();
-
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -229,10 +197,16 @@ public:
   Skill* getSkill(const int32_t &index, const bool &by_id = true);
   SkillSet* getSkillSet(const int32_t &index, const bool &by_id = true);
 
+  /* Is the game loaded */
+  bool isLoaded();
+
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
-  
+ 
+  /* Load game */
+  bool load(SDL_Renderer* renderer);
+
   /* Pauses der game in der Wald, ja ja ja */
   //void pause(); // TODO: implement
   
@@ -242,11 +216,14 @@ public:
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 
-  /* Sets the test map to run instead of current default */
-  void setTestMap(std::string test_map);
+  /* Sets the path of the game */
+  bool setPath(std::string path, int level = 0);
 
   /* Unpause the game */
   //void unpause(); // TODO: implement
+
+  /* Unload game */
+  void unload();
 
   /* Updates the game state */
   bool update(int cycle_time);

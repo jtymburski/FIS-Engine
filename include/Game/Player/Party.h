@@ -81,9 +81,9 @@ private:
   static const uint16_t kMAX_MEMBERS_FOES;
   static const int32_t kUNSET_ID; /* The unset ID for the party */
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
 private:
   /* Create the inventory */
   void createInventory();
@@ -91,9 +91,9 @@ private:
   /* Loads the default settings for a Party */
   void loadDefaults();
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Attempts to add a person to the party */
   bool addMember(Person *const new_member);
@@ -107,6 +107,10 @@ public:
 
   /* Checks if a given person is in the party */
   bool isInParty(Person *const check_person);
+  
+  /* Load data from file */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
+                std::string base_path);
 
   /* Move a member between the Reserve and the Standard party */
   bool moveMemberToReserve(Person *test_member);
@@ -181,9 +185,12 @@ public:
   /* Attempts to assign a new maximum size of the Party */
   bool setMaxSize(const uint32_t &new_max_size);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+  /* Attempts to assign the new party type */
+  bool setPartyType(const PartyType &type);
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Returns the maximum size of the Bearacks */
   static uint32_t getMaxBearacks();

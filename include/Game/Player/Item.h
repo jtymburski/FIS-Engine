@@ -96,7 +96,7 @@ public:
       const uint32_t &dura = kMIN_DURABILITY);
 
   /* Key Item constructor */
-  Item(const int32_t &ame_id, const std::string &name, 
+  Item(const int32_t &game_id, const std::string &name, 
       Frame* thumbnail = nullptr);
 
   /* Annihilates an Item object */

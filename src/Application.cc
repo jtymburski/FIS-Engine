@@ -271,11 +271,20 @@ bool Application::updateViews(int cycle_time)
       /* If action is available, get it, and parse it to change the mode */
       TitleScreen::MenuItems action_item = title_screen.getAction();
       if(action_item == TitleScreen::EXIT)
+      {
         changeMode(EXIT);
+      }
       else if(action_item == TitleScreen::GAME)
+      {
+        /* Load game, if not loaded */
+        if(!game_handler.isLoaded())
+          game_handler.load(renderer);
         changeMode(GAME);
+      }
       else if(action_item == TitleScreen::BATTLE)
+      {
         changeMode(TESTBATTLE);
+      }
     }
   }
   /* Otherwise, update the game and check if the game is finished */
@@ -455,7 +464,7 @@ bool Application::isInitialized()
 }
 
 /* Runs the application */
-bool Application::run(std::string test_map)
+bool Application::run(std::string test_path, int map_lvl)
 {
   uint32_t count = 1;
   uint32_t cycle_time = kUPDATE_RATE;
@@ -473,10 +482,11 @@ bool Application::run(std::string test_map)
 
   if(isInitialized())
   {
-    /* If the test map isn't empty, jump straight to game map */
-    if(!test_map.empty())
+    /* If the test path isn't empty, jump straight to the game */
+    if(!test_path.empty())
     {
-      game_handler.setTestMap(test_map);
+      game_handler.setPath(test_path, map_lvl);
+      game_handler.load(renderer);
       changeMode(GAME);
     }
 

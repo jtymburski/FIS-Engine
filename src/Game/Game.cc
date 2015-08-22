@@ -55,7 +55,7 @@ const uint32_t Game::kID_PARTY_SLEUTH = 0;
 const uint32_t Game::kID_PERSON_PLAYER = 0;
 const uint32_t Game::kID_SET_BUBBIFIED = 0;
 const uint32_t Game::kSTARTING_MAP = 0;
-const std::string Game::kSTARTING_PATH = "maps/design_map.ugv";
+const std::string Game::kSTARTING_PATH = "maps/Univursa.ugv";
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -76,8 +76,8 @@ Game::Game(Options* running_config)
   loaded = false;
   map_ctrl = nullptr;
   map_lvl = kSTARTING_MAP;
-  map_test_path = "";
   mode = DISABLED;
+  player_main = nullptr;
 
   /* Set up battle and map classes - initial */
   map_ctrl = new Map(config, &event_handler);
@@ -90,8 +90,11 @@ Game::Game(Options* running_config)
 /* Destructor function */
 Game::~Game()
 {
+  /* First, unload the game */
+  unload();
+
+  /* Clean config */
   config = nullptr;
-  mode = DISABLED;
 
   /* Delete battle */
   if(battle_ctrl != nullptr)
@@ -105,9 +108,6 @@ Game::~Game()
   if(map_ctrl != nullptr)
     delete map_ctrl;
   map_ctrl = nullptr;
-
-  /* Game objects */
-  removeAll();
 }
 
 /*============================================================================
@@ -193,19 +193,24 @@ Person* Game::addPersonBase(const int32_t &id)
 }
 
 /* Add functions for game objects */
-Person* Game::addPersonInst(const int32_t &base_id)
+Person* Game::addPersonInst(const int32_t &base_id, const uint32_t &lvl)
 {
-  return addPersonInst(getPersonBase(base_id));
+  return addPersonInst(getPersonBase(base_id), lvl);
 }
 
 /* Add functions for game objects */
-Person* Game::addPersonInst(Person* base_person)
+Person* Game::addPersonInst(Person* base_person, const uint32_t &lvl)
 {
   Person* new_person = nullptr;
 
   if(base_person != NULL)
   {
     new_person = new Person(base_person);
+
+    /* Set Level */
+    new_person->loseExp(new_person->getTotalExp());
+    new_person->addExp(new_person->getExpAt(lvl));
+
     list_person_inst.push_back(new_person);
   }
 
@@ -486,6 +491,8 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 bool Game::load(std::string base_file, SDL_Renderer* renderer, 
                 std::string inst_file, bool encryption)
 {
+  (void)inst_file;
+
   bool done = false;
   bool read_success = true;
   int index = 0;
@@ -501,7 +508,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
   /* Start the map read */
   success &= fh.start();
-  std::cout << "Date: " << fh.getDate() << std::endl; // TODO: Remove
+  std::cout << "Date: " << fh.getDate() << std::endl;
  
   /* If file open was successful, move forward */
   if(success)
@@ -524,7 +531,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
         else if(data.getElement(index + 1) == "map" && 
                 data.getKeyValue(index + 1) == level)
         {
-          success &= map_ctrl->loadData(data, index + 2, renderer);
+          success &= map_ctrl->loadData(data, index + 2, renderer, base_path);
         }
       }
     } while(!done);// && success); // TODO: Success in loop??
@@ -535,9 +542,12 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   /* If the load was successful, proceed to clean-up */
   if(success)
   {
-    // TODO: Game clean-up, if required
+    /* Player set-up */
+    player_main = new Player(getParty(kID_PARTY_SLEUTH), 
+                             getParty(kID_PARTY_BEARACKS));
 
-    // TODO: Call to map for clean-up
+    /* Clean up map */
+    map_ctrl->loadDataFinish(renderer);
 
     mode = MAP;
   }
@@ -601,7 +611,54 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     if(edit_party == nullptr)
       edit_party = addParty(id);
 
-    std::cout << "TODO PARTY: " << edit_party << std::endl;
+    /* Data for party */
+    if(data.getElement(index + 1) == "person")
+    {
+      std::string person_str = data.getDataString(&success);
+      if(success)
+      {
+        /* Comma split */
+        std::vector<std::string> person_set = Helpers::split(person_str, ',');
+        if(person_set.size() == 2)
+        {
+          int person_id = std::stoi(person_set.front());
+          int person_lvl = std::stoi(person_set.back());
+
+          success &= edit_party->addMember(
+                                     addPersonInst(person_id, person_lvl));
+        }
+      }
+    }
+    else if(data.getElement(index + 1) == "inventory")
+    {
+      /* Items */
+      if(data.getElement(index + 2) == "item")
+      {
+        std::string item_str = data.getDataString(&success);
+        if(success)
+        {
+          /* Comma split */
+          std::vector<std::string> item_set = Helpers::split(item_str, ',');
+          if(item_set.size() == 2)
+          {
+            int item_id = std::stoi(item_set.front());
+            int item_count = std::stoi(item_set.back());
+
+            Item* new_item = new Item(getItem(item_id));
+            AddStatus status = edit_party->getInventory()
+                                         ->add(new_item, item_count);
+            if(status == AddStatus::GOOD_DELETE)
+              delete new_item;
+            else if(status == AddStatus::FAIL)
+              success = false;
+          }
+        }
+      }
+    }
+    else
+    {
+      success &= edit_party->loadData(data, index + 1, renderer, base_path);
+    }
   }
   /* ---- PERSONS ---- */
   else if(data.getElement(index) == "person")
@@ -610,7 +667,13 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     if(edit_person == nullptr)
       edit_person = addPersonBase(id);
 
-    std::cout << "TODO PERSON: " << edit_person << std::endl;
+    /* Data for person */
+    if(data.getElement(index + 1) == "class")
+      edit_person->setClass(getClass(data.getDataInteger(&success)));
+    else if(data.getElement(index + 1) == "race")
+      edit_person->setRace(getRace(data.getDataInteger(&success)));
+    else
+      success &= edit_person->loadData(data, index + 1, renderer, base_path);
   }
   /* ---- RACES ---- */
   else if(data.getElement(index) == "race")
@@ -740,11 +803,11 @@ void Game::removeAll()
   removePersonInstances();
   removePersonBases();
 
+  removeItems();
   removeClasses();
   removeRaces();
   removeSkillSets();
 
-  removeItems();
   removeFlavours();
   removeSkills();
   removeActions();
@@ -827,18 +890,6 @@ void Game::setupBattle()
 {
   // TODO: Add parameters?
   std::cout << "Battle TODO - in game" << std::endl;
-}
-
-/* Unload the game */
-void Game::unload()
-{
-  if(loaded)
-  {
-    // TODO: Unload all resources
-
-    loaded = false;
-    mode = DISABLED;
-  }
 }
 
 /*============================================================================
@@ -1014,6 +1065,12 @@ SkillSet* Game::getSkillSet(const int32_t &index, const bool &by_id)
 
   return nullptr;
 }
+  
+/* Is the game loaded */
+bool Game::isLoaded()
+{
+  return loaded;
+}
 
 /* The key down events to be handled by the class */
 bool Game::keyDownEvent(SDL_KeyboardEvent event)
@@ -1041,10 +1098,31 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     if (battle_ctrl == nullptr)
       eventStartBattle();
   }
-  else if(event.keysym.sym == SDLK_F5 && mode == MAP && map_ctrl != nullptr)
+  /* Load game */
+  else if(event.keysym.sym == SDLK_F5)
   {
-    // TODO: REVISE - reload game
-    //map_ctrl->reloadMap(active_renderer);
+    if(loaded)
+    {
+      unload();
+    }
+    else
+    {
+      /* Preliminary handling */
+      if(game_path != "maps/design_map.ugv")
+      {
+        game_path = "maps/design_map.ugv";
+        map_lvl = 0;
+      }
+      else
+      {
+        map_lvl++;
+        if(map_lvl > 2)
+          map_lvl = 0;
+      }
+
+      /* Load map */
+      load(active_renderer);
+    }
   }
   /* Show item store dialog in map */
   else if(event.keysym.sym == SDLK_5)
@@ -1100,6 +1178,13 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
   }
 }
 
+/* Load game */
+bool Game::load(SDL_Renderer* renderer)
+{
+  //return load(game_path, renderer);
+  return load(base_path + game_path, renderer);
+}
+
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
@@ -1133,22 +1218,6 @@ bool Game::render(SDL_Renderer* renderer)
     active_renderer = renderer;
   }
 
-  /* Game initialization location */
-  //if(!loaded)
-  //{
-  //  load(game_path, renderer);
-  //}
-
-  /* Map initialization location */ // TODO: Future remove
-  if(!map_ctrl->isLoaded())
-  {
-    if(map_test_path.empty())
-      map_ctrl->loadMap(base_path + "maps/Univursa.ugv", renderer);
-    else
-      map_ctrl->loadMap(map_test_path, renderer);
-    mode = MAP;
-  }
-
   if(mode == MAP)
     return map_ctrl->render(renderer);
   else if(mode == BATTLE)
@@ -1179,10 +1248,32 @@ bool Game::setConfiguration(Options* running_config)
   return false;
 }
 
-/* Sets the test map to run instead of current default */
-void Game::setTestMap(std::string test_map)
+/* Sets the path of the game */
+bool Game::setPath(std::string path, int level)
 {
-  map_test_path = test_map;
+  if(!path.empty() && level >= 0)
+  {
+    game_path = path;
+    map_lvl = level;
+    return true;
+  }
+  return false;
+}
+
+/* Unload the game */
+void Game::unload()
+{
+  if(loaded)
+  {
+    /* Unload map first */
+    map_ctrl->unloadMap();
+
+    /* Unload game data */
+    removeAll();
+
+    loaded = false;
+    mode = DISABLED;
+  }
 }
 
 /* Updates the game state. Returns true if the class is finished */

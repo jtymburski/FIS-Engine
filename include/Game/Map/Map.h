@@ -63,20 +63,16 @@ private:
 
   /* Indication if the map has been loaded */
   bool loaded;
-  
+
   /* The menus and dialogs on top of the map */
   MapDialog map_dialog;
   // MapMenu map_menu;
 
-  /* The path to the loaded map file */
-  bool map_encrypted;
-  std::string map_path;
-  
   // /* The status bar on the map */
   // MapStatusBar map_status_bar; // TODO: Remove
 
   // /* The players info on the map */
-  std::vector<MapInteractiveObject*> ios; // TODO
+  std::vector<MapInteractiveObject*> ios;
   std::vector<MapItem*> items;
   std::vector<MapPerson*> persons;
   MapPerson* player; /* The actively controlled player */
@@ -226,17 +222,12 @@ public:
   void keyUpEvent(SDL_KeyboardEvent event);
  
   /* Loads the map data */
-  bool loadData(XmlData data, int index, SDL_Renderer* renderer);
-
-  /* Loads the map */
-  bool loadMap(std::string file, SDL_Renderer* renderer, 
-                                 bool encryption = false);
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer, 
+                std::string base_path);
+  void loadDataFinish(SDL_Renderer* renderer);
 
   /* Picks up the total number of the item */
   bool pickupItem(MapItem* item);
-  
-  /* Reloads the existing map */
-  bool reloadMap(SDL_Renderer* renderer);
   
   /* Renders the map */
   bool render(SDL_Renderer* renderer);

@@ -303,29 +303,14 @@ private:
 public:
   /* Adds an amount of experience and may update the level */
   bool addExp(const uint32_t &amount, const bool &update = true);
+  
+  /* Prepares the person for entering Battle (flags, Attributes etc.) */
+  void battlePrep();
+  void battleTurnPrep();
 
   /* Calculates the % of vitality/qtdr which a target value would be */
   float calcVitaPercentAtVal(uint32_t target_value);
   float calcQtdrPercentAtVal(uint32_t target_value);
-
-  /* Return the (floored) % of exp. reached towards the next level */
-  uint16_t findExpPercent();
-
-  /* Find the amount of experience per percentage of this level */
-  int32_t findExpPerPC();
-
-  /* Determine the amount of experience earned this level */
-  uint16_t findExpThisLevel();
-
-  /* Lose an amount of experience */
-  bool loseExp(const uint32_t &amount, const bool &update = true);
-
-  /* Lose a percentage of experience towards the next level */
-  bool loseExpPercent(const uint16_t &percent);
-
-  /* Prepares the person for entering Battle (flags, Attributes etc.) */
-  void battlePrep();
-  void battleTurnPrep();
 
   /* Clears the skills the player has learned */
   void clearLearnedSkills();
@@ -337,11 +322,30 @@ public:
   /* Shorthand function for dealing damage, returns true if the Person KO's */
   bool doDmg(const uint32_t &amount);
 
+  /* Return the (floored) % of exp. reached towards the next level */
+  uint16_t findExpPercent();
+
+  /* Find the amount of experience per percentage of this level */
+  int32_t findExpPerPC();
+
+  /* Determine the amount of experience earned this level */
+  uint16_t findExpThisLevel();
+
   /* Determines if the person is a power defender */
   bool isPowerDefender();
 
   /* Determines if the person is a power guarder */
   bool isPowerGuarder();
+
+  /* Load data from file */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
+                std::string base_path);
+
+  /* Lose an amount of experience */
+  bool loseExp(const uint32_t &amount, const bool &update = true);
+
+  /* Lose a percentage of experience towards the next level */
+  bool loseExpPercent(const uint16_t &percent);
 
   /* Method for printing out the data of the class */
   void print(const bool &simple = true, const bool &equips = false,
@@ -516,6 +520,10 @@ public:
 
   /* Assigns a value to a given PState flag */
   void setPFlag(const PState &flag, const bool &set_value = true);
+  void setPFlag(const PartyType &type);
+
+  /* Assigns a new battle class */
+  void setClass(Category* const category);
 
   /* Assigns curve modifiers for the person (change's level progression) */
   void setCurves(Element prim, ElementCurve prim_curve,
@@ -555,6 +563,9 @@ public:
 
   /* Assigns the name of the person */
   void setName(std::string name);
+
+  /* Assigns a new race class */
+  void setRace(Category* const category);
 
   /* Assigns the sprite pointers for the person */
   void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr,

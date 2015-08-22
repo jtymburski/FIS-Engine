@@ -124,7 +124,7 @@ public:
   bool isInitialized();
 
   /* Runs the application */
-  bool run(std::string test_map = "");
+  bool run(std::string test_path = "", int map_lvl = 0);
 
   /* Uninitializes all set functions in the application. Used to wind down
    * and no rendering will take place after this. */

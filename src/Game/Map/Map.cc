@@ -43,9 +43,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   base_path = "";
   this->event_handler = event_handler;
   loaded = false;
-  map_encrypted = false;
   map_index = 0;
-  map_path = "";
   player = NULL;
   system_options = NULL;
   
@@ -58,20 +56,6 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   /* Set options configuration */
   viewport.setTileSize(tile_width, tile_height);
   setConfiguration(running_config);
-
-  // /* Configure the scene */
-  // items.clear();
-  // loaded = false;
-  // map_index = 0;
-  // persons.clear();
-  // player = 0;
-  // things.clear();
-  
-  // /* Configure the FPS animation and time elapsed, and reset to 0 */
-  // paint_animation = 0;
-  // paint_frames = 0;
-  // paint_time = 0;
-  // time_elapsed = 0;
 
   /* Set up the map displays */
   item_menu.setEventHandler(event_handler);
@@ -600,34 +584,34 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section,
 
 bool Map::initiateMapSection(uint16_t section_index, int width, int height)
 {
-  /* Check if the initiation will be viable */
-  if(width > 0 && height > 0 && (geography.size() <= section_index || 
-                                 geography[section_index].size() == 0))
+  /* Make sure width and height are valid */
+  if(width > 0 && height > 0)
   {
-    /* Get the geography subset filled up past the point of being set */
+    /* Make sure the vector is of correct size first */
+    std::vector<std::vector<Tile*>> map_section;
     while(geography.size() <= section_index)
-    {
-      std::vector< std::vector<Tile*> > map_section;
       geography.push_back(map_section);
-    }
 
-    /* Fill the section */
-    for(int i = 0; i < width; i++)
+    /* Make sure it is of the correct width */
+    std::vector<Tile*> line_width;
+    while(geography[section_index].size() < static_cast<uint32_t>(width))
+      geography[section_index].push_back(line_width);
+
+    /* Make sure it is of the correct height for each column */
+    for(uint32_t i = 0; i < geography[section_index].size(); i++)
     {
-      std::vector<Tile*> col;
-      
-      for(int j = 0; j < height; j++)
+      while(geography[section_index][i].size() < static_cast<uint32_t>(height))
       {
-        Tile* t = new Tile(event_handler, tile_width, tile_height, i, j);
-        col.push_back(t);
+        int height = geography[section_index][i].size();
+        geography[section_index][i].push_back(
+                                   new Tile(event_handler, tile_width, 
+                                            tile_height, i, height));
       }
-      
-      geography[section_index].push_back(col);
     }
 
     return true;    
   }
-  
+
   return false;
 }
 
@@ -1225,278 +1209,221 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
 }
   
 /* Loads the map data - called from game */
-bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer)
+bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer, 
+                   std::string base_path)
 {
-  // TODO: Transfer and re-appropriate the loadMap() call to this
-  std::cout << "TODO-M: " << data.getElement(index) << std::endl;
-}
-
-// TODO: Separate file add success and XML read success to parse error
-bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
-{
-  bool done = false;
-  std::string map_id = "";
-  bool read_success = true;
+  (void)base_path;
   bool success = true;
-  FileHandler fh(file, false, true, encryption);
-  XmlData data;
-
-  /* Start the map read */
-  success &= fh.start();
-  std::cout << "Date: " << fh.getDate() << std::endl; // TODO: Remove
- 
-  /* If file open was successful, move forward */
-  if(success)
-  {
-    /* Run through the map components and add them to the map */
-    int height = -1;
-    int index = -1;
-    int width = -1;
-    
-    do
-    {
-      /* Read set of XML data */
-      data = fh.readXmlData(&done, &read_success);
-      success &= read_success;
-
-      /* Check the map ID, if this is the first call. TODO fix for future */
-      if(map_id == "" && data.getElement(kFILE_GAME_TYPE) == "map")
-        map_id = data.getKeyValue(kFILE_GAME_TYPE);
-
-      /* Parse map data */
-      // TODO: Change how ID is chosen for what map is read
-      if(data.getElement(kFILE_GAME_TYPE) == "map" && 
-         data.getKeyValue(kFILE_GAME_TYPE) == map_id)
-      {
-        if(data.getElement(kFILE_SECTION_ID) == "sprite" &&
-           !data.getKeyValue(kFILE_SECTION_ID).empty())
-        {
-          success &= addSpriteData(data, data.getKeyValue(kFILE_SECTION_ID), 
-                                   kFILE_SECTION_ID + 1, renderer);
-        }
-        else if((data.getElement(kFILE_SECTION_ID) == "mapthing" || 
-                 data.getElement(kFILE_SECTION_ID) == "mapperson" ||
-                 data.getElement(kFILE_SECTION_ID) == "mapnpc" ||
-                 data.getElement(kFILE_SECTION_ID) == "mapitem" || 
-                 data.getElement(kFILE_SECTION_ID) == "mapio") &&
-                data.getKey(kFILE_SECTION_ID) == "id" && 
-                !data.getKeyValue(kFILE_SECTION_ID).empty())
-        {
-          success &= addThingBaseData(data, kFILE_SECTION_ID, renderer);
-        }
-        else
-        {
-          int temp_index = -1;
-          
-          /* Determine if it's a new section */
-          if(data.getElement(kFILE_SECTION_ID) == "main" && index != 0)
-            temp_index = 0;
-          else if(data.getElement(kFILE_SECTION_ID) == "section" && 
-                  index != std::stoi(data.getKeyValue(kFILE_SECTION_ID)))
-            temp_index = std::stoi(data.getKeyValue(kFILE_SECTION_ID));
-          
-          /* Update the index information accordingly */
-          if(temp_index >= 0)
-          {
-            index = temp_index;
-            
-            if(geography.size() > static_cast<uint16_t>(index) && 
-               geography[index].size() > 0)
-            {
-              height = geography[index].front().size();
-              width = geography[index].size();
-            }
-            else
-            {
-              height = -1;
-              width = -1;
-            }
-          }
-
-          /* Parse the data, if it is relevant to the map */
-          if(height == -1 && data.getElement(kFILE_CLASSIFIER) == "height")
-          {
-            height = data.getDataInteger();
-            if(width > 0 && height > 0)
-              initiateMapSection(index, width, height);
-          }
-          else if(width == -1 && data.getElement(kFILE_CLASSIFIER) == "width")
-          {
-            width = data.getDataInteger();
-            if(width > 0 && height > 0)
-              initiateMapSection(index, width, height);
-          }
-          else if(index >= 0 && height > 0 && width > 0)
-          {
-            /* Tile data */
-            if(data.getElement(kFILE_CLASSIFIER) == "base" ||
-               data.getElement(kFILE_CLASSIFIER) == "enhancer" ||
-               data.getElement(kFILE_CLASSIFIER) == "lower" ||
-               data.getElement(kFILE_CLASSIFIER) == "upper" ||
-               data.getElement(kFILE_CLASSIFIER) == "tileevent")
-            {
-              success &= addTileData(data, index);
-            }
-            /* Thing data */
-            else if(data.getElement(kFILE_CLASSIFIER) == "mapthing" || 
-                    data.getElement(kFILE_CLASSIFIER) == "mapperson" ||
-                    data.getElement(kFILE_CLASSIFIER) == "mapnpc" ||
-                    data.getElement(kFILE_CLASSIFIER) == "mapitem" || 
-                    data.getElement(kFILE_CLASSIFIER) == "mapio")
-            {
-              success &= addThingData(data, index, renderer);
-            }
-          }
-        }
-      }
-    } while(!done);// && success); // TODO: Success in loop??
-  }
-
-  success &= fh.stop();
-
-  /* If the map load was successful, proceed to clean-up */
-  if(success)
-  {
-    /* Load the item menu sprites - TODO: In file? */
-    item_menu.loadImageBackend("sprites/Overlay/item_store_left.png", 
-                               "sprites/Overlay/item_store_right.png", 
-                               renderer);
-
-    /* Load map dialog sprites - TODO: In file? */
-    map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
-    map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png", 
-                                     "sprites/Overlay/dialog_extender.png", 
-                                     renderer);
-    map_dialog.loadImageNameLeftRight(
-                                 "sprites/Overlay/dialog_corner.png", renderer);
-    map_dialog.loadImageOptions("sprites/Overlay/option_circle.png", 
-                                "sprites/Overlay/option_triangle.png", 
-                                renderer);
-    map_dialog.loadImagePickupTopBottom(
-                           "sprites/Overlay/notification_corner.png", renderer);
-
-    /* Clean up base things */
-    for(uint16_t i = 0; i < base_things.size(); i++)
-      if(!base_things[i]->cleanMatrix())
-        base_things[i]->unsetFrames(true);
-    for(uint16_t i = 0; i < base_items.size(); i++)
-      if(!base_items[i]->cleanMatrix())
-        base_items[i]->unsetFrames(true);
-    for(uint16_t i = 0; i < base_persons.size(); i++)
-      if(!base_persons[i]->cleanMatrix())
-        base_persons[i]->unsetFrames(true);
-    for(uint16_t i = 0; i < base_ios.size(); i++)
-      if(!base_ios[i]->cleanMatrix())
-        base_ios[i]->unsetFrames(true);
-
-    /* Thing clean-up and tile set-up */
-    for(uint16_t i = 0; i < things.size(); i++)
-    {
-      /* Clean the matrix - fixes up the rendering box */
-      if((things[i]->getBase() != NULL && 
-          things[i]->getBase()->getFrames().size() > 0) || 
-         things[i]->cleanMatrix())
-      {
-        /* Get the tile matrix to match the frames and set */
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
-        if(tile_set.size() > 0)
-          things[i]->setStartingTiles(tile_set, 
-                                      things[i]->getStartingSection(), true);
-        else
-          things[i]->unsetFrames(true);
-      }
-      else
-      {
-        things[i]->unsetFrames(true);
-      }
-    }
-    
-    /* IO clean-up and tile set-up */
-    for(uint16_t i = 0; i < ios.size(); i++)
-    {
-      /* Clean the matrix - fixes up the rendering box */
-      if((ios[i]->getBase() != NULL && 
-          ios[i]->getBase()->getFrames().size() > 0) || 
-         ios[i]->cleanMatrix())
-      {
-        /* Get the tile matrix to match the frames and set */
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ios[i]);
-        if(tile_set.size() > 0)
-          ios[i]->setStartingTiles(tile_set, 
-                                   ios[i]->getStartingSection(), true);
-        else
-          ios[i]->unsetFrames(true);
-      }
-      else
-      {
-        ios[i]->unsetFrames(true);
-      }
-    }
-
-    /* Person clean-up and tile set-up */
-    for(uint16_t i = 0; i < persons.size(); i++)
-    {
-      if((persons[i]->getBase() != NULL && 
-          persons[i]->getBase()->cleanMatrix(false))  || 
-         persons[i]->cleanMatrix())
-      {
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
-        if(tile_set.size() > 0)
-          persons[i]->setStartingTiles(tile_set, 
-                                       persons[i]->getStartingSection(), true);
-        else
-          persons[i]->unsetStates(true);
-      }
-      else
-      {
-        persons[i]->unsetStates(true);
-      }
-    }
-
-    /* Items clean-up and tile set-up */
-    for(uint16_t i = 0; i < items.size(); i++)
-    {
-      /* Clean the matrix - fixes up the rendering box */
-      if((items[i]->getBase() != NULL && 
-          items[i]->getBase()->cleanMatrix(false)) ||  items[i]->cleanMatrix())
-      {
-        /* Get the tile matrix to match the frames and set */
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(items[i]);
-        if(tile_set.size() > 0)
-          items[i]->setStartingTiles(tile_set, items[i]->getStartingSection(), 
-                                     true);
-        else
-          items[i]->unsetFrames(true);
-      }
-    }
-    
-    /* Modify the map index */
-    if(player != NULL)
-      map_index = player->getStartingSection();
-    if(geography[map_index].size() > 0)
-    {
-      viewport.setMapSize(geography[map_index].size(), 
-                          geography[map_index][0].size());
-
-      if(player != NULL)
-        viewport.lockOn(player);
-    }
-  }
- 
-  /* Save file path, or unload if the load sequence failed*/
-  if(success)
-  {
-    map_path = file;
-    map_encrypted = encryption;
-  }
-  else
-  {
-    unloadMap();
-  }
   
-  loaded = success;
+  /* ---- BASE SPRITES ---- */
+  if(data.getElement(index) == "sprite" && !data.getKeyValue(index).empty())
+  {
+    success &= addSpriteData(data, data.getKeyValue(index), 
+                             index + 1, renderer);
+  }
+  /* ---- BASE THINGS ---- */
+  else if((data.getElement(index) == "mapthing" || 
+           data.getElement(index) == "mapperson" || 
+           data.getElement(index) == "mapnpc" || 
+           data.getElement(index) == "mapitem" || 
+           data.getElement(index) == "mapio") && 
+          !data.getKeyValue(index).empty())
+  {
+    success &= addThingBaseData(data, index, renderer);
+  }
+  /* ---- SUB MAPS ---- */
+  else if(data.getElement(index) == "main" || 
+          data.getElement(index) == "section")
+  {
+    int map_index = -1;
+    int height = -1;
+    int width = -1;
+
+    /* Determine section */
+    if(data.getElement(index) == "main")
+      map_index = 0;
+    else if(data.getElement(index) == "section")
+      map_index = std::stoi(data.getKeyValue(index));
+
+    if(map_index >= 0)
+    {
+      /* Determine current height and width */
+      if(geography.size() > static_cast<uint16_t>(map_index) && 
+         geography[map_index].size() > 0)
+      {
+        height = geography[map_index].front().size();
+        width = geography[map_index].size();
+      }
+      else
+      {
+        height = 1;
+        width = 1;
+      }
+
+      /* -- SECTION WIDTH -- */
+      if(data.getElement(index + 1) == "width")
+      {
+        width = data.getDataInteger(&success);
+        if(success)
+          initiateMapSection(map_index, width, height);
+      }
+      /* -- SECTION HEIGHT -- */
+      else if(data.getElement(index + 1) == "height")
+      {
+        height = data.getDataInteger(&success);
+        if(success)
+          initiateMapSection(map_index, width, height);
+      }
+      /* -- TILE SPRITES/EVENTS -- */
+      else if(data.getElement(index + 1) == "base" ||
+              data.getElement(index + 1) == "enhancer" ||
+              data.getElement(index + 1) == "lower" ||
+              data.getElement(index + 1) == "upper" ||
+              data.getElement(index + 1) == "tileevent")
+      {
+        success &= addTileData(data, map_index);
+      }
+      /* -- TILE THINGS -- */
+      else if(data.getElement(index + 1) == "mapthing" ||
+              data.getElement(index + 1) == "mapperson" ||
+              data.getElement(index + 1) == "mapnpc" ||
+              data.getElement(index + 1) == "mapitem" ||
+              data.getElement(index + 1) == "mapio")
+      {
+        success &= addThingData(data, map_index, renderer);
+      }
+    }
+  }
 
   return success;
+}
+
+/* Finishes the load - last call on successful data */
+void Map::loadDataFinish(SDL_Renderer* renderer)
+{
+  /* Load the item menu sprites - TODO: In file? */
+  item_menu.loadImageBackend("sprites/Overlay/item_store_left.png", 
+                             "sprites/Overlay/item_store_right.png", 
+                             renderer);
+
+  /* Load map dialog sprites - TODO: In file? */
+  map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
+  map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png", 
+                                   "sprites/Overlay/dialog_extender.png", 
+                                   renderer);
+  map_dialog.loadImageNameLeftRight(
+                             "sprites/Overlay/dialog_corner.png", renderer);
+  map_dialog.loadImageOptions("sprites/Overlay/option_circle.png", 
+                              "sprites/Overlay/option_triangle.png", 
+                              renderer);
+  map_dialog.loadImagePickupTopBottom("sprites/Overlay/notification_corner.png", 
+                                      renderer);
+
+  /* Clean up base things */
+  for(uint16_t i = 0; i < base_things.size(); i++)
+    if(!base_things[i]->cleanMatrix())
+      base_things[i]->unsetFrames(true);
+  for(uint16_t i = 0; i < base_items.size(); i++)
+    if(!base_items[i]->cleanMatrix())
+      base_items[i]->unsetFrames(true);
+  for(uint16_t i = 0; i < base_persons.size(); i++)
+    if(!base_persons[i]->cleanMatrix())
+      base_persons[i]->unsetFrames(true);
+  for(uint16_t i = 0; i < base_ios.size(); i++)
+    if(!base_ios[i]->cleanMatrix())
+      base_ios[i]->unsetFrames(true);
+
+  /* Thing clean-up and tile set-up */
+  for(uint16_t i = 0; i < things.size(); i++)
+  {
+    /* Clean the matrix - fixes up the rendering box */
+    if((things[i]->getBase() != NULL && 
+        things[i]->getBase()->getFrames().size() > 0) || 
+       things[i]->cleanMatrix())
+    {
+      /* Get the tile matrix to match the frames and set */
+      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
+      if(tile_set.size() > 0)
+        things[i]->setStartingTiles(tile_set, 
+                                    things[i]->getStartingSection(), true);
+      else
+        things[i]->unsetFrames(true);
+    }
+    else
+    {
+      things[i]->unsetFrames(true);
+    }
+  }
+    
+  /* IO clean-up and tile set-up */
+  for(uint16_t i = 0; i < ios.size(); i++)
+  {
+    /* Clean the matrix - fixes up the rendering box */
+    if((ios[i]->getBase() != NULL && 
+        ios[i]->getBase()->getFrames().size() > 0) || 
+       ios[i]->cleanMatrix())
+    {
+      /* Get the tile matrix to match the frames and set */
+      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ios[i]);
+      if(tile_set.size() > 0)
+        ios[i]->setStartingTiles(tile_set, 
+                                 ios[i]->getStartingSection(), true);
+      else
+        ios[i]->unsetFrames(true);
+    }
+    else
+    {
+      ios[i]->unsetFrames(true);
+    }
+  }
+
+  /* Person clean-up and tile set-up */
+  for(uint16_t i = 0; i < persons.size(); i++)
+  {
+    if((persons[i]->getBase() != NULL && 
+        persons[i]->getBase()->cleanMatrix(false))  || 
+       persons[i]->cleanMatrix())
+    {
+      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
+      if(tile_set.size() > 0)
+        persons[i]->setStartingTiles(tile_set, 
+                                     persons[i]->getStartingSection(), true);
+      else
+        persons[i]->unsetStates(true);
+    }
+    else
+    {
+      persons[i]->unsetStates(true);
+    }
+  }
+
+  /* Items clean-up and tile set-up */
+  for(uint16_t i = 0; i < items.size(); i++)
+  {
+    /* Clean the matrix - fixes up the rendering box */
+    if((items[i]->getBase() != NULL && 
+        items[i]->getBase()->cleanMatrix(false)) ||  items[i]->cleanMatrix())
+    {
+      /* Get the tile matrix to match the frames and set */
+      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(items[i]);
+      if(tile_set.size() > 0)
+        items[i]->setStartingTiles(tile_set, items[i]->getStartingSection(), 
+                                   true);
+      else
+        items[i]->unsetFrames(true);
+    }
+  }
+    
+  /* Modify the map index */
+  if(player != NULL)
+    map_index = player->getStartingSection();
+  if(geography.size() > map_index && geography[map_index].size() > 0)
+  {
+    viewport.setMapSize(geography[map_index].size(), 
+                        geography[map_index][0].size());
+    if(player != NULL)
+      viewport.lockOn(player);
+  }
 }
 
 /* Proceeds to pickup the total number of this marked item */
@@ -1508,25 +1435,6 @@ bool Map::pickupItem(MapItem* item)
     item->setCount(0);
     
     return true;
-  }
-  
-  return false;
-}
-
-// TODO: Comment
-bool Map::reloadMap(SDL_Renderer* renderer)
-{
-  if(isLoaded())
-  {
-    /* Get the map file */
-    std::string path = map_path;
-    bool encrypted = map_encrypted;
-    
-    /* Unload the map */
-    unloadMap();
-    
-    /* Re-load the same map */
-    return loadMap(path, renderer, encrypted);
   }
   
   return false;
@@ -1832,8 +1740,6 @@ void Map::unloadMap()
   /* Clear the remaining and disable the loading */
   // clear();
   loaded = false;
-  map_encrypted = false;
-  map_path = "";
 }
 
 /* Updates the game state */

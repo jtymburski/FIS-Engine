@@ -89,15 +89,6 @@ public:
   /* Decides between "a" or "an" */
   static std::string a_An(const std::string& noun);
 
-  /* Converts a given EventType to a string equivalent */
-  static std::string eventToStr(EventType event_type);
-
-  /* Determines whether a given character is a vowel */
-  static bool isVowel(const char &c);
-
-  /* Flush the console with [blank] input */
-  static void flushConsole(const char &c = ' ');
-
   /* Convert enumerated Action Type to String */
   static std::string actionTypeToStr(const ActionType &action_type);
 
@@ -121,21 +112,39 @@ public:
   /* Convert enumerated CellState to String */
   static std::string cellToStr(const CellState &cell_state);
 
+  /* Converts an ElementCurve from string to the enumerated element */
+  static ElementCurve curveFromString(const std::string &curve);
+
   /* Converts an enumerated element to a String */
   static Element elementFromString(const std::string &element);
   static uint16_t elementToInt(Element element);
   static std::string elementToString(const Element &element);
 
+  /* Converts a given EventType to a string equivalent */
+  static std::string eventToStr(EventType event_type);
+
+  /* Flush the console with [blank] input */
+  static void flushConsole(const char &c = ' ');
+
   /* Converts an enumerated GameKey to a String */
   static std::string gameKeyToStr(const GameKey &game_key);
+  
+  /* Determines whether a given character is a vowel */
+  static bool isVowel(const char &c);
 
   /* Get the string of a roman numeral from a value */
   static std::string numToRoman(int value);
 
+  /* Returns the enumerated party type from string form */
+  static PartyType partyTypeFromStr(const std::string type);
+
   /* Returns the enumerated regen rate in string form */
   static RegenRate regenRateFromStr(const std::string &regen_rate);
   static std::string regenRateToStr(const RegenRate &regen_rate);
-  
+ 
+  /* Returns the enumerated tier to/from string form */
+  static ItemTier tierFromStr(const std::string &tier);
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

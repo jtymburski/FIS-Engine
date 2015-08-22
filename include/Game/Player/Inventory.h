@@ -45,7 +45,7 @@ class Inventory
 {
 public:
 	/* Constructs an Inventory using an ID, name, and Icon image */
-  Inventory(const uint32_t game_id, const std::string name = "",
+  Inventory(const uint32_t game_id = 0, const std::string name = "",
   	        Frame* thumb = nullptr);
 
   /* Annihilates an Inventory object */

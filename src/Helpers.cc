@@ -212,280 +212,6 @@ std::string Helpers::a_An(const std::string &noun)
   return a_an;
 }
 
-std::string Helpers::eventToStr(EventType event)
-{
-  if (event == EventType::ITEM_USE)
-    return "ITEM_USE";
-  if (event == EventType::SKILL_USE)
-    return "SKILL_USE";
-  if (event == EventType::SKILL_USE_FIZZLE)
-    return "SKILL_USE_FIZZLE";
-  if (event == EventType::SKILL_COOLDOWN)
-    return "SKILL_COOLDOWN";  
-  if (event == EventType::IMPLODE)
-    return "IMPLODE";
-  if (event == EventType::INSPECT)
-    return "INSPECT";
-  if (event == EventType::ATTEMPT_RUN)
-    return "ATTEMPT_RUN";
-  if (event == EventType::SUCCEED_RUN)
-    return "SUCCEED_RUN";
-  if (event == EventType::FAIL_RUN)
-    return "FAIL_RUN";
-  if (event == EventType::MISS_TURN)
-    return "MISS_TURN";
-  if (event == EventType::PASS)
-    return "PASS";
-  if (event == EventType::SKILL_MISS)
-    return "SKILL_MISS";
-  if (event == EventType::ACTION_MISS)
-    return "ACTION_MISS";
-  if (event == EventType::BLIND_MISS)
-    return "BLIND_MISS";
-  if (event == EventType::DREAMSNARE_MISS)
-    return "DREAMSNARE_MISS";
-  if (event == EventType::FIZZLE)
-    return "FIZZLE";
-  if (event == EventType::STANDARD_DAMAGE)
-    return "STANDARD_DAMAGE";
-  if (event == EventType::CRITICAL_DAMAGE)
-    return "CRITICAL_DAMAGE";
-  if (event == EventType::POISON_DAMAGE)
-    return "POISON_DAMAGE";
-  if (event == EventType::BURN_DAMAGE)
-    return "BURN_DAMAGE";
-  if (event == EventType::HITBACK_DAMAGE)
-    return "HITBACK_DAMAGE";
-  if (event == EventType::METABOLIC_KILL)
-    return "METABOLIC_KILL";
-  if (event == EventType::METABOLIC_DAMAGE)
-    return "METABOLIC_DAMAGE";
-  if (event == EventType::DEATH_COUNTDOWN)
-    return "DEATH_COUNTDOWN";
-  if (event == EventType::BOND)
-    return "BOND";
-  if (event == EventType::BONDING)
-    return "BONDING";
-  if (event == EventType::BEGIN_DEFEND)
-    return "BEGIN_DEFEND";
-  if (event == EventType::BREAK_DEFEND)
-    return "BREAK_DEFEND";
-  if (event == EventType::PERSIST_DEFEND)
-    return "PERSIST_DEFEND";
-  if (event == EventType::BREAK_GUARD)
-    return "BREAK_GUARD";
-  if (event == EventType::BEGIN_GUARD)
-    return "BEGIN_GUARD";
-  if (event == EventType::PERSIST_GUARD)
-    return "PERSIST_GUARD";
-  if (event == EventType::BREAK_GUARD)
-    return "BREAK_GUARD";
-  if (event == EventType::FAIL_GUARD)
-    return "FAIL_GUARD";
-  if (event == EventType::DEATH)
-    return "DEATH";
-  if (event == EventType::INFLICTION)
-    return "INFLICTION";
-  if (event == EventType::CURE_INFLICTION)
-    return "CURE_INFLICTION";
-  if (event == EventType::ALTERATION)
-    return "ALTERATION";
-  if (event == EventType::ASSIGNMENT)
-    return "ASSIGNMENT";
-  if (event == EventType::REVIVAL)
-    return "REVIVAL";
-  if (event == EventType::HEAL_HEALTH)
-    return "HEAL_HEATLH";
-  if (event == EventType::REGEN_VITA)
-    return "REGEN_VITA";
-  if (event == EventType::HEAL_QD)
-    return "HEAL_QD";
-  if (event == EventType::REGEN_QTDR)
-    return "REGEN_QTDR";
-  if (event == EventType::ACTION_BEGIN)
-    return "ACTION_BEGIN";
-  if (event == EventType::PARTY_DEATH)
-    return "PARTY_DEATH";
-  if (event == EventType::INFLICTION_FIZZLE)
-    return "INFLICTION_FIZZLE";
-  if (event == EventType::DEATHTIMER_DEATH)
-    return "DEATHTIMER_DEATH";
-  if (event == EventType::EXP_GAIN)
-    return "EXP_GAIN";
-  if (event == EventType::EXP_LOSS)
-    return "EXP_LOSS";
-  if (event == EventType::LEVEL_UP)
-    return "LEVEL_UP";
-  if (event == EventType::EQUIP_EXP_GAIN)
-    return "EQUIP_EXP_GAIN";
-  if (event == EventType::BUBBY_LEVEL_UP)
-    return "BUBBY_LEVEL_UP";
-  if (event == EventType::GAIN_ITEM)
-    return "GAIN ITEM";
-  if (event == EventType::GAIN_MONEY)
-    return "GAIN MONEY";
-  if (event == EventType::ACTION_END)
-    return "ACTION END";
-  if (event == EventType::NONE)
-    return "NONE";
-
-  return "";
-}
-
-/*
- * Description: Flushes some whitespace (or whatever) into the console window.
- *
- * Inputs: char c - character to put on each line, ex. ' '
- * Output: none
- */
-void Helpers::flushConsole(const char &c)
-{
-  for (int i = 0; i < 100; i++)
-    std::cout << c << std::endl;
-}
-
-/*
- * Description: Determines vowel-ness. (See a_an fn)
- *
- * Inputs: char c - char to see if it is a vowel
- * Output: bool - true if the given char is a vowel
- */
-bool Helpers::isVowel(const char &c)
-{
-  return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
-          c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U');
-}
-
-/*
- * Description: Elemental enum form of an string element.
- *
- * Inputs: std::string element - string form of element
- * Output: Element - enum form of the element
- */
-Element Helpers::elementFromString(const std::string &element)
-{
-  std::string ele_up = element;
-  std::transform(ele_up.begin(), ele_up.end(), ele_up.begin(), toupper);
-
-  /* Parse */
-  if(ele_up == "PHYSICAL")
-    return Element::PHYSICAL;
-  else if(ele_up == "FIRE")
-    return Element::FIRE;
-  else if(ele_up == "FOREST")
-    return Element::FOREST;
-  else if(ele_up == "ICE")
-    return Element::ICE;
-  else if(ele_up == "ELECTRIC")
-    return Element::ELECTRIC;
-  else if(ele_up == "DIGITAL")
-    return Element::DIGITAL;
-  else if(ele_up == "VOID")
-    return Element::NIHIL;
-  return Element::NONE;
-}
-
-/*
- * Description: Elemental integer form of an enumerated element. Invalid element
- *              will always return the number of valid elements.
- *
- * Inputs: Element element - enumerated form of element
- * Output: uint16_t integer form of element
- */
-uint16_t Helpers::elementToInt(Element element)
-{
-  if(element == Element::PHYSICAL)
-    return 0;
-  else if(element == Element::FIRE)
-    return 1;
-  else if(element == Element::FOREST)
-    return 2;
-  else if(element == Element::ICE)
-    return 3;
-  else if(element == Element::ELECTRIC)
-    return 4;
-  else if(element == Element::DIGITAL)
-    return 5;
-  else if(element == Element::NIHIL)
-    return 6;
-  else if(element == Element::NONE)
-    return 7;
-  return 0;
-}
-
-/*
- * Description: Elemental string form of an enumerated element.
- *
- * Inputs: Element - enumerated form of element.
- * Output: std::string - string form of the element
- */
-std::string Helpers::elementToString(const Element &element)
-{
-  if (element == Element::PHYSICAL)
-    return "PHYSICAL";
-  else if (element == Element::FIRE)
-    return "FIRE";
-  else if (element == Element::FOREST)
-    return "FOREST";
-  else if (element == Element::ICE)
-    return "ICE";
-  else if (element == Element::ELECTRIC)
-    return "ELECTRIC";
-  else if (element == Element::DIGITAL)
-    return "DIGITAL";
-  else if (element == Element::NIHIL)
-    return "VOID";
-  
-  return "";
-}
-
-//TODO - Comments
-std::string Helpers::gameKeyToStr(const GameKey &game_key)
-{
-  if (game_key == GameKey::MOVE_LEFT)
-    return "Left";
-  if (game_key == GameKey::MOVE_RIGHT)
-    return "Right";
-  if (game_key == GameKey::MOVE_UP)
-    return "Up";
-  if (game_key == GameKey::MOVE_DOWN)
-    return "Down";
-  if (game_key == GameKey::MENU)
-    return "Menu";
-  if (game_key == GameKey::ACTION)
-    return "Action";
-  if (game_key == GameKey::CANCEL)
-    return "Cancel";
-  if (game_key == GameKey::RUN)
-    return "Run";
-  if (game_key == GameKey::DEBUG)
-    return "Debug";
-
-  return "None";
-}
-
-/*
- * Description: Convert enumerated cell type to string
- *
- * Inputs: CellState - enumerated state of a cell in signature
- * Output: std::string - string form of the given enumeration
- */
-std::string Helpers::cellToStr(const CellState &cell_state)
-{
-  if (cell_state == CellState::OPEN)
-    return "OPEN";
-  else if (cell_state == CellState::BUBBY)
-    return "BUBBY";
-  else if (cell_state == CellState::CLOSED)
-    return "CLOSED";
-  else if (cell_state == CellState::BLOCKED)
-    return "BLOCKED";
-  else if (cell_state == CellState::LINK)
-    return "LINK";
-  
-  return "";
-}
-
 /*
  * Description: Returns string names of enumerated action types
  *
@@ -889,6 +615,307 @@ std::string Helpers::attributeToStr(Attribute attribute)
 }
 
 /*
+ * Description: Convert enumerated cell type to string
+ *
+ * Inputs: CellState - enumerated state of a cell in signature
+ * Output: std::string - string form of the given enumeration
+ */
+std::string Helpers::cellToStr(const CellState &cell_state)
+{
+  if (cell_state == CellState::OPEN)
+    return "OPEN";
+  else if (cell_state == CellState::BUBBY)
+    return "BUBBY";
+  else if (cell_state == CellState::CLOSED)
+    return "CLOSED";
+  else if (cell_state == CellState::BLOCKED)
+    return "BLOCKED";
+  else if (cell_state == CellState::LINK)
+    return "LINK";
+  
+  return "";
+}
+  
+/*
+ * Description: Converts the string version of the ElementCurve to the 
+ *              enumerated version.
+ *
+ * Inputs: std::string curve - the string version of the ElementCurve
+ * Output: ElementCurve - the enumerated version of the string
+ */
+ElementCurve Helpers::curveFromString(const std::string &curve)
+{
+  std::string curve_up = curve;
+  std::transform(curve_up.begin(), curve_up.end(), curve_up.begin(), toupper);
+
+  /* Parse */
+  if(curve_up == "XS")
+    return ElementCurve::XS;
+  else if(curve_up == "S")
+    return ElementCurve::S;
+  else if(curve_up == "A")
+    return ElementCurve::A;
+  else if(curve_up == "B")
+    return ElementCurve::B;
+  else if(curve_up == "C")
+    return ElementCurve::C;
+  return ElementCurve::D;
+}
+
+/*
+ * Description: Elemental enum form of an string element.
+ *
+ * Inputs: std::string element - string form of element
+ * Output: Element - enum form of the element
+ */
+Element Helpers::elementFromString(const std::string &element)
+{
+  std::string ele_up = element;
+  std::transform(ele_up.begin(), ele_up.end(), ele_up.begin(), toupper);
+
+  /* Parse */
+  if(ele_up == "PHYSICAL")
+    return Element::PHYSICAL;
+  else if(ele_up == "FIRE")
+    return Element::FIRE;
+  else if(ele_up == "FOREST")
+    return Element::FOREST;
+  else if(ele_up == "ICE")
+    return Element::ICE;
+  else if(ele_up == "ELECTRIC")
+    return Element::ELECTRIC;
+  else if(ele_up == "DIGITAL")
+    return Element::DIGITAL;
+  else if(ele_up == "VOID")
+    return Element::NIHIL;
+  return Element::NONE;
+}
+
+/*
+ * Description: Elemental integer form of an enumerated element. Invalid element
+ *              will always return the number of valid elements.
+ *
+ * Inputs: Element element - enumerated form of element
+ * Output: uint16_t integer form of element
+ */
+uint16_t Helpers::elementToInt(Element element)
+{
+  if(element == Element::PHYSICAL)
+    return 0;
+  else if(element == Element::FIRE)
+    return 1;
+  else if(element == Element::FOREST)
+    return 2;
+  else if(element == Element::ICE)
+    return 3;
+  else if(element == Element::ELECTRIC)
+    return 4;
+  else if(element == Element::DIGITAL)
+    return 5;
+  else if(element == Element::NIHIL)
+    return 6;
+  else if(element == Element::NONE)
+    return 7;
+  return 0;
+}
+
+/*
+ * Description: Elemental string form of an enumerated element.
+ *
+ * Inputs: Element - enumerated form of element.
+ * Output: std::string - string form of the element
+ */
+std::string Helpers::elementToString(const Element &element)
+{
+  if (element == Element::PHYSICAL)
+    return "PHYSICAL";
+  else if (element == Element::FIRE)
+    return "FIRE";
+  else if (element == Element::FOREST)
+    return "FOREST";
+  else if (element == Element::ICE)
+    return "ICE";
+  else if (element == Element::ELECTRIC)
+    return "ELECTRIC";
+  else if (element == Element::DIGITAL)
+    return "DIGITAL";
+  else if (element == Element::NIHIL)
+    return "VOID";
+  
+  return "";
+}
+
+// TODO: Comment
+std::string Helpers::eventToStr(EventType event)
+{
+  if (event == EventType::ITEM_USE)
+    return "ITEM_USE";
+  if (event == EventType::SKILL_USE)
+    return "SKILL_USE";
+  if (event == EventType::SKILL_USE_FIZZLE)
+    return "SKILL_USE_FIZZLE";
+  if (event == EventType::SKILL_COOLDOWN)
+    return "SKILL_COOLDOWN";  
+  if (event == EventType::IMPLODE)
+    return "IMPLODE";
+  if (event == EventType::INSPECT)
+    return "INSPECT";
+  if (event == EventType::ATTEMPT_RUN)
+    return "ATTEMPT_RUN";
+  if (event == EventType::SUCCEED_RUN)
+    return "SUCCEED_RUN";
+  if (event == EventType::FAIL_RUN)
+    return "FAIL_RUN";
+  if (event == EventType::MISS_TURN)
+    return "MISS_TURN";
+  if (event == EventType::PASS)
+    return "PASS";
+  if (event == EventType::SKILL_MISS)
+    return "SKILL_MISS";
+  if (event == EventType::ACTION_MISS)
+    return "ACTION_MISS";
+  if (event == EventType::BLIND_MISS)
+    return "BLIND_MISS";
+  if (event == EventType::DREAMSNARE_MISS)
+    return "DREAMSNARE_MISS";
+  if (event == EventType::FIZZLE)
+    return "FIZZLE";
+  if (event == EventType::STANDARD_DAMAGE)
+    return "STANDARD_DAMAGE";
+  if (event == EventType::CRITICAL_DAMAGE)
+    return "CRITICAL_DAMAGE";
+  if (event == EventType::POISON_DAMAGE)
+    return "POISON_DAMAGE";
+  if (event == EventType::BURN_DAMAGE)
+    return "BURN_DAMAGE";
+  if (event == EventType::HITBACK_DAMAGE)
+    return "HITBACK_DAMAGE";
+  if (event == EventType::METABOLIC_KILL)
+    return "METABOLIC_KILL";
+  if (event == EventType::METABOLIC_DAMAGE)
+    return "METABOLIC_DAMAGE";
+  if (event == EventType::DEATH_COUNTDOWN)
+    return "DEATH_COUNTDOWN";
+  if (event == EventType::BOND)
+    return "BOND";
+  if (event == EventType::BONDING)
+    return "BONDING";
+  if (event == EventType::BEGIN_DEFEND)
+    return "BEGIN_DEFEND";
+  if (event == EventType::BREAK_DEFEND)
+    return "BREAK_DEFEND";
+  if (event == EventType::PERSIST_DEFEND)
+    return "PERSIST_DEFEND";
+  if (event == EventType::BREAK_GUARD)
+    return "BREAK_GUARD";
+  if (event == EventType::BEGIN_GUARD)
+    return "BEGIN_GUARD";
+  if (event == EventType::PERSIST_GUARD)
+    return "PERSIST_GUARD";
+  if (event == EventType::BREAK_GUARD)
+    return "BREAK_GUARD";
+  if (event == EventType::FAIL_GUARD)
+    return "FAIL_GUARD";
+  if (event == EventType::DEATH)
+    return "DEATH";
+  if (event == EventType::INFLICTION)
+    return "INFLICTION";
+  if (event == EventType::CURE_INFLICTION)
+    return "CURE_INFLICTION";
+  if (event == EventType::ALTERATION)
+    return "ALTERATION";
+  if (event == EventType::ASSIGNMENT)
+    return "ASSIGNMENT";
+  if (event == EventType::REVIVAL)
+    return "REVIVAL";
+  if (event == EventType::HEAL_HEALTH)
+    return "HEAL_HEATLH";
+  if (event == EventType::REGEN_VITA)
+    return "REGEN_VITA";
+  if (event == EventType::HEAL_QD)
+    return "HEAL_QD";
+  if (event == EventType::REGEN_QTDR)
+    return "REGEN_QTDR";
+  if (event == EventType::ACTION_BEGIN)
+    return "ACTION_BEGIN";
+  if (event == EventType::PARTY_DEATH)
+    return "PARTY_DEATH";
+  if (event == EventType::INFLICTION_FIZZLE)
+    return "INFLICTION_FIZZLE";
+  if (event == EventType::DEATHTIMER_DEATH)
+    return "DEATHTIMER_DEATH";
+  if (event == EventType::EXP_GAIN)
+    return "EXP_GAIN";
+  if (event == EventType::EXP_LOSS)
+    return "EXP_LOSS";
+  if (event == EventType::LEVEL_UP)
+    return "LEVEL_UP";
+  if (event == EventType::EQUIP_EXP_GAIN)
+    return "EQUIP_EXP_GAIN";
+  if (event == EventType::BUBBY_LEVEL_UP)
+    return "BUBBY_LEVEL_UP";
+  if (event == EventType::GAIN_ITEM)
+    return "GAIN ITEM";
+  if (event == EventType::GAIN_MONEY)
+    return "GAIN MONEY";
+  if (event == EventType::ACTION_END)
+    return "ACTION END";
+  if (event == EventType::NONE)
+    return "NONE";
+
+  return "";
+}
+
+/*
+ * Description: Flushes some whitespace (or whatever) into the console window.
+ *
+ * Inputs: char c - character to put on each line, ex. ' '
+ * Output: none
+ */
+void Helpers::flushConsole(const char &c)
+{
+  for (int i = 0; i < 100; i++)
+    std::cout << c << std::endl;
+}
+
+//TODO - Comments
+std::string Helpers::gameKeyToStr(const GameKey &game_key)
+{
+  if (game_key == GameKey::MOVE_LEFT)
+    return "Left";
+  if (game_key == GameKey::MOVE_RIGHT)
+    return "Right";
+  if (game_key == GameKey::MOVE_UP)
+    return "Up";
+  if (game_key == GameKey::MOVE_DOWN)
+    return "Down";
+  if (game_key == GameKey::MENU)
+    return "Menu";
+  if (game_key == GameKey::ACTION)
+    return "Action";
+  if (game_key == GameKey::CANCEL)
+    return "Cancel";
+  if (game_key == GameKey::RUN)
+    return "Run";
+  if (game_key == GameKey::DEBUG)
+    return "Debug";
+
+  return "None";
+}
+
+/*
+ * Description: Determines vowel-ness. (See a_an fn)
+ *
+ * Inputs: char c - char to see if it is a vowel
+ * Output: bool - true if the given char is a vowel
+ */
+bool Helpers::isVowel(const char &c)
+{
+  return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
+          c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U');
+}
+
+/*
  * Description: Converts an integer to roman numeral form (ex. 6 -> VI)
  *
  * Inputs: int - the value of the integer to find roman numerals for
@@ -932,6 +959,31 @@ std::string Helpers::numToRoman(int value)
   }
 
   return result;
+}
+  
+/*
+ * Description: Returns the enum form of an party type (string)
+ *
+ * Inputs: std::string tier - string representation of PartyType
+ * Output: PartyType - the enumeration of the string
+ */
+PartyType Helpers::partyTypeFromStr(const std::string type)
+{
+  std::string type_up = type;
+  std::transform(type_up.begin(), type_up.end(), type_up.begin(), toupper);
+
+  /* Parse */
+  if(type_up == "FINAL_BOSS")
+    return PartyType::FINAL_BOSS;
+  else if(type_up == "BOSS")
+    return PartyType::BOSS;
+  else if(type_up == "MINI_BOSS")
+    return PartyType::MINI_BOSS;
+  else if(type_up == "BEARACKS")
+    return PartyType::BEARACKS;
+  else if(type_up == "SLEUTH")
+    return PartyType::SLEUTH;
+  return PartyType::REGULAR_FOE;
 }
 
 /*
@@ -977,6 +1029,33 @@ std::string Helpers::regenRateToStr(const RegenRate &regen_rate)
     return "GRAND";
 
   return "";
+}
+  
+/*
+ * Description: Returns the enum form of an item tier (string)
+ *
+ * Inputs: std::string tier - string representation of ItemTier
+ * Output: ItemTier - the enumeration of the string
+ */
+ItemTier Helpers::tierFromStr(const std::string &tier)
+{
+  std::string tier_up = tier;
+  std::transform(tier_up.begin(), tier_up.end(), tier_up.begin(), toupper);
+
+  /* Parse */
+  if(tier_up == "TRASH")
+    return ItemTier::TRASH;
+  else if(tier_up == "COMMON")
+    return ItemTier::COMMON;
+  else if(tier_up == "UNCOMMON")
+    return ItemTier::UNCOMMON;
+  else if(tier_up == "RARE")
+    return ItemTier::RARE;
+  else if(tier_up == "VERYRARE")
+    return ItemTier::VERYRARE;
+  else if(tier_up == "LEGENDARY")
+    return ItemTier::LEGENDARY;
+  return ItemTier::NONE;
 }
 
 /*=============================================================================

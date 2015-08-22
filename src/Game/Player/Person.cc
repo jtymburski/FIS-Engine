@@ -163,8 +163,7 @@ void Person::loadDefaults()
   total_exp = kMIN_LVL_EXP;
   updateLevel();
 
-  if(battle_class != nullptr && race_class != nullptr)
-    updateBaseStats();
+  updateBaseStats();
 
   curr_stats = base_stats;
   curr_max_stats = base_stats;
@@ -182,8 +181,7 @@ void Person::loadDefaults()
   learned_skills = nullptr;
   temp_skills = nullptr;
 
-  if(battle_class != nullptr && race_class != nullptr)
-    updateBaseSkills();
+  updateBaseSkills();
 
   dmg_mod = 1.000;
   exp_mod = 1.000;
@@ -210,6 +208,7 @@ void Person::loadDefaults()
  */
 void Person::setupClass()
 {
+  ai_module = nullptr;
   base_skills = nullptr;
   curr_skills = nullptr;
   learned_skills = nullptr;
@@ -259,9 +258,12 @@ void Person::setupClass()
     curr_max_stats = base_person->curr_max_stats;
     temp_max_stats = base_person->temp_max_stats;
     base_skills = base_person->base_skills;
-    curr_skills = base_person->curr_skills;
-    learned_skills = base_person->learned_skills;
-    temp_skills = base_person->temp_skills;
+    curr_skills = nullptr;
+    //curr_skills = base_person->curr_skills;
+    learned_skills = nullptr;
+    //learned_skills = base_person->learned_skills;
+    temp_skills = nullptr;
+    //temp_skills = base_person->temp_skills;
     dmg_mod = base_person->dmg_mod;
     exp_mod = base_person->exp_mod;
 
@@ -287,6 +289,9 @@ void Person::setupClass()
     first_person = base_person->first_person;
     third_person = base_person->third_person;
     dialog_sprite = base_person->dialog_sprite;
+    action_sprite = base_person->action_sprite;
+
+    updateSkills();
   }
 }
 
@@ -318,7 +323,7 @@ void Person::unsetAll(const bool& clear)
     }
 
     /* Delete the skills sets */
-    if(base_skills != nullptr)
+    if(base_person == nullptr && base_skills != nullptr)
       delete base_skills;
     if(curr_skills != nullptr)
       delete curr_skills;
@@ -328,7 +333,8 @@ void Person::unsetAll(const bool& clear)
       delete temp_skills;
   }
 
-  // unsetSprites();
+  if(base_person == nullptr)
+    unsetSprites();
 
   ai_module = nullptr;
   base_skills = nullptr;
@@ -352,7 +358,7 @@ void Person::unsetSprites()
       delete third_person;
 
   if(dialog_sprite != nullptr)
-    if(dialog_sprite == nullptr || base_person->dialog_sprite != dialog_sprite)
+    if(base_person == nullptr || base_person->dialog_sprite != dialog_sprite)
       delete dialog_sprite;
 
   action_sprite = nullptr;
@@ -370,10 +376,18 @@ void Person::unsetSprites()
  */
 void Person::updateBaseStats()
 {
-  auto temp = battle_class->getBaseSet();
-  auto temp_max = battle_class->getTopSet();
-  temp += race_class->getBaseSet();
-  temp_max += race_class->getTopSet();
+  AttributeSet temp;
+  AttributeSet temp_max;
+  if(battle_class != nullptr)
+  {
+    temp = battle_class->getBaseSet();
+    temp_max = battle_class->getTopSet();
+  }
+  if(race_class != nullptr)
+  {
+    temp += race_class->getBaseSet();
+    temp_max += race_class->getTopSet();
+  }
 
   std::vector<int32_t> prim_indexes;
   std::vector<int32_t> secd_indexes;
@@ -443,10 +457,10 @@ void Person::updateBaseSkills()
   else
     base_skills = new SkillSet();
 
-  if(battle_class->getSkills() != nullptr)
+  if(battle_class != nullptr && battle_class->getSkills() != nullptr)
     *base_skills = *base_skills + *(battle_class->getSkills());
 
-  if(race_class->getSkills() != nullptr)
+  if(race_class != nullptr && race_class->getSkills() != nullptr)
     *base_skills = *base_skills + *(race_class->getSkills());
 
   updateSkills();
@@ -654,6 +668,65 @@ bool Person::addExp(const uint32_t& amount, const bool& update)
   return can_add;
 }
 
+/*
+ * Description: Prepares a person for entering Battle (flags, Attributes, etc.)
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::battlePrep()
+{
+  curr_stats = curr_max_stats;
+  updateEquipStats();
+  updateSkills();
+  resetSkills();
+
+  setAilFlag(PersonAilState::RANDOM_SELECTION, false);
+  setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
+  setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
+  setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
+  setAilFlag(PersonAilState::TWO_SKILLS, false);
+  setAilFlag(PersonAilState::THREE_SKILLS, false);
+  setAilFlag(PersonAilState::HALF_COST, false);
+  setAilFlag(PersonAilState::REFLECT, false);
+  setAilFlag(PersonAilState::BOND, false);
+  setAilFlag(PersonAilState::BONDED, false);
+  setAilFlag(PersonAilState::IS_BUBBY, false);
+  setAilFlag(PersonAilState::IS_MODULATED, false);
+  setBFlag(BState::IN_BATTLE, true);
+  setBFlag(BState::ALIVE, true);
+  setBFlag(BState::REVIVABLE, false);
+  setBFlag(BState::IS_SELECTING, false);
+  setBFlag(BState::SELECTED_ACTION, false);
+  setBFlag(BState::SELECTED_2ND_ACTION, false);
+  setBFlag(BState::SELECTED_3RD_ACTION, false);
+  setBFlag(BState::CAN_CRIT, true);
+  setBFlag(BState::CAN_BE_CRIT, true);
+  setBFlag(BState::DEFENDING, false);
+  setBFlag(BState::GUARDED, false);
+  setBFlag(BState::GUARDING, false);
+  setBFlag(BState::SHIELDED, false);
+  setBFlag(BState::IS_ATTACKING, false);
+
+  resetActionFlags();
+}
+
+/*
+ * Description: Prepares the person for the beginning of a turn during a
+ *              battle.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::battleTurnPrep()
+{
+  setBFlag(BState::SELECTED_ACTION, false);
+  setBFlag(BState::SELECTED_2ND_ACTION, false);
+  setBFlag(BState::SELECTED_3RD_ACTION, false);
+  // setBFlag(BState::TWO_SKILLS, true);
+}
+
+// TODO: Comment
 float Person::calcVitaPercentAtVal(uint32_t target_value)
 {
   auto target_vita = static_cast<int32_t>(target_value);
@@ -662,12 +735,67 @@ float Person::calcVitaPercentAtVal(uint32_t target_value)
   return (max_vita != 0) ? ((float)target_vita / (float)max_vita) : (0);
 }
 
+// TODO: Comment
 float Person::calcQtdrPercentAtVal(uint32_t target_value)
 {
   auto target_qtdr = static_cast<int32_t>(target_value);
   auto max_qtdr = getTemp().getStat(Attribute::QTDR);
 
   return (max_qtdr != 0) ? ((float)target_qtdr / (float)max_qtdr) : (0);
+}
+
+/*
+ * Description: Clears the learned skills of the Person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::clearLearnedSkills()
+{
+  learned_skills->clear();
+  updateSkills();
+}
+
+/*
+ * Description: Creates a new AIModule for the person given a difficulty and
+ *              a primary and secodary personality type
+ *
+ * Inputs: diff - the difficulty the AI will have
+ *         prim_personality - the primary personality for the AI
+ *         secd_personality - the secondary personality for the AI
+ * Output: bool - true if the old AIModule underwent annihilation
+ */
+bool Person::createAI(const AIDifficulty& diff,
+                      const AIPersonality& prim_personality,
+                      const AIPersonality& secd_personality)
+{
+  auto destroyed = false;
+
+  if(ai_module != nullptr)
+  {
+    delete ai_module;
+    ai_module = nullptr;
+    destroyed = true;
+  }
+
+  ai_module = new AIModule(diff, prim_personality, secd_personality);
+  ai_module->setParent(this);
+
+  return destroyed;
+}
+
+/*
+ * Description: Shorthand function for dealing damage to the Person. Returns
+ *              true if the Person's HP is 0 after the damage takes place.
+ *
+ * Inputs: amount - amount of damage to deal
+ * Output: bool - true if the Person is now dead
+ */
+bool Person::doDmg(const uint32_t& amount)
+{
+  curr_stats.alterStat(Attribute::VITA, -amount);
+
+  return (curr_stats.getStat(Attribute::VITA) <= 0);
 }
 
 /*
@@ -735,6 +863,189 @@ uint16_t Person::findExpThisLevel()
 }
 
 /*
+ * Description: Determines whether the person is a power defender (whether they
+ *              can persist in defending against multiple attacks)
+ *
+ * Inputs: none
+ * Output: bool - true if the person is a power defender
+ */
+bool Person::isPowerDefender()
+{
+  /* If either battle class or race class allows the person to be a power
+   * defender, the person will be said to be a power defender */
+  if(battle_class->getFlag(CategoryState::POWER_DEFENDER) ||
+     race_class->getFlag(CategoryState::POWER_DEFENDER))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Determines whether the person is a power guarder (whether they
+ *              can persist in shielding their guardee from multiple attacks)
+ *
+ * Inputs: none
+ * Output: bool - true if person is a power guarder
+ */
+bool Person::isPowerGuarder()
+{
+  if(battle_class->getFlag(CategoryState::POWER_GUARDER) ||
+     race_class->getFlag(CategoryState::POWER_GUARDER))
+  {
+    return true;
+  }
+
+  return false;
+}
+  
+/*
+ * Description: Loads the data from file associated with the category.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         SDL_Renderer* renderer - the rendering engine
+ * Output: bool - true if load was successful
+ */
+bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
+                      std::string base_path)
+{
+  bool success = true;
+
+  /* ---- ELEMENT PRIMARY ---- */
+  if(data.getElement(index) == "elem_pri")
+  {
+    std::string elem_str = data.getDataString(&success);
+    if(success)
+    {
+      std::vector<std::string> elem_set = Helpers::split(elem_str, ',');
+      if(elem_set.size() == 2)
+      {
+        Element ele = Helpers::elementFromString(elem_set.front());
+        ElementCurve curve = Helpers::curveFromString(elem_set.back());
+
+        setCurves(ele, curve, secondary, secondary_curve);
+      }
+    }
+  }
+  /* ---- ELEMENT SECONDARY ---- */
+  else if(data.getElement(index) == "elem_sec")
+  {
+    std::string elem_str = data.getDataString(&success);
+    if(success)
+    {
+      std::vector<std::string> elem_set = Helpers::split(elem_str, ',');
+      if(elem_set.size() == 2)
+      {
+        Element ele = Helpers::elementFromString(elem_set.front());
+        ElementCurve curve = Helpers::curveFromString(elem_set.back());
+
+        setCurves(primary, primary_curve, ele, curve);
+      }
+    }
+  }
+  /* ---- FLAGS ---- */
+  else if(data.getElement(index) == "flags")
+  {
+    bool state = data.getDataBool(&success);
+
+    if(success)
+    {
+      if(data.getElement(index + 1) == "can_gain_exp")
+        setPFlag(PState::CAN_GAIN_EXP, state);
+      else if(data.getElement(index + 1) == "can_level_up")
+        setPFlag(PState::CAN_LEVEL_UP, state);
+      else if(data.getElement(index + 1) == "can_learn_skills")
+        setPFlag(PState::CAN_LEARN_SKILLS, state);
+      else if(data.getElement(index + 1) == "can_change_equip")
+        setPFlag(PState::CAN_CHANGE_EQUIP, state);
+    }
+  }
+  /* ---- LOOT ---- */
+  else if(data.getElement(index) == "loot")
+  {
+    std::vector<uint32_t> items = item_drops;
+    uint32_t credits = credit_drop;
+    uint32_t exps = exp_drop;
+
+    /* -- CREDIT -- */
+    if(data.getElement(index + 1) == "credit")
+      credits = data.getDataInteger(&success);
+    /* -- EXPERIENCE -- */
+    else if(data.getElement(index + 1) == "exp")
+      exps = data.getDataInteger(&success);
+    /* -- ITEMS -- */
+    else if(data.getElement(index + 1) == "item")
+      items.push_back(data.getDataInteger(&success));
+
+    /* Set Loot */
+    success &= setLoot(credits, exps, items);
+  }
+  /* ---- NAME ---- */
+  else if(data.getElement(index) == "name")
+  {
+    setName(data.getDataString(&success));
+  }
+  /* ---- SPRITE ACTION ---- */
+  else if(data.getElement(index) == "sprite_action")
+  {
+    /* If null, create */
+    if(action_sprite == nullptr)
+      action_sprite = new Sprite();
+
+    /* Add data */
+    success &= action_sprite->addFileInformation(data, index + 1, 
+                                                 renderer, base_path);
+  }
+  /* ---- SPRITE ACTION X ---- */
+  else if(data.getElement(index) == "sprite_action_x")
+  {
+    setActionXY(data.getDataInteger(&success), action_y);
+  }
+  /* ---- SPRITE ACTION Y ---- */
+  else if(data.getElement(index) == "sprite_action_y")
+  {
+    setActionXY(action_x, data.getDataInteger(&success));
+  }
+  /* ---- SPRITE DIALOG ---- */
+  else if(data.getElement(index) == "sprite_dialog")
+  {
+    /* If null, create */
+    if(dialog_sprite == nullptr)
+      dialog_sprite = new Sprite();
+
+    /* Add data */
+    success &= dialog_sprite->addFileInformation(data, index + 1, 
+                                                 renderer, base_path);
+  }
+  /* ---- SPRITE FIRST PERSON ---- */
+  else if(data.getElement(index) == "sprite_fp")
+  {
+    /* If null, create */
+    if(first_person == nullptr)
+      first_person = new Sprite();
+
+    /* Add data */
+    success &= first_person->addFileInformation(data, index + 1,
+                                                renderer, base_path);
+  }
+  /* ---- SPRITE THIRD PERSON ---- */
+  else if(data.getElement(index) == "sprite_tp")
+  {
+    /* If null, create */
+    if(third_person == nullptr)
+      third_person = new Sprite();
+
+    /* Add data */
+    success &= third_person->addFileInformation(data, index + 1,
+                                                renderer, base_path);
+  }
+
+  return success;
+}
+
+/*
  * Description: Removes an amount of experience from the person but not from
  *              their equipment.
  *
@@ -785,156 +1096,6 @@ bool Person::loseExpPercent(const uint16_t& percent)
 }
 
 /*
- * Description: Prepares a person for entering Battle (flags, Attributes, etc.)
- *
- * Inputs: none
- * Output: none
- */
-void Person::battlePrep()
-{
-  curr_stats = curr_max_stats;
-  updateEquipStats();
-  updateSkills();
-  resetSkills();
-
-  setAilFlag(PersonAilState::RANDOM_SELECTION, false);
-  setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
-  setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
-  setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
-  setAilFlag(PersonAilState::TWO_SKILLS, false);
-  setAilFlag(PersonAilState::THREE_SKILLS, false);
-  setAilFlag(PersonAilState::HALF_COST, false);
-  setAilFlag(PersonAilState::REFLECT, false);
-  setAilFlag(PersonAilState::BOND, false);
-  setAilFlag(PersonAilState::BONDED, false);
-  setAilFlag(PersonAilState::IS_BUBBY, false);
-  setAilFlag(PersonAilState::IS_MODULATED, false);
-  setBFlag(BState::IN_BATTLE, true);
-  setBFlag(BState::ALIVE, true);
-  setBFlag(BState::REVIVABLE, false);
-  setBFlag(BState::IS_SELECTING, false);
-  setBFlag(BState::SELECTED_ACTION, false);
-  setBFlag(BState::SELECTED_2ND_ACTION, false);
-  setBFlag(BState::SELECTED_3RD_ACTION, false);
-  setBFlag(BState::CAN_CRIT, true);
-  setBFlag(BState::CAN_BE_CRIT, true);
-  setBFlag(BState::DEFENDING, false);
-  setBFlag(BState::GUARDED, false);
-  setBFlag(BState::GUARDING, false);
-  setBFlag(BState::SHIELDED, false);
-  setBFlag(BState::IS_ATTACKING, false);
-
-  resetActionFlags();
-}
-
-/*
- * Description: Prepares the person for the beginning of a turn during a
- *              battle.
- *
- * Inputs: none
- * Output: none
- */
-void Person::battleTurnPrep()
-{
-  setBFlag(BState::SELECTED_ACTION, false);
-  setBFlag(BState::SELECTED_2ND_ACTION, false);
-  setBFlag(BState::SELECTED_3RD_ACTION, false);
-  // setBFlag(BState::TWO_SKILLS, true);
-}
-
-/*
- * Description: Clears the learned skills of the Person
- *
- * Inputs: none
- * Output: none
- */
-void Person::clearLearnedSkills()
-{
-  learned_skills->clear();
-  updateSkills();
-}
-
-/*
- * Description: Creates a new AIModule for the person given a difficulty and
- *              a primary and secodary personality type
- *
- * Inputs: diff - the difficulty the AI will have
- *         prim_personality - the primary personality for the AI
- *         secd_personality - the secondary personality for the AI
- * Output: bool - true if the old AIModule underwent annihilation
- */
-bool Person::createAI(const AIDifficulty& diff,
-                      const AIPersonality& prim_personality,
-                      const AIPersonality& secd_personality)
-{
-  auto destroyed = false;
-
-  if(ai_module != nullptr)
-  {
-    delete ai_module;
-    ai_module = nullptr;
-    destroyed = true;
-  }
-
-  ai_module = new AIModule(diff, prim_personality, secd_personality);
-  ai_module->setParent(this);
-
-  return destroyed;
-}
-
-/*
- * Description: Shorthand function for dealing damage to the Person. Returns
- *              true if the Person's HP is 0 after the damage takes place.
- *
- * Inputs: amount - amount of damage to deal
- * Output: bool - true if the Person is now dead
- */
-bool Person::doDmg(const uint32_t& amount)
-{
-  curr_stats.alterStat(Attribute::VITA, -amount);
-
-  return (curr_stats.getStat(Attribute::VITA) <= 0);
-}
-
-/*
- * Description: Determines whether the person is a power defender (whether they
- *              can persist in defending against multiple attacks)
- *
- * Inputs: none
- * Output: bool - true if the person is a power defender
- */
-bool Person::isPowerDefender()
-{
-  /* If either battle class or race class allows the person to be a power
-   * defender, the person will be said to be a power defender */
-  if(battle_class->getFlag(CategoryState::POWER_DEFENDER) ||
-     race_class->getFlag(CategoryState::POWER_DEFENDER))
-  {
-    return true;
-  }
-
-  return false;
-}
-
-/*
- * Description: Determines whether the person is a power guarder (whether they
- *              can persist in shielding their guardee from multiple attacks)
- *
- * Inputs: none
- * Output: bool - true if person is a power guarder
- */
-bool Person::isPowerGuarder()
-{
-  if(battle_class->getFlag(CategoryState::POWER_GUARDER) ||
-     race_class->getFlag(CategoryState::POWER_GUARDER))
-  {
-    return true;
-  }
-
-  return false;
-}
-
-/*
  * Description: Method for printing out the data describing a person
  *
  * Inputs: simple - true for a simplified version of a person, false otherwise
@@ -958,8 +1119,10 @@ void Person::print(const bool& simple, const bool& equips, const bool& flags,
     std::cout << "Game ID: " << game_id << "\n";
     std::cout << "My ID: " << my_id << "\n";
     std::cout << "Base Person? " << (base_person == nullptr) << "\n";
-    std::cout << "Battle Class: " << battle_class->getName() << "\n";
-    std::cout << "Race? " << race_class->getName() << "\n";
+    if(battle_class != nullptr)
+      std::cout << "Battle Class: " << battle_class->getName() << "\n";
+    if(race_class != nullptr)
+      std::cout << "Race? " << race_class->getName() << "\n";
     std::cout << "Name: " << name << "\n";
     std::cout << "[void]Rank "
               << "\n";
@@ -1079,7 +1242,7 @@ void Person::print(const bool& simple, const bool& equips, const bool& flags,
       std::cout << "MAX_LVL: " << getPFlag(PState::MAX_LVL) << "\n";
     }
   }
-  std::cout << "--- // Person ---\n\n";
+  std::cout << "==== // Person ====\n\n";
 }
 
 /*
@@ -1673,13 +1836,16 @@ std::vector<uint32_t> Person::getItemDrops() { return item_drops; }
  */
 RegenRate Person::getQDRegenRate()
 {
-  auto total_rate = static_cast<int16_t>(battle_class->getQDRegenRate()) +
-                    static_cast<int16_t>(race_class->getQDRegenRate());
+  if(battle_class != nullptr && race_class != nullptr)
+  {
+    auto total_rate = static_cast<int16_t>(battle_class->getQDRegenRate()) +
+                      static_cast<int16_t>(race_class->getQDRegenRate());
 
-  if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
-    return static_cast<RegenRate>(total_rate);
-  else
-    return RegenRate::GRAND;
+    if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+      return static_cast<RegenRate>(total_rate);
+    else
+      return RegenRate::GRAND;
+  }
 
   return RegenRate::ZERO;
 }
@@ -1693,13 +1859,16 @@ RegenRate Person::getQDRegenRate()
  */
 RegenRate Person::getVitaRegenRate()
 {
-  auto total_rate = static_cast<int16_t>(battle_class->getVitaRegenRate()) +
-                    static_cast<int16_t>(race_class->getVitaRegenRate());
+  if(battle_class != nullptr && race_class != nullptr)
+  {
+    auto total_rate = static_cast<int16_t>(battle_class->getVitaRegenRate()) +
+                      static_cast<int16_t>(race_class->getVitaRegenRate());
 
-  if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
-    return static_cast<RegenRate>(total_rate);
-  else
-    return RegenRate::GRAND;
+    if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+      return static_cast<RegenRate>(total_rate);
+    else
+      return RegenRate::GRAND;
+  }
 
   return RegenRate::ZERO;
 }
@@ -1865,6 +2034,67 @@ void Person::setPFlag(const PState& flag, const bool& set_value)
 {
   (set_value) ? (person_flags |= flag) : (person_flags &= ~flag);
 }
+ 
+/*
+ * Description: Evaluates and returns a given PState flag but based on the
+ *              PartyType flag which is the type of party.
+ *
+ * Inputs: PartyType type - the type to correlate the PState flag to
+ * Output: none
+ */
+void Person::setPFlag(const PartyType &type)
+{
+  PState flag = PState::SLEUTH;
+
+  /* Clear existing state */
+  setPFlag(PState::SLEUTH | PState::BEARACKS | PState::MAIN | 
+           PState::FINAL | PState::BOSS | PState::MINI_BOSS, false);
+
+  /* Parse the party type and correlate */
+  if(type == PartyType::SLEUTH)
+    flag = PState::SLEUTH;
+  else if(type == PartyType::BEARACKS)
+    flag = PState::BEARACKS;
+  else if(type == PartyType::REGULAR_FOE)
+    flag = PState::MAIN;
+  else if(type == PartyType::MINI_BOSS)
+    flag = PState::MINI_BOSS;
+  else if(type == PartyType::BOSS)
+    flag = PState::BOSS;
+  else if(type == PartyType::FINAL_BOSS)
+    flag = PState::FINAL;
+
+  /* Set or unset AI */
+  if(type == PartyType::SLEUTH || type == PartyType::BEARACKS)
+  {
+    if(ai_module != nullptr)
+      delete ai_module;
+    ai_module = nullptr;
+  }
+  else
+  {
+    if(ai_module == nullptr)
+      ai_module = new AIModule();
+  }
+
+  /* Set the flag */
+  setPFlag(flag, true);
+}
+
+/*
+ * Description: Assigns a new battle class to the person. This re-generates
+ *              both the base stats and base skills upon setting.
+ *
+ * Inputs: Category* category - the new class category
+ * Output: none
+ */
+void Person::setClass(Category* const category)
+{
+  battle_class = category;
+
+  updateBaseStats();
+  updateBaseSkills();
+}
 
 /*
  * Description: Assigns a curve modifiers for the person (Change's level
@@ -1885,10 +2115,7 @@ void Person::setCurves(Element prim, ElementCurve prim_curve, Element secd,
   secondary_curve = secd_curve;
 
   if(update_level)
-  {
     updateBaseStats();
-    updateStats();
-  }
 }
 
 /*
@@ -2095,7 +2322,7 @@ bool Person::setLoot(const uint32_t& new_credit_drop,
   }
 
   if(new_exp_drop < kMAX_EXP_DROP)
-    credit_drop = new_exp_drop;
+    exp_drop = new_exp_drop;
   else
   {
     exp_drop = kMAX_EXP_DROP;
@@ -2120,6 +2347,21 @@ bool Person::setLoot(const uint32_t& new_credit_drop,
  * Output: none
  */
 void Person::setName(std::string name) { this->name = name; }
+
+/*
+ * Description: Assigns a new battle race to the person. This re-generates
+ *              both the base stats and base skills upon setting.
+ *
+ * Inputs: Category* category - the new race class category
+ * Output: none
+ */
+void Person::setRace(Category* const category)
+{
+  race_class = category;
+
+  updateBaseStats();
+  updateBaseSkills();
+}
 
 /*
  * Description: Assigns new sprite pointers for the Person

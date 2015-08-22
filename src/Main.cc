@@ -58,6 +58,9 @@ int main(int argc, char** argv)
   std::string init_map = "";
   if(argc > 1)
     init_map += argv[1];
+  int map_lvl = 0;
+  if(argc > 2)
+    map_lvl = std::stoi(argv[2]);
 
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
@@ -73,7 +76,7 @@ int main(int argc, char** argv)
     /* Create the application and start the run loop */
     Application* game_app = new Application(dir_string);
     if(game_app->initialize())
-      game_app->run(init_map);
+      game_app->run(init_map, map_lvl);
   
     /* Clean up the application, after the run loop is finished */
     game_app->uninitialize();

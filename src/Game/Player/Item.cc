@@ -338,10 +338,7 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
   {
     /* If null, create */
     if(using_animation == nullptr)
-    {
-      std::cout << "HERE" << std::endl;
       using_animation = new Sprite();
-    }
 
     /* Add data */
     success &= using_animation->addFileInformation(data, index + 1,
@@ -351,6 +348,13 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
   else if(data.getElement(index) == "brief_desc")
   {
     success &= setBriefDescription(data.getDataString(&success));
+  }
+  /* ---- BUFF SET ---- */
+  else if(data.getElement(index) == "buff_set")
+  {
+    AttributeSet set = AttributeSet::setFromStr(data.getDataString(&success));
+    if(success)
+      setBuffSet(set);
   }
   /* ---- DESCRIPTION ---- */
   else if(data.getElement(index) == "description")
@@ -365,7 +369,39 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- FLAGS ---- */
   else if(data.getElement(index) == "flags")
   {
-    // TODO: ENUM
+    bool state = data.getDataBool(&success);
+
+    if(success)
+    {
+      if(data.getElement(index + 1) == "consumed")
+        setFlag(ItemFlags::CONSUMED, state);
+      else if(data.getElement(index + 1) == "offensive")
+        setFlag(ItemFlags::OFFENSIVE, state);
+      else if(data.getElement(index + 1) == "defensive")
+        setFlag(ItemFlags::DEFENSIVE, state);
+      else if(data.getElement(index + 1) == "equipment")
+        setFlag(ItemFlags::EQUIPMENT, state);
+      else if(data.getElement(index + 1) == "bubby")
+        setFlag(ItemFlags::BUBBY, state);
+      else if(data.getElement(index + 1) == "key_item")
+        setFlag(ItemFlags::KEY_ITEM, state);
+      else if(data.getElement(index + 1) == "material")
+        setFlag(ItemFlags::MATERIAL, state);
+      else if(data.getElement(index + 1) == "gene_comp")
+        setFlag(ItemFlags::GENE_COMP, state);
+      else if(data.getElement(index + 1) == "no_category")
+        setFlag(ItemFlags::NO_CATEGORY, state);
+      else if(data.getElement(index + 1) == "stat_altering")
+        setFlag(ItemFlags::STAT_ALTERING, state);
+      else if(data.getElement(index + 1) == "skill_learning")
+        setFlag(ItemFlags::SKILL_LEARNING, state);
+      else if(data.getElement(index + 1) == "healing_item")
+        setFlag(ItemFlags::HEALING_ITEM, state);
+      else if(data.getElement(index + 1) == "relieving_item")
+        setFlag(ItemFlags::RELIEVING_ITEM, state);
+      else if(data.getElement(index + 1) == "money")
+        setFlag(ItemFlags::MONEY, state);
+    }
   }
   /* ---- MASS ---- */
   else if(data.getElement(index) == "mass")
@@ -425,7 +461,7 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- TIER ---- */
   else if(data.getElement(index) == "tier")
   {
-    // TODO: ENUM
+    setItemTier(Helpers::tierFromStr(data.getDataString(&success)));
   }
   /* ---- THUMBNAIL ---- */
   else if(data.getElement(index) == "thumb")
@@ -459,10 +495,6 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
   {
     success &= setValue(data.getDataInteger(&success));
   }
-
-  std::cout << "ITEM: " << data.getElement(index) << "," << success
-            << std::endl;
-  printInfo();
 
   return success;
 }
