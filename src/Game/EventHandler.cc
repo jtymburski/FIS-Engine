@@ -2,10 +2,10 @@
 * Class Name: EventHandler
 * Date Created: September 12, 2013
 * Inheritance: none
-* Description: This event handler contains all events between the multiple 
+* Description: This event handler contains all events between the multiple
 *              classes and manages data transfer between from calls internally.
 *              It is merely meant as a facilitator of actions that need to
-*              happen deep inside of the nested structure and then need to 
+*              happen deep inside of the nested structure and then need to
 *              fire from the top of the chain.
 ******************************************************************************/
 #include "Game/EventHandler.h"
@@ -40,9 +40,9 @@ EventHandler::~EventHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-  
+
 /* Returns the conversation at the given index */
-Conversation* EventHandler::getConversation(Conversation* reference, 
+Conversation* EventHandler::getConversation(Conversation* reference,
                                             std::vector<std::string> index_list)
 {
   Conversation* convo = reference;
@@ -50,19 +50,19 @@ Conversation* EventHandler::getConversation(Conversation* reference,
   for(uint16_t i = 1; i < index_list.size(); i++)
   {
     uint16_t convo_index = std::stoi(index_list[i]);
-    
+
     while(convo->next.size() < convo_index)
       convo->next.push_back(createEmptyConversation());
 
     convo = &convo->next[convo_index-1];
   }
-  
+
   return convo;
 }
 
 /* Sets the conversation values of the pointed object, gamd on the XML
  * file data */
-void EventHandler::setConversationValues(Conversation* reference, XmlData data, 
+void EventHandler::setConversationValues(Conversation* reference, XmlData data,
                                          int index, int section_index)
 {
   /* Only proceed if the reference convo is not NULL */
@@ -76,7 +76,7 @@ void EventHandler::setConversationValues(Conversation* reference, XmlData data,
     else if(element == "id")
       reference->thing_id = data.getDataInteger();
     else if(element == "event")
-      reference->action_event = updateEvent(reference->action_event, data, 
+      reference->action_event = updateEvent(reference->action_event, data,
                                             index + 1, section_index);
   }
 }
@@ -90,7 +90,7 @@ Event EventHandler::createBlankEvent()
 {
   return createEventTemplate();
 }
-  
+
 /* Creates the conversation initiation event */
 Event EventHandler::createConversationEvent(Conversation* new_conversation)
 {
@@ -132,15 +132,15 @@ Event EventHandler::createNotificationEvent(std::string notification)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-  
+
   if(!notification.empty())
   {
     new_event.classification = EventClassifier::NOTIFICATION;
-    
+
     /* Set up the rest of the event */
     new_event.strings.push_back(notification);
   }
-  
+
   return new_event;
 }
 
@@ -154,7 +154,7 @@ Event EventHandler::createStartBattleEvent()
 
   return new_event;
 }
-  
+
 /* Create a start map event */
 Event EventHandler::createStartMapEvent(int id)
 {
@@ -165,11 +165,11 @@ Event EventHandler::createStartMapEvent(int id)
   /* Fill in the event specific information */
   new_event.ints.push_back(id);
 
-  return new_event; 
+  return new_event;
 }
 
 /* Creates a teleport event */
-Event EventHandler::createTeleportEvent(int thing_id, uint16_t tile_x, 
+Event EventHandler::createTeleportEvent(int thing_id, uint16_t tile_x,
                                         uint16_t tile_y, uint16_t section_id)
 {
   /* Create the event and identify */
@@ -186,7 +186,7 @@ Event EventHandler::createTeleportEvent(int thing_id, uint16_t tile_x,
 }
 
 /* Execute the given event - done through signal emits */
-void EventHandler::executeEvent(Event event, MapPerson* initiator, 
+void EventHandler::executeEvent(Event event, MapPerson* initiator,
                                              MapThing* source)
 {
   /* Create the executed event queue entry */
@@ -194,7 +194,7 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
   executed_event.event = event;
   executed_event.initiator = initiator;
   executed_event.source = source;
-  
+
   /* Push the event to the back of the queue */
   event_queue.push_back(executed_event);
 }
@@ -207,7 +207,7 @@ void EventHandler::executePickup(MapItem* item, bool walkover)
   Event new_event = createEventTemplate();
   new_event.classification = EventClassifier::PICKUPITEM;
   new_event.ints.push_back(walkover);
-  
+
   /* Now execute the pickup event (throw it on the queue) */
   executeEvent(new_event, NULL);
   event_queue.back().item = item;
@@ -223,30 +223,30 @@ void EventHandler::pollClear()
 /* Poll a conversation event. Only true if this event is next on queue */
 bool EventHandler::pollConversation(Conversation** convo, MapThing** source)
 {
-  if(pollEventType() == EventClassifier::STARTCONVO && convo != NULL && 
+  if(pollEventType() == EventClassifier::STARTCONVO && convo != NULL &&
      source != NULL)
   {
     *convo = event_queue[queue_index].event.convo;
     *source = event_queue[queue_index].source;
-    
+
     return true;
   }
-  
+
   return false;
 }
 
 /* Poll a give item event */
 bool EventHandler::pollGiveItem(int* id, int* count)
 {
-  if(pollEventType() == EventClassifier::GIVEITEM && id != NULL && 
+  if(pollEventType() == EventClassifier::GIVEITEM && id != NULL &&
      count != NULL && event_queue[queue_index].event.ints.size() == 2)
   {
     *id = event_queue[queue_index].event.ints[kGIVE_ITEM_ID];
     *count = event_queue[queue_index].event.ints[kGIVE_ITEM_COUNT];
-    
+
     return true;
   }
-  
+
   return false;
 }
 
@@ -257,7 +257,7 @@ bool EventHandler::pollEvent()
   /* Update the index if it's still under the queue size */
   if(queue_index < event_queue.size())
     queue_index++;
-  
+
   /* Check if the poll is complete */
   if(queue_index >= event_queue.size())
     return false;
@@ -279,76 +279,82 @@ bool EventHandler::pollNotification(std::string* notification)
      event_queue[queue_index].event.strings.size() == 1)
   {
     *notification = event_queue[queue_index].event.strings.front();
-    
+
     return true;
   }
-  
+
   return false;
 }
-  
+
 /* Poll a pickup item event */
 bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 {
-  if(pollEventType() == EventClassifier::PICKUPITEM && item != NULL && 
+  if(pollEventType() == EventClassifier::PICKUPITEM && item != NULL &&
      walkover != NULL && event_queue[queue_index].event.ints.size() == 1)
   {
     *item = event_queue[queue_index].item;
     *walkover = event_queue[queue_index].event.ints[0];
-    
+
     return true;
   }
-  
+
   return false;
 }
 
 /* Poll a start battle event */
-bool EventHandler::pollStartBattle()
+bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source)
 {
-  if(pollEventType() == EventClassifier::RUNBATTLE)
+  if(pollEventType() == EventClassifier::RUNBATTLE &&
+     person != NULL && source != NULL)
+  {
+    *person = event_queue[queue_index].initiator;
+    *source = event_queue[queue_index].source;
+
     return true;
+  }
   return false;
 }
-  
+
 /* Poll a start map event */
 bool EventHandler::pollStartMap(int* id)
 {
-  if(pollEventType() == EventClassifier::RUNMAP && id != NULL && 
+  if(pollEventType() == EventClassifier::RUNMAP && id != NULL &&
      event_queue[queue_index].event.ints.size() == 1)
   {
     *id = event_queue[queue_index].event.ints[kMAP_ID];
     return true;
   }
-  
+
   return false;
 }
 
 /* Poll a teleport thing event */
-bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y, 
+bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
                                                     int* section_id)
 {
   EventClassifier type = pollEventType();
   if(type == EventClassifier::TELEPORTTHING && thing_id != NULL &&
-     x != NULL && y != NULL && section_id != NULL && 
+     x != NULL && y != NULL && section_id != NULL &&
      event_queue[queue_index].event.ints.size() == 4)
   {
     *thing_id = event_queue[queue_index].event.ints[kTELEPORT_ID];
     *x = event_queue[queue_index].event.ints[kTELEPORT_X];
     *y = event_queue[queue_index].event.ints[kTELEPORT_Y];
     *section_id = event_queue[queue_index].event.ints[kTELEPORT_SECTION];
-    
+
     return true;
   }
-  
+
   return false;
 }
 
-Event EventHandler::EventHandler::updateEvent(Event event, XmlData data, 
-                                                           int file_index, 
+Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
+                                                           int file_index,
                                                            int section_index)
 {
   EventClassifier category = EventClassifier::NOEVENT;
   std::string category_str = data.getElement(file_index);
-  
+
   /* Determine the category of the event that is being updated */
   if(category_str == "giveitem")
     category = EventClassifier::GIVEITEM;
@@ -367,7 +373,7 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   if(category != event.classification)
   {
     event = deleteEvent(event);
-    
+
     if(category == EventClassifier::GIVEITEM)
       event = createGiveItemEvent();
     else if(category == EventClassifier::STARTCONVO)
@@ -406,7 +412,7 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   else if(category == EventClassifier::STARTCONVO)
   {
     /* Split the key value for conversation (Eg. index="1.2.1.1") */
-    std::vector<std::string> index_list = 
+    std::vector<std::string> index_list =
                               Helpers::split(data.getKeyValue(file_index), '.');
 
     /* If size is only one, the conversation is the first item */
@@ -447,7 +453,7 @@ KeyHandler& EventHandler::getKeyHandler()
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-  
+
 /*
  * Description: Copies a past in event and returns the copied version as source.
  *              Function that calls it is in charge of deleting conversation,
@@ -466,7 +472,7 @@ Event EventHandler::copyEvent(Event source)
   event.strings = source.strings;
 
   /* If convo, do the proper copy */
-  if(event.classification == EventClassifier::STARTCONVO && 
+  if(event.classification == EventClassifier::STARTCONVO &&
      source.convo != NULL)
   {
     event.convo = new Conversation;
@@ -504,7 +510,7 @@ Event EventHandler::createEventTemplate()
   return blank_event;
 }
 
-/* Deletes the given event. Just clears the relevant memory 
+/* Deletes the given event. Just clears the relevant memory
  * Returns a blank event */
 Event EventHandler::deleteEvent(Event event)
 {

@@ -2074,7 +2074,8 @@ void Person::setPFlag(const PartyType &type)
   else
   {
     if(ai_module == nullptr)
-      ai_module = new AIModule();
+      createAI(AIDifficulty::RANDOM, AIPersonality::MODERATOR, 
+               AIPersonality::AGGRESSOR);
   }
 
   /* Set the flag */

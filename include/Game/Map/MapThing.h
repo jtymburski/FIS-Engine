@@ -5,8 +5,8 @@
  * Description: This class handles the generic MapThing. It contains things on
  *              the map that don't fall under general scenary. It acts as the
  *              parent class to a sequence of others, for example, MapPerson,
- *              MapWalkOver, MapSolid, etc. Also handles the basic setup for 
- *              name, description, id, sprite. No interaction is handled in 
+ *              MapItem, etc. Also handles the basic setup for
+ *              name, description, id, sprite. No interaction is handled in
  *              this class since its a generic parent.
  *****************************************************************************/
 #ifndef MAPTHING_H
@@ -22,7 +22,7 @@
 #include "XmlData.h"
 
 /*
- * Structure which handles the animation based control when dealing with 
+ * Structure which handles the animation based control when dealing with
  * base objects that don't allow using the standard update call of the
  * sprite matrix.
  */
@@ -41,7 +41,7 @@ public:
   /* Constructor functions */
   MapThing();
   MapThing(int id, std::string name = "", std::string description = "");
-  MapThing(std::vector<std::vector<TileSprite*>> frames, int id = kUNSET_ID,  
+  MapThing(std::vector<std::vector<TileSprite*>> frames, int id = kUNSET_ID,
            std::string name = "", std::string description = "");
 
   /* Destructor function */
@@ -67,14 +67,17 @@ protected:
   /* The event handler information and corresponding interact event */
   EventHandler* event_handler;
   Event interact_event;
-  
-  /* The main sprite frame data - contains passability and render depth */
-  SpriteMatrix* sprite_set;
+
+  /* Game ID */
+  int game_id;
 
   /* Movement information */
   Direction movement;
   bool movement_paused;
   uint16_t speed;
+
+  /* The main sprite frame data - contains passability and render depth */
+  SpriteMatrix* sprite_set;
 
   /* Startinc coordinate information */
   uint16_t starting_section;
@@ -83,7 +86,7 @@ protected:
 
   /* The target for this thing. If set, it cannot be targetted by others */
   MapThing* target;
-  
+
   /* Tile information */
   std::vector<std::vector<Tile*>> tile_main;
   std::vector<std::vector<Tile*>> tile_prev;
@@ -100,13 +103,13 @@ protected:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
-  
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
   /* Animates the thing, if it has multiple frames */
-  virtual bool animate(int cycle_time, bool reset = false, 
+  virtual bool animate(int cycle_time, bool reset = false,
                                        bool skip_head = false);
   /* Returns the tile index as a decimal to indicate what percentage of the
    * next tile it resides in */
@@ -119,14 +122,14 @@ protected:
   /* Returns the appropriate tile. NULL if unset or beyond range */
   Tile* getTileMain(uint32_t x, uint32_t y);
   Tile* getTilePrevious(uint32_t x, uint32_t y);
-  
+
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
-  
+
   /* Is move allowed, based on main tile and the next tile */
-  bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set, 
+  bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
                      Direction move_request);
-  virtual bool isTileMoveAllowed(Tile* previous, Tile* next, 
+  virtual bool isTileMoveAllowed(Tile* previous, Tile* next,
                                  uint8_t render_depth, Direction move_request);
 
   /* Move the thing, based on the internal direction */
@@ -141,12 +144,12 @@ protected:
   bool setMatrix(SpriteMatrix* matrix);
 
   /* Sets the tile of the selected with the corresponding frames */
-  virtual bool setTile(Tile* tile, TileSprite* frames, 
+  virtual bool setTile(Tile* tile, TileSprite* frames,
                        bool no_events = true);
-  virtual void setTileFinish(Tile* old_tile, Tile* new_tile, 
-                             uint8_t render_depth, bool reverse_last = false, 
+  virtual void setTileFinish(Tile* old_tile, Tile* new_tile,
+                             uint8_t render_depth, bool reverse_last = false,
                              bool no_events = false);
-  virtual bool setTileStart(Tile* old_tile, Tile* new_tile, 
+  virtual bool setTileStart(Tile* old_tile, Tile* new_tile,
                             uint8_t render_depth, bool no_events = false);
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
@@ -166,10 +169,10 @@ protected:
 public:
   /* Adds thing information from the XML file. Will be virtually re-called
    * by all children for proper operation */
-  virtual bool addThingInformation(XmlData data, int file_index, 
-                                   int section_index, SDL_Renderer* renderer, 
+  virtual bool addThingInformation(XmlData data, int file_index,
+                                   int section_index, SDL_Renderer* renderer,
                                    std::string base_path = "");
-  
+
   /* Returns the class descriptor, useful for casting */
   virtual std::string classDescriptor();
 
@@ -179,7 +182,7 @@ public:
 
   /* Clears the entire class data */
   virtual void clear();
-   
+
   /* Clear all movement from the stack. This is filled from add/remove
    * direction */
   virtual void clearAllMovement();
@@ -189,11 +192,11 @@ public:
 
   /* Returns the base class */
   MapThing* getBase();
-  
+
   /* Returns the bounding box of the thing */
   SDL_Rect getBoundingBox();
   SDL_Rect getBoundingPixels();
- 
+
   /* Returns center pixel of thing */
   uint32_t getCenterX();
   uint32_t getCenterY();
@@ -209,19 +212,22 @@ public:
   TileSprite* getFrameMain(Tile* tile);
   TileSprite* getFramePrevious(Tile* tile);
   std::vector<std::vector<TileSprite*>> getFrames();
-  
+
+  /* Returns the connected game object ID */
+  int getGameID();
+
   /* Returns the height of the thing */
   uint16_t getHeight();
 
   /* Gets the things ID */
   int getID() const;
-  
+
   /* Gets the interaction event for the thing */
   Event getInteraction() const;
 
   /* Returns the map section of the tile where this is painted */
   uint16_t getMapSection();
-  
+
   /* Get the specific details of the movement information */
   Direction getMovement();
   bool getMovementPaused();
@@ -233,14 +239,14 @@ public:
 
   /* Gets the things name */
   std::string getName() const;
-   
+
   /* Returns the passability of the tile based on direction */
   bool getPassabilityEntering(Tile* frame_tile, Direction dir);
-  bool getPassabilityExiting(Tile* frame_tile, Direction dir); 
-  
+  bool getPassabilityExiting(Tile* frame_tile, Direction dir);
+
   /* Returns the speed that the thing is moving at */
   uint16_t getSpeed() const;
- 
+
   /* Returns the starting coordinates - as set by setStartingLocation() */
   uint16_t getStartingSection();
   uint16_t getStartingX();
@@ -248,7 +254,7 @@ public:
 
   /* Returns the target that this thing is pointed at */
   MapThing* getTarget();
-  
+
   /* Returns the tile height */
   uint16_t getTileHeight();
 
@@ -262,17 +268,17 @@ public:
   /* Returns x/y of the top left, in tile units */
   uint16_t getTileX();
   uint16_t getTileY();
-  
+
   /* Returns the width of the thing */
   uint16_t getWidth();
 
   /* Returns the location of the thing */
   uint32_t getX();
   uint32_t getY();
-  
+
   /* Starts interaction (conversation, giving something, etc) */
   virtual bool interact(MapPerson* initiator);
-  
+
   /* Returns if there is a move request for the given thing */
   virtual bool isMoveRequested();
 
@@ -287,14 +293,14 @@ public:
 
   /* Returns if the thing is visible / rendered on the screen */
   virtual bool isVisible() const;
-  
+
   /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
   bool renderMain(SDL_Renderer* renderer, Tile* tile, uint8_t render_depth,
                   int offset_x, int offset_y);
   bool renderPrevious(SDL_Renderer* renderer, Tile* tile, uint8_t render_depth,
                       int offset_x, int offset_y);
- 
+
   /* Resets the location back to default (0,0,0), relative to the map */
   virtual void resetLocation();
 
@@ -306,59 +312,62 @@ public:
 
   /* Sets the dialog image data, for display during conversation */
   bool setDialogImage(std::string path, SDL_Renderer* renderer);
-    
+
   /* Sets the event handler */
   void setEventHandler(EventHandler* event_handler);
-  
+
   /* Sets the state frames of the thing */
-  virtual bool setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
+  virtual bool setFrame(TileSprite* frame, uint32_t x, uint32_t y,
                         bool delete_old = true);
-  virtual void setFrames(std::vector<std::vector<TileSprite*>> frames, 
+  virtual void setFrames(std::vector<std::vector<TileSprite*>> frames,
                          bool delete_old = false);
-  
+
+  /* Sets the connected game object ID */
+  bool setGameID(int new_id);
+
   /* Sets the things ID */
   bool setID(int new_id);
   void setIDPlayer();
 
   /* Sets the interaction event for the thing */
   bool setInteraction(Event interact_event);
-  
+
   /* Sets if the movement is paused */
   void setMovementPaused(bool paused);
-  
+
   /* Sets the things name */
   void setName(std::string new_name);
 
   /* Sets the things speed */
   void setSpeed(uint16_t speed);
-  
+
   /* Sets the starting x and y coordinate */
   virtual void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
 
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
-  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
                                 uint16_t section, bool no_events = true);
-  
+
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);
-  
+
   /* Sets the visibility of the rendering thing */
   void setVisibility(bool visible);
-  
+
   /* Triggers walk on / walk off events on the thing */
   virtual void triggerWalkOff(MapPerson* trigger);
   virtual void triggerWalkOn(MapPerson* trigger);
-  
+
   /* Updates the thing, called on the tick */
   virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
-  
+
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);
   virtual void unsetFrames(bool delete_frames = true);
-  
+
   /* Unset the rendering tiles in the class */
-  virtual void unsetTiles(bool no_events = false); 
+  virtual void unsetTiles(bool no_events = false);
 };
 
 #endif // MAPTHING_H

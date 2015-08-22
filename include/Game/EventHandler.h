@@ -149,7 +149,7 @@ public:
 
 
   
-  /* Execute the given event - done through signal emits */
+  /* Execute the given event */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
   
   /* Executes a pickup item event */
@@ -178,7 +178,7 @@ public:
   bool pollPickupItem(MapItem** item, bool* walkover);
   
   /* Poll a start battle event */
-  bool pollStartBattle();
+  bool pollStartBattle(MapPerson** person, MapThing** source);
  
   /* Poll a start map event */
   bool pollStartMap(int* id);

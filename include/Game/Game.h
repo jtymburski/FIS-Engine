@@ -42,33 +42,30 @@ public:
   ~Game();
 
   /* The game mode operator, for controlling the visible widget */
-  enum GameMode 
+  enum GameMode
   {
-    DISABLED       = 0, 
-    MAP            = 1, 
-    BATTLE         = 2, 
-    VICTORY_SCREEN = 3 
+    DISABLED       = 0,
+    MAP            = 1,
+    BATTLE         = 2,
+    VICTORY_SCREEN = 3
   };
 
 private:
   /* The active rendering engine */
   SDL_Renderer* active_renderer;
-  
+
   /* The computed base path for resources in the application */
   std::string base_path;
-    
+
   /* Battle control and visual */
   Battle* battle_ctrl;
   BattleDisplay* battle_vis;
-  
+
   /* The configuration for the display of the game */
   Options* config;
-  
+
   /* Handles all events throughout the game. */
   EventHandler event_handler;
-
-  /* The game starting inventory */
-  //Inventory* game_inventory; // TODO: Make part of bearacks party
 
   /* Game file path */
   std::string game_path;
@@ -90,17 +87,17 @@ private:
 
   /* The bubbified skill set */
   //SkillSet* bubbified_skills; // TODO: Make a const ID in skill set stack
-  
+
   /* Map variables */
   Map* map_ctrl; /* Main class */
   int map_lvl; /* Active level number */
 
   /* The mode that the game is currently running at */
   GameMode mode;
-  
+
   /* The player */
-  Player* player_main; 
-  
+  Player* player_main;
+
   /* Number of ticks since inception */
   uint64_t ticks_total;
 
@@ -138,24 +135,24 @@ private:
 
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);
-  
+
   /* Initiates a conversation event */
   void eventInitConversation(Conversation* convo, MapThing* source);
 
   /* Initiates a notification event (in map) */
   void eventInitNotification(std::string notification);
-  
+
   /* The pickup item event - from walking over or triggering from action key */
   void eventPickupItem(MapItem* item, bool walkover);
-  
+
   /* Starts a battle event. Using the given information - TODO */
-  void eventStartBattle();
-  
+  void eventStartBattle(int person_id, int source_id);
+
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
 
   /* Load game */
-  bool load(std::string base_file, SDL_Renderer* renderer, 
+  bool load(std::string base_file, SDL_Renderer* renderer,
             std::string inst_file = "", bool encryption = false);
 
   /* Load game data */
@@ -179,7 +176,7 @@ private:
   void removeSkillSets();
 
   /* Set up the battle */
-  void setupBattle();
+  bool setupBattle(Party* allies, Party* foes);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -189,11 +186,11 @@ public:
   Action* getAction(const int32_t &index, const bool &by_id = true);
   Category* getClass(const int32_t &index, const bool &by_id = true);
   Flavour* getFlavour(const int32_t &index, const bool &by_id = true);
-  Item* getItem(const int32_t &index, const bool &by_id = true); 
+  Item* getItem(const int32_t &index, const bool &by_id = true);
   Party* getParty(const int32_t &index, const bool &by_id = true);
   Person* getPersonBase(const int32_t &index, const bool &by_id = true);
   Person* getPersonInst(const int32_t &index, const bool &by_id = true);
-  Category* getRace(const int32_t &index, const bool &by_id = true);  
+  Category* getRace(const int32_t &index, const bool &by_id = true);
   Skill* getSkill(const int32_t &index, const bool &by_id = true);
   SkillSet* getSkillSet(const int32_t &index, const bool &by_id = true);
 
@@ -203,16 +200,16 @@ public:
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
- 
+
   /* Load game */
   bool load(SDL_Renderer* renderer);
 
   /* Pauses der game in der Wald, ja ja ja */
   //void pause(); // TODO: implement
-  
+
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
-  
+
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 

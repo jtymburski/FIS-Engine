@@ -384,6 +384,12 @@ void Game::buildBattleDisplayFrames(SDL_Renderer* renderer)
     battle_vis->setFrameTime(base_path +
                   "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png", renderer);
 
+    /* Background and bar */
+    battle_vis->setBackground(new Sprite(
+            base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer));
+    battle_vis->setBattleBar(new Frame(
+            base_path + "sprites/Overlay/battle.png", renderer));
+
     /* Set up the Ailment pleps */
     // TODO: Implement
 //    auto temp_sprite = new Sprite(config->getBasePath() +
@@ -469,11 +475,13 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 }
 
 /* Starts a battle event. Using the given information */
-// TODO: Need to revise. It needs a party attacking ID
-void Game::eventStartBattle()
+void Game::eventStartBattle(int person_id, int source_id)
 {
-  setupBattle();
-  //mode = BATTLE; // TODO: REPAIR
+  if(person_id >= 0 && source_id >= 0 &&
+     setupBattle(getParty(person_id), getParty(source_id)))
+  {
+    mode = BATTLE;
+  }
 }
 
 /* Teleport thing event, based on ID and coordinates */
@@ -763,7 +771,15 @@ void Game::pollEvents()
     }
     else if(classification == EventClassifier::RUNBATTLE)
     {
-      eventStartBattle();
+      /* Get the reference objects and check if valid */
+      MapPerson* person;
+      MapThing* source;
+      if(event_handler.pollStartBattle(&person, &source))
+      {
+        /* Try and find parties and start battle */
+        if(person != nullptr && source != nullptr)
+          eventStartBattle(person->getGameID(), source->getGameID());
+      }
     }
     else if(classification == EventClassifier::RUNMAP)
     {
@@ -886,10 +902,25 @@ void Game::removeSkillSets()
 }
 
 /* Set up the battle - old battle needs to be deleted prior to calling */
-void Game::setupBattle()
+bool Game::setupBattle(Party* allies, Party* foes)
 {
-  // TODO: Add parameters?
-  std::cout << "Battle TODO - in game" << std::endl;
+  if(allies != nullptr && foes != nullptr)
+  {
+    /* Battle prep */
+    for(auto &member : allies->getMembers())
+      member->battlePrep();
+    for(auto &member : foes->getMembers())
+      member->battlePrep();
+
+    /* Set up battle */
+    battle_ctrl = new Battle(allies, foes, getSkillSet(kID_SET_BUBBIFIED), 
+                             &event_handler);
+    battle_vis->setBattle(battle_ctrl, active_renderer);
+
+    return true;
+  }
+
+  return false;
 }
 
 /*============================================================================
@@ -1096,33 +1127,26 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_F2)
   {
     if (battle_ctrl == nullptr)
-      eventStartBattle();
+      eventStartBattle(0, 400);
   }
   /* Load game */
   else if(event.keysym.sym == SDLK_F5)
   {
-    if(loaded)
+    /* Preliminary handling */
+    if(game_path != "maps/design_map.ugv")
     {
-      unload();
+      game_path = "maps/design_map.ugv";
+      map_lvl = 0;
     }
     else
     {
-      /* Preliminary handling */
-      if(game_path != "maps/design_map.ugv")
-      {
-        game_path = "maps/design_map.ugv";
+      map_lvl++;
+      if(map_lvl > 2)
         map_lvl = 0;
-      }
-      else
-      {
-        map_lvl++;
-        if(map_lvl > 2)
-          map_lvl = 0;
-      }
-
-      /* Load map */
-      load(active_renderer);
     }
+
+    /* Load map */
+    load(active_renderer);
   }
   /* Show item store dialog in map */
   else if(event.keysym.sym == SDLK_5)
@@ -1289,7 +1313,9 @@ bool Game::update(int32_t cycle_time)
 
   /* MAP MODE */
   if(mode == MAP && map_ctrl != nullptr)
+  {
     return map_ctrl->update(cycle_time);
+  }
   /* BATTLE MODE */
   else if(mode == BATTLE)
   {
@@ -1299,11 +1325,20 @@ bool Game::update(int32_t cycle_time)
     {
       success &= battle_ctrl->update(cycle_time);
 
-      if(battle_ctrl->getBattleFlag(CombatState::OUTCOME_PERFORMED))
+      if(battle_ctrl->getTurnState() == TurnState::DESTRUCT)
+      {
         mode = MAP;
+
+        /* Delete logic */
+        battle_vis->unsetBattle();
+        delete battle_ctrl;
+        battle_ctrl = nullptr;
+      }
+      else if(battle_vis != nullptr)
+      {
+        success &= battle_vis->update(cycle_time);
+      }
     }
-    if(battle_vis != nullptr)
-      success &= battle_vis->update(cycle_time);
 
     return success;
   }

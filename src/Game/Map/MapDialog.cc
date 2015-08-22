@@ -256,7 +256,7 @@ void MapDialog::executeEvent()
   if(event_handler != NULL && 
      conversation_info.action_event.classification != EventClassifier::NOEVENT)
   {
-    event_handler->executeEvent(conversation_info.action_event, target);
+    event_handler->executeEvent(conversation_info.action_event, target, source);
   }
 }
 
