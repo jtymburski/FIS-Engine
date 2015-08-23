@@ -1549,6 +1549,7 @@ void TestBattle::destroy()
 /* Battle destruction */
 void TestBattle::destroyBattle()
 {
+  std::cout << " ==== Destroy battle: " << std::endl;
   if(battle_logic != nullptr)
   {
     battle_display->unsetBattle();
@@ -1557,28 +1558,28 @@ void TestBattle::destroyBattle()
   }
 
   /* Foe party list delete */
-  if(party_foes != nullptr)
+  if(party_foes)
   {
-    std::vector<Person *> foe_list = party_foes->getMembers();
-    for(uint8_t i = 0; i < foe_list.size(); i++)
-      delete foe_list[i];
-    foe_list.clear();
+    for (auto& member : party_foes->getMembers())
+      if (member)
+        delete member;
 
     delete party_foes;
-    party_foes = NULL;
+    party_foes = nullptr;
   }
 
   /* Friend party list delete */
-  if(party_friends != nullptr)
+  if(party_friends)
   {
-    std::vector<Person *> friend_list = party_friends->getMembers();
-    for(uint8_t i = 0; i < friend_list.size(); i++)
-      delete friend_list[i];
-    friend_list.clear();
+    for(auto& member : party_friends->getMembers())
+      if (member)
+        delete member;
 
     delete party_friends;
     party_friends = nullptr;
   }
+
+  std::cout << "==== // Destroy Battle ====" << std::endl;
 }
 
 /* ------------------------------------------------------------------------- */

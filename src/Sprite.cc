@@ -2,8 +2,8 @@
  * Class Name: Sprite
  * Date Created: Oct 28, 2012
  * Inheritance: none
- * Description: The Sprite class. This handles the linked list control that 
- *              wraps the Frame. This will allow for a sequence of events, 
+ * Description: The Sprite class. This handles the linked list control that
+ *              wraps the Frame. This will allow for a sequence of events,
  *              that emulate a GIF for animation or just store one image. This
  *              class also has the functionality for modded rendering through
  *              the SDL engine. The list of these mods are brightening or
@@ -27,7 +27,7 @@ const float Sprite::kMAX_BRIGHTNESS = 2.0;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-/* 
+/*
  * Description: Constructor function - Set up no frames
  *
  * Input: none
@@ -53,7 +53,7 @@ Sprite::Sprite()
   id = 0;
   loops = 0;
   opacity = kDEFAULT_OPACITY;
-  plep = false;
+  non_unique = false;
   rotation_angle = 0.0;
   size = 0;
   sequence = FORWARD;
@@ -61,19 +61,19 @@ Sprite::Sprite()
   texture_update = false;
 }
 
-/* 
+/*
  * Description: Constructor function - Set up one frame, using the string path
  *              with an integer rotated angle.
  *
  * Input: std::string image_path - image path to set as one sprite
  *        SDL_Renderer* renderer - the rendering engine for creating the image
  */
-Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
+Sprite::Sprite(std::string path, SDL_Renderer *renderer) : Sprite()
 {
   insertFirst(path, renderer);
 }
 
-/* 
+/*
  * Description: Constructor function - Set up sequence of frames.
  *
  * Inputs: std::string head_path - the start part of the path
@@ -81,8 +81,9 @@ Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
  *         std::string tail_path - the end of the path, after the count index
  *         SDL_Renderer* renderer - the rendering engine for creating the images
  */
-Sprite::Sprite(std::string head_path, int num_frames,
-               std::string tail_path, SDL_Renderer* renderer) : Sprite()
+Sprite::Sprite(std::string head_path, int num_frames, std::string tail_path,
+               SDL_Renderer *renderer)
+    : Sprite()
 {
   insertSequence(head_path, num_frames, tail_path, renderer);
 }
@@ -99,18 +100,7 @@ Sprite::Sprite(const Sprite &source) : Sprite()
 }
 
 /*
- * Description: 
- *
- * Inputs: 
- */
-Sprite::Sprite(bool plep, int32_t size) : Sprite()
-{
-  this->plep = plep;
-  this->size = size;
-}
-
-/* 
- * Description: Destructor function 
+ * Description: Destructor function
  */
 Sprite::~Sprite()
 {
@@ -126,14 +116,14 @@ Sprite::~Sprite()
  *              first angle that is greater than 0 (the only used one),
  *              otherwise it returns 0.
  *
- * Inputs: std::vector<std::string> adjustments - the string sequence of 
+ * Inputs: std::vector<std::string> adjustments - the string sequence of
  *                                                angle adjustments
  * Output: uint16_t - the unsigned angle
  */
 uint16_t Sprite::parseAdjustments(std::vector<std::string> adjustments)
 {
   uint16_t angle = 0;
-  
+
   /* Run through all the adjustments */
   for(uint16_t i = 0; i < adjustments.size(); i++)
   {
@@ -141,7 +131,7 @@ uint16_t Sprite::parseAdjustments(std::vector<std::string> adjustments)
     if(angle > 0)
       return angle;
   }
-  
+
   return angle;
 }
 
@@ -156,7 +146,7 @@ void Sprite::setColorMod()
 {
   if(brightness < kDEFAULT_BRIGHTNESS)
   {
-    SDL_SetTextureColorMod(texture, brightness * color_red, 
+    SDL_SetTextureColorMod(texture, brightness * color_red,
                            brightness * color_green, brightness * color_blue);
   }
   else
@@ -179,11 +169,12 @@ void Sprite::setColorMod()
  */
 void Sprite::clear()
 {
+  std::cout << "Sprite pointer being deleted: " << this << std::endl;
   /* Delete all class data */
-  if (!plep)
+  if(!non_unique)
     removeAll();
   SDL_DestroyTexture(texture);
-  
+
   /* Reset variables back to blank */
   current = NULL;
   head = NULL;
@@ -194,24 +185,32 @@ void Sprite::clear()
  * Description: The copy function that is called by any copying methods in the
  *              class. Utilized by the copy constructor and the copy operator.
  *
+ * Note: createTexture(SDL_Renderer*) must be called after this if you want
+ *       to manipulate this sprite further.
+ *
  * Inputs: const Sprite &source - the reference sprite class
  * Output: none
  */
 void Sprite::copySelf(const Sprite &source)
 {
+  // size = source.size;
+
   setAnimationTime(source.getAnimationTime());
   setBrightness(source.getBrightness());
-  setColorBalance(source.getColorRed(), source.getColorGreen(), 
-                                        source.getColorBlue());
-  
+  setColorBalance(source.getColorRed(), source.getColorGreen(),
+                  source.getColorBlue());
+
   if(source.isDirectionForward())
     setDirectionForward();
   else
     setDirectionReverse();
-  
+
+  setRotation(source.getRotation());
+  setHead(source.getFirstFrame());
+
   setOpacity(source.getOpacity());
   setRotation(source.getRotation());
-  //setSound(); // TODO: Future?
+  // setSound(); // TODO: Future?
 }
 
 /*============================================================================
@@ -230,7 +229,7 @@ void Sprite::copySelf(const Sprite &source)
  *         bool no_warnings - should warnings not fire? default false.
  * Output: bool - true if the add was successful
  */
-bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
+bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer *renderer,
                                 std::string base_path, bool no_warnings)
 {
   std::string element = data.getElement(index);
@@ -262,15 +261,14 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
   else if(split_element.at(0) == "path")
   {
     uint16_t angle = parseAdjustments(split_element);
-    std::vector<Frame*> new_frames = 
-                insertFrames(base_path + data.getDataString(), renderer, angle, 
-                             no_warnings);
+    std::vector<Frame *> new_frames = insertFrames(
+        base_path + data.getDataString(), renderer, angle, no_warnings);
 
     /* If there is element adjustments, do those changes */
     if(split_element.size() > 1)
     {
       split_element.erase(split_element.begin());
-      
+
       for(uint16_t i = 0; i < new_frames.size(); i++)
         success &= new_frames[i]->execImageAdjustments(split_element);
     }
@@ -283,12 +281,13 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
   return success;
 }
 
-void Sprite::createTexture(SDL_Renderer* renderer)
+void Sprite::createTexture(SDL_Renderer *renderer)
 {
-  if (head->isTextureSet() && texture == nullptr)
+  if(head->isTextureSet() && texture == nullptr)
   {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-      SDL_TEXTUREACCESS_TARGET, head->getWidth(), head->getHeight());
+                                SDL_TEXTUREACCESS_TARGET, head->getWidth(),
+                                head->getHeight());
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
     setColorMod();
     setOpacity(opacity);
@@ -297,7 +296,7 @@ void Sprite::createTexture(SDL_Renderer* renderer)
 
 /*
  * Description: Executes a set of image adjustments using a list of strings in
- *              all frames in sprite. See execImageAdjustment() in frame for 
+ *              all frames in sprite. See execImageAdjustment() in frame for
  *              more details.
  *
  * Inputs: vector<string> adjustments - a stack of all adjustments
@@ -308,15 +307,14 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
   if(head != NULL)
   {
     bool success = true;
-    Frame* parsed_frame = head;
-    
+    Frame *parsed_frame = head;
+
     do
     {
       success &= parsed_frame->execImageAdjustments(adjustments);
       parsed_frame = parsed_frame->getNext();
-    }
-    while(parsed_frame != head);
-    
+    } while(parsed_frame != head);
+
     return success;
   }
   return false;
@@ -329,23 +327,17 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
  * Inputs: none
  * Output: short - the animation time in milliseconds
  */
-short Sprite::getAnimationTime() const
-{
-  return animation_time;
-}
+short Sprite::getAnimationTime() const { return animation_time; }
 
-/* 
+/*
  * Description: Gets the brightness value that the sprite sequence is being
  *              rendered at.
  *
  * Inputs: none
- * Output: double - the brightness indicator 
+ * Output: double - the brightness indicator
  *                (<1: darker, 1: default, >1: lighter)
  */
-double Sprite::getBrightness() const
-{
-  return brightness;
-}
+double Sprite::getBrightness() const { return brightness; }
 
 /*
  * Description: Returns the color distribution evenness, according to the blue
@@ -354,10 +346,7 @@ double Sprite::getBrightness() const
  * Inputs: none
  * Output: uint8_t - the rated blue RGB value
  */
-uint8_t Sprite::getColorBlue() const
-{
-  return color_blue;
-}
+uint8_t Sprite::getColorBlue() const { return color_blue; }
 
 /*
  * Description: Returns the color distribution evenness, according to the green
@@ -366,10 +355,7 @@ uint8_t Sprite::getColorBlue() const
  * Inputs: none
  * Output: uint8_t - the rated green RGB value
  */
-uint8_t Sprite::getColorGreen() const
-{
-  return color_green;
-}
+uint8_t Sprite::getColorGreen() const { return color_green; }
 
 /*
  * Description: Returns the color distribution evenness, according to the red
@@ -378,31 +364,25 @@ uint8_t Sprite::getColorGreen() const
  * Inputs: none
  * Output: uint8_t - the rated red RGB value
  */
-uint8_t Sprite::getColorRed() const
-{
-  return color_red;
-}
+uint8_t Sprite::getColorRed() const { return color_red; }
 
-/* 
+/*
  * Description: Gets the current frame that is active.
  *
  * Inputs: none
  * Output: Frame* - the current frame where the sprite is at
  */
-Frame* Sprite::getCurrent()
-{
-  return current;
-}
+Frame *Sprite::getCurrent() { return current; }
 
-/* 
- * Description: Gets the current frame and then shifts to the next one 
+/*
+ * Description: Gets the current frame and then shifts to the next one
  *
  * Inputs: none
- * Output: Frame* - the frame before the shift occurred 
+ * Output: Frame* - the frame before the shift occurred
  */
-Frame* Sprite::getCurrentAndShift()
+Frame *Sprite::getCurrentAndShift()
 {
-  Frame* previous = current;
+  Frame *previous = current;
   shiftNext();
 
   return previous;
@@ -415,7 +395,7 @@ Frame* Sprite::getCurrentAndShift()
  * Inputs: none
  * Output: Frame* - the frame pointer
  */
-Frame* Sprite::getFirstFrame()
+Frame *Sprite::getFirstFrame() const
 {
   return head;
 }
@@ -426,10 +406,7 @@ Frame* Sprite::getFirstFrame()
  * Inputs: none
  * Output: uin16_t - an integer from 0 - 65535 (16 bit unsigned integer)
  */
-uint16_t Sprite::getId() const
-{
-  return id;
-}
+uint16_t Sprite::getId() const { return id; }
 
 /*
  * Description: Returns the number of loops the sprite has completed
@@ -437,10 +414,7 @@ uint16_t Sprite::getId() const
  * Inputs: none
  * Output: uint32_t - an integer from 0 - 2^32 - 1 (32 bit unsigned integer)
  */
-uint32_t Sprite::getLoops()
-{
-  return loops; 
-}
+uint32_t Sprite::getLoops() { return loops; }
 
 /*
  * Description: Returns the opacity that the sprite is rendered at.
@@ -448,12 +422,9 @@ uint32_t Sprite::getLoops()
  * Inputs: none
  * Output: uint8_t - the opacity value, from 0-255. 255 full opaque
  */
-uint8_t Sprite::getOpacity() const
-{
-  return opacity;
-}
+uint8_t Sprite::getOpacity() const { return opacity; }
 
-/* 
+/*
  * Description: Returns the position that the linked list is currently at
  *
  * Inputs: none
@@ -462,14 +433,14 @@ uint8_t Sprite::getOpacity() const
 int Sprite::getPosition()
 {
   int location = 0;
-  Frame* shifted = head;
+  Frame *shifted = head;
 
   while(shifted != current)
   {
     shifted = shifted->getNext();
     location++;
   }
-    
+
   return location;
 }
 
@@ -479,21 +450,15 @@ int Sprite::getPosition()
  * Inputs: none
  * Output: float - the angle, in degrees
  */
-float Sprite::getRotation() const
-{
-  return rotation_angle;
-}
+float Sprite::getRotation() const { return rotation_angle; }
 
-/* 
- * Description: Returns the size of the sequence 
+/*
+ * Description: Returns the size of the sequence
  *
  * Inputs: none
  * Output: int - the size of the sprite list
  */
-int Sprite::getSize() const
-{
-  return size;
-}
+int Sprite::getSize() const { return size; }
 
 /*
  * Description: Returns the color distribution evenness, according to the temp.
@@ -502,10 +467,7 @@ int Sprite::getSize() const
  * Inputs: none
  * Output: uint8_t - the rated temp. RGB value
  */
-uint8_t Sprite::getTempColorRed() const
-{
-  return temp_red;
-}
+uint8_t Sprite::getTempColorRed() const { return temp_red; }
 
 /*
  * Description: Returns the color distribution evenness, according to the temp.
@@ -514,10 +476,7 @@ uint8_t Sprite::getTempColorRed() const
  * Inputs: none
  * Output: uint8_t - the rated temp. RGB value
  */
-uint8_t Sprite::getTempColorGreen() const
-{
-  return temp_green;
-}
+uint8_t Sprite::getTempColorGreen() const { return temp_green; }
 
 /*
  * Description: Returns the color distribution evenness, according to the temp.
@@ -526,13 +485,10 @@ uint8_t Sprite::getTempColorGreen() const
  * Inputs: none
  * Output: uint8_t - the rated temp RGB value
  */
-uint8_t Sprite::getTempColorBlue() const
-{
-  return temp_blue;
-}
+uint8_t Sprite::getTempColorBlue() const { return temp_blue; }
 
-/* 
- * Description: Inserts the image into the sprite sequence at the given 
+/*
+ * Description: Inserts the image into the sprite sequence at the given
  *              position based on the given string path.
  *
  * Inputs: std::string path - the path to the image to add
@@ -542,12 +498,12 @@ uint8_t Sprite::getTempColorBlue() const
  *         bool no_warnings - should warnings not fire? default false.
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position, 
+Frame *Sprite::insert(std::string path, SDL_Renderer *renderer, int position,
                       uint16_t angle, bool no_warnings)
 {
-  Frame* next_frame;
-  Frame* new_frame;
-  Frame* previous_frame;
+  Frame *next_frame;
+  Frame *new_frame;
+  Frame *previous_frame;
 
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
@@ -588,8 +544,8 @@ Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position,
   return new_frame;
 }
 
-/* 
- * Description: Inserts the first image, based on the image path, if the frame 
+/*
+ * Description: Inserts the first image, based on the image path, if the frame
  *              sequence is empty.
  * Note: This isn't for inserting the head, just the first one in an empty
  *       list.
@@ -600,7 +556,7 @@ Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer, 
+Frame *Sprite::insertFirst(std::string path, SDL_Renderer *renderer,
                            uint16_t angle, bool no_warnings)
 {
   if(size == 0)
@@ -613,14 +569,14 @@ Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer,
       /* First set the rendering texture, if unset */
       if(texture == NULL)
       {
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
-                                    SDL_TEXTUREACCESS_TARGET, head->getWidth(), 
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                    SDL_TEXTUREACCESS_TARGET, head->getWidth(),
                                     head->getHeight());
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         setColorMod();
         setOpacity(opacity);
       }
-      
+
       /* Only proceed with finishing if the rendering texture could be set */
       if(texture != NULL)
       {
@@ -629,7 +585,7 @@ Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer,
         current = head;
         size = 1;
         texture_update = true;
-      
+
         return head;
       }
     }
@@ -637,18 +593,18 @@ Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer,
     delete head;
     head = NULL;
   }
-  
-  Frame* null_frame = NULL;
+
+  Frame *null_frame = NULL;
   return null_frame;
 }
 
 /*
  * Description: Insert the frames based on a single path. This is a helper
  *              function that differentiates between a multiple frame path
- *              and a single path. The differentiation occurs between two 
+ *              and a single path. The differentiation occurs between two
  *              vertical bars -> "path_|2|.png". This will send the path node
- *              to the insertSequence for the two frames: path_00.png, 
- *              path_01.png. If no vertical bars, it just tries and adds the 
+ *              to the insertSequence for the two frames: path_00.png,
+ *              path_01.png. If no vertical bars, it just tries and adds the
  *              single path.
  *
  * Inputs: std::string path - the path frame to add
@@ -657,33 +613,33 @@ Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
-std::vector<Frame*> Sprite::insertFrames(std::string path, 
-                                         SDL_Renderer* renderer, 
-                                         uint16_t angle, bool no_warnings)
+std::vector<Frame *> Sprite::insertFrames(std::string path,
+                                          SDL_Renderer *renderer,
+                                          uint16_t angle, bool no_warnings)
 {
   /* Split the path and see if it split. If it did, insert sequence. Otherwise
    * insert the single frame at tail. */
   std::vector<std::string> split_path = Helpers::split(path, '|');
   if(split_path.size() == 3)
-    return insertSequence(split_path[0], std::stoi(split_path[1]), 
+    return insertSequence(split_path[0], std::stoi(split_path[1]),
                           split_path[2], renderer, angle, no_warnings);
-  
+
   /* Otherwise, put the frame on the tail (single frame) */
-  Frame* tail_frame = insertTail(path, renderer, angle, no_warnings);
-  std::vector<Frame*> stack;
+  Frame *tail_frame = insertTail(path, renderer, angle, no_warnings);
+  std::vector<Frame *> stack;
   if(tail_frame != NULL)
     stack.push_back(tail_frame);
   return stack;
 }
 
-/* 
- * Description: Inserts a sequence of images that are stored. This allows for 
+/*
+ * Description: Inserts a sequence of images that are stored. This allows for
  * quick insertion of stored frames.
  * For example: head_path = ":/animation/image_"
  *              count = 5
  *              tail_path = ".png"
  *   This will allow for image_00.png -> image_04.png to be added into
- *   a sequence 
+ *   a sequence
  *
  * Inputs: std::string head_path - see above for explanation
  *         int count - see above for explanation
@@ -693,14 +649,14 @@ std::vector<Frame*> Sprite::insertFrames(std::string path,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
-std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count, 
-		                                       std::string tail_path, 
-                                           SDL_Renderer* renderer, 
-                                           uint16_t angle, bool no_warnings)
+std::vector<Frame *> Sprite::insertSequence(std::string head_path, int count,
+                                            std::string tail_path,
+                                            SDL_Renderer *renderer,
+                                            uint16_t angle, bool no_warnings)
 {
-  std::vector<Frame*> stack;
+  std::vector<Frame *> stack;
   bool status = true;
-  
+
   /* Test if there are sufficient frames */
   if(count <= 0)
     status = false;
@@ -715,10 +671,11 @@ std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count,
       stack.push_back(insertTail(head_path + std::to_string(i) + tail_path,
                                  renderer, angle, no_warnings));
     else
-      stack.push_back(insertTail(head_path + "0" + std::to_string(i) + 
-		                             tail_path, renderer, angle, no_warnings));
-                                 
-     status &= (stack.back() != NULL);
+      stack.push_back(
+          insertTail(head_path + "0" + std::to_string(i) + tail_path, renderer,
+                     angle, no_warnings));
+
+    status &= (stack.back() != NULL);
   }
 
   /* If the sequence failed, delete the created pointers */
@@ -732,9 +689,9 @@ std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count,
   return stack;
 }
 
-/* 
- * Description: Inserts the image, based on the path, at the end of the sprite 
- *              sequence 
+/*
+ * Description: Inserts the image, based on the path, at the end of the sprite
+ *              sequence
  *
  * Inputs: std::string path - the path to the image to add
  *         SDL_Renderer* renderer - the rendering engine pointer
@@ -742,14 +699,14 @@ std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame* Sprite::insertTail(std::string path, SDL_Renderer* renderer, 
+Frame *Sprite::insertTail(std::string path, SDL_Renderer *renderer,
                           uint16_t angle, bool no_warnings)
 {
   return insert(path, renderer, size, angle, no_warnings);
 }
 
-/* 
- * Description: Checks if the linked list pointer is at the head of the list 
+/*
+ * Description: Checks if the linked list pointer is at the head of the list
  *
  * Inputs: none
  * Output: bool - returns true if the current pointer is at the head
@@ -781,23 +738,14 @@ bool Sprite::isAtEnd()
  * Inputs: none
  * Output: bool - status if the direction is forward. False if reverse.
  */
-bool Sprite::isDirectionForward() const
-{
-  return (sequence == FORWARD);
-}
+bool Sprite::isDirectionForward() const { return (sequence == FORWARD); }
 
-bool Sprite::isFlashing() const
-{
-  return flashing;
-}
+bool Sprite::isFlashing() const { return flashing; }
 
-bool Sprite::isFramesSet() const
-{
-  return (head != NULL);
-}
+bool Sprite::isFramesSet() const { return (head != NULL); }
 
-/* 
- * Description: Checks if the sprite sequence is grey scale enabled. This 
+/*
+ * Description: Checks if the sprite sequence is grey scale enabled. This
  *              operates by only checking the head frame (which should be the
  *              same as all the others).
  *
@@ -810,9 +758,9 @@ bool Sprite::isGreyScale()
     return head->isGreyScale();
   return false;
 }
-  
-/* 
- * Description: Removes the frame in the sequence at the given position 
+
+/*
+ * Description: Removes the frame in the sequence at the given position
  *
  * Inputs: int position - the position of the frame to remove in the linked
  *                        list.
@@ -820,9 +768,9 @@ bool Sprite::isGreyScale()
  */
 bool Sprite::remove(int position)
 {
-  Frame* old_frame;
-  Frame* next_frame;
-  Frame* previous_frame;
+  Frame *old_frame;
+  Frame *next_frame;
+  Frame *previous_frame;
 
   /* Only remove if the position exists within the size boundaries */
   if(position < size && position >= 0)
@@ -858,14 +806,14 @@ bool Sprite::remove(int position)
       current = head;
     }
     texture_update = true;
-    
+
     return true;
   }
-  
+
   return false;
 }
 
-/* 
+/*
  * Description: Removes all the frames in the sequence. Empties the sprite.
  *
  * Inputs: none
@@ -886,27 +834,21 @@ bool Sprite::removeAll()
   return status;
 }
 
-/* 
- * Description: Removes the last frame in the sequence 
+/*
+ * Description: Removes the last frame in the sequence
  *
  * Inputs: none
  * Output: bool - status if tail removal was successful
  */
-bool Sprite::removeTail()
-{
-  return remove(size-1);
-}
+bool Sprite::removeTail() { return remove(size - 1); }
 
-/* 
+/*
  * Description: Resets the number of loops for the Sprite to zero.
  *
  * Inputs: none
  * Output: none
  */
-void Sprite::resetLoops()
-{
-  loops = 0;
-}
+void Sprite::resetLoops() { loops = 0; }
 
 /* Render the texture to the given renderer with the given parameters */
 /*
@@ -921,43 +863,43 @@ void Sprite::resetLoops()
  *         int h - the height of the texture painted
  * Output: bool - status if the render was successful
  */
-bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
+bool Sprite::render(SDL_Renderer *renderer, int x, int y, int w, int h)
 {
   if(current != NULL && renderer != NULL)
   {
     /* Proceed to update the running texture if it's changed */
     if(texture_update || grey_scale_update)
     {
-      SDL_Texture* previous_renderer = SDL_GetRenderTarget(renderer);
+      SDL_Texture *previous_renderer = SDL_GetRenderTarget(renderer);
 
       SDL_SetRenderTarget(renderer, texture);
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
-     
+
       /* Render current frame */
       if(grey_scale_update)
         current->renderBoth(renderer, grey_scale_alpha);
       else
-        //current->renderBoth(renderer, 128);
+        // current->renderBoth(renderer, 128);
         current->render(renderer);
-      
+
       /* Render white mask, if relevant */
-      SDL_Texture* white_mask = Helpers::getWhiteMask();
+      SDL_Texture *white_mask = Helpers::getWhiteMask();
       if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
       {
         double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
         if(bright_mod > kDEFAULT_BRIGHTNESS)
           bright_mod = kDEFAULT_BRIGHTNESS;
-        
+
         SDL_SetTextureAlphaMod(white_mask, 255 * bright_mod);
         SDL_RenderCopy(renderer, white_mask, NULL, NULL);
       }
-      
+
       /* Release the renderer and end the update */
       SDL_SetRenderTarget(renderer, previous_renderer);
       texture_update = false;
     }
-  
+
     SDL_Rect rect;
     rect.x = x;
     rect.y = y;
@@ -972,11 +914,10 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
     }
 
     /* Render and return status */
-    return (SDL_RenderCopyEx(renderer, texture, NULL, &rect, 
-                            rotation_angle, NULL, 
-                            SDL_FLIP_NONE) == 0);
+    return (SDL_RenderCopyEx(renderer, texture, NULL, &rect, rotation_angle,
+                             NULL, SDL_FLIP_NONE) == 0);
   }
-  
+
   return false;
 }
 
@@ -1006,13 +947,13 @@ void Sprite::setAnimationTime(uint16_t time)
 {
   /* Set the new animation time */
   animation_time = time;
-  
+
   /* Reset the elapsed time */
   elapsed_time = 0;
 }
 
-/* 
- * Description: Set the linked list current pointer to the head of the list 
+/*
+ * Description: Set the linked list current pointer to the head of the list
  *
  * Inputs: none
  * Output: bool - status if resetting the linked list to the first element
@@ -1025,20 +966,20 @@ bool Sprite::setAtFirst()
   texture_update = true;
   return true;
 }
- 
+
 /*
  * Description: Sets the brightness that the entire sprite sequence will be
- *              rendered at. It's range is 0-0.99: darker than default, 1.0: 
+ *              rendered at. It's range is 0-0.99: darker than default, 1.0:
  *              default brightness, 1.01-2.00: brighter.
  *
  * Inputs: double brightness - the brightness value (0+, 1.0 default)
- * Output: bool - if the set was in proper range. If out of range, it gets 
- *                locked to the correct range. 
+ * Output: bool - if the set was in proper range. If out of range, it gets
+ *                locked to the correct range.
  */
 bool Sprite::setBrightness(double brightness)
 {
   bool in_limits = true;
-  
+
   /* Check to ensure that sprite brightness is within bounds */
   if(brightness < 0.0)
   {
@@ -1050,7 +991,7 @@ bool Sprite::setBrightness(double brightness)
     brightness = kMAX_BRIGHTNESS;
     in_limits = false;
   }
-  
+
   /* Update the class brightness */
   if(this->brightness != brightness)
   {
@@ -1066,7 +1007,7 @@ bool Sprite::setBrightness(double brightness)
  * Description: Sets the color balance of the rendered texture. If each value is
  *              at 255, that is full color saturation. As the numbers get
  *              lowered, the color is pulled from the rendered texture.
- * 
+ *
  * Inputs: uint8_t red - the red color 0-255 rating (255 full)
  *         uint8_t green - the green color 0-255 rating (255 full)
  *         uint8_t blue - the blue color 0-255 rating (255 full)
@@ -1077,7 +1018,7 @@ void Sprite::setColorBalance(uint8_t red, uint8_t green, uint8_t blue)
   color_red = red;
   color_green = green;
   color_blue = blue;
-  
+
   setColorMod();
 }
 
@@ -1126,7 +1067,7 @@ void Sprite::setColorRed(uint8_t color)
   setColorMod();
 }
 
-/* 
+/*
  * Description: Sets the direction that the linked list is navigated to
  *              FORWARD. In other words, accessing the *next pointer when
  *              parsing it.
@@ -1140,7 +1081,7 @@ bool Sprite::setDirectionForward()
   return true;
 }
 
-/* 
+/*
  * Description: Sets the direction that the linked list is navigated to
  *              REVERSE. In other words, accessing the *previous pointer when
  *              parsing it.
@@ -1154,7 +1095,7 @@ bool Sprite::setDirectionReverse()
   return true;
 }
 
-void Sprite::setHead(Frame* head)
+void Sprite::setHead(Frame *head)
 {
   this->head = head;
 
@@ -1168,14 +1109,15 @@ void Sprite::setHead(Frame* head)
  * Inputs: uint16_t id - the new identifier
  * Output: none
  */
-void Sprite::setId(uint16_t id)
-{
-  this->id = id;
-}
+void Sprite::setId(uint16_t id) { this->id = id; }
 
-void Sprite::setFlashing(bool flashing)
+void Sprite::setFlashing(bool flashing) { this->flashing = flashing; }
+
+
+void Sprite::setNonUnique(bool new_value, int32_t new_size)
 {
-  this->flashing = flashing;
+  size = new_size;
+  non_unique = new_value;
 }
 
 /*
@@ -1198,10 +1140,7 @@ void Sprite::setOpacity(uint8_t opacity)
  * Inputs: float angle - angle in degrees and float to rotate the frames to
  * Output: none
  */
-void Sprite::setRotation(float angle)
-{
-  rotation_angle = angle;
-}
+void Sprite::setRotation(float angle) { rotation_angle = angle; }
 
 /*
  * Description: Stores the given RGB values as the temporary color balance
@@ -1213,7 +1152,7 @@ void Sprite::setRotation(float angle)
  * Output: none
  */
 void Sprite::setTempColorBalance(uint8_t temp_red, uint8_t temp_green,
-    uint8_t temp_blue)
+                                 uint8_t temp_blue)
 {
   setTempColorRed(temp_red);
   setTempColorGreen(temp_green);
@@ -1226,10 +1165,7 @@ void Sprite::setTempColorBalance(uint8_t temp_red, uint8_t temp_green,
  * Inputs: uint8_t temp_red - temporary red color 0-255 (255 full)
  * Output: none
  */
-void Sprite::setTempColorRed(uint8_t temp_red)
-{
-  this->temp_red   = temp_red;
-}
+void Sprite::setTempColorRed(uint8_t temp_red) { this->temp_red = temp_red; }
 
 /*
  * Description: Store the given value as the temporary color mask for green
@@ -1250,7 +1186,7 @@ void Sprite::setTempColorGreen(uint8_t temp_green)
  */
 void Sprite::setTempColorBlue(uint8_t temp_blue)
 {
-  this->temp_blue  = temp_blue;  
+  this->temp_blue = temp_blue;
 }
 
 /*
@@ -1260,42 +1196,39 @@ void Sprite::setTempColorBlue(uint8_t temp_blue)
  * Inputs: int angle - the angle in degrees to rotate the frames to
  * Output: none
  */
-void Sprite::setRotation(int angle)
-{
-  rotation_angle = angle;
-}
+void Sprite::setRotation(int angle) { rotation_angle = angle; }
 
-/* 
- * Description: Shifts to the given position in the sequence 
+/*
+ * Description: Shifts to the given position in the sequence
  *
  * Inputs: int position - position to shift to in the linked list
  * Output: bool - status if moving in the linked list was successful
  */
 bool Sprite::shift(int position)
 {
-  Frame* old_current = current;
-  
+  Frame *old_current = current;
+
   /* Only shift if the position is within the bounds of the sprite */
   if(position < size && position >= 0)
   {
-    Frame* new_current_frame = head;
+    Frame *new_current_frame = head;
 
     for(int i = 0; i < position; i++)
       new_current_frame = new_current_frame->getNext();
     current = new_current_frame;
-    
+
     /* Only update the texture if the current frame has changed */
     if(old_current != current)
       texture_update = true;
-    
+
     return true;
   }
 
   return false;
 }
 
-/* 
- * Description: Shifts to the next frame in the sprite. 
+/*
+ * Description: Shifts to the next frame in the sprite.
  * Note: this function allows you to skip the head of the list while shifting.
  *       However, if the size of the sprite is only one frame, the head will
  *       still be selected.
@@ -1306,7 +1239,7 @@ bool Sprite::shift(int position)
  */
 bool Sprite::shiftNext(bool skip_head)
 {
-  Frame* old_current = current;
+  Frame *old_current = current;
 
   if(size > 0)
   {
@@ -1324,23 +1257,23 @@ bool Sprite::shiftNext(bool skip_head)
       else
         current = current->getPrevious()->getPrevious();
     }
-    
+
     /* Only update the texture if the current frame has changed */
     if(old_current != current)
       texture_update = true;
-    
+
     /* Every time the next element is the head, increase loops, if size is 1,
      * every step is a loop, if size is greater than one, every head touch is
      * a loop. If head is skipped, no loops take place. */
-    if (current->getNext() == head)
+    if(current->getNext() == head)
       loops++;
 
     return true;
   }
   return false;
 }
-  
-/* 
+
+/*
  * Description: Sets the direction that the linked list is navigated to
  *              opposite of what it was before. FORWARD -> REVERSE or
  *              REVERSE -> FORWARD.
@@ -1366,14 +1299,14 @@ bool Sprite::switchDirection()
 bool Sprite::update(int cycle_time, bool skip_head)
 {
   bool shift = false;
-  
+
   /* If skip head is triggered, but it is at head, skip to next */
   if(skip_head && isAtFirst())
   {
     shiftNext(skip_head);
     shift = true;
   }
-  
+
   /* Do grey scale checking, for animation */
   if(grey_scale_update)
   {
@@ -1404,7 +1337,7 @@ bool Sprite::update(int cycle_time, bool skip_head)
       }
     }
   }
-  
+
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
   {
@@ -1416,7 +1349,7 @@ bool Sprite::update(int cycle_time, bool skip_head)
       shift = true;
     }
   }
-  
+
   return shift;
 }
 
@@ -1435,15 +1368,14 @@ bool Sprite::useGreyScale(bool enable)
   if(head != NULL && head->isGreyScale() != enable)
   {
     bool success = true;
-    Frame* temp = head;
-    
+    Frame *temp = head;
+
     do
     {
       success &= temp->useGreyScale(enable);
       temp = temp->getNext();
-    }
-    while(temp != head);
-    
+    } while(temp != head);
+
     if(success)
     {
       grey_scale_update = true;
@@ -1452,7 +1384,7 @@ bool Sprite::useGreyScale(bool enable)
       else
         grey_scale_alpha = 0;
     }
-    
+
     return success;
   }
   return false;
@@ -1469,12 +1401,12 @@ bool Sprite::useGreyScale(bool enable)
  * Inputs: const Sprite &source - the source class constructor
  * Output: Sprite& - pointer to the copied class
  */
-Sprite& Sprite::operator= (const Sprite &source)
+Sprite &Sprite::operator=(const Sprite &source)
 {
   /* Check for self assignment */
   if(this == &source)
     return *this;
-  
+
   /* Do the copy */
   copySelf(source);
 
@@ -1488,7 +1420,7 @@ Sprite& Sprite::operator= (const Sprite &source)
 
 /*
  * Description: Returns the degree interpretation of a string representation
- *              for the 3 classifications. 
+ *              for the 3 classifications.
  *              90, clockwise: "90", CW, or cw
  *              180, half circle: "180", HC, or hc
  *              270, counter clockwise: "270", CCW, or ccw

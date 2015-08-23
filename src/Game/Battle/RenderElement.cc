@@ -2,7 +2,7 @@
 * Class Name: /
 * Date Created: June 22, 2014
 * Inheritance: None
-* Description: 
+* Description:
 *
 * Notes
 * -----
@@ -70,17 +70,17 @@ RenderElement::RenderElement()
  *         int32_t fade_out_time - the time taken to fade out
  */
 RenderElement::RenderElement(RenderType type, int32_t remaining_time,
-    int32_t fade_in_time, int32_t fade_out_time) 
+    int32_t fade_in_time, int32_t fade_out_time)
       : RenderElement()
 {
   this->type = type;
-  
+
   bool success = setTimes(remaining_time, fade_in_time, fade_out_time);
 
   if (success)
   {
     if (fade_in_time > 0)
-      status = RenderStatus::FADING_IN;    
+      status = RenderStatus::FADING_IN;
 
     else if (fade_in_time == 0 || fade_out_time == remaining_time)
       status = RenderStatus::FADING_OUT;
@@ -92,9 +92,9 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs: 
+ * Inputs:
  */
 RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y,
     int32_t num_loops)
@@ -111,11 +111,11 @@ RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y,
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs: 
+ * Inputs:
  */
-RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y, 
+RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y,
     int32_t alpha_low, int32_t alpha_high, float fade_rate)
     : RenderElement()
 {
@@ -139,9 +139,9 @@ RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y,
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs: 
+ * Inputs:
  */
 RenderElement::~RenderElement()
 {
@@ -166,7 +166,7 @@ uint8_t RenderElement::calcColorRed()
 
   if (color.a != 0)
     pc_fade = (getAlpha() * 100) / color.a;
-  
+
   float red_float = (pc_fade * color.r) / (float)100;
 
   return std::round(red_float);
@@ -277,7 +277,7 @@ bool RenderElement::update(int cycle_time)
       {
         delta_x += temp_delta_x;
       }
-      
+
       /* If the delta has finally reached a Y pixel distance, do an update */
       if (std::abs(delta_y) >= 1.0)
       {
@@ -475,7 +475,7 @@ void RenderElement::setAlpha(uint8_t new_alpha)
  * Inputs:
  * Output:
  */
-void RenderElement::setAcceleration(int32_t new_acceleration_x, 
+void RenderElement::setAcceleration(int32_t new_acceleration_x,
     int32_t new_acceleration_y)
 {
   acceleration_x = new_acceleration_x;
@@ -509,7 +509,7 @@ void RenderElement::setSprite(Sprite* new_render_sprite)
  * Inputs:
  * Output:
  */
-void RenderElement::setShadowCoordinates(int32_t new_shadow_x, 
+void RenderElement::setShadowCoordinates(int32_t new_shadow_x,
     int32_t new_shadow_y)
 {
   setShadowX(new_shadow_x);
@@ -577,7 +577,7 @@ void RenderElement::setShadow(bool to_show)
  * Inputs:
  * Output:
  */
-bool RenderElement::setTimes(int32_t new_remaining_time, int32_t fade_in, 
+bool RenderElement::setTimes(int32_t new_remaining_time, int32_t fade_in,
     int32_t fade_out)
 {
   bool valid = new_remaining_time >= 0;

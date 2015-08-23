@@ -1334,19 +1334,8 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 
 RenderElement* BattleDisplay::createPlep(Person* target, Sprite* plep)
 {
-  Sprite* new_plep = new Sprite(true, plep->getSize());
-  new_plep->setAnimationTime(plep->getAnimationTime());
-  new_plep->setBrightness(plep->getBrightness());
-  new_plep->setColorBalance(plep->getColorRed(), plep->getColorGreen(),
-                            plep->getColorBlue());
-
-  if(plep->isDirectionForward())
-    new_plep->setDirectionForward();
-  else
-    new_plep->setDirectionForward();
-
-  new_plep->setRotation(plep->getRotation());
-  new_plep->setHead(plep->getFirstFrame());
+  Sprite* new_plep = new Sprite(*plep);
+  new_plep->setNonUnique(true, plep->getSize());
   new_plep->createTexture(renderer);
 
   RenderElement* plep_render =
@@ -1869,11 +1858,27 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
   {
     /* Set the continuous access pointers */
     state->self = person;
-    state->fp = person->getFirstPerson();
-    state->tp = person->getThirdPerson();
+
+    if (person->getActionSprite())
+    {
+      state->as = new Sprite(*(person->getActionSprite()));
+      state->as->setNonUnique(true, person->getActionSprite()->getSize());
+    }
+    if (person->getFirstPerson())
+    {
+      state->fp = new Sprite(*(person->getFirstPerson()));
+      state->fp->setNonUnique(true, person->getFirstPerson()->getSize());
+      state->fp->createTexture(renderer);
+    }
+    if (person->getThirdPerson())
+    {
+      state->tp = new Sprite(*(person->getThirdPerson()));
+      state->tp->setNonUnique(true, person->getThirdPerson()->getSize());
+      state->tp->createTexture(renderer);
+    }
 
     /* Set the third person action frame */
-    if(state->self != nullptr)
+    if(state->self)
       state->action = createActionFrame(state->self, renderer);
 
     /* Render the relevant info */
@@ -1931,14 +1936,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
            friends_state.size() < kMAX_CHARS) ||
           friends_state.size() < 2)
     {
-      PersonState* blank_state = new PersonState;
-      blank_state->action = nullptr;
-      blank_state->fp = nullptr;
-      blank_state->info = nullptr;
-      blank_state->self = nullptr;
-      blank_state->tp = nullptr;
-
-      friends_state.push_back(blank_state);
+      friends_state.push_back(new PersonState);
     }
 
     /* Get friends information */
@@ -1958,14 +1956,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
     while((foes_state.size() < foes.size() && foes_state.size() < kMAX_CHARS) ||
           foes_state.size() < 2)
     {
-      PersonState* blank_state = new PersonState;
-      blank_state->action = nullptr;
-      blank_state->fp = nullptr;
-      blank_state->info = nullptr;
-      blank_state->self = nullptr;
-      blank_state->tp = nullptr;
-
-      foes_state.push_back(blank_state);
+      foes_state.push_back(new PersonState);
     }
 
     /* Get foes information */
@@ -1988,52 +1979,22 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
 // TODO: Comment
 void BattleDisplay::stopBattle()
 {
+  std::cout << "==== Stop Battle ====" << std::endl;
   /* Clear the state */
   rendering_state = TurnState::DESTRUCT;
 
   /* Clear friend states */
-  for(uint8_t i = 0; i < friends_state.size(); i++)
-  {
-    friends_state[i]->fp = nullptr;
-    friends_state[i]->self = nullptr;
-    friends_state[i]->tp = nullptr;
-
-    /* Delete action frame */
-    if(friends_state[i]->action != nullptr)
-      delete friends_state[i]->action;
-    friends_state[i]->action = nullptr;
-
-    /* Delete info */
-    if(friends_state[i]->info != nullptr)
-      delete friends_state[i]->info;
-    friends_state[i]->info = nullptr;
-
-    /* Delete state */
-    delete friends_state[i];
-  }
+  for(auto& friend_state : friends_state)
+    if(friend_state)
+      delete friend_state;
   friends_state.clear();
 
-  /* Clear foe states */
-  for(uint8_t i = 0; i < foes_state.size(); i++)
-  {
-    foes_state[i]->fp = nullptr;
-    foes_state[i]->self = nullptr;
-    foes_state[i]->tp = nullptr;
-
-    /* Delete action frame */
-    if(foes_state[i]->action != nullptr)
-      delete foes_state[i]->action;
-    foes_state[i]->action = nullptr;
-
-    /* Delete info */
-    if(foes_state[i]->info != nullptr)
-      delete foes_state[i]->info;
-    foes_state[i]->info = nullptr;
-
-    /* Delete state */
-    delete foes_state[i];
-  }
+  for(auto& foe_state : foes_state)
+    if(foe_state)
+      delete foe_state;
   foes_state.clear();
+
+  std::cout << "==== / Stop Battle ====" << std::endl;
 }
 
 /*=============================================================================
@@ -2521,7 +2482,7 @@ void BattleDisplay::unsetBackground()
 void BattleDisplay::unsetBattle()
 {
   /* Clean up of class set information */
-  if(battle != nullptr)
+  if(battle)
     stopBattle();
 
   battle = nullptr;
@@ -3278,12 +3239,14 @@ bool BattleDisplay::updateFriends(int cycle_time)
       /* Determine which sprite to use (Attacking/Normal) */
       if(state->self->getBFlag(BState::IS_ATTACKING))
       {
-        if(state->self->getActionSprite() != nullptr)
-          state->fp = state->self->getActionSprite();
+        if(state->self->getActionSprite())
+        {
+          state->active_sprite = state->as;
+        }
       }
       else
       {
-        state->fp = state->self->getFirstPerson();
+        state->fp = state->fp;
       }
 
       /* Update position if bobbing */

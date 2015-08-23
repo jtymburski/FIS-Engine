@@ -15,8 +15,8 @@ endif
 
 # CFlags - first line is for normal operation. Switch comment to second line
 #          for additional debugging options in 'gdb'
-CFLAGS = -c -std=c++1y -Wall -Wextra
-#CFLAGS = -c -std=c++1y -Wall -Wextra -g
+# CFLAGS = -c -std=c++1y -Wall -Wextra
+CFLAGS = -c -std=c++1y -Wall -Wextra -g
 INCLUDES = -Iinclude
 
 # WINDOWS only?! Helps the cmd not appear when running the app separately.

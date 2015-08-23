@@ -27,6 +27,7 @@
 struct SetElement
 {
   /* Pointer to the skill in the skill element */
+
   Skill* skill;
 
   /* The level the skill becomes available */

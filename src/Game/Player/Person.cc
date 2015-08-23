@@ -345,6 +345,7 @@ void Person::unsetAll(const bool& clear)
 
 void Person::unsetSprites()
 {
+  std::cout << "==== Unset Sprites ====" << std::endl;
   if(action_sprite != nullptr)
     if(base_person == nullptr || base_person->action_sprite != action_sprite)
       delete action_sprite;
@@ -365,6 +366,8 @@ void Person::unsetSprites()
   first_person = nullptr;
   third_person = nullptr;
   dialog_sprite = nullptr;
+
+  std::cout << "==== / Unset Sprites =====" << std::endl;
 }
 
 /*
@@ -899,7 +902,7 @@ bool Person::isPowerGuarder()
 
   return false;
 }
-  
+
 /*
  * Description: Loads the data from file associated with the category.
  *
@@ -995,7 +998,7 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
       action_sprite = new Sprite();
 
     /* Add data */
-    success &= action_sprite->addFileInformation(data, index + 1, 
+    success &= action_sprite->addFileInformation(data, index + 1,
                                                  renderer, base_path);
   }
   /* ---- SPRITE ACTION X ---- */
@@ -1016,7 +1019,7 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
       dialog_sprite = new Sprite();
 
     /* Add data */
-    success &= dialog_sprite->addFileInformation(data, index + 1, 
+    success &= dialog_sprite->addFileInformation(data, index + 1,
                                                  renderer, base_path);
   }
   /* ---- SPRITE FIRST PERSON ---- */
@@ -2034,7 +2037,7 @@ void Person::setPFlag(const PState& flag, const bool& set_value)
 {
   (set_value) ? (person_flags |= flag) : (person_flags &= ~flag);
 }
- 
+
 /*
  * Description: Evaluates and returns a given PState flag but based on the
  *              PartyType flag which is the type of party.
@@ -2047,7 +2050,7 @@ void Person::setPFlag(const PartyType &type)
   PState flag = PState::SLEUTH;
 
   /* Clear existing state */
-  setPFlag(PState::SLEUTH | PState::BEARACKS | PState::MAIN | 
+  setPFlag(PState::SLEUTH | PState::BEARACKS | PState::MAIN |
            PState::FINAL | PState::BOSS | PState::MINI_BOSS, false);
 
   /* Parse the party type and correlate */
@@ -2074,7 +2077,7 @@ void Person::setPFlag(const PartyType &type)
   else
   {
     if(ai_module == nullptr)
-      createAI(AIDifficulty::RANDOM, AIPersonality::MODERATOR, 
+      createAI(AIDifficulty::RANDOM, AIPersonality::MODERATOR,
                AIPersonality::AGGRESSOR);
   }
 

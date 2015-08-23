@@ -50,6 +50,44 @@ enum class RenderState
  */
 struct PersonState
 {
+  PersonState()
+      : active_sprite{nullptr}
+      , as{nullptr}
+      , action{nullptr}
+      , fp{nullptr}
+      , info{nullptr}
+      , self{nullptr}
+      , tp{nullptr} {}
+
+  ~PersonState()
+  {
+    active_sprite = nullptr;
+
+    if (as)
+      delete as;
+    as = nullptr;
+
+    if(action)
+      delete action;
+    action = nullptr;
+
+    if(fp)
+      delete fp;
+    fp = nullptr;
+
+    if(info)
+      delete info;
+    info = nullptr;
+
+    self = nullptr;
+
+    if (tp)
+      delete tp;
+    tp = nullptr;
+  }
+
+  Sprite* active_sprite;
+  Sprite* as;
   Frame* action;
   Sprite* fp;
   Frame* info;

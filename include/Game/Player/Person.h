@@ -2,7 +2,7 @@
 * Class Name: Person [Declaration]
 * Date Created: December 21st, 2013
 * Inheritance: None
-* Description: 
+* Description:
 *
 * Notes
 * -----
@@ -13,7 +13,7 @@
 * -------------
 * base_stats - the level 1 stats of the Person calculated by battle_class + race
 * base_max_stats - the level max stats of the Person calc by battle_class + race
-* 
+*
 * Out of Battle
 * -------------
 * curr_sats      - unused
@@ -112,7 +112,7 @@ enum class BState
 
 /* PState Flags - flags which have impacts outside of Battle */
 ENUM_FLAGS(PState)
-enum class PState 
+enum class PState
 {
   SLEUTH             = 1 << 0, /* Is this person in the main Sleuth? */
   BEARACKS           = 1 << 1, /* Is this person in the main Bearacks? */
@@ -130,13 +130,13 @@ enum class PState
 class Person
 {
   friend class Ailment;
-  
+
 public:
   /* Empty constructor */
   Person();
 
   /* Base Person object constructor */
-  Person(const int32_t &game_id, const std::string &name, 
+  Person(const int32_t &game_id, const std::string &name,
          Category* const battle_class, Category* const race_class);
 
   /* Construct a non-base Person */
@@ -156,7 +156,7 @@ private:
 	/* Person IDs */
 	int32_t game_id;
 	int32_t my_id;
-	
+
 	/* Pointer to the base person */
   Person* base_person;
   Person* guardee;
@@ -176,7 +176,7 @@ private:
 
   /* Person's string name */
   std::string name;
-  
+
   /* Rank of the Person */
   Ranks rank;
 
@@ -294,7 +294,7 @@ private:
   static void buildExpTable();
 
   /* Returns the curve modifier given a curve value and whether to check prim */
-  static float getCurveModifier(const ElementCurve &curve, 
+  static float getCurveModifier(const ElementCurve &curve,
                                 const bool primary = true);
 
 /*=============================================================================
@@ -303,7 +303,7 @@ private:
 public:
   /* Adds an amount of experience and may update the level */
   bool addExp(const uint32_t &amount, const bool &update = true);
-  
+
   /* Prepares the person for entering Battle (flags, Attributes etc.) */
   void battlePrep();
   void battleTurnPrep();
@@ -558,7 +558,7 @@ public:
   bool setGuardee(Person* const new_guarding_person);
 
   /* Attempts to assign a new loop set for the person */
-  bool setLoot(const uint32_t &new_credit_drop, const uint32_t &new_exp_drop, 
+  bool setLoot(const uint32_t &new_credit_drop, const uint32_t &new_exp_drop,
                const std::vector<uint32_t> &new_item_drops);
 
   /* Assigns the name of the person */

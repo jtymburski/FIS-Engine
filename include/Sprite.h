@@ -2,8 +2,8 @@
  * Class Name: Sprite
  * Date Created: Oct 28, 2012
  * Inheritance: none
- * Description: The Sprite class. This handles the linked list control that 
- *              wraps the Frame. This will allow for a sequence of events, 
+ * Description: The Sprite class. This handles the linked list control that
+ *              wraps the Frame. This will allow for a sequence of events,
  *              that emulate a GIF for animation or just store one image. This
  *              class also has the functionality for modded rendering through
  *              the SDL engine. The list of these mods are brightening or
@@ -29,15 +29,12 @@ public:
   Sprite(std::string path, SDL_Renderer* renderer);
 
   /* Constructor: Set up sequence of images */
-  Sprite(std::string head_path, int num_frames, 
+  Sprite(std::string head_path, int num_frames,
          std::string tail_path, SDL_Renderer* renderer);
 
   /* Copy constructor */
   Sprite(const Sprite &source);
 
-  /* Create a plep sprite */
-  Sprite(bool plep, int32_t size);
-  
   /* Destructor function */
   ~Sprite();
 
@@ -54,10 +51,10 @@ private:
   /* Animation time */
   uint16_t animation_time;
   uint16_t elapsed_time;
-  
+
   /* The stored brightness for rendering */
   double brightness;
-  
+
   /* Color values to indicate the composition of the image */
   uint8_t temp_red;
   uint8_t temp_green;
@@ -65,14 +62,14 @@ private:
   uint8_t color_red;
   uint8_t color_green;
   uint8_t color_blue;
-  
+
   /* The current frame */
   Frame* current;
 
   /* Grey scale control information */
   uint8_t grey_scale_alpha;
   bool grey_scale_update;
-  
+
   /* The first frame */
   Frame* head;
 
@@ -88,22 +85,22 @@ private:
   /* Sets the opacity of the rendered sprite */
   uint8_t opacity;
 
-  /* Is this Sprite a plep? */
-  bool plep;
-  
+  /* Is this a non-unique Sprite? */
+  bool non_unique;
+
   /* The rotation angle for rendering */
   float rotation_angle;
-  
+
   /* The number of frames */
   int size;
 
   /* Direction */
   Sequencer sequence;
-  
+
   /* The texture with the presently displayed frame + modifications */
   SDL_Texture* texture;
   bool texture_update;
-  
+
   /*------------------- Constants -----------------------*/
   const static uint16_t kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
@@ -119,7 +116,7 @@ private:
 private:
   /* Returns the angle, if one exists in the list of modifications */
   uint16_t parseAdjustments(std::vector<std::string> adjustments);
-  
+
   /* Sets the color modification with the texture */
   void setColorMod();
 
@@ -138,26 +135,26 @@ protected:
  *============================================================================*/
 public:
   /* Adds sprite information from the XML data classifier from the file */
-  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
+  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
                           std::string base_path = "", bool no_warnings = false);
- 
+
     /* Creates a texture for a sprite (for Pleps) */
   void createTexture(SDL_Renderer* renderer);
-  
+
   /* Executes the necessary image adjustments, to all frames */
   bool execImageAdjustments(std::vector<std::string> adjustments);
 
   /* Returns the total animation time between frame changes */
   short getAnimationTime() const;
-  
+
   /* Gets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   double getBrightness() const;
-  
+
   /* Gets the color balance in the spectrum */
   uint8_t getColorBlue() const;
   uint8_t getColorGreen() const;
   uint8_t getColorRed() const;
-  
+
   /* Gets the current frame */
   Frame* getCurrent();
 
@@ -165,23 +162,23 @@ public:
   Frame* getCurrentAndShift();
 
   /* Returns the head frame */
-  Frame* getFirstFrame();
- 
+  Frame* getFirstFrame() const;
+
   /* Returns the ID */
   uint16_t getId() const;
 
   /* Get the number of loops the sprite has completed */
   uint32_t getLoops();
-  
+
   /* Returns the opacity that it is rendered at */
   uint8_t getOpacity() const;
-  
+
   /* Returns the position that the linked list pointer is at */
   int getPosition();
 
   /* Returns the rotation angle for rendering */
   float getRotation() const;
-  
+
   /* Returns the size of the sequence */
   int getSize() const;
 
@@ -189,38 +186,38 @@ public:
   uint8_t getTempColorBlue() const;
   uint8_t getTempColorGreen() const;
   uint8_t getTempColorRed() const;
-  
+
   /* Inserts the image into the sprite sequence at the given position */
-  Frame* insert(std::string path, SDL_Renderer* renderer, int position, 
+  Frame* insert(std::string path, SDL_Renderer* renderer, int position,
                 uint16_t angle = 0, bool no_warnings = false);
-  
+
   /* Inserts the first image if the frame sequence is empty
    * Note: This isn't for inserting the head, just the first one */
-  Frame* insertFirst(std::string path, SDL_Renderer* renderer, 
+  Frame* insertFirst(std::string path, SDL_Renderer* renderer,
                      uint16_t angle = 0, bool no_warnings = false);
-  
-  /* This inserts all the given frames at the tail. If there are any "|" 
+
+  /* This inserts all the given frames at the tail. If there are any "|"
    * delimiters, it splits the path and adds the sequence */
-  std::vector<Frame*> insertFrames(std::string path, SDL_Renderer* renderer, 
-                                   uint16_t angle = 0, 
+  std::vector<Frame*> insertFrames(std::string path, SDL_Renderer* renderer,
+                                   uint16_t angle = 0,
                                    bool no_warnings = false);
-  
-  /* Inserts a sequence of images that are stored. This allows for 
+
+  /* Inserts a sequence of images that are stored. This allows for
    * quick insertion of stored frames
    * For example: head_path = ":/animation/image_"
    *              count = 5
    *              file_type = ".png"
    *   This will allow for image_00.png -> image_04.png to be added into
    *   a sequence */
-  std::vector<Frame*> insertSequence(std::string head_path, int count, 
-                                     std::string tail_path, 
+  std::vector<Frame*> insertSequence(std::string head_path, int count,
+                                     std::string tail_path,
                                      SDL_Renderer* renderer, uint16_t angle = 0,
                                      bool no_warnings = false);
-  
+
   /* Inserts the image at the end of the sprite sequence */
-  Frame* insertTail(std::string path, SDL_Renderer* renderer, 
+  Frame* insertTail(std::string path, SDL_Renderer* renderer,
                     uint16_t angle = 0, bool no_warnings = false);
-  
+
   /* Returns if the linked list pointer is at the head or at the tail */
   bool isAtFirst();
   bool isAtEnd();
@@ -236,7 +233,7 @@ public:
 
   /* Returns if the grey scale mode is active */
   bool isGreyScale();
-  
+
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
 
@@ -250,7 +247,7 @@ public:
   void resetLoops();
 
   /* Render the texture to the given renderer with the given parameters */
-  bool render(SDL_Renderer* renderer, int x = 0, int y = 0, 
+  bool render(SDL_Renderer* renderer, int x = 0, int y = 0,
                                       int w = 0, int h = 0);
 
   /* Take the temp. stored color balance values and restore them */
@@ -258,19 +255,19 @@ public:
 
   /* Sets the frame animation time (in ms) */
   void setAnimationTime(uint16_t time);
-  
+
   /* Asserts that the current pointer in the linked list is at the head */
   bool setAtFirst();
-  
+
   /* Sets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   bool setBrightness(double brightness);
-  
+
   /* Sets the color balance of the sprite */
   void setColorBalance(uint8_t red, uint8_t green, uint8_t blue);
   void setColorBlue(uint8_t color);
   void setColorGreen(uint8_t color);
   void setColorRed(uint8_t color);
-  
+
   /* Asserts the direction is forward for when accessing the linked list */
   bool setDirectionForward();
 
@@ -285,10 +282,14 @@ public:
 
   /* Set whether the sprite is flashing */
   void setFlashing(bool flashing);
-  
+
   /* Sets the opacity rating */
   void setOpacity(uint8_t opacity);
-  
+
+  /* To prevent delete for sprites guaranteed to be destroyed before
+     unique sprites */
+  void setNonUnique(bool non_unique, int32_t new_size);
+
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(float angle);
   void setRotation(int angle);
@@ -313,7 +314,7 @@ public:
 
   /* Sets if the greyscale texture is active and returned on getTexture() */
   bool useGreyScale(bool enable);
-  
+
 /*============================================================================
  * OPERATOR FUNCTIONS
  *===========================================================================*/
