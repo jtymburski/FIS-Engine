@@ -37,12 +37,12 @@
 *          - negative values will be used only when the ALTER key word is set
 *   - USER.ATTR/AILMENT - the user of the action's attribute or ailment which
 *                         will be mutated
-*                       - in the case of an ailment, this is the ailment 
+*                       - in the case of an ailment, this is the ailment
 *                         which will be inflicted on to the user.
 *   - TARGET.ATTR - the user of the action or target of the action's
 *                   tribute as a factor of calculation to alter the
 *                   mutated attribute
-*   - AMOUNT/PC - decides between utilizing base and variance as an amount 
+*   - AMOUNT/PC - decides between utilizing base and variance as an amount
 *                 (+ or -) value or as a factor (%) value
 *   - VARIANCE - the variance (even distribution) which base may change by
 *              - may be set to -1 for the highest possible variance
@@ -62,9 +62,9 @@
 *  -------
 *
 *   [2.2]: Alter Actions
-*     [2.2.1]: When altering by percentage, the percentage altered is the 
+*     [2.2.1]: When altering by percentage, the percentage altered is the
 *              user's percentage of MAX values, or target's percentage of
-*              MAX values. When both attributes are defined, the targets's 
+*              MAX values. When both attributes are defined, the targets's
 *              percentage of MAX will be altered BY the user's percentage
 *              of MAX.
 *     200,ALTER,,,,VITA,AMOUNT.100,AMOUNT.10,,99
@@ -81,10 +81,10 @@
 *       - Alters target's QTDR by 10% +/- 20 of user's THAG with 97% chance
 *
 *   [2.3]: Assign Actions
-*     [2.3.1]: When assigning percentages, the percentage altered is the 
+*     [2.3.1]: When assigning percentages, the percentage altered is the
 *              user's percentage of CURR values (ex. [5]/10VITA) not the max.
 *              Likewise for target's, and when both attributes are assigned
-*              the user's percentage of CURR values will be altered by the 
+*              the user's percentage of CURR values will be altered by the
 *              target's percentage of CURR values.
 *     300,ASSIGN,,,,VITA,AMOUNT.1,AMOUNT.0,,100
 *       - Assign the user's VITA to a value of 1 with 100% accuracy.
@@ -118,7 +118,7 @@
 *      actions to have a desired effect.
 *
 *      Example, lifesteal requires two actions
-*      to complete: 1 to remove VITA from target, 1 to add VITA to user: it 
+*      to complete: 1 to remove VITA from target, 1 to add VITA to user: it
 *      would be irregular for once action to miss and the other to hit, so
 *      the actions should take place at 100% and the skill hit rate set to
 *      the desired value.
@@ -239,9 +239,6 @@ private:
   /* Returns the ignore flags in a period delimited list */
   std::string ignoreToStr(bool attack = true);
 
-  /* Main function for parsing the raw string */
-  bool parse(const std::string &raw);
-
   /* Sub-method for parsing the string containing the ailment */
   bool parseAilment(const std::string &ailm_parse);
 
@@ -250,7 +247,7 @@ private:
 
   /* Sub-method for parsing the string containing the affected attribute */
   bool parseAttribute(const std::string &attr_parse, const bool &target);
-  
+
   /* Parse the chance occuring */
   void parseChance(const float &parse_chance);
 
@@ -276,6 +273,9 @@ public:
   /* Evaluates a given ignore atk flag */
   bool atkFlag(IgnoreFlags test_flag);
 
+  /* Clears the class info */
+  void clear();
+
   /* Evaluates a given ignore def flag */
   bool defFlag(IgnoreFlags test_flag);
 
@@ -291,7 +291,7 @@ public:
 
   /* Return the chance of the action occuring */
   float getChance() const;
- 
+
   /* Returns the ID of the Action */
   int getID() const;
 
@@ -305,6 +305,9 @@ public:
   /* The output string (to store in file) */
   std::string outputString();
 
+  /* Main function for parsing the raw string */
+  bool parse(const std::string &raw);
+
   /* Sets an action flag */
   void setActionFlag(ActionFlags set_flag, bool set);
 
@@ -316,7 +319,7 @@ public:
   void setAttributeTarget(Attribute target);
   void setAttributeUser(Attribute user);
 
-  /* Sets the base value and variance (amount or pc in flag) to change 
+  /* Sets the base value and variance (amount or pc in flag) to change
    * attribute by */
   void setBaseValue(int32_t value, bool percent = false);
   void setBaseVariance(uint32_t variance, bool percent = false);
