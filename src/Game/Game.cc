@@ -425,20 +425,29 @@ bool Game::eventGiveItem(int id, int count)
   {
     /* Try and insert into sleuth inventory */
     bool inserted = false;
-    if(player_main != nullptr && player_main->getSleuth() != nullptr && 
-       player_main->getSleuth()->getInventory() != nullptr)
+    if(player_main != nullptr)
     {
-      Item* new_item = new Item(found_item);
-      AddStatus status = player_main->getSleuth()->getInventory()
-                                         ->add(new_item, count);
-      if(status == AddStatus::GOOD_DELETE)
+      /* If ID matches item ID, add credits */
+      if(id == kID_ITEM_MONEY)
       {
-        delete new_item;
-        inserted = true;
+        inserted = player_main->addCredits(count);
       }
-      else if(status == AddStatus::GOOD_KEEP)
+      /* Otherwise, just general item */
+      else if(player_main->getSleuth() != nullptr && 
+              player_main->getSleuth()->getInventory() != nullptr)
       {
-        inserted = true;
+        Item* new_item = new Item(found_item);
+        AddStatus status = player_main->getSleuth()->getInventory()
+                                         ->add(new_item, count);
+        if(status == AddStatus::GOOD_DELETE)
+        {
+          delete new_item;
+          inserted = true;
+        }
+        else if(status == AddStatus::GOOD_KEEP)
+        {
+          inserted = true;
+        }
       }
     }
 
@@ -537,6 +546,9 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   /* Ensure nothing is loaded - if full load is false, just unloads map */
   unload(full_load);
 
+  /* Initial set-up */
+  player_main = new Player();
+
   /* Create the file handler */
   FileHandler fh(base_file, false, true, encryption);
   XmlData data;
@@ -580,8 +592,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
     if(full_load)
     {
       /* Player set-up */
-      player_main = new Player(getParty(kID_PARTY_SLEUTH), 
-                               getParty(kID_PARTY_BEARACKS));
+      player_main->setSleuth(getParty(kID_PARTY_SLEUTH));
+      player_main->setBearacks(getParty(kID_PARTY_BEARACKS));
     }
 
     /* Clean up map */
@@ -712,6 +724,15 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       edit_person->setRace(getRace(data.getDataInteger(&success)));
     else
       success &= edit_person->loadData(data, index + 1, renderer, base_path);
+  }
+  /* ---- PLAYER ---- */
+  else if(data.getElement(index) == "player")
+  {
+    /* Data for player */
+    if(data.getElement(index + 1) == "credits")
+    {
+      success &= player_main->setCredits(data.getDataInteger(&success));
+    }
   }
   /* ---- RACES ---- */
   else if(data.getElement(index) == "race")
@@ -1005,6 +1026,47 @@ Flavour* Game::getFlavour(const int32_t &index, const bool &by_id)
   else if (static_cast<uint32_t>(index) < list_flavour.size())
   {
     return list_flavour.at(index);
+  }
+
+  return nullptr;
+}
+ 
+/* Returns the inventory of the corresponding party ID, if relevant */
+Inventory* Game::getInventory(const int32_t &id)
+{
+  Party* found_party = getParty(id);
+  if(found_party != nullptr)
+    return found_party->getInventory();
+  return nullptr;
+}
+ 
+/* Returns the player bearacks inventory pointer, if relevant */
+Inventory* Game::getInvBearacks()
+{
+  /* Check if player is valid */
+  if(player_main != nullptr)
+  {
+    /* Check if bearacks is valid */
+    if(player_main->getBearacks() != nullptr)
+    {
+      return player_main->getBearacks()->getInventory();
+    }
+  }
+
+  return nullptr;
+}
+
+/* Returns the player sleuth inventory pointer, if relevant */
+Inventory* Game::getInvSleuth()
+{
+  /* Check if player is valid */
+  if(player_main != nullptr)
+  {
+    /* Check if bearacks is valid */
+    if(player_main->getSleuth() != nullptr)
+    {
+      return player_main->getSleuth()->getInventory();
+    }
   }
 
   return nullptr;

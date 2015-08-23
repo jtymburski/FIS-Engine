@@ -187,6 +187,9 @@ public:
   Action* getAction(const int32_t &index, const bool &by_id = true);
   Category* getClass(const int32_t &index, const bool &by_id = true);
   Flavour* getFlavour(const int32_t &index, const bool &by_id = true);
+  Inventory* getInventory(const int32_t &id);
+  Inventory* getInvBearacks();
+  Inventory* getInvSleuth();
   Item* getItem(const int32_t &index, const bool &by_id = true);
   Party* getParty(const int32_t &index, const bool &by_id = true);
   Person* getPersonBase(const int32_t &index, const bool &by_id = true);

@@ -25,7 +25,7 @@ class Player
 {
 public:
   /* General player construction */
-  Player(Party* sleuth, Party* bearacks = nullptr);
+  Player(Party* sleuth = nullptr, Party* bearacks = nullptr);
 
 private:
   /* The slueth and bearacks parties. The sleuth is the player's main party, 
