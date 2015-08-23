@@ -142,7 +142,6 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   plep_strike->setAnimationTime(150);
 
   /* Paw Strike */
-  std::cout << "Making paw strike plep!" << std::endl;
   plep_paw_strike = new Sprite(
       base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
   plep_paw_strike->setAnimationTime(150);
@@ -1549,7 +1548,6 @@ void TestBattle::destroy()
 /* Battle destruction */
 void TestBattle::destroyBattle()
 {
-  std::cout << " ==== Destroy battle: " << std::endl;
   if(battle_logic != nullptr)
   {
     battle_display->unsetBattle();
@@ -1578,8 +1576,6 @@ void TestBattle::destroyBattle()
     delete party_friends;
     party_friends = nullptr;
   }
-
-  std::cout << "==== // Destroy Battle ====" << std::endl;
 }
 
 /* ------------------------------------------------------------------------- */

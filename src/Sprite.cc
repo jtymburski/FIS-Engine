@@ -169,7 +169,6 @@ void Sprite::setColorMod()
  */
 void Sprite::clear()
 {
-  std::cout << "Sprite pointer being deleted: " << this << std::endl;
   /* Delete all class data */
   if(!non_unique)
     removeAll();

@@ -826,9 +826,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
 
   /* Delete if skills are already rendered */
   deleteSkills();
-
   auto skills = menu->getMenuSkills();
-  std::cout << "Battle display skills size: " << skills.size() << std::endl;
 
   /* Loop through all skills */
   for(uint16_t i = 0; i < skills.size(); i++)
@@ -1558,7 +1556,6 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
       }
       else if(!foe_state->dying && (foe_state->bobbing || foe_state->running))
       {
-        std::cout << "Rendering bobbin / runnin!" << std::endl;
         success &= foe_state->tp->render(renderer, foe_state->x, foe_state->y);
       }
     }
@@ -1979,7 +1976,6 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
 // TODO: Comment
 void BattleDisplay::stopBattle()
 {
-  std::cout << "==== Stop Battle ====" << std::endl;
   /* Clear the state */
   rendering_state = TurnState::DESTRUCT;
 
@@ -1993,8 +1989,6 @@ void BattleDisplay::stopBattle()
     if(foe_state)
       delete foe_state;
   foes_state.clear();
-
-  std::cout << "==== / Stop Battle ====" << std::endl;
 }
 
 /*=============================================================================
@@ -3281,7 +3275,6 @@ bool BattleDisplay::updateFriends(int cycle_time)
         }
         else
         {
-          std::cout << " RUNNIN!" << std::endl;
           state->x = getPersonX(state->self) +
                      kRUN_AMOUNT * sin(state->elapsed_time * kRUN_RATE);
           state->y = getPersonY(state->self);

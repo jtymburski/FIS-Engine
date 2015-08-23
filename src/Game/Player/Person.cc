@@ -345,7 +345,6 @@ void Person::unsetAll(const bool& clear)
 
 void Person::unsetSprites()
 {
-  std::cout << "==== Unset Sprites ====" << std::endl;
   if(action_sprite != nullptr)
     if(base_person == nullptr || base_person->action_sprite != action_sprite)
       delete action_sprite;
@@ -366,8 +365,6 @@ void Person::unsetSprites()
   first_person = nullptr;
   third_person = nullptr;
   dialog_sprite = nullptr;
-
-  std::cout << "==== / Unset Sprites =====" << std::endl;
 }
 
 /*
