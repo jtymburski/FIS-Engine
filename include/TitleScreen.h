@@ -2,8 +2,8 @@
  * Class Name: TitleScreen
  * Date Created: Dec 02 2012
  * Inheritance: none
- * Description: Is the view for the main control display of the game. Will 
- *              mostly just be a menu but this allows for the safe passage 
+ * Description: Is the view for the main control display of the game. Will
+ *              mostly just be a menu but this allows for the safe passage
  *              between classes as interactions with Application occur.
  ******************************************************************************/
 #ifndef TITLESCREEN_H
@@ -40,7 +40,7 @@ private:
   /* The menu item that has been initiated. Gets polled by a parent class for
    * usage */
   MenuItems action;
-  
+
   /* The background frame to render */
   Sprite background; // TODO: Fix - base
   float rotate1;
@@ -55,31 +55,31 @@ private:
   Sprite background7; // TODO: Remove - temporary - waldo
   uint16_t delay; // TODO: Remove or fix - for displaying poofs
   uint16_t delay2; // TODO: Remove or fix - for displaying poofs
-  
+
   /* Background music during title screen (and game music) */
   Sound background_music;
   Sound game_music; // TODO: Temporary
 
   /* The base path, for all rendering */
   std::string base_path;
-  
+
   /* Indication for the title screen menu's position */
   uint8_t cursor_index;
 
   /* The font that is being used throughout the program */
   TTF_Font* font;
-  
+
   /* The navigation direction keys indicator */
   bool nav_down;
   uint16_t nav_time;
   bool nav_up;
-  
+
   /* Menu click audio, during selection changes */
   Sound menu_click_sound;
 
   /* The render index of the top left of the title screen options */
   int render_index;
- 
+
   /* Title in corner */
   Frame title;
 
@@ -105,13 +105,13 @@ private:
 private:
   /* Decrements the selected option */
   void decrementSelected();
-  
+
   /* Increments the selected option */
   void incrementSelected();
-  
+
   /* Sets the selected item. This gets polled by another class */
   void setAction();
-  
+
   /* Set up the menu display text, for painting */
   bool setMenu(SDL_Renderer* renderer);
 
@@ -125,10 +125,10 @@ public:
   /* Enables or disables the view. This includes any initialization for before
    * or after it was visible */
   void enableView(bool enable);
-  
+
   /* Returns the active action */
   MenuItems getAction();
-  
+
   /* The key up and down events to be handled by the class */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
@@ -138,13 +138,13 @@ public:
 
   /* Sets the background frames to be rendered */
   bool setBackground(std::string path, SDL_Renderer* renderer);
-  
+
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
-  
+
   /* Sets the music in the title screen - TODO: Encapsulate in file load? */
   void setMusic();
-  
+
   /* Updates the title screen. Necessary for visual updates */
   bool update(int32_t cycle_time);
 };

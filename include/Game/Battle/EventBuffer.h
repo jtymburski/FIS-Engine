@@ -57,7 +57,7 @@ public:
 private:
   /* Vector of pointers to BattleEvent objects */
   std::vector<BattleEvent*> events;
-  
+
   /* Is the EventBuffer active? */
   bool active;
 
@@ -92,7 +92,7 @@ public:
       Person* target, Action* curr_action, Ailment* ailment_use);
 
   /* Creates an alteration event and returns it */
-  BattleEvent* createAlterEvent(Action* alter_action, Person* target, 
+  BattleEvent* createAlterEvent(Action* alter_action, Person* target,
       int32_t amount);
 
   /* Creates an assign action event */
@@ -100,7 +100,7 @@ public:
       int32_t amount);
 
   /* Skill cooldown event with the skill pointer and the # turns remaining */
-  BattleEvent* createCooldownEvent(Person* user, Skill* skill_cooldown, 
+  BattleEvent* createCooldownEvent(Person* user, Skill* skill_cooldown,
       int32_t cooldown);
 
   /* Creates a new blank event and returns the constructed event */
@@ -108,7 +108,7 @@ public:
       int32_t amount);
 
   /* Creates a death event and returns the constructd object */
-  BattleEvent* createDeathEvent(EventType death_type, Person* target, 
+  BattleEvent* createDeathEvent(EventType death_type, Person* target,
       bool allies);
 
   /* Creates an experience event */
@@ -125,7 +125,9 @@ public:
   /* Creates a guard event and returns a pointer to the event */
   BattleEvent* createGuardEvent(EventType guard_type, Person* user,
       Person* target);
-  
+
+  BattleEvent* createImplodeEvent(Person* user, Person* target);
+
   /* Creates an item event */
   BattleEvent* createItemEvent(Item* item_use, Person* user, Person* target);
 
@@ -160,7 +162,7 @@ public:
   /* Creates a Fizzle event and returns it */
   BattleEvent* createFizzleEvent(EventType fizzle_type, Person* user,
       Person* target);
- 
+
   /* Annihilates the last battle event straight into the void */
   bool destroyLastEvent();
 

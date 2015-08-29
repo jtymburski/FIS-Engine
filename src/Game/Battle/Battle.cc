@@ -759,6 +759,53 @@ Battle::buildBattleSkills(const int32_t &p_index,
   return battle_skills;
 }
 
+void Battle::buildActionVariables(ActionType action_type,
+                                  std::vector<Person *> targets)
+{
+  auto prim_stats = Helpers::elementToStats(Element::PHYSICAL);
+  auto secd_stats = Helpers::elementToStats(Element::PHYSICAL);
+
+  if(action_type == ActionType::SKILL)
+  {
+    /* Grab the enumerated attribute types related to elements of the Skill */
+    prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
+    secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
+  }
+  else if(action_type == ActionType::IMPLODE)
+  {
+    prim_stats = Helpers::elementToStats(curr_user->getPrimary());
+    secd_stats = Helpers::elementToStats(curr_user->getSecondary());
+  }
+
+  /* Update the temporary copy of the User's current stats */
+  temp_user_stats = AttributeSet(curr_user->getCurr());
+  temp_user_max_stats = AttributeSet(curr_user->getTemp());
+
+  /* Build vectors of curr and curr_max stas for each target */
+  for(auto jt = begin(targets); jt != end(targets); ++jt)
+  {
+    temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
+    temp_target_max_stats.push_back(AttributeSet((*jt)->getTemp()));
+  }
+
+  /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
+  auto prim_user_off = temp_user_stats.getStat(prim_off);
+  auto prim_user_def = temp_user_stats.getStat(prim_def);
+  auto secd_user_off = temp_user_stats.getStat(secd_off);
+  auto secd_user_def = temp_user_stats.getStat(secd_def);
+
+  if(curr_user->getPrimary() == curr_skill->getPrimary())
+  {
+    prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
+    prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
+  }
+  else if(curr_user->getSecondary() == curr_skill->getSecondary())
+  {
+    secd_user_off *= kOFF_SECD_ELM_MODIFIER;
+    secd_user_def *= kDEF_SECD_ELM_MODIFIER;
+  }
+}
+
 /*
  * Description: This function calculates the base damage of an action during
  *              battle. To do this, this function will also call functions like
@@ -1098,6 +1145,59 @@ int32_t Battle::calcExperience(Person *ally)
     exp += foe->getExpDrop();
 
   return static_cast<int32_t>(exp * ally->getExpMod());
+}
+
+int32_t Battle::calcImplodeDamage()
+{
+  auto party_death = false;
+  (void)party_death; // TODO check for party death
+
+  auto targ_attrs = temp_target_stats.at(pro_index);
+  float base_damage = 0;
+  int32_t base_user_pow = 0;
+  int32_t base_targ_def = 0;
+  int32_t phys_pow_val = temp_user_stats.getStat(Attribute::PHAG);
+  int32_t phys_def_val = targ_attrs.getStat(Attribute::PHFD);
+  int32_t elm1_pow_val = temp_user_stats.getStat(prim_off);
+  int32_t elm1_def_val = targ_attrs.getStat(prim_def);
+  int32_t elm2_pow_val = temp_user_stats.getStat(secd_off);
+  int32_t elm2_def_val = targ_attrs.getStat(secd_def);
+
+  base_user_pow = phys_pow_val + elm1_pow_val + elm2_pow_val;
+  base_targ_def = phys_def_val + elm1_def_val + elm2_def_val;
+
+  int32_t action_power = base_user_pow;
+
+  auto attack_modifier = 1.0 / (1.0 + std::exp(-base_user_pow / 255));
+  auto attack_power = 2.0 * action_power * (1.0 + attack_modifier);
+
+  auto defense_modifier = 0.0f;
+
+  if(3 * ((float)action_power + (float)base_targ_def >= 0))
+  {
+    defense_modifier = (float)base_targ_def /
+                       (3 * ((float)action_power + (float)base_targ_def));
+  }
+
+  base_damage = attack_power * (1 - defense_modifier);
+
+#ifdef UDEBUG
+  std::cout << "Attack Modifier: " << attack_modifier << std::endl;
+  std::cout << "Action Power: " << action_power << std::endl;
+  std::cout << "Attack Power: " << attack_power << std::endl;
+  std::cout << "Defense Modifier: " << defense_modifier << std::endl;
+  std::cout << "Base Damage: " << base_damage << std::endl;
+#endif
+
+  int32_t damage_round = std::round(base_damage);
+  damage_round =
+      Helpers::setInRange(damage_round, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
+
+#ifdef UDEBUG
+  std::cout << "Modified Damage: " << damage_round << std::endl;
+#endif
+
+  return damage_round;
 }
 
 /*
@@ -2267,7 +2367,8 @@ void Battle::processBuffer()
     }
     else if(curr_action_type == ActionType::IMPLODE)
     {
-      // Annihilate self in catastrophic hit against opponents!
+      assert(curr_targets.size() > 0);
+      processImplode(curr_targets);
     }
     else if(curr_action_type == ActionType::RUN)
     {
@@ -3185,42 +3286,8 @@ void Battle::processSkill(std::vector<Person *> targets)
     /* Else, process action index and increment the action index */
     auto effects = curr_skill->getEffects();
 
-    /* Grab the enumerated attribute types related to elements of the Skill */
-    auto prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
-    auto secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
-
-    prim_off = prim_stats.first;
-    prim_def = prim_stats.second;
-    secd_off = secd_stats.first;
-    secd_def = secd_stats.second;
-
-    /* Update the temporary copy of the User's current stats */
-    temp_user_stats = AttributeSet(curr_user->getCurr());
-    temp_user_max_stats = AttributeSet(curr_user->getTemp());
-
-    /* Build vectors of curr and curr_max stas for each target */
-    for(auto jt = begin(targets); jt != end(targets); ++jt)
-    {
-      temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
-      temp_target_max_stats.push_back(AttributeSet((*jt)->getTemp()));
-    }
-
-    /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
-    auto prim_user_off = temp_user_stats.getStat(prim_off);
-    auto prim_user_def = temp_user_stats.getStat(prim_def);
-    auto secd_user_off = temp_user_stats.getStat(secd_off);
-    auto secd_user_def = temp_user_stats.getStat(secd_def);
-
-    if(curr_user->getPrimary() == curr_skill->getPrimary())
-    {
-      prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
-      prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
-    }
-    else if(curr_user->getSecondary() == curr_skill->getSecondary())
-    {
-      secd_user_off *= kOFF_SECD_ELM_MODIFIER;
-      secd_user_def *= kDEF_SECD_ELM_MODIFIER;
-    }
+    /* Build the variables for primary and secondary off/def attributes, etc. */
+    buildActionVariables(ActionType::SKILL, targets);
 
     /* Assert the current action index is within effects range, then
      * compute the outcome for the effect for every target, and prepare
@@ -3270,6 +3337,35 @@ void Battle::processSkill(std::vector<Person *> targets)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Battle::processImplode(std::vector<Person *> targets)
+{
+  /* */
+  auto process = true;
+
+#ifdef UDEBUG
+  std::cout << "{IMPLODE} Processing: " << curr_user->getName() << std::endl;
+  printPartyState();
+#endif
+
+  buildActionVariables(ActionType::IMPLODE, targets);
+
+  if(process)
+  {
+    auto implode_event =
+        event_buffer->createImplodeEvent(curr_user, curr_target);
+    auto damage = calcImplodeDamage();
+
+    if(implode_event)
+      implode_event->amount = damage;
+  }
+}
+
+/*
  * Description: Recalculates the ailments modification factors for a given
  *              Person* inflcited by all ailments. For proper reversible stat
  *              buffs, both the multiplicative effects and additive effects
@@ -3283,7 +3379,6 @@ void Battle::reCalcAilments(Person *const target)
 {
   auto temp_vita = target->getCurr().getStat(0);
   auto temp_qtdr = target->getCurr().getStat(1);
-
   auto base_max_stats = target->getCurrMax();
 
   target->setCurr(base_max_stats);
