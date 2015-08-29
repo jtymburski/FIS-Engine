@@ -20,12 +20,12 @@
 #include "Options.h"
 
 /* Constant Implementation - see header file for descriptions */
-const std::string Options::kFONTS[] = {"fonts/colab_light.otf", 
+const std::string Options::kFONTS[] = {"fonts/colab_light.otf",
                                        "fonts/crimes.ttf"};
 const uint8_t  Options::kNUM_FONTS = 2;
-const uint8_t  Options::kNUM_RESOLUTIONS = 5;
-const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920, 2560};
-const uint16_t Options::kRESOLUTIONS_Y[] = {704, 705, 768, 1080, 1080};
+const uint8_t  Options::kNUM_RESOLUTIONS = 6;
+const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920, 2560, 4480};
+const uint16_t Options::kRESOLUTIONS_Y[] = {704, 705, 768, 1080, 1080, 4480};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -134,10 +134,10 @@ void Options::setFont(uint8_t index, bool first_call)
   {
     int old_index = font;
     font = index;
-    
+
     if(!first_call)
       success = confirmFontSetup();
-      
+
     if(!success)
       font = old_index;
   }
@@ -146,7 +146,7 @@ void Options::setFont(uint8_t index, bool first_call)
 void Options::setLinearFiltering(bool linear_filtering)
 {
   setFlag(OptionState::LINEAR_FILTERING, true);
-  
+
   if(linear_filtering)
   {
     /* Set texture filtering to linear */
@@ -157,7 +157,7 @@ void Options::setLinearFiltering(bool linear_filtering)
   {
     /* Set texture filtering to nearest pixel */
     if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-      std::cerr << "[WARNING] Unable to enable nearest pixel filtering." 
+      std::cerr << "[WARNING] Unable to enable nearest pixel filtering."
                 << std::endl;
   }
 }
@@ -197,7 +197,7 @@ bool Options::isAudioEnabled()
 {
   return getFlag(OptionState::AUDIO_ENABLED);
 }
-  
+
 bool Options::isVsyncEnabled()
 {
   return getFlag(OptionState::VSYNC);
@@ -218,16 +218,16 @@ bool Options::confirmFontSetup()
   bool success = true;
   std::string path = base_path + kFONTS[font];
   TTF_Font* test_font = TTF_OpenFont(path.c_str(), 14);
-  
+
   /* If the font setup fails, output the error alert */
   if(test_font == NULL)
   {
-    std::cerr << "[ERROR] The font " << kFONTS[font] 
-              << " could not be loaded. SDL_ttf error: " << TTF_GetError() 
+    std::cerr << "[ERROR] The font " << kFONTS[font]
+              << " could not be loaded. SDL_ttf error: " << TTF_GetError()
               << std::endl;
     success = false;
   }
-  
+
   TTF_CloseFont(test_font);
   return success;
 }
@@ -253,7 +253,7 @@ std::string Options::getFont()
 {
   return kFONTS[font];
 }
- 
+
 std::string Options::getFont(uint8_t index)
 {
   if(index < kNUM_FONTS)

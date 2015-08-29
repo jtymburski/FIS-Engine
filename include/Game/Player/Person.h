@@ -241,6 +241,7 @@ private:
   static const uint32_t kMAX_LVL_EXP;     /* Exp to reach final level */
   static const uint32_t kMIN_EXP;         /* Minimum Exp possible */
   static const uint32_t kMIN_LVL_EXP;     /* Starting exp. */
+  static const uint32_t kMIN_LVL_IMPLODE; /* The minimum lvl to implode at */
   static const float    kMIN_DMG_MODI;    /* Min. Dmg modifier */
   static const float    kMAX_DMG_MODI;    /* Max. Dmg modifier */
   static const float    kMIN_EXP_MODI;    /* Min. experience modifier */

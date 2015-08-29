@@ -99,6 +99,11 @@ private:
   Sprite* plep_multi_strike;
   Sprite* plep_ensnare;
   Sprite* plep_enrich;
+  Sprite* plep_upgrade;
+
+  Sprite* sprite_defend_start;
+  Sprite* sprite_defend_break;
+  Sprite* sprite_defend_persist;
 
   /* First run trigger */
   bool first_run;

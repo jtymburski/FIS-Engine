@@ -1727,21 +1727,21 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
   bool success = true;
 
   /* Render the friends */
-  for(const auto& ally_state : friends_state)
+  for(const auto &ally_state : friends_state)
   {
-    if(ally_state->fp != nullptr && ally_state->self != nullptr)
+    if(ally_state->active_sprite && ally_state->self)
     {
       /* If the ally isn't dying, render them */
       if(!ally_state->dying && !ally_state->bobbing)
       {
-        success &=
-            ally_state->fp->render(renderer, getPersonX(ally_state->self),
-                                   getPersonY(ally_state->self));
+        success &= ally_state->active_sprite->render(
+            renderer, getPersonX(ally_state->self),
+            getPersonY(ally_state->self));
       }
       else if(ally_state->bobbing)
       {
-        success &=
-            ally_state->fp->render(renderer, ally_state->x, ally_state->y);
+        success &= ally_state->active_sprite->render(renderer, ally_state->x,
+                                                     ally_state->y);
       }
     }
   }
@@ -1860,6 +1860,7 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     {
       state->as = new Sprite(*(person->getActionSprite()));
       state->as->setNonUnique(true, person->getActionSprite()->getSize());
+      state->as->createTexture(renderer);
     }
     if (person->getFirstPerson())
     {
@@ -2073,6 +2074,19 @@ Sprite* BattleDisplay::getAilmentPlep(Infliction ailment)
     auto found = ailment_pleps.find(ailment);
 
     if(found != end(ailment_pleps))
+      return found->second;
+  }
+
+  return nullptr;
+}
+
+Sprite* BattleDisplay::getEventPlep(EventType event_type)
+{
+  if(event_type != EventType::NONE)
+  {
+    auto found = event_pleps.find(event_type);
+
+    if(found != end(event_pleps))
       return found->second;
   }
 
@@ -2330,6 +2344,19 @@ bool BattleDisplay::setAilmentPlep(Infliction ailment, Sprite* plep)
 
   return false;
 }
+
+bool BattleDisplay::setEventPlep(EventType event_type, Sprite* plep)
+{
+  if(event_type != EventType::NONE && plep)
+  {
+    event_pleps.emplace(std::make_pair(event_type, plep));
+
+    return true;
+  }
+
+  return false;
+}
+
 
 /* Sets the background sprite */
 // TODO: Comment
@@ -3131,8 +3158,15 @@ bool BattleDisplay::updateEvent()
   {
     if(curr_event->user != nullptr)
     {
-      createDamageText(curr_event->user, "Defending");
+      auto animation = getEventPlep(EventType::BEGIN_DEFEND);
+
+      if (animation)
+        createPlep(curr_event->user, animation);
+
+      //createDamageText(curr_event->user, "Defending");
       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
+
+
     }
 
     processing_delay = 400;
@@ -3141,7 +3175,12 @@ bool BattleDisplay::updateEvent()
   {
     if(curr_event->user != nullptr)
     {
-      createDamageText(curr_event->user, "Break Defend");
+      auto animation = getEventPlep(EventType::BREAK_DEFEND);
+
+      if(animation)
+        createPlep(curr_event->user, animation);
+
+      //createDamageText(curr_event->user, "Break Defend");
       createSpriteFlash(curr_event->user, {177, 177, 30, 190}, 450);
     }
 
@@ -3151,7 +3190,12 @@ bool BattleDisplay::updateEvent()
   {
     if(curr_event->user != nullptr)
     {
-      createDamageText(curr_event->user, "Defend Persists");
+      auto animation = getEventPlep(EventType::PERSIST_DEFEND);
+
+      if(animation)
+        createPlep(curr_event->user, animation);
+
+      //createDamageText(curr_event->user, "Defend Persists");
       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
     }
   }
@@ -3240,7 +3284,7 @@ bool BattleDisplay::updateFriends(int cycle_time)
       }
       else
       {
-        state->fp = state->fp;
+        state->active_sprite = state->fp;
       }
 
       /* Update position if bobbing */

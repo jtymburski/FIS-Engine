@@ -88,6 +88,15 @@ TestBattle::~TestBattle()
 
   delete battle_display;
   battle_display = nullptr;
+
+  delete sprite_defend_break;
+  sprite_defend_break = nullptr;
+
+  delete sprite_defend_persist;
+  sprite_defend_persist = nullptr;
+
+  delete sprite_defend_start;
+  sprite_defend_start = nullptr;
 }
 
 /*=============================================================================
@@ -108,13 +117,13 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
 
   /* Light Push */
   plep_light_push = new Sprite(
-      base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
+      base_path + "sprites/Battle/Pleps/lightpushplep_AA_A", 7, ".png", renderer);
   plep_light_push->setAnimationTime(150);
 
   /* Light Shot */
   plep_light_shot = new Sprite(
-      base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
-  plep_light_shot->setAnimationTime(150);
+      base_path + "sprites/Battle/Pleps/lightshotplep_AA_A", 6, ".png", renderer);
+  plep_light_shot->setAnimationTime(90);
 
   /* Prismatic Shot */
   plep_prismatic_shot = new Sprite(
@@ -143,8 +152,8 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
 
   /* Paw Strike */
   plep_paw_strike = new Sprite(
-      base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
-  plep_paw_strike->setAnimationTime(150);
+      base_path + "sprites/Battle/Pleps/pawstrikeplep_AA_A", 7, ".png", renderer);
+  plep_paw_strike->setAnimationTime(70);
 
   /* Maul */
   plep_maul = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3,
@@ -166,11 +175,16 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
                            ".png", renderer);
   plep_enrich->setAnimationTime(110);
 
+  /* Upgrade */
+  plep_upgrade = new Sprite(base_path + "sprites/Battle/Pleps/upgradeplep_AA_A", 16, ".png", renderer);
+  plep_upgrade->setAnimationTime(90);
+
   getSkill(100)->setAnimation(plep_light_push);
   getSkill(120)->setAnimation(plep_light_shot);
   getSkill(121)->setAnimation(plep_prismatic_shot);
   getSkill(140)->setAnimation(plep_rail_shot);
-  getSkill(160)->setAnimation(plep_shatter_shot);
+  getSkill(141)->setAnimation(plep_shatter_shot);
+  getSkill(160)->setAnimation(plep_upgrade);
   getSkill(180)->setAnimation(plep_static_shot);
   getSkill(181)->setAnimation(plep_locked_shot);
   getSkill(1001)->setAnimation(plep_strike);
@@ -411,6 +425,20 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   battle_display->setAilmentPlep(Infliction::ALLATKBUFF, sprite_buff);
   battle_display->setAilmentPlep(Infliction::ALLDEFBUFF, sprite_buff);
   battle_display->setAilmentPlep(Infliction::LIMBUFF, sprite_buff);
+
+  sprite_defend_start = new Sprite(game_config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A", 7, ".png", renderer);
+  sprite_defend_start->setAnimationTime(180);
+
+  sprite_defend_break = new Sprite(game_config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A", 7, ".png", renderer);
+  sprite_defend_break->setAnimationTime(180);
+  sprite_defend_break->switchDirection();
+
+  sprite_defend_persist = new Sprite(game_config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A", 7, ".png", renderer);
+  sprite_defend_persist->setAnimationTime(180);
+
+  battle_display->setEventPlep(EventType::BEGIN_DEFEND, sprite_defend_start);
+  battle_display->setEventPlep(EventType::BREAK_DEFEND, sprite_defend_break);
+  battle_display->setEventPlep(EventType::PERSIST_DEFEND, sprite_defend_persist);
 
   sprite_hibernation = new Sprite(
       game_config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A",
@@ -1108,7 +1136,6 @@ void TestBattle::createSkills()
   prismatic_shot->setDescription("A triple strike electric hit against a foe");
   prismatic_shot->setPrimary(Element::ELECTRIC);
   prismatic_shot->setFlag(SkillFlags::OFFENSIVE);
-
   skills.push_back(prismatic_shot);
 
   /* Rail Shot */

@@ -45,6 +45,7 @@ const size_t Person::kMAX_ITEM_DROPS{5};
 const uint32_t Person::kMAX_LVL_EXP{1200}; /* 100 million */
 const uint32_t Person::kMIN_EXP{0};
 const uint32_t Person::kMIN_LVL_EXP{20};
+const uint32_t Person::kMIN_LVL_IMPLODE{7}; /* Min lvl for enemies to 'plode */
 const float Person::kMIN_DMG_MODI{0.01};
 const float Person::kMAX_DMG_MODI{10.00};
 const float Person::kMIN_EXP_MODI{0.10};
@@ -1966,7 +1967,7 @@ std::vector<ActionType> Person::getValidActions()
   if(getBFlag(BState::GRD_ENABLED))
     valid_action_types.push_back(ActionType::GUARD);
 
-  if(getBFlag(BState::IMP_ENABLED))
+  if(getBFlag(BState::IMP_ENABLED) && this->getLevel() >= kMIN_LVL_IMPLODE)
     valid_action_types.push_back(ActionType::IMPLODE);
 
   if(getBFlag(BState::RUN_ENABLED))

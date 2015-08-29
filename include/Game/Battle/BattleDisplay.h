@@ -131,6 +131,7 @@ private:
   std::vector<Frame> ailments;
 
   std::map<Infliction, Sprite*> ailment_pleps;
+  std::map<EventType, Sprite*> event_pleps;
 
   /* Animation control */
   uint16_t animation_delay;
@@ -204,9 +205,6 @@ private:
 
   /* The system options. Used for rendering, settings, etc */
   Options* system_options;
-
-  /* TODO: Delete */
-  // Sprite* temp_sprite;
 
   /* ------------ Constants --------------- */
   const static uint16_t kACTION_BORDER; /* Border width on action slideout */
@@ -476,6 +474,8 @@ public:
 
   Sprite* getAilmentPlep(Infliction ailment);
 
+  Sprite* getEventPlep(EventType event_type);
+
   /* Get the background */
   Sprite* getBackground();
 
@@ -506,6 +506,8 @@ public:
   bool setAilment(Infliction ailment, std::string path, SDL_Renderer* renderer);
 
   bool setAilmentPlep(Infliction ailment, Sprite* plep);
+
+  bool setEventPlep(EventType event_type, Sprite* plep);
 
   /* Sets the background sprite */
   bool setBackground(Sprite* background);

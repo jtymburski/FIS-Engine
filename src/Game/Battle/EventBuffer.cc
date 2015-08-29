@@ -355,6 +355,18 @@ BattleEvent* EventBuffer::createGuardEvent(EventType guard_type, Person* user,
   return new_event;
 }
 
+BattleEvent* EventBuffer::createImplodeEvent(Person* user, Person* target)
+{
+  auto new_event = createNewEvent();
+  new_event->type = EventType::IMPLODE;
+  new_event->user = user;
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
 /*
  * Description: Creates an appends a create item event to the buffer.
  *
