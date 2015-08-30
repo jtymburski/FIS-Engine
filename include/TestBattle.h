@@ -86,6 +86,12 @@ private:
   Sprite* sprite_poison;
   Sprite* sprite_hibernation;
 
+  Sprite* plep_sullen_sting;
+  Sprite* plep_befuddling_sting;
+  Sprite* plep_canopy;
+  Sprite* plep_numbing_sting;
+  Sprite* plep_toxic_sting;
+  Sprite* plep_updraft;
   Sprite* plep_light_push;
   Sprite* plep_light_shot;
   Sprite* plep_prismatic_shot;

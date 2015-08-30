@@ -353,7 +353,7 @@ bool Application::initialize()
        one rendering drivers available */
     if (SDL_GetNumRenderDrivers() > 1)
     {
-      std::string open_gl = "direct3d";
+      std::string open_gl = "opengl";
 
       /* Loop through each driver, comparing its value to "opengl" */
       for (int32_t i = 0;

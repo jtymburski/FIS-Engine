@@ -452,7 +452,7 @@ private:
   void processSkill(std::vector<Person *> targets);
 
   /* Processes an individual action from a user imploding on a target */
-  void processImplode(std::vector<Person*> targets);
+  bool processImplode(std::vector<Person*> targets);
 
   /* Checks to see whether a guard action can occur between user and target */
   bool processGuard();

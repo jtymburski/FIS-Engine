@@ -32,7 +32,7 @@ const uint32_t AIModule::kMAXIMUM_RECORD_SIZE{500};
  */
 const float AIModule::kGAI_VARIANCE{0.05};
 const float AIModule::kGAI_BASE_GUARD_FACTOR{0.05};
-const float AIModule::kGAI_BASE_IMPLODE_FACTOR{0.25};
+const float AIModule::kGAI_BASE_IMPLODE_FACTOR{0.95};
 const float AIModule::kGAI_BASE_DEFEND_FACTOR{0.10};
 const float AIModule::kGAI_BASE_RUN_FACTOR{0.001};
 const float AIModule::kGAI_BASE_PASS_FACTOR{0.01};
@@ -723,6 +723,7 @@ bool AIModule::selectPriorityAction()
   }
   else if (chosen_action_type == ActionType::IMPLODE)
   {
+    action_index_selected = true;
     //TODO: Action index selection [07-20-14]
   }
   else if (chosen_action_type == ActionType::RUN)

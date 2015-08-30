@@ -13,7 +13,7 @@ const std::string TestBattle::kMENU_ITEMS[] = {
     "Aurora Agent, Heavy", "Aurora Heavy", "Aurora Engineer, Drone",
     "Aurora Engineer, Drone x 3", "Aurora Engineer, Agent, Heavy, Drone",
     "Reverdile, Reverdling", "Reverdile, Reverdling x 2",
-    "Reverdile, Reverdling x 3", "Reverdling", "Reverdling x 2",
+    "Reverdile, Reverdliling x 3", "Reverdling", "Reverdling x 2",
     "The Impossible", "Exit"};
 const std::string TestBattle::kMENU_FOE = "Enter Foe Level: ";
 const std::string TestBattle::kMENU_FRIEND = "Enter Friend Level: ";
@@ -32,6 +32,12 @@ TestBattle::TestBattle(Options *running_config)
       sprite_buff{nullptr},
       sprite_poison{nullptr},
       sprite_hibernation{nullptr},
+      plep_sullen_sting{nullptr},
+      plep_befuddling_sting{nullptr},
+      plep_canopy{nullptr},
+      plep_numbing_sting{nullptr},
+      plep_toxic_sting{nullptr},
+      plep_updraft{nullptr},
       plep_light_push{nullptr},
       plep_light_shot{nullptr},
       plep_prismatic_shot{nullptr},
@@ -115,25 +121,66 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
     menu_items_sel[i]->setText(renderer, kMENU_ITEMS[i], {255, 0, 0, 255});
   }
 
+  /* sullen Sting */
+  plep_sullen_sting = new Sprite(base_path + "sprites/Battle/Pleps/sullenstingplep_AA_A", 6, ".png", renderer);
+  plep_sullen_sting->setAnimationTime(150);
+
+  /* Befuddling Sting */
+  plep_befuddling_sting =
+      new Sprite(base_path + "sprites/Battle/Pleps/befuddlingstingplep_AA_A", 4,
+                 ".png", renderer);
+  plep_befuddling_sting->setAnimationTime(150);
+
+  /* Canopy */
+  plep_canopy = new Sprite(base_path + "sprites/Battle/Pleps/canopyplep_AA_A",
+                           6, ".png", renderer);
+
+  plep_canopy->setAnimationTime(150);
+
+  /* Toxic Sting */
+  plep_toxic_sting =
+      new Sprite(base_path + "sprites/Battle/Pleps/toxicstingplep_AA_A", 5,
+                 ".png", renderer);
+  plep_toxic_sting->setAnimationTime(150);
+
+  plep_numbing_sting =
+      new Sprite(base_path + "sprites/Battle/Pleps/numbingstingplep_AA_A", 4,
+                 ".png", renderer);
+  plep_numbing_sting->setAnimationTime(150);
+
+  /* Updraft */
+  plep_updraft = new Sprite(base_path + "sprites/Battle/Pleps/updraftplep_AA_A",
+                            5, ".png", renderer);
+  plep_updraft->setAnimationTime(150);
+
   /* Light Push */
-  plep_light_push = new Sprite(
-      base_path + "sprites/Battle/Pleps/lightpushplep_AA_A", 7, ".png", renderer);
+  plep_light_push =
+      new Sprite(base_path + "sprites/Battle/Pleps/lightpushplep_AA_A", 7,
+                 ".png", renderer);
   plep_light_push->setAnimationTime(150);
 
   /* Light Shot */
-  plep_light_shot = new Sprite(
-      base_path + "sprites/Battle/Pleps/lightshotplep_AA_A", 6, ".png", renderer);
+  plep_light_shot =
+      new Sprite(base_path + "sprites/Battle/Pleps/lightshotplep_AA_A", 6,
+                 ".png", renderer);
   plep_light_shot->setAnimationTime(90);
 
   /* Prismatic Shot */
-  plep_prismatic_shot = new Sprite(
-      base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
-  plep_prismatic_shot->setAnimationTime(150);
+  plep_prismatic_shot =
+      new Sprite(base_path + "sprites/Battle/Pleps/prismaticshotplep_AA_A", 7,
+                 ".png", renderer);
+  plep_prismatic_shot->setAnimationTime(120);
 
   /* Rail Shot */
-  plep_rail_shot = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A",
-                              3, ".png", renderer);
+  plep_rail_shot =
+      new Sprite(base_path + "sprites/Battle/Pleps/railshotplep_AA_A", 6,
+                 ".png", renderer);
   plep_rail_shot->setAnimationTime(150);
+
+  plep_locked_shot =
+      new Sprite(base_path + "sprites/Battle/Pleps/lockedshotplep_AA_A", 14,
+                 ".png", renderer);
+  plep_locked_shot->setAnimationTime(100);
 
   /* Shatter Shot */
   plep_shatter_shot = new Sprite(
@@ -141,8 +188,9 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   plep_shatter_shot->setAnimationTime(150);
 
   /* Static Shot */
-  plep_static_shot = new Sprite(
-      base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
+  plep_static_shot =
+      new Sprite(base_path + "sprites/Battle/Pleps/staticshotplep_AA_A", 4,
+                 ".png", renderer);
   plep_static_shot->setAnimationTime(150);
 
   /* Strike */
@@ -151,8 +199,9 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   plep_strike->setAnimationTime(150);
 
   /* Paw Strike */
-  plep_paw_strike = new Sprite(
-      base_path + "sprites/Battle/Pleps/pawstrikeplep_AA_A", 7, ".png", renderer);
+  plep_paw_strike =
+      new Sprite(base_path + "sprites/Battle/Pleps/pawstrikeplep_AA_A", 7,
+                 ".png", renderer);
   plep_paw_strike->setAnimationTime(70);
 
   /* Maul */
@@ -176,9 +225,16 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   plep_enrich->setAnimationTime(110);
 
   /* Upgrade */
-  plep_upgrade = new Sprite(base_path + "sprites/Battle/Pleps/upgradeplep_AA_A", 16, ".png", renderer);
+  plep_upgrade = new Sprite(base_path + "sprites/Battle/Pleps/upgradeplep_AA_A",
+                            16, ".png", renderer);
   plep_upgrade->setAnimationTime(90);
 
+  getSkill(240)->setAnimation(plep_numbing_sting);
+  getSkill(241)->setAnimation(plep_sullen_sting);
+  getSkill(242)->setAnimation(plep_toxic_sting);
+  getSkill(243)->setAnimation(plep_befuddling_sting);
+  getSkill(220)->setAnimation(plep_canopy);
+  getSkill(221)->setAnimation(plep_updraft);
   getSkill(100)->setAnimation(plep_light_push);
   getSkill(120)->setAnimation(plep_light_shot);
   getSkill(121)->setAnimation(plep_prismatic_shot);
@@ -426,19 +482,30 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   battle_display->setAilmentPlep(Infliction::ALLDEFBUFF, sprite_buff);
   battle_display->setAilmentPlep(Infliction::LIMBUFF, sprite_buff);
 
-  sprite_defend_start = new Sprite(game_config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A", 7, ".png", renderer);
+  sprite_defend_start = new Sprite(game_config->getBasePath() +
+                                       "sprites/Battle/Pleps/defendplep_AA_A",
+                                   7, ".png", renderer);
   sprite_defend_start->setAnimationTime(180);
+  sprite_defend_start->switchDirection();
 
-  sprite_defend_break = new Sprite(game_config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A", 7, ".png", renderer);
+  sprite_defend_break = new Sprite(game_config->getBasePath() +
+                                       "sprites/Battle/Pleps/defendplep_AA_A",
+                                   7, ".png", renderer);
   sprite_defend_break->setAnimationTime(180);
-  sprite_defend_break->switchDirection();
+  // sprite_defend_break->switchDirection();
 
-  sprite_defend_persist = new Sprite(game_config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A", 7, ".png", renderer);
+  sprite_defend_persist = new Sprite(game_config->getBasePath() +
+                                         "sprites/Battle/Pleps/defendplep_AA_A",
+                                     7, ".png", renderer);
   sprite_defend_persist->setAnimationTime(180);
+
+  // sprite_implode = new Sprite(game_config->getBasePath() +
+  // "sprites/Battle/Pleps/detonateplep_AA_A", 6, ".png", renderer);
 
   battle_display->setEventPlep(EventType::BEGIN_DEFEND, sprite_defend_start);
   battle_display->setEventPlep(EventType::BREAK_DEFEND, sprite_defend_break);
-  battle_display->setEventPlep(EventType::PERSIST_DEFEND, sprite_defend_persist);
+  battle_display->setEventPlep(EventType::PERSIST_DEFEND,
+                               sprite_defend_persist);
 
   sprite_hibernation = new Sprite(
       game_config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A",
@@ -1387,10 +1454,10 @@ void TestBattle::createSkillSets()
 
   /* Reverdling */
   SkillSet *set_reverdling = new SkillSet(240);
-  //set_reverdling->addSkill(getSkill(240), 1);
+  set_reverdling->addSkill(getSkill(240), 1);
   set_reverdling->addSkill(getSkill(241), 1);
-  //set_reverdling->addSkill(getSkill(242), 1);
-  //set_reverdling->addSkill(getSkill(243), 1);
+  set_reverdling->addSkill(getSkill(242), 1);
+  set_reverdling->addSkill(getSkill(243), 1);
   skillsets.push_back(set_reverdling);
 
   /* ---- RACES ---- */
@@ -1585,8 +1652,8 @@ void TestBattle::destroyBattle()
   /* Foe party list delete */
   if(party_foes)
   {
-    for (auto& member : party_foes->getMembers())
-      if (member)
+    for(auto &member : party_foes->getMembers())
+      if(member)
         delete member;
 
     delete party_foes;
@@ -1596,8 +1663,8 @@ void TestBattle::destroyBattle()
   /* Friend party list delete */
   if(party_friends)
   {
-    for(auto& member : party_friends->getMembers())
-      if (member)
+    for(auto &member : party_friends->getMembers())
+      if(member)
         delete member;
 
     delete party_friends;

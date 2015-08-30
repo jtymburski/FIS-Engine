@@ -1190,8 +1190,8 @@ int32_t Battle::calcImplodeDamage()
 #endif
 
   int32_t damage_round = std::round(base_damage);
-  damage_round =
-      Helpers::setInRange(damage_round, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
+  damage_round = Helpers::setInRange(damage_round, 0,
+                                     targ_attrs.getStat(Attribute::VITA) - 1);
 
 #ifdef UDEBUG
   std::cout << "Modified Damage: " << damage_round << std::endl;
@@ -3342,9 +3342,10 @@ void Battle::processSkill(std::vector<Person *> targets)
  * Inputs:
  * Output:
  */
-void Battle::processImplode(std::vector<Person *> targets)
+bool Battle::processImplode(std::vector<Person *> targets)
 {
   /* */
+  auto party_death = false;
   auto process = true;
 
 #ifdef UDEBUG
@@ -3356,13 +3357,27 @@ void Battle::processImplode(std::vector<Person *> targets)
 
   if(process)
   {
+    /* Create the initial damage amount against user, killing 'dem ' */
+    auto user_damage_amount = curr_user->getCurr().getStat(Attribute::VITA);
+    event_buffer->createDamageEvent(
+        EventType::STANDARD_DAMAGE, curr_user, user_damage_amount);
+
+    party_death &= processDamageAmount(user_damage_amount);
+
+    /* Create the damage event for the target */
     auto implode_event =
         event_buffer->createImplodeEvent(curr_user, curr_target);
     auto damage = calcImplodeDamage();
 
     if(implode_event)
       implode_event->amount = damage;
+
+    party_death &= processDamageAmount(damage);
+
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
   }
+
+  return party_death;
 }
 
 /*

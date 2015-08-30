@@ -3199,6 +3199,26 @@ bool BattleDisplay::updateEvent()
       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
     }
   }
+  else if(curr_event->type == EventType::IMPLODE)
+  {
+    if(curr_event->user && curr_event->targets.size() > 0 &&
+       curr_event->targets.at(0))
+    {
+      auto animation = getEventPlep(EventType::IMPLODE);
+
+      if(animation)
+      {
+        createPlep(curr_event->targets.at(0), animation);
+        createPlep(curr_event->user, animation);
+      }
+
+      createDamageValue(curr_event->targets.at(0), curr_event->amount);
+      createSpriteFlash(curr_event->user, {255, 0, 0, 225}, 450);
+      createSpriteFlash(curr_event->targets.at(0), {255, 0, 0, 225}, 450);
+    }
+
+    processing_delay = 1200;
+  }
 
   else if(curr_event->type == EventType::STANDARD_DAMAGE ||
           curr_event->type == EventType::CRITICAL_DAMAGE ||
