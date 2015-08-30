@@ -2069,7 +2069,7 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
     {
       for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
       {
-        if(sprite_set->at(i, j) != NULL)
+        if(sprite_set->at(i, j) != NULL && sprite_set->at(i, j)->getSize() > 0)
         {
           success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
           if(!success)
