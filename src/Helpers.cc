@@ -27,7 +27,7 @@ SDL_Texture* Helpers::white_mask = NULL;
  *============================================================================*/
 
 /* Seed the random number generators with high-precision */
-const uint32_t  Helpers::seed_original = 
+const uint32_t  Helpers::seed_original =
     std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
 std::mt19937    Helpers::rand_eng(seed_original);
@@ -45,7 +45,7 @@ std::mt19937_64 Helpers::rand_64_eng(seed_original);
  *        - chanceHappens(0, n) -> always false
  *
  * Inputs: const uint32_t &pc_chance - const ref to the chance the event has
- *         const uint32_t &mag - magnitude of accuracy 
+ *         const uint32_t &mag - magnitude of accuracy
  *                                    (bound to generate #s)
  * Output: bool - determination of the event
  */
@@ -58,7 +58,7 @@ bool Helpers::chanceHappens(const uint32_t &pc_chance, const uint32_t &mag)
 
   auto random = randU(1, static_cast<int>(mag));
 
-  if (static_cast<uint32_t>(random) <= pc_chance) 
+  if (static_cast<uint32_t>(random) <= pc_chance)
     return true;
   return false;
 }
@@ -117,7 +117,7 @@ int Helpers::randU(const int &a, const int &b)
   auto max = std::max(a, b);
 
   std::uniform_int_distribution<int> distribution(min, max);
-  
+
   return distribution(rand_eng);
 }
 
@@ -146,7 +146,7 @@ uint64_t Helpers::randU64()
 }
 
 /*
- * Description: Simulates the rolling of an s-sided time x # of times and 
+ * Description: Simulates the rolling of an s-sided time x # of times and
  *              returns the result.
  *
  * Inputs: const int& s_sides - const ref to # of sided die to represent
@@ -172,7 +172,7 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  *              "a" for "sword" etc.
  *
  * Inputs: std::string - noun - noun to find a/an for
- * Output: std::string - "a" or "an" where required 
+ * Output: std::string - "a" or "an" where required
  */
 std::string Helpers::a_An(const std::string &noun)
 {
@@ -203,7 +203,7 @@ std::string Helpers::a_An(const std::string &noun)
     a_an = "a";
 
   /* Some exceptions for consonant and vowel sounds (e.g. "a eulogy") */
-  if (lower.substr(0, 2) == "eu" || lower.substr(0, 3) == "one" || 
+  if (lower.substr(0, 2) == "eu" || lower.substr(0, 3) == "one" ||
       lower.substr(0, 3) == "uni")
     a_an = "a";
   else if (lower.substr(0, 3) == "hon")
@@ -381,13 +381,13 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
 
   return "";
 }
- 
+
 /*
  * Description: Returns the enum form of an ailment (string)
  *
  * Inputs: std::string ail - string form of ailment
  * Output: Infliction - ailment enumeration
- */ 
+ */
 Infliction Helpers::ailmentFromStr(const std::string &ail)
 {
   std::string ail_up = ail;
@@ -562,7 +562,7 @@ std::string Helpers::ailmentToStr(const Infliction &ail)
 
   return "";
 }
-  
+
 /*
  * Description: Returns the enumerated Attribute to String.
  *
@@ -632,12 +632,12 @@ std::string Helpers::cellToStr(const CellState &cell_state)
     return "BLOCKED";
   else if (cell_state == CellState::LINK)
     return "LINK";
-  
+
   return "";
 }
-  
+
 /*
- * Description: Converts the string version of the ElementCurve to the 
+ * Description: Converts the string version of the ElementCurve to the
  *              enumerated version.
  *
  * Inputs: std::string curve - the string version of the ElementCurve
@@ -741,7 +741,7 @@ std::string Helpers::elementToString(const Element &element)
     return "DIGITAL";
   else if (element == Element::NIHIL)
     return "VOID";
-  
+
   return "";
 }
 
@@ -755,7 +755,7 @@ std::string Helpers::eventToStr(EventType event)
   if (event == EventType::SKILL_USE_FIZZLE)
     return "SKILL_USE_FIZZLE";
   if (event == EventType::SKILL_COOLDOWN)
-    return "SKILL_COOLDOWN";  
+    return "SKILL_COOLDOWN";
   if (event == EventType::IMPLODE)
     return "IMPLODE";
   if (event == EventType::INSPECT)
@@ -923,10 +923,10 @@ bool Helpers::isVowel(const char &c)
  */
 std::string Helpers::numToRoman(int value)
 {
-  struct roman_values 
+  struct roman_values
   {
-    int numeral_value; 
-    std::string numeral; 
+    int numeral_value;
+    std::string numeral;
   };
 
   std::vector<roman_values> values
@@ -946,7 +946,7 @@ std::string Helpers::numToRoman(int value)
     {1, "I"},
     {0, ""},
   };
- 
+
   std::string result = "";
 
   for (auto it = begin(values); it != end(values); ++it)
@@ -960,7 +960,7 @@ std::string Helpers::numToRoman(int value)
 
   return result;
 }
-  
+
 /*
  * Description: Returns the enum form of an party type (string)
  *
@@ -1030,7 +1030,7 @@ std::string Helpers::regenRateToStr(const RegenRate &regen_rate)
 
   return "";
 }
-  
+
 /*
  * Description: Returns the enum form of an item tier (string)
  *
@@ -1085,7 +1085,7 @@ std::pair<Attribute, Attribute> Helpers::elementToStats(const Element &element)
     return std::make_pair(Attribute::CYAG, Attribute::CYFD);
   else if (element == Element::NIHIL)
     return std::make_pair(Attribute::NIAG, Attribute::NIFD);
-  
+
   return std::make_pair(Attribute::NONE, Attribute::NONE);
 }
 
@@ -1134,7 +1134,7 @@ Element Helpers::getWeakness(const Element& element)
 /*=============================================================================
  * GENERAL HELPER FUNCTIONS
  *============================================================================*/
-  
+
 /*
  * Description: Build an exponentially increasing table of values given a
  *              starting value, a maximum value, and the number of iterations
@@ -1146,8 +1146,8 @@ Element Helpers::getWeakness(const Element& element)
  *         const int &iter - const ref int of the # of iterations for the table
  * Output: std::vector<int> - the vector containing the constructed table
  */
-std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min, 
-                                             const uint32_t &max, 
+std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min,
+                                             const uint32_t &max,
                                              const uint32_t &iter)
 {
   std::vector<uint32_t> table;
@@ -1201,7 +1201,7 @@ std::string Helpers::combine(std::string s, char c, bool before)
  * Example: std::string test = "Test01_[A-C][A-B]_U00.png";
  *          Vector becomes: AA BA CA
  *                          AB BB CB -> in the appropriate string format
- * 
+ *
  * Inputs: const std::string path - the starting sprite path
  * Output: std::vector<std::vector<std::string>> - a matrix of paths (in X
  *         and Y direction). As shown in the example above.
@@ -1211,7 +1211,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
 {
   /* Split string on '[' */
   std::vector<std::string> first_split = split(path, '[');
-  
+
   /* Parse each string and split on the ']' character */
   std::vector<std::string> split_strings;
   std::vector<uint32_t> range_ids;
@@ -1228,8 +1228,8 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     {
       /* Check if the first string in the set is valid in the 'A-B' category */
       std::vector<std::string> range_split = split(second_split.front(), '-');
-      if(range_count < 2 && range_split.size() == 2 && 
-         range_split.front().size() == 1 && 
+      if(range_count < 2 && range_split.size() == 2 &&
+         range_split.front().size() == 1 &&
          range_split.back().size() == 1 &&
          range_split.front().front() >= 'A' &&
          range_split.front().front() <= 'Z' &&
@@ -1276,7 +1276,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     {
       uint32_t base_elements = linear_set.size();
       std::vector<std::string> range_str = split(split_strings[i], '-');
-      int32_t new_elements = range_str.back().front() - 
+      int32_t new_elements = range_str.back().front() -
                               range_str.front().front();
       uint32_t abs_elements = new_elements;
       if(new_elements < 0)
@@ -1349,7 +1349,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
 
     /* Determine if it's x or y direction */
     bool x_dir = true;
-    if(index > 0 && linear_set.front()[index] >= 'A' && 
+    if(index > 0 && linear_set.front()[index] >= 'A' &&
                     linear_set.front()[index - 1] <= 'Z')
       x_dir = false;
 
@@ -1395,7 +1395,7 @@ uint8_t Helpers::getRenderDepth()
 {
   return kMAX_RENDER_DEPTH;
 }
-  
+
 /*
  * Description: Returns the tile size for rendering, as defined by the stored
  *              constants.
@@ -1414,9 +1414,9 @@ uint16_t Helpers::getTileSize()
  * Inputs: std::string &s - the string to trim whitespace from
  * Output: std::string& - the string with the whitespace removed
  */
-std::string& Helpers::ltrim(std::string &s) 
+std::string& Helpers::ltrim(std::string &s)
 {
-  s.erase(begin(s), std::find_if(begin(s), end(s), 
+  s.erase(begin(s), std::find_if(begin(s), end(s),
           std::not1(std::ptr_fun<int, int>(std::isspace))));
 
   return s;
@@ -1429,11 +1429,11 @@ std::string& Helpers::ltrim(std::string &s)
  *              i.e. x1,y1-y2 or x1,y1
  *
  * Inputs: std::string sequence - the string sequence to parse
- *         uint32_t x_min, x_max, y_min, y_max - the range variables for the 
+ *         uint32_t x_min, x_max, y_min, y_max - the range variables for the
                                  parsed data to return. Passed by reference.
  * Output: bool - status if the data is good and referenced vars are set
  */
-bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max, 
+bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
                          uint32_t &y_min, uint32_t &y_max)
 {
   uint32_t x_max_tmp = 0;
@@ -1449,23 +1449,23 @@ bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
     good_data = true;
     std::vector<std::string> x_set = split(range_set.front(), '-');
     std::vector<std::string> y_set = split(range_set.back(), '-');
-    
+
     /* Convert the data over */
     int new_coord = atoi(x_set.front().c_str());
     if(new_coord < 0)
       good_data = false;
     x_min_tmp = new_coord;
-    
+
     new_coord = atoi(x_set.back().c_str());
     if(new_coord < 0)
       good_data = false;
     x_max_tmp = new_coord;
-    
+
     new_coord = atoi(y_set.front().c_str());
     if(new_coord < 0)
       good_data = false;
     y_min_tmp = new_coord;
-    
+
     new_coord = atoi(y_set.back().c_str());
     if(new_coord < 0)
       good_data = false;
@@ -1475,7 +1475,7 @@ bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
     if(y_min_tmp > y_max_tmp || x_min_tmp > x_max_tmp)
       good_data = false;
   }
-  
+
   /* If data is good, proceed to set the outgoing pass by reference */
   if(good_data)
   {
@@ -1484,7 +1484,7 @@ bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
     y_min = y_min_tmp;
     y_max = y_max_tmp;
   }
-  
+
   return good_data;
 }
 
@@ -1499,20 +1499,20 @@ bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
 std::vector<std::vector<uint16_t>> Helpers::parseRangeSet(std::string sequence)
 {
   std::vector<std::vector<uint16_t>> set_elements;
-  
+
   /* Get the range of elements to process */
   std::vector<std::string> range_set = split(sequence, ',');
   for(uint32_t i = 0; i < range_set.size(); i++)
   {
     std::vector<std::string> range = split(range_set[i], '-');
     std::vector<uint16_t> row;
-    
+
     /* If a range, push both values back */
     if(range.size() > 1)
     {
       uint16_t first = atoi(range.front().c_str());
       uint16_t second = atoi(range.back().c_str());
-      
+
       /* Sort based on range */
       if(first > second)
       {
@@ -1530,7 +1530,7 @@ std::vector<std::vector<uint16_t>> Helpers::parseRangeSet(std::string sequence)
     {
       row.push_back(atoi(range.front().c_str()));
     }
-    
+
     set_elements.push_back(row);
   }
 
@@ -1545,9 +1545,9 @@ std::vector<std::vector<uint16_t>> Helpers::parseRangeSet(std::string sequence)
  */
 std::string& Helpers::rtrim(std::string &s)
 {
-  s.erase(std::find_if(s.rbegin(), s.rend(), 
+  s.erase(std::find_if(s.rbegin(), s.rend(),
           std::not1(std::ptr_fun<int, int>(std::isspace))).base(), end(s));
-  
+
   return s;
 }
 
@@ -1558,7 +1558,7 @@ std::string& Helpers::rtrim(std::string &s)
  *
  * Example: std::string test = "Hello,sunshine,,what,a,beautiful,day";
  *          std::vector<std::string> temp_list = split(test, ',');
- * 
+ *
  * Note: Does not give an empty final element.
  *
  * Inputs: const std::string &line - the line to split
@@ -1570,11 +1570,11 @@ std::vector<std::string> Helpers::split(const std::string &line, char delim)
   std::vector<std::string> elements;
   std::string item;
   std::stringstream ss(line);
-  
+
   /* Parse the string and separate as per each delimiter */
   while(std::getline(ss, item, delim))
     elements.push_back(item);
-  
+
   return elements;
 }
 
@@ -1605,15 +1605,15 @@ void Helpers::createWhiteMask(SDL_Renderer* renderer)
 {
   if(white_mask == NULL)
   {
-    white_mask = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
-                                             SDL_TEXTUREACCESS_TARGET, 
+    white_mask = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                             SDL_TEXTUREACCESS_TARGET,
                                              kTILE_SIZE, kTILE_SIZE);
     SDL_SetRenderTarget(renderer, white_mask);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
     SDL_RenderDrawRect(renderer, NULL);
     SDL_SetRenderTarget(renderer, NULL);
-    
+
     /* Set the new texture as the white mask (with additive blending) */
     SDL_SetTextureBlendMode(white_mask, SDL_BLENDMODE_ADD);
   }
@@ -1633,7 +1633,7 @@ void Helpers::deleteWhiteMask()
   white_mask = NULL;
 }
 
-/* 
+/*
  * Description: Returns the white mask for rendering on screen. Do not delete
  *              this pointer.
  *

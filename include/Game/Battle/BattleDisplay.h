@@ -129,7 +129,6 @@ private:
 
   /* Ailment frames */
   std::vector<Frame> ailments;
-
   std::map<Infliction, Sprite*> ailment_pleps;
   std::map<EventType, Sprite*> event_pleps;
 

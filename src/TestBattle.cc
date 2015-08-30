@@ -80,32 +80,41 @@ TestBattle::~TestBattle()
 {
   destroy();
 
-  delete sprite_paralysis;
-  sprite_paralysis = nullptr;
+  // if(sprite_paralysis)
+  //   delete sprite_paralysis;
+  // sprite_paralysis = nullptr;
 
-  delete sprite_confusion;
-  sprite_confusion = nullptr;
+  // if(sprite_confusion)
+  // delete sprite_confusion;
+  // sprite_confusion = nullptr;
 
-  delete sprite_buff;
-  sprite_buff = nullptr;
+  // if(sprite_buff)
+  //   delete sprite_buff;
+  // sprite_buff = nullptr;
 
-  delete sprite_poison;
-  sprite_poison = nullptr;
+  // if(sprite_poison)
+  //   delete sprite_poison;
+  // sprite_poison = nullptr;
 
-  delete sprite_hibernation;
-  sprite_hibernation = nullptr;
+  // if(sprite_hibernation)
+  // delete sprite_hibernation;
+  // sprite_hibernation = nullptr;
 
-  delete battle_display;
-  battle_display = nullptr;
+  // if(battle_display)
+  //   delete battle_display;
+  // battle_display = nullptr;
 
-  delete sprite_defend_break;
-  sprite_defend_break = nullptr;
+  // if(sprite_defend_break)
+  //   delete sprite_defend_break;
+  // sprite_defend_break = nullptr;
 
-  delete sprite_defend_persist;
-  sprite_defend_persist = nullptr;
+  // if(sprite_defend_persist)
+  //   delete sprite_defend_persist;
+  // sprite_defend_persist = nullptr;
 
-  delete sprite_defend_start;
-  sprite_defend_start = nullptr;
+  // if(sprite_defend_start)
+  //   delete sprite_defend_start;
+  // sprite_defend_start = nullptr;
 }
 
 /*=============================================================================

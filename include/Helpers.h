@@ -40,7 +40,7 @@ class Helpers
 public:
 /*=============================================================================
  * TEMPLATE FUNCTIONS
- *============================================================================*/  
+ *============================================================================*/
   #include "Helpers.tcc" /* Template Implementation */
 
 /*=============================================================================
@@ -128,7 +128,7 @@ public:
 
   /* Converts an enumerated GameKey to a String */
   static std::string gameKeyToStr(const GameKey &game_key);
-  
+
   /* Determines whether a given character is a vowel */
   static bool isVowel(const char &c);
 
@@ -141,7 +141,7 @@ public:
   /* Returns the enumerated regen rate in string form */
   static RegenRate regenRateFromStr(const std::string &regen_rate);
   static std::string regenRateToStr(const RegenRate &regen_rate);
- 
+
   /* Returns the enumerated tier to/from string form */
   static ItemTier tierFromStr(const std::string &tier);
 
@@ -164,32 +164,32 @@ public:
 public:
   /* Builds an exponentially growing table from min to max with iter
    * iterations */
-  static std::vector<uint32_t> buildExpTable(const uint32_t &min, 
+  static std::vector<uint32_t> buildExpTable(const uint32_t &min,
       const uint32_t &max, const uint32_t &iter);
-   
+
   /* Appends char and string together */
-  static std::string combine(std::string s, char c, bool before = false); 
-  
+  static std::string combine(std::string s, char c, bool before = false);
+
   /* Splites the string into a grid based on the frame naming convention */
   static std::vector<std::vector<std::string>> frameSeparator(
       std::string path);
-  
+
   /* Get render tile size */
   static uint16_t getTileSize();
 
   /* Get render depth for thing stacks */
   static uint8_t getRenderDepth();
-  
+
   /* Methods for trimming white space from left of string ends */
   static std::string& ltrim(std::string &s);
 
   /* Takes a range and parses it to determine the x and y, min and max parts */
-  static bool parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max, 
+  static bool parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
                          uint32_t &y_min, uint32_t &y_max);
- 
+
   /* Parses a comma delimited range and separates into integers */
   static std::vector<std::vector<uint16_t>> parseRangeSet(std::string sequence);
-  
+
   /* Methods for trimming white space from right of string ends */
   static std::string& rtrim(std::string &s);
 
@@ -198,14 +198,14 @@ public:
 
   /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string &s);
-  
+
 /*=============================================================================
  * GRAPHICAL HELPER FUNCTIONS
  *============================================================================*/
 public:
   /* Creates the white mask to use - needs to be called to init */
   static void createWhiteMask(SDL_Renderer* renderer);
-  
+
   /* Deletes the white mask - when game shut down */
   static void deleteWhiteMask();
 
