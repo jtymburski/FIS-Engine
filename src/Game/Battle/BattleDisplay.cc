@@ -126,7 +126,7 @@ const SDL_Color BattleDisplay::kHIBERNATION_REGEN_COLOR = {75, 205, 50, 255};
  * Inputs:
  */
 // TODO: Comment
-BattleDisplay::BattleDisplay(Options* running_config)
+BattleDisplay::BattleDisplay(Options *running_config)
 {
   /* Blank out variables */
   processing_delay = 0;
@@ -147,7 +147,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   index_layer = 0;
   index_person = 0;
   index_types = 0;
-  offset = 0;   // TODO: Delete
+  offset = 0; // TODO: Delete
   offset_2 = 0; // TODO: Delete
   renderer = nullptr;
   rendering_state = TurnState::DESTRUCT;
@@ -186,7 +186,7 @@ BattleDisplay::~BattleDisplay()
  *============================================================================*/
 
 /* Calculates the proper opacity for the sprite of a given Person */
-uint8_t BattleDisplay::updatePersonOpacity(Person* test_person,
+uint8_t BattleDisplay::updatePersonOpacity(Person *test_person,
                                            int32_t cycle_time)
 {
   uint8_t opacity = 0;
@@ -258,7 +258,7 @@ uint8_t BattleDisplay::updatePersonOpacity(Person* test_person,
 }
 
 /* Calculate the proper brightness for the sprite of a given Person */
-double BattleDisplay::calcPersonBrightness(Person* test_person)
+double BattleDisplay::calcPersonBrightness(Person *test_person)
 {
   auto layer_index = battle->getBattleMenu()->getLayerIndex();
   auto person_index = battle->getIndexOfPerson(test_person);
@@ -312,7 +312,7 @@ double BattleDisplay::calcPersonBrightness(Person* test_person)
 
 /* Generates the action frame for the third person sprite */
 // TODO: Comment
-Frame* BattleDisplay::createActionFrame(Person* person, SDL_Renderer* renderer)
+Frame *BattleDisplay::createActionFrame(Person *person, SDL_Renderer *renderer)
 {
   uint16_t width = kACTION_W;
   uint16_t height = kACTION_H;
@@ -329,14 +329,14 @@ Frame* BattleDisplay::createActionFrame(Person* person, SDL_Renderer* renderer)
   uint16_t cy2 = cy1 / 2;
 
   /* Create main rendering texture */
-  Frame* rendered_frame = new Frame();
-  SDL_Texture* texture =
+  Frame *rendered_frame = new Frame();
+  SDL_Texture *texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
   /* Create underlay rendering texture */
-  SDL_Texture* texture2 =
+  SDL_Texture *texture2 =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture2, SDL_BLENDMODE_BLEND);
@@ -371,7 +371,7 @@ Frame* BattleDisplay::createActionFrame(Person* person, SDL_Renderer* renderer)
     SDL_RenderDrawLine(renderer, x2, y2 + i, x1, y1 + i);
 
   /* Render the person */
-  Sprite* action_frames = person->getDialogSprite();
+  Sprite *action_frames = person->getDialogSprite();
   if(action_frames != nullptr && action_frames->isFramesSet())
     action_frames->render(renderer, person->getActionX(), person->getActionY(),
                           action_frames->getCurrent()->getWidth(),
@@ -398,7 +398,7 @@ Frame* BattleDisplay::createActionFrame(Person* person, SDL_Renderer* renderer)
 }
 
 // TODO: Comment
-void BattleDisplay::createFoeBackdrop(SDL_Renderer* renderer)
+void BattleDisplay::createFoeBackdrop(SDL_Renderer *renderer)
 {
   /* Sizing variables */
   uint16_t width = kINFO_W;
@@ -409,8 +409,8 @@ void BattleDisplay::createFoeBackdrop(SDL_Renderer* renderer)
   uint8_t grey_color = kINFO_GREY;
 
   /* Create rendering texture */
-  Frame* rendered_frame = new Frame();
-  SDL_Texture* texture =
+  Frame *rendered_frame = new Frame();
+  SDL_Texture *texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -505,7 +505,7 @@ void BattleDisplay::createFoeBackdrop(SDL_Renderer* renderer)
 }
 
 // TODO: Comment
-Frame* BattleDisplay::createFoeInfo(Person* foe, SDL_Renderer* renderer)
+Frame *BattleDisplay::createFoeInfo(Person *foe, SDL_Renderer *renderer)
 {
   /* Sizing variables */
   uint16_t bar_width = kFOE_BAR_W;
@@ -514,7 +514,7 @@ Frame* BattleDisplay::createFoeInfo(Person* foe, SDL_Renderer* renderer)
   uint8_t bar_offset = kFOE_BAR_OFFSET;
 
   /* Create rendering texture */
-  SDL_Texture* texture =
+  SDL_Texture *texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, kINFO_W, kINFO_H);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -539,7 +539,7 @@ Frame* BattleDisplay::createFoeInfo(Person* foe, SDL_Renderer* renderer)
 
   /* Render the enemy name */
   SDL_Color color = {255, 255, 255, 255};
-  Text* t = new Text(font_header);
+  Text *t = new Text(font_header);
   t->setText(renderer, foe->getName(), color);
   t->render(renderer, (kINFO_W - t->getWidth()) / 2,
             (border[0].y - t->getHeight()) / 2);
@@ -554,7 +554,7 @@ Frame* BattleDisplay::createFoeInfo(Person* foe, SDL_Renderer* renderer)
   delete t;
 
   /* Set the new frame */
-  Frame* foe_info = new Frame();
+  Frame *foe_info = new Frame();
   foe_info->setTexture(texture);
 
   /* Clear render connection */
@@ -579,19 +579,19 @@ bool BattleDisplay::createFonts()
   if(system_options != nullptr)
   {
     /* Try and create the new fonts */
-    TTF_Font* action_font = Text::createFont(system_options->getBasePath() +
+    TTF_Font *action_font = Text::createFont(system_options->getBasePath() +
                                                  system_options->getFont(1),
                                              60, TTF_STYLE_NORMAL);
-    TTF_Font* header_font = Text::createFont(system_options->getBasePath() +
+    TTF_Font *header_font = Text::createFont(system_options->getBasePath() +
                                                  system_options->getFont(),
                                              16, TTF_STYLE_BOLD);
-    TTF_Font* subheader_font = Text::createFont(system_options->getBasePath() +
+    TTF_Font *subheader_font = Text::createFont(system_options->getBasePath() +
                                                     system_options->getFont(),
                                                 13, TTF_STYLE_BOLD);
-    TTF_Font* turn_font = Text::createFont(system_options->getBasePath() +
+    TTF_Font *turn_font = Text::createFont(system_options->getBasePath() +
                                                system_options->getFont(1),
                                            80, TTF_STYLE_NORMAL);
-    TTF_Font* damage_font = Text::createFont(system_options->getBasePath() +
+    TTF_Font *damage_font = Text::createFont(system_options->getBasePath() +
                                                  system_options->getFont(),
                                              30, TTF_STYLE_BOLD);
 
@@ -633,7 +633,7 @@ bool BattleDisplay::createFonts()
 
 /* Generates info for friends in battle */
 // TODO: Comment
-Frame* BattleDisplay::createFriendInfo(Person* ally, SDL_Renderer* renderer)
+Frame *BattleDisplay::createFriendInfo(Person *ally, SDL_Renderer *renderer)
 {
   /* Sizing variables */
   uint8_t health_height = kALLY_HEALTH_H;
@@ -647,7 +647,7 @@ Frame* BattleDisplay::createFriendInfo(Person* ally, SDL_Renderer* renderer)
   uint16_t width = kINFO_W;
 
   /* Create rendering texture */
-  SDL_Texture* texture =
+  SDL_Texture *texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -680,7 +680,7 @@ Frame* BattleDisplay::createFriendInfo(Person* ally, SDL_Renderer* renderer)
 
   /* Render the ally name */
   SDL_Color color = {255, 255, 255, 255};
-  Text* t = new Text(font_header);
+  Text *t = new Text(font_header);
   t->setText(renderer, ally->getName(), color);
   t->render(renderer, (width - t->getWidth()) / 2,
             (border[0].y - t->getHeight()) / 2);
@@ -697,7 +697,7 @@ Frame* BattleDisplay::createFriendInfo(Person* ally, SDL_Renderer* renderer)
   delete t;
 
   /* Set the new frame */
-  Frame* friend_info = new Frame();
+  Frame *friend_info = new Frame();
   friend_info->setTexture(texture);
 
   /* Clear render connection */
@@ -707,11 +707,11 @@ Frame* BattleDisplay::createFriendInfo(Person* ally, SDL_Renderer* renderer)
 }
 
 // TODO: Comment
-SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
+SDL_Texture *BattleDisplay::createSkill(SDL_Renderer *renderer, Skill *skill,
                                         uint16_t width, uint16_t height)
 {
   /* Create rendering texture */
-  SDL_Texture* texture =
+  SDL_Texture *texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -731,7 +731,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the action scope */
-  Frame* scope_frame = getScope(skill->getScope());
+  Frame *scope_frame = getScope(skill->getScope());
   SDL_Rect rect_bot;
   rect_bot.x = kSKILL_BORDER;
   rect_bot.h = kSKILL_FRAME_S;
@@ -742,7 +742,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the primary element */
-  Frame* primary_frame = getElement(skill->getPrimary());
+  Frame *primary_frame = getElement(skill->getPrimary());
   rect_bot.x += rect_bot.w + kSKILL_BORDER;
   rect_bot.w = kSKILL_FRAME_S;
   if(primary_frame != nullptr)
@@ -750,7 +750,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the secondary element */
-  Frame* secondary_frame = getElement(skill->getSecondary());
+  Frame *secondary_frame = getElement(skill->getSecondary());
   rect_bot.x += rect_bot.w + kSKILL_BORDER;
   if(secondary_frame != nullptr)
   {
@@ -814,13 +814,13 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
 
 /* Generates info for the skills of the selecting person in battle */
 // TODO: Comment
-bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
+bool BattleDisplay::createSkills(SDL_Renderer *renderer, BattleMenu *menu,
                                  uint16_t width_left, uint16_t width_right)
 {
   SDL_Color color = {255, 255, 255, 255};
   SDL_Color invalid_color = {100, 100, 100, 255};
   bool success = true;
-  Text* t = new Text(font_header);
+  Text *t = new Text(font_header);
   uint16_t text_height = 0;
   uint16_t text_width = width_left - kTYPE_MARGIN * 8;
 
@@ -832,7 +832,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
   for(uint16_t i = 0; i < skills.size(); i++)
   {
     /* Create new frame and access skill */
-    Skill* skill = skills[i].skill;
+    Skill *skill = skills[i].skill;
     skill_names.push_back(new Frame());
     skill_info.push_back(new Frame());
 
@@ -849,7 +849,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
         text_height = t->getHeight() + kTYPE_MARGIN * 2;
 
       /* Create rendering texture */
-      SDL_Texture* texture =
+      SDL_Texture *texture =
           SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                             SDL_TEXTUREACCESS_TARGET, text_width, text_height);
       SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -921,11 +921,11 @@ void BattleDisplay::deleteFonts()
 // TODO: Comment
 void BattleDisplay::deleteSkills()
 {
-  for(auto& skill : skill_info)
+  for(auto &skill : skill_info)
     delete skill;
   skill_info.clear();
 
-  for(auto& name : skill_names)
+  for(auto &name : skill_names)
     delete name;
   skill_names.clear();
 }
@@ -949,10 +949,13 @@ bool BattleDisplay::handleDelayProcessing(int32_t cycle_time, bool change_state)
 
 /* Get foes in battle */
 // TODO: Comment
-Party* BattleDisplay::getFoesParty() { return battle->getFoes(); }
+Party *BattleDisplay::getFoesParty()
+{
+  return battle->getFoes();
+}
 
 // TODO: Comment
-PersonState* BattleDisplay::getFoesState(int32_t index)
+PersonState *BattleDisplay::getFoesState(int32_t index)
 {
   if(index >= 0)
   {
@@ -964,10 +967,10 @@ PersonState* BattleDisplay::getFoesState(int32_t index)
   return nullptr;
 }
 
-PersonState* BattleDisplay::getFoesState(Person* foe)
+PersonState *BattleDisplay::getFoesState(Person *foe)
 {
   if(foe != nullptr)
-    for(const auto& foe_state : foes_state)
+    for(const auto &foe_state : foes_state)
       if(foe == foe_state->self)
         return foe_state;
 
@@ -976,10 +979,13 @@ PersonState* BattleDisplay::getFoesState(Person* foe)
 
 /* Get friends in battle */
 // TODO: Comment
-Party* BattleDisplay::getFriendsParty() { return battle->getFriends(); }
+Party *BattleDisplay::getFriendsParty()
+{
+  return battle->getFriends();
+}
 
 // TODO: Comment
-PersonState* BattleDisplay::getFriendsState(int32_t index)
+PersonState *BattleDisplay::getFriendsState(int32_t index)
 {
   if(index >= 0)
   {
@@ -991,10 +997,10 @@ PersonState* BattleDisplay::getFriendsState(int32_t index)
   return nullptr;
 }
 
-PersonState* BattleDisplay::getFriendsState(Person* ally)
+PersonState *BattleDisplay::getFriendsState(Person *ally)
 {
   if(ally != nullptr)
-    for(const auto& friend_state : friends_state)
+    for(const auto &friend_state : friends_state)
       if(ally == friend_state->self)
         return friend_state;
 
@@ -1018,7 +1024,7 @@ uint32_t BattleDisplay::getIndex(int32_t index)
 }
 
 // TODO: Comment
-int16_t BattleDisplay::getPersonX(Person* check_person)
+int16_t BattleDisplay::getPersonX(Person *check_person)
 {
   auto screen_width = system_options->getScreenWidth();
 
@@ -1034,20 +1040,20 @@ int16_t BattleDisplay::getPersonX(Person* check_person)
 }
 
 // TODO: Comment
-int16_t BattleDisplay::getPersonY(Person* check_person)
+int16_t BattleDisplay::getPersonY(Person *check_person)
 {
-  for(auto& foe : foes_state)
+  for(auto &foe : foes_state)
     if(check_person == foe->self)
       return kFOES_OFFSET;
 
-  for(auto& ally : friends_state)
+  for(auto &ally : friends_state)
     if(check_person == ally->self)
       return system_options->getScreenHeight() - kFRIENDS_OFFSET;
 
   return -1;
 }
 
-Sprite* BattleDisplay::getPersonSprite(Person* target)
+Sprite *BattleDisplay::getPersonSprite(Person *target)
 {
   auto state = getState(target);
 
@@ -1063,13 +1069,13 @@ Sprite* BattleDisplay::getPersonSprite(Person* target)
 }
 
 /* Return the value of a rendering flag */
-bool BattleDisplay::getRenderFlag(const RenderState& test_flag)
+bool BattleDisplay::getRenderFlag(const RenderState &test_flag)
 {
   return static_cast<bool>((render_flags & test_flag) == test_flag);
 }
 
 /* Gett the state of a person from any target pointer */
-PersonState* BattleDisplay::getState(Person* target)
+PersonState *BattleDisplay::getState(Person *target)
 {
   if(target != nullptr)
   {
@@ -1083,14 +1089,14 @@ PersonState* BattleDisplay::getState(Person* target)
 }
 
 /* Assigns the value of a RenderState flag */
-void BattleDisplay::setRenderFlag(RenderState flags, const bool& set_value)
+void BattleDisplay::setRenderFlag(RenderState flags, const bool &set_value)
 {
   (set_value) ? (render_flags |= flags) : (render_flags &= ~flags);
 }
 
 /* Render the action skills */
 // TODO: Comment
-bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
+bool BattleDisplay::renderActionSkills(SDL_Renderer *renderer, BattleMenu *menu,
                                        uint16_t x, uint16_t y, uint16_t width,
                                        uint16_t height)
 {
@@ -1181,7 +1187,7 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
 // TODO: Comment
 void BattleDisplay::createActionText(std::string action_name)
 {
-  RenderElement* action_text =
+  RenderElement *action_text =
       new RenderElement(RenderType::ACTION_TEXT, 900, 100, 100);
 
   action_text->setColor({0, 0, 0, 255});
@@ -1207,7 +1213,7 @@ void BattleDisplay::renderFizzleText()
   // return success;
 }
 
-void BattleDisplay::createDamageText(Person* target, std::string text)
+void BattleDisplay::createDamageText(Person *target, std::string text)
 {
   auto element = createDamageValue(target, 0);
   element->setText(text);
@@ -1227,7 +1233,7 @@ void BattleDisplay::createDamageText(Person* target, std::string text)
 }
 
 // TODO: Comment
-RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
+RenderElement *BattleDisplay::createDamageValue(Person *target, uint32_t amount)
 {
   /* Determine the color of text to use for displaying according to the
    * appropriate damage type (based on the type of event being processed ) */
@@ -1243,7 +1249,7 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
   else if(curr_event->type == EventType::BURN_DAMAGE)
     shadow_color = kBURN_DMG_COLOR;
 
-  RenderElement* element =
+  RenderElement *element =
       new RenderElement(RenderType::DAMAGE_VALUE, 475, 65, 100);
 
   /* Build parameters for the damage text, add to render text elements */
@@ -1275,9 +1281,9 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
   return element;
 }
 
-void BattleDisplay::createDeath(Person* target)
+void BattleDisplay::createDeath(Person *target)
 {
-  RenderElement* element =
+  RenderElement *element =
       new RenderElement(RenderType::RGB_SPRITE_DEATH, 3000, 300, 2650);
   element->setColor({255, 0, 0, 255});
   element->setCoordinates(getPersonX(target), getPersonY(target));
@@ -1287,7 +1293,7 @@ void BattleDisplay::createDeath(Person* target)
 }
 
 // TODO: Comment
-void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
+void BattleDisplay::createRegenValue(Person *target, uint64_t amount)
 {
   /* Determine the appropriate color to show (whether VITA/QD regen) */
   SDL_Color color = {0, 0, 0, 255};
@@ -1298,10 +1304,10 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   else if(curr_event->type == EventType::REGEN_QTDR)
     shadow_color = kQTDR_REGEN_COLOR;
   else if(curr_event->type == EventType::HIBERNATION ||
-      curr_event->type == EventType::HEAL_HEALTH)
+          curr_event->type == EventType::HEAL_HEALTH)
     shadow_color = kHIBERNATION_REGEN_COLOR;
 
-  RenderElement* element =
+  RenderElement *element =
       new RenderElement(RenderType::DAMAGE_VALUE, 650, 150, 150);
 
   element->setColor(color);
@@ -1330,24 +1336,24 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   render_elements.push_back(element);
 }
 
-RenderElement* BattleDisplay::createPlep(Person* target, Sprite* plep)
+RenderElement *BattleDisplay::createPlep(Person *target, Sprite *plep)
 {
-  Sprite* new_plep = new Sprite(*plep);
+  Sprite *new_plep = new Sprite(*plep);
   new_plep->setNonUnique(true, plep->getSize());
   new_plep->createTexture(renderer);
 
-  RenderElement* plep_render =
+  RenderElement *plep_render =
       new RenderElement(new_plep, getPersonX(target), getPersonY(target), 1);
   render_elements.push_back(plep_render);
 
   return plep_render;
 }
 
-void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color,
+void BattleDisplay::createSpriteFlash(Person *target, SDL_Color color,
                                       int32_t flash_time)
 {
   auto fade_time = std::floor(flash_time * 3.0 / 7.0);
-  RenderElement* sprite_flash = new RenderElement(
+  RenderElement *sprite_flash = new RenderElement(
       RenderType::RGB_SPRITE_FLASH, flash_time, fade_time, fade_time);
 
   sprite_flash->setSprite(getPersonSprite(target));
@@ -1359,14 +1365,14 @@ void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color,
 
 /* Render the action categories */
 // TODO: Comment
-bool BattleDisplay::renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu,
+bool BattleDisplay::renderActionTypes(SDL_Renderer *renderer, BattleMenu *menu,
                                       uint16_t x, uint16_t y, uint16_t width,
                                       uint16_t height)
 {
   /* Get actions */
   SDL_Color color = {255, 255, 255, 255};
   bool success = true;
-  Text* t = new Text(font_header);
+  Text *t = new Text(font_header);
   std::vector<ActionType> types = menu->getValidActionTypes();
 
   /* Calculate the start y */
@@ -1455,12 +1461,12 @@ bool BattleDisplay::renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu,
 
 /* Renders the ailments for a given person at a given location */
 // TODO: Comment
-bool BattleDisplay::renderAilment(SDL_Renderer* renderer, Person* person,
+bool BattleDisplay::renderAilment(SDL_Renderer *renderer, Person *person,
                                   uint16_t x, uint16_t y, bool foe,
                                   bool full_border)
 {
   /* Get ailment(s) and render holding box */
-  std::vector<Ailment*> ailments = battle->getPersonAilments(person);
+  std::vector<Ailment *> ailments = battle->getPersonAilments(person);
   if(ailments.size() > 0)
   {
     /* Sizing variables */
@@ -1509,7 +1515,7 @@ bool BattleDisplay::renderAilment(SDL_Renderer* renderer, Person* person,
     rect.y += border + gap;
     for(uint16_t j = 0; j < ailments.size(); j++)
     {
-      Frame* f = getAilment(ailments[j]->getType());
+      Frame *f = getAilment(ailments[j]->getType());
       f->render(renderer, rect.x, rect.y);
       rect.x += f->getWidth() + gap * 2;
     }
@@ -1521,7 +1527,7 @@ bool BattleDisplay::renderAilment(SDL_Renderer* renderer, Person* person,
 
 /* Renders the battle bar */
 // TODO: Comment
-bool BattleDisplay::renderBar(SDL_Renderer* renderer, uint16_t screen_width,
+bool BattleDisplay::renderBar(SDL_Renderer *renderer, uint16_t screen_width,
                               uint16_t screen_height)
 {
   bool success = true;
@@ -1539,11 +1545,11 @@ bool BattleDisplay::renderBar(SDL_Renderer* renderer, uint16_t screen_width,
 
 /* Renders the foes */
 // TODO: Comment
-bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
+bool BattleDisplay::renderFoes(SDL_Renderer *renderer)
 {
   bool success = false;
 
-  for(const auto& foe_state : foes_state)
+  for(const auto &foe_state : foes_state)
   {
     if(foe_state->tp != nullptr)
     {
@@ -1565,7 +1571,7 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
 }
 
 // TODO: Comment
-bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer,
+bool BattleDisplay::renderFoesInfo(SDL_Renderer *renderer,
                                    uint16_t screen_width)
 {
   // std::vector<Person*> foes_list = getFoes();
@@ -1619,7 +1625,7 @@ bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer,
 }
 
 // TODO: Comment
-bool BattleDisplay::renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
+bool BattleDisplay::renderFriendInfo(SDL_Renderer *renderer, PersonState *state,
                                      uint16_t screen_height, uint16_t x,
                                      uint16_t y, bool below)
 {
@@ -1693,7 +1699,7 @@ bool BattleDisplay::renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
   /* Health Text Amount */
   AttributeSet set = state->self->getCurr();
   SDL_Color color = {255, 255, 255, 255};
-  Text* t = new Text(font_subheader);
+  Text *t = new Text(font_subheader);
   success &= t->setText(renderer, std::to_string(set.getStat("VITA")), color);
   success &= t->render(
       renderer, health_x + (kALLY_HEALTH_W - t->getWidth()) / 2, health_y);
@@ -1722,7 +1728,7 @@ bool BattleDisplay::renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
 
 /* Renders the friends */
 // TODO: Comment
-bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
+bool BattleDisplay::renderFriends(SDL_Renderer *renderer)
 {
   bool success = true;
 
@@ -1750,7 +1756,7 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
 }
 
 // TODO: Comment
-bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer,
+bool BattleDisplay::renderFriendsInfo(SDL_Renderer *renderer,
                                       uint16_t screen_height)
 {
   bool success = true;
@@ -1773,12 +1779,12 @@ bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer,
 }
 
 /* Render menu at bottom of screen - for skill selecting */
-bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
+bool BattleDisplay::renderMenu(SDL_Renderer *renderer, PersonState *state,
                                uint16_t screen_width, uint16_t screen_height)
 {
   /* Initial set-up variables */
   uint16_t bar_height = kBIGBAR_OFFSET + kBIGBAR_CHOOSE;
-  BattleMenu* menu = battle->getBattleMenu();
+  BattleMenu *menu = battle->getBattleMenu();
   int32_t layer_index = menu->getLayerIndex();
   uint16_t section1_w = screen_width * kBIGBAR_L;
   bool success = true;
@@ -1839,10 +1845,10 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
 
 /* Set person state */
 // TODO: Comment
-bool BattleDisplay::setPersonState(Person* person, uint8_t index,
-                                   SDL_Renderer* renderer, bool foe)
+bool BattleDisplay::setPersonState(Person *person, uint8_t index,
+                                   SDL_Renderer *renderer, bool foe)
 {
-  PersonState* state = nullptr;
+  PersonState *state = nullptr;
 
   /* Get the relevant state */
   if(foe)
@@ -1856,19 +1862,19 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     /* Set the continuous access pointers */
     state->self = person;
 
-    if (person->getActionSprite())
+    if(person->getActionSprite())
     {
       state->as = new Sprite(*(person->getActionSprite()));
       state->as->setNonUnique(true, person->getActionSprite()->getSize());
       state->as->createTexture(renderer);
     }
-    if (person->getFirstPerson())
+    if(person->getFirstPerson())
     {
       state->fp = new Sprite(*(person->getFirstPerson()));
       state->fp->setNonUnique(true, person->getFirstPerson()->getSize());
       state->fp->createTexture(renderer);
     }
-    if (person->getThirdPerson())
+    if(person->getThirdPerson())
     {
       state->tp = new Sprite(*(person->getThirdPerson()));
       state->tp->setNonUnique(true, person->getThirdPerson()->getSize());
@@ -1907,7 +1913,7 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
 
 /* Start battle - fires up the variables */
 // TODO: Comment
-bool BattleDisplay::startBattle(SDL_Renderer* renderer)
+bool BattleDisplay::startBattle(SDL_Renderer *renderer)
 {
   bool success = true;
 
@@ -1929,7 +1935,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
     rendering_state = battle->getTurnState();
 
     /* Get friends and set-up structure */
-    std::vector<Person*> friends = battle->getFriends()->getMembers();
+    std::vector<Person *> friends = battle->getFriends()->getMembers();
     while((friends_state.size() < friends.size() &&
            friends_state.size() < kMAX_CHARS) ||
           friends_state.size() < 2)
@@ -1950,7 +1956,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
     }
 
     /* Get foes */
-    std::vector<Person*> foes = battle->getFoes()->getMembers();
+    std::vector<Person *> foes = battle->getFoes()->getMembers();
     while((foes_state.size() < foes.size() && foes_state.size() < kMAX_CHARS) ||
           foes_state.size() < 2)
     {
@@ -1981,12 +1987,12 @@ void BattleDisplay::stopBattle()
   rendering_state = TurnState::DESTRUCT;
 
   /* Clear friend states */
-  for(auto& friend_state : friends_state)
+  for(auto &friend_state : friends_state)
     if(friend_state)
       delete friend_state;
   friends_state.clear();
 
-  for(auto& foe_state : foes_state)
+  for(auto &foe_state : foes_state)
     if(foe_state)
       delete foe_state;
   foes_state.clear();
@@ -1998,7 +2004,7 @@ void BattleDisplay::stopBattle()
 
 /* Adds a midlay sprite - appends to end of stack */
 // TODO: Comment
-bool BattleDisplay::addMidlay(Sprite* midlay)
+bool BattleDisplay::addMidlay(Sprite *midlay)
 {
   if(midlay != nullptr && midlay->isFramesSet() && midlays.size() < kMAX_LAYERS)
   {
@@ -2010,7 +2016,7 @@ bool BattleDisplay::addMidlay(Sprite* midlay)
 
 /* Adds an overlay sprite - appends to end of stack */
 // TODO: Comment
-bool BattleDisplay::addOverlay(Sprite* overlay)
+bool BattleDisplay::addOverlay(Sprite *overlay)
 {
   if(overlay != nullptr && overlay->isFramesSet() &&
      overlays.size() < kMAX_LAYERS)
@@ -2060,14 +2066,14 @@ void BattleDisplay::clear(bool battle_specific)
 }
 
 // TODO: Comment
-Frame* BattleDisplay::getAilment(Infliction ailment)
+Frame *BattleDisplay::getAilment(Infliction ailment)
 {
   if(ailment != Infliction::INVALID)
     return &ailments[static_cast<uint64_t>(ailment)];
   return nullptr;
 }
 
-Sprite* BattleDisplay::getAilmentPlep(Infliction ailment)
+Sprite *BattleDisplay::getAilmentPlep(Infliction ailment)
 {
   if(ailment != Infliction::INVALID)
   {
@@ -2080,7 +2086,7 @@ Sprite* BattleDisplay::getAilmentPlep(Infliction ailment)
   return nullptr;
 }
 
-Sprite* BattleDisplay::getEventPlep(EventType event_type)
+Sprite *BattleDisplay::getEventPlep(EventType event_type)
 {
   if(event_type != EventType::NONE)
   {
@@ -2095,14 +2101,20 @@ Sprite* BattleDisplay::getEventPlep(EventType event_type)
 
 /* Get the background */
 // TODO: Comment
-Sprite* BattleDisplay::getBackground() { return background; }
+Sprite *BattleDisplay::getBackground()
+{
+  return background;
+}
 
 /* Gets the battle corresponding to the display */
 // TODO: Comment
-Battle* BattleDisplay::getBattle() { return battle; }
+Battle *BattleDisplay::getBattle()
+{
+  return battle;
+}
 
 // TODO: Comment
-Frame* BattleDisplay::getElement(Element element)
+Frame *BattleDisplay::getElement(Element element)
 {
   if(element != Element::NONE)
     return &elements[Helpers::elementToInt(element)];
@@ -2111,37 +2123,46 @@ Frame* BattleDisplay::getElement(Element element)
 
 /* Get the midlay(s) */
 // TODO: Comment
-Sprite* BattleDisplay::getMidlay(uint8_t index)
+Sprite *BattleDisplay::getMidlay(uint8_t index)
 {
   if(midlays.size() > index)
     return midlays[index];
 
-  Sprite* null_sprite = nullptr;
+  Sprite *null_sprite = nullptr;
   return null_sprite;
 }
 
 // TODO: Comment
-std::vector<Sprite*> BattleDisplay::getMidlays() { return midlays; }
+std::vector<Sprite *> BattleDisplay::getMidlays()
+{
+  return midlays;
+}
 
 /* Get the overlay(s) */
 // TODO: Comment
-Sprite* BattleDisplay::getOverlay(uint8_t index)
+Sprite *BattleDisplay::getOverlay(uint8_t index)
 {
   if(overlays.size() > index)
     return overlays[index];
 
-  Sprite* null_sprite = nullptr;
+  Sprite *null_sprite = nullptr;
   return null_sprite;
 }
 
 // TODO: Comment
-std::vector<Sprite*> BattleDisplay::getOverlays() { return overlays; }
+std::vector<Sprite *> BattleDisplay::getOverlays()
+{
+  return overlays;
+}
 
 // TODO: Comment
-TurnState BattleDisplay::getRenderingState() { return rendering_state; }
+TurnState BattleDisplay::getRenderingState()
+{
+  return rendering_state;
+}
 
 // TODO: Comment
-Frame* BattleDisplay::getScope(ActionScope scope)
+Frame *BattleDisplay::getScope(ActionScope scope)
 {
   if(scope != ActionScope::NO_SCOPE)
     return &scopes[static_cast<uint64_t>(scope)];
@@ -2150,7 +2171,7 @@ Frame* BattleDisplay::getScope(ActionScope scope)
 
 /* Renders the battle display */
 // TODO: Comment
-bool BattleDisplay::render(SDL_Renderer* renderer)
+bool BattleDisplay::render(SDL_Renderer *renderer)
 {
   this->renderer = renderer;
 
@@ -2203,7 +2224,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     success &= renderFoesInfo(renderer, width);
 
     /* Render any death animations below the menu */
-    for(auto& element : render_elements)
+    for(auto &element : render_elements)
     {
       if(element->getType() == RenderType::RGB_SPRITE_DEATH)
       {
@@ -2230,7 +2251,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     renderBar(renderer, width, height);
 
     /* Render friend information */
-    BattleMenu* menu = battle->getBattleMenu();
+    BattleMenu *menu = battle->getBattleMenu();
 
     /* Determine whether the menu should be rendered */
     auto to_render_menu = true;
@@ -2259,7 +2280,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       success &= renderFriendsInfo(renderer, height);
     }
 
-    for(const auto& element : render_elements)
+    for(const auto &element : render_elements)
     {
       // auto alpha = 255;
 
@@ -2305,7 +2326,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       }
     }
 
-    for(auto& element : render_elements)
+    for(auto &element : render_elements)
     {
       if(element->getType() == RenderType::PLEP)
       {
@@ -2326,14 +2347,14 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
 /* Sets the ailment frame */
 // TODO: Comment
 bool BattleDisplay::setAilment(Infliction ailment, std::string path,
-                               SDL_Renderer* renderer)
+                               SDL_Renderer *renderer)
 {
   if(ailment != Infliction::INVALID)
     return ailments[static_cast<uint64_t>(ailment)].setTexture(path, renderer);
   return false;
 }
 
-bool BattleDisplay::setAilmentPlep(Infliction ailment, Sprite* plep)
+bool BattleDisplay::setAilmentPlep(Infliction ailment, Sprite *plep)
 {
   if(ailment != Infliction::INVALID && plep)
   {
@@ -2345,7 +2366,7 @@ bool BattleDisplay::setAilmentPlep(Infliction ailment, Sprite* plep)
   return false;
 }
 
-bool BattleDisplay::setEventPlep(EventType event_type, Sprite* plep)
+bool BattleDisplay::setEventPlep(EventType event_type, Sprite *plep)
 {
   if(event_type != EventType::NONE && plep)
   {
@@ -2357,10 +2378,9 @@ bool BattleDisplay::setEventPlep(EventType event_type, Sprite* plep)
   return false;
 }
 
-
 /* Sets the background sprite */
 // TODO: Comment
-bool BattleDisplay::setBackground(Sprite* background)
+bool BattleDisplay::setBackground(Sprite *background)
 {
   if(background != nullptr && background->isFramesSet())
   {
@@ -2374,7 +2394,7 @@ bool BattleDisplay::setBackground(Sprite* background)
 
 /* Sets the battle connected to the display */
 // TODO: Comment
-bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
+bool BattleDisplay::setBattle(Battle *battle, SDL_Renderer *renderer)
 {
   bool success = true;
 
@@ -2397,7 +2417,7 @@ bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
 
 /* Sets the rendering battle bar */
 // TODO: Comment
-bool BattleDisplay::setBattleBar(Frame* bar)
+bool BattleDisplay::setBattleBar(Frame *bar)
 {
   if(bar != nullptr && bar->isTextureSet())
   {
@@ -2409,7 +2429,7 @@ bool BattleDisplay::setBattleBar(Frame* bar)
 
 /* Sets the running configuration, from the options class */
 // TODO: Comment
-bool BattleDisplay::setConfiguration(Options* running_config)
+bool BattleDisplay::setConfiguration(Options *running_config)
 {
   if(running_config != nullptr)
   {
@@ -2425,7 +2445,7 @@ bool BattleDisplay::setConfiguration(Options* running_config)
 /* Sets the element frame */
 // TODO: Comment
 bool BattleDisplay::setElement(Element element, std::string path,
-                               SDL_Renderer* renderer)
+                               SDL_Renderer *renderer)
 {
   if(element != Element::NONE)
     return elements[Helpers::elementToInt(element)].setTexture(path, renderer);
@@ -2434,26 +2454,26 @@ bool BattleDisplay::setElement(Element element, std::string path,
 
 /* Sets the rendering helper frames for display */
 // TODO: Comment
-bool BattleDisplay::setFramePercent(std::string path, SDL_Renderer* renderer)
+bool BattleDisplay::setFramePercent(std::string path, SDL_Renderer *renderer)
 {
   return frame_percent.setTexture(path, renderer);
 }
 
 // TODO: Comment
-bool BattleDisplay::setFrameQD(std::string path, SDL_Renderer* renderer)
+bool BattleDisplay::setFrameQD(std::string path, SDL_Renderer *renderer)
 {
   return frame_qd.setTexture(path, renderer);
 }
 
 // TODO: Comment
-bool BattleDisplay::setFrameTime(std::string path, SDL_Renderer* renderer)
+bool BattleDisplay::setFrameTime(std::string path, SDL_Renderer *renderer)
 {
   return frame_time.setTexture(path, renderer);
 }
 
 /* Sets the midlay sprite - main one, removes all others */
 // TODO: Comment
-bool BattleDisplay::setMidlay(Sprite* midlay)
+bool BattleDisplay::setMidlay(Sprite *midlay)
 {
   if(midlay != nullptr && midlay->isFramesSet())
   {
@@ -2467,7 +2487,7 @@ bool BattleDisplay::setMidlay(Sprite* midlay)
 
 /* Sets the overlay sprite - main one, removes all others */
 // TODO: Comment
-bool BattleDisplay::setOverlay(Sprite* overlay)
+bool BattleDisplay::setOverlay(Sprite *overlay)
 {
   if(overlay != nullptr && overlay->isFramesSet())
   {
@@ -2482,7 +2502,7 @@ bool BattleDisplay::setOverlay(Sprite* overlay)
 /* Sets the action scope frame */
 // TODO: Comment
 bool BattleDisplay::setScope(ActionScope scope, std::string path,
-                             SDL_Renderer* renderer)
+                             SDL_Renderer *renderer)
 {
   if(scope != ActionScope::NO_SCOPE)
     return scopes[static_cast<uint64_t>(scope)].setTexture(path, renderer);
@@ -2525,7 +2545,7 @@ void BattleDisplay::unsetBattleBar()
 // TODO: Comment
 void BattleDisplay::unsetMidlays()
 {
-  for(auto& midlay : midlays)
+  for(auto &midlay : midlays)
   {
     if(midlay != nullptr)
       delete midlay;
@@ -2538,7 +2558,7 @@ void BattleDisplay::unsetMidlays()
 // TODO: Comment
 void BattleDisplay::unsetOverlays()
 {
-  for(auto& overlay : overlays)
+  for(auto &overlay : overlays)
   {
     if(overlay != nullptr)
       delete overlay;
@@ -2551,7 +2571,7 @@ void BattleDisplay::unsetOverlays()
 // TODO: Comment
 void BattleDisplay::unsetElements()
 {
-  for(auto& element : render_elements)
+  for(auto &element : render_elements)
   {
     if(element != nullptr)
       delete element;
@@ -2573,10 +2593,10 @@ bool BattleDisplay::update(int cycle_time)
       background->update(cycle_time);
 
     /* Update the midlays */
-    for(auto& midlay : midlays)
+    for(auto &midlay : midlays)
       midlay->update(cycle_time);
     /* Update the overlays */
-    for(auto& overlay : overlays)
+    for(auto &overlay : overlays)
       overlay->update(cycle_time);
 
     /* Update the turn state - TODO: Add delays and pretty animations */
@@ -2629,7 +2649,7 @@ bool BattleDisplay::update(int cycle_time)
         processing_delay = 3500;
 
         SDL_Color shadow_color = {194, 59, 34, 255};
-        RenderElement* turn_text =
+        RenderElement *turn_text =
             new RenderElement(RenderType::ACTION_TEXT, 1300, 500, 300);
 
         turn_text->setColor({0, 0, 0, 255});
@@ -2674,7 +2694,7 @@ bool BattleDisplay::update(int cycle_time)
 
         SDL_Color screen_dim_color = {0, 0, 0, 185};
 
-        RenderElement* dim_element =
+        RenderElement *dim_element =
             new RenderElement(RenderType::RGB_OVERLAY, 2000, 400, 300);
 
         dim_element->setColor(screen_dim_color);
@@ -2905,7 +2925,7 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
 {
   bool success = true;
 
-  for(auto& element : render_elements)
+  for(auto &element : render_elements)
   {
     if(element != nullptr)
     {
@@ -2969,9 +2989,9 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
   }
 
   /* Clear render elements which have timed out */
-  std::vector<RenderElement*> temp_elements;
+  std::vector<RenderElement *> temp_elements;
 
-  for(auto& element : render_elements)
+  for(auto &element : render_elements)
   {
     if(element != nullptr)
     {
@@ -2988,7 +3008,7 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
          * balance back on the next cycle */
         if(element->getType() == RenderType::RGB_SPRITE_FLASH)
         {
-          PersonState* state = getState(element->getFlasher());
+          PersonState *state = getState(element->getFlasher());
 
           /* Assigns the state's 'was flashing' bool to true -> revert */
           if(state != nullptr)
@@ -3024,7 +3044,7 @@ bool BattleDisplay::updateEvent()
 
       if(state != nullptr)
       {
-        RenderElement* action_frame =
+        RenderElement *action_frame =
             new RenderElement(RenderType::ACTION_FRAME, 2000, 700, 700);
         action_frame->setX(system_options->getScreenWidth() -
                            state->action->getWidth());
@@ -3107,7 +3127,9 @@ bool BattleDisplay::updateEvent()
        curr_event->action_use)
     {
       auto infliction = curr_event->action_use->getAilment();
+
       auto plep = getAilmentPlep(infliction);
+
       SDL_Color flash_color = {100, 100, 100, 235};
 
       if(plep)
@@ -3160,13 +3182,11 @@ bool BattleDisplay::updateEvent()
     {
       auto animation = getEventPlep(EventType::BEGIN_DEFEND);
 
-      if (animation)
+      if(animation)
         createPlep(curr_event->user, animation);
 
-      //createDamageText(curr_event->user, "Defending");
+      // createDamageText(curr_event->user, "Defending");
       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
-
-
     }
 
     processing_delay = 400;
@@ -3180,7 +3200,7 @@ bool BattleDisplay::updateEvent()
       if(animation)
         createPlep(curr_event->user, animation);
 
-      //createDamageText(curr_event->user, "Break Defend");
+      // createDamageText(curr_event->user, "Break Defend");
       createSpriteFlash(curr_event->user, {177, 177, 30, 190}, 450);
     }
 
@@ -3195,7 +3215,7 @@ bool BattleDisplay::updateEvent()
       if(animation)
         createPlep(curr_event->user, animation);
 
-      //createDamageText(curr_event->user, "Defend Persists");
+      // createDamageText(curr_event->user, "Defend Persists");
       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
     }
   }
@@ -3212,7 +3232,7 @@ bool BattleDisplay::updateEvent()
         createPlep(curr_event->user, animation);
       }
 
-      createDamageValue(curr_event->targets.at(0), curr_event->amount);
+      createDamageValue(curr_event->user, curr_event->amount);
       createSpriteFlash(curr_event->user, {255, 0, 0, 225}, 450);
       createSpriteFlash(curr_event->targets.at(0), {255, 0, 0, 225}, 450);
     }
@@ -3280,7 +3300,7 @@ bool BattleDisplay::updateEvent()
 // TODO COMMENTS
 bool BattleDisplay::updateFriends(int cycle_time)
 {
-  for(auto& state : friends_state)
+  for(auto &state : friends_state)
   {
     if(state && state->fp && state->self)
     {
@@ -3353,7 +3373,7 @@ bool BattleDisplay::updateFriends(int cycle_time)
 // TODO COMMENTS
 bool BattleDisplay::updateFoes(int cycle_time)
 {
-  for(auto& state : foes_state)
+  for(auto &state : foes_state)
   {
     if(state && state->tp && state->self)
     {

@@ -589,6 +589,10 @@ bool AIModule::selectRandomTargets()
 
   if (action_scope == ActionScope::ONE_ENEMY)
   {
+    std::cout << "Selecitng Random foe targets of these foes: " << std::endl;
+
+    for (auto& foe : foe_targets)
+      std::cout << "Foe: " << foe->getName() << std::endl;
     target_ptr = addRandomTarget(foe_targets);
   }
   else if (action_scope == ActionScope::ONE_ALLY ||

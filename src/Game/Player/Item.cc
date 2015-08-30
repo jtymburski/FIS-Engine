@@ -42,11 +42,11 @@ const int32_t Item::kUNSET_ID{-1};
  * Inputs: none
  */
 Item::Item()
-    : game_id{kUNSET_ID}
-    , my_id{++id}
-    , base_item{nullptr}
-    , thumbnail{nullptr}
-    , value{0}
+    : game_id{kUNSET_ID},
+      my_id{++id},
+      base_item{nullptr},
+      thumbnail{nullptr},
+      value{0}
 {
   setDurability(kMAX_DURABILITY, true);
   setMass(kMIN_MASS);
@@ -59,11 +59,11 @@ Item::Item()
  *
  * Inputs: Flavour* - pointer to a flavour object for the item's likeness
  */
-Item::Item(Flavour* const source)
-    : game_id{source->game_id}
-    , my_id{++id}
-    , base_item{nullptr}
-    , thumbnail{nullptr}
+Item::Item(Flavour *const source)
+    : game_id{source->game_id},
+      my_id{++id},
+      base_item{nullptr},
+      thumbnail{nullptr}
 {
   setupClass();
 
@@ -83,10 +83,8 @@ Item::Item(Flavour* const source)
  *
  * Inputs: Item* - pointer to an item object to be copied
  */
-Item::Item(Item* const source)
-    : game_id{source->game_id}
-    , my_id{++id}
-    , base_item{source}
+Item::Item(Item *const source)
+    : game_id{source->game_id}, my_id{++id}, base_item{source}
 {
   setupClass();
 }
@@ -102,16 +100,16 @@ Item::Item(Item* const source)
  *         mass - base mass for the Item
  */
 Item::Item(const int32_t &game_id, const std::string &name,
-    const uint32_t &value, Frame* thumbnail, const uint32_t &mass,
-    const uint32_t &dura)
-      : game_id{game_id}
-      , my_id{++id}
-      , base_item{nullptr}
-      , max_durability{dura}
-      , mass{mass}
-      , name{name}
-      , thumbnail{thumbnail}
-      , value{value}
+           const uint32_t &value, Frame *thumbnail, const uint32_t &mass,
+           const uint32_t &dura)
+    : game_id{game_id},
+      my_id{++id},
+      base_item{nullptr},
+      max_durability{dura},
+      mass{mass},
+      name{name},
+      thumbnail{thumbnail},
+      value{value}
 {
   setupClass();
 }
@@ -123,15 +121,15 @@ Item::Item(const int32_t &game_id, const std::string &name,
  *         name - the name to be assigned to the Item
  *         thumbnail - icon for the Item
  */
-Item::Item(const int32_t &game_id, const std::string &name, Frame* thumbnail)
-    : game_id{game_id}
-    , my_id{++id}
-    , base_item{nullptr}
-    , max_durability{0}
-    , mass{0}
-    , name{name}
-    , thumbnail{thumbnail}
-    , value{0}
+Item::Item(const int32_t &game_id, const std::string &name, Frame *thumbnail)
+    : game_id{game_id},
+      my_id{++id},
+      base_item{nullptr},
+      max_durability{0},
+      mass{0},
+      name{name},
+      thumbnail{thumbnail},
+      value{0}
 {
   setupClass();
   setFlag(ItemFlags::KEY_ITEM, true);
@@ -150,37 +148,37 @@ Item::~Item()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
- /*
- * Description: Sets the Item class to default values. Private function that
- *              should NEVER be called outside of construction or assignment
- *              operations.
- *
- * Inputs: none
- * Output: none
- */
+/*
+* Description: Sets the Item class to default values. Private function that
+*              should NEVER be called outside of construction or assignment
+*              operations.
+*
+* Inputs: none
+* Output: none
+*/
 void Item::setupClass()
 {
   /* Clear some variables that are the same between both */
   value_modifier = 0;
 
   /* Setup the class as a standalone Item */
-  if (base_item == nullptr)
+  if(base_item == nullptr)
   {
     buff_set = AttributeSet();
 
-    brief_description = "";//StringDb::kDEFAULT_ITEM_DESC;
+    brief_description = ""; // StringDb::kDEFAULT_ITEM_DESC;
     description = StringDb::kDEFAULT_ITEM_DESC;
     composition = static_cast<Material>(0);
     durability = max_durability;
     flags = static_cast<ItemFlags>(0);
-    item_tier= ItemTier::NONE;
+    item_tier = ItemTier::NONE;
     prefix = StringDb::kDEFAULT_ITEM_PREFIX;
     occasion = ActionOccasion::NONE;
 
-    using_skill     = nullptr;
+    using_skill = nullptr;
     using_animation = nullptr;
-    using_message   = "";
-    using_sound     = nullptr;
+    using_message = "";
+    using_sound = nullptr;
   }
 
   /* Setup the class as a copy of the Base Item */
@@ -208,17 +206,17 @@ void Item::setupClass()
   }
 }
 
- /*
- * Description: Unsets all the values of a given Item object
- *              to destrucable ready-values.
- *
- * Inputs: none
- * Output: none
- */
+/*
+* Description: Unsets all the values of a given Item object
+*              to destrucable ready-values.
+*
+* Inputs: none
+* Output: none
+*/
 void Item::unsetAll()
 {
   /* Unset the thumbnail, only if it's a base */
-  if (base_item == nullptr && thumbnail != nullptr)
+  if(base_item == nullptr && thumbnail != nullptr)
     delete thumbnail;
 
   /* Unset the using animation, only if it's a base */
@@ -266,40 +264,40 @@ void Item::print()
   std::cout << "------------\n";
 }
 
- /*
- * Description: Virtual method which returns the current stats of the Item.
- *
- * Inputs: none
- * Output: AttributeSet - the stats of the
- */
+/*
+* Description: Virtual method which returns the current stats of the Item.
+*
+* Inputs: none
+* Output: AttributeSet - the stats of the
+*/
 AttributeSet Item::getStats()
 {
   return buff_set;
 }
 
- /*
- * Description: Virtual method which returns the mass of the Item.
- *
- * Inputs: none
- * Output: double - the mass of the Item
- */
+/*
+* Description: Virtual method which returns the mass of the Item.
+*
+* Inputs: none
+* Output: double - the mass of the Item
+*/
 uint32_t Item::getMass()
 {
   return mass;
 }
 
- /*
- * Description: Virtual method which returns the value of the Item.
- *
- * Inputs: none
- * Output: uint32_t - the value of the Item
- */
+/*
+* Description: Virtual method which returns the value of the Item.
+*
+* Inputs: none
+* Output: uint32_t - the value of the Item
+*/
 uint32_t Item::getValue()
 {
   auto calc_value = value + value_modifier;
 
   /* Check bounds (calc_value is unsigned) */
-  if (calc_value > kMAX_VALUE)
+  if(calc_value > kMAX_VALUE)
     return kMAX_VALUE;
 
   return calc_value;
@@ -328,7 +326,7 @@ bool Item::isBaseItem()
  *         SDL_Renderer* renderer - the rendering engine
  * Output: bool - true if load was successful
  */
-bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
+bool Item::loadData(XmlData data, int index, SDL_Renderer *renderer,
                     std::string base_path)
 {
   bool success = true;
@@ -341,8 +339,8 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
       using_animation = new Sprite();
 
     /* Add data */
-    success &= using_animation->addFileInformation(data, index + 1,
-                                                   renderer, base_path);
+    success &= using_animation->addFileInformation(data, index + 1, renderer,
+                                                   base_path);
   }
   /* ---- BRIEF DESCRIPTION ---- */
   else if(data.getElement(index) == "brief_desc")
@@ -429,7 +427,7 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
         setMaterial(Material::PHYSICAL, state);
       else if(data.getElement(index + 1) == "non_physical")
         setMaterial(Material::NON_PHYSICAL, state);
-      else if(data.getElement(index  + 1) == "fire")
+      else if(data.getElement(index + 1) == "fire")
         setMaterial(Material::FIRE, state);
       else if(data.getElement(index + 1) == "forest")
         setMaterial(Material::FOREST, state);
@@ -471,8 +469,8 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
       thumbnail = new Frame();
 
     /* Add data */
-    success &= thumbnail->setTexture(base_path +
-                                     data.getDataString(&success), renderer);
+    success &= thumbnail->setTexture(base_path + data.getDataString(&success),
+                                     renderer);
   }
   /* ---- USE ---- */
   else if(data.getElement(index) == "use")
@@ -523,32 +521,32 @@ void Item::printFlags()
   std::cout << "RELIEVING_ITEM: " << getFlag(ItemFlags::RELIEVING_ITEM) << "\n";
 
   /* Print Material (composition) flags -- alloys etc. */
-  std::cout << "WOODEN: "    << getMaterial(Material::WOODEN)        << "\n";
-  std::cout << "OFFENSIVE: " << getMaterial(Material::STEEL)         << "\n";
-  std::cout << "BRASS: "     << getMaterial(Material::BRASS)         << "\n";
-  std::cout << "TITANIUM: "  << getMaterial(Material::TITANIUM)      << "\n";
-  std::cout << "GRAPHENE: "  << getMaterial(Material::GRAPHENE)      << "\n";
+  std::cout << "WOODEN: " << getMaterial(Material::WOODEN) << "\n";
+  std::cout << "OFFENSIVE: " << getMaterial(Material::STEEL) << "\n";
+  std::cout << "BRASS: " << getMaterial(Material::BRASS) << "\n";
+  std::cout << "TITANIUM: " << getMaterial(Material::TITANIUM) << "\n";
+  std::cout << "GRAPHENE: " << getMaterial(Material::GRAPHENE) << "\n";
 
   /* Material alloys -- see StringDb.h for the actual name */
-  std::cout << "PHYSICAL: "     << getMaterial(Material::PHYSICAL)     << "\n";
+  std::cout << "PHYSICAL: " << getMaterial(Material::PHYSICAL) << "\n";
   std::cout << "NON_PHYSICAL: " << getMaterial(Material::NON_PHYSICAL) << "\n";
-  std::cout << "FIRE: "         << getMaterial(Material::FIRE)         << "\n";
-  std::cout << "FOREST: "       << getMaterial(Material::FOREST)       << "\n";
-  std::cout << "ICE: "          << getMaterial(Material::ICE)          << "\n";
-  std::cout << "ELECTRIC: "     << getMaterial(Material::ELECTRIC)     << "\n";
-  std::cout << "DIGITAL: "      << getMaterial(Material::DIGITAL)      << "\n";
-  std::cout << "NIHIL: "        << getMaterial(Material::NIHIL)        << "\n";
+  std::cout << "FIRE: " << getMaterial(Material::FIRE) << "\n";
+  std::cout << "FOREST: " << getMaterial(Material::FOREST) << "\n";
+  std::cout << "ICE: " << getMaterial(Material::ICE) << "\n";
+  std::cout << "ELECTRIC: " << getMaterial(Material::ELECTRIC) << "\n";
+  std::cout << "DIGITAL: " << getMaterial(Material::DIGITAL) << "\n";
+  std::cout << "NIHIL: " << getMaterial(Material::NIHIL) << "\n";
 }
 
- /*
- * Description: Prints out the information of the Item object [std::cout]
- *
- * Inputs: basic - boolean whether to display a simple format or not
- * Output: none
- */
+/*
+* Description: Prints out the information of the Item object [std::cout]
+*
+* Inputs: basic - boolean whether to display a simple format or not
+* Output: none
+*/
 void Item::printInfo(const bool &basic)
 {
-  if (basic)
+  if(basic)
   {
     std::cout << "ID: " << my_id << "Game ID: " << game_id << " N: " << name
               << " M: " << mass << " V: " << value << "\n";
@@ -573,7 +571,8 @@ void Item::printInfo(const bool &basic)
     std::cout << "Use Sound? " << !(using_sound == nullptr) << "\n";
     std::cout << "Value: " << value << "\n";
 
-    std::cout << "Buff_Set: " << "\n";
+    std::cout << "Buff_Set: "
+              << "\n";
     buff_set.print(basic);
     std::cout << "\n";
   }
@@ -711,82 +710,82 @@ ActionOccasion Item::getOccasion()
   return occasion;
 }
 
- /*
- * Description: Returns a ptr to the thumbnail of the Item.
- *
- * Inputs: none
- * Output: Frame* - ptr to the thumbnail of the Item
- */
-Frame* Item::getThumb()
+/*
+* Description: Returns a ptr to the thumbnail of the Item.
+*
+* Inputs: none
+* Output: Frame* - ptr to the thumbnail of the Item
+*/
+Frame *Item::getThumb()
 {
   return thumbnail;
 }
 
- /*
- * Description: Returns a ptr to the using animation of the Item
- *
- * Inputs: none
- * Output: Sprite* - ptr to the animation of the use effect of the Item
- */
-Sprite* Item::getUseAnimation()
+/*
+* Description: Returns a ptr to the using animation of the Item
+*
+* Inputs: none
+* Output: Sprite* - ptr to the animation of the use effect of the Item
+*/
+Sprite *Item::getUseAnimation()
 {
   return using_animation;
 }
 
- /*
- * Description: Returns the using message of the Item
- *
- * Inputs: none
- * Output: std::string - the message the Item displays upon use
- */
+/*
+* Description: Returns the using message of the Item
+*
+* Inputs: none
+* Output: std::string - the message the Item displays upon use
+*/
 std::string Item::getUseMessage()
 {
   return using_message;
 }
 
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-Skill* Item::getUseSkill()
+/*
+* Description:
+*
+* Inputs:
+* Output:
+*/
+Skill *Item::getUseSkill()
 {
   return using_skill;
 }
 
- /*
- * Description: Returns a ptr to the sound effect of the Item.
- *
- * Inputs: none
- * Output: Sound* - ptr to the sound effect of the Item
- */
-Sound* Item::getUseSound()
+/*
+* Description: Returns a ptr to the sound effect of the Item.
+*
+* Inputs: none
+* Output: Sound* - ptr to the sound effect of the Item
+*/
+Sound *Item::getUseSound()
 {
   return using_sound;
 }
 
- /*
- * Description: Assigns a new AttributeSet for the Item.
- *
- * Inputs: new_buff_set - new AttributeSet to assign to the Item
- * Output: none
- */
+/*
+* Description: Assigns a new AttributeSet for the Item.
+*
+* Inputs: new_buff_set - new AttributeSet to assign to the Item
+* Output: none
+*/
 void Item::setBuffSet(const AttributeSet &new_buff_set)
 {
   buff_set = new_buff_set;
 }
 
- /*
- * Description: Attempts to assign a new brief description to the Item and
- *              returns the outcome of the assignment.
- *
- * Inputs: new_brief_description - new string to assign br. desc for
- * Output: bool - outcome of the assignment
- */
+/*
+* Description: Attempts to assign a new brief description to the Item and
+*              returns the outcome of the assignment.
+*
+* Inputs: new_brief_description - new string to assign br. desc for
+* Output: bool - outcome of the assignment
+*/
 bool Item::setBriefDescription(const std::string &new_brief_description)
 {
-  if (new_brief_description.size() <= StringDb::kMAX_BRIEF_DESC)
+  if(new_brief_description.size() <= StringDb::kMAX_BRIEF_DESC)
   {
     brief_description = new_brief_description;
 
@@ -805,7 +804,7 @@ bool Item::setBriefDescription(const std::string &new_brief_description)
  */
 bool Item::setDescription(const std::string &new_description)
 {
-  if (new_description.size() <= StringDb::kMAX_DESC)
+  if(new_description.size() <= StringDb::kMAX_DESC)
   {
     description = new_description;
 
@@ -831,7 +830,7 @@ bool Item::setDurability(const uint32_t &new_durability, const bool &max)
     max_durability = kMAX_DURABILITY;
 
   /* Then, normal dura */
-  if (new_durability <= max_durability)
+  if(new_durability <= max_durability)
   {
     durability = new_durability;
     return true;
@@ -840,13 +839,13 @@ bool Item::setDurability(const uint32_t &new_durability, const bool &max)
   return false;
 }
 
- /*
- * Description: Assigns a given ItemFlags flag a given boolean value.
- *
- * Inputs: flag - ItemFlags flag to be set
- *         set_value - value to set the given flag to
- * Output: none
- */
+/*
+* Description: Assigns a given ItemFlags flag a given boolean value.
+*
+* Inputs: flag - ItemFlags flag to be set
+*         set_value - value to set the given flag to
+* Output: none
+*/
 void Item::setFlag(ItemFlags flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
@@ -889,15 +888,15 @@ void Item::setMaterial(Material flag, const bool &set_value)
   (set_value) ? (composition |= flag) : (composition &= ~flag);
 }
 
- /*
- * Description: Attempts to assign a new string name to the Item
- *
- * Inputs: new_name - new string name to assign to the Item
- * Output: bool - the outcome of the name assignment
- */
+/*
+* Description: Attempts to assign a new string name to the Item
+*
+* Inputs: new_name - new string name to assign to the Item
+* Output: bool - the outcome of the name assignment
+*/
 bool Item::setName(const std::string &new_name)
 {
-  if (new_name.size() <= StringDb::kMAX_NAME)
+  if(new_name.size() <= StringDb::kMAX_NAME)
   {
     name = new_name;
 
@@ -907,16 +906,16 @@ bool Item::setName(const std::string &new_name)
   return false;
 }
 
- /*
- * Description: Attempts to assign a new prefix to the Item and returns the
- *              outcome of the assignment
- *
- * Inputs: new_prefix - string prefix for the Item
- * Output: bool - the outcome of the assignment
- */
+/*
+* Description: Attempts to assign a new prefix to the Item and returns the
+*              outcome of the assignment
+*
+* Inputs: new_prefix - string prefix for the Item
+* Output: bool - the outcome of the assignment
+*/
 bool Item::setPrefix(const std::string &new_prefix)
 {
-  if (new_prefix.size() <= StringDb::kMAX_PREFIX)
+  if(new_prefix.size() <= StringDb::kMAX_PREFIX)
   {
     prefix = new_prefix;
 
@@ -926,27 +925,27 @@ bool Item::setPrefix(const std::string &new_prefix)
   return false;
 }
 
- /*
- * Description: Assigns a new occasion to the Item.
- *
- * Inputs: new_occasion - action occasion (conditions of use) of the Item
- * Output: none
- */
+/*
+* Description: Assigns a new occasion to the Item.
+*
+* Inputs: new_occasion - action occasion (conditions of use) of the Item
+* Output: none
+*/
 void Item::setOccasion(const ActionOccasion &new_occasion)
 {
   occasion = new_occasion;
 }
 
- /*
- * Description: Attempts to assign a new mass for the Item and returns the
- *              outcome of the assignment.
- *
- * Inputs: new_mass - the new mass to be assigned
- * Output: bool - outcome of the assignment
- */
+/*
+* Description: Attempts to assign a new mass for the Item and returns the
+*              outcome of the assignment.
+*
+* Inputs: new_mass - the new mass to be assigned
+* Output: bool - outcome of the assignment
+*/
 bool Item::setMass(uint32_t new_mass)
 {
-  if (Helpers::isInRange(new_mass, kMIN_MASS, kMAX_MASS))
+  if(Helpers::isInRange(new_mass, kMIN_MASS, kMAX_MASS))
   {
     mass = new_mass;
 
@@ -956,14 +955,14 @@ bool Item::setMass(uint32_t new_mass)
   return false;
 }
 
- /*
- * Description: Attempts to assign a new thumbnail ptr (icon image) to the Item
- *              and return true if the new thumbnail is not null.
- *
- * Inputs: new_thumbnail - ptr to a new thumb frame for the Item
- * Output: bool - true if the new Frame ptr is not null
- */
-bool Item::setThumbnail(Frame* new_thumbnail)
+/*
+* Description: Attempts to assign a new thumbnail ptr (icon image) to the Item
+*              and return true if the new thumbnail is not null.
+*
+* Inputs: new_thumbnail - ptr to a new thumb frame for the Item
+* Output: bool - true if the new Frame ptr is not null
+*/
+bool Item::setThumbnail(Frame *new_thumbnail)
 {
   /* If not null, delete */
   if(thumbnail != nullptr)
@@ -975,14 +974,14 @@ bool Item::setThumbnail(Frame* new_thumbnail)
   return (new_thumbnail != nullptr);
 }
 
- /*
- * Description: Attempts to assign a new usage animation to the Item and returns
- *              true if the new animation is not null.
- *
- * Inputs: new_animation - new animation to be assigned
- * Output: bool - true if the new animation is not null
- */
-bool Item::setUseAnimation(Sprite* new_animation)
+/*
+* Description: Attempts to assign a new usage animation to the Item and returns
+*              true if the new animation is not null.
+*
+* Inputs: new_animation - new animation to be assigned
+* Output: bool - true if the new animation is not null
+*/
+bool Item::setUseAnimation(Sprite *new_animation)
 {
   /* If not null, delete */
   if(using_animation != nullptr)
@@ -994,16 +993,16 @@ bool Item::setUseAnimation(Sprite* new_animation)
   return (new_animation != nullptr);
 }
 
- /*
- * Description: Attempts to assign a new usage message to the Item and
- *              returns the outcome of the assignment.
- *
- * Inputs: new_message - new message to attempted to be assigned
- * Output: bool - true if the new message was assigned
- */
+/*
+* Description: Attempts to assign a new usage message to the Item and
+*              returns the outcome of the assignment.
+*
+* Inputs: new_message - new message to attempted to be assigned
+* Output: bool - true if the new message was assigned
+*/
 bool Item::setUseMessage(const std::string &new_message)
 {
-  if (new_message.size() <= StringDb::kMAX_USE_MSG)
+  if(new_message.size() <= StringDb::kMAX_USE_MSG)
   {
     using_message = new_message;
 
@@ -1013,28 +1012,28 @@ bool Item::setUseMessage(const std::string &new_message)
   return false;
 }
 
- /*
- * Description: Attempts to assign a new skill use effect to the Item and
- *              returns true if the new skill effect is not null.
- *
- * Inputs: new_skill - ptr to the new usage skill for the Item
- * Output: bool - true if the new usage skill is not null
- */
-bool Item::setUseSkill(Skill* new_skill)
+/*
+* Description: Attempts to assign a new skill use effect to the Item and
+*              returns true if the new skill effect is not null.
+*
+* Inputs: new_skill - ptr to the new usage skill for the Item
+* Output: bool - true if the new usage skill is not null
+*/
+bool Item::setUseSkill(Skill *new_skill)
 {
   using_skill = new_skill;
 
   return (new_skill != nullptr);
 }
 
- /*
- * Description: Attempts to assign a new sound effect to the Item and returns
- *              true if the new assignment is not null.
- *
- * Inputs: new_sound - ptr to a new sound effect for the Item
- * Output: bool = true if the new soun ptr is not null
- */
-bool Item::setUseSound(Sound* new_sound)
+/*
+* Description: Attempts to assign a new sound effect to the Item and returns
+*              true if the new assignment is not null.
+*
+* Inputs: new_sound - ptr to a new sound effect for the Item
+* Output: bool = true if the new soun ptr is not null
+*/
+bool Item::setUseSound(Sound *new_sound)
 {
   using_sound = new_sound;
 
@@ -1050,7 +1049,7 @@ bool Item::setUseSound(Sound* new_sound)
  */
 bool Item::setValue(const uint32_t &new_value)
 {
-  if (new_value <= kMAX_VALUE)
+  if(new_value <= kMAX_VALUE)
   {
     value = new_value;
 

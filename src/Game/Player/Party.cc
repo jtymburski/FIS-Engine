@@ -205,7 +205,7 @@ bool Party::isInParty(Person *const check_person)
  *         SDL_Renderer* renderer - the rendering engine
  * Output: bool - true if load was successful
  */
-bool Party::loadData(XmlData data, int index, SDL_Renderer* renderer,
+bool Party::loadData(XmlData data, int index, SDL_Renderer *renderer,
                      std::string base_path)
 {
   bool success = true;
@@ -215,8 +215,8 @@ bool Party::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- TYPE ---- */
   if(data.getElement(index) == "type")
   {
-    success &= setPartyType(Helpers::partyTypeFromStr(
-                                             data.getDataString(&success)));
+    success &=
+        setPartyType(Helpers::partyTypeFromStr(data.getDataString(&success)));
   }
   // TODO: FUTURE - PartyState flags editable?
 
@@ -295,8 +295,8 @@ void Party::print(const bool &simple, const bool &flags)
     std::cout << "----- Members -----\n";
 
     for(const auto &member : members)
-      std::cout << "Member: " << member->getMyID() << " - " 
-                << member->getName() << ":" << member->getLevel() << "\n";
+      std::cout << "Member: " << member->getMyID() << " - " << member->getName()
+                << ":" << member->getLevel() << "\n";
     std::cout << "----- Reserve Members -----\n";
     for(const auto &member : reserve_members)
       std::cout << "Reserve Member: " << member->getMyID() << " - "
@@ -374,7 +374,10 @@ bool Party::removeMember(const std::string &name)
  * Inputs: none
  * Output: uint32_t - the size of the party
  */
-uint32_t Party::getSize() { return members.size(); }
+uint32_t Party::getSize()
+{
+  return members.size();
+}
 
 /*
  * Description: Calculates and returns the average speed among members of
@@ -427,7 +430,10 @@ bool Party::getFlag(const PartyState &test_flag)
  * Inputs: none
  * Output: int32_t - the party id
  */
-int32_t Party::getID() const { return id; }
+int32_t Party::getID() const
+{
+  return id;
+}
 
 /*
  * Description: Returns the pointer to the current inventory object.
@@ -435,7 +441,10 @@ int32_t Party::getID() const { return id; }
  * Inputs: none
  * Output: Inventory* - pointer to the Inventory object.
  */
-Inventory *Party::getInventory() { return pouch; }
+Inventory *Party::getInventory()
+{
+  return pouch;
+}
 
 /*
  * Description: Returns the vector of indexes along the party which are
@@ -480,7 +489,10 @@ std::vector<Person *> Party::getLivingMemberPtrs()
  * Inputs: none
  * Output: int32_t - the maximum size for the party.
  */
-uint32_t Party::getMaxSize() { return max_size; }
+uint32_t Party::getMaxSize()
+{
+  return max_size;
+}
 
 /*
  * Description: Obtains a pointer to the member person at a given index in
@@ -543,7 +555,10 @@ std::string Party::getMemberName(const uint32_t &index)
  * Inputs: none
  * Output: std::vector<Person*> - stack of persons
  */
-std::vector<Person *> Party::getMembers() { return members; }
+std::vector<Person *> Party::getMembers()
+{
+  return members;
+}
 
 /*
  * Description:
@@ -551,7 +566,10 @@ std::vector<Person *> Party::getMembers() { return members; }
  * Inputs:
  * Output:
  */
-std::vector<Person *> Party::getReserveMembers() { return reserve_members; }
+std::vector<Person *> Party::getReserveMembers()
+{
+  return reserve_members;
+}
 
 /*
  * Description: Returns the enumerated PartyType of the Party (ex. sleuth,
@@ -560,7 +578,10 @@ std::vector<Person *> Party::getReserveMembers() { return reserve_members; }
  * Inputs: none
  * Output: PartyType - enumerated party type.
  */
-PartyType Party::getPartyType() { return party_type; }
+PartyType Party::getPartyType()
+{
+  return party_type;
+}
 
 /*
  * Description: Calculates and returns the total speed of all the party
@@ -669,7 +690,7 @@ bool Party::setMaxSize(const uint32_t &new_max_size)
 
   return false;
 }
-  
+
 /*
  * Description: Attempts to assign a new type of the Party.
  *
@@ -690,9 +711,10 @@ bool Party::setPartyType(const PartyType &type)
     reserve_members[i]->setPFlag(type);
 
   /* Clear inventory */
-  pouch->setFlag(InvState::PLAYER_STORAGE | InvState::SHIP_STORAGE | 
-                 InvState::ENEMY_STORAGE | InvState::SHOP_STORAGE, false);
-  
+  pouch->setFlag(InvState::PLAYER_STORAGE | InvState::SHIP_STORAGE |
+                     InvState::ENEMY_STORAGE | InvState::SHOP_STORAGE,
+                 false);
+
   /* Set size based on type */
   if(type == PartyType::SLEUTH)
   {
@@ -727,7 +749,10 @@ bool Party::setPartyType(const PartyType &type)
  * Output: uint32_t - the static maximum size of the Bearacks
  */
 /* Returns the maximum size of the Bearacks */
-uint32_t Party::getMaxBearacks() { return kMAX_MEMBERS_BEARACKS; }
+uint32_t Party::getMaxBearacks()
+{
+  return kMAX_MEMBERS_BEARACKS;
+}
 
 /*
  * Description: Retuns the static maximum size of the sleuth.
@@ -735,7 +760,10 @@ uint32_t Party::getMaxBearacks() { return kMAX_MEMBERS_BEARACKS; }
  * Inputs: none
  * Output: uint32_t - the static maximum size of the sleuth.
  */
-uint32_t Party::getMaxSleuth() { return kMAX_MEMBERS_SLEUTH; }
+uint32_t Party::getMaxSleuth()
+{
+  return kMAX_MEMBERS_SLEUTH;
+}
 
 /*
  * Description: Retunrs the static maximum size of a foes party.
@@ -743,4 +771,7 @@ uint32_t Party::getMaxSleuth() { return kMAX_MEMBERS_SLEUTH; }
  * Inputs: none
  * Output: uint32_t - the static maximum size of the foes.
  */
-uint32_t Party::getMaxFoes() { return kMAX_MEMBERS_FOES; }
+uint32_t Party::getMaxFoes()
+{
+  return kMAX_MEMBERS_FOES;
+}

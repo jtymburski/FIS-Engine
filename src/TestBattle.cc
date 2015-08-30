@@ -3,6 +3,8 @@
  * Date Created: July 31, 2015
  * Inheritance: none
  * Description: This class is the testing interface for battle scenarios.
+ * // Remove ailments
+ * // Chlorophononaonaonaon - switch to curr canopy
  ******************************************************************************/
 #include "TestBattle.h"
 
@@ -34,6 +36,7 @@ TestBattle::TestBattle(Options *running_config)
       sprite_hibernation{nullptr},
       plep_sullen_sting{nullptr},
       plep_befuddling_sting{nullptr},
+      plep_chlorophoria{nullptr},
       plep_canopy{nullptr},
       plep_numbing_sting{nullptr},
       plep_toxic_sting{nullptr},
@@ -122,7 +125,9 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   }
 
   /* sullen Sting */
-  plep_sullen_sting = new Sprite(base_path + "sprites/Battle/Pleps/sullenstingplep_AA_A", 6, ".png", renderer);
+  plep_sullen_sting =
+      new Sprite(base_path + "sprites/Battle/Pleps/sullenstingplep_AA_A", 6,
+                 ".png", renderer);
   plep_sullen_sting->setAnimationTime(150);
 
   /* Befuddling Sting */
@@ -131,10 +136,14 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
                  ".png", renderer);
   plep_befuddling_sting->setAnimationTime(150);
 
+  /* Chlorophoria */
+  plep_chlorophoria = new Sprite(
+      base_path + "sprites/Battle/Pleps/healplep_AA_A", 12, ".png", renderer);
+  plep_chlorophoria->setAnimationTime(150);
+
   /* Canopy */
   plep_canopy = new Sprite(base_path + "sprites/Battle/Pleps/canopyplep_AA_A",
                            6, ".png", renderer);
-
   plep_canopy->setAnimationTime(150);
 
   /* Toxic Sting */
@@ -205,9 +214,9 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   plep_paw_strike->setAnimationTime(70);
 
   /* Maul */
-  plep_maul = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3,
+  plep_maul = new Sprite(base_path + "sprites/Battle/Pleps/maulplep_AA_A", 11,
                          ".png", renderer);
-  plep_maul->setAnimationTime(150);
+  plep_maul->setAnimationTime(100);
 
   /* Multi-Strike */
   plep_multi_strike = new Sprite(
@@ -215,8 +224,8 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   plep_multi_strike->setAnimationTime(150);
 
   /* Ensnare */
-  plep_ensnare = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A",
-                            3, ".png", renderer);
+  plep_ensnare = new Sprite(base_path + "sprites/Battle/Pleps/ensnareplep_AA_A",
+                            8, ".png", renderer);
   plep_ensnare->setAnimationTime(150);
 
   /* Enrich */
@@ -229,6 +238,7 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
                             16, ".png", renderer);
   plep_upgrade->setAnimationTime(90);
 
+  getSkill(222)->setAnimation(plep_chlorophoria);
   getSkill(240)->setAnimation(plep_numbing_sting);
   getSkill(241)->setAnimation(plep_sullen_sting);
   getSkill(242)->setAnimation(plep_toxic_sting);
@@ -905,6 +915,7 @@ void TestBattle::createClasses()
   class_aurora_drone->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_drone->setQDRegenRate(RegenRate::WEAK);
   class_aurora_drone->setDescription("Cannon fodder");
+  class_aurora_drone->setFlag(CategoryState::DEF_ENABLED, false);
   class_aurora_drone->setFlag(CategoryState::IMP_ENABLED, true);
 
   /* Aurora Engineer Class */
@@ -1034,7 +1045,7 @@ Person *TestBattle::createPerson(int id, TestPerson type,
   }
   else if(type == AURORAENGG)
   {
-    new_person = new Person(id, "Engineer", race_human, class_aurora_engg);
+    new_person = new Person(id, "Engineer", class_aurora_engg, race_human);
     new_person->setCurves(Element::ELECTRIC, ElementCurve::B, Element::PHYSICAL,
                           ElementCurve::B, true);
 
@@ -1053,7 +1064,7 @@ Person *TestBattle::createPerson(int id, TestPerson type,
     else if(id == 402)
       name = "Drone C";
 
-    new_person = new Person(id, name, race_robot, class_aurora_drone);
+    new_person = new Person(id, name, class_aurora_drone, race_robot);
     new_person->setCurves(Element::ELECTRIC, ElementCurve::D, Element::PHYSICAL,
                           ElementCurve::D, true);
 
@@ -1285,12 +1296,12 @@ void TestBattle::createSkills()
   skills.push_back(updraft);
 
   /* Chlorophona */
-  Skill *chlorophona = new Skill(222, "Chlorophona", ActionScope::ALL_ALLIES,
-                                 act_alt[0], 90, 15);
-  chlorophona->setDescription("Team health up");
-  chlorophona->setPrimary(Element::PHYSICAL);
-  chlorophona->setFlag(SkillFlags::DEFENSIVE);
-  skills.push_back(chlorophona);
+  Skill *chlorophoria = new Skill(222, "Chlorophoria", ActionScope::ALL_ALLIES,
+                                  act_alt[0], 90, 15);
+  chlorophoria->setDescription("Team health up");
+  chlorophoria->setPrimary(Element::PHYSICAL);
+  chlorophoria->setFlag(SkillFlags::DEFENSIVE);
+  skills.push_back(chlorophoria);
 
   /* Numbing Sting */
   Skill *numbing = new Skill(240, "Numbing Sting", ActionScope::ONE_ENEMY,
@@ -1960,7 +1971,10 @@ bool TestBattle::keyDownEvent(SDL_KeyboardEvent event)
 /* ------------------------------------------------------------------------- */
 /* The key up and down events to be handled by the class */
 /* ------------------------------------------------------------------------- */
-void TestBattle::keyUpEvent(SDL_KeyboardEvent event) { (void)event; }
+void TestBattle::keyUpEvent(SDL_KeyboardEvent event)
+{
+  (void)event;
+}
 
 /* ------------------------------------------------------------------------- */
 /* Renders the title screen */

@@ -88,6 +88,7 @@ private:
 
   Sprite* plep_sullen_sting;
   Sprite* plep_befuddling_sting;
+  Sprite* plep_chlorophoria;
   Sprite* plep_canopy;
   Sprite* plep_numbing_sting;
   Sprite* plep_toxic_sting;

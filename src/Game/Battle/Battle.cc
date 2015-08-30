@@ -794,15 +794,18 @@ void Battle::buildActionVariables(ActionType action_type,
   auto secd_user_off = temp_user_stats.getStat(secd_off);
   auto secd_user_def = temp_user_stats.getStat(secd_def);
 
-  if(curr_user->getPrimary() == curr_skill->getPrimary())
+  if(action_type == ActionType::SKILL)
   {
-    prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
-    prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
-  }
-  else if(curr_user->getSecondary() == curr_skill->getSecondary())
-  {
-    secd_user_off *= kOFF_SECD_ELM_MODIFIER;
-    secd_user_def *= kDEF_SECD_ELM_MODIFIER;
+    if(curr_user->getPrimary() == curr_skill->getPrimary())
+    {
+      prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
+      prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
+    }
+    else if(curr_user->getSecondary() == curr_skill->getSecondary())
+    {
+      secd_user_off *= kOFF_SECD_ELM_MODIFIER;
+      secd_user_def *= kDEF_SECD_ELM_MODIFIER;
+    }
   }
 }
 
@@ -821,15 +824,15 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   int32_t base_user_pow = 0; /* Base user power value */
   int32_t base_targ_def = 0; /* Base target defense value */
-  int32_t phys_pow_val = 0;  /* Physical towards attack */
-  int32_t phys_def_val = 0;  /* Physical towards defense */
-  int32_t elm1_pow_val = 0;  /* Primary elemental towards attacking */
-  int32_t elm1_def_val = 0;  /* Primary elemental towards defending */
-  int32_t elm2_pow_val = 0;  /* Secondary elemental towards defending */
-  int32_t elm2_def_val = 0;  /* Secondary elemental towards defending */
-  int32_t luck_pow_val = 0;  /* Luck value towards attacking */
-  int32_t luck_def_val = 0;  /* Luck value towards defending */
-  int32_t var_val = 0;       /* Determined variance value */
+  int32_t phys_pow_val = 0; /* Physical towards attack */
+  int32_t phys_def_val = 0; /* Physical towards defense */
+  int32_t elm1_pow_val = 0; /* Primary elemental towards attacking */
+  int32_t elm1_def_val = 0; /* Primary elemental towards defending */
+  int32_t elm2_pow_val = 0; /* Secondary elemental towards defending */
+  int32_t elm2_def_val = 0; /* Secondary elemental towards defending */
+  int32_t luck_pow_val = 0; /* Luck value towards attacking */
+  int32_t luck_def_val = 0; /* Luck value towards defending */
+  int32_t var_val = 0; /* Determined variance value */
 
   calcIgnoreState();
   calcElementalMods();
@@ -1902,7 +1905,8 @@ void Battle::performEvents()
     }
     if(event->type == EventType::IMPLODE)
     {
-      // TODO [02-08-15]: Determine implode outcome
+      performDamageEvent(event);
+      // TODO [08-30-15]: Move the member to reserve (not needed until revive)
     }
     else if(event->type == EventType::INSPECT)
     {
@@ -2179,6 +2183,13 @@ void Battle::performDamageEvent(BattleEvent *event)
 
   auto amount = event->amount;
   auto targets = event->targets;
+
+  if (event->type == EventType::IMPLODE)
+  {
+    auto temp = event->user;
+    event->user = event->targets.at(0);
+    targets.at(0) = temp;
+  }
 
   /* Do the actual damage to the person */
   if(targets.size() > 0)
@@ -3348,6 +3359,10 @@ bool Battle::processImplode(std::vector<Person *> targets)
   auto party_death = false;
   auto process = true;
 
+  /* Assign the target, assert that the target is valid */
+  assert(targets.size() > 0 && targets.at(0));
+  curr_target = targets.at(0);
+
 #ifdef UDEBUG
   std::cout << "{IMPLODE} Processing: " << curr_user->getName() << std::endl;
   printPartyState();
@@ -3359,20 +3374,23 @@ bool Battle::processImplode(std::vector<Person *> targets)
   {
     /* Create the initial damage amount against user, killing 'dem ' */
     auto user_damage_amount = curr_user->getCurr().getStat(Attribute::VITA);
-    event_buffer->createDamageEvent(
-        EventType::STANDARD_DAMAGE, curr_user, user_damage_amount);
+    auto targ_damage_amount = calcImplodeDamage();
 
+    auto temp_curr_user = curr_user;
+    auto temp_curr_targ = curr_target;
+
+    curr_target = temp_curr_user;
     party_death &= processDamageAmount(user_damage_amount);
 
-    /* Create the damage event for the target */
+    /* Create the imploding damage event for the user of the imploding */
+    curr_target = temp_curr_targ;
     auto implode_event =
         event_buffer->createImplodeEvent(curr_user, curr_target);
-    auto damage = calcImplodeDamage();
+    implode_event->amount = user_damage_amount;
 
-    if(implode_event)
-      implode_event->amount = damage;
-
-    party_death &= processDamageAmount(damage);
+    /* Create the damage event on the target */
+    event_buffer->createDamageEvent(EventType::STANDARD_DAMAGE, curr_target,
+                                    targ_damage_amount);
 
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
   }
@@ -3720,19 +3738,19 @@ void Battle::updateAllySelection()
       else if(action_type == ActionType::IMPLODE)
         scope = ActionScope::USER;
 
-#ifdef UDEBUG
-      std::cout << "Finding selectable targets for action with scope: "
-                << Helpers::actionScopeToStr(scope) << std::endl;
-#endif
+// #ifdef UDEBUG
+//       std::cout << "Finding selectable targets for action with scope: "
+//                 << Helpers::actionScopeToStr(scope) << std::endl;
+// #endif
 
       if(action_type == ActionType::SKILL)
       {
         auto selected_skill = menu->getSelectedSkill();
 
-#ifdef UDEBUG
-        std::cout << "Selected Skill Name: " << selected_skill.skill->getName()
-                  << std::endl;
-#endif
+// #ifdef UDEBUG
+//         std::cout << "Selected Skill Name: " << selected_skill.skill->getName()
+//                   << std::endl;
+// #endif
 
         targets = getIndexesOfPersons(selected_skill.all_targets);
       }
@@ -3789,8 +3807,12 @@ void Battle::updateEnemySelection()
         scope = curr_module->getSelectedSkill()->getScope();
       else if(action_type == ActionType::ITEM)
         scope = curr_module->getSelectedItem()->getUseSkill()->getScope();
+      else if(action_type == ActionType::IMPLODE)
+      {
+        std::cout << "Setting action scope: ONE_ENEMY " << std::endl;
+        scope = ActionScope::ONE_ENEMY;
+      }
       else if(action_type == ActionType::DEFEND ||
-              action_type == ActionType::IMPLODE ||
               action_type == ActionType::RUN || action_type == ActionType::PASS)
       {
         std::cout << "Setting action type:: USER" << std::endl;
@@ -3802,7 +3824,7 @@ void Battle::updateEnemySelection()
       }
 
 #ifdef UDEBUG
-      std::cout << "Finding selectable targets for enemy action w/ scope: "
+      std::cout << "Person Index: " << person_index << " Finding selectable targets for enemy action w/ scope: "
                 << Helpers::actionScopeToStr(scope) << std::endl;
 #endif
 
@@ -4281,7 +4303,7 @@ bool Battle::isFoe(Person *check_person)
  */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
-  // #ifdef UDEBUG
+#ifdef UDEBUG
   if(!getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
     // Helpers::flushConsole();
@@ -4319,7 +4341,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
   }
   else
     std::cout << "The battle is complete!" << std::endl;
-  // #endif
+#endif
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY &&
      menu->getWindowStatus() == WindowStatus::ON)
@@ -4652,7 +4674,10 @@ bool Battle::update(int32_t cycle_time)
   return false;
 }
 
-Skill *Battle::getCurrSkill() { return curr_skill; }
+Skill *Battle::getCurrSkill()
+{
+  return curr_skill;
+}
 
 /*
  * Description: Returns the ailment update mode currently set
@@ -4660,7 +4685,10 @@ Skill *Battle::getCurrSkill() { return curr_skill; }
  * Inputs: none
  * Output: BattleOptions - enumerated BattleOptions for ailment update mode
  */
-BattleOptions Battle::getAilmentUpdateMode() { return ailment_update_mode; }
+BattleOptions Battle::getAilmentUpdateMode()
+{
+  return ailment_update_mode;
+}
 
 /*
  * Description: Returns a pointer to the BattleMenu
@@ -4668,7 +4696,10 @@ BattleOptions Battle::getAilmentUpdateMode() { return ailment_update_mode; }
  * Inputs: none
  * Output: BattleMenu* - pointer to the BattleMenu
  */
-BattleMenu *Battle::getBattleMenu() { return menu; }
+BattleMenu *Battle::getBattleMenu()
+{
+  return menu;
+}
 
 /*
  * Description: Return the value of a given CombatState flag
@@ -4698,14 +4729,21 @@ bool Battle::getIgnoreFlag(const IgnoreState &test_flag)
  * Inputs: none
  * Output: Party* - pointer to the Friends party
  */
-Party *Battle::getFriends() { return friends; }
+Party *Battle::getFriends()
+{
+  return friends;
+}
+
 /*
  * Description: Returns the event buffer pointer
  *
  * Inputs: none
  * Output: EventBuffer* - pointer to the event buffer
  */
-EventBuffer *Battle::getEventBuffer() { return event_buffer; }
+EventBuffer *Battle::getEventBuffer()
+{
+  return event_buffer;
+}
 
 /*
  * Description: Returns the foes pointer of the Battle
@@ -4713,10 +4751,16 @@ EventBuffer *Battle::getEventBuffer() { return event_buffer; }
  * Inputs: none
  * Output: Party* - pointer to the Foes party
  */
-Party *Battle::getFoes() { return foes; }
+Party *Battle::getFoes()
+{
+  return foes;
+}
 
 // TODO: Conventions [04-11-15]
-OutcomeType Battle::getOutcome() { return outcome; }
+OutcomeType Battle::getOutcome()
+{
+  return outcome;
+}
 
 /*
  * Description: Evaluates and returns a vector of ailments for a given person.
@@ -4742,7 +4786,10 @@ std::vector<Ailment *> Battle::getPersonAilments(const Person *const target)
  * Inputs: none
  * Output: uint32_t - the total number of turns elapsed completely
  */
-uint32_t Battle::getTurnsElapsed() { return turns_elapsed; }
+uint32_t Battle::getTurnsElapsed()
+{
+  return turns_elapsed;
+}
 
 /*
  * Description: Returns the elapsed time of the Battle.
@@ -4750,7 +4797,10 @@ uint32_t Battle::getTurnsElapsed() { return turns_elapsed; }
  * Inputs: none
  * Output: uint32_t - the amount of time that has been elapsed
  */
-uint32_t Battle::getTimeElapsed() { return time_elapsed; }
+uint32_t Battle::getTimeElapsed()
+{
+  return time_elapsed;
+}
 
 /*
  * Description: Returns the enumerated turn state of the Battle
@@ -4758,7 +4808,10 @@ uint32_t Battle::getTimeElapsed() { return time_elapsed; }
  * Inputs: none
  * Output: TurnState - enumerated turn state of the Battle
  */
-TurnState Battle::getTurnState() { return turn_state; }
+TurnState Battle::getTurnState()
+{
+  return turn_state;
+}
 
 /*
  * Description: Returns the index integer of a a given Person ptr, or 0 if no
