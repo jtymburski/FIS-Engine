@@ -344,6 +344,22 @@ int32_t AttributeSet::getStat(const std::string &name) const
 {
   return getStat(getIndex(name));
 }
+  
+/*
+ * Description: Sets the AttributeSet state flags within the class which
+ *              defines properties on how the set operates.
+ *
+ * Inputs: AttributeState flag - the state flag to modify
+ *         bool state - true the flag is enabled. false otherwise. def true.
+ * Output: none
+ */
+void AttributeSet::setFlag(const AttributeState &flag, const bool &state)
+{
+  if(state)
+    flags |= flag;
+  else
+    flags &= ~flag;
+}
 
 /*
  * Description: Attempts to assign a stat at a given index to a value.
@@ -595,8 +611,13 @@ std::string AttributeSet::getName(const size_t &index)
   return "";
 }
 
-/* Create set from comma delimited string */
-/* 50,100,8,8,0,0,0,0,5,5,5,5,0,0,0,0,9,9,10,0,T,F */
+/*
+ * Description: Creates an Attribute Set from a comma delimited string.
+ * Format: 50,100,8,8,0,0,0,0,5,5,5,5,0,0,0,0,9,9,10,0,T,F
+ *
+ * Inputs: std::string str - the comma delimited string
+ * Output: AttributeSet - the produced set from the string
+ */
 AttributeSet AttributeSet::setFromStr(const std::string &str)
 {
   std::vector<std::string> set = Helpers::split(str, ',');
@@ -623,6 +644,35 @@ AttributeSet AttributeSet::setFromStr(const std::string &str)
   }
 
   return AttributeSet();
+}
+
+/*
+ * Description: Creates a comma delimited string from an Attribute Set. Opposite
+ *              of setFromStr()
+ * Format: 50,100,8,8,0,0,0,0,5,5,5,5,0,0,0,0,9,9,10,0,T,F 
+ *
+ * Inputs: AttributeSet set - the set to convert to a string
+ * Output: std::string - the produced comma delimited string
+ */
+std::string AttributeSet::setToStr(const AttributeSet &set)
+{
+  std::string str = "";
+
+  /* Go through all elements first */
+  for(uint16_t i = 0; i < kNUM_ELEMENTS; i++)
+    str += std::to_string(set.getStat(i)) + ",";
+
+  /* Finish with flags */
+  if(set.getFlag(AttributeState::PERSONAL))
+    str += "T,";
+  else
+    str += "F,";
+  if(set.getFlag(AttributeState::CONSTANT))
+    str += "T";
+  else
+    str += "F";
+
+  return str;
 }
 
 /*=============================================================================

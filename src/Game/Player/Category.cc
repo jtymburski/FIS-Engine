@@ -203,6 +203,25 @@ void Category::copySelf(const Category &source)
  *============================================================================*/
 
 /*
+ * Description: Adds an infliction immunity to the category. This function
+ *              will use isImmune() to check for duplicate immunities.
+ *
+ * Inputs: Infliction - the immunity to add to the category.
+ * Output: bool - whether the immunity addition was added
+ */
+bool Category::addImmunity(const Infliction &new_immunity)
+{
+  if (!isImmune(new_immunity))
+  {
+    immunities.push_back(new_immunity);
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
  * Description: Determines whether a given piece of Equipment can be equipped
  *              based on the EquipState flags like Staff and Sword, etc. Some
  *              categories should not be able to equip all types of equipment.
@@ -224,25 +243,6 @@ bool Category::canEquip(Equipment* const check)
     can_equip &= getFlag(CategoryState::E_SWORD);
 
   return can_equip;
-}
-
-/*
- * Description: Adds an infliction immunity to the category. This function
- *              will use isImmune() to check for duplicate immunities.
- *
- * Inputs: Infliction - the immunity to add to the category.
- * Output: bool - whether the immunity addition was added
- */
-bool Category::addImmunity(const Infliction &new_immunity)
-{
-  if (!isImmune(new_immunity))
-  {
-    immunities.push_back(new_immunity);
-
-    return true;
-  }
-
-  return false;
 }
 
 /*
@@ -371,29 +371,6 @@ bool Category::loadData(XmlData data, int index, SDL_Renderer* renderer)
 }
 
 /*
- * Description: Attempts to remove a given Infliction enumeration from
- *              the immunties of the Category. Returns true if the infliction
- *              was remove successfully.
- *
- * Inputs: Infliction - enumerated infliction to be removed from immunities. 
- * Output: bool - true if the immunity was found and removed
- */
-bool Category::removeImmunity(const Infliction &rem_immunity)
-{
-  for (auto it = begin(immunities); it != end(immunities); ++it)
-  {
-    if ((*it) == rem_immunity)
-    {
-      immunities.erase(it);
-
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/*
  * Description: Prints out the information of the Category.
  *
  * Inputs: simple - whether to print out a simple version of the category
@@ -436,6 +413,45 @@ void Category::print(const bool &simple, const bool &flags)
     std::cout << "\nE_SWORD? " << getFlag(CategoryState::E_SWORD);
     std::cout << "\nE_CLAWS? " << getFlag(CategoryState::E_CLAWS) << "\n";
   }
+}
+
+/*
+ * Description: Attempts to remove a given Infliction enumeration from
+ *              the immunties of the Category. Returns true if the infliction
+ *              was remove successfully.
+ *
+ * Inputs: Infliction - enumerated infliction to be removed from immunities. 
+ * Output: bool - true if the immunity was found and removed
+ */
+bool Category::removeImmunity(const Infliction &rem_immunity)
+{
+  for (auto it = begin(immunities); it != end(immunities); ++it)
+  {
+    if ((*it) == rem_immunity)
+    {
+      immunities.erase(it);
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*
+ * Description: This enabled the edit mode of the category; primarily regarding
+ *              the base and max attribute sets and allows them to be modified.
+ *
+ * Inputs: bool enabled - true if edit mode enabled. default to true
+ * Output: none
+ */
+void Category::triggerEditMode(bool enabled)
+{
+  base_stats.setFlag(AttributeState::PERSONAL, !enabled);
+  base_stats.setFlag(AttributeState::CONSTANT, !enabled);
+
+  top_stats.setFlag(AttributeState::PERSONAL, !enabled);
+  top_stats.setFlag(AttributeState::CONSTANT, !enabled);
 }
 
 /*
@@ -609,6 +625,21 @@ void Category::setID(int32_t id)
     this->id = kUNSET_ID;
   else
     this->id = id;
+}
+  
+/*
+ * Description: Sets the immunity to either enabled or disabled. 
+ *
+ * Inputs: Infliction immunity - the infliction to modify the enabled state
+ *         bool enabled - true if immune. false if not. default to true.
+ * Output: none
+ */
+void Category::setImmunity(const Infliction &immunity, const bool &enabled)
+{
+  if(enabled)
+    addImmunity(immunity);
+  else
+    removeImmunity(immunity);
 }
 
 /*

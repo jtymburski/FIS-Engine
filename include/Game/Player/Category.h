@@ -124,23 +124,26 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-  /* Checks if a piece of equipment can be equipped by a person of this cat. */
-  bool canEquip(Equipment* const check);
-
   /* Adds an enumerated infliction to the list of immunities */
   bool addImmunity(const Infliction &new_immunity);
+  
+  /* Checks if a piece of equipment can be equipped by a person of this cat. */
+  bool canEquip(Equipment* const check);
 
   /* Checks if a person of this cat. is immune to a given infliction */
   bool isImmune(const Infliction &check_immunity);
 
   /* Load data from file */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer);
+  
+  /* Prints out the state of the object */
+  void print(const bool &simple = false, const bool &flags = false);
 
   /* Removes a given infliction from the list of immunities (if it exists) */
   bool removeImmunity(const Infliction &rem_immunity);
 
-  /* Prints out the state of the object */
-  void print(const bool &simple = false, const bool &flags = false);
+  /* Trigger edit mode of the category - used only by Editor */
+  void triggerEditMode(bool enabled = true); // TODO
 
   /* Returns the string denonym */
   std::string getDenonym();
@@ -183,6 +186,9 @@ public:
 
   /* Assigns the id for the category */
   void setID(int32_t id);
+
+  /* Sets the immunity to enabled/disabled */
+  void setImmunity(const Infliction &immunity, const bool &enabled = true);
 
   /* Assigns the name for the category */
   void setName(const std::string &name);
