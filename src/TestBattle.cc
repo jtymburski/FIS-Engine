@@ -137,115 +137,115 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   plep_sullen_sting =
       new Sprite(base_path + "sprites/Battle/Pleps/sullenstingplep_AA_A", 6,
                  ".png", renderer);
-  plep_sullen_sting->setAnimationTime(150);
+  plep_sullen_sting->setAnimationTime(70);
 
   /* Befuddling Sting */
   plep_befuddling_sting =
       new Sprite(base_path + "sprites/Battle/Pleps/befuddlingstingplep_AA_A", 4,
                  ".png", renderer);
-  plep_befuddling_sting->setAnimationTime(150);
+  plep_befuddling_sting->setAnimationTime(70);
 
   /* Chlorophoria */
   plep_chlorophoria = new Sprite(
       base_path + "sprites/Battle/Pleps/healplep_AA_A", 12, ".png", renderer);
-  plep_chlorophoria->setAnimationTime(150);
+  plep_chlorophoria->setAnimationTime(70);
 
   /* Canopy */
   plep_canopy = new Sprite(base_path + "sprites/Battle/Pleps/canopyplep_AA_A",
                            6, ".png", renderer);
-  plep_canopy->setAnimationTime(150);
+  plep_canopy->setAnimationTime(90);
 
   /* Toxic Sting */
   plep_toxic_sting =
-      new Sprite(base_path + "sprites/Battle/Pleps/toxicstingplep_AA_A", 5,
+      new Sprite(base_path + "sprites/Battle/Pleps/toxicstingplep_AA_A", 12,
                  ".png", renderer);
-  plep_toxic_sting->setAnimationTime(150);
+  plep_toxic_sting->setAnimationTime(70);
 
   plep_numbing_sting =
       new Sprite(base_path + "sprites/Battle/Pleps/numbingstingplep_AA_A", 4,
                  ".png", renderer);
-  plep_numbing_sting->setAnimationTime(150);
+  plep_numbing_sting->setAnimationTime(70);
 
   /* Updraft */
   plep_updraft = new Sprite(base_path + "sprites/Battle/Pleps/updraftplep_AA_A",
                             5, ".png", renderer);
-  plep_updraft->setAnimationTime(150);
+  plep_updraft->setAnimationTime(80);
 
   /* Light Push */
   plep_light_push =
       new Sprite(base_path + "sprites/Battle/Pleps/lightpushplep_AA_A", 7,
                  ".png", renderer);
-  plep_light_push->setAnimationTime(150);
+  plep_light_push->setAnimationTime(40);
 
   /* Light Shot */
   plep_light_shot =
       new Sprite(base_path + "sprites/Battle/Pleps/lightshotplep_AA_A", 6,
                  ".png", renderer);
-  plep_light_shot->setAnimationTime(90);
+  plep_light_shot->setAnimationTime(80);
 
   /* Prismatic Shot */
   plep_prismatic_shot =
       new Sprite(base_path + "sprites/Battle/Pleps/prismaticshotplep_AA_A", 7,
                  ".png", renderer);
-  plep_prismatic_shot->setAnimationTime(120);
+  plep_prismatic_shot->setAnimationTime(85);
 
   /* Rail Shot */
   plep_rail_shot =
       new Sprite(base_path + "sprites/Battle/Pleps/railshotplep_AA_A", 6,
                  ".png", renderer);
-  plep_rail_shot->setAnimationTime(150);
+  plep_rail_shot->setAnimationTime(80);
 
   plep_locked_shot =
       new Sprite(base_path + "sprites/Battle/Pleps/lockedshotplep_AA_A", 14,
                  ".png", renderer);
-  plep_locked_shot->setAnimationTime(100);
+  plep_locked_shot->setAnimationTime(80);
 
   /* Shatter Shot */
   plep_shatter_shot = new Sprite(
       base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
-  plep_shatter_shot->setAnimationTime(150);
+  plep_shatter_shot->setAnimationTime(70);
 
   /* Static Shot */
   plep_static_shot =
       new Sprite(base_path + "sprites/Battle/Pleps/staticshotplep_AA_A", 4,
                  ".png", renderer);
-  plep_static_shot->setAnimationTime(150);
+  plep_static_shot->setAnimationTime(80);
 
   /* Strike */
   plep_strike = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3,
                            ".png", renderer);
-  plep_strike->setAnimationTime(150);
+  plep_strike->setAnimationTime(70);
 
   /* Paw Strike */
   plep_paw_strike =
       new Sprite(base_path + "sprites/Battle/Pleps/pawstrikeplep_AA_A", 7,
                  ".png", renderer);
-  plep_paw_strike->setAnimationTime(70);
+  plep_paw_strike->setAnimationTime(45);
 
   /* Maul */
   plep_maul = new Sprite(base_path + "sprites/Battle/Pleps/maulplep_AA_A", 11,
                          ".png", renderer);
-  plep_maul->setAnimationTime(100);
+  plep_maul->setAnimationTime(45);
 
   /* Multi-Strike */
   plep_multi_strike = new Sprite(
       base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", renderer);
-  plep_multi_strike->setAnimationTime(150);
+  plep_multi_strike->setAnimationTime(70);
 
   /* Ensnare */
   plep_ensnare = new Sprite(base_path + "sprites/Battle/Pleps/ensnareplep_AA_A",
                             8, ".png", renderer);
-  plep_ensnare->setAnimationTime(150);
+  plep_ensnare->setAnimationTime(70);
 
   /* Enrich */
   plep_enrich = new Sprite(base_path + "sprites/Battle/Pleps/healplep_AA_A", 12,
                            ".png", renderer);
-  plep_enrich->setAnimationTime(110);
+  plep_enrich->setAnimationTime(60);
 
   /* Upgrade */
   plep_upgrade = new Sprite(base_path + "sprites/Battle/Pleps/upgradeplep_AA_A",
                             16, ".png", renderer);
-  plep_upgrade->setAnimationTime(90);
+  plep_upgrade->setAnimationTime(80);
 
   getSkill(222)->setAnimation(plep_chlorophoria);
   getSkill(240)->setAnimation(plep_numbing_sting);
@@ -478,25 +478,25 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   sprite_paralysis = new Sprite(game_config->getBasePath() +
                                     "sprites/Battle/Pleps/paralysisplep_AA_A",
                                 3, ".png", renderer);
-  sprite_paralysis->setAnimationTime(180);
+  sprite_paralysis->setAnimationTime(70);
   battle_display->setAilmentPlep(Infliction::PARALYSIS, sprite_paralysis);
 
   sprite_confusion = new Sprite(game_config->getBasePath() +
                                     "sprites/Battle/Pleps/confusionplep_AA_A",
                                 3, ".png", renderer);
-  sprite_confusion->setAnimationTime(180);
+  sprite_confusion->setAnimationTime(80);
   battle_display->setAilmentPlep(Infliction::CONFUSE, sprite_confusion);
 
   sprite_poison = new Sprite(game_config->getBasePath() +
                                  "sprites/Battle/Pleps/poisonplep_AA_A",
                              4, ".png", renderer);
-  sprite_poison->setAnimationTime(180);
+  sprite_poison->setAnimationTime(70);
   battle_display->setAilmentPlep(Infliction::POISON, sprite_poison);
 
   sprite_buff = new Sprite(game_config->getBasePath() +
                                "sprites/Battle/Pleps/raiseplep_AA_A",
                            9, ".png", renderer);
-  sprite_buff->setAnimationTime(150);
+  sprite_buff->setAnimationTime(95);
   battle_display->setAilmentPlep(Infliction::ALLATKBUFF, sprite_buff);
   battle_display->setAilmentPlep(Infliction::ALLDEFBUFF, sprite_buff);
   battle_display->setAilmentPlep(Infliction::LIMBUFF, sprite_buff);
@@ -504,19 +504,19 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   sprite_defend_start = new Sprite(game_config->getBasePath() +
                                        "sprites/Battle/Pleps/defendplep_AA_A",
                                    7, ".png", renderer);
-  sprite_defend_start->setAnimationTime(180);
+  sprite_defend_start->setAnimationTime(375);
   sprite_defend_start->switchDirection();
 
   sprite_defend_break = new Sprite(game_config->getBasePath() +
                                        "sprites/Battle/Pleps/defendplep_AA_A",
                                    7, ".png", renderer);
-  sprite_defend_break->setAnimationTime(180);
+  sprite_defend_break->setAnimationTime(90);
   // sprite_defend_break->switchDirection();
 
   sprite_defend_persist = new Sprite(game_config->getBasePath() +
                                          "sprites/Battle/Pleps/defendplep_AA_A",
                                      7, ".png", renderer);
-  sprite_defend_persist->setAnimationTime(180);
+  sprite_defend_persist->setAnimationTime(90);
 
   // sprite_implode = new Sprite(game_config->getBasePath() +
   // "sprites/Battle/Pleps/detonateplep_AA_A", 6, ".png", renderer);
@@ -545,7 +545,7 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
       game_config->getBasePath() +
           "sprites/Battle/Pleps/hibernationplep_AA_A03.png",
       renderer);
-  sprite_hibernation->setAnimationTime(180);
+  sprite_hibernation->setAnimationTime(70);
   battle_display->setAilmentPlep(Infliction::HIBERNATION, sprite_hibernation);
 
   /* Background and bar */
@@ -560,10 +560,10 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   {
     if(i % 2 == 0)
       skills[i]->setThumbnail(new Frame(
-          base_path + "sprites/Battle/Skills/_sample_skill_1.png", renderer));
+          base_path + "sprites/Battle/Skills/pawstrike_AA_A00.png", renderer));
     else
       skills[i]->setThumbnail(new Frame(
-          base_path + "sprites/Battle/Skills/_sample_skill_2.png", renderer));
+          base_path + "sprites/Battle/Skills/staticshot_AA_A00.png", renderer));
   }
 }
 
