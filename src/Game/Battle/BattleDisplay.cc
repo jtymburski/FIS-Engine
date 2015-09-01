@@ -2062,17 +2062,17 @@ void BattleDisplay::clear(bool battle_specific)
     if(foes_backdrop != nullptr)
       delete foes_backdrop;
     foes_backdrop = nullptr;
+
+    /* Pleps */
+    for(auto plep : ailment_pleps)
+      if(plep.second)
+        delete plep.second;
+    ailment_pleps.clear();
+    for(auto plep : event_pleps)
+      if(plep.second)
+        delete plep.second;
+    event_pleps.clear();
   }
-
-  for(auto plep : ailment_pleps)
-    if(plep.second)
-      delete plep.second;
-  for(auto plep : event_pleps)
-    if(plep.second)
-    delete plep.second;
-
-  ailment_pleps.clear();
-  event_pleps.clear();
 }
 
 // TODO: Comment
