@@ -731,7 +731,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     1, 1, 1, 1,
     0, 0, 0, 0,
-    10, 10, 10, 0
+    10, 6, 10, 0
   }, true);
 
   stats_reverdling_max = AttributeSet(
@@ -740,7 +740,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     2, 2, 2, 2,
     0, 0, 0, 0,
-    20, 20, 15, 0
+    20, 16, 15, 0
   }, true);
 
   stats_reverdile_min = AttributeSet(
