@@ -457,13 +457,13 @@ enum class Infliction : std::uint64_t
  */
 enum class ItemTier : std::uint8_t
 {
-  TRASH,
-  COMMON,
-  UNCOMMON,
-  RARE,
-  VERYRARE,
-  LEGENDARY,
-  NONE
+  TRASH = 0,
+  COMMON = 1,
+  UNCOMMON = 2,
+  RARE = 3,
+  VERYRARE = 4,
+  LEGENDARY = 5,
+  NONE = 6
 };
 
 /*

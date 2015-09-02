@@ -1058,6 +1058,29 @@ ItemTier Helpers::tierFromStr(const std::string &tier)
   return ItemTier::NONE;
 }
 
+/*
+ * Description: Returns the string form of an item tier (enum)
+ *
+ * Inputs: ItemTier tier - enum representation of the tier
+ * Output: std::string - the enumeration to a string
+ */
+std::string Helpers::tierToStr(const ItemTier &tier)
+{
+  if(tier == ItemTier::TRASH)
+    return "TRASH";
+  else if(tier == ItemTier::COMMON)
+    return "COMMON";
+  else if(tier == ItemTier::UNCOMMON)
+    return "UNCOMMON";
+  else if(tier == ItemTier::RARE)
+    return "RARE";
+  else if(tier == ItemTier::VERYRARE)
+    return "VERYRARE";
+  else if(tier == ItemTier::LEGENDARY)
+    return "LEGENDARY";
+  return "";
+}
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

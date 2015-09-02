@@ -164,6 +164,7 @@ protected:
   int32_t  value_modifier;
   
   /* ------------ Constants --------------- */
+public:
   static const uint32_t kMAX_DURABILITY; /* Maximum durability */
   static const uint32_t kMAX_MASS;       /* Maximum mass of an Item */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */

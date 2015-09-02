@@ -144,6 +144,7 @@ public:
 
   /* Returns the enumerated tier to/from string form */
   static ItemTier tierFromStr(const std::string &tier);
+  static std::string tierToStr(const ItemTier &tier);
 
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
