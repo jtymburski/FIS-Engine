@@ -649,17 +649,58 @@ ElementCurve Helpers::curveFromString(const std::string &curve)
   std::transform(curve_up.begin(), curve_up.end(), curve_up.begin(), toupper);
 
   /* Parse */
-  if(curve_up == "XS")
+  if(curve_up == "XS" || curve_up == "GODLIKE")
     return ElementCurve::XS;
-  else if(curve_up == "S")
+  else if(curve_up == "S" || curve_up == "XPOWERFUL")
     return ElementCurve::S;
-  else if(curve_up == "A")
+  else if(curve_up == "A" || curve_up == "POWERFUL")
     return ElementCurve::A;
-  else if(curve_up == "B")
+  else if(curve_up == "B" || curve_up == "STRONG")
     return ElementCurve::B;
-  else if(curve_up == "C")
+  else if(curve_up == "C" || curve_up == "MODERATE")
     return ElementCurve::C;
   return ElementCurve::D;
+}
+
+/*
+ * Description: Converts the element curve enum to the string version.
+ *
+ * Inputs: ElementCurve curve - the curve to convert
+ *         bool simple - true if simple ('D'). false ('Normal'). default false.
+ * Output: std::string - the converted string version
+ */
+std::string Helpers::curveToString(const ElementCurve &curve, bool simple)
+{
+  /* Simple form is 'XS', 'S', etc. */
+  if(simple)
+  {
+    if(curve == ElementCurve::XS)
+      return "XS";
+    else if(curve == ElementCurve::S)
+      return "S";
+    else if(curve == ElementCurve::A)
+      return "A";
+    else if(curve == ElementCurve::B)
+      return "B";
+    else if(curve == ElementCurve::C)
+      return "C";
+    return "D";
+  }
+  /* Complex form is 'God-like', 'Normal', etc. */
+  else
+  {
+    if(curve == ElementCurve::XS)
+      return "GodLike";
+    else if(curve == ElementCurve::S)
+      return "XPowerful";
+    else if(curve == ElementCurve::A)
+      return "Powerful";
+    else if(curve == ElementCurve::B)
+      return "Strong";
+    else if(curve == ElementCurve::C)
+      return "Moderate";
+    return "Normal";
+  }
 }
 
 /*

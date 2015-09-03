@@ -229,6 +229,7 @@ private:
   static int id; /* Person unique ID counter */
   static std::vector<uint32_t> exp_table; /* Table of exp. values */
 
+public:
   /* ------------ Constants --------------- */
   static const uint8_t  kACTION_X;        /* Action render X point */
   static const uint8_t  kACTION_Y;        /* Action render Y point */
@@ -256,7 +257,10 @@ private:
  *============================================================================*/
 private:
   /* Begin processing the actions on the buffer */
-  void beginProcessActions();
+  //void beginProcessActions();
+
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const Person &source);
 
   /* Loads the default values for the Person */
   void loadDefaults();
@@ -571,6 +575,13 @@ public:
   /* Assigns the sprite pointers for the person */
   void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr,
       Sprite* new_dialog_sprite = nullptr, Sprite* new_action_sprite = nullptr);
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  /* The copy operator */
+  Person& operator= (const Person &source);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

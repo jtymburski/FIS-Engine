@@ -114,6 +114,8 @@ public:
 
   /* Converts an ElementCurve from string to the enumerated element */
   static ElementCurve curveFromString(const std::string &curve);
+  static std::string curveToString(const ElementCurve &curve, 
+                                   bool simple = true);
 
   /* Converts an enumerated element to a String */
   static Element elementFromString(const std::string &element);

@@ -41,7 +41,7 @@ const size_t Person::kNUM_EQUIP_SLOTS{5};
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */
 const uint32_t Person::kMAX_EXP{1000000000}; /* 1 billion */
 const uint32_t Person::kMAX_EXP_DROP{1000000}; /* 1 million */
-const size_t Person::kMAX_ITEM_DROPS{5};
+const size_t Person::kMAX_ITEM_DROPS{25};
 const uint32_t Person::kMAX_LVL_EXP{1200}; /* 100 million */
 const uint32_t Person::kMIN_EXP{0};
 const uint32_t Person::kMIN_LVL_EXP{20};
@@ -126,6 +126,44 @@ Person::~Person()
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+  
+/*
+ * Description: Copies all data from source object to this object.
+ *
+ * Inputs: Person &source - the source to copy from
+ * Output: none
+ */
+// TODO: NOT FULLY COMPLETE. Relevant??
+void Person::copySelf(const Person &source)
+{
+  action_x = source.action_x;
+  action_y = source.action_y;
+
+  game_id = source.game_id;
+
+  base_person = source.base_person;
+  person_flags = source.person_flags;
+
+  battle_class = source.battle_class;
+  race_class = source.race_class;
+
+  name = source.name;
+  rank = source.rank;
+
+  primary = source.primary;
+  secondary = source.secondary;
+  primary_curve = source.primary_curve;
+  secondary_curve = source.secondary_curve;
+
+  equipments = source.equipments;
+
+  item_drops = source.item_drops;
+  credit_drop = source.credit_drop;
+  exp_drop = source.exp_drop;
+  
+  level = source.level;
+  total_exp = source.total_exp;
+}
 
 /*
  * Description: Loads the default settings for a Person
@@ -2481,6 +2519,31 @@ void Person::setSprites(Sprite *new_fp, Sprite *new_tp, Sprite *new_dialog,
   first_person = new_fp;
   third_person = new_tp;
   dialog_sprite = new_dialog;
+}
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Copy operator construction. This is called when the variable
+ *              already exists and equal operator used with another
+ *              Person.
+ *
+ * Inputs: const Person &source - the source class constructor
+ * Output: Person& - pointer to the copied class
+ */
+Person& Person::operator= (const Person &source)
+{
+  /* Check for self assignment */
+  if(this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }
 
 /*=============================================================================
