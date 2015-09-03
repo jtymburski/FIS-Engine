@@ -2,7 +2,7 @@
  * Class Name: Item [Header]
  * Date Created: December 9th, 2013
  * Inheritance: None
- * Description: An Item is an object contained within the inventory of a party. 
+ * Description: An Item is an object contained within the inventory of a party.
  *              An Item may be a key item which is important for the progression
  *              through the game, some sort of material or component, an item
  *              that has a use in Battle or Menu (does some skill, etc.), or
@@ -42,19 +42,16 @@ ENUM_FLAGS(ItemFlags)
 enum class ItemFlags
 {
   CONSUMED       = 1 << 0,
-  OFFENSIVE      = 1 << 1,
-  DEFENSIVE      = 1 << 2,
-  EQUIPMENT      = 1 << 3,
-  BUBBY          = 1 << 4,
-  KEY_ITEM       = 1 << 5,
-  MATERIAL       = 1 << 6,
-  GENE_COMP      = 1 << 7,
-  NO_CATEGORY    = 1 << 8,
-  STAT_ALTERING  = 1 << 9,
-  SKILL_LEARNING = 1 << 10,
-  HEALING_ITEM   = 1 << 11,
-  RELIEVING_ITEM = 1 << 12,
-  MONEY          = 1 << 13
+  EQUIPMENT      = 1 << 1,
+  BUBBY          = 1 << 2,
+  KEY_ITEM       = 1 << 3,
+  MATERIAL       = 1 << 4,
+  NO_CATEGORY    = 1 << 5,
+  STAT_ALTERING  = 1 << 6,
+  SKILL_LEARNING = 1 << 7,
+  HEALING_ITEM   = 1 << 8,
+  RELIEVING_ITEM = 1 << 9,
+  MONEY          = 1 << 10
 };
 
 /* Material flags describing the composition of an Item */
@@ -79,7 +76,7 @@ enum class Material
 class Item
 {
   friend Flavour;
-  
+
 public:
   /* Blank constructor */
   Item();
@@ -92,11 +89,11 @@ public:
 
   /* Base Item constructor - constructs an Item given a game ID and basics */
   Item(const int32_t &game_id, const std::string &name, const uint32_t &value,
-      Frame* thumbnail = nullptr, const uint32_t &mass = 0, 
+      Frame* thumbnail = nullptr, const uint32_t &mass = 0,
       const uint32_t &dura = kMIN_DURABILITY);
 
   /* Key Item constructor */
-  Item(const int32_t &game_id, const std::string &name, 
+  Item(const int32_t &game_id, const std::string &name,
       Frame* thumbnail = nullptr);
 
   /* Annihilates an Item object */
@@ -116,7 +113,7 @@ protected:
 
   /* AttrSet by which the Item will alter stats */
   AttributeSet buff_set;
-  
+
   /* Brief and Full-length descriptions */
   std::string brief_description;
   std::string description;
@@ -162,7 +159,7 @@ protected:
   /* Value of the item (in the shop) */
   uint32_t value;
   int32_t  value_modifier;
-  
+
   /* ------------ Constants --------------- */
 public:
   static const uint32_t kMAX_DURABILITY; /* Maximum durability */
@@ -204,7 +201,7 @@ public:
 public:
   /* Evaluates and returns whether the cur. object is a base item */
   bool isBaseItem();
-  
+
   /* Load data from file */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 std::string base_path);
@@ -319,7 +316,7 @@ public:
 
   /* Attempts to set a new value for the Item */
   bool setValue(const uint32_t &new_value);
-  
+
   /* Sets the modifier value, to affect the set value */
   void setValueModifier(const int32_t &new_value);
 };

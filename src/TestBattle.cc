@@ -80,41 +80,9 @@ TestBattle::~TestBattle()
 {
   destroy();
 
-  // if(sprite_paralysis)
-  //   delete sprite_paralysis;
-  // sprite_paralysis = nullptr;
-
-  // if(sprite_confusion)
-  // delete sprite_confusion;
-  // sprite_confusion = nullptr;
-
-  // if(sprite_buff)
-  //   delete sprite_buff;
-  // sprite_buff = nullptr;
-
-  // if(sprite_poison)
-  //   delete sprite_poison;
-  // sprite_poison = nullptr;
-
-  // if(sprite_hibernation)
-  // delete sprite_hibernation;
-  // sprite_hibernation = nullptr;
-
-  // if(battle_display)
-  //   delete battle_display;
-  // battle_display = nullptr;
-
-  // if(sprite_defend_break)
-  //   delete sprite_defend_break;
-  // sprite_defend_break = nullptr;
-
-  // if(sprite_defend_persist)
-  //   delete sprite_defend_persist;
-  // sprite_defend_persist = nullptr;
-
-  // if(sprite_defend_start)
-  //   delete sprite_defend_start;
-  // sprite_defend_start = nullptr;
+  if(battle_display)
+    delete battle_display;
+  battle_display = nullptr;
 }
 
 /*=============================================================================
@@ -1990,7 +1958,7 @@ void TestBattle::keyUpEvent(SDL_KeyboardEvent event)
 /* ------------------------------------------------------------------------- */
 bool TestBattle::render(SDL_Renderer *renderer)
 {
-  if(renderer != nullptr)
+  if(renderer)
   {
     /* First run rendering */
     if(first_run)
@@ -2008,7 +1976,7 @@ bool TestBattle::render(SDL_Renderer *renderer)
     }
 
     /* Rendering primary */
-    if(mode == TEST_BATTLE)
+    if(mode == TEST_BATTLE && battle_display)
     {
       battle_display->render(renderer);
     }
@@ -2051,13 +2019,13 @@ bool TestBattle::render(SDL_Renderer *renderer)
 /* ------------------------------------------------------------------------- */
 bool TestBattle::setConfiguration(Options *running_config)
 {
-  if(running_config != nullptr)
+  if(running_config)
   {
     game_config = running_config;
     base_path = game_config->getBasePath();
 
     /* Battle configuration setup */
-    if(battle_display != nullptr)
+    if(battle_display)
       battle_display->setConfiguration(running_config);
 
     /* Text setup */
@@ -2086,7 +2054,7 @@ bool TestBattle::update(int cycle_time)
       mode = SCENARIO;
       destroyBattle();
     }
-    else
+    else if(battle_display)
     {
       battle_display->update(cycle_time);
     }

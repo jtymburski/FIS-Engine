@@ -2046,6 +2046,9 @@ void BattleDisplay::clear(bool battle_specific)
   /* Unsets the flat rendering sprites */
   deleteSkills();
 
+  /* Unsets elements at the end of battle */
+  unsetElements();
+
   /* All generic non battle specific data */
   if(!battle_specific)
   {
@@ -2056,7 +2059,6 @@ void BattleDisplay::clear(bool battle_specific)
     unsetBattleBar();
     unsetMidlays();
     unsetOverlays();
-    unsetElements();
 
     /* Deletes internal pointers, if set */
     if(foes_backdrop != nullptr)
@@ -2236,12 +2238,12 @@ bool BattleDisplay::render(SDL_Renderer *renderer)
     /* Render any death animations below the menu */
     for(auto &element : render_elements)
     {
-      if(element->getType() == RenderType::RGB_SPRITE_DEATH)
+      if(element && element->getType() == RenderType::RGB_SPRITE_DEATH)
       {
         auto death_sprite = element->getSprite();
-        auto flasher = element->getFlasher();
+        auto flasher      = element->getFlasher();
 
-        if(death_sprite != nullptr && flasher != nullptr)
+        if(death_sprite && flasher)
         {
           if(element->getAlpha() >= kPERSON_KO_ALPHA)
             death_sprite->setOpacity(element->getAlpha());
@@ -2581,10 +2583,12 @@ void BattleDisplay::unsetOverlays()
 // TODO: Comment
 void BattleDisplay::unsetElements()
 {
+  /* Unset all render elements */
   for(auto &element : render_elements)
   {
-    if(element != nullptr)
+    if(element)
       delete element;
+
     element = nullptr;
   }
 

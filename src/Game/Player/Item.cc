@@ -373,10 +373,6 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer *renderer,
     {
       if(data.getElement(index + 1) == "consumed")
         setFlag(ItemFlags::CONSUMED, state);
-      else if(data.getElement(index + 1) == "offensive")
-        setFlag(ItemFlags::OFFENSIVE, state);
-      else if(data.getElement(index + 1) == "defensive")
-        setFlag(ItemFlags::DEFENSIVE, state);
       else if(data.getElement(index + 1) == "equipment")
         setFlag(ItemFlags::EQUIPMENT, state);
       else if(data.getElement(index + 1) == "bubby")
@@ -385,8 +381,6 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer *renderer,
         setFlag(ItemFlags::KEY_ITEM, state);
       else if(data.getElement(index + 1) == "material")
         setFlag(ItemFlags::MATERIAL, state);
-      else if(data.getElement(index + 1) == "gene_comp")
-        setFlag(ItemFlags::GENE_COMP, state);
       else if(data.getElement(index + 1) == "no_category")
         setFlag(ItemFlags::NO_CATEGORY, state);
       else if(data.getElement(index + 1) == "stat_altering")
@@ -508,13 +502,10 @@ void Item::printFlags()
 {
   /* Print ItemState flags */
   std::cout << "CONSUMED: " << getFlag(ItemFlags::CONSUMED) << "\n";
-  std::cout << "OFFENSIVE: " << getFlag(ItemFlags::OFFENSIVE) << "\n";
-  std::cout << "DEFENSIVE: " << getFlag(ItemFlags::DEFENSIVE) << "\n";
   std::cout << "EQUIPMENT: " << getFlag(ItemFlags::EQUIPMENT) << "\n";
   std::cout << "BUBBY: " << getFlag(ItemFlags::BUBBY) << "\n";
   std::cout << "KEY_ITEM: " << getFlag(ItemFlags::KEY_ITEM) << "\n";
   std::cout << "MATERIAL: " << getFlag(ItemFlags::MATERIAL) << "\n";
-  std::cout << "GENE_COMP: " << getFlag(ItemFlags::GENE_COMP) << "\n";
   std::cout << "STAT_ALTERING: " << getFlag(ItemFlags::STAT_ALTERING) << "\n";
   std::cout << "SKILL_LEARNING: " << getFlag(ItemFlags::SKILL_LEARNING) << "\n";
   std::cout << "HEALING_ITEM: " << getFlag(ItemFlags::HEALING_ITEM) << "\n";
