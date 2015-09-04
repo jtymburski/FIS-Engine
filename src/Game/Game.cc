@@ -421,7 +421,7 @@ bool Game::eventGiveItem(int id, int count)
       found_item = (*it);
 
   /* If the item was inserted, display pickup notification */
-  if(found_item != nullptr)
+  if(found_item != nullptr && count > 0)
   {
     /* Try and insert into sleuth inventory */
     bool inserted = false;
