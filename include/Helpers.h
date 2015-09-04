@@ -138,7 +138,8 @@ public:
   static std::string numToRoman(int value);
 
   /* Returns the enumerated party type from string form */
-  static PartyType partyTypeFromStr(const std::string type);
+  static PartyType partyTypeFromStr(const std::string &type);
+  static std::string partyTypeToStr(const PartyType &type);
 
   /* Returns the enumerated regen rate in string form */
   static RegenRate regenRateFromStr(const std::string &regen_rate);

@@ -1008,7 +1008,7 @@ std::string Helpers::numToRoman(int value)
  * Inputs: std::string tier - string representation of PartyType
  * Output: PartyType - the enumeration of the string
  */
-PartyType Helpers::partyTypeFromStr(const std::string type)
+PartyType Helpers::partyTypeFromStr(const std::string &type)
 {
   std::string type_up = type;
   std::transform(type_up.begin(), type_up.end(), type_up.begin(), toupper);
@@ -1025,6 +1025,27 @@ PartyType Helpers::partyTypeFromStr(const std::string type)
   else if(type_up == "SLEUTH")
     return PartyType::SLEUTH;
   return PartyType::REGULAR_FOE;
+}
+
+/*
+ * Description: Returns the string form of a party type (enum)
+ *
+ * Inputs: PartyType type - enum of type
+ * Output: std::string - the string version of the enumeration
+ */
+std::string Helpers::partyTypeToStr(const PartyType &type)
+{
+  if(type == PartyType::SLEUTH)
+    return "SLEUTH";
+  else if(type == PartyType::BEARACKS)
+    return "BEARACKS";
+  else if(type == PartyType::MINI_BOSS)
+    return "MINI_BOSS";
+  else if(type == PartyType::BOSS)
+    return "BOSS";
+  else if(type == PartyType::FINAL_BOSS)
+    return "FINAL_BOSS";
+  return "REGULAR_FOE";
 }
 
 /*

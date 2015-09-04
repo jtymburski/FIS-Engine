@@ -489,12 +489,12 @@ enum class SortType : std::uint8_t
  */
 enum class PartyType : std::uint8_t
 {
-  SLEUTH,
-  BEARACKS,
-  REGULAR_FOE,
-  MINI_BOSS,
-  BOSS,
-  FINAL_BOSS
+  SLEUTH = 0,
+  BEARACKS = 1,
+  REGULAR_FOE = 2,
+  MINI_BOSS = 3,
+  BOSS = 4,
+  FINAL_BOSS = 5
 };
 
 enum class PartyTarget : std::uint8_t
