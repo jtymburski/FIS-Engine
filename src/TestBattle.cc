@@ -729,7 +729,7 @@ void TestBattle::create()
     30, 30, 15, 0
   }, true);
 
-  // Yuki don't edit Arcadius
+  // Yuki DO NOT edit Arcadius
   stats_arcadius_race_min = AttributeSet(
   {
     55000, 10000, 1000, 1000,
