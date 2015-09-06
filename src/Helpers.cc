@@ -1014,11 +1014,11 @@ PartyType Helpers::partyTypeFromStr(const std::string &type)
   std::transform(type_up.begin(), type_up.end(), type_up.begin(), toupper);
 
   /* Parse */
-  if(type_up == "FINAL_BOSS")
+  if(type_up == "FINAL_BOSS" || type_up == "FINAL BOSS")
     return PartyType::FINAL_BOSS;
   else if(type_up == "BOSS")
     return PartyType::BOSS;
-  else if(type_up == "MINI_BOSS")
+  else if(type_up == "MINI_BOSS" || type_up == "MINI BOSS")
     return PartyType::MINI_BOSS;
   else if(type_up == "BEARACKS")
     return PartyType::BEARACKS;

@@ -90,13 +90,14 @@ private:
   Frame* backdrop;
   Frame* thumbnail;
 
+public:
   /* ------------ Constants --------------- */
   static const double   kMIN_MASS;
   static const double   kMAX_MASS;
   static const uint32_t kMIN_ITEM;
   static const uint32_t kMAX_ITEM;
-  static const uint16_t  kMIN_EACH_ITEM;
-  static const uint16_t  kMAX_EACH_ITEM;
+  static const uint16_t kMIN_EACH_ITEM;
+  static const uint16_t kMAX_EACH_ITEM;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
