@@ -129,11 +129,11 @@ Person::~Person()
   
 /*
  * Description: Copies all data from source object to this object.
+ * Notes: NOT FULLY COMPLETE. Just enough data required for Editor. TODO?
  *
  * Inputs: Person &source - the source to copy from
  * Output: none
  */
-// TODO: NOT FULLY COMPLETE. Relevant??
 void Person::copySelf(const Person &source)
 {
   action_x = source.action_x;

@@ -103,6 +103,27 @@ Party::~Party()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Copies all data from source object to this object.
+ * Notes: NOT FULLY COMPLETE. Just enough data required for Editor. TODO?
+ *
+ * Inputs: Party &source - the source to copy from
+ * Output: none
+ */
+void Party::copySelf(const Party &source)
+{
+  flags = source.flags;
+
+  members = source.members;
+  reserve_members = source.reserve_members;
+
+  max_size = source.max_size;
+
+  party_type = source.party_type;
+
+  //*pouch = *source.pouch;
+}
+
 void Party::createInventory()
 {
   if(pouch != nullptr)
@@ -736,6 +757,31 @@ bool Party::setPartyType(const PartyType &type)
   }
 
   return success;
+}
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Copy operator construction. This is called when the variable
+ *              already exists and equal operator used with another
+ *              Party.
+ *
+ * Inputs: const Party &source - the source class constructor
+ * Output: Party& - pointer to the copied class
+ */
+Party& Party::operator= (const Party &source)
+{
+  /* Check for self assignment */
+  if(this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }
 
 /*=============================================================================

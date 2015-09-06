@@ -85,6 +85,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const Party &source);
+
   /* Create the inventory */
   void createInventory();
 
@@ -187,6 +190,13 @@ public:
 
   /* Attempts to assign the new party type */
   bool setPartyType(const PartyType &type);
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  /* The copy operator */
+  Party& operator= (const Party &source);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
