@@ -205,7 +205,7 @@ enum class Attribute : std::uint8_t
   LIMB = 17,
   UNBR = 18,
   MANN = 19,
-  NONE = 99
+  NONE = 20 /* This needs to always be the last element, at +1 of the last */
 };
 
 /* Enumerated BattleAttribute types -- expanded on AttributeSet */
