@@ -19,6 +19,8 @@
  * CONSTANTS - See header declaration for details.
  *============================================================================*/
 
+const uint32_t Party::kID_BEARACKS{1};
+const uint32_t Party::kID_SLEUTH{0};
 const uint16_t Party::kMAX_MEMBERS_BEARACKS{50};
 const uint16_t Party::kMAX_MEMBERS_SLEUTH{5};
 const uint16_t Party::kMAX_MEMBERS_FOES{5};

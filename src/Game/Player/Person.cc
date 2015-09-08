@@ -36,6 +36,7 @@
  *============================================================================*/
 const uint8_t Person::kACTION_X = 60;
 const uint8_t Person::kACTION_Y = 128;
+const uint32_t Person::kID_PLAYER{0};
 const size_t Person::kNUM_LEVELS{15};
 const size_t Person::kNUM_EQUIP_SLOTS{5};
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */

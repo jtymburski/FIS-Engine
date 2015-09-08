@@ -162,6 +162,7 @@ protected:
 
   /* ------------ Constants --------------- */
 public:
+  static const uint32_t kID_MONEY;       /* ID of money item */
   static const uint32_t kMAX_DURABILITY; /* Maximum durability */
   static const uint32_t kMAX_MASS;       /* Maximum mass of an Item */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */

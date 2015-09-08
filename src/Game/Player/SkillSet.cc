@@ -21,12 +21,13 @@
  * CONSTANTS
  *============================================================================*/
 
-const bool   SkillSet::kADDITION_BYPASS  =  true;
-const bool   SkillSet::kENABLED_DEFAULT  =  true;
-const size_t SkillSet::kMAX_SKILLS       =   500;
-const size_t SkillSet::kMAX_UNLOCK_LEVEL =   127;
-const size_t SkillSet::kMIN_UNLOCK_LEVEL =     1;
-const int    SkillSet::kUNSET_ID         =    -1;
+const bool     SkillSet::kADDITION_BYPASS  =  true;
+const bool     SkillSet::kENABLED_DEFAULT  =  true;
+const uint32_t SkillSet::kID_BUBBIFIED     =     0;
+const size_t   SkillSet::kMAX_SKILLS       =   500;
+const size_t   SkillSet::kMAX_UNLOCK_LEVEL =   127;
+const size_t   SkillSet::kMIN_UNLOCK_LEVEL =     1;
+const int      SkillSet::kUNSET_ID         =    -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

@@ -64,8 +64,10 @@ private:
   std::vector<SetElement> skill_elements;
 
   /* ------------ Constants --------------- */
+public:
   static const bool   kADDITION_BYPASS;  /* Does the + operator bypass max? */
   static const bool   kENABLED_DEFAULT;  /* Are skills enabled by default? */
+  static const uint32_t kID_BUBBIFIED;   /* The bubbified skill set ID */
   static const size_t kMAX_SKILLS;       /* Problems with adding mass skills */
   static const size_t kMIN_UNLOCK_LEVEL; /* Min. lvl a Skill can be unlocked */
   static const size_t kMAX_UNLOCK_LEVEL; /* Max. lvl a Skill can be unlocked */

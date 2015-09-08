@@ -49,11 +49,6 @@
  * CONSTANTS
  *============================================================================*/
 
-const uint32_t Game::kID_ITEM_MONEY = 0;
-const uint32_t Game::kID_PARTY_BEARACKS = 1;
-const uint32_t Game::kID_PARTY_SLEUTH = 0;
-const uint32_t Game::kID_PERSON_PLAYER = 0;
-const uint32_t Game::kID_SET_BUBBIFIED = 0;
 const uint32_t Game::kSTARTING_MAP = 0;
 const std::string Game::kSTARTING_PATH = "maps/Univursa.ugv";
 
@@ -428,7 +423,7 @@ bool Game::eventGiveItem(int id, int count)
     if(player_main != nullptr)
     {
       /* If ID matches item ID, add credits */
-      if(id == kID_ITEM_MONEY)
+      if(id == (int)Item::kID_MONEY)
       {
         inserted = player_main->addCredits(count);
       }
@@ -592,8 +587,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
     if(full_load)
     {
       /* Player set-up */
-      player_main->setSleuth(getParty(kID_PARTY_SLEUTH));
-      player_main->setBearacks(getParty(kID_PARTY_BEARACKS));
+      player_main->setSleuth(getParty(Party::kID_SLEUTH));
+      player_main->setBearacks(getParty(Party::kID_BEARACKS));
     }
 
     /* Clean up map */
@@ -966,7 +961,7 @@ bool Game::setupBattle(Party* allies, Party* foes)
       member->battlePrep();
 
     /* Set up battle */
-    battle_ctrl = new Battle(allies, foes, getSkillSet(kID_SET_BUBBIFIED), 
+    battle_ctrl = new Battle(allies, foes, getSkillSet(SkillSet::kID_BUBBIFIED), 
                              &event_handler);
     battle_vis->setBattle(battle_ctrl, active_renderer);
 

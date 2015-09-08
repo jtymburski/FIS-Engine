@@ -76,10 +76,13 @@ private:
   Inventory *pouch;
 
   /* ------------ Constants --------------- */
+public:
+  static const uint32_t kID_BEARACKS; /* ID of player bearacks party */
+  static const uint32_t kID_SLEUTH;   /* ID of player sleuth party */
   static const uint16_t kMAX_MEMBERS_BEARACKS;
   static const uint16_t kMAX_MEMBERS_SLEUTH;
   static const uint16_t kMAX_MEMBERS_FOES;
-  static const int32_t kUNSET_ID; /* The unset ID for the party */
+  static const int32_t  kUNSET_ID; /* The unset ID for the party */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

@@ -25,6 +25,7 @@
 int32_t Item::id{0};
 
 /* Static Class Constants */
+const uint32_t Item::kID_MONEY{0};
 const uint32_t Item::kMAX_DURABILITY{100000};
 const uint32_t Item::kMAX_MASS{500000};
 const uint32_t Item::kMAX_VALUE{100000000};

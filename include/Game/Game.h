@@ -102,11 +102,7 @@ private:
   //VictoryScreen* victory_screen;
 
   /* ------------ Constants --------------- */
-  static const uint32_t kID_ITEM_MONEY; /* ID of money item */
-  static const uint32_t kID_PARTY_BEARACKS; /* ID of player bearacks party */
-  static const uint32_t kID_PARTY_SLEUTH; /* ID of player sleuth party */
-  static const uint32_t kID_PERSON_PLAYER; /* ID of player primary person */
-  static const uint32_t kID_SET_BUBBIFIED; /* ID of bubbified skillset */
+public:
   static const uint32_t kSTARTING_MAP; /* Starting map ID */
   static const std::string kSTARTING_PATH; /* Starting game path */
 

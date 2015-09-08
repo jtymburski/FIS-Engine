@@ -229,10 +229,11 @@ private:
   static int id; /* Person unique ID counter */
   static std::vector<uint32_t> exp_table; /* Table of exp. values */
 
-public:
   /* ------------ Constants --------------- */
+public:
   static const uint8_t  kACTION_X;        /* Action render X point */
   static const uint8_t  kACTION_Y;        /* Action render Y point */
+  static const uint32_t kID_PLAYER;       /* ID of player primary person */
   static const size_t   kNUM_LEVELS;      /* Number of Levels for Persons */
   static const size_t   kNUM_EQUIP_SLOTS; /* Number of Equip Slots */
   static const uint32_t kMAX_CREDIT_DROP; /* Maximum credit award */
