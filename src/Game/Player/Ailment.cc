@@ -139,28 +139,34 @@ Ailment::Ailment(Person* ail_victim, const Infliction& ail_type,
       inflictor{ail_inflictor},
       victim{ail_victim}
 {
-  if(type == Infliction::INVALID)
-  {
-    chance = 0;
-    max_turns_left = 0;
-    victim = nullptr;
-    inflictor = nullptr;
-  }
-  else
-  {
-    if(ail_victim != nullptr)
-      // if (!checkImmunity(ail_victim))
-      setFlag(AilState::VICTIM_SET, true);
+  (void)ail_victim;
+  (void)ail_type;
+  (void)ail_inflictor;
+  (void)ail_max_turns;
+  (void)ail_min_turns;
+  (void)ail_chance;
+  // if(type == Infliction::INVALID)
+  // {
+  //   chance = 0;
+  //   max_turns_left = 0;
+  //   victim = nullptr;
+  //   inflictor = nullptr;
+  // }
+  // else
+  // {
+  //   if(ail_victim != nullptr)
+  //     // if (!checkImmunity(ail_victim))
+  //     setFlag(AilState::VICTIM_SET, true);
 
-    if(inflictor != nullptr)
-      setFlag(AilState::INFLICTOR_SET, true);
+  //   if(inflictor != nullptr)
+  //     setFlag(AilState::INFLICTOR_SET, true);
 
-    setDuration(ail_min_turns, ail_max_turns, chance);
+  //   setDuration(ail_min_turns, ail_max_turns, chance);
 
-    setFlag(AilState::CURE_ON_DEATH, true);
-    setFlag(AilState::TO_UPDATE, true);
-    setFlag(AilState::TO_APPLY, true);
-  }
+  //   setFlag(AilState::CURE_ON_DEATH, true);
+  //   setFlag(AilState::TO_UPDATE, true);
+  //   setFlag(AilState::TO_APPLY, true);
+  // }
 }
 
 /*=============================================================================
@@ -185,798 +191,816 @@ Ailment::Ailment(Person* ail_victim, const Infliction& ail_type,
  * Inputs: none
  * Output: bool - true if the ailment is to be cured
  */
-bool Ailment::apply()
+// bool Ailment::apply()
+// {
+  // if(victim == nullptr)
+  //   return false;
+
+  // /* Helper variables */
+  // const auto& kHEALTH = victim->getCurr().getStat(Attribute::VITA);
+  // auto& stats = victim->getCurr();
+  // auto& max_stats = victim->getTemp();
+  // auto skills = victim->getCurrSkills();
+
+  // /* Poison: Ailed actor takes increasing hit to HP every turn
+  //  * Constants: kPOISON_DMG_MAX -- maximum amount poison damage can do
+  //  *            kPOISON_DMG_MIN -- minimum amount poison damage can do
+  //  *            kPOISON_DMG_INCR -- % increase poison damage does
+  //  *            kPOISON_DMG_INIT -- % dmg incurred by poison initially
+  //  */
+  // if(type == Infliction::POISON)
+  // {
+  //   auto min_value = static_cast<int32_t>(kPOISON_DMG_MIN);
+  //   auto max_value = static_cast<int32_t>(kPOISON_DMG_MAX);
+
+  //   if(min_value < (kPOISON_DMG_INIT * kHEALTH))
+  //     min_value = kPOISON_DMG_INIT * kHEALTH;
+
+  //   if(max_value > stats.getStat(Attribute::VITA))
+  //     max_value = stats.getStat(Attribute::VITA);
+
+  //   if(turns_occured > 0)
+  //   {
+  //     auto damage_amount =
+  //         min_value *
+  //         std::pow(static_cast<float>(kPOISON_DMG_INCR), turns_occured);
+  //     damage = static_cast<int32_t>(std::floor(damage_amount));
+  //   }
+
+  //   damage = Helpers::setInRange(damage, min_value, max_value);
+  //   damage_type = DamageType::POISON;
+
+  //   setFlag(AilState::DEALS_DAMAGE, true);
+  // }
+
+  // /* Burn/Scald/Char - The three increasing levels of Burn
+  //  * Burn - light damage over a few turns
+  //  * Scald - moderate damage over a few more turns
+  //  * Char - heavy damage over a long period
+  //  * Constant: kBURN_DMG_MIN - minimum amt of burn damage
+  //  *           kBURN_DMG_MAX - maximum amt of burn damage
+  //  *           kBURN_DMG_INCR - % incr burn damage per additional lvl
+  //  *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
+  //  */
+  // else if(type == Infliction::BURN || type == Infliction::SCALD ||
+  //         type == Infliction::CHARR)
+  // {
+  //   auto min_value = static_cast<int32_t>(kBURN_DMG_MIN);
+  //   auto max_value = static_cast<int32_t>(kBURN_DMG_MAX);
+
+  //   damage = min_value;
+  //   if(damage < (kBURN_DMG_INCR * kBURN_DMG_PC))
+  //     damage = kBURN_DMG_INCR * kBURN_DMG_PC;
+
+  //   if(max_value > stats.getStat(Attribute::VITA))
+  //     max_value = stats.getStat(Attribute::VITA);
+
+  //   if(type == Infliction::SCALD)
+  //     damage *= kBURN_DMG_INCR;
+  //   if(type == Infliction::CHARR)
+  //     damage *= kBURN_DMG_INCR;
+
+  //   damage = Helpers::setInRange(damage, min_value, max_value);
+  //   damage_type = DamageType::BURN;
+
+  //   setFlag(AilState::DEALS_DAMAGE, true);
+  // }
+
+  // /* Berserk - Ailed actor physically attacks enemy target for extreme damage
+  //  *           while receiving damage themselves. Hitback damage will take
+  //  *           place in Battle.
+  //  * Constants: kBERSERK_DMG_INCR - multiplier for normal damage on target
+  //  *            kBERSERK_HITBACK_PC - multiplier for damage done to self.
+  //  */
+  // else if(type == Infliction::BERSERK)
+  // {
+  //   /* On initial application, disable non physical skills and running */
+  //   victim->setBFlag(BState::SKL_ENABLED, false);
+  //   victim->setBFlag(BState::DEF_ENABLED, false);
+  //   victim->setBFlag(BState::GRD_ENABLED, false);
+  //   victim->setBFlag(BState::ITM_ENABLED, false);
+  //   victim->setBFlag(BState::RUN_ENABLED, false);
+  //   victim->setBFlag(BState::PAS_ENABLED, false);
+  //   victim->setDmgMod(2);
+
+  //   setFlag(AilState::TO_APPLY, false);
+  //   setFlag(AilState::TO_UNAPPLY, true);
+  // }
+
+  // /* Ailed actor cannot use skills if they require QD */
+  // else if(type == Infliction::SILENCE)
+  // {
+  //   /* On application, remove skills which have a QD cost > 0 from useable */
+  //   for(uint32_t i = 0; i < skills->getSize(); i++)
+  //     if(skills->getElement(i).skill != nullptr)
+  //       if(skills->getElement(i).skill->getCost() > 0)
+  //         skills->setSilenced(i, true);
+
+  //   setFlag(AilState::TO_APPLY, false);
+  //   setFlag(AilState::TO_UNAPPLY, true);
+  // }
+
+  // /* Bubbify - ailed actor is turned into a near-useless Bubby */
+  // else if(type == Infliction::BUBBIFY)
+  // {
+  //   /* Decrease the stats of the person by a factor of kBUBBIFY_STAT_MULR */
+  //   for(uint16_t i = 0; i < stats.getSize(); i++)
+  //   {
+  //     stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULT.at(i));
+  //     max_stats.setStat(i, max_stats.getStat(i) * kBUBBIFY_STAT_MULT.at(i));
+  //   }
+
+  //   /* Flip the Battle State Bubby flag */
+  //   victim->setAilFlag(PersonAilState::IS_BUBBY, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   setFlag(AilState::TO_UNAPPLY, true);
+  // }
+
+  // /* Modulate */
+  // else if(type == Infliction::MODULATE)
+  // {
+  //   for(uint16_t i = 0; i < stats.getSize(); i++)
+  //   {
+  //     stats.setStat(i, stats.getStat(i) * kMODULATE_STAT_MULT.at(i));
+  //     max_stats.setStat(i, max_stats.getStat(i) * kMODULATE_STAT_MULT.at(i));
+  //   }
+  // }
+
+  // /* Death Timer - Ailed actor KOs upon reaching max_turns */
+  // else if(type == Infliction::DEATHTIMER)
+  // {
+  //   if(max_turns_left == 0)
+  //     setFlag(AilState::TO_KILL, true);
+  // }
+
+  // /* Paralysis - Ailed actor has a kPARALYSIS_PC chance of skipping their turn,
+  //  *             the effect persisting or a number of turns
+  //  * Constants: kPARALYSIS_PC - Percent chance to skip each turn */
+  // else if(type == Infliction::PARALYSIS)
+  // {
+  //   if(Helpers::chanceHappens((kPARALYSIS_PC * 100), 100))
+  //     victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, true);
+  // }
+
+  // /* Blindness - Ailed actor has a kBLIND_PC chance of missing targets
+  //  * Constants: kBLIND_PC - Percet chance for ailed actor to miss targets
+  //  */
+  // else if(type == Infliction::BLINDNESS)
+  // {
+  //   if(Helpers::chanceHappens((kBLIND_PC * 100), 100))
+  //     victim->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
+  // }
+
+  // /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
+  //  *               skipping just one turn
+  //  * Constants: kDREADSTRUCK_PC - Percent chance of skipping their next turn.
+  //  */
+  // else if(type == Infliction::DREADSTRUCK)
+  // {
+  //   if(Helpers::chanceHappens((kDREADSTRUCK_PC), 100))
+  //     victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
+  // }
+
+  // /* Dreamsnare - Ailed actor's actions have a kDREAMSNARE_PC chance of being
+  //  *              benign illusions (no effect)
+  //  * Constants: kDREAMSNARE_PC - Percent chance of no effect attacks
+  //  */
+  // else if(type == Infliction::DREAMSNARE)
+  // {
+  //   if(Helpers::chanceHappens((kDREAMSNARE_PC * 100), 100))
+  //     victim->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, true);
+  // }
+
+  //  Bond & Bonded - Two actors are afflicted simultaneously. One person is
+  //  * Bonded to the other. The Bond person is essentially in a dead state, but
+  //  * the other assumes a kBOND_STATS_PC percent of their statistical boost.
+  //  * However, if the Bonded actor dies, the Bond actor wll also die (this
+  //  * case will be handled in Battle)
+  //  * Constants: kBOND_STATS_PC - % by which to increase actor's stats.
+
+  // else if(type == Infliction::BOND)
+  // {
+  //   victim->setAilFlag(PersonAilState::BOND, true);
+  // }
+  // else if(type == Infliction::BONDED)
+  // {
+  //   for(uint32_t i = 0; i < stats.getSize(); i++)
+  //     stats.setStat(i, stats.getStat(i) * (1 + kBOND_STATS_PC));
+  // }
+
+  // /* Buffs -- Increases the user's stats by a specified amount on application
+  //  * Constants: kALLBUFF_PC  - % to incr all values
+  //  *            kPHYSBUFF_PC - % to incr phys values
+  //  *            kELMBUFF_PC  - % to incr elemental values
+  //  */
+  // /* Remove the buffing effects from all attack stats */
+  // else if(getType() == Infliction::ALLATKBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+
+  //   for(uint32_t i = 2; i < stats.getSize(); i++)
+  //     if(i % 2 == 0 && i < 16)
+  //       stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
+  // }
+
+  // /* Remove the buffing effect from all defense stats */
+  // else if(getType() == Infliction::ALLDEFBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+
+  //   for(uint32_t i = 2; i < stats.getSize(); i++)
+  //     if(i % 2 != 0 && i < 16)
+  //       stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
+  // }
+
+  // else if(getType() == Infliction::PHYBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(2, stats.getStat(2) * kPHYSBUFF_PC);
+  //   stats.setStat(3, stats.getStat(3) * kPHYSBUFF_PC);
+  // }
+  // else if(type == Infliction::THRBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(4, stats.getStat(4) * kELMBUFF_PC);
+  //   stats.setStat(5, stats.getStat(5) * kELMBUFF_PC);
+  // }
+  // else if(type == Infliction::PRIBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(6, stats.getStat(6) * kELMBUFF_PC);
+  //   stats.setStat(7, stats.getStat(7) * kELMBUFF_PC);
+  // }
+  // else if(type == Infliction::POLBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(8, stats.getStat(8) * kELMBUFF_PC);
+  //   stats.setStat(9, stats.getStat(9) * kELMBUFF_PC);
+  // }
+  // else if(type == Infliction::CHGBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(10, stats.getStat(10) * kELMBUFF_PC);
+  //   stats.setStat(11, stats.getStat(11) * kELMBUFF_PC);
+  // }
+  // else if(type == Infliction::CYBBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(12, stats.getStat(12) * kELMBUFF_PC);
+  //   stats.setStat(13, stats.getStat(13) * kELMBUFF_PC);
+  // }
+  // else if(type == Infliction::NIHBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(14, stats.getStat(14) * kELMBUFF_PC);
+  //   stats.setStat(15, stats.getStat(15) * kELMBUFF_PC);
+  // }
+  // else if(type == Infliction::UNBBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(18, stats.getStat(18) * kELMBUFF_PC);
+  // }
+  // else if(type == Infliction::LIMBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   stats.setStat(17, stats.getStat(17) * kLIMBUFF_PC);
+  //   stats.setStat(16, stats.getStat(16) * kLIMBUFF_PC);
+  // }
+  // else if(type == Infliction::VITBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   max_stats.setStat(0, stats.getStat(0) * kVITBUFF_PC);
+  // }
+  // else if(type == Infliction::QDBUFF)
+  // {
+  //   setFlag(AilState::BUFF, true);
+  //   setFlag(AilState::TO_APPLY, false);
+  //   max_stats.setStat(1, stats.getStat(1) * kQDBUFF_PC);
+  // }
+
+  // /* Rootbound - Ailed actor (if biological in nature) gains a % HP / turn
+  //  * Constats - kROOTBOUND_PC - % vitality to be gained each turn */
+  // else if(type == Infliction::ROOTBOUND)
+  // {
+  //   auto value = stats.getStat(Attribute::VITA) * kROOTBOUND_PC;
+  //   stats.setStat(Attribute::VITA, value);
+  // }
+
+  // /* Double Cast allows the user to use two skils per turn */
+  // else if(type == Infliction::DOUBLECAST)
+  //   victim->setAilFlag(PersonAilState::TWO_SKILLS, true);
+
+  // /* Triple Cast allows the user to use three skills per turn */
+  // else if(type == Infliction::TRIPLECAST)
+  //   victim->setAilFlag(PersonAilState::THREE_SKILLS, true);
+
+  // /* Half Cost - On application, the user's useable skill costs are halved */
+  // else if(type == Infliction::HALFCOST)
+  //   victim->setAilFlag(PersonAilState::HALF_COST, true);
+
+  // /* Hibernation - Gain a % health back per turn in exchange for skipping it,
+  //  *               but the % gain grows
+  //  * Constants - kHIBERNATION_INIT - Initial % (of cur value) hibernation adds
+  //  *             kHIBERNATION_INCR - Increasing % for each turn
+  //  */
+  // else if(type == Infliction::HIBERNATION)
+  // {
+  //   float gain_pc = kHIBERNATION_INIT;
+
+  //   for(uint32_t i = 0; i < turns_occured; i++)
+  //     gain_pc += kHIBERNATION_INCR;
+
+  //   damage = stats.getStat(Attribute::VITA) * gain_pc;
+
+  //   setFlag(AilState::DEALS_DAMAGE, true);
+
+  //   victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, true);
+  // }
+
+  // /* Reflect - turn on Person flag to show they reflect skills */
+  // else if(type == Infliction::REFLECT)
+  //   victim->setAilFlag(PersonAilState::REFLECT, true);
+
+  // /* Metabolic Tether - Metabolic tether has a kMETABOLIC_PC chance for
+  //  * killing
+  //  *   the inflicted, but also a kMETABOLIC_DMG percent that it will deal to
+  //  *   the target.
+  //  */
+  // else if(type == Infliction::METATETHER)
+  // {
+  //   // TODO [01-26-14]
+  //   /* Do kMETABOLIC_DMG % upon victim, emit signal if dead */
+  //   // if (victim->damage(max_stats.getStat(EnumDb::VITA) * kMETABOLIC_DMG))
+  //   //    emit victimDeath(victim->getName(), EnumDb::METABOLIC_TETHER);
+
+  //   /* Check for kMETABOLIC_PC chance for instant death */
+  //   // if (chanceHappens(kMETABOLIC_PC * 100))
+  //   //    emit victimDeath(victim->getName(), EnumDb::METABOLIC_DMG);
+  // }
+
+  // /* Modulate - Modulates a persons sprite and improves their stats by
+  //  *            some factor.
+  //  *
+  //  * Constants:
+  //  */
+  // else if(type == Infliction::MODULATE)
+  // {
+  // }
+
+  // return true;
+// }
+
+/*
+ * Description: Checks the immunity of a potential victim given the type of
+ *the
+ * ailment.
+ *
+ * Inputs: none
+ * Output: bool - evaluation of the immunity check
+ */
+// bool Ailment::checkImmunity(Person* new_victim)
+// {
+  // if(new_victim == nullptr)
+  //   return false;
+
+  // /* Flag immunity section */
+  // if(new_victim->getPFlag(PState::MINI_BOSS))
+  // {
+  //   if(type == Infliction::DEATHTIMER || type == Infliction::BUBBIFY)
+  //     return false;
+  // }
+
+  // /* Bosses are immune to some ailments */
+  // else if(new_victim->getPFlag(PState::BOSS))
+  // {
+  //   if(type == Infliction::DEATHTIMER || type == Infliction::BUBBIFY ||
+  //      type == Infliction::SILENCE || type == Infliction::PARALYSIS ||
+  //      type == Infliction::BLINDNESS)
+  //     return false;
+  // }
+
+  // /* Final boss will be immune to many ailments */
+  // else if(new_victim->getPFlag(PState::FINAL))
+  // {
+  //   if(type == Infliction::DEATHTIMER || type == Infliction::BUBBIFY ||
+  //      type == Infliction::SILENCE || type == Infliction::PARALYSIS ||
+  //      type == Infliction::BLINDNESS || type == Infliction::CONFUSE ||
+  //      type == Infliction::BERSERK)
+  //     return false;
+  // }
+
+  // /* Bubby effect immunity section */
+  // if(type == Infliction::ALLATKBUFF || type == Infliction::ALLDEFBUFF ||
+  //    type == Infliction::PHYBUFF || type == Infliction::THRBUFF ||
+  //    type == Infliction::POLBUFF || type == Infliction::PRIBUFF ||
+  //    type == Infliction::CHGBUFF || type == Infliction::CYBBUFF ||
+  //    type == Infliction::NIHBUFF || type == Infliction::LIMBUFF ||
+  //    type == Infliction::UNBBUFF || type == Infliction::VITBUFF ||
+  //    type == Infliction::QDBUFF)
+  //   return false;
+
+  // /* Check for category and racial immunity */
+  // if(victim->getClass()->isImmune(type))
+  //   return false;
+
+  // if(victim->getRace()->isImmune(type))
+  //   return false;
+
+  // return true;
+//}
+
+/*
+ * Description: Updates the turn counter on the status ailment based off
+ *              the random chance to cure each turn (if not zero). Returns
+ *true
+ *              if the ailment will be cured after this update, false
+ *otherwise.
+ *
+ * Inputs: none
+ * Output: bool - true if the ailment is to be cured after the update of Fn.
+ */
+// bool Ailment::updateTurns()
+// {
+//   turns_occured++;
+
+//   /* If the ailment doesn't have one turn left, if it's finite, decrement it
+//    */
+//   if(max_turns_left <= kMAX_TURNS && max_turns_left > 0)
+//     --max_turns_left;
+//   if(min_turns_left > 0)
+//     --min_turns_left;
+
+//   if(turns_occured <= min_turns_left)
+//     return false;
+
+//   /* If the ailment is finite, cure it based on chance */;
+//   if(chance != 0 && Helpers::chanceHappens(std::floor(chance), 100))
+//     max_turns_left = 1;
+
+//   /* If the ailment currently has one turn left, it's cured! */
+//   if(max_turns_left == 1)
+//     return true;
+
+//   return false;
+// }
+
+/*
+ * Description: Sets the type of Infliction of the ailment
+ *
+ * Inputs: Infliction - type of Infliction to be set.
+ * Output: none
+ */
+// void Ailment::setType(const Infliction& new_type)
+// {
+//   type = new_type;
+// }
+
+/*
+ * Description: Assigns the inflictor of the ailment
+ *
+ * Inputs: Person* - pointer to the person who inflicted the ailment
+ * Output: bool - true if the inflictor is being set for the first time.
+ */
+// bool Ailment::setInflictor(Person* new_inflictor)
+// {
+  // if(!getFlag(AilState::INFLICTOR_SET) && new_inflictor != 0)
+  // {
+  //   inflictor = new_inflictor;
+  //   setFlag(AilState::INFLICTOR_SET);
+
+  //   return true;
+  // }
+
+  // return false;
+// }
+
+/*
+ * Description: Assigns the victim of the ailment.
+ *
+ * Inputs: Person* - pointer to the person the ailment is inflicting.
+ * Output: bool - true if the victim is being set for the first time.
+ */
+// bool Ailment::setVictim(Person* set_victim)
+// {
+  // if(!getFlag(AilState::VICTIM_SET))
+  // {
+  //   victim = set_victim;
+  //   setFlag(AilState::VICTIM_SET);
+
+  //   return true;
+  // }
+
+  // return false;
+// }
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Unapplies the effects of the status ailment to the victim.
+ *
+ * Inputs: none
+ * Output: none
+ */
+// void Ailment::unapply()
+// {
+  // // TODO: Retain the defaults or previous settings of things? [01-26-14]
+  // auto& stats = victim->getCurr();
+  // // auto& max_stats = victim->getTemp();
+  // auto skills = victim->getCurrSkills();
+
+  // /* On removing Berserk, person's dmg_mod needs to be reset. Action flags are
+  //  * recomputed in the reCalcAilmentFlags() function in Battle */
+  // if(getType() == Infliction::BERSERK)
+  //   victim->setDmgMod(1);
+
+  // /* Silence - When silence is removed, skills need to have their booleans
+  //  * reassigned. (This is no longer the enabled flag, is own silenced one) */
+  // else if(getType() == Infliction::SILENCE)
+  // {
+  //   for(uint32_t i = 0; i < skills->getSize(); i++)
+  //     skills->setSilenced(i, false);
+  // }
+
+  // /* Bond - on unapplication, the Person BOND flag is turned off
+  //  */
+  // else if(getType() == Infliction::BOND)
+  // {
+  //   victim->setAilFlag(PersonAilState::BOND, false);
+  // }
+
+  // /* Bonded - on unapplication, the Persons' buffed stats are returned to
+  //  * normal
+  //  */
+  // else if(getType() == Infliction::BONDED)
+  // {
+  //   for(uint32_t i = 0; i < stats.getSize(); i++)
+  //     stats.setStat(i, stats.getStat(i) / (1 + kBOND_STATS_PC));
+  // }
+
+  //  When bubbify is removed, actor needs to return to normal (all other buffs
+  //    are removed as well)
+  // else if(getType() == Infliction::BUBBIFY)
+  // {
+  //   victim->setAilFlag(PersonAilState::IS_BUBBY, false);
+  // }
+
+  // /* Double Cast - on unapplication turn off the flag for DoubleCast */
+  // else if(getType() == Infliction::DOUBLECAST)
+  // {
+  //   victim->setAilFlag(PersonAilState::TWO_SKILLS, false);
+  // }
+
+  // /* Tripl Cast - on unapplication, turn off the flag for TripleCast */
+  // else if(getType() == Infliction::TRIPLECAST)
+  //   victim->setAilFlag(PersonAilState::THREE_SKILLS, false);
+
+  // /* Half Cost - on unapplication, turn off the flag for HalfCost */
+  // else if(getType() == Infliction::HALFCOST)
+  //   victim->setAilFlag(PersonAilState::HALF_COST, false);
+
+  // /* Reflect - on unapplication, turn off the Person flag for reflect */
+  // else if(getType() == Infliction::REFLECT)
+  //   victim->setAilFlag(PersonAilState::REFLECT, false);
+
+  // /* Modulate - Certain classes may modulate themselves, converting their
+  //  *            sprite and increasing their stats by some factor.
+  //  *
+  //  * Constants:
+  //  */
+  // else if(type == Infliction::MODULATE)
+  // {
+  // }
+// }
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+// bool Ailment::toReapplyFlags()
+// {
+
+  // if(type == Infliction::BERSERK || type == Infliction::HIBERNATION)
+  // {
+  //   return true;
+  // }
+
+  // return false;
+// }
+
+/*
+ * Description: Prints all the info pertaining to Ailment by calling the other
+ *              print functions
+ *
+ * Inputs: none
+ * Output: none
+ */
+// void Ailment::print(const bool& simple, const bool& flags)
+// {
+  // std::cout << " --- Ailment ---\n";
+
+  // if(simple)
+  // {
+  //   std::cout << "Ch" << chance << " T Lf: " << max_turns_left
+  //             << " T Oc: " << turns_occured << "\n";
+  //   std::cout << "Vic: " << victim->getName() << "\n";
+  // }
+  // else
+  // {
+  //   std::cout << "Chance: " << chance;
+  //   std::cout << "\nMax # turns left: " << max_turns_left;
+  //   std::cout << "\nTurns Occured: " << turns_occured;
+  //   std::cout << "\nCurrent Victim Name: " << victim->getName() << "\n";
+  // }
+
+  // if(flags)
+  // {
+  //   std::cout << "LASTING: " << getFlag(AilState::LASTING) << "\n";
+  //   std::cout << "CURABLE" << getFlag(AilState::CURABLE) << "\n";
+  //   std::cout << "TO_CURE" << getFlag(AilState::TO_CURE) << "\n";
+  //   std::cout << "TO_UPDATE" << getFlag(AilState::TO_UPDATE) << "\n";
+  //   std::cout << "TO_APPLY" << getFlag(AilState::TO_APPLY) << "\n";
+  //   std::cout << "TO_UNAPPLY" << getFlag(AilState::TO_UNAPPLY) << "\n";
+  //   std::cout << "BUFF" << getFlag(AilState::BUFF) << "\n";
+  //   std::cout << "ADVERSE" << getFlag(AilState::ADVERSE) << "\n";
+  //   std::cout << "IMMUNITY" << getFlag(AilState::IMMUNITY) << "\n";
+  //   std::cout << "CURE_ON_DEATH" << getFlag(AilState::CURE_ON_DEATH) << "\n";
+  //   std::cout << "VICTIM_SET" << getFlag(AilState::VICTIM_SET) << "\n";
+  //   std::cout << "INFLICTOR_SET" << getFlag(AilState::INFLICTOR_SET) << "\n";
+  //   std::cout << "DEALS DAMAGE" << getFlag(AilState::DEALS_DAMAGE) << "\n";
+  //   std::cout << "UPDATE PROCESSED" << getFlag(AilState::UPDATE_PROCESSED);
+  // }
+
+  // std::cout << "\n -- /Ailment --- " << std::endl;
+// }
+
+/*
+ * Description: Returns the amount of damage computed for the ailment update
+ *
+ * Inputs: none
+ * Output: int32_t - the amount of damage
+ */
+// int32_t Ailment::getDamageAmount() const
+// {
+//   return damage;
+// }
+
+/*
+ * Description: Returns the type of damage computed for the ailment update
+ *
+ * Inputs: none
+ * Output: DamageType - the type of damage
+ */
+// DamageType Ailment::getDamageType() const
+// {
+//   return damage_type;
+// }
+
+/*
+ * Description: Evaluates a given status Ailment flag.
+ *
+ * Inputs: AilState flags - the flags to be evaluated
+ * Output: bool - the boolean evaluation of the given flag
+ */
+// bool Ailment::getFlag(AilState test_flag)
+// {
+//   return static_cast<bool>((flag_set & test_flag) == test_flag);
+// }
+
+/*
+ * Description: Returns the number (max number) of turns left on the ailment
+ *
+ * Inputs: none
+ * Output: ushort - maximum number of turns left on the ailment
+ */
+// uint16_t Ailment::getTurnsLeft()
+// {
+//   return max_turns_left;
+// }
+
+/*
+ * Description: Returns the Infliction type of the ailment
+ *
+ * Inputs: none
+ * Output: Infliction - type of Ailment
+ */
+Infliction Ailment::getType()
 {
-  if(victim == nullptr)
-    return false;
-
-  /* Helper variables */
-  const auto& kHEALTH = victim->getCurr().getStat(Attribute::VITA);
-  auto& stats = victim->getCurr();
-  auto& max_stats = victim->getTemp();
-  auto skills = victim->getCurrSkills();
-
-  /* Poison: Ailed actor takes increasing hit to HP every turn
-   * Constants: kPOISON_DMG_MAX -- maximum amount poison damage can do
-   *            kPOISON_DMG_MIN -- minimum amount poison damage can do
-   *            kPOISON_DMG_INCR -- % increase poison damage does
-   *            kPOISON_DMG_INIT -- % dmg incurred by poison initially
-   */
-  if(type == Infliction::POISON)
-  {
-    auto min_value = static_cast<int32_t>(kPOISON_DMG_MIN);
-    auto max_value = static_cast<int32_t>(kPOISON_DMG_MAX);
-
-    if(min_value < (kPOISON_DMG_INIT * kHEALTH))
-      min_value = kPOISON_DMG_INIT * kHEALTH;
-
-    if(max_value > stats.getStat(Attribute::VITA))
-      max_value = stats.getStat(Attribute::VITA);
-
-    if(turns_occured > 0)
-    {
-      auto damage_amount =
-          min_value *
-          std::pow(static_cast<float>(kPOISON_DMG_INCR), turns_occured);
-      damage = static_cast<int32_t>(std::floor(damage_amount));
-    }
-
-    damage = Helpers::setInRange(damage, min_value, max_value);
-    damage_type = DamageType::POISON;
-
-    setFlag(AilState::DEALS_DAMAGE, true);
-  }
-
-  /* Burn/Scald/Char - The three increasing levels of Burn
-   * Burn - light damage over a few turns
-   * Scald - moderate damage over a few more turns
-   * Char - heavy damage over a long period
-   * Constant: kBURN_DMG_MIN - minimum amt of burn damage
-   *           kBURN_DMG_MAX - maximum amt of burn damage
-   *           kBURN_DMG_INCR - % incr burn damage per additional lvl
-   *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
-   */
-  else if(type == Infliction::BURN || type == Infliction::SCALD ||
-          type == Infliction::CHARR)
-  {
-    auto min_value = static_cast<int32_t>(kBURN_DMG_MIN);
-    auto max_value = static_cast<int32_t>(kBURN_DMG_MAX);
-
-    damage = min_value;
-    if(damage < (kBURN_DMG_INCR * kBURN_DMG_PC))
-      damage = kBURN_DMG_INCR * kBURN_DMG_PC;
-
-    if(max_value > stats.getStat(Attribute::VITA))
-      max_value = stats.getStat(Attribute::VITA);
-
-    if(type == Infliction::SCALD)
-      damage *= kBURN_DMG_INCR;
-    if(type == Infliction::CHARR)
-      damage *= kBURN_DMG_INCR;
-
-    damage = Helpers::setInRange(damage, min_value, max_value);
-    damage_type = DamageType::BURN;
-
-    setFlag(AilState::DEALS_DAMAGE, true);
-  }
-
-  /* Berserk - Ailed actor physically attacks enemy target for extreme damage
-   *           while receiving damage themselves. Hitback damage will take
-   *           place in Battle.
-   * Constants: kBERSERK_DMG_INCR - multiplier for normal damage on target
-   *            kBERSERK_HITBACK_PC - multiplier for damage done to self.
-   */
-  else if(type == Infliction::BERSERK)
-  {
-    /* On initial application, disable non physical skills and running */
-    victim->setBFlag(BState::SKL_ENABLED, false);
-    victim->setBFlag(BState::DEF_ENABLED, false);
-    victim->setBFlag(BState::GRD_ENABLED, false);
-    victim->setBFlag(BState::ITM_ENABLED, false);
-    victim->setBFlag(BState::RUN_ENABLED, false);
-    victim->setBFlag(BState::PAS_ENABLED, false);
-    victim->setDmgMod(2);
-
-    setFlag(AilState::TO_APPLY, false);
-    setFlag(AilState::TO_UNAPPLY, true);
-  }
-
-  /* Ailed actor cannot use skills if they require QD */
-  else if(type == Infliction::SILENCE)
-  {
-    /* On application, remove skills which have a QD cost > 0 from useable */
-    for(uint32_t i = 0; i < skills->getSize(); i++)
-      if(skills->getElement(i).skill != nullptr)
-        if(skills->getElement(i).skill->getCost() > 0)
-          skills->setSilenced(i, true);
-
-    setFlag(AilState::TO_APPLY, false);
-    setFlag(AilState::TO_UNAPPLY, true);
-  }
-
-  /* Bubbify - ailed actor is turned into a near-useless Bubby */
-  else if(type == Infliction::BUBBIFY)
-  {
-    /* Decrease the stats of the person by a factor of kBUBBIFY_STAT_MULR */
-    for(uint16_t i = 0; i < stats.getSize(); i++)
-    {
-      stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULT.at(i));
-      max_stats.setStat(i, max_stats.getStat(i) * kBUBBIFY_STAT_MULT.at(i));
-    }
-
-    /* Flip the Battle State Bubby flag */
-    victim->setAilFlag(PersonAilState::IS_BUBBY, true);
-    setFlag(AilState::TO_APPLY, false);
-    setFlag(AilState::TO_UNAPPLY, true);
-  }
-
-  /* Modulate */
-  else if(type == Infliction::MODULATE)
-  {
-    for(uint16_t i = 0; i < stats.getSize(); i++)
-    {
-      stats.setStat(i, stats.getStat(i) * kMODULATE_STAT_MULT.at(i));
-      max_stats.setStat(i, max_stats.getStat(i) * kMODULATE_STAT_MULT.at(i));
-    }
-  }
-
-  /* Death Timer - Ailed actor KOs upon reaching max_turns */
-  else if(type == Infliction::DEATHTIMER)
-  {
-    if(max_turns_left == 0)
-      setFlag(AilState::TO_KILL, true);
-  }
-
-  /* Paralysis - Ailed actor has a kPARALYSIS_PC chance of skipping their turn,
-   *             the effect persisting or a number of turns
-   * Constants: kPARALYSIS_PC - Percent chance to skip each turn */
-  else if(type == Infliction::PARALYSIS)
-  {
-    if(Helpers::chanceHappens((kPARALYSIS_PC * 100), 100))
-      victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, true);
-  }
-
-  /* Blindness - Ailed actor has a kBLIND_PC chance of missing targets
-   * Constants: kBLIND_PC - Percet chance for ailed actor to miss targets
-   */
-  else if(type == Infliction::BLINDNESS)
-  {
-    if(Helpers::chanceHappens((kBLIND_PC * 100), 100))
-      victim->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
-  }
-
-  /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
-   *               skipping just one turn
-   * Constants: kDREADSTRUCK_PC - Percent chance of skipping their next turn.
-   */
-  else if(type == Infliction::DREADSTRUCK)
-  {
-    if(Helpers::chanceHappens((kDREADSTRUCK_PC), 100))
-      victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
-  }
-
-  /* Dreamsnare - Ailed actor's actions have a kDREAMSNARE_PC chance of being
-   *              benign illusions (no effect)
-   * Constants: kDREAMSNARE_PC - Percent chance of no effect attacks
-   */
-  else if(type == Infliction::DREAMSNARE)
-  {
-    if(Helpers::chanceHappens((kDREAMSNARE_PC * 100), 100))
-      victim->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, true);
-  }
-
-  /* Bond & Bonded - Two actors are afflicted simultaneously. One person is
-   * Bonded to the other. The Bond person is essentially in a dead state, but
-   * the other assumes a kBOND_STATS_PC percent of their statistical boost.
-   * However, if the Bonded actor dies, the Bond actor wll also die (this
-   * case will be handled in Battle)
-   * Constants: kBOND_STATS_PC - % by which to increase actor's stats.
-   */
-  else if(type == Infliction::BOND)
-  {
-    victim->setAilFlag(PersonAilState::BOND, true);
-  }
-  else if(type == Infliction::BONDED)
-  {
-    for(uint32_t i = 0; i < stats.getSize(); i++)
-      stats.setStat(i, stats.getStat(i) * (1 + kBOND_STATS_PC));
-  }
-
-  /* Buffs -- Increases the user's stats by a specified amount on application
-   * Constants: kALLBUFF_PC  - % to incr all values
-   *            kPHYSBUFF_PC - % to incr phys values
-   *            kELMBUFF_PC  - % to incr elemental values
-   */
-  /* Remove the buffing effects from all attack stats */
-  else if(getType() == Infliction::ALLATKBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-
-    for(uint32_t i = 2; i < stats.getSize(); i++)
-      if(i % 2 == 0 && i < 16)
-        stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
-  }
-
-  /* Remove the buffing effect from all defense stats */
-  else if(getType() == Infliction::ALLDEFBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-
-    for(uint32_t i = 2; i < stats.getSize(); i++)
-      if(i % 2 != 0 && i < 16)
-        stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
-  }
-
-  else if(getType() == Infliction::PHYBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(2, stats.getStat(2) * kPHYSBUFF_PC);
-    stats.setStat(3, stats.getStat(3) * kPHYSBUFF_PC);
-  }
-  else if(type == Infliction::THRBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(4, stats.getStat(4) * kELMBUFF_PC);
-    stats.setStat(5, stats.getStat(5) * kELMBUFF_PC);
-  }
-  else if(type == Infliction::PRIBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(6, stats.getStat(6) * kELMBUFF_PC);
-    stats.setStat(7, stats.getStat(7) * kELMBUFF_PC);
-  }
-  else if(type == Infliction::POLBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(8, stats.getStat(8) * kELMBUFF_PC);
-    stats.setStat(9, stats.getStat(9) * kELMBUFF_PC);
-  }
-  else if(type == Infliction::CHGBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(10, stats.getStat(10) * kELMBUFF_PC);
-    stats.setStat(11, stats.getStat(11) * kELMBUFF_PC);
-  }
-  else if(type == Infliction::CYBBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(12, stats.getStat(12) * kELMBUFF_PC);
-    stats.setStat(13, stats.getStat(13) * kELMBUFF_PC);
-  }
-  else if(type == Infliction::NIHBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(14, stats.getStat(14) * kELMBUFF_PC);
-    stats.setStat(15, stats.getStat(15) * kELMBUFF_PC);
-  }
-  else if(type == Infliction::UNBBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(18, stats.getStat(18) * kELMBUFF_PC);
-  }
-  else if(type == Infliction::LIMBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    stats.setStat(17, stats.getStat(17) * kLIMBUFF_PC);
-    stats.setStat(16, stats.getStat(16) * kLIMBUFF_PC);
-  }
-  else if(type == Infliction::VITBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    max_stats.setStat(0, stats.getStat(0) * kVITBUFF_PC);
-  }
-  else if(type == Infliction::QDBUFF)
-  {
-    setFlag(AilState::BUFF, true);
-    setFlag(AilState::TO_APPLY, false);
-    max_stats.setStat(1, stats.getStat(1) * kQDBUFF_PC);
-  }
-
-  /* Rootbound - Ailed actor (if biological in nature) gains a % HP / turn
-   * Constats - kROOTBOUND_PC - % vitality to be gained each turn */
-  else if(type == Infliction::ROOTBOUND)
-  {
-    auto value = stats.getStat(Attribute::VITA) * kROOTBOUND_PC;
-    stats.setStat(Attribute::VITA, value);
-  }
-
-  /* Double Cast allows the user to use two skils per turn */
-  else if(type == Infliction::DOUBLECAST)
-    victim->setAilFlag(PersonAilState::TWO_SKILLS, true);
-
-  /* Triple Cast allows the user to use three skills per turn */
-  else if(type == Infliction::TRIPLECAST)
-    victim->setAilFlag(PersonAilState::THREE_SKILLS, true);
-
-  /* Half Cost - On application, the user's useable skill costs are halved */
-  else if(type == Infliction::HALFCOST)
-    victim->setAilFlag(PersonAilState::HALF_COST, true);
-
-  /* Hibernation - Gain a % health back per turn in exchange for skipping it,
-   *               but the % gain grows
-   * Constants - kHIBERNATION_INIT - Initial % (of cur value) hibernation adds
-   *             kHIBERNATION_INCR - Increasing % for each turn
-   */
-  else if(type == Infliction::HIBERNATION)
-  {
-    float gain_pc = kHIBERNATION_INIT;
-
-    for(uint32_t i = 0; i < turns_occured; i++)
-      gain_pc += kHIBERNATION_INCR;
-
-    damage = stats.getStat(Attribute::VITA) * gain_pc;
-
-    setFlag(AilState::DEALS_DAMAGE, true);
-
-    victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, true);
-  }
-
-  /* Reflect - turn on Person flag to show they reflect skills */
-  else if(type == Infliction::REFLECT)
-    victim->setAilFlag(PersonAilState::REFLECT, true);
-
-  /* Metabolic Tether - Metabolic tether has a kMETABOLIC_PC chance for
-   * killing
-   *   the inflicted, but also a kMETABOLIC_DMG percent that it will deal to
-   *   the target.
-   */
-  else if(type == Infliction::METATETHER)
-  {
-    // TODO [01-26-14]
-    /* Do kMETABOLIC_DMG % upon victim, emit signal if dead */
-    // if (victim->damage(max_stats.getStat(EnumDb::VITA) * kMETABOLIC_DMG))
-    //    emit victimDeath(victim->getName(), EnumDb::METABOLIC_TETHER);
-
-    /* Check for kMETABOLIC_PC chance for instant death */
-    // if (chanceHappens(kMETABOLIC_PC * 100))
-    //    emit victimDeath(victim->getName(), EnumDb::METABOLIC_DMG);
-  }
-
-  /* Modulate - Modulates a persons sprite and improves their stats by
-   *            some factor.
-   *
-   * Constants:
-   */
-  else if(type == Infliction::MODULATE)
-  {
-
-  }
-
-  return true;
-  }
-
-
-
-  /*
-   * Description: Checks the immunity of a potential victim given the type of
-   *the
-   * ailment.
-   *
-   * Inputs: none
-   * Output: bool - evaluation of the immunity check
-   */
-  bool Ailment::checkImmunity(Person * new_victim)
-  {
-    if(new_victim == nullptr)
-      return false;
-
-    /* Flag immunity section */
-    if(new_victim->getPFlag(PState::MINI_BOSS))
-    {
-      if(type == Infliction::DEATHTIMER || type == Infliction::BUBBIFY)
-        return false;
-    }
-
-    /* Bosses are immune to some ailments */
-    else if(new_victim->getPFlag(PState::BOSS))
-    {
-      if(type == Infliction::DEATHTIMER || type == Infliction::BUBBIFY ||
-         type == Infliction::SILENCE || type == Infliction::PARALYSIS ||
-         type == Infliction::BLINDNESS)
-        return false;
-    }
-
-    /* Final boss will be immune to many ailments */
-    else if(new_victim->getPFlag(PState::FINAL))
-    {
-      if(type == Infliction::DEATHTIMER || type == Infliction::BUBBIFY ||
-         type == Infliction::SILENCE || type == Infliction::PARALYSIS ||
-         type == Infliction::BLINDNESS || type == Infliction::CONFUSE ||
-         type == Infliction::BERSERK)
-        return false;
-    }
-
-    /* Bubby effect immunity section */
-    if(type == Infliction::ALLATKBUFF || type == Infliction::ALLDEFBUFF ||
-       type == Infliction::PHYBUFF || type == Infliction::THRBUFF ||
-       type == Infliction::POLBUFF || type == Infliction::PRIBUFF ||
-       type == Infliction::CHGBUFF || type == Infliction::CYBBUFF ||
-       type == Infliction::NIHBUFF || type == Infliction::LIMBUFF ||
-       type == Infliction::UNBBUFF || type == Infliction::VITBUFF ||
-       type == Infliction::QDBUFF)
-      return false;
-
-    /* Check for category and racial immunity */
-    if(victim->getClass()->isImmune(type))
-      return false;
-
-    if(victim->getRace()->isImmune(type))
-      return false;
-
-    return true;
-  }
-
-  /*
-   * Description: Updates the turn counter on the status ailment based off
-   *              the random chance to cure each turn (if not zero). Returns
-   *true
-   *              if the ailment will be cured after this update, false
-   *otherwise.
-   *
-   * Inputs: none
-   * Output: bool - true if the ailment is to be cured after the update of Fn.
-   */
-  bool Ailment::updateTurns()
-  {
-    turns_occured++;
-
-    /* If the ailment doesn't have one turn left, if it's finite, decrement it
-     */
-    if(max_turns_left <= kMAX_TURNS && max_turns_left > 0)
-      --max_turns_left;
-    if(min_turns_left > 0)
-      --min_turns_left;
-
-    if(turns_occured <= min_turns_left)
-      return false;
-
-    /* If the ailment is finite, cure it based on chance */;
-    if(chance != 0 && Helpers::chanceHappens(std::floor(chance), 100))
-      max_turns_left = 1;
-
-    /* If the ailment currently has one turn left, it's cured! */
-    if(max_turns_left == 1)
-      return true;
-
-    return false;
-  }
-
-  /*
-   * Description: Sets the type of Infliction of the ailment
-   *
-   * Inputs: Infliction - type of Infliction to be set.
-   * Output: none
-   */
-  void Ailment::setType(const Infliction& new_type) { type = new_type; }
-
-  /*
-   * Description: Assigns the inflictor of the ailment
-   *
-   * Inputs: Person* - pointer to the person who inflicted the ailment
-   * Output: bool - true if the inflictor is being set for the first time.
-   */
-  bool Ailment::setInflictor(Person * new_inflictor)
-  {
-    if(!getFlag(AilState::INFLICTOR_SET) && new_inflictor != 0)
-    {
-      inflictor = new_inflictor;
-      setFlag(AilState::INFLICTOR_SET);
-
-      return true;
-    }
-
-    return false;
-  }
-
-  /*
-   * Description: Assigns the victim of the ailment.
-   *
-   * Inputs: Person* - pointer to the person the ailment is inflicting.
-   * Output: bool - true if the victim is being set for the first time.
-   */
-  bool Ailment::setVictim(Person * set_victim)
-  {
-    if(!getFlag(AilState::VICTIM_SET))
-    {
-      victim = set_victim;
-      setFlag(AilState::VICTIM_SET);
-
-      return true;
-    }
-
-    return false;
-  }
-
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
-
-  /*
-   * Description: Unapplies the effects of the status ailment to the victim.
-   *
-   * Inputs: none
-   * Output: none
-   */
-  void Ailment::unapply()
-  {
-    // TODO: Retain the defaults or previous settings of things? [01-26-14]
-    auto& stats = victim->getCurr();
-    // auto& max_stats = victim->getTemp();
-    auto skills = victim->getCurrSkills();
-
-    /* On removing Berserk, person's dmg_mod needs to be reset. Action flags are
-     * recomputed in the reCalcAilmentFlags() function in Battle */
-    if(getType() == Infliction::BERSERK)
-      victim->setDmgMod(1);
-
-    /* Silence - When silence is removed, skills need to have their booleans
-     * reassigned. (This is no longer the enabled flag, is own silenced one) */
-    else if(getType() == Infliction::SILENCE)
-    {
-      for(uint32_t i = 0; i < skills->getSize(); i++)
-        skills->setSilenced(i, false);
-    }
-
-    /* Bond - on unapplication, the Person BOND flag is turned off
-     */
-    else if(getType() == Infliction::BOND)
-    {
-      victim->setAilFlag(PersonAilState::BOND, false);
-    }
-
-    /* Bonded - on unapplication, the Persons' buffed stats are returned to
-     * normal
-     */
-    else if(getType() == Infliction::BONDED)
-    {
-      for(uint32_t i = 0; i < stats.getSize(); i++)
-        stats.setStat(i, stats.getStat(i) / (1 + kBOND_STATS_PC));
-    }
-
-    /* When bubbify is removed, actor needs to return to normal (all other buffs
-       are removed as well) */
-    else if(getType() == Infliction::BUBBIFY)
-    {
-      victim->setAilFlag(PersonAilState::IS_BUBBY, false);
-    }
-
-    /* Double Cast - on unapplication turn off the flag for DoubleCast */
-    else if(getType() == Infliction::DOUBLECAST)
-    {
-      victim->setAilFlag(PersonAilState::TWO_SKILLS, false);
-    }
-
-    /* Tripl Cast - on unapplication, turn off the flag for TripleCast */
-    else if(getType() == Infliction::TRIPLECAST)
-      victim->setAilFlag(PersonAilState::THREE_SKILLS, false);
-
-    /* Half Cost - on unapplication, turn off the flag for HalfCost */
-    else if(getType() == Infliction::HALFCOST)
-      victim->setAilFlag(PersonAilState::HALF_COST, false);
-
-    /* Reflect - on unapplication, turn off the Person flag for reflect */
-    else if(getType() == Infliction::REFLECT)
-      victim->setAilFlag(PersonAilState::REFLECT, false);
-
-    /* Modulate - Certain classes may modulate themselves, converting their
-     *            sprite and increasing their stats by some factor.
-     *
-     * Constants:
-     */
-    else if(type == Infliction::MODULATE)
-    {
-    }
-  }
-
-  /*
-   * Description:
-   *
-   * Inputs:
-   * Output:
-   */
-  bool Ailment::toReapplyFlags()
-  {
-
-    if(type == Infliction::BERSERK || type == Infliction::HIBERNATION)
-    {
-      return true;
-    }
-
-    return false;
-  }
-
-  /*
-   * Description: Prints all the info pertaining to Ailment by calling the other
-   *              print functions
-   *
-   * Inputs: none
-   * Output: none
-   */
-  void Ailment::print(const bool& simple, const bool& flags)
-  {
-    std::cout << " --- Ailment ---\n";
-
-    if(simple)
-    {
-      std::cout << "Ch" << chance << " T Lf: " << max_turns_left
-                << " T Oc: " << turns_occured << "\n";
-      std::cout << "Vic: " << victim->getName() << "\n";
-    }
-    else
-    {
-      std::cout << "Chance: " << chance;
-      std::cout << "\nMax # turns left: " << max_turns_left;
-      std::cout << "\nTurns Occured: " << turns_occured;
-      std::cout << "\nCurrent Victim Name: " << victim->getName() << "\n";
-    }
-
-    if(flags)
-    {
-      std::cout << "LASTING: " << getFlag(AilState::LASTING) << "\n";
-      std::cout << "CURABLE" << getFlag(AilState::CURABLE) << "\n";
-      std::cout << "TO_CURE" << getFlag(AilState::TO_CURE) << "\n";
-      std::cout << "TO_UPDATE" << getFlag(AilState::TO_UPDATE) << "\n";
-      std::cout << "TO_APPLY" << getFlag(AilState::TO_APPLY) << "\n";
-      std::cout << "TO_UNAPPLY" << getFlag(AilState::TO_UNAPPLY) << "\n";
-      std::cout << "BUFF" << getFlag(AilState::BUFF) << "\n";
-      std::cout << "ADVERSE" << getFlag(AilState::ADVERSE) << "\n";
-      std::cout << "IMMUNITY" << getFlag(AilState::IMMUNITY) << "\n";
-      std::cout << "CURE_ON_DEATH" << getFlag(AilState::CURE_ON_DEATH) << "\n";
-      std::cout << "VICTIM_SET" << getFlag(AilState::VICTIM_SET) << "\n";
-      std::cout << "INFLICTOR_SET" << getFlag(AilState::INFLICTOR_SET) << "\n";
-      std::cout << "DEALS DAMAGE" << getFlag(AilState::DEALS_DAMAGE) << "\n";
-      std::cout << "UPDATE PROCESSED" << getFlag(AilState::UPDATE_PROCESSED);
-    }
-
-    std::cout << "\n -- /Ailment --- " << std::endl;
-  }
-
-  /*
-   * Description: Returns the amount of damage computed for the ailment update
-   *
-   * Inputs: none
-   * Output: int32_t - the amount of damage
-   */
-  int32_t Ailment::getDamageAmount() const { return damage; }
-
-  /*
-   * Description: Returns the type of damage computed for the ailment update
-   *
-   * Inputs: none
-   * Output: DamageType - the type of damage
-   */
-  DamageType Ailment::getDamageType() const { return damage_type; }
-
-  /*
-   * Description: Evaluates a given status Ailment flag.
-   *
-   * Inputs: AilState flags - the flags to be evaluated
-   * Output: bool - the boolean evaluation of the given flag
-   */
-  bool Ailment::getFlag(AilState test_flag)
-  {
-    return static_cast<bool>((flag_set & test_flag) == test_flag);
-  }
-
-  /*
-   * Description: Returns the number (max number) of turns left on the ailment
-   *
-   * Inputs: none
-   * Output: ushort - maximum number of turns left on the ailment
-   */
-  uint16_t Ailment::getTurnsLeft() { return max_turns_left; }
-
-  /*
-   * Description: Returns the Infliction type of the ailment
-   *
-   * Inputs: none
-   * Output: Infliction - type of Ailment
-   */
-  Infliction Ailment::getType() { return type; }
-
-  /*
-   * Description: Returns the assigned Victim
-   *
-   * Inputs: none
-   * Output: Person* - pointer to the victim
-   */
-  Person* Ailment::getVictim() { return victim; }
-
-  /*
-   * Description: Sets the maximum duration of the ailment as well as the chance
-   *
-   * Inputs: ushort max - maximum number of turns the ailment will persist
-   *         float ch   - chance the ailment has to be cured per turn
-   * Output: none
-   */
-  void Ailment::setDuration(const uint16_t& min_turns,
-                            const uint16_t& max_turns, const double& chance)
-  {
-    setFlag(AilState::LASTING, (max_turns > kMAX_TURNS));
-
-    min_turns_left = std::min(min_turns, max_turns);
-    max_turns_left = std::max(min_turns, max_turns);
-
-    // TODO: Turns occured?
-
-    this->chance = chance;
-  }
-
-  /*
-   * Description: Assigns a PersonState flag or flags to (a) given value(s)
-   *
-   * Inputs: AilmentFlag flags - enumerated flag to be assigned
-   *         set_value - the value to assign the flag(s) to (default: true)
-   * Output: none
-   */
-  void Ailment::setFlag(const AilState& flags, const bool& set_value)
-  {
-    (set_value) ? (flag_set |= flags) : (flag_set &= ~flags);
-  }
-
-  /*
-   * Description: Update slot. This function will handle calling the
-   *              apply function if the status ailment applies an effect (new or
-   *              recurring) every turn, and also will handle calling the update
-   *              turn function. This function will flip the TOBECURED flag if
-   *               the ailment is to be removed immediately.
-   *
-   * Inputs: none
-   * Output: none
-   */
-  void Ailment::update(bool update_turns)
-  {
-    /* Regardless of update outcome, set the update processed flag */
-    setFlag(AilState::UPDATE_PROCESSED);
-
-    /* The ailment may not be updated */
-    if(getFlag(AilState::TO_UPDATE))
-    {
-      /* Update the turn count and set the TOBECURED flag if neccessary, only
-       * update the turns if being called for (default - true) */
-      if(!getFlag(AilState::LASTING) && update_turns && updateTurns() &&
-         getType() != Infliction::DEATHTIMER)
-        setFlag(AilState::TO_CURE);
-
-      /* If the ailment is not to be cured, apply an effect (if there is one) */
-      if(!getFlag(AilState::TO_CURE) && getFlag(AilState::TO_APPLY))
-        apply();
-    }
-  }
-
-  /*
-   * Description: Catches reset by Battle, resets the turn counter on the
-   *ailment.
-   *
-   * Inputs: none
-   * Output: none
-   */
-  void Ailment::reset()
-  {
-    max_turns_left += turns_occured;
-    turns_occured = 0;
-  }
-
-  /*============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
-
-  /*
-   * Description:
-   *
-   * Inputs:
-   * Output:
-   */
-  double Ailment::getBerserkHitbackPC() { return kBERSERK_HITBACK_PC; }
+  return type;
+}
+
+/*
+ * Description: Returns the assigned Victim
+ *
+ * Inputs: none
+ * Output: Person* - pointer to the victim
+ */
+// Person* Ailment::getVictim()
+// {
+//   return victim;
+// }
+
+/*
+ * Description: Sets the maximum duration of the ailment as well as the chance
+ *
+ * Inputs: ushort max - maximum number of turns the ailment will persist
+ *         float ch   - chance the ailment has to be cured per turn
+ * Output: none
+ */
+// void Ailment::setDuration(const uint16_t& min_turns, const uint16_t& max_turns,
+//                           const double& chance)
+// {
+//   setFlag(AilState::LASTING, (max_turns > kMAX_TURNS));
+
+//   min_turns_left = std::min(min_turns, max_turns);
+//   max_turns_left = std::max(min_turns, max_turns);
+
+//   // TODO: Turns occured?
+
+//   this->chance = chance;
+// }
+
+/*
+ * Description: Assigns a PersonState flag or flags to (a) given value(s)
+ *
+ * Inputs: AilmentFlag flags - enumerated flag to be assigned
+ *         set_value - the value to assign the flag(s) to (default: true)
+ * Output: none
+ */
+// void Ailment::setFlag(const AilState& flags, const bool& set_value)
+// {
+//   (set_value) ? (flag_set |= flags) : (flag_set &= ~flags);
+// }
+
+/*
+ * Description: Update slot. This function will handle calling the
+ *              apply function if the status ailment applies an effect (new or
+ *              recurring) every turn, and also will handle calling the update
+ *              turn function. This function will flip the TOBECURED flag if
+ *               the ailment is to be removed immediately.
+ *
+ * Inputs: none
+ * Output: none
+ */
+// void Ailment::update(bool update_turns)
+// {
+//   /* Regardless of update outcome, set the update processed flag */
+//   setFlag(AilState::UPDATE_PROCESSED);
+
+//   /* The ailment may not be updated */
+//   if(getFlag(AilState::TO_UPDATE))
+//   {
+//      Update the turn count and set the TOBECURED flag if neccessary, only
+//      * update the turns if being called for (default - true)
+//     if(!getFlag(AilState::LASTING) && update_turns && updateTurns() &&
+//        getType() != Infliction::DEATHTIMER)
+//       setFlag(AilState::TO_CURE);
+
+//     /* If the ailment is not to be cured, apply an effect (if there is one) */
+//     if(!getFlag(AilState::TO_CURE) && getFlag(AilState::TO_APPLY))
+//       apply();
+//   }
+// }
+
+/*
+ * Description: Catches reset by Battle, resets the turn counter on the
+ *ailment.
+ *
+ * Inputs: none
+ * Output: none
+ */
+// void Ailment::reset()
+// {
+//   max_turns_left += turns_occured;
+//   turns_occured = 0;
+// }
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+// double Ailment::getBerserkHitbackPC()
+// {
+//   return kBERSERK_HITBACK_PC;
+// }

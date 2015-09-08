@@ -330,10 +330,10 @@ void Party::print(const bool &simple, const bool &flags)
     if(pouch != nullptr)
       pouch->print(false);
 
-    std::cout << "Average Speed: " << getAverageSpeed() << "\n";
-    std::cout << "Total Speed: " << getTotalSpeed() << "\n";
-    std::cout << "# Dead Members: " << getDeadMembers().size() << "\n";
-    std::cout << "# Living Members: " << getLivingMembers().size() << "\n\n";
+    // std::cout << "Average Speed: " << getAverageSpeed() << "\n";
+    // std::cout << "Total Speed: " << getTotalSpeed() << "\n";
+    // std::cout << "# Dead Members: " << getDeadMembers().size() << "\n";
+    // std::cout << "# Living Members: " << getLivingMembers().size() << "\n\n";
   }
 
   if(flags)
@@ -410,12 +410,12 @@ uint32_t Party::getSize()
  * Inputs: none
  * Output: int32_t - the average speed of members in the party.
  */
-int32_t Party::getAverageSpeed()
-{
-  if(members.size() > 0)
-    return std::floor(getTotalSpeed() / members.size());
-  return 0;
-}
+// int32_t Party::getAverageSpeed()
+// {
+//   if(members.size() > 0)
+//     return std::floor(getTotalSpeed() / members.size());
+//   return 0;
+// }
 
 /*
  * Description: Returns a vector of indexes of all KO'd party members
@@ -423,18 +423,18 @@ int32_t Party::getAverageSpeed()
  * Inputs: none
  * Output: std::vector<uint32_t> - the indexes of all dead members
  */
-std::vector<uint32_t> Party::getDeadMembers()
-{
-  std::vector<uint32_t> dead_members;
+// std::vector<uint32_t> Party::getDeadMembers()
+// {
+//   std::vector<uint32_t> dead_members;
 
-  auto index = 0;
+//   auto index = 0;
 
-  for(auto it = begin(members); it != end(members); ++it, index++)
-    if(!(*it)->getBFlag(BState::ALIVE))
-      dead_members.push_back(index);
+//   for(auto it = begin(members); it != end(members); ++it, index++)
+//     if(!(*it)->getBFlag(BState::ALIVE))
+//       dead_members.push_back(index);
 
-  return dead_members;
-}
+//   return dead_members;
+// }
 
 /*
  * Description: Evaluates and returns a given PartyState flag
@@ -476,17 +476,17 @@ Inventory *Party::getInventory()
  * Inputs: none
  * Output: std::vector<uint32_t> - living party member indexes.
  */
-std::vector<uint32_t> Party::getLivingMembers()
-{
-  std::vector<uint32_t> living_members;
+// std::vector<uint32_t> Party::getLivingMembers()
+// {
+//   std::vector<uint32_t> living_members;
 
-  auto index = 0;
-  for(auto it = begin(members); it != end(members); ++it, index++)
-    if((*it)->getBFlag(BState::ALIVE))
-      living_members.push_back(index);
+//   auto index = 0;
+//   for(auto it = begin(members); it != end(members); ++it, index++)
+//     if((*it)->getBFlag(BState::ALIVE))
+//       living_members.push_back(index);
 
-  return living_members;
-}
+//   return living_members;
+// }
 
 /*
  * Description: Returns a vector of person pointers for all persons in the
@@ -495,16 +495,16 @@ std::vector<uint32_t> Party::getLivingMembers()
  * Inputs: none
  * Output: std::vector<Person*> - living party memebr pointers
  */
-std::vector<Person *> Party::getLivingMemberPtrs()
-{
-  std::vector<Person *> living_member_ptrs;
+// std::vector<Person *> Party::getLivingMemberPtrs()
+// {
+//   std::vector<Person *> living_member_ptrs;
 
-  for(const auto &member : members)
-    if(member->getBFlag(BState::ALIVE))
-      living_member_ptrs.push_back(member);
+//   for(const auto &member : members)
+//     if(member->getBFlag(BState::ALIVE))
+//       living_member_ptrs.push_back(member);
 
-  return living_member_ptrs;
-}
+//   return living_member_ptrs;
+// }
 
 /*
  * Description: Returns the current maximum size of the Party.
@@ -543,18 +543,18 @@ Person *Party::getMember(const uint32_t &index)
  * Output: std::vector<Person*> - a vector of members with all but given
  *member
  */
-std::vector<Person *> Party::findMembersExcept(Person *const member,
-                                               const bool &only_living)
-{
-  std::vector<Person *> temp_members;
+// std::vector<Person *> Party::findMembersExcept(Person *const member,
+//                                                const bool &only_living)
+// {
+//   std::vector<Person *> temp_members;
 
-  for(const auto &person : members)
-    if(person == member)
-      if((only_living && person->getBFlag(BState::ALIVE)) || !only_living)
-        temp_members.push_back(person);
+//   for(const auto &person : members)
+//     if(person == member)
+//       if((only_living && person->getBFlag(BState::ALIVE)) || !only_living)
+//         temp_members.push_back(person);
 
-  return temp_members;
-}
+//   return temp_members;
+// }
 
 /*
  * Description: Returns the string name of a party member at a given index,
@@ -614,15 +614,15 @@ PartyType Party::getPartyType()
  * Output: int64_t the calculated total speed of the Party.
  */
 /* Calculates and returns the total speed of the Party */
-int64_t Party::getTotalSpeed()
-{
-  int64_t total_speed{0};
+// int64_t Party::getTotalSpeed()
+// {
+//   int64_t total_speed{0};
 
-  for(const auto &member : members)
-    total_speed += member->getCurr().getStat(Attribute::MMNT);
+//   for(const auto &member : members)
+//     total_speed += member->getCurr().getStat(Attribute::MMNT);
 
-  return total_speed;
-}
+//   return total_speed;
+// }
 
 /*
  * Description: Assigns a given PartyState flag a given Boolean vale.

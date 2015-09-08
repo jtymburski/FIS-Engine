@@ -30,25 +30,25 @@ const uint32_t BattleStats::kMAX_ADDITIVE_MODS{7};
  */
 BattleStats::BattleStats(AttributeSet attr_set)
 {
-  /* Add in the AttributeSet by pairing it with corres. BattleAttribute enums */
+  /* Add in the AttributeSet by pairing it with corres. Attribute enums */
   for(uint32_t i = 0; i < AttributeSet::getSize(); i++)
   {
-    BattleAttribute curr_attr = static_cast<BattleAttribute>(i);
+    Attribute curr_attr = static_cast<Attribute>(i);
     values.push_back(std::make_pair(curr_attr, attr_set.getStat(i)));
   }
 
   /* Add Battle-only additional attribute values */
   values.push_back(
-      std::make_pair(BattleAttribute::MVIT, attr_set.getStat(Attribute::VITA)));
+      std::make_pair(Attribute::MVIT, attr_set.getStat(Attribute::VITA)));
   values.push_back(
-      std::make_pair(BattleAttribute::MQTD, attr_set.getStat(Attribute::QTDR)));
+      std::make_pair(Attribute::MQTD, attr_set.getStat(Attribute::QTDR)));
 }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool BattleStats::addModifier(BattleAttribute stat, ModifierType type,
+bool BattleStats::addModifier(Attribute stat, ModifierType type,
                               float value, bool has_lifetime, int32_t lifetime,
                               Ailment *linked_ailment)
 {
@@ -130,9 +130,9 @@ void BattleStats::print()
       std::cout << AttributeSet::getName(static_cast<Attribute>(value.first))
                 << ": " << value.second << std::endl;
     }
-    else if(value.first == BattleAttribute::MVIT)
+    else if(value.first == Attribute::MVIT)
       std::cout << "MVIT: " << value.second << std::endl;
-    else if(value.first == BattleAttribute::MQTD)
+    else if(value.first == Attribute::MQTD)
       std::cout << "MQTD: " << value.second << std::endl;
   }
 
@@ -148,9 +148,9 @@ void BattleStats::print()
 
     if(static_cast<uint8_t>(modifier.stat) < AttributeSet::getSize())
       std::cout << AttributeSet::getName(static_cast<Attribute>(modifier.stat));
-    else if(modifier.stat == BattleAttribute::MVIT)
+    else if(modifier.stat == Attribute::MVIT)
       std::cout << "MVIT";
-    else if(modifier.stat == BattleAttribute::MQTD)
+    else if(modifier.stat == Attribute::MQTD)
       std::cout << "MQTD";
     std::cout << " Value: " << modifier.value << std::endl;
 
@@ -173,9 +173,9 @@ void BattleStats::print()
       std::cout << AttributeSet::getName(static_cast<Attribute>(value.first))
                 << ": " << final_value << std::endl;
     }
-    else if(value.first == BattleAttribute::MVIT)
+    else if(value.first == Attribute::MVIT)
       std::cout << "MVIT: " << final_value << std::endl;
-    else if(value.first == BattleAttribute::MQTD)
+    else if(value.first == Attribute::MQTD)
       std::cout << "MQTD: " << final_value << std::endl;
   }
 }
@@ -204,7 +204,7 @@ void BattleStats::update(int32_t lifetime_update)
                   end(modifiers));
 }
 
-uint32_t BattleStats::getBaseValue(BattleAttribute stat)
+uint32_t BattleStats::getBaseValue(Attribute stat)
 {
   if(static_cast<uint8_t>(stat) < (uint8_t)values.size())
     return values.at(static_cast<uint8_t>(stat)).second;
@@ -213,11 +213,11 @@ uint32_t BattleStats::getBaseValue(BattleAttribute stat)
 }
 
 // Returns the actual value of the stat after all modifiers
-uint32_t BattleStats::getValue(BattleAttribute stat)
+uint32_t BattleStats::getValue(Attribute stat)
 {
   double value = getBaseValue(stat);
 
-  /* If the given BattleAttribute is a valid index */
+  /* If the given Attribute is a valid index */
   if(static_cast<uint8_t>(stat) < (uint8_t)values.size())
   {
     /* Obtain all modifiers of the stats */
@@ -243,7 +243,7 @@ uint32_t BattleStats::getValue(BattleAttribute stat)
 }
 
 std::vector<StatModifier>
-BattleStats::getModifiersOfStat(BattleAttribute battle_stat)
+BattleStats::getModifiersOfStat(Attribute battle_stat)
 {
   std::vector<StatModifier> found_modifiers{};
 
@@ -254,7 +254,7 @@ BattleStats::getModifiersOfStat(BattleAttribute battle_stat)
   return found_modifiers;
 }
 
-uint32_t BattleStats::getNumAddModifiers(BattleAttribute battle_stat)
+uint32_t BattleStats::getNumAddModifiers(Attribute battle_stat)
 {
   uint32_t num_add_modifiers;
 
@@ -265,7 +265,7 @@ uint32_t BattleStats::getNumAddModifiers(BattleAttribute battle_stat)
   return num_add_modifiers;
 }
 
-bool BattleStats::setBaseValue(BattleAttribute stat, uint32_t value)
+bool BattleStats::setBaseValue(Attribute stat, uint32_t value)
 {
   if(static_cast<uint8_t>(stat) < (uint8_t)values.size())
   {

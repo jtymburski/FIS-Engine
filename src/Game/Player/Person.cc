@@ -92,8 +92,8 @@ Person::Person()
  *         battle_class - pointer to the battle class
  *         race_class - pointer to the race class
  */
-Person::Person(const int32_t &game_id, const std::string &name,
-               Category *const battle_class, Category *const race_class)
+Person::Person(const int32_t& game_id, const std::string& name,
+               Category* const battle_class, Category* const race_class)
     : game_id{game_id},
       my_id{++id},
       base_person{nullptr},
@@ -109,7 +109,7 @@ Person::Person(const int32_t &game_id, const std::string &name,
  *
  * Inputs: Person* - pointer to the base person
  */
-Person::Person(Person *const source)
+Person::Person(Person* const source)
     : game_id{source->game_id}, my_id{++id}, base_person{source}
 {
   setupClass();
@@ -127,15 +127,15 @@ Person::~Person()
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
-  
+
 /*
  * Description: Copies all data from source object to this object.
- * Notes: NOT FULLY COMPLETE. Just enough data required for Editor. TODO?
  *
  * Inputs: Person &source - the source to copy from
  * Output: none
  */
-void Person::copySelf(const Person &source)
+// TODO: NOT FULLY COMPLETE. Relevant??
+void Person::copySelf(const Person& source)
 {
   action_x = source.action_x;
   action_y = source.action_y;
@@ -161,7 +161,7 @@ void Person::copySelf(const Person &source)
   item_drops = source.item_drops;
   credit_drop = source.credit_drop;
   exp_drop = source.exp_drop;
-  
+
   level = source.level;
   total_exp = source.total_exp;
 }
@@ -179,11 +179,11 @@ void Person::loadDefaults()
 
   ai_module = nullptr;
 
-  guardee = nullptr;
-  guard = nullptr;
+  // guardee = nullptr;
+  // guard = nullptr;
 
-  ailment_flags = static_cast<PersonAilState>(0);
-  battle_flags = static_cast<BState>(0);
+  // ailment_flags = static_cast<PersonAilState>(0);
+  // battle_flags = static_cast<BState>(0);
   person_flags = static_cast<PState>(0);
 
   setPFlag(PState::CAN_GAIN_EXP, true);
@@ -219,7 +219,6 @@ void Person::loadDefaults()
   base_skills = nullptr;
   curr_skills = nullptr;
   learned_skills = nullptr;
-  temp_skills = nullptr;
 
   updateBaseSkills();
 
@@ -252,7 +251,6 @@ void Person::setupClass()
   base_skills = nullptr;
   curr_skills = nullptr;
   learned_skills = nullptr;
-  temp_skills = nullptr;
 
   if(exp_table.empty())
     buildExpTable();
@@ -270,17 +268,18 @@ void Person::setupClass()
     action_y = base_person->action_y;
 
     /* Deep copied AI Module */
-    if(base_person->ai_module != nullptr)
-    {
-      ai_module = new AIModule(base_person->ai_module->getDifficulty(),
-                               base_person->ai_module->getPrimPersonality(),
-                               base_person->ai_module->getSecdPersonality());
-    }
+    //TODO: Reimplement when AI Modules are fixed
+    // if(base_person->ai_module != nullptr)
+    // {
+    //   ai_module = new AIModule(base_person->ai_module->getDifficulty(),
+    //                            base_person->ai_module->getPrimPersonality(),
+    //                            base_person->ai_module->getSecdPersonality());
+    // }
 
-    guardee = base_person->guardee;
-    guard = base_person->guard;
-    ailment_flags = base_person->ailment_flags;
-    battle_flags = base_person->battle_flags;
+    // guardee = base_person->guardee;
+    // guard = base_person->guard;
+    // ailment_flags = base_person->ailment_flags;
+    // battle_flags = base_person->battle_flags;
     person_flags = base_person->person_flags;
     // TODO: Dynamic initialization of record? [10-25-14]
     // person_record = base-person->person_record;
@@ -302,7 +301,7 @@ void Person::setupClass()
     // curr_skills = base_person->curr_skills;
     learned_skills = nullptr;
     // learned_skills = base_person->learned_skills;
-    temp_skills = nullptr;
+    // temp_skills = nullptr;
     // temp_skills = base_person->temp_skills;
     dmg_mod = base_person->dmg_mod;
     exp_mod = base_person->exp_mod;
@@ -341,7 +340,7 @@ void Person::setupClass()
  * Inputs: bool - clears the memory of anything dynamically allocated by Person
  * Output: none
  */
-void Person::unsetAll(const bool &clear)
+void Person::unsetAll(const bool& clear)
 {
   if(clear)
   {
@@ -369,8 +368,6 @@ void Person::unsetAll(const bool &clear)
       delete curr_skills;
     if(learned_skills != nullptr)
       delete learned_skills;
-    if(temp_skills != nullptr)
-      delete temp_skills;
   }
 
   if(base_person == nullptr)
@@ -380,7 +377,6 @@ void Person::unsetAll(const bool &clear)
   base_skills = nullptr;
   curr_skills = nullptr;
   learned_skills = nullptr;
-  temp_skills = nullptr;
 }
 
 void Person::unsetSprites()
@@ -514,7 +510,7 @@ void Person::updateBaseSkills()
  * Inputs: none
  * Output: none
  */
-void Person::updateEquipStats()
+AttributeSet Person::calcEquipStats()
 {
   auto equip_bonus = AttributeSet();
 
@@ -522,7 +518,7 @@ void Person::updateEquipStats()
     if((*it) != nullptr)
       equip_bonus += (*it)->getStats();
 
-  temp_max_stats = curr_max_stats + equip_bonus;
+  return (curr_max_stats + equip_bonus);
 }
 
 /*
@@ -605,6 +601,7 @@ void Person::updateStats()
  */
 void Person::updateSkills()
 {
+
   if(curr_skills != nullptr)
     curr_skills->clear();
   else
@@ -653,7 +650,7 @@ void Person::buildExpTable()
  * Output: float - the obtained curve modifier
  */
 /* Returns the curve modifier given a curve value and whether to check prim */
-float Person::getCurveModifier(const ElementCurve &curve, const bool primary)
+float Person::getCurveModifier(const ElementCurve& curve, const bool primary)
 {
   auto index = static_cast<uint8_t>(curve);
 
@@ -678,7 +675,7 @@ float Person::getCurveModifier(const ElementCurve &curve, const bool primary)
  *         update - a boolean value whether to be updated
  * Output: bool - true if the experience was added successfully
  */
-bool Person::addExp(const uint32_t &amount, const bool &update)
+bool Person::addExp(const uint32_t& amount, const bool& update)
 {
   auto can_add = false;
 
@@ -706,64 +703,6 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
     updateLevel();
 
   return can_add;
-}
-
-/*
- * Description: Prepares a person for entering Battle (flags, Attributes, etc.)
- *
- * Inputs: none
- * Output: none
- */
-void Person::battlePrep()
-{
-  curr_stats = curr_max_stats;
-  updateEquipStats();
-  updateSkills();
-  resetSkills();
-
-  setAilFlag(PersonAilState::RANDOM_SELECTION, false);
-  setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
-  setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
-  setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
-  setAilFlag(PersonAilState::TWO_SKILLS, false);
-  setAilFlag(PersonAilState::THREE_SKILLS, false);
-  setAilFlag(PersonAilState::HALF_COST, false);
-  setAilFlag(PersonAilState::REFLECT, false);
-  setAilFlag(PersonAilState::BOND, false);
-  setAilFlag(PersonAilState::BONDED, false);
-  setAilFlag(PersonAilState::IS_BUBBY, false);
-  setAilFlag(PersonAilState::IS_MODULATED, false);
-  setBFlag(BState::IN_BATTLE, true);
-  setBFlag(BState::ALIVE, true);
-  setBFlag(BState::REVIVABLE, false);
-  setBFlag(BState::IS_SELECTING, false);
-  setBFlag(BState::SELECTED_ACTION, false);
-  setBFlag(BState::SELECTED_2ND_ACTION, false);
-  setBFlag(BState::SELECTED_3RD_ACTION, false);
-  setBFlag(BState::CAN_CRIT, true);
-  setBFlag(BState::CAN_BE_CRIT, true);
-  setBFlag(BState::DEFENDING, false);
-  setBFlag(BState::GUARDED, false);
-  setBFlag(BState::GUARDING, false);
-  setBFlag(BState::SHIELDED, false);
-  setBFlag(BState::IS_ATTACKING, false);
-
-  resetActionFlags();
-}
-
-/*
- * Description: Prepares the person for the beginning of a turn during a
- *              battle.
- *
- * Inputs: none
- * Output: none
- */
-void Person::battleTurnPrep()
-{
-  setBFlag(BState::SELECTED_ACTION, false);
-  setBFlag(BState::SELECTED_2ND_ACTION, false);
-  setBFlag(BState::SELECTED_3RD_ACTION, false);
-  // setBFlag(BState::TWO_SKILLS, true);
 }
 
 // TODO: Comment
@@ -805,9 +744,9 @@ void Person::clearLearnedSkills()
  *         secd_personality - the secondary personality for the AI
  * Output: bool - true if the old AIModule underwent annihilation
  */
-bool Person::createAI(const AIDifficulty &diff,
-                      const AIPersonality &prim_personality,
-                      const AIPersonality &secd_personality)
+bool Person::createAI(const AIDifficulty& diff,
+                      const AIPersonality& prim_personality,
+                      const AIPersonality& secd_personality)
 {
   auto destroyed = false;
 
@@ -818,8 +757,11 @@ bool Person::createAI(const AIDifficulty &diff,
     destroyed = true;
   }
 
-  ai_module = new AIModule(diff, prim_personality, secd_personality);
-  ai_module->setParent(this);
+  (void)diff;
+  (void)prim_personality;
+  (void)secd_personality;
+  // ai_module = new AIModule(diff, prim_personality, secd_personality);
+  // ai_module->setParent(this);
 
   return destroyed;
 }
@@ -831,7 +773,7 @@ bool Person::createAI(const AIDifficulty &diff,
  * Inputs: amount - amount of damage to deal
  * Output: bool - true if the Person is now dead
  */
-bool Person::doDmg(const uint32_t &amount)
+bool Person::doDmg(const uint32_t& amount)
 {
   curr_stats.alterStat(Attribute::VITA, -amount);
 
@@ -948,7 +890,7 @@ bool Person::isPowerGuarder()
  *         SDL_Renderer* renderer - the rendering engine
  * Output: bool - true if load was successful
  */
-bool Person::loadData(XmlData data, int index, SDL_Renderer *renderer,
+bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
                       std::string base_path)
 {
   bool success = true;
@@ -1093,7 +1035,7 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer *renderer,
  *         update - whether to update the level
  * Output: bool - whether the loss of experience was possible
  */
-bool Person::loseExp(const uint32_t &amount, const bool &update)
+bool Person::loseExp(const uint32_t& amount, const bool& update)
 {
   if(amount >= total_exp)
     total_exp -= amount;
@@ -1114,7 +1056,7 @@ bool Person::loseExp(const uint32_t &amount, const bool &update)
  * Inputs: percentage - the percentage to take away gained experience.
  * Output: bool - whether a loss of experience happened properly
  */
-bool Person::loseExpPercent(const uint16_t &percent)
+bool Person::loseExpPercent(const uint16_t& percent)
 {
   auto lost_exp = false;
   auto exp_pc = findExpPercent();
@@ -1144,150 +1086,160 @@ bool Person::loseExpPercent(const uint16_t &percent)
  *         skills - true to print out information for each skill
  * Output: none
  */
-void Person::print(const bool &simple, const bool &equips, const bool &flags,
-                   const bool &skills)
-{
-  std::cout << "==== Person: " << getName() << " ====\n";
-  if(simple)
-  {
-    std::cout << "GID: " << game_id << " MID: " << my_id << " Name: " << name
-              << " Level: " << static_cast<int>(level) << " Exp: " << total_exp
-              << "\n";
-  }
-  else
-  {
-    std::cout << "Game ID: " << game_id << "\n";
-    std::cout << "My ID: " << my_id << "\n";
-    std::cout << "Base Person? " << (base_person == nullptr) << "\n";
-    if(battle_class != nullptr)
-      std::cout << "Battle Class: " << battle_class->getName() << "\n";
-    if(race_class != nullptr)
-      std::cout << "Race? " << race_class->getName() << "\n";
-    std::cout << "Name: " << name << "\n";
-    std::cout << "[void]Rank "
-              << "\n";
-    std::cout << "Primary: " << Helpers::elementToString(primary) << "\n";
-    std::cout << "Secondary: " << Helpers::elementToString(secondary);
-    std::cout << "\nPrim Curve: " << static_cast<int>(primary_curve);
-    std::cout << "\nSecd Curve: " << static_cast<int>(secondary_curve);
-    std::cout << "\nDmg Modifier: " << dmg_mod << "\n";
-    std::cout << "Exp Modifier: " << exp_mod << "\n";
-    std::cout << "Item Drops: " << item_drops.size() << "\n";
-    std::cout << "Credit Drop: " << credit_drop << "\n";
-    std::cout << "Exp Drop: " << exp_drop << "\n";
-    std::cout << "Level: " << static_cast<int>(level) << "\n";
-    std::cout << "Total Exp: " << total_exp << "\n";
-    std::cout << "To Next Lvl: " << findExpPerPC() << "\n";
-    std::cout << "First Person? " << (first_person != nullptr) << "\n";
-    std::cout << "Third Person? " << (third_person != nullptr) << "\n";
-    std::cout << "VITA Regn: " << Helpers::regenRateToStr(getVitaRegenRate());
-    std::cout << "\nQTDR Regn: " << Helpers::regenRateToStr(getQDRegenRate());
-    std::cout << "\n\n";
+// void Person::print(const bool& simple, const bool& equips, const bool& flags,
+//                    const bool& skills)
+// {
+  // std::cout << "==== Person: " << getName() << " ====\n";
+  // if(simple)
+  // {
+  //   std::cout << "GID: " << game_id << " MID: " << my_id << " Name: " << name
+  //             << " Level: " << static_cast<int>(level) << " Exp: " <<
+  //             total_exp
+  //             << "\n";
+  // }
+  // else
+  // {
+  // std::cout << "Game ID: " << game_id << "\n";
+  // std::cout << "My ID: " << my_id << "\n";
+  // std::cout << "Base Person? " << (base_person == nullptr) << "\n";
+  // if(battle_class != nullptr)
+  //   std::cout << "Battle Class: " << battle_class->getName() << "\n";
+  // if(race_class != nullptr)
+  //   std::cout << "Race? " << race_class->getName() << "\n";
+  // std::cout << "Name: " << name << "\n";
+  // std::cout << "[void]Rank "
+  //           << "\n";
+  // std::cout << "Primary: " << Helpers::elementToString(primary) << "\n";
+  // std::cout << "Secondary: " << Helpers::elementToString(secondary);
+  // std::cout << "\nPrim Curve: " << static_cast<int>(primary_curve);
+  // std::cout << "\nSecd Curve: " << static_cast<int>(secondary_curve);
+  // std::cout << "\nDmg Modifier: " << dmg_mod << "\n";
+  // std::cout << "Exp Modifier: " << exp_mod << "\n";
+  // std::cout << "Item Drops: " << item_drops.size() << "\n";
+  // std::cout << "Credit Drop: " << credit_drop << "\n";
+  // std::cout << "Exp Drop: " << exp_drop << "\n";
+  // std::cout << "Level: " << static_cast<int>(level) << "\n";
+  // std::cout << "Total Exp: " << total_exp << "\n";
+  // std::cout << "To Next Lvl: " << findExpPerPC() << "\n";
+  // std::cout << "First Person? " << (first_person != nullptr) << "\n";
+  // std::cout << "Third Person? " << (third_person != nullptr) << "\n";
+  // std::cout << "VITA Regn: " << Helpers::regenRateToStr(getVitaRegenRate());
+  // std::cout << "\nQTDR Regn: " << Helpers::regenRateToStr(getQDRegenRate());
+  // std::cout << "\n\n";
 
-    std::cout << "Base Stats: ";
-    base_stats.print(true);
-    std::cout << "\n";
-    std::cout << "Base Max Stats: ";
-    base_max_stats.print(true);
-    std::cout << "\n";
-    std::cout << "Curr Stats: ";
-    curr_stats.print(true);
-    std::cout << "\n";
-    std::cout << "Curr Max Stats: ";
-    curr_max_stats.print(true);
-    std::cout << "\n";
-    std::cout << "Temp Max Stats: ";
-    temp_max_stats.print(true);
-    std::cout << "\n";
+  // std::cout << "Base Stats: ";
+  // base_stats.print(true);
+  // std::cout << "\n";
+  // std::cout << "Base Max Stats: ";
+  // base_max_stats.print(true);
+  // std::cout << "\n";
+  // std::cout << "Curr Stats: ";
+  // curr_stats.print(true);
+  // std::cout << "\n";
+  // std::cout << "Curr Max Stats: ";
+  // curr_max_stats.print(true);
+  // std::cout << "\n";
+  // std::cout << "Temp Max Stats: ";
+  // temp_max_stats.print(true);
+  // std::cout << "\n";
 
-    if(skills)
-    {
-      std::cout << "Base Skill Set: ";
+  // if(skills)
+  // {
+  //   std::cout << "Base Skill Set: ";
 
-      if(base_skills != nullptr)
-        base_skills->print();
+  //   if(base_skills != nullptr)
+  //     base_skills->print();
 
-      std::cout << "\nCurr Skill Set: ";
+  //   std::cout << "\nCurr Skill Set: ";
 
-      if(curr_skills != nullptr)
-        curr_skills->print();
+  //   if(curr_skills != nullptr)
+  //     curr_skills->print();
 
-      std::cout << "\nLearned Skills: ";
+  //   std::cout << "\nLearned Skills: ";
 
-      if(learned_skills != nullptr)
-        learned_skills->print();
+  //   if(learned_skills != nullptr)
+  //     learned_skills->print();
 
-      std::cout << "\n";
-    }
+  //   std::cout << "\n";
+  // }
 
-    if(equips)
-      for(auto equipment : equipments)
-        if(equipment != nullptr)
-          equipment->print();
+  // if(equips)
+  //   for(auto equipment : equipments)
+  //     if(equipment != nullptr)
+  //       equipment->print();
 
-    if(flags)
-    {
-      std::cout << "--- Battle State Flags ---\n";
-      std::cout << "IN_BATTLE: " << getBFlag(BState::IN_BATTLE) << "\n";
-      std::cout << "ALIVE: " << getBFlag(BState::ALIVE) << "\n";
-      std::cout << "ATK_ENABLED: " << getBFlag(BState::ATK_ENABLED) << "\n";
-      std::cout << "SKL_ENABLED: " << getBFlag(BState::SKL_ENABLED) << "\n";
-      std::cout << "ITM_ENABLED: " << getBFlag(BState::ITM_ENABLED) << "\n";
-      std::cout << "DEF_ENABLED: " << getBFlag(BState::DEF_ENABLED) << "\n";
-      std::cout << "GRD_ENABLED: " << getBFlag(BState::GRD_ENABLED) << "\n";
-      std::cout << "IMP_ENABLED: " << getBFlag(BState::IMP_ENABLED) << "\n";
-      std::cout << "RUN_ENABLED: " << getBFlag(BState::RUN_ENABLED) << "\n";
-      std::cout << "PAS_ENABLED: " << getBFlag(BState::PAS_ENABLED) << "\n";
-      // std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN);
-      // std::cout << "\nMISS_NEXT_TARGET: " <<
-      // getBFlag(BState::MISS_NEXT_TARGET);
-      // std::cout << "\nNEXT_ATK_NO_EFFECT: "
-      //           << getBFlag(BState::NEXT_ATK_NO_EFFECT);
-      // std::cout << "\nIS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
-      // std::cout << "TWO_SKILLS: " << getBFlag(BState::TWO_SKILLS) << "\n";
-      // std::cout << "THREE_SKILLS: " << getBFlag(BState::THREE_SKILLS) <<
-      // "\n";
-      // std::cout << "HALF_COST: " << getBFlag(BState::HALF_COST) << "\n";
-      // std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
-      // std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
-      // std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
-      // std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE);
-      std::cout << "\nIS_SELECTING: " << getBFlag(BState::IS_SELECTING);
-      std::cout << "\nSELECTED_ACTION: " << getBFlag(BState::SELECTED_ACTION);
-      std::cout << "\nSELECTED_2ND_ACTION: "
-                << getBFlag(BState::SELECTED_2ND_ACTION);
-      std::cout << "\nSELECTED_3RD_ACTION: "
-                << getBFlag(BState::SELECTED_3RD_ACTION);
-      std::cout << "\nCAN_CRIT: " << getBFlag(BState::CAN_CRIT);
-      std::cout << "\nCAN_BE_CRIT: " << getBFlag(BState::CAN_BE_CRIT);
-      std::cout << "\nDEFENDING: " << getBFlag(BState::DEFENDING);
-      std::cout << "\nGUARDED: " << getBFlag(BState::GUARDED);
-      std::cout << "\nGUARDING: " << getBFlag(BState::GUARDING);
-      std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED);
-      std::cout << "\nIS_ATTACKING: " << getBFlag(BState::IS_ATTACKING);
+  // if(flags)
+  // {
+  // std::cout << "--- Battle State Flags ---\n";
+  // std::cout << "IN_BATTLE: " << getBFlag(BState::IN_BATTLE) << "\n";
+  // std::cout << "ALIVE: " << getBFlag(BState::ALIVE) << "\n";
+  // std::cout << "ATK_ENABLED: " << getBFlag(BState::ATK_ENABLED) << "\n";
+  // std::cout << "SKL_ENABLED: " << getBFlag(BState::SKL_ENABLED) << "\n";
+  // std::cout << "ITM_ENABLED: " << getBFlag(BState::ITM_ENABLED) << "\n";
+  // std::cout << "DEF_ENABLED: " << getBFlag(BState::DEF_ENABLED) << "\n";
+  // std::cout << "GRD_ENABLED: " << getBFlag(BState::GRD_ENABLED) << "\n";
+  // std::cout << "IMP_ENABLED: " << getBFlag(BState::IMP_ENABLED) << "\n";
+  // std::cout << "RUN_ENABLED: " << getBFlag(BState::RUN_ENABLED) << "\n";
+  // std::cout << "PAS_ENABLED: " << getBFlag(BState::PAS_ENABLED) << "\n";
+  // std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN);
+  // std::cout << "\nMISS_NEXT_TARGET: " <<
+  // getBFlag(BState::MISS_NEXT_TARGET);
+  // std::cout << "\nNEXT_ATK_NO_EFFECT: "
+  //           << getBFlag(BState::NEXT_ATK_NO_EFFECT);
+  // std::cout << "\nIS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
+  // std::cout << "TWO_SKILLS: " << getBFlag(BState::TWO_SKILLS) << "\n";
+  // std::cout << "THREE_SKILLS: " << getBFlag(BState::THREE_SKILLS) <<
+  // "\n";
+  // std::cout << "HALF_COST: " << getBFlag(BState::HALF_COST) << "\n";
+  // std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
+  // std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
+  // std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
+  // std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE);
+  //     std::cout << "\nIS_SELECTING: " << getBFlag(BState::IS_SELECTING);
+  //     std::cout << "\nSELECTED_ACTION: " <<
+  //     getBFlag(BState::SELECTED_ACTION);
+  //     std::cout << "\nSELECTED_2ND_ACTION: "
+  //               << getBFlag(BState::SELECTED_2ND_ACTION);
+  //     std::cout << "\nSELECTED_3RD_ACTION: "
+  //               << getBFlag(BState::SELECTED_3RD_ACTION);
+  //     std::cout << "\nCAN_CRIT: " << getBFlag(BState::CAN_CRIT);
+  //     std::cout << "\nCAN_BE_CRIT: " << getBFlag(BState::CAN_BE_CRIT);
+  //     std::cout << "\nDEFENDING: " << getBFlag(BState::DEFENDING);
+  //     std::cout << "\nGUARDED: " << getBFlag(BState::GUARDED);
+  //     std::cout << "\nGUARDING: " << getBFlag(BState::GUARDING);
+  //     std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED);
+  //     std::cout << "\nIS_ATTACKING: " << getBFlag(BState::IS_ATTACKING);
 
-      std::cout << "\n\n--- Person State Flags ---\n";
-      std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";
-      std::cout << "BEARACKS: " << getPFlag(PState::BEARACKS) << "\n";
-      std::cout << "MAIN: " << getPFlag(PState::MAIN) << "\n";
-      std::cout << "FINAL: " << getPFlag(PState::FINAL) << "\n";
-      std::cout << "BOSS: " << getPFlag(PState::BOSS) << "\n";
-      std::cout << "MINI_BOSS: " << getPFlag(PState::MINI_BOSS) << "\n";
-      std::cout << "CAN_GAIN_EXP: " << getPFlag(PState::CAN_GAIN_EXP) << "\n";
-      std::cout << "CAN_LEVEL_UP: " << getPFlag(PState::CAN_LEVEL_UP) << "\n";
-      std::cout << "CAN_LEARN_SKILLS: " << getPFlag(PState::CAN_LEARN_SKILLS)
-                << "\n";
-      std::cout << "CAN_CHANGE_EQUIP: " << getPFlag(PState::CAN_CHANGE_EQUIP)
-                << "\n";
-      std::cout << "MAX_LVL: " << getPFlag(PState::MAX_LVL) << "\n";
-    }
-  }
-  std::cout << "==== // Person ====\n\n";
-}
+  //     std::cout << "\n\n--- Person State Flags ---\n";
+  //     std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";
+  //     std::cout << "BEARACKS: " << getPFlag(PState::BEARACKS) << "\n";
+  //     std::cout << "MAIN: " << getPFlag(PState::MAIN) << "\n";
+  //     std::cout << "FINAL: " << getPFlag(PState::FINAL) << "\n";
+  //     std::cout << "BOSS: " << getPFlag(PState::BOSS) << "\n";
+  //     std::cout << "MINI_BOSS: " << getPFlag(PState::MINI_BOSS) << "\n";
+  //     std::cout << "CAN_GAIN_EXP: " << getPFlag(PState::CAN_GAIN_EXP) <<
+  //     "\n";
+  //     std::cout << "CAN_LEVEL_UP: " << getPFlag(PState::CAN_LEVEL_UP) <<
+  //     "\n";
+  //     std::cout << "CAN_LEARN_SKILLS: " <<
+  //     getPFlag(PState::CAN_LEARN_SKILLS)
+  //               << "\n";
+  //     std::cout << "CAN_CHANGE_EQUIP: " <<
+  //     getPFlag(PState::CAN_CHANGE_EQUIP)
+  //               << "\n";
+  //     std::cout << "MAX_LVL: " << getPFlag(PState::MAX_LVL) << "\n";
+  //   }
+  // }
+  // std::cout << "==== // Person ====\n\n";
+  //   }
+  // }
+// }
 
 /*
- * Description: Attempts to remove equipment from a given equip slot. Removes
- *              true if an equipment at that slot was found and it was removed.
+ * Description: Attempts to remove equipment from a given equip slot.
+ *Removes
+ *              true if an equipment at that slot was found and it was
+ *removed.
  *
  * Note [1]: This function will cause a memory leak unless the equipment is
  *           grabbed before the removal takes place!
@@ -1295,7 +1247,7 @@ void Person::print(const bool &simple, const bool &equips, const bool &flags,
  * Inputs: equip_slot - enumerated equip slot to remove the equipment for
  * Output: bool - true if a piece of equipment was there and removed
  */
-bool Person::removeEquip(const EquipSlots &equip_slot)
+bool Person::removeEquip(const EquipSlots& equip_slot)
 {
   auto removed = false;
 
@@ -1334,70 +1286,43 @@ bool Person::removeEquip(const EquipSlots &equip_slot)
 }
 
 /*
- * Description: Resets the action flags (types of useable actions) to their
- *              standard states (defaults plus category defaults).
- *
- * Inputs: none
- * Output: none
- */
-void Person::resetActionFlags()
-{
-  setBFlag(BState::ATK_ENABLED, true);
-  setBFlag(BState::SKL_ENABLED, true);
-  setBFlag(BState::ITM_ENABLED, false); // TODO: Temporarily disabled [08-09-14]
-  setBFlag(BState::INS_ENABLED, false); // TODO: What enables inspect?
-  setBFlag(BState::RUN_ENABLED, true);
-  setBFlag(BState::PAS_ENABLED, true);
-
-  setBFlag(BState::DEF_ENABLED,
-           battle_class->getFlag(CategoryState::DEF_ENABLED));
-
-  // TODO: Enable guard
-  setBFlag(BState::GRD_ENABLED, false);
-  // setBFlag(BState::GRD_ENABLED,
-  //          battle_class->getFlag(CategoryState::GRD_ENABLED));
-
-  setBFlag(BState::IMP_ENABLED,
-           battle_class->getFlag(CategoryState::IMP_ENABLED));
-}
-
-/*
  * Description:
  *
  * Inputs:
  * Output:
  */
-bool Person::resetAI()
-{
-  if(ai_module == nullptr)
-    return false;
+// bool Person::resetAI()
+// {
+//   if(ai_module == nullptr)
+//     return false;
 
-  ai_module->incrementTurns();
-  ai_module->resetForNewTurn(this);
+//   ai_module->incrementTurns();
+//   ai_module->resetForNewTurn(this);
 
-  return true;
-}
+//   return true;
+// }
 
 /*
- * Description: Resets the Person pointer guard and GUARDED flag of this person
+ * Description: Resets the Person pointer guard and GUARDED flag of this
+ *person
  *              and returns true if the guard status has properly changed.
  *
  * Inputs: none
  * Output: bool - true if the guard status was reset properly
  */
-bool Person::resetGuard()
-{
-  bool good_reset = false;
+// bool Person::resetGuard()
+// {
+//   bool good_reset = false;
 
-  /* Proper reset if guard was assigned as well as GUARDED flag */
-  good_reset &= (guard != nullptr && getBFlag(BState::GUARDED));
+//   /* Proper reset if guard was assigned as well as GUARDED flag */
+//   good_reset &= (guard != nullptr && getBFlag(BState::GUARDED));
 
-  /* Unassign the guard and turn off GUARDED flag */
-  guard = nullptr;
-  setBFlag(BState::GUARDED, false);
+//   /* Unassign the guard and turn off GUARDED flag */
+//   guard = nullptr;
+//   setBFlag(BState::GUARDED, false);
 
-  return good_reset;
-}
+//   return good_reset;
+// }
 
 /*
  * Description: Resets the defending status of the person. Returns true if
@@ -1406,16 +1331,16 @@ bool Person::resetGuard()
  * Inputs: none
  * Output: bool - true if the person was defending and now no longer is
  */
-bool Person::resetDefend()
-{
-  bool good_defend = false;
+// bool Person::resetDefend()
+// {
+//   bool good_defend = false;
 
-  good_defend &= getBFlag(BState::DEFENDING);
+//   good_defend &= getBFlag(BState::DEFENDING);
 
-  setBFlag(BState::DEFENDING, false);
+//   setBFlag(BState::DEFENDING, false);
 
-  return good_defend;
-}
+//   return good_defend;
+// }
 
 /*
  * Description: Resets the guarding status of this person. Returns true if
@@ -1424,17 +1349,17 @@ bool Person::resetDefend()
  * Inputs: none
  * Output: bool - true if guarding state was set and no longer is
  */
-bool Person::resetGuardee()
-{
-  bool good_reset = false;
+// bool Person::resetGuardee()
+// {
+//   bool good_reset = false;
 
-  good_reset &= (guardee != nullptr && getBFlag(BState::GUARDING));
+//   good_reset &= (guardee != nullptr && getBFlag(BState::GUARDING));
 
-  guardee = nullptr;
-  setBFlag(BState::GUARDING, false);
+//   guardee = nullptr;
+//   setBFlag(BState::GUARDING, false);
 
-  return good_reset;
-}
+//   return good_reset;
+// }
 
 /*
  * Description: Resets the state of the users current skill set for proper
@@ -1443,15 +1368,15 @@ bool Person::resetGuardee()
  * Inputs: none
  * Output: none
  */
-void Person::resetSkills()
-{
-  auto elements = curr_skills->getElements(level);
+// void Person::resetSkills()
+// {
+//   auto elements = curr_skills->getElements(level);
 
-  for(auto &element : elements)
-    element.silenced = false;
-}
+//   for(auto& element : elements)
+//     element.silenced = false;
+// }
 
-Sprite *Person::getActionSprite()
+Sprite* Person::getActionSprite()
 {
   return action_sprite;
 }
@@ -1463,13 +1388,14 @@ Sprite *Person::getActionSprite()
  * Inputs: none
  * Output: Sprite* - the sprite pointer
  */
-Sprite *Person::getDialogSprite()
+Sprite* Person::getDialogSprite()
 {
   return dialog_sprite;
 }
 
 /*
- * Description: Returns the rendering action X offset in the swipe away in the
+ * Description: Returns the rendering action X offset in the swipe away in
+ *the
  *              battle.
  *
  * Inputs: none
@@ -1481,7 +1407,8 @@ int16_t Person::getActionX()
 }
 
 /*
- * Description: Returns the rendering action Y offset in the swipe away in the
+ * Description: Returns the rendering action Y offset in the swipe away in
+ *the
  *              battle.
  *
  * Inputs: none
@@ -1498,7 +1425,7 @@ int16_t Person::getActionY()
  * Inputs:
  * Output:
  */
-AIModule *Person::getAI()
+AIModule* Person::getAI()
 {
   return ai_module;
 }
@@ -1531,10 +1458,10 @@ int32_t Person::getMyID()
  * Inputs:
  * Output:
  */
-bool Person::getAilFlag(const PersonAilState &test_flag)
-{
-  return static_cast<bool>((ailment_flags & test_flag) == test_flag);
-}
+// bool Person::getAilFlag(const PersonAilState& test_flag)
+// {
+//   return static_cast<bool>((ailment_flags & test_flag) == test_flag);
+// }
 
 /*
  * Description: Evaluates and returns the state of a given BState flag
@@ -1542,10 +1469,10 @@ bool Person::getAilFlag(const PersonAilState &test_flag)
  * Inputs: test_flag - BState flag to find the value for
  * Output: bool - the value of the given flag to check
  */
-bool Person::getBFlag(const BState &test_flag)
-{
-  return static_cast<bool>((battle_flags & test_flag) == test_flag);
-}
+// bool Person::getBFlag(const BState& test_flag)
+// {
+//   return static_cast<bool>((battle_flags & test_flag) == test_flag);
+// }
 
 /*
  * Description: Evaluates and returns the state of a given PState flag
@@ -1553,7 +1480,7 @@ bool Person::getBFlag(const BState &test_flag)
  * Inputs: test_flag - PState flag to find the value for
  * Output: bool - the value of the given flag to check
  */
-bool Person::getPFlag(const PState &test_flag)
+bool Person::getPFlag(const PState& test_flag)
 {
   return static_cast<bool>((person_flags & test_flag) == test_flag);
 }
@@ -1564,32 +1491,34 @@ bool Person::getPFlag(const PState &test_flag)
  * Inputs: none
  * Output: Person* - pointer to the assigned base person
  */
-Person *Person::getBasePerson()
+Person* Person::getBasePerson()
 {
   return base_person;
 }
 
 /*
- * Description: Returns the pointer to the person who is guarding this person
+ * Description: Returns the pointer to the person who is guarding this
+ *person
  *
  * Inputs: none
  * Output: Person* - person guarding this person
  */
-Person *Person::getGuard()
-{
-  return guard;
-}
+// Person* Person::getGuard()
+// {
+//   return guard;
+// }
 
 /*
- * Description: Returns the pointer to the person being guarded by this person
+ * Description: Returns the pointer to the person being guarded by this
+ *person
  *
  * Inputs: none
  * Output: Person* - the person being guarded
  */
-Person *Person::getGuardee()
-{
-  return guardee;
-}
+// Person* Person::getGuardee()
+// {
+//   return guardee;
+// }
 
 /*
  * Description: Returns a pointer to the battle class category
@@ -1597,7 +1526,7 @@ Person *Person::getGuardee()
  * Inputs: none
  * Output: Category* - pointer to the base class
  */
-Category *Person::getClass()
+Category* Person::getClass()
 {
   return battle_class;
 }
@@ -1608,7 +1537,7 @@ Category *Person::getClass()
  * Inputs: none
  * Output: Category* - pointer to the race class
  */
-Category *Person::getRace()
+Category* Person::getRace()
 {
   return race_class;
 }
@@ -1661,7 +1590,8 @@ Element Person::getSecondary()
  * Description: Return the enumerated curve of prim. elemental progression
  *
  * Inputs: none
- * Output: ElementCurve - the enumerated curve of prim. elemental progression
+ * Output: ElementCurve - the enumerated curve of prim. elemental
+ *progression
  */
 ElementCurve Person::getPrimaryCurve()
 {
@@ -1672,7 +1602,8 @@ ElementCurve Person::getPrimaryCurve()
  * Description: Return the enumerated curve of secd. elemental progression
  *
  * Inputs: none
- * Output: ElementCurve - the enumerated curve of secd. elemental progression
+ * Output: ElementCurve - the enumerated curve of secd. elemental
+ *progression
  */
 ElementCurve Person::getSecondaryCurve()
 {
@@ -1685,7 +1616,7 @@ ElementCurve Person::getSecondaryCurve()
  * Inputs: none
  * Output: AttributeSet& - ref. to the base stats of the Person
  */
-AttributeSet &Person::getBase()
+AttributeSet& Person::getBase()
 {
   return base_stats;
 }
@@ -1696,7 +1627,7 @@ AttributeSet &Person::getBase()
  * Inputs: none
  * Output: AttributeSet& - ref. to the base max stats of the Person
  */
-AttributeSet &Person::getBaseMax()
+AttributeSet& Person::getBaseMax()
 {
   return base_max_stats;
 }
@@ -1707,7 +1638,7 @@ AttributeSet &Person::getBaseMax()
  * Inputs: none
  * Output: AttributeSet& - ref. to the curr stats of the Person
  */
-AttributeSet &Person::getCurr()
+AttributeSet& Person::getCurr()
 {
   return curr_stats;
 }
@@ -1718,7 +1649,7 @@ AttributeSet &Person::getCurr()
  * Inputs: none
  * Output: AttributeSet& - ref. to the curr max stats of the Person
  */
-AttributeSet &Person::getCurrMax()
+AttributeSet& Person::getCurrMax()
 {
   return curr_max_stats;
 }
@@ -1729,7 +1660,7 @@ AttributeSet &Person::getCurrMax()
  * Inputs: none
  * Output: AttributeSet& - ref. to the temp stats of the Person
  */
-AttributeSet &Person::getTemp()
+AttributeSet& Person::getTemp()
 {
   return temp_max_stats;
 }
@@ -1740,7 +1671,7 @@ AttributeSet &Person::getTemp()
  * Inputs: none
  * Output: SkillSet* - pointer to the base skills of the Person
  */
-SkillSet *Person::getBaseSkills()
+SkillSet* Person::getBaseSkills()
 {
   return base_skills;
 }
@@ -1751,7 +1682,7 @@ SkillSet *Person::getBaseSkills()
  * Inputs: none
  * Output: SkillSet* - pointer to the current SkillSet of the Person
  */
-SkillSet *Person::getCurrSkills()
+SkillSet* Person::getCurrSkills()
 {
   return curr_skills;
 }
@@ -1784,7 +1715,7 @@ float Person::getExpMod()
  * Inputs: equip_slot - the equip slot to check the equipment for
  * Output: Equipment* - pointer to the equipment at the enumerated slot
  */
-Equipment *Person::getEquip(const EquipSlots &equip_slot)
+Equipment* Person::getEquip(const EquipSlots& equip_slot)
 {
   auto index = getEquipIndex(equip_slot);
 
@@ -1795,12 +1726,13 @@ Equipment *Person::getEquip(const EquipSlots &equip_slot)
 }
 
 /*
- * Description: Grabs the corresponding index of a given EquipSlots enumeration
+ * Description: Grabs the corresponding index of a given EquipSlots
+ *enumeration
  *
  * Inputs: none
  * Output: uint32_t - the mapped index of a given equip slot
  */
-uint32_t Person::getEquipIndex(const EquipSlots &equip_slot)
+uint32_t Person::getEquipIndex(const EquipSlots& equip_slot)
 {
   if(static_cast<uint8_t>(equip_slot) < equipments.size())
   {
@@ -1891,47 +1823,13 @@ float Person::getVitaPercent()
 }
 
 /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-int16_t Person::getTrueCost(Skill *test_skill)
-{
-  if(temp_skills != nullptr && !getAilFlag(PersonAilState::IS_BUBBY))
-  {
-    auto elements = temp_skills->getElements(level);
-
-    for(auto it = begin(elements); it != end(elements); ++it)
-    {
-      if((*it).skill == test_skill)
-      {
-        if(getAilFlag(PersonAilState::HALF_COST))
-          return (*it).skill->getCost() / 2;
-
-        return (*it).skill->getCost();
-      }
-    }
-  }
-  else if(getAilFlag(PersonAilState::IS_BUBBY))
-  {
-    if(getAilFlag(PersonAilState::HALF_COST))
-      return test_skill->getCost() / 2;
-
-    return test_skill->getCost();
-  }
-
-  return AttributeSet::getMaxValue();
-}
-
-/*
  * Description: Grabs the currentassigned first person frame (based on the
  *              IS_BUBBY BState flag)
  *
  * Inputs: none
  * Output: Sprite* - pointer to the correct current first person sprite
  */
-Sprite *Person::getFirstPerson()
+Sprite* Person::getFirstPerson()
 {
   if(base_person != nullptr)
     return base_person->first_person;
@@ -1945,7 +1843,7 @@ Sprite *Person::getFirstPerson()
  * Inputs: none
  * Output: Sprite* - pointer to the correct current third person sprite
  */
-Sprite *Person::getThirdPerson()
+Sprite* Person::getThirdPerson()
 {
   if(base_person != nullptr)
     return base_person->third_person;
@@ -1965,50 +1863,52 @@ std::vector<uint32_t> Person::getItemDrops()
 }
 
 /*
- * Description: Calculates the total QD regeneration rate from the battle class
+ * Description: Calculates the total QD regeneration rate from the battle
+ *class
  *              and race class bonuses and returns the enumerated result.
  *
  * Inputs: none
  * Output: RegenRate - enumerated regen rate for quantum drive / turn
  */
-RegenRate Person::getQDRegenRate()
-{
-  if(battle_class != nullptr && race_class != nullptr)
-  {
-    auto total_rate = static_cast<int16_t>(battle_class->getQDRegenRate()) +
-                      static_cast<int16_t>(race_class->getQDRegenRate());
+// RegenRate Person::getQDRegenRate()
+// {
+//   if(battle_class != nullptr && race_class != nullptr)
+//   {
+//     auto total_rate = static_cast<int16_t>(battle_class->getQDRegenRate()) +
+//                       static_cast<int16_t>(race_class->getQDRegenRate());
 
-    if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
-      return static_cast<RegenRate>(total_rate);
-    else
-      return RegenRate::GRAND;
-  }
+//     if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+//       return static_cast<RegenRate>(total_rate);
+//     else
+//       return RegenRate::GRAND;
+//   }
 
-  return RegenRate::ZERO;
-}
+//   return RegenRate::ZERO;
+// }
 
 /*
  * Description: Calculates the total Vita regeneration rate from the battle
- *              class and race class bonuses and returns the enumerated result.
+ *              class and race class bonuses and returns the enumerated
+ *result.
  *
  * Inputs: none
  * Output: RegenRate - enumerated regen rate for vitality / turn
  */
-RegenRate Person::getVitaRegenRate()
-{
-  if(battle_class != nullptr && race_class != nullptr)
-  {
-    auto total_rate = static_cast<int16_t>(battle_class->getVitaRegenRate()) +
-                      static_cast<int16_t>(race_class->getVitaRegenRate());
+// RegenRate Person::getVitaRegenRate()
+// {
+//   if(battle_class != nullptr && race_class != nullptr)
+//   {
+//     auto total_rate = static_cast<int16_t>(battle_class->getVitaRegenRate()) +
+//                       static_cast<int16_t>(race_class->getVitaRegenRate());
 
-    if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
-      return static_cast<RegenRate>(total_rate);
-    else
-      return RegenRate::GRAND;
-  }
+//     if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+//       return static_cast<RegenRate>(total_rate);
+//     else
+//       return RegenRate::GRAND;
+//   }
 
-  return RegenRate::ZERO;
-}
+//   return RegenRate::ZERO;
+// }
 
 /*
  * Description: Calculates a vector of Skill ptrs containing all Skills the
@@ -2018,98 +1918,102 @@ RegenRate Person::getVitaRegenRate()
  * Inputs: none
  * Output: SkillSet* useable skills
  */
-SkillSet *Person::getUseableSkills()
+SkillSet* Person::getUseableSkills()
 {
-  /* Delete the old temp skills ptr if set */
-  if(temp_skills != nullptr)
-    delete temp_skills;
+  // /* Delete the old temp skills ptr if set */
+  // if(temp_skills != nullptr)
+  //   delete temp_skills;
 
-  /* Create a new temporary skills ptr */
-  temp_skills = new SkillSet();
+  // /* Create a new temporary skills ptr */
+  // temp_skills = new SkillSet();
 
-  /* Grab the SetElement useable from curr skills ptr at a given lvl */
-  std::vector<SetElement> useable_skills;
-  auto elements = curr_skills->getElements(level);
+  // /* Grab the SetElement useable from curr skills ptr at a given lvl */
+  // std::vector<SetElement> useable_skills;
+  // auto elements = curr_skills->getElements(level);
 
-  for(auto it = begin(elements); it != end(elements); ++it)
-  {
-    auto add_skill = true;
+  // for(auto it = begin(elements); it != end(elements); ++it)
+  // {
+  //   auto add_skill = true;
 
-    if((*it).enabled && !(*it).silenced)
-    {
-      auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
+  //   if((*it).enabled && !(*it).silenced)
+  //   {
+  //     auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
 
-      /* Adjust for Half Cost of skills */
-      if(getAilFlag(PersonAilState::HALF_COST))
-        if(skill_cost != 1)
-          skill_cost /= 2;
+  //     /* Adjust for Half Cost of skills */
+  //     if(getAilFlag(PersonAilState::HALF_COST))
+  //       if(skill_cost != 1)
+  //         skill_cost /= 2;
 
-      /* If the adjusted QD cost is 0, assert that ATK is enabled */
-      if(skill_cost == 0 || (*it).skill->isBerserkSkill())
-        add_skill &= getBFlag(BState::ATK_ENABLED);
-      /* If the adjusted QD cost is > 0, asert that SKL is enabled */
-      else
-        add_skill &= getBFlag(BState::SKL_ENABLED);
+  //      If the adjusted QD cost is 0, assert that ATK is enabled
+  //     if(skill_cost == 0 || (*it).skill->isBerserkSkill())
+  //       add_skill &= getBFlag(BState::ATK_ENABLED);
+  //     /* If the adjusted QD cost is > 0, asert that SKL is enabled */
+  //     else
+  //       add_skill &= getBFlag(BState::SKL_ENABLED);
 
-      add_skill &= (skill_cost <= temp_max_stats.getStat(Attribute::QTDR));
+  //     add_skill &= (skill_cost <= temp_max_stats.getStat(Attribute::QTDR));
 
-      /* If the skill can still be added, push it to the useable elements */
-      if(add_skill)
-      {
-        useable_skills.push_back(*it);
-      }
-    }
-  }
+  //     /* If the skill can still be added, push it to the useable elements */
+  //     if(add_skill)
+  //     {
+  //       useable_skills.push_back(*it);
+  //     }
+  //   }
+  // }
 
-  if(temp_skills->addSkills(useable_skills))
-  {
-    return temp_skills;
-  }
-  else
-  {
-    std::cerr << "[Eror] Creating temp skill values." << std::endl;
-  }
+  // if(temp_skills->addSkills(useable_skills))
+  // {
+  //   return temp_skills;
+  // }
+  // else
+  // {
+  //   std::cerr << "[Eror] Creating temp skill values." << std::endl;
+  // }
 
   return nullptr;
 }
 
 /*
- * Description: Calculates and prints the valid action types which this person
+ * Description: Calculates and prints the valid action types which this
+ *person
  *              may perform in a battle in their current state
  *
  * Inputs: none
- * Output: std::vector<ActionType> - vector of enuemrated action types possible
+ * Output: std::vector<ActionType> - vector of enuemrated action types
+ *possible
  */
-std::vector<ActionType> Person::getValidActions()
-{
-  std::vector<ActionType> valid_action_types;
+// std::vector<ActionType> Person::getValidActions()
+// {
+//   std::vector<ActionType> valid_action_types;
 
-  if(getBFlag(BState::ATK_ENABLED) || getBFlag(BState::SKL_ENABLED))
-    valid_action_types.push_back(ActionType::SKILL);
+//   if(getBFlag(BState::ATK_ENABLED) || getBFlag(BState::SKL_ENABLED))
+//     valid_action_types.push_back(ActionType::SKILL);
 
-  if(getBFlag(BState::ITM_ENABLED))
-    valid_action_types.push_back(ActionType::ITEM);
+//   if(getBFlag(BState::ITM_ENABLED))
+//     valid_action_types.push_back(ActionType::ITEM);
 
-  if(getBFlag(BState::DEF_ENABLED))
-    valid_action_types.push_back(ActionType::DEFEND);
+//   if(getBFlag(BState::DEF_ENABLED))
+//     valid_action_types.push_back(ActionType::DEFEND);
 
-  if(getBFlag(BState::GRD_ENABLED))
-    valid_action_types.push_back(ActionType::GUARD);
+//   if(getBFlag(BState::GRD_ENABLED))
+//     valid_action_types.push_back(ActionType::GUARD);
 
-  if(getBFlag(BState::IMP_ENABLED) && this->getLevel() >= kMIN_LVL_IMPLODE)
-    valid_action_types.push_back(ActionType::IMPLODE);
+//   if(getBFlag(BState::IMP_ENABLED) && this->getLevel() >=
+//   kMIN_LVL_IMPLODE)
+//     valid_action_types.push_back(ActionType::IMPLODE);
 
-  if(getBFlag(BState::RUN_ENABLED))
-    valid_action_types.push_back(ActionType::RUN);
+//   if(getBFlag(BState::RUN_ENABLED))
+//     valid_action_types.push_back(ActionType::RUN);
 
-  if(getBFlag(BState::PAS_ENABLED))
-    valid_action_types.push_back(ActionType::PASS);
+//   if(getBFlag(BState::PAS_ENABLED))
+//     valid_action_types.push_back(ActionType::PASS);
 
-  return valid_action_types;
-}
+//   return valid_action_types;
+// }
 
 /*
- * Description: Sets the action x and y offset for the rendering person in the
+ * Description: Sets the action x and y offset for the rendering person in
+ *the
  *              battle action frame slide-away.
  *
  * Inputs: uint8_t action_x - the x direction offset
@@ -2128,7 +2032,7 @@ void Person::setActionXY(int16_t action_x, int16_t action_y)
  * Inputs:
  * Output:
  */
-void Person::setAI(AIModule *const new_ai_module)
+void Person::setAI(AIModule* const new_ai_module)
 {
   ai_module = new_ai_module;
 }
@@ -2139,10 +2043,11 @@ void Person::setAI(AIModule *const new_ai_module)
  * Inputs:
  * Output:
  */
-void Person::setAilFlag(const PersonAilState &flag, const bool &set_value)
-{
-  (set_value) ? (ailment_flags |= flag) : (ailment_flags &= ~flag);
-}
+// void Person::setAilFlag(const PersonAilState &flag, const bool
+// &set_value)
+// {
+//   (set_value) ? (ailment_flags |= flag) : (ailment_flags &= ~flag);
+// }
 
 /*
  * Description: Assigns a given BState flag a given set value
@@ -2151,10 +2056,10 @@ void Person::setAilFlag(const PersonAilState &flag, const bool &set_value)
  *         set_value - the value to assign the flag to
  * Output: none
  */
-void Person::setBFlag(const BState &flag, const bool &set_value)
-{
-  (set_value) ? (battle_flags |= flag) : (battle_flags &= ~flag);
-}
+// void Person::setBFlag(const BState &flag, const bool &set_value)
+// {
+//   (set_value) ? (battle_flags |= flag) : (battle_flags &= ~flag);
+// }
 
 /*
  * Description: Evaluates and returns a given PState flag
@@ -2163,7 +2068,7 @@ void Person::setBFlag(const BState &flag, const bool &set_value)
  *         set_value - the value to assign the flag to
  * Output: none
  */
-void Person::setPFlag(const PState &flag, const bool &set_value)
+void Person::setPFlag(const PState& flag, const bool& set_value)
 {
   (set_value) ? (person_flags |= flag) : (person_flags &= ~flag);
 }
@@ -2175,7 +2080,7 @@ void Person::setPFlag(const PState &flag, const bool &set_value)
  * Inputs: PartyType type - the type to correlate the PState flag to
  * Output: none
  */
-void Person::setPFlag(const PartyType &type)
+void Person::setPFlag(const PartyType& type)
 {
   PState flag = PState::SLEUTH;
 
@@ -2223,7 +2128,7 @@ void Person::setPFlag(const PartyType &type)
  * Inputs: Category* category - the new class category
  * Output: none
  */
-void Person::setClass(Category *const category)
+void Person::setClass(Category* const category)
 {
   battle_class = category;
 
@@ -2242,7 +2147,7 @@ void Person::setClass(Category *const category)
  * Output: none
  */
 void Person::setCurves(Element prim, ElementCurve prim_curve, Element secd,
-                       ElementCurve secd_curve, const bool &update_level)
+                       ElementCurve secd_curve, const bool& update_level)
 {
   primary = prim;
   secondary = secd;
@@ -2259,7 +2164,7 @@ void Person::setCurves(Element prim, ElementCurve prim_curve, Element secd,
  * Inputs: new_curr_set - const ref. to an AttributeSet to be assigned
  * Output: bool - true if the assignment was successful
  */
-bool Person::setCurr(const AttributeSet &new_curr_set)
+bool Person::setCurr(const AttributeSet& new_curr_set)
 {
   if(new_curr_set.getFlag(AttributeState::PERSONAL))
   {
@@ -2277,7 +2182,7 @@ bool Person::setCurr(const AttributeSet &new_curr_set)
  * Inputs: new_curr_max_set - const ref. to an AttributeSet to be assigned
  * Output: bool - true if the assignment was successfully
  */
-bool Person::setCurrMax(const AttributeSet &new_curr_max_set)
+bool Person::setCurrMax(const AttributeSet& new_curr_max_set)
 {
   if(curr_max_stats.getFlag(AttributeState::PERSONAL))
   {
@@ -2295,7 +2200,7 @@ bool Person::setCurrMax(const AttributeSet &new_curr_max_set)
  * Inputs: new_temp_set - const ref. to an AttributeSet to be assigned
  * Output: bool - true if the assignment was successfully
  */
-bool Person::setTemp(const AttributeSet &new_temp_set)
+bool Person::setTemp(const AttributeSet& new_temp_set)
 {
   if(new_temp_set.getFlag(AttributeState::PERSONAL))
   {
@@ -2313,7 +2218,7 @@ bool Person::setTemp(const AttributeSet &new_temp_set)
  * Inputs: new_dmg_mod - float value that is a new dmg modifier value
  * Output: bool - true if the new value was within range
  */
-bool Person::setDmgMod(const float &new_dmg_mod)
+bool Person::setDmgMod(const float& new_dmg_mod)
 {
   if(Helpers::isInRange(new_dmg_mod, kMIN_DMG_MODI, kMAX_DMG_MODI))
   {
@@ -2331,7 +2236,7 @@ bool Person::setDmgMod(const float &new_dmg_mod)
  * Inputs: new_exp_mod - float value that is a new exp modifier value
  * Output: bool - true if the nw value was within range
  */
-bool Person::setExpMod(const float &new_exp_mod)
+bool Person::setExpMod(const float& new_exp_mod)
 {
   if(Helpers::isInRange(new_exp_mod, kMIN_EXP_MODI, kMAX_EXP_MODI))
   {
@@ -2351,7 +2256,7 @@ bool Person::setExpMod(const float &new_exp_mod)
  *         new_equip - pointer to the equipment to be equipped
  * Output: bool - true if the equipment was attached successfully
  */
-bool Person::setEquip(const EquipSlots &slot, Equipment *new_equip)
+bool Person::setEquip(const EquipSlots& slot, Equipment* new_equip)
 {
   if(new_equip == nullptr || slot != new_equip->getEquipSlot())
     return false;
@@ -2396,21 +2301,22 @@ void Person::setGameID(int id)
  * Inputs: Person* - the new guard for this person
  * Output: bool - true if the guard was assigned
  */
-bool Person::setGuard(Person *const new_guard)
-{
-  /* If this person is guarding someone, the guard cannot be made, or if this
-   * is trying to be as assigned to a guard to self */
-  if(guardee == nullptr && new_guard != nullptr && this != new_guard)
-  {
-    setBFlag(BState::GUARDED, true);
-    setBFlag(BState::GUARDING, false);
-    guard = new_guard;
+// bool Person::setGuard(Person *const new_guard)
+// {
+//   /* If this person is guarding someone, the guard cannot be made, or if
+//   this
+//    * is trying to be as assigned to a guard to self */
+//   if(guardee == nullptr && new_guard != nullptr && this != new_guard)
+//   {
+//     setBFlag(BState::GUARDED, true);
+//     setBFlag(BState::GUARDING, false);
+//     guard = new_guard;
 
-    return true;
-  }
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Assigns a new person to be guarded
@@ -2418,21 +2324,22 @@ bool Person::setGuard(Person *const new_guard)
  * Inputs: Person* - the new person being guarded by this person
  * Output: bool - true if the guarding person was assigned
  */
-bool Person::setGuardee(Person *const new_guardee)
-{
-  /* If this has a guard, they cannot guard someone else. They cannot be guarded
-   * by themselves as well */
-  if(guard == nullptr && new_guardee != nullptr && this != new_guardee)
-  {
-    setBFlag(BState::GUARDING, true);
-    setBFlag(BState::GUARDED, false);
-    guardee = new_guardee;
+// bool Person::setGuardee(Person *const new_guardee)
+// {
+//   /* If this has a guard, they cannot guard someone else. They cannot be
+//   guarded
+//    * by themselves as well */
+//   if(guard == nullptr && new_guardee != nullptr && this != new_guardee)
+//   {
+//     setBFlag(BState::GUARDING, true);
+//     setBFlag(BState::GUARDED, false);
+//     guardee = new_guardee;
 
-    return true;
-  }
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Attempts to assign a new loot set for the Person
@@ -2442,9 +2349,9 @@ bool Person::setGuardee(Person *const new_guardee)
  *         new_item_drops - new item drop IDs for drop loot
  * Output: bool - true if the loot assignment was successful
  */
-bool Person::setLoot(const uint32_t &new_credit_drop,
-                     const uint32_t &new_exp_drop,
-                     const std::vector<uint32_t> &new_item_drops)
+bool Person::setLoot(const uint32_t& new_credit_drop,
+                     const uint32_t& new_exp_drop,
+                     const std::vector<uint32_t>& new_item_drops)
 {
   auto all_set = true;
 
@@ -2493,7 +2400,7 @@ void Person::setName(std::string name)
  * Inputs: Category* category - the new race class category
  * Output: none
  */
-void Person::setRace(Category *const category)
+void Person::setRace(Category* const category)
 {
   race_class = category;
 
@@ -2509,8 +2416,8 @@ void Person::setRace(Category *const category)
  *         new_action - pointer to an action frame sprite
  * Output: none
  */
-void Person::setSprites(Sprite *new_fp, Sprite *new_tp, Sprite *new_dialog,
-                        Sprite *new_action)
+void Person::setSprites(Sprite* new_fp, Sprite* new_tp, Sprite* new_dialog,
+                        Sprite* new_action)
 {
   /* Unset the current sprites */
   unsetSprites();
@@ -2534,7 +2441,7 @@ void Person::setSprites(Sprite *new_fp, Sprite *new_tp, Sprite *new_dialog,
  * Inputs: const Person &source - the source class constructor
  * Output: Person& - pointer to the copied class
  */
-Person& Person::operator= (const Person &source)
+Person& Person::operator=(const Person& source)
 {
   /* Check for self assignment */
   if(this == &source)
@@ -2558,7 +2465,7 @@ Person& Person::operator= (const Person &source)
  * Inputs: level - the level to be checked for
  * Output: uint32_t - the minimum experience required to reach that level
  */
-uint32_t Person::getExpAt(const uint8_t &level)
+uint32_t Person::getExpAt(const uint8_t& level)
 {
   if(level != 0 && level <= kNUM_LEVELS)
     return exp_table.at(level - 1);
@@ -2572,7 +2479,7 @@ uint32_t Person::getExpAt(const uint8_t &level)
  * Inputs: experience - the experience to find a level for
  * Output: uint8_t - the highest level reachable at the given experience
  */
-uint16_t Person::getLevelAt(const uint32_t &experience)
+uint16_t Person::getLevelAt(const uint32_t& experience)
 {
   for(size_t i = 0; i < exp_table.size(); i++)
     if(exp_table.at(i) > experience)
@@ -2596,7 +2503,8 @@ size_t Person::getNumLevels()
  * Description: Grabs the number of equipment slots a Person has
  *
  * Inputs: none
- * Output: size_t - kNUM_EQUIP_SLOTS - the number of equipment slots for Persons
+ * Output: size_t - kNUM_EQUIP_SLOTS - the number of equipment slots for
+ *Persons
  */
 size_t Person::getNumEquipSlots()
 {
@@ -2641,7 +2549,8 @@ uint32_t Person::getMinLvlExp()
  * Description: Returns the experience required at the final level
  *
  * Inputs: none
- * Output: uint32_t - kMAX_LVL_EXP - the experience req. at the highets level
+ * Output: uint32_t - kMAX_LVL_EXP - the experience req. at the highets
+ *level
  */
 uint32_t Person::getMaxLvlExp()
 {
@@ -2663,7 +2572,8 @@ uint32_t Person::getMaxCreditDrop()
  * Description: Returns the maximum experience awarded by a single Person
  *
  * Inputs: none
- * Output: uint32_t - kMAX_EXP_DROP - the maximum experience awarded by a Person
+ * Output: uint32_t - kMAX_EXP_DROP - the maximum experience awarded by a
+ *Person
  */
 uint32_t Person::getMaxExpDrop()
 {

@@ -1,6 +1,0 @@
-Name - Sequence - Animation Time
-Paralysis Plep - 012101210 - 50
-Hibernation Plep - 01230123 - 180
-Poison Plep - 0123 - 75
-Burn/Scald/Char Plep - 01234 - 75
-Confusion Plep - 012012 - 175

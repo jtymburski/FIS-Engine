@@ -18,15 +18,13 @@
 #include <chrono>
 #include <memory>
 
-#include "Game/Battle/AIModuleTester.h"
+// #include "Game/Battle/AIModuleTester.h"
 #include "Game/Battle/Battle.h"
-#include "Game/Battle/BattleDisplay.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
 #include "Game/Player/Bubby.h"
-//#include "Game/VictoryScreen.h"
-#include "Game/Player/Inventory.h" // TODO
+#include "Game/Player/Inventory.h"
 #include "Options.h"
 
 using std::begin;
@@ -59,7 +57,9 @@ private:
 
   /* Battle control and visual */
   Battle* battle_ctrl;
-  BattleDisplay* battle_vis;
+
+  /* Structure for containing BattleDisplay Data */
+  BattleDisplayData* battle_display_data;
 
   /* The configuration for the display of the game */
   Options* config;
@@ -123,9 +123,6 @@ private:
   Skill* addSkill(const int32_t &id);
   SkillSet* addSkillSet(const int32_t &id);
 
-  /* Builds the ailment frames */
-  void buildBattleDisplayFrames(SDL_Renderer* renderer);
-
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);
 
@@ -140,7 +137,7 @@ private:
 
   /* Starts a battle event. Using the given information */
   void eventStartBattle(int person_id, int source_id);
-  
+
   /* Switch maps event. - utilizing a map ID */
   void eventSwitchMap(int map_id);
 
@@ -149,7 +146,7 @@ private:
 
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
-            std::string inst_file = "", bool encryption = false, 
+            std::string inst_file = "", bool encryption = false,
             bool full_load = true);
 
   /* Load game data */
@@ -171,9 +168,6 @@ private:
   void removeRaces();
   void removeSkills();
   void removeSkillSets();
-
-  /* Set up the battle */
-  bool setupBattle(Party* allies, Party* foes);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

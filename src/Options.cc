@@ -36,6 +36,8 @@ Options::Options(std::string base_path)
 {
   this->base_path = base_path;
   setAllToDefault();
+
+  font_data = new Fonts(this);
 }
 
 Options::Options(const Options &source)
@@ -46,7 +48,9 @@ Options::Options(const Options &source)
 /* Destructor function */
 Options::~Options()
 {
-
+  if(font_data)
+    delete font_data;
+  font_data = nullptr;
 }
 
 /*=============================================================================
@@ -56,10 +60,7 @@ Options::~Options()
 void Options::copySelf(const Options &source)
 {
   /* Battle Options */
-  ailment_update_state = source.ailment_update_state;
-  battle_hud_state     = source.ailment_update_state;
   base_path            = source.base_path;
-
   resolution_x  = source.resolution_x;
   resolution_y  = source.resolution_y;
   flags = source.flags;
@@ -67,9 +68,6 @@ void Options::copySelf(const Options &source)
 
 void Options::setAllToDefault()
 {
-  /* Battle Options */
-  setAilmentUpdateState(BattleOptions::FOREST_WALK);
-
   audio_level = 50;
   music_level = 50;
 
@@ -85,16 +83,6 @@ void Options::setAllToDefault()
   /* Rendering Options */
   setFont(0, true);
   setScreenResolution(0);
-}
-
-// void Options::setAutoRun(bool auto_run)
-// {
-//   this->auto_run = auto_run;
-// }
-
-void Options::setAilmentUpdateState(BattleOptions new_state)
-{
-  ailment_update_state = new_state;
 }
 
 bool Options::setAudioLevel(int32_t new_level)
@@ -232,11 +220,6 @@ bool Options::confirmFontSetup()
   return success;
 }
 
-BattleOptions Options::getAilmentUpdateState()
-{
-  return ailment_update_state;
-}
-
 std::string Options::getBasePath()
 {
   return base_path;
@@ -270,8 +253,6 @@ uint16_t Options::getScreenWidth()
 {
   return kRESOLUTIONS_X[resolution_x];
 }
-
-
 
 /*=============================================================================
  * OPERATOR FUNCTIONS

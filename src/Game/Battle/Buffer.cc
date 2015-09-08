@@ -30,7 +30,9 @@ const uint16_t Buffer::kMAXIMUM_COOLDOWN{10};
  *
  * Inputs: none
  */
-Buffer::Buffer() : index{0} {}
+Buffer::Buffer() : index{0}
+{
+}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -43,61 +45,61 @@ Buffer::Buffer() : index{0} {}
  * Inputs: elm - ref. to a BufferAction to check the validity of
  * Output: bool - the validity of the element
  */
-bool Buffer::checkValid(BufferAction& elm)
-{
-  auto is_valid = true;
+// bool Buffer::checkValid(BufferAction& elm)
+// {
+//   auto is_valid = true;
 
-  /* Assert the user is not null, the targets are not empty */
-  is_valid &= !(elm.user == nullptr);
+//   /* Assert the user is not null, the targets are not empty */
+//   is_valid &= !(elm.user == nullptr);
 
-  if(elm.type == ActionType::SKILL || elm.type == ActionType::ITEM)
-  {
-    is_valid &= !elm.targets.empty();
-    is_valid &= (elm.targets.size() == elm.damage_types.size());
-  }
+//   if(elm.type == ActionType::SKILL || elm.type == ActionType::ITEM)
+//   {
+//     is_valid &= !elm.targets.empty();
+//     is_valid &= (elm.targets.size() == elm.damage_types.size());
+//   }
 
-  is_valid &= elm.targets.size() <= kMAXIMUM_TARGETS;
+//   is_valid &= elm.targets.size() <= kMAXIMUM_TARGETS;
 
-  /* Assign a valid value to the cooldown */
-  Helpers::setInRange(elm.cooldown, static_cast<uint16_t>(0),
-                      kMAXIMUM_COOLDOWN);
+//   /* Assign a valid value to the cooldown */
+//   Helpers::setInRange(elm.cooldown, static_cast<uint16_t>(0),
+//                       kMAXIMUM_COOLDOWN);
 
-  if(is_valid)
-  {
-    /* Assert the user of the action is in battle and is alive */
-    is_valid &= elm.user->getBFlag(BState::IN_BATTLE);
+//   if(is_valid)
+//   {
+//     /* Assert the user of the action is in battle and is alive */
+//     is_valid &= elm.user->getBFlag(BState::IN_BATTLE);
 
-    /* Iterate through each target asserting they are alive and in battle */
-    for(auto it = begin(elm.targets); it != end(elm.targets); ++it)
-      is_valid &= (*it)->getBFlag(BState::IN_BATTLE);
+//     /* Iterate through each target asserting they are alive and in battle */
+//     for(auto it = begin(elm.targets); it != end(elm.targets); ++it)
+//       is_valid &= (*it)->getBFlag(BState::IN_BATTLE);
 
-    if(elm.type == ActionType::SKILL)
-    {
-      /* Action skill must not be null and skill use must be enabled */
-      is_valid &= !(elm.skill_used == nullptr);
-      // is_valid &= elm.user->getBFlag(BState::SKL_ENABLED);
-    }
-    else if(elm.type == ActionType::ITEM)
-    {
-      /* Action item must not be null and item use must be enabled */
-      is_valid &= !(elm.item_used == nullptr);
+//     if(elm.type == ActionType::SKILL)
+//     {
+//       /* Action skill must not be null and skill use must be enabled */
+//       is_valid &= !(elm.skill_used == nullptr);
+//       // is_valid &= elm.user->getBFlag(BState::SKL_ENABLED);
+//     }
+//     else if(elm.type == ActionType::ITEM)
+//     {
+//       /* Action item must not be null and item use must be enabled */
+//       is_valid &= !(elm.item_used == nullptr);
 
-      if(is_valid)
-        is_valid &= !(elm.item_used->getUseSkill() == nullptr);
+//       if(is_valid)
+//         is_valid &= !(elm.item_used->getUseSkill() == nullptr);
 
-      is_valid &= elm.user->getBFlag(BState::ITM_ENABLED);
-    }
-    else if(elm.type == ActionType::NONE)
-    {
+//       is_valid &= elm.user->getBFlag(BState::ITM_ENABLED);
+//     }
+//     else if(elm.type == ActionType::NONE)
+//     {
 
-      is_valid = false;
-    }
-  }
+//       is_valid = false;
+//     }
+//   }
 
-  elm.valid = is_valid;
+//   elm.valid = is_valid;
 
-  return is_valid;
-}
+//   return is_valid;
+// }
 
 /*
  * Description: Decrements the cooldown of a BufferAction at a given element.
@@ -105,20 +107,20 @@ bool Buffer::checkValid(BufferAction& elm)
  * Inputs: index - the index of the Buffer to cooldown.
  * Output: bool - true if the index was found and cooldown took place
  */
-bool Buffer::decrementCooldown(const uint32_t& index)
-{
-  if(index < action_buffer.size())
-  {
-    if(getIndex(index).cooldown != 0)
-    {
-      getIndex(index).cooldown--;
+// bool Buffer::decrementCooldown(const uint32_t& index)
+// {
+//   if(index < action_buffer.size())
+//   {
+//     if(getIndex(index).cooldown != 0)
+//     {
+//       getIndex(index).cooldown--;
 
-      return true;
-    }
-  }
+//       return true;
+//     }
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Returns the ref to the element at a given index
@@ -126,14 +128,14 @@ bool Buffer::decrementCooldown(const uint32_t& index)
  * Inputs: index - the index of the Buffer to grab
  * Output: BufferAction& - the reference at the given index
  */
-BufferAction& Buffer::getIndex(const uint32_t& index)
-{
-  if(index < action_buffer.size())
-    return action_buffer.at(index);
-  ;
+// BufferAction& Buffer::getIndex(const uint32_t& index)
+// {
+//   if(index < action_buffer.size())
+//     return action_buffer.at(index);
+//   ;
 
-  return action_buffer.at(0);
-}
+//   return action_buffer.at(0);
+// }
 
 /*
  * Description: Sorts a given vector of BufferActions by a given enumerated
@@ -144,20 +146,20 @@ BufferAction& Buffer::getIndex(const uint32_t& index)
  *         buffer_sorts - the enumerated sort to be performed
  * Output: bool - true if the sorting took place
  */
-std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
-                                       BufferSorts buffer_sorts)
-{
-  if(buffer_sorts == BufferSorts::ITEM_FIRST)
-    std::stable_sort(begin(actions), end(actions), Helpers::CompItemFirst());
-  else if(buffer_sorts == BufferSorts::SKILL_FIRST)
-    std::stable_sort(begin(actions), end(actions), Helpers::CompSkillFirst());
-  else if(buffer_sorts == BufferSorts::MOMENTUM)
-    std::stable_sort(begin(actions), end(actions), Helpers::CompMomentum());
-  else
-    std::cerr << "[Error]: Unknown buffer sorting method \n";
+// std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
+//                                        BufferSorts buffer_sorts)
+// {
+//   if(buffer_sorts == BufferSorts::ITEM_FIRST)
+//     std::stable_sort(begin(actions), end(actions), Helpers::CompItemFirst());
+//   else if(buffer_sorts == BufferSorts::SKILL_FIRST)
+//     std::stable_sort(begin(actions), end(actions), Helpers::CompSkillFirst());
+//   else if(buffer_sorts == BufferSorts::MOMENTUM)
+//     std::stable_sort(begin(actions), end(actions), Helpers::CompMomentum());
+//   else
+//     std::cerr << "[Error]: Unknown buffer sorting method \n";
 
-  return actions;
-}
+//   return actions;
+// }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -172,42 +174,42 @@ std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
-                 std::vector<Person*> targets, const uint32_t& cooldown,
-                 const uint32_t& initial_turn)
-{
-  BufferAction new_elm;
+// bool Buffer::add(BattleActor* const new_user, Skill* const new_skill_used,
+//                  std::vector<BattleActor*> targets, const uint32_t& cooldown,
+//                  const uint32_t& initial_turn)
+// {
+//   BufferAction new_elm;
 
-  new_elm.cooldown = cooldown;
-  new_elm.initial_turn = initial_turn;
-  new_elm.user = new_user;
-  new_elm.item_used = nullptr;
-  new_elm.skill_used = new_skill_used;
-  new_elm.targets = targets;
+//   new_elm.cooldown = cooldown;
+//   new_elm.initial_turn = initial_turn;
+//   new_elm.user = new_user;
+//   new_elm.item_used = nullptr;
+//   new_elm.skill_used = new_skill_used;
+//   new_elm.targets = targets;
 
-  std::vector<DamageType> damage_types;
-  for(auto it = begin(targets); it != end(targets); ++it)
-    damage_types.push_back(DamageType::BASE);
+//   // std::vector<DamageType> damage_types;
+//   // for(auto it = begin(targets); it != end(targets); ++it)
+//   //   damage_types.push_back(DamageType::BASE);
 
-  new_elm.damage_types = damage_types;
-  new_elm.type = ActionType::SKILL;
+//   // new_elm.damage_types = damage_types;
+//   new_elm.type = ActionType::SKILL;
 
-  auto add = checkValid(new_elm);
+//   auto add = checkValid(new_elm);
 
-  if(add)
-  {
-    action_buffer.push_back(new_elm);
+//   if(add)
+//   {
+//     action_buffer.push_back(new_elm);
 
-    return true;
-  }
+//     return true;
+//   }
 
-  std::cout << "[Adding Invalid Action] " << std::endl;
-  std::cout << new_user->getName() << std::endl;
-  std::cout << new_skill_used->getName() << std::endl;
-  std::cout << targets.size() << std::endl;
+  // std::cout << "[Adding Invalid Action] " << std::endl;
+  // std::cout << new_user->getName() << std::endl;
+  // std::cout << new_skill_used->getName() << std::endl;
+  // std::cout << targets.size() << std::endl;
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Creates and adds a new Item BufferAction element given params
@@ -218,29 +220,29 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person* const new_user, Item* const new_item_used,
-                 std::vector<Person*> targets, const uint32_t& cooldown,
-                 const uint32_t& initial_turn)
-{
-  BufferAction new_elm;
+// bool Buffer::add(BattleActor* const new_user, Item* const new_item_used,
+//                  std::vector<BattleActor*> targets, const uint32_t& cooldown,
+//                  const uint32_t& initial_turn)
+// {
+//   BufferAction new_elm;
 
-  new_elm.cooldown = cooldown;
-  new_elm.initial_turn = initial_turn;
-  new_elm.user = new_user;
-  new_elm.item_used = new_item_used;
-  new_elm.skill_used = nullptr;
-  new_elm.targets = targets;
+//   new_elm.cooldown = cooldown;
+//   new_elm.initial_turn = initial_turn;
+//   new_elm.user = new_user;
+//   new_elm.item_used = new_item_used;
+//   new_elm.skill_used = nullptr;
+//   new_elm.targets = targets;
 
-  std::vector<DamageType> damage_types;
-  for(auto it = begin(targets); it != end(targets); ++it)
-    damage_types.push_back(DamageType::BASE);
+//   // std::vector<DamageType> damage_types;
+//   // for(auto it = begin(targets); it != end(targets); ++it)
+//   //   damage_types.push_back(DamageType::BASE);
 
-  new_elm.damage_types = damage_types;
+//   // new_elm.damage_types = damage_types;
 
-  new_elm.type = ActionType::ITEM;
+//   new_elm.type = ActionType::ITEM;
 
-  return add(new_elm);
-}
+//   return add(new_elm);
+// }
 
 /*
  * Description:
@@ -251,28 +253,28 @@ bool Buffer::add(Person* const new_user, Item* const new_item_used,
  *
  * Output:
  */
-bool Buffer::add(Person* const user, ActionType const& buffer_type,
-                 std::vector<Person*> targets, const uint32_t& cooldown,
-                 const uint32_t& initial_turn)
-{
-  BufferAction new_elm;
+// bool Buffer::add(BattleActor* const user, ActionType const& buffer_type,
+//                  std::vector<BattleActor*> targets, const uint32_t& cooldown,
+//                  const uint32_t& initial_turn)
+// {
+//   BufferAction new_elm;
 
-  new_elm.cooldown = cooldown;
-  new_elm.initial_turn = initial_turn;
-  new_elm.user = user;
-  new_elm.item_used = nullptr;
-  new_elm.skill_used = nullptr;
-  new_elm.targets = targets;
+//   new_elm.cooldown = cooldown;
+//   new_elm.initial_turn = initial_turn;
+//   new_elm.user = user;
+//   new_elm.item_used = nullptr;
+//   new_elm.skill_used = nullptr;
+//   new_elm.targets = targets;
 
-  std::vector<DamageType> damage_types;
-  for(auto it = begin(targets); it != end(targets); ++it)
-    damage_types.push_back(DamageType::BASE);
+//   // std::vector<DamageType> damage_types;
+//   // for(auto it = begin(targets); it != end(targets); ++it)
+//   //   damage_types.push_back(DamageType::BASE);
 
-  new_elm.damage_types = damage_types;
-  new_elm.type = buffer_type;
+//   // new_elm.damage_types = damage_types;
+//   new_elm.type = buffer_type;
 
-  return add(new_elm);
-}
+//   return add(new_elm);
+// }
 
 /*
  * Description: Adds a given BufferAction element into the Buffer
@@ -280,25 +282,25 @@ bool Buffer::add(Person* const user, ActionType const& buffer_type,
  * Inputs: action - the BufferAction to be added
  * Output: bool - true if the BufferAction was added successfully
  */
-bool Buffer::add(BufferAction& action)
-{
-  auto add = checkValid(action);
-  add &= (action.cooldown <= kMAXIMUM_COOLDOWN);
-  add &= (action.targets.size() <= kMAXIMUM_TARGETS);
+// bool Buffer::add(BufferAction& action)
+// {
+//   auto add = checkValid(action);
+//   add &= (action.cooldown <= kMAXIMUM_COOLDOWN);
+//   add &= (action.targets.size() <= kMAXIMUM_TARGETS);
 
-  if(add)
-  {
-    action_buffer.push_back(action);
+//   if(add)
+//   {
+//     action_buffer.push_back(action);
 
-    return true;
-  }
-  else
-  {
-    std::cerr << "[Cerr] Adding invalid action buffer. \n";
-  }
+//     return true;
+//   }
+//   else
+//   {
+//     std::cerr << "[Cerr] Adding invalid action buffer. \n";
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Clears all the elements of the buffer, or only those of a given
@@ -308,25 +310,25 @@ bool Buffer::add(BufferAction& action)
  * Inputs: int32_t this_turn_only - the initial turn # to del elements, or -1
  * Output: none
  */
-void Buffer::clearAll(int32_t this_turn_only)
-{
-  if(this_turn_only == -1)
-  {
-    action_buffer.clear();
-  }
-  else
-  {
-    std::vector<BufferAction> temp;
+// void Buffer::clearAll(int32_t this_turn_only)
+// {
+//   if(this_turn_only == -1)
+//   {
+//     action_buffer.clear();
+//   }
+//   else
+//   {
+//     std::vector<BufferAction> temp;
 
-    for(const auto& elm : action_buffer)
-      if(elm.initial_turn != static_cast<uint32_t>(this_turn_only))
-        temp.push_back(elm);
+//     for(const auto& elm : action_buffer)
+//       if(elm.initial_turn != static_cast<uint32_t>(this_turn_only))
+//         temp.push_back(elm);
 
-    action_buffer = temp;
-  }
+//     action_buffer = temp;
+//   }
 
-  index = 0;
-}
+//   index = 0;
+// }
 
 /*
  * Description: Iterates through and removes all invalid BufferElements.
@@ -334,17 +336,17 @@ void Buffer::clearAll(int32_t this_turn_only)
  * Inputs: none
  * Output: none
  */
-void Buffer::clearInvalid()
-{
-  std::vector<BufferAction> temp;
+// void Buffer::clearInvalid()
+// {
+//   std::vector<BufferAction> temp;
 
-  for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
-    if(checkValid(*it))
-      temp.push_back(*it);
+//   for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
+//     if(checkValid(*it))
+//       temp.push_back(*it);
 
-  action_buffer = temp;
-  index = 0;
-}
+//   action_buffer = temp;
+//   index = 0;
+// }
 
 /*
  * Description: Determines and returns true if the action buffer contains
@@ -354,14 +356,14 @@ void Buffer::clearInvalid()
  * Inputs:
  * Output: bool - true if the buffer contains a cooling skill for person
  */
-Skill* Buffer::hasCoolingSkill(Person* check_person)
-{
-  for(auto element : action_buffer)
-    if(element.user == check_person) //&& element.cooldown >= 0)
-      return element.skill_used;
+// Skill* Buffer::hasCoolingSkill(BattleActor* check_person)
+// {
+//   for(auto element : action_buffer)
+//     if(element.user == check_person) //&& element.cooldown >= 0)
+//       return element.skill_used;
 
-  return nullptr;
-}
+//   return nullptr;
+// }
 
 /*
  * Description: Checks if the next element of the Buffer is valid.
@@ -369,13 +371,13 @@ Skill* Buffer::hasCoolingSkill(Person* check_person)
  * Inputs: none
  * Output: bool - true if the next index of the Buffer is valid
  */
-bool Buffer::isNextValid()
-{
-  if(index + 1 < action_buffer.size())
-    return checkValid(getIndex(index + 1));
+// bool Buffer::isNextValid()
+// {
+//   if(index + 1 < action_buffer.size())
+//     return checkValid(getIndex(index + 1));
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Sort through every action in the buffer and wherever the guardee
@@ -384,22 +386,22 @@ bool Buffer::isNextValid()
  * Inputs: none
  * Output: none
  */
-void Buffer::injectGuardTargets(Person* guard, Person* guardee)
-{
-  for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
-  {
-    for(size_t i = 0; i < (*it).targets.size(); i++)
-    {
-      auto person = (*it).targets.at(i)->getGuard();
+// void Buffer::injectGuardTargets(Person* guard, Person* guardee)
+// {
+//   for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
+//   {
+//     for(size_t i = 0; i < (*it).targets.size(); i++)
+//     {
+//       auto person = (*it).targets.at(i)->getGuard();
 
-      if(person == guardee)
-      {
-        (*it).targets.at(i) = guard;
-        (*it).damage_types.at(i) = DamageType::GUARD;
-      }
-    }
-  }
-}
+//       if(person == guardee)
+//       {
+//         (*it).targets.at(i) = guard;
+//         (*it).damage_types.at(i) = DamageType::GUARD;
+//       }
+//     }
+//   }
+// }
 
 /*
  * Description: Prints out the information of the Buffer
@@ -407,75 +409,77 @@ void Buffer::injectGuardTargets(Person* guard, Person* guardee)
  * Inputs: simple - if a simple version of the Buffer is to be printed
  * Output: none
  */
-void Buffer::print(const bool& simple)
-{
-  std::cout << "==== Action Buffer ====\n";
-  std::cout << "Size: " << action_buffer.size() << " Index:" << index << "\n";
+// void Buffer::print(const bool& simple)
+// {
+//   std::cout << "==== Action Buffer ====\n";
+//   std::cout << "Size: " << action_buffer.size() << " Index:" << index <<
+//   "\n";
 
-  if(!simple)
-  {
-    for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
-    {
-      std::cout << "Action Type: " << Helpers::actionTypeToStr((*it).type)
-                << std::endl;
+//   if(!simple)
+//   {
+//     for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
+//     {
+//       std::cout << "Action Type: " << Helpers::actionTypeToStr((*it).type)
+//                 << std::endl;
 
-      if((*it).type == ActionType::SKILL)
-      {
-        if((*it).skill_used != nullptr)
-        {
-          std::cout << "Skill Name: " << (*it).skill_used->getName() << "\n";
-          std::cout << "Skill Scope: "
-                    << Helpers::actionScopeToStr((*it).skill_used->getScope())
-                    << "\n";
-        }
-        else
-        {
-          std::cout << "[Warning]: Skill buffer has null skill\n";
-        }
-      }
-      else if((*it).type == ActionType::ITEM)
-      {
-        if((*it).item_used != nullptr)
-        {
-          std::cout << "Item Name: " << (*it).item_used->getName();
-          std::cout << "\nItem Skill Name: "
-                    << (*it).item_used->getUseSkill()->getName();
+//       if((*it).type == ActionType::SKILL)
+//       {
+//         if((*it).skill_used != nullptr)
+//         {
+//           std::cout << "Skill Name: " << (*it).skill_used->getName() << "\n";
+//           std::cout << "Skill Scope: "
+//                     <<
+//                     Helpers::actionScopeToStr((*it).skill_used->getScope())
+//                     << "\n";
+//         }
+//         else
+//         {
+//           std::cout << "[Warning]: Skill buffer has null skill\n";
+//         }
+//       }
+//       else if((*it).type == ActionType::ITEM)
+//       {
+//         if((*it).item_used != nullptr)
+//         {
+//           std::cout << "Item Name: " << (*it).item_used->getName();
+//           std::cout << "\nItem Skill Name: "
+//                     << (*it).item_used->getUseSkill()->getName();
 
-          auto action_scope = ((*it).item_used->getUseSkill()->getScope());
-          std::cout << "\nItem Skill Scope: "
-                    << Helpers::actionScopeToStr(action_scope) << "\n";
-        }
-        else
-          std::cout << "[Warning]: Item buffer has null skill\n";
-      }
-      else if((*it).type == ActionType::NONE)
-        std::cout << "[Warning]: No buffer type set\n";
+//           auto action_scope = ((*it).item_used->getUseSkill()->getScope());
+//           std::cout << "\nItem Skill Scope: "
+//                     << Helpers::actionScopeToStr(action_scope) << "\n";
+//         }
+//         else
+//           std::cout << "[Warning]: Item buffer has null skill\n";
+//       }
+//       else if((*it).type == ActionType::NONE)
+//         std::cout << "[Warning]: No buffer type set\n";
 
-      std::cout << "Cooldown: " << (*it).cooldown << "\n";
+//       std::cout << "Cooldown: " << (*it).cooldown << "\n";
 
-      if((*it).user != nullptr)
-      {
-        std::cout << "User: " << (*it).user->getName() << "\n";
-        std::cout << "Momentum: " << (*it).user->getCurr().getStat("MMTM")
-                  << "\n";
-      }
-      else
-        std::cout << "User is nullptr\n";
+//       if((*it).user != nullptr)
+//       {
+//         std::cout << "User: " << (*it).user->getName() << "\n";
+//         std::cout << "Momentum: " << (*it).user->getCurr().getStat("MMTM")
+//                   << "\n";
+//       }
+//       else
+//         std::cout << "User is nullptr\n";
 
-      for(auto jt = begin((*it).targets); jt != end((*it).targets); ++jt)
-      {
-        if((*jt) != nullptr)
-          std::cout << "Target: " << (*jt)->getName() << "\n";
-        else
-          std::cout << "Target is nullptr\n";
-      }
+//       for(auto jt = begin((*it).targets); jt != end((*it).targets); ++jt)
+//       {
+//         if((*jt) != nullptr)
+//           std::cout << "Target: " << (*jt)->getName() << "\n";
+//         else
+//           std::cout << "Target is nullptr\n";
+//       }
 
-      std::cout << "Initial Turn: " << (*it).initial_turn << std::endl;
-      std::cout << "Valid: " << (*it).valid << std::endl
-                << std::endl;
-    }
-  }
-}
+//       std::cout << "Initial Turn: " << (*it).initial_turn << std::endl;
+//       std::cout << "Valid: " << (*it).valid << std::endl
+//                 << std::endl;
+//     }
+//   }
+// }
 
 /*
  * Description: Removes a Buffer element at a given index if the index was found
@@ -483,17 +487,17 @@ void Buffer::print(const bool& simple)
  * Inputs: index - the index of the Buffer to locate
  * Output: bool - true if the index was found and removed
  */
-bool Buffer::remove(const uint32_t& index)
-{
-  if(index < action_buffer.size())
-  {
-    action_buffer.erase(action_buffer.begin() + index);
+// bool Buffer::remove(const uint32_t& index)
+// {
+//   if(index < action_buffer.size())
+//   {
+//     action_buffer.erase(action_buffer.begin() + index);
 
-    return true;
-  }
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Removes all the elements of the buffer of the given Person
@@ -501,21 +505,22 @@ bool Buffer::remove(const uint32_t& index)
  * Inputs: user - the user to remove elements for
  * Output: none
  */
-void Buffer::removeAllByUser(Person* user)
-{
-  action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
-                                     [&](BufferAction x) -> bool
-                                     {
-                                       return (x.user == user);
-                                     }),
-                      end(action_buffer));
+// void Buffer::removeAllByUser(Person* user)
+// {
+//   action_buffer.erase(std::remove_if(begin(action_buffer),
+//   end(action_buffer),
+//                                      [&](BufferAction x) -> bool
+//                                      {
+//                                        return (x.user == user);
+//                                      }),
+//                       end(action_buffer));
 
-  auto new_size = action_buffer.size();
+//   auto new_size = action_buffer.size();
 
-  /* Set the index of the last possible if the index ends out of bounds */
-  if(action_buffer.size() > 0 && index > new_size - 1)
-    index = new_size - 1;
-}
+//   /* Set the index of the last possible if the index ends out of bounds */
+//   if(action_buffer.size() > 0 && index > new_size - 1)
+//     index = new_size - 1;
+// }
 
 /*
  * Description:
@@ -523,25 +528,25 @@ void Buffer::removeAllByUser(Person* user)
  * Inputs:
  * Output:
  */
-void Buffer::rejectGuardTargets(Person* guard)
-{
-  auto guardee = guard->getGuardee();
+// void Buffer::rejectGuardTargets(Person* guard)
+// {
+//   auto guardee = guard->getGuardee();
 
-  if(guardee != nullptr)
-  {
-    for(auto& action : action_buffer)
-    {
-      for(size_t i = 0; i < action.targets.size(); i++)
-      {
-        if(action.targets.at(i) == guard)
-        {
-          action.targets[i] = guard;
-          action.damage_types[i] = DamageType::BASE;
-        }
-      }
-    }
-  }
-}
+//   if(guardee != nullptr)
+//   {
+//     for(auto& action : action_buffer)
+//     {
+//       for(size_t i = 0; i < action.targets.size(); i++)
+//       {
+//         if(action.targets.at(i) == guard)
+//         {
+//           action.targets[i] = guard;
+//           action.damage_types[i] = DamageType::BASE;
+//         }
+//       }
+//     }
+//   }
+// }
 
 /*
  * Description: Updates the buffer for a turn by decrementing the cooldown
@@ -550,29 +555,29 @@ void Buffer::rejectGuardTargets(Person* guard)
  * Inputs: bool - true if the buffer is to be cleared entirely
  * Output: none
  */
-void Buffer::update(const bool& clear)
-{
-  clearInvalid();
+// void Buffer::update(const bool& clear)
+// {
+//   clearInvalid();
 
-  if(clear)
-    clearAll();
-  else
-  {
-    std::vector<BufferAction> temp;
+//   if(clear)
+//     clearAll();
+//   else
+//   {
+//     std::vector<BufferAction> temp;
 
-    for(uint32_t i = 0; i < action_buffer.size(); i++)
-    {
-      if(!(getIndex(i).cooldown == 0))
-      {
-        decrementCooldown(i);
-        temp.push_back(getIndex(i));
-      }
-    }
+//     for(uint32_t i = 0; i < action_buffer.size(); i++)
+//     {
+//       if(!(getIndex(i).cooldown == 0))
+//       {
+//         decrementCooldown(i);
+//         temp.push_back(getIndex(i));
+//       }
+//     }
 
-    action_buffer = temp;
-    index = 0;
-  }
-}
+//     action_buffer = temp;
+//     index = 0;
+//   }
+// }
 
 /*
  * Description: Returns the enumerated action type for the current index on
@@ -581,13 +586,13 @@ void Buffer::update(const bool& clear)
  * Inputs: none
  * Output: ActionType -- enumerated action type for the current index
  */
-ActionType Buffer::getActionType()
-{
-  if(checkValid(getIndex(index)))
-    return getIndex(index).type;
+// ActionType Buffer::getActionType()
+// {
+//   if(checkValid(getIndex(index)))
+//     return getIndex(index).type;
 
-  return ActionType::NONE;
-}
+//   return ActionType::NONE;
+// }
 
 /*
  * Description: Returns the cooldown of the current action buffer index if the
@@ -596,13 +601,13 @@ ActionType Buffer::getActionType()
  * Inputs: none
  * Output: int32_t - the cooldown of the current index, or -1 if invalid
  */
-int32_t Buffer::getCooldown()
-{
-  if(checkValid(getIndex(index)))
-    return getIndex(index).cooldown;
+// int32_t Buffer::getCooldown()
+// {
+//   if(checkValid(getIndex(index)))
+//     return getIndex(index).cooldown;
 
-  return -1;
-}
+//   return -1;
+// }
 
 /*
  * Description: Returns the pointer to the person of the current index's user.
@@ -610,13 +615,13 @@ int32_t Buffer::getCooldown()
  * Inputs: none
  * Output: Person* - ptr to the element at current index's user
  */
-Person* Buffer::getUser()
-{
-  if(checkValid(getIndex(index)))
-    return getIndex(index).user;
+// Person* Buffer::getUser()
+// {
+//   if(checkValid(getIndex(index)))
+//     return getIndex(index).user;
 
-  return nullptr;
-}
+//   return nullptr;
+// }
 
 /*
  * Description: Returns the pointer to the current index's skill
@@ -624,13 +629,13 @@ Person* Buffer::getUser()
  * Inputs: none
  * Output: Skill* - ptr to the current index's skill
  */
-Skill* Buffer::getSkill()
-{
-  if(checkValid(getIndex(index)))
-    return getIndex(index).skill_used;
+// Skill* Buffer::getSkill()
+// {
+//   if(checkValid(getIndex(index)))
+//     return getIndex(index).skill_used;
 
-  return nullptr;
-}
+//   return nullptr;
+// }
 
 /*
  * Description: Returns the pointer to the current index's item
@@ -638,13 +643,13 @@ Skill* Buffer::getSkill()
  * Inputs: none
  * Output: Item* - ptr to the current index's item
  */
-Item* Buffer::getItem()
-{
-  if(checkValid(getIndex(index)))
-    return getIndex(index).item_used;
+// Item* Buffer::getItem()
+// {
+//   if(checkValid(getIndex(index)))
+//     return getIndex(index).item_used;
 
-  return nullptr;
-}
+//   return nullptr;
+// }
 
 /*
  * Description: Returns the assigned initial turn for the current element index
@@ -653,13 +658,13 @@ Item* Buffer::getItem()
  * Inputs: none
  * Output: int32_t - the initial turn of current element or -1 if invalid index
  */
-int32_t Buffer::getInitialTurn()
-{
-  if(checkValid(getIndex(index)))
-    return getIndex(index).initial_turn;
+// int32_t Buffer::getInitialTurn()
+// {
+//   if(checkValid(getIndex(index)))
+//     return getIndex(index).initial_turn;
 
-  return -1;
-}
+//   return -1;
+// }
 
 /*
  * Description: Returns the vector of targets for the current index's
@@ -667,7 +672,10 @@ int32_t Buffer::getInitialTurn()
  * Inputs: none
  * Output: std::vector<Person*> - returns the vector of targets for the Buffer
  */
-std::vector<Person*> Buffer::getTargets() { return getIndex(index).targets; }
+// std::vector<Person*> Buffer::getTargets()
+// {
+//   return getIndex(index).targets;
+// }
 
 /*
  * Description:
@@ -675,10 +683,10 @@ std::vector<Person*> Buffer::getTargets() { return getIndex(index).targets; }
  * Inputs:
  * Output:
  */
-std::vector<DamageType> Buffer::getDamageTypes()
-{
-  return getIndex(index).damage_types;
-}
+// std::vector<DamageType> Buffer::getDamageTypes()
+// {
+//   return getIndex(index).damage_types;
+// }
 
 /*
  * Description: Attempts to assign the next index of the buffer and returns
@@ -687,18 +695,18 @@ std::vector<DamageType> Buffer::getDamageTypes()
  * Inputs: none
  * Output: bool - true if there exists a next buffer action which to get to
  */
-bool Buffer::setNext()
-{
-  if(index + 1 < action_buffer.size())
-  {
-    index++;
+// bool Buffer::setNext()
+// {
+//   if(index + 1 < action_buffer.size())
+//   {
+//     index++;
 
-    if(index < action_buffer.size() - 1)
-      return true;
-  }
+//     if(index < action_buffer.size() - 1)
+//       return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Reorders the Buffer based on two different sorting methods,
@@ -708,60 +716,60 @@ bool Buffer::setNext()
  *         secondary - the secondary way by which to sort the elements
  * Output: bool - true if the sorts were performed successfully.
  */
-bool Buffer::reorder()
-{
-  /* Precedence of Action Types (each action type sorted by momentum)
-   *
-   * DEFEND
-   * GUARD
-   * ITEM
-   * SKILL
-   * OTHER
-   */
+// bool Buffer::reorder()
+// {
+//   /* Precedence of Action Types (each action type sorted by momentum)
+//    *
+//    * DEFEND
+//    * GUARD
+//    * ITEM
+//    * SKILL
+//    * OTHER
+//    */
 
-  /* For each action type, grab all BufferActions of the type */
-  std::vector<BufferAction> defend_actions;
-  std::vector<BufferAction> guard_actions;
-  std::vector<BufferAction> item_actions;
-  std::vector<BufferAction> skill_actions;
-  std::vector<BufferAction> other_actions;
+//   /* For each action type, grab all BufferActions of the type */
+//   std::vector<BufferAction> defend_actions;
+//   std::vector<BufferAction> guard_actions;
+//   std::vector<BufferAction> item_actions;
+//   std::vector<BufferAction> skill_actions;
+//   std::vector<BufferAction> other_actions;
 
-  for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
-  {
-    if((*it).type == ActionType::DEFEND)
-      defend_actions.push_back(*it);
-    else if((*it).type == ActionType::GUARD)
-      guard_actions.push_back(*it);
-    else if((*it).type == ActionType::ITEM)
-      item_actions.push_back(*it);
-    else if((*it).type == ActionType::SKILL)
-      skill_actions.push_back(*it);
-    else
-      other_actions.push_back(*it);
-  }
+//   for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
+//   {
+//     if((*it).type == ActionType::DEFEND)
+//       defend_actions.push_back(*it);
+//     else if((*it).type == ActionType::GUARD)
+//       guard_actions.push_back(*it);
+//     else if((*it).type == ActionType::ITEM)
+//       item_actions.push_back(*it);
+//     else if((*it).type == ActionType::SKILL)
+//       skill_actions.push_back(*it);
+//     else
+//       other_actions.push_back(*it);
+//   }
 
-  /* Sort each action type by greatest momentum for the user */
-  defend_actions = Buffer::sort(defend_actions, BufferSorts::MOMENTUM);
-  guard_actions = Buffer::sort(guard_actions, BufferSorts::MOMENTUM);
-  item_actions = Buffer::sort(item_actions, BufferSorts::MOMENTUM);
-  skill_actions = Buffer::sort(skill_actions, BufferSorts::MOMENTUM);
-  other_actions = Buffer::sort(other_actions, BufferSorts::MOMENTUM);
+//    Sort each action type by greatest momentum for the user
+//   defend_actions = Buffer::sort(defend_actions, BufferSorts::MOMENTUM);
+//   guard_actions = Buffer::sort(guard_actions, BufferSorts::MOMENTUM);
+//   item_actions = Buffer::sort(item_actions, BufferSorts::MOMENTUM);
+//   skill_actions = Buffer::sort(skill_actions, BufferSorts::MOMENTUM);
+//   other_actions = Buffer::sort(other_actions, BufferSorts::MOMENTUM);
 
-  /* If the sorting succeeded, recompile each action type in order */
-  action_buffer.clear();
-  action_buffer = defend_actions;
+//   /* If the sorting succeeded, recompile each action type in order */
+//   action_buffer.clear();
+//   action_buffer = defend_actions;
 
-  for(auto it = begin(guard_actions); it != end(guard_actions); ++it)
-    action_buffer.push_back(*it);
-  for(auto it = begin(item_actions); it != end(item_actions); ++it)
-    action_buffer.push_back(*it);
-  for(auto it = begin(skill_actions); it != end(skill_actions); ++it)
-    action_buffer.push_back(*it);
-  for(auto it = begin(other_actions); it != end(other_actions); ++it)
-    action_buffer.push_back(*it);
+//   for(auto it = begin(guard_actions); it != end(guard_actions); ++it)
+//     action_buffer.push_back(*it);
+//   for(auto it = begin(item_actions); it != end(item_actions); ++it)
+//     action_buffer.push_back(*it);
+//   for(auto it = begin(skill_actions); it != end(skill_actions); ++it)
+//     action_buffer.push_back(*it);
+//   for(auto it = begin(other_actions); it != end(other_actions); ++it)
+//     action_buffer.push_back(*it);
 
-  return true;
-}
+//   return true;
+// }
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
@@ -773,4 +781,7 @@ bool Buffer::reorder()
  * Inputs: none
  * Output: uint16_t - the value of kMAXIMUM_ELEMENTS
  */
-uint16_t Buffer::getMaxSize() { return kMAXIMUM_ELEMENTS; }
+// uint16_t Buffer::getMaxSize()
+// {
+//   return kMAXIMUM_ELEMENTS;
+// }

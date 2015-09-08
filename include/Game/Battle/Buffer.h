@@ -16,9 +16,10 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include "Game/Player/Item.h"
-#include "Game/Player/Skill.h"
-#include "Game/Player/Person.h"
+#include "Game/Battle/BattleActor.h"
+
+using std::begin;
+using std::end;
 
 /* Enumerated method of sorting for the Buffer objects */
 enum class BufferSorts
@@ -39,15 +40,14 @@ struct BufferAction
   uint32_t initial_turn;
 
   /* Pointer to the user of the action */
-  Person* user;
+  BattleActor* user;
 
   /* The Skill OR Item which the action will perform - only oe will be set */
   Skill* skill_used;
   Item*  item_used;
 
   /* The vector of targets for the action */
-  std::vector<Person*> targets;
-  std::vector<DamageType> damage_types;
+  std::vector<BattleActor*> targets;
 
   /* Enumerated type of buffer (SKILL or ITEM or NONE) */
   ActionType type;
@@ -96,17 +96,17 @@ private:
  *============================================================================*/
 public:
   /* Creates and adds a new Skill BufferAction element given params */
-  bool add(Person* const user, Skill* const skill_used,
-      std::vector<Person*> targets, const uint32_t &cooldown = 0,
+  bool add(BattleActor* const user, Skill* const skill_used,
+      std::vector<BattleActor*> targets, const uint32_t &cooldown = 0,
       const uint32_t &initial_turn = 0);
 
   /* Creates and adds a new Item BufferAction element given params */
-  bool add(Person* const user, Item* const item_used,
-      std::vector<Person*> targets, const uint32_t &cooldown = 0,
+  bool add(BattleActor* const user, Item* const item_used,
+      std::vector<BattleActor*> targets, const uint32_t &cooldown = 0,
       const uint32_t &initial_turn = 0);
 
-  bool add(Person* const user, ActionType const &buffer_type,
-      std::vector<Person*> targets, const uint32_t &cooldown = 0,
+  bool add(BattleActor* const user, ActionType const &buffer_type,
+      std::vector<BattleActor*> targets, const uint32_t &cooldown = 0,
       const uint32_t &initial_turn = 0);
 
   /* Adds a given BufferAction element to the vector */
@@ -119,13 +119,13 @@ public:
   void clearInvalid();
 
   /* Checks if an element containing a Skill cooldown for given person exists */
-  Skill* hasCoolingSkill(Person* check_person);
+  Skill* hasCoolingSkill(BattleActor* check_person);
 
   /* Returns true if the next BufferAction is valid */
   bool isNextValid();
 
   /* For every action which targets a guarded person -> swap in the guard */
-  void injectGuardTargets(Person* guard, Person* guardee);
+  // void injectGuardTargets(Person* guard, Person* guardee);
 
   /* Prints out the information of the Buffer */
   void print(const bool &simple = false);
@@ -134,10 +134,10 @@ public:
   bool remove(const uint32_t &index);
 
   /* Remove a guard's targets from buffer actions */
-  void rejectGuardTargets(Person* guard);
+  // void rejectGuardTargets(Person* guard);
 
   /* Removes all BufferActions which are of the given user type */
-  void removeAllByUser(Person* user);
+  void removeAllByUser(BattleActor* user);
 
   /* Updates the cooldown of each BufferAction element */
   void update(const bool &clear = false);
@@ -161,10 +161,10 @@ public:
   int32_t getInitialTurn();
 
   /* Obtains the target vector for current element index */
-  std::vector<Person*> getTargets();
+  std::vector<BattleActor*> getTargets();
 
   /* Returns the corresponding damage types for target indexes */
-  std::vector<DamageType> getDamageTypes();
+  // std::vector<DamageType> getDamageTypes();
 
   /* Sets the next index of the Buffer if available */
   bool setNext();

@@ -28,7 +28,7 @@ const uint8_t TestBattle::kNUM_MENU_ITEMS = 16;
 /* ------------------------------------------------------------------------- */
 /* Constructor function */
 /* ------------------------------------------------------------------------- */
-TestBattle::TestBattle(Options *running_config)
+TestBattle::TestBattle(Options* running_config)
     : sprite_paralysis{nullptr},
       sprite_confusion{nullptr},
       sprite_buff{nullptr},
@@ -56,7 +56,6 @@ TestBattle::TestBattle(Options *running_config)
       plep_enrich{nullptr}
 {
   base_path = "";
-  battle_display = new BattleDisplay(running_config);
   battle_logic = nullptr;
   battle_start = false;
   first_run = true;
@@ -69,6 +68,8 @@ TestBattle::TestBattle(Options *running_config)
   party_foes = nullptr;
   party_friends = nullptr;
 
+  battle_logic = new Battle();
+
   setConfiguration(running_config);
   create();
 }
@@ -79,10 +80,6 @@ TestBattle::TestBattle(Options *running_config)
 TestBattle::~TestBattle()
 {
   destroy();
-
-  if(battle_display)
-    delete battle_display;
-  battle_display = nullptr;
 }
 
 /*=============================================================================
@@ -92,7 +89,7 @@ TestBattle::~TestBattle()
 /* ------------------------------------------------------------------------- */
 /* Builds the ailment frames */
 /* ------------------------------------------------------------------------- */
-void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
+void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
 {
   /* Render fonts */
   for(uint8_t i = 0; i < menu_items.size(); i++)
@@ -237,291 +234,10 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   getSkill(1040)->setAnimation(plep_ensnare);
   getSkill(1041)->setAnimation(plep_enrich);
 
-  /* Set the ailments */
-  battle_display->setAilment(
-      Infliction::POISON,
-      base_path + "sprites/Battle/Ailments/Poison_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::BURN, base_path + "sprites/Battle/Ailments/Burn01_AA_A00.png",
-      renderer);
-  battle_display->setAilment(
-      Infliction::SCALD,
-      base_path + "sprites/Battle/Ailments/Burn02_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::CHARR,
-      base_path + "sprites/Battle/Ailments/Burn03_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::BERSERK,
-      base_path + "sprites/Battle/Ailments/Berserk_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::CONFUSE,
-      base_path + "sprites/Battle/Ailments/Confused_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::SILENCE,
-      base_path + "sprites/Battle/Ailments/Silence_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::BUBBIFY,
-      base_path + "sprites/Battle/Ailments/Bubbified_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::DEATHTIMER,
-      base_path + "sprites/Battle/Ailments/DeathTimer_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::PARALYSIS,
-      base_path + "sprites/Battle/Ailments/Paralysis_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::BLINDNESS,
-      base_path + "sprites/Battle/Ailments/Blind_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::DREADSTRUCK,
-      base_path + "sprites/Battle/Ailments/DreadStruck_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::DREAMSNARE,
-      base_path + "sprites/Battle/Ailments/DreamSnare_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::HELLBOUND,
-      base_path + "sprites/Battle/Ailments/HellBound_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::BOND, base_path + "sprites/Battle/Ailments/Bond02_AA_A00.png",
-      renderer);
-  battle_display->setAilment(
-      Infliction::BONDED,
-      base_path + "sprites/Battle/Ailments/Bond01_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::ALLATKBUFF,
-      base_path + "sprites/Battle/Ailments/AllAtkBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::ALLDEFBUFF,
-      base_path + "sprites/Battle/Ailments/AllDefBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::PHYBUFF,
-      base_path + "sprites/Battle/Ailments/PhyBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::THRBUFF,
-      base_path + "sprites/Battle/Ailments/ThrBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::POLBUFF,
-      base_path + "sprites/Battle/Ailments/PolBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::PRIBUFF,
-      base_path + "sprites/Battle/Ailments/PriBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::CHGBUFF,
-      base_path + "sprites/Battle/Ailments/ChgBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::CYBBUFF,
-      base_path + "sprites/Battle/Ailments/CybBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::NIHBUFF,
-      base_path + "sprites/Battle/Ailments/NihBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::LIMBUFF,
-      base_path + "sprites/Battle/Ailments/LimBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::UNBBUFF,
-      base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
-  battle_display->setAilment(
-      Infliction::VITBUFF,
-      base_path + "sprites/Battle/Ailments/VitBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::QDBUFF,
-      base_path + "sprites/Battle/Ailments/QDBuff_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::ROOTBOUND,
-      base_path + "sprites/Battle/Ailments/RootBound_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::DOUBLECAST,
-      base_path + "sprites/Battle/Ailments/DoubleCast_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::TRIPLECAST,
-      base_path + "sprites/Battle/Ailments/TripleCast_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::HALFCOST,
-      base_path + "sprites/Battle/Ailments/HalfCost_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::REFLECT,
-      base_path + "sprites/Battle/Ailments/Reflect_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::HIBERNATION,
-      base_path + "sprites/Battle/Ailments/Hibernation_AA_A00.png", renderer);
-  battle_display->setAilment(
-      Infliction::CURSE, base_path + "sprites/Battle/Ailments/Curse_AA_A00.png",
-      renderer);
-  battle_display->setAilment(
-      Infliction::METATETHER,
-      base_path + "sprites/Battle/Ailments/MetaTether_AA_A00.png", renderer);
-
-  /* Set the elements */
-  battle_display->setElement(
-      Element::PHYSICAL,
-      base_path + "sprites/Battle/Skills/Elements/Physical_AA_A00.png",
-      renderer);
-  battle_display->setElement(
-      Element::FIRE,
-      base_path + "sprites/Battle/Skills/Elements/Thermal_AA_A00.png",
-      renderer);
-  battle_display->setElement(
-      Element::ICE,
-      base_path + "sprites/Battle/Skills/Elements/Polar_AA_A00.png", renderer);
-  battle_display->setElement(
-      Element::FOREST,
-      base_path + "sprites/Battle/Skills/Elements/Primal_AA_A00.png", renderer);
-  battle_display->setElement(
-      Element::ELECTRIC,
-      base_path + "sprites/Battle/Skills/Elements/Charge_AA_A00.png", renderer);
-  battle_display->setElement(
-      Element::DIGITAL,
-      base_path + "sprites/Battle/Skills/Elements/Cyber_AA_A00.png", renderer);
-  battle_display->setElement(
-      Element::NIHIL,
-      base_path + "sprites/Battle/Skills/Elements/Nihil_AA_A00.png", renderer);
-
-  /* Set the action scopes */
-  battle_display->setScope(
-      ActionScope::USER,
-      base_path + "sprites/Battle/Skills/Targets/user_AA_A00.png", renderer);
-  battle_display->setScope(
-      ActionScope::ONE_TARGET,
-      base_path + "sprites/Battle/Skills/Targets/single_AA_A00.png", renderer);
-  battle_display->setScope(
-      ActionScope::ONE_ENEMY,
-      base_path + "sprites/Battle/Skills/Targets/singleenemy_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::TWO_ENEMIES,
-      base_path + "sprites/Battle/Skills/Targets/twoenemies_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ALL_ENEMIES,
-      base_path + "sprites/Battle/Skills/Targets/allenemies_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ONE_ALLY,
-      base_path + "sprites/Battle/Skills/Targets/singleally_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ONE_ALLY_NOT_USER,
-      base_path + "sprites/Battle/Skills/Targets/singlenotuserally_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::TWO_ALLIES,
-      base_path + "sprites/Battle/Skills/Targets/twoallies_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ALL_ALLIES,
-      base_path + "sprites/Battle/Skills/Targets/allallies_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ONE_ALLY_KO,
-      base_path + "sprites/Battle/Skills/Targets/singlekoedally_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ALL_ALLIES_KO,
-      base_path + "sprites/Battle/Skills/Targets/allkoedallies_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ONE_PARTY,
-      base_path + "sprites/Battle/Skills/Targets/singleparty_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ALL_TARGETS,
-      base_path + "sprites/Battle/Skills/Targets/all_AA_A00.png", renderer);
-  battle_display->setScope(
-      ActionScope::NOT_USER,
-      base_path + "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png",
-      renderer);
-  battle_display->setScope(
-      ActionScope::ALL_NOT_USER,
-      base_path + "sprites/Battle/Skills/Targets/allnotuser_AA_A00.png",
-      renderer);
-
-  /* Set up the extra frames */
-  battle_display->setFramePercent(
-      base_path + "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png", renderer);
-  battle_display->setFrameQD(
-      base_path + "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png", renderer);
-  battle_display->setFrameTime(
-      base_path + "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png", renderer);
-
-  /* Set up the Ailment pleps */
-  sprite_paralysis = new Sprite(game_config->getBasePath() +
-                                    "sprites/Battle/Pleps/paralysisplep_AA_A",
-                                3, ".png", renderer);
-  sprite_paralysis->setAnimationTime(70);
-  battle_display->setAilmentPlep(Infliction::PARALYSIS, sprite_paralysis);
-
-  sprite_confusion = new Sprite(game_config->getBasePath() +
-                                    "sprites/Battle/Pleps/confusionplep_AA_A",
-                                3, ".png", renderer);
-  sprite_confusion->setAnimationTime(80);
-  battle_display->setAilmentPlep(Infliction::CONFUSE, sprite_confusion);
-
-  sprite_poison = new Sprite(game_config->getBasePath() +
-                                 "sprites/Battle/Pleps/poisonplep_AA_A",
-                             4, ".png", renderer);
-  sprite_poison->setAnimationTime(70);
-  battle_display->setAilmentPlep(Infliction::POISON, sprite_poison);
-
-  sprite_buff = new Sprite(game_config->getBasePath() +
-                               "sprites/Battle/Pleps/raiseplep_AA_A",
-                           9, ".png", renderer);
-  sprite_buff->setAnimationTime(95);
-  battle_display->setAilmentPlep(Infliction::ALLATKBUFF, sprite_buff);
-  battle_display->setAilmentPlep(Infliction::ALLDEFBUFF, sprite_buff);
-  battle_display->setAilmentPlep(Infliction::LIMBUFF, sprite_buff);
-
-  sprite_defend_start = new Sprite(game_config->getBasePath() +
-                                       "sprites/Battle/Pleps/defendplep_AA_A",
-                                   7, ".png", renderer);
-  sprite_defend_start->setAnimationTime(375);
-  sprite_defend_start->switchDirection();
-
-  sprite_defend_break = new Sprite(game_config->getBasePath() +
-                                       "sprites/Battle/Pleps/defendplep_AA_A",
-                                   7, ".png", renderer);
-  sprite_defend_break->setAnimationTime(90);
-  // sprite_defend_break->switchDirection();
-
-  sprite_defend_persist = new Sprite(game_config->getBasePath() +
-                                         "sprites/Battle/Pleps/defendplep_AA_A",
-                                     7, ".png", renderer);
-  sprite_defend_persist->setAnimationTime(90);
-
-  // sprite_implode = new Sprite(game_config->getBasePath() +
-  // "sprites/Battle/Pleps/detonateplep_AA_A", 6, ".png", renderer);
-
-  battle_display->setEventPlep(EventType::BEGIN_DEFEND, sprite_defend_start);
-  battle_display->setEventPlep(EventType::BREAK_DEFEND, sprite_defend_break);
-  battle_display->setEventPlep(EventType::PERSIST_DEFEND,
-                               sprite_defend_persist);
-
-  sprite_hibernation = new Sprite(
-      game_config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A",
-      4, ".png", renderer);
-  sprite_hibernation->insertTail(
-      game_config->getBasePath() +
-          "sprites/Battle/Pleps/hibernationplep_AA_A00.png",
-      renderer);
-  sprite_hibernation->insertTail(
-      game_config->getBasePath() +
-          "sprites/Battle/Pleps/hibernationplep_AA_A01.png",
-      renderer);
-  sprite_hibernation->insertTail(
-      game_config->getBasePath() +
-          "sprites/Battle/Pleps/hibernationplep_AA_A02.png",
-      renderer);
-  sprite_hibernation->insertTail(
-      game_config->getBasePath() +
-          "sprites/Battle/Pleps/hibernationplep_AA_A03.png",
-      renderer);
-  sprite_hibernation->setAnimationTime(70);
-  battle_display->setAilmentPlep(Infliction::HIBERNATION, sprite_hibernation);
-
   /* Background and bar */
-  Sprite *background = new Sprite(
+  Sprite* background = new Sprite(
       base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
-  battle_display->setBackground(background);
-  battle_display->setBattleBar(
-      new Frame(base_path + "sprites/Overlay/battle.png", renderer));
+  battle_logic->setBackground(background);
 
   /* Skill Images (lol) */
   for(uint32_t i = 0; i < skills.size(); i++)
@@ -751,6 +467,13 @@ void TestBattle::create()
   createClasses();
   createRaces();
 
+  // createItems();
+  // Alpha Items:
+  // Med Kit
+  // Rock
+  // Rotten Fish
+  // Nanite Spray
+
   /* Inventories */
   pouch_foes = new Inventory(1000, "Der Pouch");
   pouch_friends = new Inventory(1001, "Teh Pouch");
@@ -935,7 +658,7 @@ void TestBattle::createFonts()
   if(game_config != nullptr)
   {
     /* Try and create the new fonts */
-    TTF_Font *regular_font =
+    TTF_Font* regular_font =
         Text::createFont(game_config->getBasePath() + game_config->getFont(),
                          16, TTF_STYLE_BOLD);
 
@@ -969,15 +692,15 @@ void TestBattle::createMenu()
 /* ------------------------------------------------------------------------- */
 /* Create person of type */
 /* ------------------------------------------------------------------------- */
-Person *TestBattle::createPerson(int id, TestPerson type,
-                                 SDL_Renderer *renderer, uint8_t level,
+Person* TestBattle::createPerson(int id, TestPerson type,
+                                 SDL_Renderer* renderer, uint8_t level,
                                  bool include_ai)
 {
-  Person *new_person = nullptr;
-  Sprite *as = nullptr;
-  Sprite *ds = nullptr;
-  Sprite *fp = nullptr;
-  Sprite *tp = nullptr;
+  Person* new_person = nullptr;
+  Sprite* as = nullptr;
+  Sprite* ds = nullptr;
+  Sprite* fp = nullptr;
+  Sprite* tp = nullptr;
 
   /* Create person based on enum - custom logic based on type */
   if(type == ARCADIUS)
@@ -1101,9 +824,9 @@ Person *TestBattle::createPerson(int id, TestPerson type,
 
   if(include_ai)
   {
-    AIModule *ai_module = new AIModule();
-    ai_module->setParent(new_person);
-    new_person->setAI(ai_module);
+    // AIModule* ai_module = new AIModule();
+    // ai_module->setParent(new_person);
+    // new_person->setAI(ai_module);
   }
   new_person->setSprites(fp, tp, ds, as);
 
@@ -1167,7 +890,7 @@ void TestBattle::createRaces()
 void TestBattle::createSkills()
 {
   /* Light Push */
-  Skill *light_push =
+  Skill* light_push =
       new Skill(100, "Light Push", ActionScope::ONE_ENEMY, act_dmg[0], 100, 0);
   light_push->setDescription("A weak, physical hit with a long cool down");
   light_push->setPrimary(Element::PHYSICAL);
@@ -1176,7 +899,7 @@ void TestBattle::createSkills()
   skills.push_back(light_push);
 
   /* Light Shot */
-  Skill *light_shot =
+  Skill* light_shot =
       new Skill(120, "Light Shot", ActionScope::ONE_ENEMY, act_dmg[7], 95, 0);
   light_shot->setDescription("A standard, electric hit against a single foe");
   light_shot->setPrimary(Element::ELECTRIC);
@@ -1184,7 +907,7 @@ void TestBattle::createSkills()
   skills.push_back(light_shot);
 
   /* Prismatic Shot */
-  Skill *prismatic_shot = new Skill(121, "Prismatic Shot",
+  Skill* prismatic_shot = new Skill(121, "Prismatic Shot",
                                     ActionScope::ONE_ENEMY, act_dmg[1], 90, 15);
   prismatic_shot->addAction(act_dmg[1]);
   prismatic_shot->addAction(act_dmg[1]);
@@ -1194,7 +917,7 @@ void TestBattle::createSkills()
   skills.push_back(prismatic_shot);
 
   /* Rail Shot */
-  Skill *rail_shot =
+  Skill* rail_shot =
       new Skill(140, "Rail Shot", ActionScope::ONE_ENEMY, act_dmg[2], 95, 0);
   rail_shot->setDescription("A heavy damage electric hit against a foe");
   rail_shot->setPrimary(Element::ELECTRIC);
@@ -1202,7 +925,7 @@ void TestBattle::createSkills()
   skills.push_back(rail_shot);
 
   /* Shatter Shot */
-  Skill *shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
+  Skill* shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
                                   act_dmg[3], 95, 15);
   shatter_shot->addAction(act_dmg[2]);
   shatter_shot->setDescription("This description sucks.");
@@ -1211,7 +934,7 @@ void TestBattle::createSkills()
   skills.push_back(shatter_shot);
 
   /* Engineer Upgrade */
-  Skill *eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER,
+  Skill* eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER,
                                  act_inf[4], 100, 5);
   eng_upgrade->addAction(act_inf[5]);
   eng_upgrade->setDescription("Team upgrade to ally for defense and speed");
@@ -1221,7 +944,7 @@ void TestBattle::createSkills()
 
   /* Static Shot */
 
-  Skill *static_shot =
+  Skill* static_shot =
       new Skill(180, "Static Shot", ActionScope::ONE_ENEMY, act_dmg[4], 95, 0);
   static_shot->setDescription("A weak charged-based attack.");
   static_shot->setPrimary(Element::ELECTRIC);
@@ -1229,7 +952,7 @@ void TestBattle::createSkills()
   skills.push_back(static_shot);
 
   /* Locked Shot */
-  Skill *locked_shot = new Skill(181, "Locked Shot", ActionScope::ONE_ENEMY,
+  Skill* locked_shot = new Skill(181, "Locked Shot", ActionScope::ONE_ENEMY,
                                  act_dmg[8], 100, 25);
   locked_shot->setDescription("A charged-based attack that will not miss.");
   locked_shot->setPrimary(Element::ELECTRIC);
@@ -1240,7 +963,7 @@ void TestBattle::createSkills()
   // TODO: Implement imploding
 
   /* Hidden Amplification */
-  Skill *hidden_amp = new Skill(200, "Hidden Amplification", ActionScope::USER,
+  Skill* hidden_amp = new Skill(200, "Hidden Amplification", ActionScope::USER,
                                 act_inf[3], 90, 5);
   // hidden_amp->addAction(act_inf[4]);
   hidden_amp->setDescription("Raises one's attacking power.");
@@ -1257,7 +980,7 @@ void TestBattle::createSkills()
   //   act_alt[0], 90, 25);
 
   /* Canopy */
-  Skill *canopy =
+  Skill* canopy =
       new Skill(220, "Canopy", ActionScope::ALL_ALLIES, act_inf[4], 90, 5);
   canopy->setDescription("Entire team DEF up.");
   canopy->setPrimary(Element::PHYSICAL);
@@ -1265,7 +988,7 @@ void TestBattle::createSkills()
   skills.push_back(canopy);
 
   /* Updraft */
-  Skill *updraft = new Skill(221, "Updraft", ActionScope::ONE_ALLY_NOT_USER,
+  Skill* updraft = new Skill(221, "Updraft", ActionScope::ONE_ALLY_NOT_USER,
                              act_inf[5], 90, 10);
   updraft->setDescription("Ally dodge up");
   updraft->setPrimary(Element::PHYSICAL);
@@ -1273,7 +996,7 @@ void TestBattle::createSkills()
   skills.push_back(updraft);
 
   /* Chlorophona */
-  Skill *chlorophoria = new Skill(222, "Chlorophoria", ActionScope::ALL_ALLIES,
+  Skill* chlorophoria = new Skill(222, "Chlorophoria", ActionScope::ALL_ALLIES,
                                   act_alt[0], 90, 15);
   chlorophoria->setDescription("Team health up");
   chlorophoria->setPrimary(Element::PHYSICAL);
@@ -1281,7 +1004,7 @@ void TestBattle::createSkills()
   skills.push_back(chlorophoria);
 
   /* Numbing Sting */
-  Skill *numbing = new Skill(240, "Numbing Sting", ActionScope::ONE_ENEMY,
+  Skill* numbing = new Skill(240, "Numbing Sting", ActionScope::ONE_ENEMY,
                              act_inf[6], 90, 5);
   numbing->setDescription("Paralysis Inflict");
   numbing->setPrimary(Element::PHYSICAL);
@@ -1289,7 +1012,7 @@ void TestBattle::createSkills()
   skills.push_back(numbing);
 
   /* Hypnotic Sting */
-  Skill *hypnotic =
+  Skill* hypnotic =
       new Skill(241, "Sullen Sting", ActionScope::ONE_ENEMY, act_inf[2], 90, 5);
   hypnotic->setDescription("Silencing sting");
   hypnotic->setPrimary(Element::PHYSICAL);
@@ -1297,7 +1020,7 @@ void TestBattle::createSkills()
   skills.push_back(hypnotic);
 
   /* Toxic Sting */
-  Skill *toxic =
+  Skill* toxic =
       new Skill(242, "Toxic Sting", ActionScope::ONE_ENEMY, act_inf[0], 90, 5);
   toxic->setDescription("Poision Inflict");
   toxic->setPrimary(Element::PHYSICAL);
@@ -1305,7 +1028,7 @@ void TestBattle::createSkills()
   skills.push_back(toxic);
 
   /* Befuddling Sting */
-  Skill *befuddling = new Skill(243, "Befuddling Sting", ActionScope::ONE_ENEMY,
+  Skill* befuddling = new Skill(243, "Befuddling Sting", ActionScope::ONE_ENEMY,
                                 act_inf[1], 90, 5);
   befuddling->setDescription("Confusion Inflict");
   befuddling->setPrimary(Element::PHYSICAL);
@@ -1313,7 +1036,7 @@ void TestBattle::createSkills()
   skills.push_back(befuddling);
 
   /* Cunning */
-  Skill *cunning =
+  Skill* cunning =
       new Skill(1000, "Cunning", ActionScope::USER, act_inf[4], 90, 5);
   cunning->addAction(act_inf[5]);
   cunning->setDescription("Self dodge and defense up");
@@ -1322,7 +1045,7 @@ void TestBattle::createSkills()
   skills.push_back(cunning);
 
   /* Strike */
-  Skill *strike =
+  Skill* strike =
       new Skill(1001, "Strike", ActionScope::ONE_ENEMY, act_dmg[6], 90, 15);
   strike->setDescription("Physical strike against one foe");
   strike->setPrimary(Element::PHYSICAL);
@@ -1331,7 +1054,7 @@ void TestBattle::createSkills()
   skills.push_back(strike);
 
   /* Paw Strike */
-  Skill *paw_strike =
+  Skill* paw_strike =
       new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[9], 95, 0);
   paw_strike->setDescription("A standard, physical hit against a single foe");
   paw_strike->setPrimary(Element::PHYSICAL);
@@ -1340,7 +1063,7 @@ void TestBattle::createSkills()
   skills.push_back(paw_strike);
 
   /* Maul */
-  Skill *maul =
+  Skill* maul =
       new Skill(1021, "Maul", ActionScope::ONE_ENEMY, act_dmg[10], 95, 10);
   maul->setDescription("A stronger, physical hit against a single foe");
   maul->setPrimary(Element::PHYSICAL);
@@ -1349,7 +1072,7 @@ void TestBattle::createSkills()
   skills.push_back(maul);
 
   /* Multi-Strike */
-  Skill *multi_strike = new Skill(1022, "Multi-Strike", ActionScope::ONE_ENEMY,
+  Skill* multi_strike = new Skill(1022, "Multi-Strike", ActionScope::ONE_ENEMY,
                                   act_dmg[9], 90, 15);
   multi_strike->addAction(act_dmg[9]);
   multi_strike->setDescription("What");
@@ -1359,7 +1082,7 @@ void TestBattle::createSkills()
   skills.push_back(multi_strike);
 
   /* Hibernate */
-  Skill *hibernate =
+  Skill* hibernate =
       new Skill(1023, "Hibernate", ActionScope::USER, act_inf[7], 100, 5);
   hibernate->setDescription("Heal self");
   hibernate->setPrimary(Element::PHYSICAL);
@@ -1368,7 +1091,7 @@ void TestBattle::createSkills()
 
   /* Ensnare */
   // TODO: Slow down portion of ensnare? Ehhh...
-  Skill *ensnare =
+  Skill* ensnare =
       new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY, act_dmg[11], 80, 5);
   ensnare->setDescription("Damage enemy");
   ensnare->setPrimary(Element::FOREST);
@@ -1377,7 +1100,7 @@ void TestBattle::createSkills()
 
   /* Enrich */
   // TODO: Healing plep
-  Skill *enrich =
+  Skill* enrich =
       new Skill(1041, "Enrich", ActionScope::USER, act_alt[0], 100, 5);
   enrich->setDescription("Small amount of heal to self");
   enrich->setPrimary(Element::FOREST);
@@ -1394,54 +1117,54 @@ void TestBattle::createSkillSets()
   /* ---- CLASSES ---- */
 
   /* The {} Set */
-  SkillSet *set_empty = new SkillSet(101);
+  SkillSet* set_empty = new SkillSet(101);
   skillsets.push_back(set_empty);
 
   /* Arcadius Class */
-  SkillSet *set_arcadius = new SkillSet(100);
+  SkillSet* set_arcadius = new SkillSet(100);
   set_arcadius->addSkill(getSkill(100), 1);
   skillsets.push_back(set_arcadius);
 
   /* Aurora Agent Class */
-  SkillSet *set_agent = new SkillSet(120);
+  SkillSet* set_agent = new SkillSet(120);
   set_agent->addSkill(getSkill(120), 1);
   set_agent->addSkill(getSkill(121), 12);
   skillsets.push_back(set_agent);
 
   /* Aurora Heavy Class */
-  SkillSet *set_heavy = new SkillSet(140);
+  SkillSet* set_heavy = new SkillSet(140);
   set_heavy->addSkill(getSkill(140), 1);
   set_heavy->addSkill(getSkill(141), 12);
   skillsets.push_back(set_heavy);
 
   /* Aurora Engineer Class */
-  SkillSet *set_engineer = new SkillSet(160);
+  SkillSet* set_engineer = new SkillSet(160);
   set_engineer->addSkill(getSkill(160), 1);
   set_engineer->addSkill(getSkill(120), 12);
   skillsets.push_back(set_engineer);
 
   /* Aurora Drone Class */
-  SkillSet *set_drone = new SkillSet(180);
+  SkillSet* set_drone = new SkillSet(180);
   set_drone->addSkill(getSkill(180), 1);
   set_drone->addSkill(getSkill(181), 5);
   set_drone->addSkill(getSkill(182), 13);
   skillsets.push_back(set_drone);
 
   /* Player Class */
-  SkillSet *set_player = new SkillSet(200);
+  SkillSet* set_player = new SkillSet(200);
   set_player->addSkill(getSkill(200), 1);
   set_player->addSkill(getSkill(201), 15);
   skillsets.push_back(set_player);
 
   /* Reverdile */
-  SkillSet *set_reverdile = new SkillSet(220);
+  SkillSet* set_reverdile = new SkillSet(220);
   set_reverdile->addSkill(getSkill(220), 1);
   set_reverdile->addSkill(getSkill(221), 5);
   set_reverdile->addSkill(getSkill(222), 8);
   skillsets.push_back(set_reverdile);
 
   /* Reverdling */
-  SkillSet *set_reverdling = new SkillSet(240);
+  SkillSet* set_reverdling = new SkillSet(240);
   set_reverdling->addSkill(getSkill(240), 1);
   set_reverdling->addSkill(getSkill(241), 1);
   set_reverdling->addSkill(getSkill(242), 1);
@@ -1451,13 +1174,13 @@ void TestBattle::createSkillSets()
   /* ---- RACES ---- */
 
   /* Human Race */
-  SkillSet *set_human = new SkillSet(1000);
+  SkillSet* set_human = new SkillSet(1000);
   set_human->addSkill(getSkill(1000), 1);
   set_human->addSkill(getSkill(1001), 6);
   skillsets.push_back(set_human);
 
   /* Bear Race */
-  SkillSet *set_bear = new SkillSet(1020);
+  SkillSet* set_bear = new SkillSet(1020);
   set_bear->addSkill(getSkill(1020), 1);
   set_bear->addSkill(getSkill(1021), 5);
   set_bear->addSkill(getSkill(1022), 8);
@@ -1465,13 +1188,13 @@ void TestBattle::createSkillSets()
   skillsets.push_back(set_bear);
 
   /* Treefolk Race */
-  SkillSet *set_treefolk = new SkillSet(1040);
+  SkillSet* set_treefolk = new SkillSet(1040);
   set_treefolk->addSkill(getSkill(1040), 1);
   set_treefolk->addSkill(getSkill(1041), 6);
   skillsets.push_back(set_treefolk);
 
   /* ---- BUBBIFIED SKILL SET ---- */
-  SkillSet *set_bubbified = new SkillSet(1);
+  SkillSet* set_bubbified = new SkillSet(1);
   set_bubbified->addSkill(getSkill(1020), 1);
   skillsets.push_back(set_bubbified);
 }
@@ -1586,7 +1309,7 @@ void TestBattle::deleteRaces()
 /* ------------------------------------------------------------------------- */
 void TestBattle::deleteSkills()
 {
-  for(auto &skill : skills)
+  for(auto& skill : skills)
     delete skill;
   skills.clear();
 }
@@ -1596,7 +1319,7 @@ void TestBattle::deleteSkills()
 /* ------------------------------------------------------------------------- */
 void TestBattle::deleteSkillSets()
 {
-  for(auto &skillset : skillsets)
+  for(auto& skillset : skillsets)
     delete skillset;
   skillsets.clear();
 }
@@ -1632,7 +1355,6 @@ void TestBattle::destroyBattle()
 {
   if(battle_logic != nullptr)
   {
-    battle_display->unsetBattle();
     delete battle_logic;
     battle_logic = nullptr;
   }
@@ -1640,7 +1362,7 @@ void TestBattle::destroyBattle()
   /* Foe party list delete */
   if(party_foes)
   {
-    for(auto &member : party_foes->getMembers())
+    for(auto& member : party_foes->getMembers())
       if(member)
         delete member;
 
@@ -1651,7 +1373,7 @@ void TestBattle::destroyBattle()
   /* Friend party list delete */
   if(party_friends)
   {
-    for(auto &member : party_friends->getMembers())
+    for(auto& member : party_friends->getMembers())
       if(member)
         delete member;
 
@@ -1663,9 +1385,9 @@ void TestBattle::destroyBattle()
 /* ------------------------------------------------------------------------- */
 /* Get call for Skill by ID */
 /* ------------------------------------------------------------------------- */
-Skill *TestBattle::getSkill(int id)
+Skill* TestBattle::getSkill(int id)
 {
-  Skill *found_skill = nullptr;
+  Skill* found_skill = nullptr;
 
   for(uint16_t i = 0; i < skills.size(); i++)
     if(skills[i]->getID() == id)
@@ -1677,9 +1399,9 @@ Skill *TestBattle::getSkill(int id)
 /* ------------------------------------------------------------------------- */
 /* Get call for Skill Set by ID */
 /* ------------------------------------------------------------------------- */
-SkillSet *TestBattle::getSkillSet(int id)
+SkillSet* TestBattle::getSkillSet(int id)
 {
-  SkillSet *found_set = nullptr;
+  SkillSet* found_set = nullptr;
 
   for(uint16_t i = 0; i < skillsets.size(); i++)
     if(skillsets[i]->getID() == id)
@@ -1691,38 +1413,38 @@ SkillSet *TestBattle::getSkillSet(int id)
 /* ------------------------------------------------------------------------- */
 /* Set up the battle */
 /* ------------------------------------------------------------------------- */
-void TestBattle::initBattle(SDL_Renderer *renderer)
+void TestBattle::initBattle(SDL_Renderer* renderer)
 {
   MenuItems ref = (MenuItems)menu_index;
 
   /* Set up FRIEND party */
-  Person *player = createPerson(100, PLAYER, renderer, lvl_friend, false);
+  Person* player = createPerson(100, PLAYER, renderer, lvl_friend, false);
   party_friends = new Party(200, player, PartyType::SLEUTH, 5);
 
   /* Set up FOE party based on menu index */
   if(ref == AC)
   {
-    Person *arc = createPerson(300, ARCADIUS, renderer, lvl_foe);
+    Person* arc = createPerson(300, ARCADIUS, renderer, lvl_foe);
     party_foes = new Party(400, arc, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AA)
   {
-    Person *aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
     party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AAx2)
   {
-    Person *aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person *aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
+    Person* aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person* aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
 
     party_foes = new Party(400, aa1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(aa2);
   }
   else if(ref == AAx5)
   {
-    Person *aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person *aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
-    Person *aa3 = createPerson(302, AURORAAGENT, renderer, lvl_foe);
+    Person* aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person* aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
+    Person* aa3 = createPerson(302, AURORAAGENT, renderer, lvl_foe);
     // Person *aa4 = createPerson(303, AURORAAGENT, renderer, lvl_foe);
     // Person *aa5 = createPerson(304, AURORAAGENT, renderer, lvl_foe);
 
@@ -1734,31 +1456,31 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   }
   else if(ref == AAnAH)
   {
-    Person *aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person *ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
+    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person* ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
 
     party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ah);
   }
   else if(ref == AH)
   {
-    Person *ah = createPerson(300, AURORAHEAVY, renderer, lvl_foe);
+    Person* ah = createPerson(300, AURORAHEAVY, renderer, lvl_foe);
     party_foes = new Party(400, ah, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AEnAD)
   {
-    Person *ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
-    Person *ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
+    Person* ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
+    Person* ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
 
     party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ad);
   }
   else if(ref == AEnADx4)
   {
-    Person *ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
-    Person *ad1 = createPerson(400, AURORADRONE, renderer, lvl_foe);
-    Person *ad2 = createPerson(401, AURORADRONE, renderer, lvl_foe);
-    Person *ad3 = createPerson(402, AURORADRONE, renderer, lvl_foe);
+    Person* ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
+    Person* ad1 = createPerson(400, AURORADRONE, renderer, lvl_foe);
+    Person* ad2 = createPerson(401, AURORADRONE, renderer, lvl_foe);
+    Person* ad3 = createPerson(402, AURORADRONE, renderer, lvl_foe);
     // Person *ad4 = createPerson(304, AURORADRONE, renderer, lvl_foe);
 
     party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5);
@@ -1769,10 +1491,10 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   }
   else if(ref == AAnAHnADnAE)
   {
-    Person *aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person *ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
-    Person *ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
-    Person *ae = createPerson(303, AURORAENGG, renderer, lvl_foe);
+    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person* ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
+    Person* ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
+    Person* ae = createPerson(303, AURORAENGG, renderer, lvl_foe);
 
     party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ah);
@@ -1781,17 +1503,17 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   }
   else if(ref == REnRG)
   {
-    Person *re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person *rg = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
+    Person* rg = createPerson(500, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg);
   }
   else if(ref == REnRGx2)
   {
-    Person *re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg1);
@@ -1799,10 +1521,10 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   }
   else if(ref == REnRGx4)
   {
-    Person *re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
-    Person *rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
+    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person* rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
     // Person *rg4 = createPerson(304, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
@@ -1813,24 +1535,24 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   }
   else if(ref == RG)
   {
-    Person *rg = createPerson(300, REVERDLING, renderer, lvl_foe);
+    Person* rg = createPerson(300, REVERDLING, renderer, lvl_foe);
     party_foes = new Party(400, rg, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == RGx2)
   {
-    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg2);
   }
   else if(ref == RGx5)
   {
-    Person *rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person *rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
-    Person *rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
-    Person *rg4 = createPerson(503, REVERDLING, renderer, lvl_foe);
-    Person *rg5 = createPerson(504, REVERDLING, renderer, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person* rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
+    Person* rg4 = createPerson(503, REVERDLING, renderer, lvl_foe);
+    Person* rg5 = createPerson(504, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg2);
@@ -1839,15 +1561,10 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
     party_foes->addMember(rg5);
   }
 
-  /* Battle Prep */
-  for(auto &member : party_friends->getMembers())
-    member->battlePrep();
-  for(auto &member : party_foes->getMembers())
-    member->battlePrep();
-
   /* Set up battle */
-  battle_logic = new Battle(party_friends, party_foes, getSkillSet(1), nullptr);
-  battle_display->setBattle(battle_logic, renderer);
+  auto background = new Sprite(
+      base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
+  battle_logic->startBattle(party_friends, party_foes, background);
 }
 
 /*============================================================================
@@ -1861,8 +1578,7 @@ bool TestBattle::keyDownEvent(SDL_KeyboardEvent event)
 {
   if(mode == TEST_BATTLE)
   {
-    if(battle_display->getRenderingState() == battle_logic->getTurnState())
-      return battle_logic->keyDownEvent(event);
+    return battle_logic->keyDownEvent(event);
   }
   else
   {
@@ -1956,7 +1672,7 @@ void TestBattle::keyUpEvent(SDL_KeyboardEvent event)
 /* ------------------------------------------------------------------------- */
 /* Renders the title screen */
 /* ------------------------------------------------------------------------- */
-bool TestBattle::render(SDL_Renderer *renderer)
+bool TestBattle::render(SDL_Renderer* renderer)
 {
   if(renderer)
   {
@@ -1976,9 +1692,9 @@ bool TestBattle::render(SDL_Renderer *renderer)
     }
 
     /* Rendering primary */
-    if(mode == TEST_BATTLE && battle_display)
+    if(mode == TEST_BATTLE)
     {
-      battle_display->render(renderer);
+      battle_logic->render(0);
     }
     else
     {
@@ -2017,7 +1733,7 @@ bool TestBattle::render(SDL_Renderer *renderer)
 /* ------------------------------------------------------------------------- */
 /* Set the running configuration, from the options class */
 /* ------------------------------------------------------------------------- */
-bool TestBattle::setConfiguration(Options *running_config)
+bool TestBattle::setConfiguration(Options* running_config)
 {
   if(running_config)
   {
@@ -2025,8 +1741,7 @@ bool TestBattle::setConfiguration(Options *running_config)
     base_path = game_config->getBasePath();
 
     /* Battle configuration setup */
-    if(battle_display)
-      battle_display->setConfiguration(running_config);
+    battle_logic->setConfig(running_config);
 
     /* Text setup */
     deleteMenu();
@@ -2049,17 +1764,12 @@ bool TestBattle::update(int cycle_time)
   {
     battle_logic->update(cycle_time);
 
-    if(battle_logic->getTurnState() == TurnState::DESTRUCT)
+    if(battle_logic->getTurnState() == TurnState::STOPPED)
     {
       mode = SCENARIO;
       destroyBattle();
     }
-    else if(battle_display)
-    {
-      battle_display->update(cycle_time);
-    }
   }
 
-  (void)cycle_time;
   return false;
 }

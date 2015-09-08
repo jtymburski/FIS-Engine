@@ -2,7 +2,7 @@
 * Class Name: AI Module [Declaration]
 * Date Created: June 22, 2014
 * Inheritance: None
-* Description: The AI Module is an object describing the difficulty and 
+* Description: The AI Module is an object describing the difficulty and
 *              personality for enemy decision making in Battle.
 *
 * Notes
@@ -16,8 +16,8 @@
 #ifndef AIMODULE_H
 #define AIMODULE_H
 
-struct BattleSkill;
-struct BattleItem;
+// struct BattleSkill;
+// struct BattleItem;
 class Person;
 
 #include "Game/Player/Item.h"
@@ -93,9 +93,9 @@ private:
   ActionScope action_scope;
 
   /* Valid skills and items */
-  std::vector<BattleSkill> valid_skills;
-  std::vector<BattleItem>  valid_items;
-  
+  // std::vector<BattleSkill> valid_skills;
+  // std::vector<BattleItem>  valid_items;
+
   /* Probability distribution of skill and item possibilities */
   std::vector<std::pair<Skill*, uint32_t>> skill_probabilities;
   std::vector<std::pair<Item*, uint32_t>>  item_probabilities;
@@ -192,7 +192,7 @@ private:
 
   /* Evaluates and returns whether any action may take place */
   bool canSelectAction();
- 
+
   /* Evaluates and returns whether an AI can select Guard */
   bool canSelectGuard();
 
@@ -208,11 +208,11 @@ private:
   /* Clear invalid Skill and Item choices */
   bool clearInvalid();
 
-  /* Determines whether a given BattleSkill has valid targets */
-  bool battleSkillValid(const BattleSkill& battle_skill);
+  // /* Determines whether a given BattleSkill has valid targets */
+  // bool battleSkillValid(const BattleSkill& battle_skill);
 
-  /* Determines whether a given BattleItem has valid targets */
-  bool battleItemValid(const BattleItem &batle_item);
+  // /* Determines whether a given BattleItem has valid targets */
+  // bool battleItemValid(const BattleItem &batle_item);
 
   /* Selects an action for a random-level AI */
   bool selectRandomAction();
@@ -231,7 +231,7 @@ private:
 
   /* Selects action targets for current action for tactical level AI */
   bool selectTacticalTargets();
-  
+
   /* Selects an action for a deep-thought level AI */
   bool selectDeepThoughtAction();
 
@@ -303,7 +303,7 @@ public:
   /* Returns the # of elapsed turns */
   uint16_t getTurnsElapsed();
   uint16_t getTurnsElapsedTotal();
- 
+
   /* Assign a value to a AIState flag */
   void setFlag(AIState flags, const bool &set_value = true);
 
@@ -314,10 +314,10 @@ public:
   bool setActionTypes(std::vector<ActionType> new_valid_action_types);
 
   /* Assigns the vector of valid skills */
-  bool setSkills(std::vector<BattleSkill> new_skills);
+  // bool setSkills(std::vector<BattleSkill> new_skills);
 
-  /* Assigns the vector of valid items */
-  bool setItems(std::vector<BattleItem> new_items);
+  //  Assigns the vector of valid items
+  // bool setItems(std::vector<BattleItem> new_items);
 
   /* Assigns the vector of valid friend targets */
   bool setFriendTargets(std::vector<Person*> new_valid_targets);

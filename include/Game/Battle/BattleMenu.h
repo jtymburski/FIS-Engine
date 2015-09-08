@@ -2,7 +2,7 @@
 * ClassBattle Name: Menu [Declaration]
 * Date Created: April 13th, 2018
 * Inheritance: None
-* Description: 
+* Description:
 *
 * Notes
 * -----
@@ -14,7 +14,7 @@
 *      <Defend>                -------------------------  <Self target>
 *      <Guard>                 -------------------------  <Ally Non-self target>
 *      <Implode>               -------------------------  <Self>
-*      <Run>                   -------------------------  ----------------- 
+*      <Run>                   -------------------------  -----------------
 *      <Pass>                  -------------------------  -----------------
 *
 *      [4: Verification Layer]
@@ -24,12 +24,12 @@
 #ifndef BATTLEMENU_H
 #define BATTLEMENU_H
 
+#include <SDL2/SDL.h>
+
 #include "EnumFlags.h"
 #include "EnumDb.h"
 #include "Options.h"
-#include "Game/Player/Person.h"
-#include "Game/Player/Item.h"
-#include "Game/Player/SkillSet.h"
+#include "Game/Battle/BattleActor.h"
 
 #include <vector>
 
@@ -60,33 +60,39 @@ private:
   std::vector<ActionType> valid_actions;
 
   /* The current selectable items on the menu */
-  std::vector<BattleItem> menu_items;
+  std::vector<BattleItem*> menu_items;
 
   /* Current skill set for Skills to be chosen from */
-  std::vector<BattleSkill> menu_skills;
+  std::vector<BattleSkill*> menu_skills;
 
   /* Remaining valid targets that can be chosen and already chosen targets */
-  std::vector<int32_t> valid_targets;
-  std::vector<int32_t> selected_targets;
+  std::vector<BattleActor*> valid_targets;
+  std::vector<BattleActor*> selected_targets;
 
-  /* The type of the action that was chosen (if selection_completed) */ 
+  /* The type of the action that was chosen (if selection_completed) */
   ActionType action_type;
 
   /* The scope of the action */
   ActionScope action_scope;
 
   /* Potentially selected object pointers */
-  BattleSkill selected_skill;
-  Item*       selected_item;
+  BattleSkill* selected_skill;
+  BattleItem*  selected_item;
 
   /* Set of BattleMenuState flags */
   MenuState flags;
 
   /* The window status of the BattleMenu */
   WindowStatus window_status;
-  
+
   /* Pointer to the current user of the Battle menu */
-  Person* current_user;
+  BattleActor* current_user;
+
+  SDL_Renderer* renderer;
+
+  /* Vectors of skill names and skill info frames */
+  std::vector<Frame*> frames_skill_info;
+  std::vector<Frame*> frames_skill_name;
 
   /* Menu indexes */
   uint16_t    num_allies;
@@ -98,6 +104,13 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Clears the skill frames */
+  void clearSkillFrames();
+
+  /* Creates the skill name and info frames */
+  SDL_Texture* createSkillFrame(uint32_t width, uint32_t height);
+  bool createSkillFrames(uint32_t width_left, uint32_t width_right);
+
   /* Decrement the current menu layer */
   bool decrementLayer(const int32_t &new_layer_index);
 
@@ -123,6 +136,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Render the skills */
+  bool renderSkills(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
   /* Unset all BattleMenu information (for end of selection, etc) */
   void unsetAll(const bool &window_off = false);
 
@@ -174,12 +190,6 @@ public:
   /* Returns whether some index of the current selected type has targets */
   bool someIndexHasTargets();
 
-  /* Traverse left */
-  bool traverseLeft(int32_t &curr_index);
-
-  /* Traverse right */
-  int32_t traverseRight(int32_t curr_index);
-
   /* Prints out the list of (selected and) valid targets to choose from */
   void printTargets(const bool &print_selected = false);
 
@@ -188,15 +198,15 @@ public:
 
   /* Obtains the selected enumerated ActionType */
   ActionType getActionType();
-  
+
   /* Obtains the index of action (Skill or Item lists) chosen */
   int32_t getActionIndex();
 
   /* Obtains user selected targets for the action from the Menu */
-  std::vector<int32_t> getActionTargets();
+  // std::vector<int32_t> getActionTargets();
 
   /* Get a pointer to the current person */
-  Person* getCurrentUser();
+  // Person* getCurrentUser();
 
   /* Get the element index (ex. index of skill selection */
   int32_t getElementIndex();
@@ -232,7 +242,7 @@ public:
   int32_t getQtdrCostPaid();
 
   /* The currently selected Skill (if set) */
-  BattleSkill getSelectedSkill();
+  BattleSkill* getSelectedSkill();
 
   /* The currently selected Item (if set) */
   Item* getSelectedItem();
@@ -244,16 +254,18 @@ public:
   WindowStatus getWindowStatus();
 
   /* Assigns the scope of the skill when a skill has been chosen */
-  void setActionScope(const ActionScope &new_action_scope);
+  // void setActionScope(const ActionScope &new_action_scope);
 
   /* Assigns the number of allies the curr person has (1 == self) */
   void setNumAllies(uint16_t num_allies);
 
+  void setRenderer(SDL_Renderer* renderer);
+
   /* Assigns the vector of BattleSkills to choose from */
-  bool setSelectableSkills(std::vector<BattleSkill> new_menu_skills);
+  bool setSelectableSkills(std::vector<BattleSkill*> new_menu_skills);
 
   /* Assigns a new selectable list of items for the menu */
-  bool setSelectableItems(std::vector<BattleItem> new_menu_items);
+  bool setSelectableItems(std::vector<BattleItem*> new_menu_items);
 
   /* Assigns valid targets for the menu */
   bool setSelectableTargets(std::vector<int32_t> valid_targets);

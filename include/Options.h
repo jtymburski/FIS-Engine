@@ -5,17 +5,21 @@
  * Description: This handles all options used throughout the application as well
  *              as the API for changing this. It's activated by calling the
  *              render class by the higher end classes.
- *  
+ *
  * TODO: See cc file
  ******************************************************************************/
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include "EnumFlags.h"
+class Fonts;
+
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
+
+#include "EnumFlags.h"
+#include "Fonts.h"
 
 ENUM_FLAGS(OptionState)
 enum class OptionState
@@ -27,13 +31,6 @@ enum class OptionState
   BATTLE_ANIMATIONS = 1 << 4,
   GUI_ENABLED       = 1 << 5,
   AUDIO_ENABLED     = 1 << 6
-};
-
-enum class BattleOptions
-{
-  FOREST_WALK,
-  BEARLY_DIFFICULT,
-  GRIZZLY
 };
 
 class Options
@@ -49,8 +46,8 @@ public:
   ~Options();
 
 private:
-  /* Amount of information to display during ailment updates */
-  BattleOptions ailment_update_state;
+  /* Fonts */
+  Fonts* font_data;
 
   /* Sound levels */
   int32_t audio_level;
@@ -61,19 +58,16 @@ private:
 
   /* The base string path for accessing file information */
   std::string base_path;
-  
-  /* Amount of information to display on the Battle HUD */
-  BattleOptions battle_hud_state;
 
   /* The index for the selected font */
   uint8_t font;
-  
+
   /* If the linear filtering is enabled */
   //bool linear_filtering;
 
   /* Enum flags option state set */
   OptionState flags;
-  
+
   /* Resolution of the screen currently being used */
   uint8_t resolution_x;
   uint8_t resolution_y;
@@ -82,10 +76,10 @@ private:
   //bool vsync_enabled;
 
   /* Horizontal resolution options */
-  //QVector<int> x_options; 
+  //QVector<int> x_options;
 
   /* Vertical resolution options */
-  //QVector<int> y_options; 
+  //QVector<int> y_options;
 
   /* Primary options menu */
   //QList<QString> main_options;
@@ -95,7 +89,7 @@ private:
   //QList<QString> secondary_Options;
 
   /*------------------- Constants -----------------------*/
-  const static std::string kFONTS[]; /* A list of all the fonts available */
+  const static std::string kFONTS[]; /* A list of all the fonts avfhudable */
   const static uint8_t kNUM_FONTS; /* The number of fonts available */
   const static uint8_t kNUM_RESOLUTIONS; /* Number of resolutions available */
   const static uint16_t kRESOLUTIONS_X[]; /* X Resolution sizes available */
@@ -111,21 +105,18 @@ private:
   /* Sets all parameters to default */
   void setAllToDefault();
 
-  /* Assign a new ailment update state to BattleOptions */
-  void setAilmentUpdateState(BattleOptions new_state);
-
   /* Assigns if the player is to always run on the map */
   //void setAutoRun(bool auto_run);
 
   /* Sets the chosen font */
   void setFont(uint8_t index, bool first_call = false);
-  
+
   /* Sets if linear filtering should be enabled or not */
   void setLinearFiltering(bool linear_filtering);
 
   /* Set the screen dimensions to be painted, based on the array index */
   void setScreenResolution(uint8_t index);
-  
+
   /* Enable or disable vertical refresh syncing */
   void setVsync(bool enabled);
 
@@ -141,10 +132,10 @@ public:
 
   /* Returns if the game is full screen mode */
   bool isFullScreen();
-  
+
   /* Returns if linear filtering mode is enabled */
   bool isLinearFilteringEnabled();
-  
+
   /* Returns true if the sound is enabled */
   bool isAudioEnabled();
 
@@ -158,19 +149,16 @@ public:
   /* Returns the value of a given OptionState flag */
   bool getFlag(const OptionState &test_flag);
 
-  /* Returns the current state of ailment updates */
-  BattleOptions getAilmentUpdateState();
-
   /* Returns the program configured base path, used for pathing throughout */
   std::string getBasePath();
 
   /* Returns the path to the font to use throughout the application */
   std::string getFont();
   std::string getFont(uint8_t index);
-  
+
   /* Returns the screen dimensions to be painted */
   uint16_t getScreenHeight();
-  uint16_t getScreenWidth(); 
+  uint16_t getScreenWidth();
 
   /* Audio setter */
   bool setAudioLevel(int32_t new_level);
@@ -179,7 +167,7 @@ public:
   bool setMusicLevel(int32_t new_level);
 
   /* Sets an option flag to a given state */
-  void setFlag(OptionState flags, bool set_value = true); 
+  void setFlag(OptionState flags, bool set_value = true);
 
 /*============================================================================
  * OPERATOR FUNCTIONS

@@ -65,7 +65,6 @@ Game::Game(Options* running_config)
   active_renderer = nullptr;
   base_path = "";
   battle_ctrl = nullptr;
-  battle_vis = nullptr;
   config = nullptr;
   game_path = kSTARTING_PATH;
   loaded = false;
@@ -76,7 +75,9 @@ Game::Game(Options* running_config)
 
   /* Set up battle and map classes - initial */
   map_ctrl = new Map(config, &event_handler);
-  battle_vis = new BattleDisplay(config);
+
+  battle_ctrl = new Battle();
+  battle_display_data = new BattleDisplayData();
 
   /* Set game configuration */
   setConfiguration(running_config);
@@ -92,15 +93,16 @@ Game::~Game()
   config = nullptr;
 
   /* Delete battle */
-  if(battle_ctrl != nullptr)
+  if(battle_ctrl)
     delete battle_ctrl;
-  if(battle_vis != nullptr)
-    delete battle_vis;
   battle_ctrl = nullptr;
-  battle_vis = nullptr;
+
+  if(battle_display_data)
+    delete battle_display_data;
+  battle_display_data = nullptr;
 
   /* Delete map */
-  if(map_ctrl != nullptr)
+  if(map_ctrl)
     delete map_ctrl;
   map_ctrl = nullptr;
 }
@@ -108,9 +110,9 @@ Game::~Game()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-  
+
 /* Add functions for game objects */
-Action* Game::addAction(const std::string &raw)
+Action* Game::addAction(const std::string& raw)
 {
   Action* new_action = new Action(raw);
   list_action.push_back(new_action);
@@ -119,7 +121,7 @@ Action* Game::addAction(const std::string &raw)
 }
 
 /* Add functions for game objects */
-Category* Game::addClass(const int32_t &id)
+Category* Game::addClass(const int32_t& id)
 {
   Category* new_category = new Category();
   new_category->setID(id);
@@ -129,7 +131,7 @@ Category* Game::addClass(const int32_t &id)
 }
 
 /* Add functions for game objects */
-Flavour* Game::addFlavour(const int32_t &id)
+Flavour* Game::addFlavour(const int32_t& id)
 {
   Flavour* new_flavour = new Flavour();
   new_flavour->setID(id);
@@ -139,7 +141,7 @@ Flavour* Game::addFlavour(const int32_t &id)
 }
 
 /* Add functions for game objects */
-Item* Game::addItem(const int32_t &id, SortObjects type)
+Item* Game::addItem(const int32_t& id, SortObjects type)
 {
   Item* new_item = nullptr;
 
@@ -168,7 +170,7 @@ Item* Game::addItem(const int32_t &id, SortObjects type)
 }
 
 /* Add functions for game objects */
-Party* Game::addParty(const int32_t &id)
+Party* Game::addParty(const int32_t& id)
 {
   Party* new_party = new Party();
   new_party->setID(id);
@@ -178,7 +180,7 @@ Party* Game::addParty(const int32_t &id)
 }
 
 /* Add functions for game objects */
-Person* Game::addPersonBase(const int32_t &id)
+Person* Game::addPersonBase(const int32_t& id)
 {
   Person* new_person = new Person();
   new_person->setGameID(id);
@@ -188,13 +190,13 @@ Person* Game::addPersonBase(const int32_t &id)
 }
 
 /* Add functions for game objects */
-Person* Game::addPersonInst(const int32_t &base_id, const uint32_t &lvl)
+Person* Game::addPersonInst(const int32_t& base_id, const uint32_t& lvl)
 {
   return addPersonInst(getPersonBase(base_id), lvl);
 }
 
 /* Add functions for game objects */
-Person* Game::addPersonInst(Person* base_person, const uint32_t &lvl)
+Person* Game::addPersonInst(Person* base_person, const uint32_t& lvl)
 {
   Person* new_person = nullptr;
 
@@ -213,7 +215,7 @@ Person* Game::addPersonInst(Person* base_person, const uint32_t &lvl)
 }
 
 /* Add functions for game objects */
-Category* Game::addRace(const int32_t &id)
+Category* Game::addRace(const int32_t& id)
 {
   Category* new_race = new Category();
   new_race->setID(id);
@@ -223,7 +225,7 @@ Category* Game::addRace(const int32_t &id)
 }
 
 /* Add functions for game objects */
-Skill* Game::addSkill(const int32_t &id)
+Skill* Game::addSkill(const int32_t& id)
 {
   Skill* new_skill = new Skill();
   new_skill->setID(id);
@@ -233,177 +235,12 @@ Skill* Game::addSkill(const int32_t &id)
 }
 
 /* Add functions for game objects */
-SkillSet* Game::addSkillSet(const int32_t &id)
+SkillSet* Game::addSkillSet(const int32_t& id)
 {
   SkillSet* new_set = new SkillSet(id);
   list_set.push_back(new_set);
 
   return new_set;
-}
-
-//TODO: Battle display data container, instead of instantiating upon
-// display creation? [07-18-15] - from file??
-void Game::buildBattleDisplayFrames(SDL_Renderer* renderer)
-{
-  if(battle_vis != nullptr)
-  {
-    /* Set the ailments */
-    battle_vis->setAilment(Infliction::POISON,
-        base_path + "sprites/Battle/Ailments/Poison_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::BURN,
-        base_path + "sprites/Battle/Ailments/Burn01_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::SCALD,
-        base_path + "sprites/Battle/Ailments/Burn02_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::CHARR,
-        base_path + "sprites/Battle/Ailments/Burn03_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::BERSERK,
-        base_path + "sprites/Battle/Ailments/Berserk_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::CONFUSE,
-        base_path + "sprites/Battle/Ailments/Confused_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::SILENCE,
-        base_path + "sprites/Battle/Ailments/Silence_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::BUBBIFY,
-        base_path + "sprites/Battle/Ailments/Bubbified_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::DEATHTIMER,
-        base_path + "sprites/Battle/Ailments/DeathTimer_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::PARALYSIS,
-        base_path + "sprites/Battle/Ailments/Paralysis_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::BLINDNESS,
-        base_path + "sprites/Battle/Ailments/Blind_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::DREADSTRUCK,
-        base_path + "sprites/Battle/Ailments/DreadStruck_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::DREAMSNARE,
-        base_path + "sprites/Battle/Ailments/DreamSnare_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::HELLBOUND,
-        base_path + "sprites/Battle/Ailments/HellBound_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::BOND,
-        base_path + "sprites/Battle/Ailments/Bond02_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::BONDED,
-        base_path + "sprites/Battle/Ailments/Bond01_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::ALLATKBUFF,
-        base_path + "sprites/Battle/Ailments/AllAtkBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::ALLDEFBUFF,
-        base_path + "sprites/Battle/Ailments/AllDefBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::PHYBUFF,
-        base_path + "sprites/Battle/Ailments/PhyBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::THRBUFF,
-        base_path + "sprites/Battle/Ailments/ThrBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::POLBUFF,
-        base_path + "sprites/Battle/Ailments/PolBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::PRIBUFF,
-        base_path + "sprites/Battle/Ailments/PriBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::CHGBUFF,
-        base_path + "sprites/Battle/Ailments/ChgBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::CYBBUFF,
-        base_path + "sprites/Battle/Ailments/CybBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::NIHBUFF,
-        base_path + "sprites/Battle/Ailments/NihBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::LIMBUFF,
-        base_path + "sprites/Battle/Ailments/LimBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::UNBBUFF,
-        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
-    battle_vis->setAilment(Infliction::VITBUFF,
-        base_path + "sprites/Battle/Ailments/VitBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::QDBUFF,
-        base_path + "sprites/Battle/Ailments/QDBuff_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::ROOTBOUND,
-        base_path + "sprites/Battle/Ailments/RootBound_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::DOUBLECAST,
-        base_path + "sprites/Battle/Ailments/DoubleCast_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::TRIPLECAST,
-        base_path + "sprites/Battle/Ailments/TripleCast_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::HALFCOST,
-        base_path + "sprites/Battle/Ailments/HalfCost_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::REFLECT,
-        base_path + "sprites/Battle/Ailments/Reflect_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::HIBERNATION,
-        base_path + "sprites/Battle/Ailments/Hibernation_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::CURSE,
-        base_path + "sprites/Battle/Ailments/Curse_AA_A00.png", renderer);
-    battle_vis->setAilment(Infliction::METATETHER,
-        base_path + "sprites/Battle/Ailments/MetaTether_AA_A00.png", renderer);
-
-    /* Set the elements */
-    battle_vis->setElement(Element::PHYSICAL, base_path +
-            "sprites/Battle/Skills/Elements/Physical_AA_A00.png", renderer);
-    battle_vis->setElement(Element::FIRE, base_path +
-            "sprites/Battle/Skills/Elements/Thermal_AA_A00.png", renderer);
-    battle_vis->setElement(Element::ICE, base_path +
-            "sprites/Battle/Skills/Elements/Polar_AA_A00.png", renderer);
-    battle_vis->setElement(Element::FOREST, base_path +
-            "sprites/Battle/Skills/Elements/Primal_AA_A00.png", renderer);
-    battle_vis->setElement(Element::ELECTRIC, base_path +
-            "sprites/Battle/Skills/Elements/Charge_AA_A00.png", renderer);
-    battle_vis->setElement(Element::DIGITAL, base_path +
-            "sprites/Battle/Skills/Elements/Cyber_AA_A00.png", renderer);
-    battle_vis->setElement(Element::NIHIL, base_path +
-            "sprites/Battle/Skills/Elements/Nihil_AA_A00.png", renderer);
-
-    /* Set the action scopes */
-    battle_vis->setScope(ActionScope::USER, base_path +
-        "sprites/Battle/Skills/Targets/user_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ONE_TARGET, base_path +
-        "sprites/Battle/Skills/Targets/single_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ONE_ENEMY, base_path +
-        "sprites/Battle/Skills/Targets/singleenemy_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::TWO_ENEMIES, base_path +
-        "sprites/Battle/Skills/Targets/twoenemies_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ALL_ENEMIES, base_path +
-        "sprites/Battle/Skills/Targets/allenemies_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ONE_ALLY, base_path +
-        "sprites/Battle/Skills/Targets/singleally_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ONE_ALLY_NOT_USER, base_path +
-        "sprites/Battle/Skills/Targets/singlenotuserally_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::TWO_ALLIES, base_path +
-        "sprites/Battle/Skills/Targets/twoallies_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ALL_ALLIES, base_path +
-        "sprites/Battle/Skills/Targets/allallies_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ONE_ALLY_KO, base_path +
-        "sprites/Battle/Skills/Targets/singlekoedally_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ALL_ALLIES_KO, base_path +
-        "sprites/Battle/Skills/Targets/allkoedallies_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ONE_PARTY, base_path +
-        "sprites/Battle/Skills/Targets/singleparty_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ALL_TARGETS, base_path +
-        "sprites/Battle/Skills/Targets/all_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::NOT_USER, base_path +
-        "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png", renderer);
-    battle_vis->setScope(ActionScope::ALL_NOT_USER, base_path +
-        "sprites/Battle/Skills/Targets/allnotuser_AA_A00.png", renderer);
-
-    /* Set up the extram frames */
-    battle_vis->setFramePercent(base_path +
-                  "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png", renderer);
-    battle_vis->setFrameQD(base_path +
-                  "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png", renderer);
-    battle_vis->setFrameTime(base_path +
-                  "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png", renderer);
-
-    /* Background and bar */
-    battle_vis->setBackground(new Sprite(
-            base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer));
-    battle_vis->setBattleBar(new Frame(
-            base_path + "sprites/Overlay/battle.png", renderer));
-
-    /* Set up the Ailment pleps */
-    // TODO: Implement
-//    auto temp_sprite = new Sprite(config->getBasePath() +
-//        "sprites/Battle/Pleps/hibernationplep_AA_A", 4, ".png", renderer);
-//    temp_sprite->insertTail(config->getBasePath() +
-//                            "sprites/Battle/Pleps/hibernationplep_AA_A00.png", renderer);
-//    temp_sprite->insertTail(config->getBasePath() +
-//                            "sprites/Battle/Pleps/hibernationplep_AA_A01.png", renderer);
-//    temp_sprite->insertTail(config->getBasePath() +
-//                            "sprites/Battle/Pleps/hibernationplep_AA_A02.png", renderer);
-//    temp_sprite->insertTail(config->getBasePath() +
-//                            "sprites/Battle/Pleps/hibernationplep_AA_A03.png", renderer);
-//    for(uint16_t i = 0; i < 5; i++)
-//      temp_sprite->insertTail(config->getBasePath() +
-//                              "sprites/blank.png", renderer);
-//    temp_sprite->setAnimationTime(180);
-//
-//    battle_vis->setAilmentPlep(Infliction::POISON, temp_sprite);
-  }
 }
 
 /* A give item event, based on an ID and count (triggered from stored event */
@@ -428,12 +265,12 @@ bool Game::eventGiveItem(int id, int count)
         inserted = player_main->addCredits(count);
       }
       /* Otherwise, just general item */
-      else if(player_main->getSleuth() != nullptr && 
+      else if(player_main->getSleuth() != nullptr &&
               player_main->getSleuth()->getInventory() != nullptr)
       {
         Item* new_item = new Item(found_item);
-        AddStatus status = player_main->getSleuth()->getInventory()
-                                         ->add(new_item, count);
+        AddStatus status =
+            player_main->getSleuth()->getInventory()->add(new_item, count);
         if(status == AddStatus::GOOD_DELETE)
         {
           delete new_item;
@@ -498,13 +335,16 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 /* Starts a battle event. Using the given information */
 void Game::eventStartBattle(int person_id, int source_id)
 {
-  if(person_id >= 0 && source_id >= 0 &&
-     setupBattle(getParty(person_id), getParty(source_id)))
+  if(person_id >= 0 && source_id >= 0)
   {
-    mode = BATTLE;
+    if(battle_ctrl)
+    {
+      battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
+      mode = BATTLE;
+    }
   }
 }
-  
+
 /* Switch maps event. - utilizing a map ID */
 void Game::eventSwitchMap(int map_id)
 {
@@ -521,13 +361,13 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
   if(map_ctrl != nullptr)
     map_ctrl->teleportThing(thing_id, x, y, section_id);
 }
-  
+
 /* Load game */
 // TODO: Comment
 // Notes: Revise that when inst file is blank, it uses default starting map.
 //        Otherwise, determine current map from inst first, then load correct
 //        base followed by correct inst map and all associated data.
-bool Game::load(std::string base_file, SDL_Renderer* renderer, 
+bool Game::load(std::string base_file, SDL_Renderer* renderer,
                 std::string inst_file, bool encryption, bool full_load)
 {
   (void)inst_file;
@@ -551,7 +391,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   /* Start the map read */
   success &= fh.start();
   std::cout << "Date: " << fh.getDate() << std::endl;
- 
+
   /* If file open was successful, move forward */
   if(success)
   {
@@ -570,13 +410,13 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
           success &= loadData(data, index + 2, renderer);
         }
         /* Map data */
-        else if(data.getElement(index + 1) == "map" && 
+        else if(data.getElement(index + 1) == "map" &&
                 data.getKeyValue(index + 1) == level)
         {
           success &= map_ctrl->loadData(data, index + 2, renderer, base_path);
         }
       }
-    } while(!done);// && success); // TODO: Success in loop??
+    } while(!done); // && success); // TODO: Success in loop??
   }
 
   success &= fh.stop();
@@ -669,8 +509,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
           int person_id = std::stoi(person_set.front());
           int person_lvl = std::stoi(person_set.back());
 
-          success &= edit_party->addMember(
-                                     addPersonInst(person_id, person_lvl));
+          success &=
+              edit_party->addMember(addPersonInst(person_id, person_lvl));
         }
       }
     }
@@ -690,8 +530,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
             int item_count = std::stoi(item_set.back());
 
             Item* new_item = new Item(getItem(item_id));
-            AddStatus status = edit_party->getInventory()
-                                         ->add(new_item, item_count);
+            AddStatus status =
+                edit_party->getInventory()->add(new_item, item_count);
             if(status == AddStatus::GOOD_DELETE)
               delete new_item;
             else if(status == AddStatus::FAIL)
@@ -851,12 +691,12 @@ void Game::pollEvents()
 
   event_handler.pollClear();
 }
-  
+
 /* Remove functions for game objects */
 void Game::removeActions()
 {
   for(auto it = begin(list_action); it != end(list_action); ++it)
-    delete (*it);
+    delete(*it);
   list_action.clear();
 }
 
@@ -881,7 +721,7 @@ void Game::removeAll()
 void Game::removeClasses()
 {
   for(auto it = begin(list_class); it != end(list_class); ++it)
-    delete (*it);
+    delete(*it);
   list_class.clear();
 }
 
@@ -889,7 +729,7 @@ void Game::removeClasses()
 void Game::removeFlavours()
 {
   for(auto it = begin(list_flavour); it != end(list_flavour); ++it)
-    delete (*it);
+    delete(*it);
   list_flavour.clear();
 }
 
@@ -897,7 +737,7 @@ void Game::removeFlavours()
 void Game::removeItems()
 {
   for(auto it = begin(list_item); it != end(list_item); it++)
-    delete (*it);
+    delete(*it);
   list_item.clear();
 }
 
@@ -905,7 +745,7 @@ void Game::removeItems()
 void Game::removeParties()
 {
   for(auto it = begin(list_party); it != end(list_party); it++)
-    delete (*it);
+    delete(*it);
   list_party.clear();
 }
 
@@ -913,7 +753,7 @@ void Game::removeParties()
 void Game::removePersonBases()
 {
   for(auto it = begin(list_person_base); it != end(list_person_base); ++it)
-    delete (*it);
+    delete(*it);
   list_person_base.clear();
 }
 
@@ -921,7 +761,7 @@ void Game::removePersonBases()
 void Game::removePersonInstances()
 {
   for(auto it = begin(list_person_inst); it != end(list_person_inst); ++it)
-    delete (*it);
+    delete(*it);
   list_person_inst.clear();
 }
 
@@ -929,7 +769,7 @@ void Game::removePersonInstances()
 void Game::removeRaces()
 {
   for(auto it = begin(list_race); it != end(list_race); ++it)
-    delete (*it);
+    delete(*it);
   list_race.clear();
 }
 
@@ -937,7 +777,7 @@ void Game::removeRaces()
 void Game::removeSkills()
 {
   for(auto it = begin(list_skill); it != end(list_skill); ++it)
-    delete (*it);
+    delete(*it);
   list_skill.clear();
 }
 
@@ -945,30 +785,8 @@ void Game::removeSkills()
 void Game::removeSkillSets()
 {
   for(auto it = begin(list_set); it != end(list_set); ++it)
-    delete (*it);
+    delete(*it);
   list_set.clear();
-}
-
-/* Set up the battle - old battle needs to be deleted prior to calling */
-bool Game::setupBattle(Party* allies, Party* foes)
-{
-  if(allies != nullptr && foes != nullptr)
-  {
-    /* Battle prep */
-    for(auto &member : allies->getMembers())
-      member->battlePrep();
-    for(auto &member : foes->getMembers())
-      member->battlePrep();
-
-    /* Set up battle */
-    battle_ctrl = new Battle(allies, foes, getSkillSet(SkillSet::kID_BUBBIFIED), 
-                             &event_handler);
-    battle_vis->setBattle(battle_ctrl, active_renderer);
-
-    return true;
-  }
-
-  return false;
 }
 
 /*============================================================================
@@ -976,15 +794,15 @@ bool Game::setupBattle(Party* allies, Party* foes)
  *===========================================================================*/
 
 /* Returns a pointer to a given action by index or by ID */
-Action* Game::getAction(const int32_t &index, const bool& by_id)
+Action* Game::getAction(const int32_t& index, const bool& by_id)
 {
-  if (by_id)
+  if(by_id)
   {
-    for (auto it = begin(list_action); it != end(list_action); ++it)
-      if ((*it)->getID() == index)
+    for(auto it = begin(list_action); it != end(list_action); ++it)
+      if((*it)->getID() == index)
         return (*it);
   }
-  else if (static_cast<uint32_t>(index) < list_action.size())
+  else if(static_cast<uint32_t>(index) < list_action.size())
   {
     return list_action.at(index);
   }
@@ -993,15 +811,15 @@ Action* Game::getAction(const int32_t &index, const bool& by_id)
 }
 
 /* Returns a pointer to a battle class by index or by ID */
-Category* Game::getClass(const int32_t &index, const bool &by_id)
+Category* Game::getClass(const int32_t& index, const bool& by_id)
 {
-  if (by_id)
+  if(by_id)
   {
-    for (auto it = begin(list_class); it != end(list_class); ++it)
-      if ((*it)->getID() == index)
+    for(auto it = begin(list_class); it != end(list_class); ++it)
+      if((*it)->getID() == index)
         return (*it);
   }
-  else if (static_cast<uint32_t>(index) < list_class.size())
+  else if(static_cast<uint32_t>(index) < list_class.size())
   {
     return list_class.at(index);
   }
@@ -1010,31 +828,31 @@ Category* Game::getClass(const int32_t &index, const bool &by_id)
 }
 
 /* Returns a pointer to a flavour by index or by ID */
-Flavour* Game::getFlavour(const int32_t &index, const bool &by_id)
+Flavour* Game::getFlavour(const int32_t& index, const bool& by_id)
 {
-  if (by_id)
+  if(by_id)
   {
-    for (auto it = begin(list_flavour); it != end(list_flavour); ++it)
-      if ((*it)->getGameID() == index)
+    for(auto it = begin(list_flavour); it != end(list_flavour); ++it)
+      if((*it)->getGameID() == index)
         return (*it);
   }
-  else if (static_cast<uint32_t>(index) < list_flavour.size())
+  else if(static_cast<uint32_t>(index) < list_flavour.size())
   {
     return list_flavour.at(index);
   }
 
   return nullptr;
 }
- 
+
 /* Returns the inventory of the corresponding party ID, if relevant */
-Inventory* Game::getInventory(const int32_t &id)
+Inventory* Game::getInventory(const int32_t& id)
 {
   Party* found_party = getParty(id);
   if(found_party != nullptr)
     return found_party->getInventory();
   return nullptr;
 }
- 
+
 /* Returns the player bearacks inventory pointer, if relevant */
 Inventory* Game::getInvBearacks()
 {
@@ -1068,24 +886,24 @@ Inventory* Game::getInvSleuth()
 }
 
 /* Returns a pointer to a person by index or by ID */
-Item* Game::getItem(const int32_t &index, const bool &by_id)
+Item* Game::getItem(const int32_t& index, const bool& by_id)
 {
-  if (by_id)
+  if(by_id)
   {
-    for (auto it = begin(list_item); it != end(list_item); ++it)
-      if ((*it)->getGameID() == index)
+    for(auto it = begin(list_item); it != end(list_item); ++it)
+      if((*it)->getGameID() == index)
         return (*it);
   }
-  else if (static_cast<uint32_t>(index) < list_item.size())
+  else if(static_cast<uint32_t>(index) < list_item.size())
   {
     return list_item.at(index);
   }
 
   return nullptr;
 }
-  
+
 /* Returns a pointer to a party by index or by ID */
-Party* Game::getParty(const int32_t &index, const bool &by_id)
+Party* Game::getParty(const int32_t& index, const bool& by_id)
 {
   if(by_id)
   {
@@ -1102,24 +920,24 @@ Party* Game::getParty(const int32_t &index, const bool &by_id)
 }
 
 /* Returns a pointer to a base person by index or by ID (game) */
-Person* Game::getPersonBase(const int32_t &index, const bool &by_id)
+Person* Game::getPersonBase(const int32_t& index, const bool& by_id)
 {
-  if (by_id)
+  if(by_id)
   {
-    for (auto it = begin(list_person_base); it != end(list_person_base); ++it)
-      if ((*it)->getGameID() == index)
+    for(auto it = begin(list_person_base); it != end(list_person_base); ++it)
+      if((*it)->getGameID() == index)
         return (*it);
   }
-  else if (static_cast<uint32_t>(index) < list_person_base.size())
+  else if(static_cast<uint32_t>(index) < list_person_base.size())
   {
     return list_person_base.at(index);
   }
 
   return nullptr;
 }
-  
+
 /* Returns a pointer to an instance person by index or by ID (unique) */
-Person* Game::getPersonInst(const int32_t &index, const bool &by_id)
+Person* Game::getPersonInst(const int32_t& index, const bool& by_id)
 {
   if(by_id)
   {
@@ -1136,15 +954,15 @@ Person* Game::getPersonInst(const int32_t &index, const bool &by_id)
 }
 
 /* Returns a pointer to a race category by index or by ID */
-Category* Game::getRace(const int32_t &index, const bool &by_id)
+Category* Game::getRace(const int32_t& index, const bool& by_id)
 {
-  if (by_id)
+  if(by_id)
   {
-    for (auto it = begin(list_race); it != end(list_race); ++it)
-      if ((*it)->getID() == index)
+    for(auto it = begin(list_race); it != end(list_race); ++it)
+      if((*it)->getID() == index)
         return (*it);
   }
-  else if (static_cast<uint32_t>(index) < list_race.size())
+  else if(static_cast<uint32_t>(index) < list_race.size())
   {
     return list_race.at(index);
   }
@@ -1153,24 +971,24 @@ Category* Game::getRace(const int32_t &index, const bool &by_id)
 }
 
 /* Returns a pointer to a skill by index or by ID */
-Skill* Game::getSkill(const int32_t &index, const bool &by_id)
+Skill* Game::getSkill(const int32_t& index, const bool& by_id)
 {
-  if (by_id)
+  if(by_id)
   {
-    for (auto it = begin(list_skill); it != end(list_skill); ++it)
-      if ((*it)->getID() == index)
+    for(auto it = begin(list_skill); it != end(list_skill); ++it)
+      if((*it)->getID() == index)
         return (*it);
   }
-  else if (static_cast<uint32_t>(index) < list_skill.size())
+  else if(static_cast<uint32_t>(index) < list_skill.size())
   {
     return list_skill.at(index);
   }
 
   return nullptr;
 }
-  
+
 /* Returns a pointer to a skillset by index or by ID */
-SkillSet* Game::getSkillSet(const int32_t &index, const bool &by_id)
+SkillSet* Game::getSkillSet(const int32_t& index, const bool& by_id)
 {
   if(by_id)
   {
@@ -1185,7 +1003,7 @@ SkillSet* Game::getSkillSet(const int32_t &index, const bool &by_id)
 
   return nullptr;
 }
-  
+
 /* Is the game loaded */
 bool Game::isLoaded()
 {
@@ -1206,18 +1024,18 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   {
     mode = MAP;
 
-    if(battle_ctrl != nullptr)
-    {
-      delete battle_ctrl;
-      battle_ctrl = nullptr;
-    }
+    // if(battle_ctrl != nullptr)
+    // {
+    //   delete battle_ctrl;
+    //   battle_ctrl = nullptr;
+    // }
   }
   /* Switch the view to the battle */
-  else if(event.keysym.sym == SDLK_F2)
-  {
-    if (battle_ctrl == nullptr)
-      eventStartBattle(0, 400);
-  }
+  // else if(event.keysym.sym == SDLK_F2)
+  // {
+  //   if(battle_ctrl == nullptr)
+  //     eventStartBattle(0, 400);
+  // }
   /* Load game */
   else if(event.keysym.sym == SDLK_F5)
   {
@@ -1241,7 +1059,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_5)
   {
     // TODO: Future
-    //if (map_ctrl != nullptr)
+    // if (map_ctrl != nullptr)
     //{
     //  std::vector<Item*> items;
     //  items.push_back(list_item[0]);
@@ -1257,21 +1075,13 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     //                      cost_modifiers, "Kevin's Store", false);
     //}
   }
-  else if(event.keysym.sym == SDLK_LCTRL)
-  {
-    // if(battle_vis != NULL)
-    //   battle_vis->setRenderFlag(RenderState::SHOW_INFO);
-  }
   /* Otherwise, send keys to the active view */
   else
   {
     if(mode == MAP)
       return map_ctrl->keyDownEvent(event);
     else if(mode == BATTLE)
-    {
-      if(battle_vis->getRenderingState() == battle_ctrl->getTurnState())
-        return battle_ctrl->keyDownEvent(event);
-    }
+      return battle_ctrl->keyDownEvent(event);
   }
 
   return false;
@@ -1282,8 +1092,8 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 {
   if(event.keysym.sym == SDLK_LCTRL)
   {
-    // if(battle_vis != NULL)
-    //   battle_vis->setShowInfo(false);
+    // if(battle != NULL)
+    //   battle->setShowInfo(false);
   }
   else if(mode == MAP)
   {
@@ -1294,7 +1104,7 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 /* Load game */
 bool Game::load(SDL_Renderer* renderer)
 {
-  //return load(game_path, renderer);
+  // return load(game_path, renderer);
   return load(base_path + game_path, renderer);
 }
 
@@ -1303,16 +1113,25 @@ bool Game::render(SDL_Renderer* renderer)
 {
   /* Make sure the active renderer is set up */
   if(active_renderer == NULL)
-  {
-    buildBattleDisplayFrames(renderer);
-
     active_renderer = renderer;
-  }
 
   if(mode == MAP)
+  {
     return map_ctrl->render(renderer);
+  }
   else if(mode == BATTLE)
-    return battle_vis->render(renderer);
+  {
+    /* Assign the rendererer to Battle and data container class */
+    battle_ctrl->setRenderer(renderer);
+    battle_display_data->setRenderer(renderer);
+
+    /* Build the data if it isn't built */
+    if(renderer && !battle_display_data->isDataBuilt())
+      battle_display_data->buildData();
+
+    /* Render the battle */
+    return battle_ctrl->render(0);
+  }
 
   return true;
 }
@@ -1320,18 +1139,22 @@ bool Game::render(SDL_Renderer* renderer)
 /* Set the running configuration, from the options class */
 bool Game::setConfiguration(Options* running_config)
 {
-  if(running_config != nullptr)
+  if(running_config)
   {
     config = running_config;
     base_path = config->getBasePath();
 
     /* Set in secondary classes */
-    if(map_ctrl != nullptr)
+    if(map_ctrl)
       map_ctrl->setConfiguration(running_config);
 
     /* Battle configuration setup */
-    if(battle_vis != nullptr)
-      battle_vis->setConfiguration(running_config);
+    if(battle_ctrl)
+      battle_ctrl->setConfig(running_config);
+
+    /* Battle display data configuration */
+    if(battle_display_data)
+      battle_display_data->setConfig(running_config);
 
     return true;
   }
@@ -1389,23 +1212,21 @@ bool Game::update(int32_t cycle_time)
   {
     bool success = true;
 
-    if(battle_ctrl != nullptr)
+    if(battle_ctrl)
     {
       success &= battle_ctrl->update(cycle_time);
 
-      if(battle_ctrl->getTurnState() == TurnState::DESTRUCT)
-      {
-        mode = MAP;
+      // if(battle_ctrl->getTurnState() == TurnState::DESTRUCT)
+      // {
+      //   mode = MAP;
 
-        /* Delete logic */
-        battle_vis->unsetBattle();
-        delete battle_ctrl;
-        battle_ctrl = nullptr;
-      }
-      else if(battle_vis != nullptr)
-      {
-        success &= battle_vis->update(cycle_time);
-      }
+      //   /* Delete logic */
+      //   // battle_ctrl->unsetBattle();
+      // }
+      // else if(battle != nullptr)
+      // {
+      //   success &= battle_ctrl->update(cycle_time);
+      // }
     }
 
     return success;

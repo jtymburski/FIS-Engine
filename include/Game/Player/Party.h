@@ -108,12 +108,12 @@ public:
   bool clearParty();
 
   /* Returns all the persons in the party except a given user */
-  std::vector<Person *> findMembersExcept(Person *const member,
-                                          const bool &only_living = false);
+  // std::vector<Person *> findMembersExcept(Person *const member,
+  //                                         const bool &only_living = false);
 
   /* Checks if a given person is in the party */
   bool isInParty(Person *const check_person);
-  
+
   /* Load data from file */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 std::string base_path);
@@ -132,10 +132,10 @@ public:
   bool removeMember(const std::string &name);
 
   /* Calculates and returns the average speed of the Party */
-  int32_t getAverageSpeed();
+  // int32_t getAverageSpeed();
 
   /* Returns a vector of indexes of all KO'd party members */
-  std::vector<uint32_t> getDeadMembers();
+  // std::vector<uint32_t> getDeadMembers();
 
   /* Evaluates and returns a given PartyState flag */
   bool getFlag(const PartyState &test_flag);
@@ -147,10 +147,10 @@ public:
   Inventory *getInventory();
 
   /* Returns a vector of the indexes of all non-KO'd party members */
-  std::vector<uint32_t> getLivingMembers();
+  // std::vector<uint32_t> getLivingMembers();
 
   /* Returns a vector of pointers to the all living party members */
-  std::vector<Person *> getLivingMemberPtrs();
+  // std::vector<Person *> getLivingMemberPtrs();
 
   /* Returns the current maximum size of the party */
   uint32_t getMaxSize();
@@ -173,8 +173,8 @@ public:
   /* Return the size of the party */
   uint32_t getSize();
 
-  /* Calculates and returns the total speed of the Party */
-  int64_t getTotalSpeed();
+  //  Calculates and returns the total speed of the Party
+  // int64_t getTotalSpeed();
 
   /* Assigns a given PartyState flag a given value */
   void setFlag(const PartyState &flag, const bool &set_value = true);

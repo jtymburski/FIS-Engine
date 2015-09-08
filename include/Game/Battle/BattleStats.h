@@ -47,7 +47,7 @@ struct StatModifier
   Ailment *linked_ailment;
 
   /* The enumerated attribute to be altered */
-  BattleAttribute stat;
+  Attribute stat;
 
   /* The enumerated modification type to be applied to the base value */
   ModifierType type;
@@ -67,9 +67,9 @@ public:
 
 private:
   /* The base values for the BattleStats */
-  std::vector<std::pair<BattleAttribute, uint32_t>> values;
+  std::vector<std::pair<Attribute, uint32_t>> values;
 
-  /* All modifiers currently applied to the BattleAttributes */
+  /* All modifiers currently applied to the Attributes */
   std::vector<StatModifier> modifiers;
 
   /* ------------ Constants --------------- */
@@ -80,7 +80,7 @@ private:
    *============================================================================*/
 public:
   /* Attempts to add a modifier given necessary information. */
-  bool addModifier(BattleAttribute stat, ModifierType type, float value,
+  bool addModifier(Attribute stat, ModifierType type, float value,
                    bool has_lifetime = false, int32_t lifetime = 0,
                    Ailment *linked_ailment = nullptr);
 
@@ -96,20 +96,20 @@ public:
   /* Updates the modifiers of the BattleStat class based on given lifetime */
   void update(int32_t lifetime_update);
 
-  /* Returns the base value stored of a given BattleAttribute */
-  uint32_t getBaseValue(BattleAttribute stat);
+  /* Returns the base value stored of a given Attribute */
+  uint32_t getBaseValue(Attribute stat);
 
   /* Returns the value of a given Attribute after modifiers are applied */
-  uint32_t getValue(BattleAttribute stat);
+  uint32_t getValue(Attribute stat);
 
   /* Returns a vector of all modifiers for a given Attribute stat */
-  std::vector<StatModifier> getModifiersOfStat(BattleAttribute battle_stat);
+  std::vector<StatModifier> getModifiersOfStat(Attribute battle_stat);
 
   /* Returns the number of additive modifiers for a given Attribute */
-  uint32_t getNumAddModifiers(BattleAttribute battle_stat);
+  uint32_t getNumAddModifiers(Attribute battle_stat);
 
-  /* Assigns a given BattleAttribute stat to a given value */
-  bool setBaseValue(BattleAttribute stat, uint32_t value);
+  /* Assigns a given Attribute stat to a given value */
+  bool setBaseValue(Attribute stat, uint32_t value);
 };
 
 #endif // BATTLESTATS_H

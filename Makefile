@@ -44,18 +44,30 @@ endif
 
 SOURCES=src/Application.cc \
         src/FileHandler.cc \
+        src/Fonts.cc \
         src/Frame.cc \
+        src/Helpers.cc \
+        src/Main.cc \
+        src/Md5.cc \
+        src/Music.cc \
+        src/Options.cc \
+        src/Sound.cc \
+        src/Sprite.cc \
+				src/TestBattle.cc \
+        src/Text.cc \
+        src/TinyXML.cc \
+        src/TitleScreen.cc \
+        src/XmlData.cc \
         src/Game/EventHandler.cc \
         src/Game/KeyHandler.cc \
         src/Game/Game.cc \
         src/Game/Battle/AIModule.cc \
-        src/Game/Battle/AIModuleTester.cc \
         src/Game/Battle/Battle.cc \
+        src/Game/Battle/BattleActor.cc \
         src/Game/Battle/BattleStats.cc \
-        src/Game/Battle/BattleDisplay.cc \
+        src/Game/Battle/BattleDisplayData.cc \
         src/Game/Battle/BattleMenu.cc \
         src/Game/Battle/Buffer.cc \
-        src/Game/Battle/EventBuffer.cc \
         src/Game/Battle/RenderElement.cc \
         src/Game/Map/ItemStore.cc \
         src/Game/Map/Map.cc \
@@ -84,19 +96,7 @@ SOURCES=src/Application.cc \
         src/Game/Player/Player.cc \
         src/Game/Player/Signature.cc \
         src/Game/Player/Skill.cc \
-        src/Game/Player/SkillSet.cc \
-        src/Helpers.cc \
-        src/Main.cc \
-        src/Md5.cc \
-        src/Music.cc \
-        src/Options.cc \
-        src/Sound.cc \
-        src/Sprite.cc \
-				src/TestBattle.cc \
-        src/Text.cc \
-        src/TinyXML.cc \
-        src/TitleScreen.cc \
-        src/XmlData.cc
+        src/Game/Player/SkillSet.cc
 
 OBJECTS=$(SOURCES:.cc=.o)
 

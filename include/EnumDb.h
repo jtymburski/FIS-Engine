@@ -205,32 +205,6 @@ enum class Attribute : std::uint8_t
   LIMB = 17,
   UNBR = 18,
   MANN = 19,
-  NONE = 20 /* This needs to always be the last element, at +1 of the last */
-};
-
-/* Enumerated BattleAttribute types -- expanded on AttributeSet */
-enum class BattleAttribute : std::uint8_t
-{
-  VITA = 0,
-  QTDR = 1,
-  PHAG = 2,
-  PHFD = 3,
-  THAG = 4,
-  THFD = 5,
-  PRAG = 6,
-  PRFD = 7,
-  POAG = 8,
-  POFD = 9,
-  CHAG = 10,
-  CHFD = 11,
-  CYAG = 12,
-  CYFD = 13,
-  NIAG = 14,
-  NIFD = 15,
-  MMNT = 16,
-  LIMB = 17,
-  UNBR = 18,
-  MANN = 19,
   MVIT = 20,
   MQTD = 21,
   NONE = 99
@@ -429,6 +403,14 @@ enum class GameKey
   RUN,
   DEBUG,
   NONE
+};
+
+enum class FadeState
+{
+  FADING_IN,
+  DISPLAYING,
+  FADING_OUT,
+  NOT_SHOWN
 };
 
 /*

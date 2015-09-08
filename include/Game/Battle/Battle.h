@@ -1,88 +1,63 @@
 /*******************************************************************************
-* Class Name: Battle [Declaration]
-* Date Created: February 23rd, 2014
+* Class Name: RenderElement
+* Date Created: June 22, 2015
+* Date Redesigned: September 5, 2015
 * Inheritance: None
 * Description:
 *
 * Notes
 * -----
 *
+* [1]:
+*
 * TODO
 * ----
-* [03-01-14]: Weather updates
-* [08-24-14]: Finish battle run functionality
-* [08-24-14]: Finish victory functionality
-* [08-24-14]: Finish battle lost functionality
-* [08-24-14]: Ailment corner cases
-* [11-06-14]: Event handler finish signal (battle)?
-* [11-06-14]: Update personal record run from battle count
-* [11-23-14]: Documentation
-*
-* BUGS
-* ----
-* [06-07-15]: Turn N > 0 not iterating through all ze actions. Why?
-* [03-29-15]: Is battleWon() being called twice upon victory?
-*******************************************************************************/
+* [09-07-15]: Overlays and Midlays. Make class?
+* ? - Are temp user attributes needed?
+* ? - Bubbified skills
+* ? - Curr event system [build an event struct] ?
+*****************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
 
+#include "Game/Battle/BattleDisplayData.h"
+//#include "Game/Battle/BattleEvent.h"
+#include "Game/Battle/BattleActor.h"
 #include "Game/Battle/Buffer.h"
 #include "Game/Battle/BattleMenu.h"
-#include "Game/Battle/EventBuffer.h"
-#include "Game/Player/Ailment.h"
+#include "Game/Battle/RenderElement.h"
 #include "Game/Player/Party.h"
-#include "Game/EventHandler.h"
-#include "Options.h"
 
 using std::begin;
 using std::end;
 
-/* CombatState enumerated flags */
+/* CombatState flags */
 ENUM_FLAGS(CombatState)
 enum class CombatState
 {
-  PHASE_DONE = 1 << 0,
-  OUTCOME_PROCESSED = 1 << 1,
-  OUTCOME_PERFORMED = 1 << 2,
-  READY_TO_RENDER = 1 << 3,            /* Processing state done */
-  RENDERING_COMPLETE = 1 << 4,         /* Current render cycle complete */
-  BEGIN_PROCESSING = 1 << 5,           /* This processing loop has begun */
-  BEGIN_ACTION_PROCESSING = 1 << 6,    /* Current action processing begun */
-  ACTION_PROCESSING_COMPLETE = 1 << 7, /* Curr action processing loop done */
-  LAST_INDEX = 1 << 8,
-  ALL_PROCESSING_COMPLETE = 1 << 9,   /* Entire processing complete */
-  BEGIN_PERSON_UPKEEPS = 1 << 10,     /* The upkeep phase has started */
-  PERSON_UPKEEP_COMPLETE = 1 << 11,   /* One person state complete */
-  BEGIN_AILMENT_UPKEEPS = 1 << 12,    /* Curr. person has begun ailment up */
-  CURRENT_AILMENT_STARTED = 1 << 13,  /* Curr. ailment processing begun */
-  CURRENT_AILMENT_COMPLETE = 1 << 14, /* Curr person ailment check stage */
-  COMPLETE_AILMENT_UPKEEPS = 1 << 15, /* Curr person ailment check done  */
-  ALL_UPKEEPS_COMPLETE = 1 << 16,      /* Upkeep checking stage complete */
-  CURR_TARG_DEAD = 1 << 17
+
+};
+
+ENUM_FLAGS(RenderState)
+enum class RenderState
+{
+
 };
 
 ENUM_FLAGS(IgnoreState)
 enum class IgnoreState
 {
-  IGNORE_PHYS_ATK = 1 << 0,
-  IGNORE_PHYS_DEF = 1 << 1,
-  IGNORE_PRIM_ATK = 1 << 2,
-  IGNORE_PRIM_DEF = 1 << 3,
-  IGNORE_SECD_ATK = 1 << 4,
-  IGNORE_SECD_DEF = 1 << 5,
-  IGNORE_LUCK_ATK = 1 << 6,
-  IGNORE_LUCK_DEF = 1 << 7,
-  IGNORE_EQUIPMENT = 1 << 8,
+
 };
 
-/* Description: Enumerated values for the Battle OutStatecomeState
- *
- * VICTORY - The allies have defeated all remaining foes
- * DEFEAT  - The foes have defeated all allies, GAME OVER
- * ALLIES_RUN - The allies have escaped the Battle
- * ENEMIES_RUN - The enemies have escaped the Battle 'pyrric victory'
- * RETURN  - The battle ends without any victory/loss -> return to Map state
- */
+enum class DamageState
+{
+  DAMAGE,
+  PERSON_DEATH_CHECK,
+  PARTY_DEATH_CHECK,
+  COMPLETE
+};
+
 enum class OutcomeType
 {
   VICTORY,
@@ -93,127 +68,119 @@ enum class OutcomeType
   NONE
 };
 
-/* Enumerated values for turn mode */
-enum class TurnMode
-{
-  FRIENDS_FIRST,
-  ENEMIES_FIRST,
-};
-
 /* Enumerated values for turn state */
 enum class TurnState
 {
-  BEGIN,               /* Setup of the battle */
-  GENERAL_UPKEEP,      /* General upkeep phase - weather etc. */
-  UPKEEP,              /* Personal upkeep - ailments etc. */
-  SELECT_ACTION_ALLY,  /* User choice of action/skill etc. */
+  BEGIN, /* Setup of the battle */
+  GENERAL_UPKEEP, /* General upkeep phase - weather etc. */
+  UPKEEP, /* Personal upkeep - ailments etc. */
+  SELECT_ACTION_ALLY, /* User choice of action/skill etc. */
   SELECT_ACTION_ENEMY, /* Enemy choice of skill -> AI */
-  ORDER_ACTIONS,       /* Determines order of skills */
-  PROCESS_ACTIONS,     /* Determines outcomes of skills */
-  CLEAN_UP,            /* Cleanup after turn, turn incr. etc. */
-  LOSS,                /* LosStates stage returns to title */
-  VICTORY,             /* Victory displays the victory screen */
-  RUNNING,             /* Running condition */
-  DESTRUCT             /* Battle should be destructed */
+  ORDER_ACTIONS, /* Determines order of skills */
+  PROCESS_ACTIONS, /* Determines outcomes of skills */
+  CLEAN_UP, /* Cleanup after turn, turn incr. etc. */
+  LOSS, /* LosStates stage returns to title */
+  VICTORY, /* Victory displays the victory screen */
+  RUNNING, /* Running condition */
+  STOPPED /* Battle should be stopped */
 };
+
+struct ActorUpkeep
+{
+  BattleActor* battle_actor;
+  std::vector<Ailment*> upkeep_aiilments;
+  UpkeepState upkeep_state;
+};
+
+// struct BattleEvent
+// {
+//   ProcessingState processing_state;
+//   ActionType curr_action_type;
+
+//   Skill* curr_skill;
+//   Item*  curr_item;
+
+//   uint32_t curr_action_index;
+
+//   BattleActor* curr_actor;
+//   std::vector<BattleActor*> curr_targets;
+
+//   IgnoreState flags_ignore;
+
+//   Attribute prim_off;
+//   Attribute prim_def;
+//   Attribute secd_off;
+//   Attribute secd_def;
+//   Attribute user_attr;
+//   Attribute targ_attr;
+// };
 
 class Battle
 {
 public:
-  /* Constructs a party given two parties and configured options */
-  Battle(Party *const friends, Party *const foes,
-         SkillSet *const bubbified_skills, EventHandler *event_handler);
+  /* Constructs the Battle object */
+  Battle();
 
   /* Annihilates a Battle object */
   ~Battle();
 
 private:
-  /* The Item Buffer of the Battle */
-  Buffer *action_buffer;
+  /* Vector of actors for the Battle */
+  std::vector<BattleActor*> actors;
 
-  /* The normal vector of ailments */
-  std::vector<Ailment *> ailments;
+  /* Actors which need to have an upkeep done on them */
+  std::vector<BattleActor*> actors_upkeep;
 
-  /* Temporary vector of ailments for update processing */
-  std::vector<Ailment *> temp_ailments;
+  /* The background sprite */
+  Sprite* background;
 
-  /* The bubbified skill set */
-  SkillSet *bubbified_skills;
+  /* The battle bar offest value */
+  uint32_t bar_offset;
 
-  /* The current AI Module */
-  AIModule *curr_module;
+  /* Pointer to the BattleDisplayData */
+  BattleDisplayData* battle_display_data;
 
-  /* The buffer of events for the battle */
-  EventBuffer *event_buffer;
+  /* The Battle Menu */
+  BattleMenu* battle_menu;
 
-  /* The EventHandler */
-  EventHandler *event_handler;
+  /* The action buffer */
+  Buffer* battle_buffer;
 
-  /* The Battle Menu Bar */
-  BattleMenu *menu;
+  /* The assigned configuration for the Battle */
+  Options* config;
 
-  /* Enumerated battle options for ailment updates */
-  BattleOptions ailment_update_mode;
+  /* Delay for all processing */
+  uint32_t delay;
 
-  /* CombatState flag set */
-  CombatState flags;
-  IgnoreState ignore_flags;
+  /* Flags related to the combat state */
+  CombatState flags_combat;
 
-  /* Pointers to the battling parties */
-  Party *friends;
-  Party *foes;
+  /* Flags related to the render state */
+  RenderState flags_render;
 
-  /* Enumerated outcome value for type of outcome */
+  Frame* frame_battle_bar;
+
+  /* The enemy backdrop frame */
+  Frame* frame_enemy_backdrop;
+
+  /* Enumerated outcome type of the battle */
   OutcomeType outcome;
 
-  /* Current index for action selection/outcomes */
-  int32_t person_index;
+  /* Pointer to the current renderer */
+  SDL_Renderer* renderer;
 
-  /* The index of the currently selected target */
-  uint32_t target_index;
-
-  /* Elapsed time of the Battle */
-  uint32_t time_elapsed;
-
-  /* Elapsed time since last turn */
-  uint32_t time_elapsed_this_turn;
-
-  /* Elapsed turns of hte battle */
-  uint16_t turns_elapsed;
-
-  /* Enumeration of turn order */
-  TurnMode turn_mode;
+  /* Render element objects for the Battle */
+  std::vector<RenderElement*> render_elements;
 
   /* The turn state of the Battle */
   TurnState turn_state;
 
-  /* Action Processing Variables */
-  Attribute prim_off;
-  Attribute prim_def;
-  Attribute secd_off;
-  Attribute secd_def;
-  Attribute user_attr;
-  Attribute targ_attr;
+  /* Elapsed turns of hte battle */
+  uint16_t turns_elapsed;
 
-  AttributeSet temp_user_stats;
-  AttributeSet temp_user_max_stats;
-  std::vector<AttributeSet> temp_target_stats;
-  std::vector<AttributeSet> temp_target_max_stats;
-
-  Person *curr_user;
-  Person *curr_target;
-  Action *curr_action;
-  uint32_t curr_action_index;
-  Skill *curr_skill;
-  Item *curr_item;
-
-  /* Current pocessing target index */
-  uint32_t pro_index;
-
-  /* Vector of persons needing upkeep */
-  std::vector<Person *> upkeep_persons;
-
-  /* ------------ Battle Modifiers (See Implementation) --------------- */
+  /*=============================================================================
+   * CONSTANTS - Battle Operations
+   *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
   static const uint16_t kMAXIMUM_DAMAGE;
@@ -277,387 +244,229 @@ private:
   static const int16_t kRUN_PC_EXP_PENALTY;
 
   /*=============================================================================
-   * PRIVATE FUNCTIONS
+   * CONSTANTS - Battle Display
+   *============================================================================*/
+  const static uint16_t kACTION_BORDER; /* Border width on action slideout */
+  const static uint16_t kACTION_CENTER; /* Center point to center triangle */
+  const static uint16_t kACTION_COLOR_A; /* Alpha for inner portion */
+  const static uint16_t kACTION_COLOR_G; /* Grey color on middle border */
+  const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
+  const static uint16_t kACTION_CORNER_X; /* Corner offset on inner triangle */
+  const static uint16_t kACTION_CORNER_Y; /* Corner offset on inner triangle */
+  const static uint16_t kACTION_H; /* Height of action frame */
+  const static uint16_t kACTION_TEXT_SHADOW; /* Shadow offset of middle text */
+  const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
+  const static uint16_t kACTION_W; /* Width of action frame */
+  const static uint16_t kACTION_Y; /* Y location of peak of triangle */
+
+  const static uint8_t kAILMENT_BORDER; /* Ailment border width */
+  const static uint8_t kAILMENT_GAP; /* Ailment gap between edges of space */
+  const static uint8_t kAILMENT_OPACITY; /* Ailment background opacity */
+
+  const static uint8_t kALLY_HEALTH_H; /* Ally health bar height */
+  const static uint8_t kALLY_HEALTH_TRIANGLE; /* Ally health triangle width */
+  const static uint8_t kALLY_HEALTH_W; /* Ally health bar width */
+  const static uint16_t kALLY_HEIGHT; /* Ally display section height */
+  const static uint8_t kALLY_QD_H; /* Ally qd bar height */
+  const static uint8_t kALLY_QD_OFFSET; /* Ally qd bar offset off health */
+  const static uint8_t kALLY_QD_TRIANGLE; /* Ally qd triangle width */
+  const static uint8_t kALLY_QD_W; /* Ally qd bar width */
+
+  const static uint16_t kANIMATION_PROCESS; /* Time to process actions */
+  const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
+  const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
+  const static float kBIGBAR_L; /* The percentage of the left section */
+  const static float kBIGBAR_M1; /* The percentage of the middle section */
+  const static float kBIGBAR_M2; /* The percentage of the second middle */
+
+  const static float kBIGBAR_R; /* The percentage of the right section */
+  const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
+
+  const static uint16_t kBOB_AMOUNT; /* Amount of PX to 'bob the sprites */
+  const static float kBOB_RATE; /* Rate at which to bob the sprites */
+  const static uint32_t kBOB_TIME; /* Time to bob the sprites for */
+
+  const static uint16_t kRUN_AMOUNT;
+  const static float kRUN_RATE;
+  const static uint32_t kRUN_TIME;
+
+  const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
+  const static float kCYCLE_RATE; /* Rate of cycling for selecting persons */
+
+  const static uint16_t kDELAY_DAMAGE; /* Standard damage delay (ms) */
+  const static uint16_t kDELAY_SKILL; /* Standard skill delay (ms) */
+
+  const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
+  const static uint8_t kINFO_GREY; /* Grey value for border bar */
+  const static uint16_t kINFO_H; /* Height of enemy info bar */
+  const static uint8_t kINFO_OPACITY; /* Opacity of black background in info */
+  const static uint8_t kINFO_TRIANGLE; /* Height of triangle in info corner */
+  const static uint16_t kINFO_W; /* Width of enemy info bar */
+
+  const static uint8_t kENEMY_BAR_H; /* Height of health bar for foes */
+  const static uint8_t kENEMY_BAR_OFFSET; /* Offset of foe health off center */
+  const static uint8_t kENEMY_BAR_TRIANGLE; /* Width of foe health triangle */
+  const static uint16_t kENEMY_BAR_W; /* Width of rect in foe health bar */
+  const static uint16_t kENEMIES_BAR_GAP; /* Offset of bar above foes */
+  const static uint16_t kENEMIES_OFFSET; /* Offset of foes from top */
+  const static uint16_t kALLIES_OFFSET; /* Offset of friends from bottom */
+
+  const static uint8_t kMAX_CHARS; /* Max number of foes in battle */
+  const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
+  const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
+  const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */
+  const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
+  const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
+  const static uint8_t kPERSON_KO_ALPHA; /* Opacity of a person at death */
+  const static uint8_t kSCROLL_R; /* Radius on scroll renders */
+
+  const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
+  const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
+  const static uint8_t kSKILL_DESC_GAP; /* Gap between name and description */
+  const static uint8_t kSKILL_DESC_LINES; /* Max number of description lines */
+  const static uint8_t kSKILL_DESC_SEP; /* Gap between lines in description */
+  const static uint8_t kSKILL_FRAME_S; /* Small frame size on skill info */
+  const static uint8_t kSKILL_FRAME_L; /* Large frame size on skill info */
+  const static uint8_t kSKILL_QD_GAP; /* Gap between top edge and QD icon */
+  const static uint8_t kSKILL_SEP; /* Separator between image and text */
+  const static uint8_t kSKILL_SUCCESS; /* Gap between success and cooldown */
+  const static uint8_t kSKILL_TIME_GAP; /* Gap between cooldown and bottom */
+
+  const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
+  const static uint8_t kTYPE_MAX; /* Max number of action types to render */
+  const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
+
+  /* ---- Color Constants ---- */
+  const static SDL_Color kSTRD_DMG_COLOR;
+  const static SDL_Color kCRIT_DMG_COLOR;
+  const static SDL_Color kPOIS_DMG_COLOR;
+  const static SDL_Color kHEAL_DMG_COLOR;
+  const static SDL_Color kBURN_DMG_COLOR;
+  const static SDL_Color kVITA_REGEN_COLOR;
+  const static SDL_Color kQTDR_REGEN_COLOR;
+  const static SDL_Color kHIBERNATION_REGEN_COLOR;
+
+  /*=============================================================================
+   * PRIVATE FUNCTIONS - Battle Operations
    *============================================================================*/
 private:
-  /* Attempts to add an ailment to the vector of ailments */
-  bool addAilment(Infliction infliction_type, Person *inflictor,
-                  uint16_t min_turns, uint16_t max_turns, int32_t chance);
+  /* Construct the Battle actors from the given parties */
+  void buildBattleActors(Party* allies, Party* enemies);
 
-  /* Determines if there is any member of a party needing selection */
-  bool anyUserSelection(bool friends = true);
+  /* Clear function for the battle actors */
+  void clearBattleActors();
 
-  /* Returns the most recently created ailmnent */
-  Ailment *getLastAilment();
-
-  /* Set the next action index, true if valid */
-  bool nextActionIndex();
-
-  /* Attempts to remove an ailment from the vector */
-  bool removeAilment(Ailment *remove_ailment);
-
-  /* Called when the Battle has been lost */
-  void battleLost();
-
-  /* Called when the Battle is being run from */
-  void battleRun();
-
-  /* Called when the Battle has been won */
-  void battleWon();
-
-  /* Creates a vector of action variables */
-  void buildActionVariables(ActionType action_type,
-                            std::vector<Person*> targets);
-
-  /* Attempt to add the current module settings to the action buffer */
-  bool bufferEnemyAction();
-
-  /* Attempt to add the current menu settings to the action buffer */
-  bool bufferUserAction();
-
-  /* Builds the vector of structs for skills and assosciated targets */
-  std::vector<BattleSkill> buildBattleSkills(const int32_t &index,
-                                             SkillSet *skill_set);
-
-  std::vector<BattleItem>
-  buildBattleItems(const int32_t &index,
-                   std::vector<std::pair<Item *, uint16_t>> items);
-
-  /* Calculates the base damage for the current action/target setup */
-  int32_t calcBaseDamage(const float &crit_factor);
-
-  /* Calculates the modifiers to be used for curr skill elemental adv setup */
-  void calcElementalMods();
-
-  /* Calculates the amount of experience a person will gain for win of Battle */
-  int32_t calcExperience(Person *ally);
-
-  /* Calculates the Crit Factor to be applied to the damage */
-  float calcCritFactor();
-
-  /* Calculate the current ignore state flags */
-  bool calcIgnoreState();
-
-  /* Calculates the amount of damage which implode will do */
-  int32_t calcImplodeDamage();
-
-  /* Calculates the level difference between curr_user and curr_target */
-  int16_t calcLevelDifference(std::vector<Person *> targets);
-
-  /* Calculates the total regen value of a particular stat for a given person */
-  int32_t calcTurnRegen(Person *const target, const Attribute &attr);
-
-  /* Determines whether the current person has selected all actions */
-  bool canIncrementIndex(Person *check_person);
-
-  /* Can the current target be inflicted with a new infliction of given type? */
-  bool canInflict(Infliction test_infliction);
-
-  /* Tests whether the given infliction type can be removed from target */
-  bool canRelieve(Infliction test_infliction);
-
-  /* Determines whether a person has an infliction already */
-  bool hasInfliction(Infliction type, Person *check);
-
-  /* Asserts all AI modules are set for the enemy parties */
-  bool checkAIModules();
-
-  /* Cleans up the action variables (sets to default upon instantiation too) */
-  void clearActionVariables();
-
-  /* Returns enumeration of party death [None, Friends, Foes, Both] */
-  bool checkPartyDeath(Party *const check_party, Person *target);
-
-  /* Cleanup before the end of a Battle turn */
-  void cleanUp();
-
-  /* Determines the turn progression of the Battle (based on speed) */
-  void determineTurnMode();
-
-  /* Calculates crit chances and determines whether a critical will occur */
-  bool doesActionCrit();
-
-  /* Calculates miss chance and determines whether an action miss will occur */
-  bool doesActionHit();
-
-  /* Determines whether the current person trying to run runs */
-  bool doesCurrPersonRun();
-
-  /* Calculates skill missing chance and determines if the skill miss */
-  bool doesSkillHit(std::vector<Person *> targets);
-
-  /* Deals with general upkeep (i.e. weather) */
-  void generalUpkeep();
-
-  /* Sets the flags of BattleState at the beginning of the Battle */
-  void loadBattleStateFlags();
-
-  /* Orders the actions on the buffer by speed of the aggressor */
-  void orderActions();
-
-  /* Perform the Battle events */
-  void performEvents();
-
-  /* Sub-function to perform damage events */
-  void performDamageEvent(BattleEvent *event);
-
-  /* Deals with character related upkeep */
-  void personalUpkeep(Person *const target);
-
-  /* Process the events of the Battle */
-  void processBuffer();
-
-  /* Determines the Regen % for a given enumerated regeneration rate */
-  int16_t getRegenFactor(const RegenRate &regen_rate);
-
-  /* General processing action function */
-  bool processAction(BattleEvent *action_event);
-
-  /* Processing function for the current ailment */
-  bool processAilment();
-
-  /* Processes the updating portion of the ailment from processAilment() */
-  bool processAilmentUpdate(Ailment *ail);
-
-  /* Processes an alteration action */
-  bool processAlterAction(BattleEvent *alter_event, Person *action_target,
-                          Person *factor_target);
-
-  /* Processes an assigning action */
-  bool processAssignAction(BattleEvent *assign_event, Person *action_target,
-                           Person *factor_target);
-
-  /* Processes a damaging action */
-  bool processDamageAction(BattleEvent *damage_event);
-
-  /* Method for outsourcing an amount of dmg and type of damage to curr targ */
-  bool processDamageAmount(int32_t amount);
-
-  /* Processes the death of a recent person checking for party death */
-  bool processPersonDeath(bool ally_target);
-
-  /* Processes a relieving action */
-  bool processRelieveAction();
-
-  /* Processes a reviving action */
-  bool processReviveAction(BattleEvent *revive_event);
-
-  /* Processes an inflicting action */
-  bool processInflictAction();
-
-  /* Processes an individual item from a user against targets */
-  void processItem(std::vector<Person *> targets);
-
-  /* Processes an individual action from a user against targets */
-  void processSkill(std::vector<Person *> targets);
-
-  /* Processes an individual action from a user imploding on a target */
-  bool processImplode(std::vector<Person*> targets);
-
-  /* Checks to see whether a guard action can occur between user and target */
-  bool processGuard();
-
-  /* Actually performs a guard action between cur user and target */
-  bool performGuard(BattleEvent *guard_event);
-
-  /* Recalculates the ailments after they have been altered */
-  void reCalcAilments(Person *const target);
-
-  /* Recalculates the flags for a target person (based on ailments) */
-  bool reCalcAilmentFlags(Person *target, Ailment *ail);
-
-  /* Reset miss/no effect flags for the given user */
-  void resetTurnFlags(Person *user);
-
-  /* Calculates enemy actions and add them to the buffer */
-  void selectEnemyActions();
-
-  /* Calculates user actions and add them to the buffer */
-  void selectUserActions();
-
-  /* Load default configuration of the battle */
-  bool setupClass();
-
-  /* Determines whether a potential person index can select an action */
-  bool testPersonIndex(const int32_t &test_index);
-
-  /* Method which calls personal upkeeps */
-  void upkeep();
-
-  /* Sub-function of update() for ally selections */
-  void updateAllySelection();
-
-  /* Sub-function of update() for enemy selections */
-  void updateEnemySelection();
-
-  /* Updates the LOSS/VICTORY flags based on party deaths */
-  bool updatePartyDeaths(Person *target);
-
-  /* Updates the current targets defense state */
-  bool updateTargetDefense();
-
-  /* Assigns a new value to the ailment update mode */
-  void setAilmentUpdateMode(const BattleOptions &new_value);
-
-  /* Assigns the friends party of the Battle */
-  bool setFriends(Party *const new_friends);
-
-  /* Assigns the foes party of the Battle */
-  bool setFoes(Party *const new_foes);
-
-  /* Updates the person selection index to the next valid one */
-  bool setNextPersonIndex();
-
-  /* Updates the Battle to the next state */
-  void setNextTurnState();
-
-  /* Assigns a new value to the Outcome enumeration */
-  bool setOutcome(OutcomeType new_outcome);
-
-  /* Assigns a new value to the elapsed time */
-  void setTimeElapsed(const int32_t &new_value);
-
-  /* Assigns thee time elapsed this turn */
-  void setTimeElapsedThisTurn(const int32_t &new_value);
-
-  /* Assigns a new value to the turns elapsed */
-  void setTurnsElapsed(const uint16_t &new_value);
-
-  /* Assigns a new turn mode to the Battle */
-  void setTurnMode(const TurnMode &new_turn_mode);
-
-  /* Updates the turn state of the Battle */
-  void setTurnState(const TurnState &new_turn_state);
+  /* Returns the modified index of a given index value */
+  int32_t getBattleIndex(int32_t index, bool ally);
 
   /*=============================================================================
-   * PUBLIC FUNCTIONS
+   * PRIVATE FUNCTIONS - Battle Display
+  *============================================================================*/
+private:
+  /* Creates action frames for a given BattleActor */
+  void buildActionFrame(BattleActor* actor);
+
+  /* Creates the enemy backdrop frame */
+  void buildEnemyBackdrop();
+
+  /* Creates an ally info panel for a given BattleActor */
+  void buildInfoAlly(BattleActor* ally);
+
+  /* Creates an enemy info for a given BattleActor */
+  void buildInfoEnemy(BattleActor* enemy);
+
+  /* Clears the Battle background */
+  void clearBackground();
+
+  /* Clears the elements out */
+  void clearElements();
+
+  /* Renders the Battle bar on the screen */
+  bool renderBattleBar();
+  bool renderAilments();
+  // bool renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y, bool full_border;
+  bool renderAllies();
+  bool renderAlliesInfo();
+  bool renderAllyInfo(BattleActor* ally);
+  bool renderEnemies();
+  bool renderEnemiesInfo();
+  bool renderEnemyInfo(BattleActor* enemy);
+  bool renderMenu();
+
+  /* Rendering updates */
+  void updateRendering(int32_t cycle_time);
+  void updateRenderElements(int32_t cycle_time);
+  void updateRenderEnemies(int32_t cycle_time);
+  void updateRenderAllies(int32_t cycle_time);
+
+  /* Returns an X-value for a given Person */
+  int32_t getActorX(BattleActor* actor);
+
+  /* Returns the Y-value for a given Person */
+  int32_t getActorY(BattleActor* actor);
+
+  /*=============================================================================
+   * PUBLIC FUNCTIONS - Battle Operations
    *============================================================================*/
 public:
-  /* Evaluates whether a given Person ptr is a member of the allies party */
-  bool isAlly(Person *check_person);
-
-  /* Evaluates whether a given Person ptr is a member of the foes party */
-  bool isFoe(Person *check_person);
-
-  /* Processing key down events for the Battle */
+  /* */
   bool keyDownEvent(SDL_KeyboardEvent event);
 
-  /* Methods to print information about the Battle */
-  void printAll(const bool &flags, const bool &party);
-  void printPartyState();
-  void printPersonState(Person *const member, const int32_t &person_index);
-  void printProcessingState(bool basic = false);
-  void printInventory(Party *const target_party);
-  void printTurnState();
+  /* Method to start a Battle */
+  bool startBattle(Party* friends, Party* allies, Sprite* background = nullptr);
 
-  /* Update the cycle time of Battle */
+  /* Stops a running Battle */
+  void stopBattle();
+
+  /* Update methods */
   bool update(int32_t cycle_time);
 
-  /* Unsets the attacking flag for all allies & foes members */
-  void unsetActorsAttacking();
-  void unsetActorsSelecting();
+  /* Returns all allied BattleActors in a vector of ptrs */
+  std::vector<BattleActor*> getAllies();
 
-  Skill *getCurrSkill();
+  /* Returns all enemy BattleActors in a vector of ptrs */
+  std::vector<BattleActor*> getEnemies();
 
-  /* Returns the ailment update mode currently set */
-  BattleOptions getAilmentUpdateMode();
+  /* Evaluates a given CombatState flag */
+  bool getFlagCombat(CombatState test_flag);
 
-  /* Returns a pointer to the BattleMenu */
-  BattleMenu *getBattleMenu();
+  /* Evaluates a given RenderState flag */
+  bool getFlagRender(RenderState test_flag);
 
-  /* Return the value of a given CombatState flag */
-  bool getBattleFlag(const CombatState &test_flag);
+  /* Return the enumerated outcom type */
+  OutcomeType getOutcomeType();
 
-  /* Return the value of a given IgnoreState flag */
-  bool getIgnoreFlag(const IgnoreState &test_flag);
-
-  /* Return the pointer to the event buffer */
-  EventBuffer *getEventBuffer();
-
-  /* Returns the friends pointer of the Battle */
-  Party *getFriends();
-
-  /* Returns the foes pointer of the Battle */
-  Party *getFoes();
-
-  /* Obtains the outcome state enumeration */
-  OutcomeType getOutcome();
-
-  /* Evaluates and returns a vector of ailments for a given person */
-  std::vector<Ailment *> getPersonAilments(const Person *const target);
-
-  /* Returns the value of the turns elapsed */
-  uint32_t getTurnsElapsed();
-
-  /* Returns the elapsed time of the Battle */
-  uint32_t getTimeElapsed();
-
-  /* Returns the enumerated turn state of the Battle */
+  /* Returns the turn state of the Battle */
   TurnState getTurnState();
 
-  /* Returns the index integer of a given Person ptr */
-  int32_t getTarget(Person *battle_member);
+  /* Assigns a configuration to the Battle */
+  bool setConfig(Options* config);
 
-  /* Obtains the corresponding Person ptr for a given battle member index */
-  Person *getPerson(const int32_t &index);
+  /* Sets a CombatState flag */
+  void setFlagCombat(CombatState test_flag, const bool& set_value);
 
-  /* Calculate and return all BattleMember indexes */
-  std::vector<int32_t> getAllTargets();
-
-  /* Obtains the list of friends target indexes */
-  std::vector<int32_t> getFriendsTargets(const bool &ko = false);
-
-  /* Obtains the list of foes target indexes */
-  std::vector<int32_t> getFoesTargets(const bool &ko = false);
-
-  /* Obtains a vector of targets matching the signage */
-  std::vector<int32_t> getPartyTargets(int32_t check_index);
-
-  /* Build a vector of person pointers from a vector of person indexes */
-  std::vector<Person *> getPersonsFromIndexes(std::vector<int32_t> indexes);
-
-  /* Build a vector of person indexes from a vector of person pointers */
-  std::vector<int32_t> getIndexesOfPersons(std::vector<Person *> persons);
-
-  /* Get the index of a person from its pointer */
-  int32_t getIndexOfPerson(Person *check_person);
-
-  /* Obtains a vector of battle member indexes for a given user and scope */
-  std::vector<int32_t> getValidTargets(int32_t index, ActionScope action_scope);
-
-  /* Assign a value to a CombatState flag */
-  void setBattleFlag(CombatState flags, const bool &set_value = true);
-
-  /* Assign a value to an IgnoreState flag */
-  void setIgnoreFlag(IgnoreState flags, const bool &set_value = true);
-
-  void setUserAttacking(Person *user);
+  /* Set a RenderState flag */
+  void setFlagRender(RenderState test_flag, const bool& set_value);
 
   /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
+   * PUBLIC FUNCTIONS - Battle Display
    *============================================================================*/
 public:
-  /* Public static gets for menu constant values */
-  static uint32_t getGenUpkeepDelay();
-  static uint32_t getBattleMenuDelay();
+  /* Renders the Battle */
+  bool render(int32_t cycle_time);
 
-  /* Public static gets for battle modifier values */
-  static uint32_t getMaxAilments();
-  static uint32_t getMaxEachAilments();
-  static uint32_t getMaxDamage();
-  static uint32_t getMinDamage();
-  static float getOffPrimElmMod();
-  static float getDefPrimElmMod();
-  static float getOffSecdElmMod();
-  static float getDefSecdElmMod();
-  static float getDodgeMod();
-  static float getDogePerLvlMod();
-  static float getPrimElmAdvMod();
-  static float getPrimElmDisMod();
-  static float getSecdElmAdvMod();
-  static float getSecdElmDisMod();
-  static float getDoubleElmAdvMod();
-  static float getDoubleElmDisMod();
+  /* Assigns the battle display container object */
+  bool setBattleDisplayData(BattleDisplayData* battle_display_data);
+
+  /* Assigns scope frames */
+  bool setFrameScope(ActionScope scope, std::string path,
+                     SDL_Renderer* renderer);
+
+  /* Assigns a new renderer to the Battle */
+  bool setRenderer(SDL_Renderer* renderer);
+
+  /* Sets the background sprite */
+  bool setBackground(Sprite* background);
 };
 
 #endif // BATTLE_H

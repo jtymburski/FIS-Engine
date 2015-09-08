@@ -11,9 +11,7 @@
 #include <chrono>
 #include <memory>
 
-#include "Game/Battle/AIModuleTester.h"
 #include "Game/Battle/Battle.h"
-#include "Game/Battle/BattleDisplay.h"
 #include "Game/Player/Player.h"
 #include "Options.h"
 
@@ -66,7 +64,6 @@ private:
   std::string base_path;
 
   /* A current battle pointer */
-  BattleDisplay* battle_display;
   Battle* battle_logic;
   bool battle_start;
 

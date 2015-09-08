@@ -678,3 +678,177 @@ void RenderElement::setSizeY(int32_t new_size_y)
 {
   size_y = new_size_y;
 }
+
+//TODO
+// void Battle::createActionText(std::string action_name)
+// {
+//   RenderElement *action_text =
+//       new RenderElement(RenderType::ACTION_TEXT, 900, 100, 100);
+
+//   action_text->setColor({0, 0, 0, 255});
+//   action_text->setShadowColor({kACTION_COLOR_R, 0, 0, 255});
+//   action_text->setFont(font_action);
+//   action_text->setText(action_name);
+
+//   Text t(font_action);
+//   t.setText(renderer, action_text->getText(), action_text->getColor());
+
+//   auto x = (kACTION_TEXT_X - t.getWidth());
+
+//   action_text->setX(x);
+//   action_text->setY(kACTION_CENTER - t.getHeight() / 2 - 8);
+//   action_text->setShadow();
+//   action_text->setShadowCoordinates(kACTION_TEXT_SHADOW, kACTION_TEXT_SHADOW);
+//   render_elements.push_back(action_text);
+// }
+
+// void Battle::createDamageText(Person *target, std::string text)
+// {
+//   auto element = createDamageValue(target, 0);
+//   element->setText(text);
+
+//   Text t(font_damage);
+//   t.setText(renderer, element->getText(), {0, 0, 0, 255});
+
+//   auto x = getPersonX(target);
+//   x += kPERSON_WIDTH / 2;
+//   x -= t.getWidth() / 2;
+
+//   element->setTimes(550, 115, 115);
+//   element->setX(x);
+//   element->setShadowX(kACTION_TEXT_SHADOW - 2);
+//   element->setVelocity(0, -45);
+//   element->setAcceleration(0, 8);
+// }
+
+// // TODO: Comment
+// RenderElement *Battle::createDamageValue(Person *target, uint32_t amount)
+// {
+//   /* Determine the color of text to use for displaying according to the
+//    * appropriate damage type (based on the type of event being processed ) */
+//   SDL_Color color = {0, 0, 0, 255};
+//   SDL_Color shadow_color = {255, 255, 255, 255};
+
+//   if(curr_event->type == EventType::STANDARD_DAMAGE)
+//     shadow_color = kSTRD_DMG_COLOR;
+//   else if(curr_event->type == EventType::CRITICAL_DAMAGE)
+//     shadow_color = kCRIT_DMG_COLOR;
+//   else if(curr_event->type == EventType::POISON_DAMAGE)
+//     shadow_color = kPOIS_DMG_COLOR;
+//   else if(curr_event->type == EventType::BURN_DAMAGE)
+//     shadow_color = kBURN_DMG_COLOR;
+
+//   RenderElement *element =
+//       new RenderElement(RenderType::DAMAGE_VALUE, 475, 65, 100);
+
+//   /* Build parameters for the damage text, add to render text elements */
+//   element->setColor(color);
+//   element->setFont(font_damage);
+//   element->setText(std::to_string(amount));
+
+//   Text t(font_damage);
+//   t.setText(renderer, element->getText(), color);
+
+//   auto x = getPersonX(target);
+//   x += kPERSON_WIDTH / 2;
+//   x -= t.getWidth() / 2;
+
+//   auto y = getPersonY(target);
+//   y += t.getHeight() / 2;
+//   y += system_options->getScreenHeight() / 13;
+
+//   element->setCoordinates(x, y);
+//   element->setShadow(true);
+//   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2,
+//                                 kACTION_TEXT_SHADOW - 1);
+//   element->setShadowColor(shadow_color);
+//   element->setAcceleration(4, 0);
+//   element->setVelocity(-15, -25);
+
+//   render_elements.push_back(element);
+
+//   return element;
+// }
+
+// void Battle::createDeath(Person *target)
+// {
+//   RenderElement *element =
+//       new RenderElement(RenderType::RGB_SPRITE_DEATH, 3000, 300, 2650);
+//   element->setColor({255, 0, 0, 255});
+//   element->setCoordinates(getPersonX(target), getPersonY(target));
+//   element->setSprite(getPersonSprite(target));
+//   element->setFlasher(target);
+//   render_elements.push_back(element);
+// }
+
+// // TODO: Comment
+// void Battle::createRegenValue(Person *target, uint64_t amount)
+// {
+//   /* Determine the appropriate color to show (whether VITA/QD regen) */
+//   SDL_Color color = {0, 0, 0, 255};
+//   SDL_Color shadow_color = {255, 255, 255, 255};
+
+//   if(curr_event->type == EventType::REGEN_VITA)
+//     shadow_color = kVITA_REGEN_COLOR;
+//   else if(curr_event->type == EventType::REGEN_QTDR)
+//     shadow_color = kQTDR_REGEN_COLOR;
+//   else if(curr_event->type == EventType::HIBERNATION ||
+//           curr_event->type == EventType::HEAL_HEALTH)
+//     shadow_color = kHIBERNATION_REGEN_COLOR;
+
+//   RenderElement *element =
+//       new RenderElement(RenderType::DAMAGE_VALUE, 650, 150, 150);
+
+//   element->setColor(color);
+//   element->setFont(font_damage);
+//   element->setText(std::to_string(amount));
+
+//   Text t(font_damage);
+//   t.setText(renderer, element->getText(), color);
+
+//   auto x = getPersonX(target);
+//   x += kPERSON_WIDTH / 2;
+//   x -= t.getWidth() / 2;
+
+//   auto y = getPersonY(target);
+//   y += t.getHeight() / 2;
+//   y += 40;
+
+//   element->setCoordinates(x, y);
+//   element->setShadow(true);
+//   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2,
+//                                 kACTION_TEXT_SHADOW - 1);
+//   element->setShadowColor(shadow_color);
+//   element->setVelocity(0, -25);
+//   element->setAcceleration(0, 4);
+
+//   render_elements.push_back(element);
+// }
+
+// RenderElement *Battle::createPlep(Person *target, Sprite *plep)
+// {
+//   Sprite *new_plep = new Sprite(*plep);
+//   new_plep->setNonUnique(true, plep->getSize());
+//   new_plep->createTexture(renderer);
+
+//   RenderElement *plep_render =
+//       new RenderElement(new_plep, getPersonX(target), getPersonY(target), 1);
+//   render_elements.push_back(plep_render);
+
+//   return plep_render;
+// }
+
+// void Battle::createSpriteFlash(Person *target, SDL_Color color,
+//                                       int32_t flash_time)
+// {
+//   auto fade_time = std::floor(flash_time * 3.0 / 7.0);
+//   RenderElement *sprite_flash = new RenderElement(
+//       RenderType::RGB_SPRITE_FLASH, flash_time, fade_time, fade_time);
+
+//   sprite_flash->setSprite(getPersonSprite(target));
+//   sprite_flash->setFlasher(target);
+//   sprite_flash->setColor(color);
+
+//   render_elements.push_back(sprite_flash);
+// }
+
