@@ -82,6 +82,7 @@ enum class TurnState
   LOSS, /* LosStates stage returns to title */
   VICTORY, /* Victory displays the victory screen */
   RUNNING, /* Running condition */
+  FINISHED,
   STOPPED /* Battle should be stopped */
 };
 
@@ -128,9 +129,6 @@ private:
   /* Vector of actors for the Battle */
   std::vector<BattleActor*> actors;
 
-  /* Actors which need to have an upkeep done on them */
-  std::vector<BattleActor*> actors_upkeep;
-
   /* The background sprite */
   Sprite* background;
 
@@ -157,8 +155,6 @@ private:
 
   /* Flags related to the render state */
   RenderState flags_render;
-
-  Frame* frame_battle_bar;
 
   /* The enemy backdrop frame */
   Frame* frame_enemy_backdrop;
@@ -384,7 +380,7 @@ private:
   /* Renders the Battle bar on the screen */
   bool renderBattleBar();
   bool renderAilments();
-  // bool renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y, bool full_border;
+  // bool renderAilmentsOnActor(BattleActor* actor, uint32_t x, uint32_t y, bool full_border;
   bool renderAllies();
   bool renderAlliesInfo();
   bool renderAllyInfo(BattleActor* ally);

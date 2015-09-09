@@ -117,13 +117,13 @@ void Application::handleEvents()
 
       if (press_event.keysym.sym == SDLK_F3)
       {
-        system_options->setAudioLevel(system_options->getAudioLevel() - 5);
-        system_options->setMusicLevel(system_options->getAudioLevel() - 5);
+        system_options->setAudioLevel(system_options->getAudioLevel() - 15);
+        system_options->setMusicLevel(system_options->getAudioLevel() - 15);
       }
       else if (press_event.keysym.sym == SDLK_F4)
       {
-        system_options->setAudioLevel(system_options->getAudioLevel() + 5);
-        system_options->setMusicLevel(system_options->getAudioLevel() + 5);
+        system_options->setAudioLevel(system_options->getAudioLevel() + 15);
+        system_options->setMusicLevel(system_options->getAudioLevel() + 15);
       }
       else if (press_event.keysym.sym == SDLK_4)
       {

@@ -255,7 +255,6 @@ Battle::Battle()
       delay{0},
       flags_combat{static_cast<CombatState>(0)},
       flags_render{static_cast<RenderState>(0)},
-      frame_battle_bar{nullptr},
       frame_enemy_backdrop{nullptr},
       outcome{OutcomeType::NONE},
       renderer{nullptr},
@@ -314,7 +313,11 @@ void Battle::buildBattleActors(Party* allies, Party* enemies)
 void Battle::clearBattleActors()
 {
   for(auto& battle_actor : actors)
-    delete battle_actor;
+  {
+    if(battle_actor)
+      delete battle_actor;
+    battle_actor = nullptr;
+  }
 
   actors.clear();
 }
@@ -1789,11 +1792,11 @@ int32_t Battle::getActorY(BattleActor* actor)
  * PUBLIC FUNCTIONS - Battle Operations
  *============================================================================*/
 
-//TODO
+// TODO
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
   (void)event;
-  return true;
+  return false;
 }
 // #ifdef UDEBUG
 //   if(!getBattleFlag(CombatState::OUTCOME_PROCESSED))
@@ -1848,7 +1851,7 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 {
   /* Assert everything important is not nullptr */
   assert(config);
-//  assert(renderer);
+  //  assert(renderer);
   assert(friends);
   assert(foes);
 
@@ -1872,6 +1875,8 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 
   // createFoeBackDrop()
 
+  turn_state = TurnState::BEGIN;
+
   return true;
 }
 
@@ -1879,6 +1884,8 @@ void Battle::stopBattle()
 {
   /* Destroy the battle actors at the end of a Battle */
   clearBattleActors();
+
+  turn_state = TurnState::STOPPED;
 }
 
 bool Battle::update(int32_t cycle_time)

@@ -1,13 +1,9 @@
 /*******************************************************************************
-* Class Name: Battle [Implementation]
+* Class Name: Buffer [Implementation]
 * Date Created: February 23rd, 2014
+* Date Redesigned: September 8th, 2015
 * Inheritance: None
 * Description:
-*
-* Notes
-* -----
-*
-* [1]:
 *
 * See .h file for TODOs
 *******************************************************************************/

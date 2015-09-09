@@ -1194,7 +1194,7 @@ void Game::unload(bool full_unload)
 /* Updates the game state. Returns true if the class is finished */
 bool Game::update(int32_t cycle_time)
 {
-  ticks_total++;
+  ++ticks_total;
 
   /* Poll System Events */
   pollEvents();
@@ -1203,33 +1203,22 @@ bool Game::update(int32_t cycle_time)
   event_handler.getKeyHandler().update(cycle_time);
 
   /* MAP MODE */
-  if(mode == MAP && map_ctrl != nullptr)
+  if(mode == MAP && map_ctrl)
   {
     return map_ctrl->update(cycle_time);
   }
   /* BATTLE MODE */
-  else if(mode == BATTLE)
+  else if(mode == BATTLE && battle_ctrl)
   {
-    bool success = true;
-
-    if(battle_ctrl)
+    if(battle_ctrl->getTurnState() == TurnState::FINISHED)
     {
-      success &= battle_ctrl->update(cycle_time);
-
-      // if(battle_ctrl->getTurnState() == TurnState::DESTRUCT)
-      // {
-      //   mode = MAP;
-
-      //   /* Delete logic */
-      //   // battle_ctrl->unsetBattle();
-      // }
-      // else if(battle != nullptr)
-      // {
-      //   success &= battle_ctrl->update(cycle_time);
-      // }
+      battle_ctrl->stopBattle();
+      mode = MAP;
     }
-
-    return success;
+    else
+    {
+      return battle_ctrl->update(cycle_time);
+    }
   }
 
   return false;

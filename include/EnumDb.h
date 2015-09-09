@@ -205,9 +205,9 @@ enum class Attribute : std::uint8_t
   LIMB = 17,
   UNBR = 18,
   MANN = 19,
-  MVIT = 20,
-  MQTD = 21,
-  NONE = 99
+  NONE = 20,
+  MVIT = 21,
+  MQTD = 22
 };
 
 enum class EventType : std::uint8_t

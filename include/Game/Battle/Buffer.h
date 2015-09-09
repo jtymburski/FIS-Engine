@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: Battle [Declaration]
+* Class Name: Buffer [Declaration]
 * Date Created: February 23rd, 2014
 * Inheritance: None
 * Description:
@@ -12,7 +12,6 @@
 * TODO
 * ----
 *******************************************************************************/
-
 #ifndef BUFFER_H
 #define BUFFER_H
 
