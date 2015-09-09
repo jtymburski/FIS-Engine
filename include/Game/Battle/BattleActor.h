@@ -321,6 +321,12 @@ public:
   /* Obtains the real cost value of the Skill */
   uint32_t getSkillCost(Skill* test_skill);
 
+  /* Returns the stats actual object */
+  BattleStats& getStats();
+
+  /* Returns the stats_rendered object */
+  BattleStats& getStatsRendered();
+
   /* Assigns a new active sprite for the BattleActor */
   void setActiveSprite(ActiveSprite new_active_sprite);
 

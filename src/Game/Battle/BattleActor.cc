@@ -523,6 +523,16 @@ uint32_t BattleActor::getSkillCost(Skill* test_skill)
   return AttributeSet::getMaxValue();
 }
 
+BattleStats& BattleActor::getStats()
+{
+  return stats_actual;
+}
+
+BattleStats& BattleActor::getStatsRendered()
+{
+  return stats_rendered;
+}
+
 void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
 {
   active_sprite = new_active_sprite;

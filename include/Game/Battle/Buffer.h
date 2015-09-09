@@ -33,7 +33,18 @@ enum class BufferSorts
 /* A buffer element */
 struct BufferAction
 {
-  /* The number of turns to remain in the buffer */
+  BufferAction()
+      : cooldown{0},
+        initial_turn{0},
+        user{nullptr},
+        used_skill{nullptr},
+        used_item{nullptr},
+        targets{},
+        type{ActionType::NONE}
+  {
+  }
+
+  /* The number of turns needed after cooldown */
   uint32_t cooldown;
 
   /* The turn # the buffer element was added */
@@ -43,17 +54,14 @@ struct BufferAction
   BattleActor* user;
 
   /* The Skill OR Item which the action will perform - only oe will be set */
-  Skill* skill_used;
-  Item*  item_used;
+  Skill* used_skill;
+  Item* used_item;
 
-  /* The vector of targets for the action */
+  /* The vector of targets the action will target */
   std::vector<BattleActor*> targets;
 
   /* Enumerated type of buffer (SKILL or ITEM or NONE) */
   ActionType type;
-
-  /* The validity of the element */
-  bool valid;
 };
 
 class Buffer
@@ -69,78 +77,62 @@ private:
   /* The buffer of actions to take place */
   std::vector<BufferAction> action_buffer;
 
-  /* ------------ Constants --------------- */
-  static const uint16_t kMAXIMUM_ELEMENTS;
-  static const uint16_t kMAXIMUM_TARGETS;
-  static const uint16_t kMAXIMUM_COOLDOWN;
-
 /*=============================================================================
  * PRIVATE FUNCTIONS
- *==========================================================================*/
+ *============================================================================*/
 private:
-  /* Checks the validity of a given BufferAction element */
-  bool checkValid(BufferAction& elm);
-
-  /* Decrements the cooldown of a BufferAction at a given index */
-  bool decrementCooldown(const uint32_t &index);
-
   /* Returns a ref. to a BufferAction at a given index */
-  BufferAction& getIndex(const uint32_t &index);
+  BufferAction& getIndex(const uint32_t& index);
 
   /* Sorts a vector of Buffer actions by a given buffer sort */
   std::vector<BufferAction> sort(std::vector<BufferAction> actions,
-      BufferSorts buffer_sorts);
+                                 BufferSorts buffer_sorts);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-  /* Creates and adds a new Skill BufferAction element given params */
-  bool add(BattleActor* const user, Skill* const skill_used,
-      std::vector<BattleActor*> targets, const uint32_t &cooldown = 0,
-      const uint32_t &initial_turn = 0);
+  /* Adds a defend element to the buffer */
+  void addDefend(BattleActor* user);
 
-  /* Creates and adds a new Item BufferAction element given params */
-  bool add(BattleActor* const user, Item* const item_used,
-      std::vector<BattleActor*> targets, const uint32_t &cooldown = 0,
-      const uint32_t &initial_turn = 0);
+  /* Adds a guard element to the buffer */
+  void addGuard(BattleActor* user, BattleActor* target);
 
-  bool add(BattleActor* const user, ActionType const &buffer_type,
-      std::vector<BattleActor*> targets, const uint32_t &cooldown = 0,
-      const uint32_t &initial_turn = 0);
+  /* Add an imploding element to the buffer */
+  void addImplode(BattleActor* user);
 
-  /* Adds a given BufferAction element to the vector */
-  bool add(BufferAction &action);
+  /* Adds an Item element to the buffer */
+  void addItem(BattleActor* user, Item* used_item,
+               std::vector<BattleActor*> targets);
+
+  /* Adds a Pass event to the Battle */
+  void addPass(BattleActor* user);
+
+  /* Adds a run element to the buffer */
+  void addRun(BattleActor* user);
+
+  /* Adds a skill use to the buffer */
+  void addSkill(BattleActor* user, Skill* used_skill,
+                std::vector<BattleActor*> targets, uint32_t cooldown = 0,
+                uint32_t initial_turn = 0);
+
+  /* Clears all elements from the Buffer */
+  void clear();
 
   /* Clears all BufferAction elements from the Buffer */
-  void clearAll(int32_t this_turn_only = -1);
-
-  /* Clears all invalid buffer elements */
-  void clearInvalid();
+  void clearForTurn(uint32_t turn_number);
 
   /* Checks if an element containing a Skill cooldown for given person exists */
-  Skill* hasCoolingSkill(BattleActor* check_person);
-
-  /* Returns true if the next BufferAction is valid */
-  bool isNextValid();
-
-  /* For every action which targets a guarded person -> swap in the guard */
-  // void injectGuardTargets(Person* guard, Person* guardee);
+  bool hasCoolingSkill(BattleActor* check_person);
 
   /* Prints out the information of the Buffer */
-  void print(const bool &simple = false);
-
-  /* Attempts to remove a BufferAction at a given index */
-  bool remove(const uint32_t &index);
-
-  /* Remove a guard's targets from buffer actions */
-  // void rejectGuardTargets(Person* guard);
+  void print(bool simple = false);
 
   /* Removes all BufferActions which are of the given user type */
   void removeAllByUser(BattleActor* user);
 
   /* Updates the cooldown of each BufferAction element */
-  void update(const bool &clear = false);
+  void updateCooldowns();
 
   /* Returns the action type for the current index */
   ActionType getActionType();
@@ -149,7 +141,7 @@ public:
   int32_t getCooldown();
 
   /* Obtains the Person ptr for the current element index */
-  Person* getUser();
+  BattleActor* getUser();
 
   /* Obtains the Skill ptr for the current element index */
   Skill* getSkill();
@@ -163,22 +155,11 @@ public:
   /* Obtains the target vector for current element index */
   std::vector<BattleActor*> getTargets();
 
-  /* Returns the corresponding damage types for target indexes */
-  // std::vector<DamageType> getDamageTypes();
-
-  /* Sets the next index of the Buffer if available */
+  /* Sets the next index of the Buffer if available, returns true if done */
   bool setNext();
 
   /* Reorders the Buffer based off given primary and secondary sorts */
-  bool reorder();
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-public:
-  /* Returns the maximum possible size of the Buffer */
-  static uint16_t getMaxSize();
-
+  void reorder();
 };
 
-#endif //BUFFER_H
+#endif // BUFFER_H

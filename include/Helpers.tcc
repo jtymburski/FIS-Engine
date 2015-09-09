@@ -87,8 +87,8 @@ struct CompMomentum
   template<class T>
   bool operator()(const T &a, const T &b) const
   {
-    return a.user->getCurr().getStat("MMTM") >
-           b.user->getCurr().getStat("MMTM");
+    return a.user->getStats().getValue(Attribute::MMNT) >
+           b.user->getStats().getValue(Attribute::MMNT);
   }
 };
 
@@ -97,7 +97,7 @@ struct CompItemFirst
   template<class T>
   bool operator()(const T &a, const T &b) const
   {
-    return (a.item_used != nullptr && b.item_used == nullptr);
+    return (a.used_item != nullptr && b.used_item == nullptr);
   }
 };
 
@@ -106,7 +106,7 @@ struct CompSkillFirst
   template<class T>
   bool operator()(const T &a, const T &b) const
   {
-    return (a.skill_used != nullptr && b.skill_used == nullptr);
+    return (a.used_skill != nullptr && b.used_skill == nullptr);
   }
 };
 
