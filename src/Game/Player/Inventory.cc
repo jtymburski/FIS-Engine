@@ -388,7 +388,6 @@ AddStatus Inventory::add(Item* new_item, const uint32_t &amount,
   }
 
   bypass |= getFlag(InvState::SHOP_STORAGE);
-
   auto spaces = hasRoom(new_item, amount);
 
   if (amount > 0 && new_item != nullptr && (spaces >= amount || bypass))
@@ -602,10 +601,17 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 
   if (need_check)
   {
-    n = std::min(item_limit - getItemTotalCount(), n);
-    n = std::min(item_each_limit - getItemCount(item->getGameID()), n);
-    auto lim = std::floor((mass_limit - getMass()) / item->getMass());
-    n = std::min(static_cast<uint32_t>(lim), n);
+    if(getMass() > 0)
+    {
+      n = std::min(item_limit - getItemTotalCount(), n);
+      n = std::min(item_each_limit - getItemCount(item->getGameID()), n);
+      auto lim = std::floor((mass_limit - getMass()) / item->getMass());
+      n = std::min(static_cast<uint32_t>(lim), n);
+    }
+    else
+    {
+      n = kMAX_ITEM;
+    }
   }
 
   return n;

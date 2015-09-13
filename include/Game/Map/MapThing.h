@@ -214,7 +214,7 @@ public:
   std::vector<std::vector<TileSprite*>> getFrames();
 
   /* Returns the connected game object ID */
-  int getGameID();
+  int getGameID() const;
 
   /* Returns the height of the thing */
   uint16_t getHeight();

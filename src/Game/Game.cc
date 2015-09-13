@@ -530,6 +530,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
             int item_count = std::stoi(item_set.back());
 
             Item* new_item = new Item(getItem(item_id));
+            
             AddStatus status =
                 edit_party->getInventory()->add(new_item, item_count);
             if(status == AddStatus::GOOD_DELETE)
@@ -664,7 +665,7 @@ void Game::pollEvents()
       {
         /* Try and find parties and start battle */
         if(person != nullptr && source != nullptr)
-          eventStartBattle(person->getGameID(), source->getGameID());
+          eventStartBattle(Party::kID_SLEUTH, source->getGameID());
       }
     }
     else if(classification == EventClassifier::RUNMAP)

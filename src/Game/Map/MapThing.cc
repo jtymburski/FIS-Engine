@@ -1147,7 +1147,7 @@ std::vector<std::vector<TileSprite*>> MapThing::getFrames()
  * Inputs: none
  * Output: int - the connected ID
  */
-int MapThing::getGameID()
+int MapThing::getGameID() const
 {
   if(base != NULL && game_id < 0)
     return base->getGameID();
