@@ -31,181 +31,120 @@
 #ifndef AILMENT_H
 #define AILMENT_H
 
-#include "Game/Player/Person.h"
-#include "EnumDb.h"
+#include <limits>
+
 #include "EnumFlags.h"
-#include "Helpers.h"
+#include "EnumDb.h"
+#include "Game/Battle/BattleStats.h"
 
 /* Enumerated AilState Flags */
 ENUM_FLAGS(AilState)
 enum class AilState
 {
-  LASTING       = 1 << 0,  /* Ailment does not alleviate by time? kMAX_TURNS */
-  CURABLE       = 1 << 1,  /* Ailment cannot be cured except by time? */
-  TO_CURE       = 1 << 2,  /* The ailment is to be cured immediately */
-  TO_UPDATE     = 1 << 3,  /* Ailment set to be updated on new turn */
-  TO_APPLY      = 1 << 4,  /* Ailment effects set to be applied on new turn */
-  TO_UNAPPLY    = 1 << 5,  /* Ailment effects to be unapplied [after update]*/
-  TO_KILL       = 1 << 6,
-  BUFF          = 1 << 7,  /* Is this ailment a favorable ailment? */
-  ADVERSE       = 1 << 8,  /* Is this ailment an adverse ailment? */
-  IMMUNITY      = 1 << 9,  /* Is the inflicted person immune to this ailment? */
-  CURE_ON_DEATH = 1 << 10,  /* Does the ailment persist death? */
-  VICTIM_SET    = 1 << 11,  /* Has the victim of the ailment been set? */
-  INFLICTOR_SET = 1 << 12,
-  DEALS_DAMAGE  = 1 << 13,  /* Has the inflictor of the ailment been set? */
-  UPDATE_PROCESSED = 1 << 14 /* Has the update for this turn been processed? */
+  CURABLE_TIME = 1 << 0,
+  CURABLE_KO = 1 << 1,
+  CURABLE_DEATH = 1 << 2,
 };
 
 class Ailment
 {
 public:
+  /* Cannot construct an empty Ailment object */
+  Ailment() = delete;
 
-  /* Minimal Constructor */
-  Ailment(Person* ail_victim, const Infliction &type, 
-      Person* inflictor = nullptr,  const uint16_t &max_turns = 1, 
-      const uint16_t &min_turns = 1, const double &chance = 0);
+  /* Minimal constructor */
+  Ailment(Infliction type, BattleStats& stats_victim);
+
+  /* Detailed constructor */
+  Ailment(Infliction type, BattleStats& stats_victim, uint32_t min_turns,
+          uint32_t max_turns, double chance);
 
   /* Annihilates an AttributeSet object */
   ~Ailment() = default;
 
 private:
-  /* Inflinction of the Ailment */
-  Infliction type;
+  BattleStats& stats_victim;
+
+  /* The classification of the Ailment */
+  AilmentClass ailment_class;
 
   /* Chance the status effect will wear off per turn (>1 = 100%, 0 = 0%) */
-  double chance;
+  double cure_chance;
 
-  /* Amount of damage computed for the ailment update on this turn */
-  int32_t damage;
-
-  /* The type of damage computed for the ailment update for the turn */
-  DamageType damage_type;
+  /* The damage amount present for the Ailment */
+  int32_t damage_amount;
 
   /* Set of flags for the current ailment */
   AilState flag_set;
 
-  /* Durations of the status_ailment (>KMAX_TURNS = INFINITY) */
-  uint16_t min_turns_left;
-  uint16_t max_turns_left;
-  uint16_t turns_occured;
+  /* Durations of the status_ailment */
+  uint32_t min_turns_left;
+  uint32_t max_turns_left;
+  uint32_t total_turns;
 
-  /* The person who inflicted the ailment */
-  Person* inflictor;
+  /* Inflinction of the Ailment */
+  Infliction type;
 
-  /* The victim (owner) of the ailment. */
-  Person* victim;
+  /* The status for updating the ailment */
+  AilmentStatus update_status;
 
-  /*------------------- Constants -----------------------*/
-  static const uint16_t kMAX_TURNS; /* Maximum # turns ailments will last */
-  static const uint16_t kMIN_TURNS; /* The minimum # turns ailments last */
-  static const uint32_t kPOISON_DMG_MAX; /* The max. dmg from Poison ailment */
-  static const uint32_t kPOISON_DMG_MIN; /* The min. dmg from Poison ailment */
-  static const double kPOISON_DMG_INCR; /* Additional % per turn for Poison */
-  static const double kPOISON_DMG_INIT; /* Initial % per turn for Poison */
-  static const uint32_t kBURN_DMG_MAX; /* The max. damage from Burn */
-  static const uint32_t kBURN_DMG_MIN; /* The min. damage from Burn */
-  static const double kBURN_DMG_INCR; /* The increment (amt) for Burn lvls */
-  static const double kBURN_DMG_INIT; /* The inital dmg caused by Burn */
-  static const double kBURN_DMG_PC; /* Additional % dmg causedby Burn */
-  static const double kBERSERK_DMG_INCR; /* % incr in damage against target */
-  static const double kBERSERK_HITBACK_PC; /* % hitback on victim */
-  static const std::vector<double> kBUBBIFY_STAT_MULT;
-  static const std::vector<double> kMODULATE_STAT_MULT;
-  static const double kPARALYSIS_PC; /* % chance paralysis will skip turn */
-  static const double kBLIND_PC; /* % chance Blind will miss attacks */
-  static const double kDREADSTRUCK_PC; /* % Dreadstruck will miss attacks */
-  static const double kDREAMSNARE_PC; /* % Dreamsnare causes attacks to miss */
-  static const double kALLBUFF_PC; /* % by which all buffs will raise stats */
-  static const double kPHYSBUFF_PC; /* % by which phys buffs will raise stats */
-  static const double kELMBUFF_PC; /* % by which elm buffs will raise stats */
-  static const double kLIMBUFF_PC; /* % value by which to incr limb stats */
-  static const double kUNBBUFF_PC; /* % value by which to incr unbbuff stats */
-  static const double kMOMBUFF_PC; /* % value by which to incr momuff stats */
-  static const double kVITBUFF_PC; /* %  by which to incr vitality stats */
-  static const double kQDBUFF_PC; /* % values by which to incr QD stats */
-  static const double kROOTBOUND_PC; /* % values by which rootbound increases */
-  static const double kHIBERNATION_INIT; /* % value for initial hibernation */
-  static const double kHIBERNATION_INCR; /* % value by which to increase Hib */
-  static const double kMETABOLIC_PC; /* % chance for metabolic teth to kill */
-  static const double kMETABOLIC_DMG; /* % damage metabolic teth will deal */
-  static const double kBOND_STATS_PC; /* % by which bond wil increase stats */
+  /*------------------- Buff Constants -----------------------*/
+  static const float kPC_ALL_ATK_BUFF;
+  static const float kPC_ALL_DEF_BUFF;
+  static const float kPC_PHYS_BUFF;
+  static const float kPC_ELEMENTAL_BUFF;
+  static const float kPC_LIMB_BUFF;
+  static const float kPC_UNBR_BUFF;
+  static const float kPC_VITA_BUFF;
+  static const float kPC_QTDR_BUFF;
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*------------------- Damaging Constants -----------------------*/
+  static const float kPOISON_DMG_INIT; /* % damage for Turn # 1 for Poison */
+  static const float kPOISON_DMG_INCR; /* % chance / turn for Poison */
+
+  /*============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
-  /* Checks the immunity of the ailment */
-  bool checkImmunity(Person* new_victim);
+  /* Calculates the amount of poison damage, assigns to damage_amount */
+  void calcPoisonDamage();
+
+  /* Does the ailment cure this turn? */
+  bool doesAilmentCure();
+
+  /* Updates the effect of the Ailment for the turn */
+  AilmentStatus updateEffect();
 
   /* Updates the ailment by decrementing the turn counter if necessary */
-  bool updateTurns();
+  void updateTurnCount();
 
-  /* Sets the Inflinction of the Status Ailment */
-  void setType(const Infliction &type);
-
-  /* Assigns the inflictor of the ailment */
-  bool setInflictor(Person* set_inflictor);
-
-  /* Assigns the victim of the object */
-  bool setVictim(Person* set_victim);
-
-/*============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
-  /* Applies the effect of the ailment */
-  bool apply();
+  /* Applies a Buff to the BattleStats of the inflicted BattleActor's stats */
+  bool applyBuffs();
 
-  /* Updates the ailment for upkeep condition */
-  void update(bool update_turns = true);
+  /* Updates the ailment for a turn, returns the amount of damage */
+  void update();
 
-  /* Reset the ailment to default conditions */
-  void reset();
-
-  /* Undoes the effect (if exits) to the victim before curing */
-  void unapply();
-  
-  /* Determines whether to reapply affect upon recalculation */
-  bool toReapplyFlags();
-
-  /* Methods for printing all the information pertaining to the ailment */
-  void print(const bool &simple = true, const bool &flags = false);
-
-  /* Returns the amount of damage computed for the ailment update */
-  int32_t getDamageAmount() const;
-
-  /* Returns the type of damage computed for the ailment update */
-  DamageType getDamageType() const;
+  /* Returns the assigned amount of damage */
+  int32_t getDamageAmount();
 
   /* Evaluates an ailment flag or flags */
   bool getFlag(AilState flags);
 
-  /* Returns the Inflictor of the ailment */
-  Person* getInflictor();
-
-  /* Returns the number of turns left (assuming 0%) */
-  uint16_t getTurnsLeft();
-
-  /* Returns the Inflinction of the status ailment */
+  /* Returns the enumerated type of the Ailment */
   Infliction getType();
 
-  /* Obtains the victim of the Status Ailment */
-  Person* getVictim();
-
-  /* Sets the duration of the ailment */
-  void setDuration(const uint16_t &min_turns, const uint16_t &max_turns, 
-                   const double &chance = 0);
-
   /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
-  void setFlag(const AilState &flags, const bool &set_value = true);
-
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  void setFlag(const AilState& flags, const bool& set_value = true);
+  /*============================================================================
+   * PUBLIC STATIC FUNCTIONS
+   *============================================================================*/
 public:
-  /* Returns the hitback % for Berserk */
-  static double getBerserkHitbackPC();
+  /* Returns the classification of an ailment from a given Infliction */
+  static AilmentClass getClassOfInfliction(Infliction type);
 };
 
 #endif

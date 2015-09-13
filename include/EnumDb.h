@@ -119,6 +119,25 @@ enum class AITarget
   STRONGEST_FIRST  = 1 << 2
 };
 
+enum class AilmentClass
+{
+  DAMAGING,
+  HEALING,
+  PASSIVE,
+  BUFF,
+  UNSET
+};
+
+enum class AilmentStatus
+{
+  INCOMPLETE,
+  TO_REMOVE,
+  KO_USER,
+  TO_DAMAGE,
+  COMPLETED,
+  NONE
+};
+
 /*:
  * Description:
  *
@@ -181,7 +200,9 @@ enum class ActionType : std::uint16_t
  * LIMB - Limbertude - dodge chance in avoiding attacks/ActionScope
  * UNBR - Unbearability - critical hit chance, increases base damage by factor
  * MANN - Manna - luck which has various effects on outcomes/earnings etc.
- * NOAT - No Attribute - the enumeration does not describe an attribute
+ * NONE - No Attribute - the enumeration does not describe an attribute
+ * MVIT - Maximum Vitality (Limit as x -> infinity)
+ * MQTD - Maximum Quantum Drive (Limit)
  */
 enum class Attribute : std::uint8_t
 {

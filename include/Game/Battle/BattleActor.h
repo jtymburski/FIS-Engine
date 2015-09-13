@@ -23,6 +23,11 @@
 #ifndef BATTLEACTOR_H
 #define BATTLEACTOR_H
 
+/* Ailment <-- --> Battle Actor communication */
+class Ailment;
+class BattleStats;
+class BattleActor;
+
 #include "Game/Battle/BattleStats.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Person.h"
@@ -31,15 +36,12 @@
 using std::begin;
 using std::end;
 
-/* Forward Declaration - for declaring BattleSkill / BattleItems */
-class BattleActor;
-
 /* BState Flags - Flags which describe only battle-related flags */
 ENUM_FLAGS(ActorState)
 enum class ActorState
 {
   // clang-format off
-  KO                = 1 << 1, /* Is the person not-KO'd ? */
+  KO                = 1 << 1, /* Is the person KO'd ? */
   ALIVE             = 1 << 2, /* Is the person alive? (not imploded) */
   ITM_ENABLED       = 1 << 5, /* Can the person use item in battle? */
   DEF_ENABLED       = 1 << 6, /* Can the person use 'Defend'? */
@@ -275,6 +277,9 @@ public:
 
   /* Constructs BattleSkill objects of the BattleActor */
   bool buildBattleSkills(std::vector<BattleActor*> all_targets);
+
+  /* Checks whether the BattleActor would be immune to a given Infliction */
+  bool isImmune(Infliction test_infliction);
 
   /* Determines whether the Actor is inflicted with a given infliction */
   bool isInflicted(Infliction test_infliction);

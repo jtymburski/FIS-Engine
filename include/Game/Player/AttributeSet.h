@@ -94,7 +94,7 @@ public:
 
   /* Print out the values of the Attribute Set */
   void print(const bool &simple = false);
-  
+
   /* Methods for altering a stat by a given amount given either an index,
    * enumerated value of the Attribute, or a string name (short or long */
   bool alterStat(const int32_t &index, const int32_t &amount);
@@ -123,6 +123,12 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Returns all offensive attributes */
+  static std::vector<Attribute> getAllOffensive();
+
+  /* Returns all defensive attributes */
+  static std::vector<Attribute> getAllDefensive();
+
   /* Method for getting the index of an attribute by an enum  */
   static int32_t getIndex(const Attribute &stat);
 
@@ -134,7 +140,7 @@ public:
 
   /* Method for returning the index of an attribute given a name */
   static int32_t getIndex(const std::string &name);
-  
+
   /* Returns the max value for an attribute */
   static uint32_t getMaxValue();
 
@@ -159,7 +165,7 @@ public:
 
 /*============================================================================
  * OPERATOR FUNCTIONS
- *===========================================================================*/ 
+ *===========================================================================*/
 public:
   /* Default move-assignment operator */
   AttributeSet& operator=(AttributeSet&&) = default;

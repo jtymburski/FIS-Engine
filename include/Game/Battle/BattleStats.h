@@ -15,6 +15,10 @@
 #ifndef BATTLESTATS_H
 #define BATTLESTATS_H
 
+class Ailment;
+class BattleActor;
+class BattleStats;
+
 #include <vector>
 #include <iostream>
 

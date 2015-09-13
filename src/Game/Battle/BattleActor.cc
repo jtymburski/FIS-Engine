@@ -11,7 +11,9 @@
 *
 * See .h file for TODOs
 ******************************************************************************/
+#include "Game/Player/Ailment.h"
 #include "Game/Battle/BattleActor.h"
+#include "Game/Battle/BattleStats.h"
 
 /*=============================================================================
  * CONSTANTS
@@ -428,6 +430,22 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> all_targets)
   //     }
   //   }
   // }
+
+  return true;
+}
+
+/* Checks whether the BattleActor would be immune to a given Infliction */
+bool BattleActor::isImmune(Infliction type)
+{
+  /* Check Battle Class Immunity */
+  if(person_base && person_base->getClass())
+    if(person_base->getClass()->isImmune(type))
+      return false;
+
+  /* Check Race Immunity */
+  if(person_base && person_base->getRace())
+    if(person_base->getRace()->isImmune(type))
+      return false;
 
   return true;
 }

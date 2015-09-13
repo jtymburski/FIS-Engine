@@ -12,6 +12,8 @@
 * See .h file for TODOs
 ******************************************************************************/
 #include "Game/Battle/BattleStats.h"
+#include "Game/Battle/BattleActor.h"
+#include "Game/Player/Ailment.h"
 
 /*=============================================================================
  * CONSTANTS - See implementation for details
@@ -48,9 +50,9 @@ BattleStats::BattleStats(AttributeSet attr_set)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool BattleStats::addModifier(Attribute stat, ModifierType type,
-                              float value, bool has_lifetime, int32_t lifetime,
-                              Ailment *linked_ailment)
+bool BattleStats::addModifier(Attribute stat, ModifierType type, float value,
+                              bool has_lifetime, int32_t lifetime,
+                              Ailment* linked_ailment)
 {
   bool success = true;
 
@@ -99,8 +101,10 @@ bool BattleStats::popBackAdditive()
   return false;
 }
 
-bool BattleStats::removeLinked(Ailment *linked_ailment)
+bool BattleStats::removeLinked(Ailment* linked_ailment)
 {
+  /* If the index is valid and the linked ailment is not null, do an
+     erase remove for the matching ailment pointer. */
   if(modifiers.size() > 0 && linked_ailment)
   {
     auto it = std::find_if(begin(modifiers), end(modifiers),
@@ -123,7 +127,7 @@ bool BattleStats::removeLinked(Ailment *linked_ailment)
 void BattleStats::print()
 {
   /* Print out each of the base values */
-  for(const auto &value : values)
+  for(const auto& value : values)
   {
     if(static_cast<uint8_t>(value.first) < AttributeSet::getSize())
     {
@@ -139,7 +143,7 @@ void BattleStats::print()
   std::cout << std::endl;
 
   /* Print out the modifiers */
-  for(const auto &modifier : modifiers)
+  for(const auto& modifier : modifiers)
   {
     if(modifier.type == ModifierType::MULTIPLICATIVE)
       std::cout << "---- Modifier Type: MULTIPLICATIVE ----" << std::endl;
@@ -164,7 +168,7 @@ void BattleStats::print()
     std::cout << std::endl;
 
   /* Print out the actual calculated values of the BattleStats */
-  for(const auto &value : values)
+  for(const auto& value : values)
   {
     auto final_value = getValue(value.first);
 
@@ -183,7 +187,7 @@ void BattleStats::print()
 void BattleStats::update(int32_t lifetime_update)
 {
   /* Update lifetime based on the given value for elements which have life */
-  for(auto &modifier : modifiers)
+  for(auto& modifier : modifiers)
     if(modifier.has_lifetime)
       modifier.lifetime -= lifetime_update;
 
@@ -224,12 +228,12 @@ uint32_t BattleStats::getValue(Attribute stat)
     auto stat_modifiers = getModifiersOfStat(stat);
 
     /* First, apply all multiplicitve modifiers */
-    for(const auto &modifier : stat_modifiers)
+    for(const auto& modifier : stat_modifiers)
       if(modifier.type == ModifierType::MULTIPLICATIVE)
         value *= modifier.value;
 
     /* Second ,apply all additive modifiers */
-    for(const auto &modifier : stat_modifiers)
+    for(const auto& modifier : stat_modifiers)
       if(modifier.type == ModifierType::ADDITIVE)
         value += modifier.value;
   }
@@ -242,12 +246,11 @@ uint32_t BattleStats::getValue(Attribute stat)
   return final_val;
 }
 
-std::vector<StatModifier>
-BattleStats::getModifiersOfStat(Attribute battle_stat)
+std::vector<StatModifier> BattleStats::getModifiersOfStat(Attribute battle_stat)
 {
   std::vector<StatModifier> found_modifiers{};
 
-  for(const auto &modifier : modifiers)
+  for(const auto& modifier : modifiers)
     if(modifier.stat == battle_stat)
       found_modifiers.push_back(modifier);
 
@@ -258,7 +261,7 @@ uint32_t BattleStats::getNumAddModifiers(Attribute battle_stat)
 {
   uint32_t num_add_modifiers;
 
-  for(const auto &modifier : modifiers)
+  for(const auto& modifier : modifiers)
     if(modifier.type == ModifierType::ADDITIVE && modifier.stat == battle_stat)
       ++num_add_modifiers;
 
