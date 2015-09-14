@@ -53,7 +53,7 @@ const float Ailment::kPOISON_DMG_INCR{-0.03};
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-Ailment::Ailment(Infliction type, BattleStats& stats_victim)
+Ailment::Ailment(Infliction type, BattleStats* stats_victim)
     : stats_victim{stats_victim},
       ailment_class{AilmentClass::UNSET},
       cure_chance{0},
@@ -68,7 +68,7 @@ Ailment::Ailment(Infliction type, BattleStats& stats_victim)
   ailment_class = getClassOfInfliction(type);
 }
 
-Ailment::Ailment(Infliction type, BattleStats& stats_victim, uint32_t min_turns,
+Ailment::Ailment(Infliction type, BattleStats* stats_victim, uint32_t min_turns,
                  uint32_t max_turns, double chance)
     : Ailment(type, stats_victim)
 {
@@ -82,13 +82,20 @@ Ailment::Ailment(Infliction type, BattleStats& stats_victim, uint32_t min_turns,
  *============================================================================*/
 
 /* Calculates poison damage, true if it can occur */
-void Ailment::calcPoisonDamage()
+bool Ailment::calcPoisonDamage()
 {
-  auto max_health = stats_victim.getValue(Attribute::MVIT);
-  auto change = kPOISON_DMG_INIT + ((float)total_turns * kPOISON_DMG_INCR);
+  if(stats_victim)
+  {
+    auto max_health = stats_victim->getValue(Attribute::MVIT);
+    auto change = kPOISON_DMG_INIT + ((float)total_turns * kPOISON_DMG_INCR);
 
     if(std::round(max_health * change) >= 0)
       damage_amount = std::round(max_health * change);
+
+    return true;
+  }
+
+  return false;
 }
 
 /* Does the ailment cure? */
@@ -224,13 +231,19 @@ bool Ailment::applyBuffs()
     stats_to_buff.push_back(Attribute::MQTD);
   }
 
-  for(const auto& attribute : stats_to_buff)
+  if(stats_victim)
   {
-    stats_victim.addModifier(attribute, ModifierType::MULTIPLICATIVE, value,
-                             false, 0, this);
+    for(const auto& attribute : stats_to_buff)
+    {
+
+      stats_victim->addModifier(attribute, ModifierType::MULTIPLICATIVE, value,
+                                false, 0, this);
+    }
+
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 void Ailment::update()

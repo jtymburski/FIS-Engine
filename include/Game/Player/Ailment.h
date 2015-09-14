@@ -53,17 +53,18 @@ public:
   Ailment() = delete;
 
   /* Minimal constructor */
-  Ailment(Infliction type, BattleStats& stats_victim);
+  Ailment(Infliction type, BattleStats* stats_victim);
 
   /* Detailed constructor */
-  Ailment(Infliction type, BattleStats& stats_victim, uint32_t min_turns,
+  Ailment(Infliction type, BattleStats* stats_victim, uint32_t min_turns,
           uint32_t max_turns, double chance);
 
   /* Annihilates an AttributeSet object */
   ~Ailment() = default;
 
 private:
-  BattleStats& stats_victim;
+  /* Reference to the stats */
+  BattleStats* stats_victim;
 
   /* The classification of the Ailment */
   AilmentClass ailment_class;
@@ -107,7 +108,7 @@ private:
    *============================================================================*/
 private:
   /* Calculates the amount of poison damage, assigns to damage_amount */
-  void calcPoisonDamage();
+  bool calcPoisonDamage();
 
   /* Does the ailment cure this turn? */
   bool doesAilmentCure();
