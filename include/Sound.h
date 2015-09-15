@@ -32,6 +32,16 @@ enum class SoundChannels : int
   TRIGGERS   = 8
 };
 
+/*
+ * Structure which handles a sound queue entry
+ */
+struct SoundQueue
+{
+  uint32_t id;
+  SoundChannels channel;
+};
+
+/* Sound class */
 class Sound
 {
 public:
@@ -50,7 +60,10 @@ private:
 
   /* The time to fade the sound in. If 0, no fade */
   uint32_t fade_time;
-  
+ 
+  /* Sound ID */
+  int id;
+
   /* The number of times to play the sound. It will be loop_count+1 
    * except for -1, which is infinite loop */
   int loop_count;
@@ -64,6 +77,7 @@ private:
   /* --------------------- CONSTANTS --------------------- */
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
+  const static int kUNSET_ID; /* The placeholder unset ID */
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -80,7 +94,10 @@ public:
   
   /* Returns the time that the chunk will be faded in or out */
   uint32_t getFadeTime();
-  
+ 
+  /* Returns the ID */
+  int getID();
+
   /* Returns the loop count, the number of times it will play for */
   int getLoopCount();
 
@@ -99,7 +116,10 @@ public:
   
   /* Sets the fade time for the sound chunk sequence (in msec) */
   void setFadeTime(uint32_t time);
-  
+
+  /* Sets the ID */
+  void setID(int id);
+
   /* Set the number of times to play the song for. If 0, defaults to 1 */
   void setLoopCount(int loop_count);
 
@@ -119,24 +139,21 @@ public:
   void unsetSoundFile();
 
 /*=============================================================================
- * PUBLIC FUNCTIONS
+ * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
-
-  static bool setMasterVolume(int new_volume);
-
-  static bool setMusicVolumes(int new_volume);
-
-  static bool setAudioVolumes(int new_volume);
-
+  /* Pause all channels or select channels */
   static void pauseAllChannels();
-
   static void pauseChannel(SoundChannels channel);
-
+  
+  /* Resume all channels or select channels */
   static void resumeAllChannels();
-
   static void resumeChannel(SoundChannels channel);
-
+  
+  /* Set volumes */
+  static int setAudioVolumes(int new_volume);
+  static int setMasterVolume(int new_volume);
+  static int setMusicVolumes(int new_volume);
 };
 
 #endif // SOUND_H

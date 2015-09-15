@@ -179,9 +179,9 @@ public:
   static const std::vector<float> kPRIM_MODS; /* Primary elm curv modifiers */
   static const std::vector<float> kSECD_MODS; /* Secondary elm curv mods */
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
 private:
   /* Begin processing the actions on the buffer */
   // void beginProcessActions();
@@ -226,9 +226,9 @@ private:
   static float getCurveModifier(const ElementCurve& curve,
                                 const bool primary = true);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Adds an amount of experience and may update the level */
   bool addExp(const uint32_t& amount, const bool& update = true);
@@ -490,16 +490,16 @@ public:
                   Sprite* new_dialog_sprite = nullptr,
                   Sprite* new_action_sprite = nullptr);
 
-  /*============================================================================
-   * OPERATOR FUNCTIONS
-   *===========================================================================*/
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
 public:
   /* The copy operator */
   Person& operator=(const Person& source);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Grabs the experience required to reach a given level */
   static uint32_t getExpAt(const uint8_t& level);

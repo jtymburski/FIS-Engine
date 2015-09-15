@@ -5,7 +5,7 @@
  * Description: Handles all sound used within the game. This individual class
  *              only handles playing a single sound at one time. If you click
  *              play while it's still playing, it will stop the previous
- *              execution. However, if you create multiple sound files, SDL 
+ *              execution. However, if you create multiple sound files, SDL
  *              allows up to x files being mixed together at once before
  *              returning the channel full error.
  *
@@ -15,6 +15,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const short Sound::kINFINITE_LOOP = -1;
+const int Sound::kUNSET_ID = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -30,6 +31,7 @@ Sound::Sound()
 {
   channel = SoundChannels::UNASSIGNED;
   fade_time = 0;
+  id = kUNSET_ID;
   loop_count = 0;
   raw_data = NULL;
   volume = MIX_MAX_VOLUME;
@@ -51,7 +53,7 @@ Sound::Sound(SoundChannels channel, std::string path, int loop_count) : Sound()
   setLoopCount(loop_count);
 }
 
-/* 
+/*
  * Description: Destructor function
  */
 Sound::~Sound()
@@ -66,7 +68,7 @@ Sound::~Sound()
 /*
  * Description: This function handles a rudimentary cross-fading between two
  *              channels. This takes a channel ID and tries to play this sound
- *              first and if successful, begins to stop the given channel ID. 
+ *              first and if successful, begins to stop the given channel ID.
  *              This uses the fade time from the new class fading in to fade out
  *              the other class.
  *
@@ -77,7 +79,7 @@ void Sound::crossFade(int channel)
 {
   /* Attempt to play the current audio file */
   bool success = play();
-  
+
   /* If successful, begin to transition the passed in function out */
   if(success)
   {
@@ -96,13 +98,13 @@ void Sound::crossFade(int channel)
 /*
  * Description: This function handles a rudimentary cross-fading between two
  *              channels. This takes a channel and tries to play this sound
- *              first and if successful, begins to stop the given channel. 
+ *              first and if successful, begins to stop the given channel.
  *              This uses the fade time from the new class fading in to fade out
  *              the other class.
  *
  * Inputs: SoundChannels channel - the channel, used for sound mixing
  * Output: none
- */ 
+ */
 void Sound::crossFade(SoundChannels channel)
 {
   crossFade(static_cast<int>(channel));
@@ -144,7 +146,18 @@ uint32_t Sound::getFadeTime()
   return fade_time;
 }
 
-/* 
+/*
+ * Description: Returns the ID of the sound chunk.
+ *
+ * Inputs: none
+ * Output: int - the ID. If less than 0, unset
+ */
+int Sound::getID()
+{
+  return id;
+}
+
+/*
  * Description: Gets the number of times that the audio will loop for when
  *              the play() function is called. If it returns -1, this
  *              represents it will loop infinitely until stopped using stop().
@@ -183,7 +196,7 @@ uint8_t Sound::getVolume()
   return volume;
 }
 
-/* 
+/*
  * Description: Play function. This handles playing the sound file that was
  *              configured in this class. It will use the number of loops
  *              setup as well as the file. If the file was playing, it
@@ -199,19 +212,19 @@ uint8_t Sound::getVolume()
 bool Sound::play(bool stop_channel)
 {
   bool success = false;
-  
+
   /* Only proceed if the sound chunk is set and if the stop was successful */
-  if(raw_data != NULL && channel != SoundChannels::UNASSIGNED 
+  if(raw_data != NULL && channel != SoundChannels::UNASSIGNED
                       && stop(stop_channel))
   {
     /* Try to play on a new channel */
     int play_channel = -1;
     if(fade_time > 0)
-      play_channel = 
+      play_channel =
             Mix_FadeInChannel(getChannelInt(), raw_data, loop_count, fade_time);
     else
       play_channel = Mix_PlayChannel(getChannelInt(), raw_data, loop_count);
-      
+
     /* Check the status of the played channel */
     if(play_channel < 0)
       std::cerr << "[WARNING] Unable to play sound file: " << Mix_GetError()
@@ -219,15 +232,15 @@ bool Sound::play(bool stop_channel)
     else
       success = true;
   }
-  
+
   return success;
 }
 
 /*
- * Description: Sets the channel that the audio file should be played on. If 
+ * Description: Sets the channel that the audio file should be played on. If
  *              the sound is currently playing, stop it first.
  *
- * Inputs: SoundChannels channel - the channel enumerator for the allocated 
+ * Inputs: SoundChannels channel - the channel enumerator for the allocated
  *                                 channels.
  * Output: none
  */
@@ -250,16 +263,30 @@ void Sound::setFadeTime(uint32_t time)
   fade_time = time;
 }
 
-/* 
+/*
+ * Description: Sets the ID of the sound chunk. If less than 0, unsets the ID.
+ *
+ * Inputs: int id - the new ID for the chunk
+ * Output: none
+ */
+void Sound::setID(int id)
+{
+  if(id < 0)
+    this->id = kUNSET_ID;
+  else
+    this->id = id;
+}
+
+/*
  * Description: Sets the number of times that the audio file should loop for
  *              before halting to repeat when the play() function is called.
  *              If a 0 is used, it will default to only playing once and the
- *              number represents the number of times it will play (1=once, 
+ *              number represents the number of times it will play (1=once,
  *              etc.). If -1 is used, it will loop forever.
  *              position.
  *
  * Inputs: int play_count - the number of times the file should play for
- * Output: bool - status if play count set was successful. If it isn't, it 
+ * Output: bool - status if play count set was successful. If it isn't, it
  *                will default to 1 play.
  */
 void Sound::setLoopCount(int loop_count)
@@ -284,8 +311,8 @@ void Sound::setLoopForever()
   loop_count = kINFINITE_LOOP;
 }
 
-/* 
- * Description: Sets the sound to be played the next time the play() 
+/*
+ * Description: Sets the sound to be played the next time the play()
  *              function is called. This tries to open it and if it
  *              fails, it will not be set and the class will be notified
  *              as well as the terminal. If the sound file was set and this
@@ -309,7 +336,7 @@ bool Sound::setSoundFile(std::string path)
                 << Mix_GetError() << std::endl;
       return false;
     }
-    
+
     /* Unset the old and set the new data */
     unsetSoundFile();
     raw_data = sound;
@@ -334,20 +361,20 @@ void Sound::setVolume(uint8_t volume)
   if(volume > MIX_MAX_VOLUME)
     this->volume = MIX_MAX_VOLUME;
   this->volume = volume;
-  
+
   /* Change the chunk volume related to this file */
   if(raw_data != NULL)
     Mix_VolumeChunk(raw_data, volume);
 }
 
-/* 
+/*
  * Description: Stop function. This handles stopping the sound file that was
  *              configured in this class. It will fade out the sound file if
  *              the fade time is greater than 0. If the input is true, it will
  *              halt the channel regardless of if this class has the chunk
  *              that is playing on it.
  *
- * Inputs: bool stop_channel - if the channel should be stopped regardless if 
+ * Inputs: bool stop_channel - if the channel should be stopped regardless if
  *                             this class is the chunk that's playing
  * Output: bool - status if the stop occurred
  */
@@ -356,7 +383,7 @@ bool Sound::stop(bool stop_channel)
   if(channel != SoundChannels::UNASSIGNED)
   {
     int channel_id = getChannelInt();
-    
+
     /* Stop the playback, if relevant */
     if(stop_channel || Mix_GetChunk(channel_id) == raw_data)
     {
@@ -365,20 +392,20 @@ bool Sound::stop(bool stop_channel)
       else
         Mix_HaltChannel(channel_id);
     }
-    
+
     /* Check the status of the playing */
-    if(!Mix_Playing(channel_id) || 
-       Mix_FadingChannel(channel_id) == MIX_FADING_OUT || 
+    if(!Mix_Playing(channel_id) ||
+       Mix_FadingChannel(channel_id) == MIX_FADING_OUT ||
        Mix_FadingChannel(channel_id) == MIX_FADING_IN)
       return true;
     return false;
   }
-  
+
   return true;
 }
 
-/* 
- * Description: Unsets the sound file in this class. If it's set, the memory 
+/*
+ * Description: Unsets the sound file in this class. If it's set, the memory
  *              is freed, the pointer is nulled and the class is notified of
  *              the change. Otherwise, it just cleans up the pointer logic
  *              to ensure that the sound hasn't been set. Will be called on
@@ -391,67 +418,135 @@ void Sound::unsetSoundFile()
 {
   /* Just stop this class, if it's the playing one */
   stop(false);
-  
+
   /* Free the sound chunk */
   if(raw_data != NULL)
     Mix_FreeChunk(raw_data);
   raw_data = NULL;
 }
 
-bool Sound::setMasterVolume(int new_volume)
-{
-  if(new_volume >= 0 && new_volume <= MIX_MAX_VOLUME)
-  {
-    Mix_Volume(-1, new_volume);
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
 
-    return true;
-  }
-
-  return false;
-}
-
-bool Sound::setMusicVolumes(int new_volume)
-{
-  if(new_volume >= 0 && new_volume <= MIX_MAX_VOLUME)
-  {
-    Mix_Volume(0, new_volume);
-    Mix_Volume(1, new_volume);
-
-    return true;
-  }
-
-  return false;
-}
-
-bool Sound::setAudioVolumes(int new_volume)
-{
-  if (new_volume >= 0 && new_volume <= MIX_MAX_VOLUME)
-  {
-    for(auto i = 2; i <= 8; i++)
-      Mix_Volume(i, new_volume);
-
-    return true;
-  }
-
-  return false;
-}
-
+/*
+ * Description: Pause all channels of sound.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Sound::pauseAllChannels()
 {
   Mix_Pause(-1);
 }
 
+/*
+ * Description: Pause a single channel of sound, based on the enumerator.
+ *
+ * Inputs: SoundChannels channel - the enumerated channel to pause
+ * Output: none
+ */
 void Sound::pauseChannel(SoundChannels channel)
 {
   Mix_Pause(static_cast<int>(channel));
 }
 
+/*
+ * Description: Resumes all channels. This only does something if they were
+ *              paused previously.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Sound::resumeAllChannels()
 {
   Mix_Resume(-1);
 }
 
+/*
+ * Description: Resumes a single channel of sound, based on the enumerator. 
+ *              This only does something if they were paused previously.
+ *
+ * Inputs: SoundChannels channel - the enumerated channel to pause
+ * Output: none
+ */
 void resumeChannel(SoundChannels channel)
 {
   Mix_Resume(static_cast<int>(channel));
+}
+
+/*
+ * Description: Sets the audio volume channels to the designated volume. If less
+ *              then 0, set to 0. If greater than max, set to max (128). The
+ *              audio channels include all channels that aren't music (e.g.
+ *              weather, menus, tiles, etc)
+ *
+ * Inputs: int new_volume - the new volume level to set all audio channels.
+ * Output: none
+ */
+int Sound::setAudioVolumes(int new_volume)
+{
+  /* Error checking on input */
+  if(new_volume < 0)
+    new_volume = 0;
+  if(new_volume > MIX_MAX_VOLUME)
+    new_volume = MIX_MAX_VOLUME;
+
+  /* Set volumes */
+  Mix_Volume((int)SoundChannels::WEATHER1, new_volume);
+  Mix_Volume((int)SoundChannels::WEATHER2, new_volume);
+  Mix_Volume((int)SoundChannels::MENUS, new_volume);
+  Mix_Volume((int)SoundChannels::TILES, new_volume);
+  Mix_Volume((int)SoundChannels::THINGS, new_volume);
+  Mix_Volume((int)SoundChannels::SECTORS, new_volume);
+  Mix_Volume((int)SoundChannels::TRIGGERS, new_volume);
+
+  /* Return volume */
+  return new_volume;
+}
+
+/*
+ * Description: Sets the volume of all channels to the designated volume. If 
+ *              less then 0, set to 0. If greater than max, set to max (128). 
+ *
+ * Inputs: int new_volume - the new volume level to set all audio channels.
+ * Output: none
+ */
+int Sound::setMasterVolume(int new_volume)
+{
+    /* Error checking on input */
+  if(new_volume < 0)
+    new_volume = 0;
+  if(new_volume > MIX_MAX_VOLUME)
+    new_volume = MIX_MAX_VOLUME;
+  
+  /* Set volumes */
+  Mix_Volume(-1, new_volume);
+
+  /* Return volume */
+  return new_volume;
+}
+
+/*
+ * Description: Sets the music volume channels to the designated volume. If less
+ *              then 0, set to 0. If greater than max, set to max (128). The
+ *              music channels only include music related channels (der)
+ *
+ * Inputs: int new_volume - the new volume level to set all music channels.
+ * Output: none
+ */
+int Sound::setMusicVolumes(int new_volume)
+{
+  /* Error checking on input */
+  if(new_volume < 0)
+    new_volume = 0;
+  if(new_volume > MIX_MAX_VOLUME)
+    new_volume = MIX_MAX_VOLUME;
+  
+  /* Set volumes */
+  Mix_Volume((int)SoundChannels::MUSIC1, new_volume);
+  Mix_Volume((int)SoundChannels::MUSIC2, new_volume);
+  
+  /* Return volume */
+  return new_volume;
 }

@@ -35,9 +35,9 @@ const uint16_t Options::kRESOLUTIONS_Y[] = {704, 705, 768, 1080, 1080, 4480};
 Options::Options(std::string base_path)
 {
   this->base_path = base_path;
-  setAllToDefault();
-
   font_data = new Fonts(this);
+  
+  setAllToDefault();
 }
 
 Options::Options(const Options &source)
@@ -60,7 +60,7 @@ Options::~Options()
 void Options::copySelf(const Options &source)
 {
   /* Battle Options */
-  base_path            = source.base_path;
+  base_path = source.base_path;
   resolution_x  = source.resolution_x;
   resolution_y  = source.resolution_y;
   flags = source.flags;
@@ -68,8 +68,9 @@ void Options::copySelf(const Options &source)
 
 void Options::setAllToDefault()
 {
-  audio_level = 50;
-  music_level = 50;
+  /* Sound options */
+  setAudioLevel(60);
+  setMusicLevel(60);
 
   /* Flags */
   setLinearFiltering(false);
@@ -83,35 +84,6 @@ void Options::setAllToDefault()
   /* Rendering Options */
   setFont(0, true);
   setScreenResolution(0);
-}
-
-bool Options::setAudioLevel(int32_t new_level)
-{
-  if (new_level <= 128 && new_level >= 0)
-  {
-    audio_level = new_level;
-
-    return true;
-  }
-
-  return false;
-}
-
-bool Options::setMusicLevel(int32_t new_level)
-{
-  if (new_level <= 128 && new_level >= 0)
-  {
-    music_level = new_level;
-
-    return true;
-  }
-
-  return false;
-}
-
-void Options::setFlag(OptionState flag, bool set_value)
-{
-  (set_value) ? (flags |= flag): (flags &= ~flag);
 }
 
 /* Sets the chosen font */
@@ -163,44 +135,7 @@ void Options::setScreenResolution(uint8_t index)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-/* Returns if the player is instructed to always run */
-bool Options::isAutoRun()
-{
-  return getFlag(OptionState::AUTO_RUN);
-}
-
-/* Returns if the game is full screen mode */
-bool Options::isFullScreen()
-{
-  return getFlag(OptionState::FULLSCREEN);
-}
-
-/* Returns if linear filtering mode is enabled */
-bool Options::isLinearFilteringEnabled()
-{
-  return getFlag(OptionState::LINEAR_FILTERING);
-}
-
-bool Options::isAudioEnabled()
-{
-  return getFlag(OptionState::AUDIO_ENABLED);
-}
-
-bool Options::isVsyncEnabled()
-{
-  return getFlag(OptionState::VSYNC);
-}
-
-int32_t Options::getAudioLevel()
-{
-  return audio_level;
-}
-
-int32_t Options::getMusicLevel()
-{
-  return music_level;
-}
-
+/* Confirms correct font set-up */
 bool Options::confirmFontSetup()
 {
   bool success = true;
@@ -218,6 +153,11 @@ bool Options::confirmFontSetup()
 
   TTF_CloseFont(test_font);
   return success;
+}
+
+int32_t Options::getAudioLevel()
+{
+  return audio_level;
 }
 
 std::string Options::getBasePath()
@@ -244,6 +184,11 @@ std::string Options::getFont(uint8_t index)
   return "";
 }
 
+int32_t Options::getMusicLevel()
+{
+  return music_level;
+}
+
 uint16_t Options::getScreenHeight()
 {
   return kRESOLUTIONS_Y[resolution_y];
@@ -252,6 +197,51 @@ uint16_t Options::getScreenHeight()
 uint16_t Options::getScreenWidth()
 {
   return kRESOLUTIONS_X[resolution_x];
+}
+
+bool Options::isAudioEnabled()
+{
+  return getFlag(OptionState::AUDIO_ENABLED);
+}
+
+/* Returns if the player is instructed to always run */
+bool Options::isAutoRun()
+{
+  return getFlag(OptionState::AUTO_RUN);
+}
+
+/* Returns if the game is full screen mode */
+bool Options::isFullScreen()
+{
+  return getFlag(OptionState::FULLSCREEN);
+}
+
+/* Returns if linear filtering mode is enabled */
+bool Options::isLinearFilteringEnabled()
+{
+  return getFlag(OptionState::LINEAR_FILTERING);
+}
+
+bool Options::isVsyncEnabled()
+{
+  return getFlag(OptionState::VSYNC);
+}
+
+void Options::setAudioLevel(int32_t new_level)
+{
+  audio_level = Sound::setAudioVolumes(new_level);
+}
+
+void Options::setFlag(OptionState flag, bool set_value)
+{
+  (set_value) ? (flags |= flag): (flags &= ~flag);
+  
+  // TODO: repair. Especially regarding VSync, Full Screen, etc SDL
+}
+
+void Options::setMusicLevel(int32_t new_level)
+{
+  music_level = Sound::setMusicVolumes(new_level);
 }
 
 /*=============================================================================

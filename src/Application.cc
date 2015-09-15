@@ -25,9 +25,6 @@ Application::Application(std::string base_path)
   renderer = NULL;
   system_options = new Options(base_path);
 
-  system_options->setMusicLevel(50);
-  system_options->setAudioLevel(50);
-
   window = NULL;
 
   /* Initialize update variables */
@@ -118,12 +115,12 @@ void Application::handleEvents()
       if (press_event.keysym.sym == SDLK_F3)
       {
         system_options->setAudioLevel(system_options->getAudioLevel() - 15);
-        system_options->setMusicLevel(system_options->getAudioLevel() - 15);
+        system_options->setMusicLevel(system_options->getMusicLevel() - 15);
       }
       else if (press_event.keysym.sym == SDLK_F4)
       {
         system_options->setAudioLevel(system_options->getAudioLevel() + 15);
-        system_options->setMusicLevel(system_options->getAudioLevel() + 15);
+        system_options->setMusicLevel(system_options->getMusicLevel() + 15);
       }
       else if (press_event.keysym.sym == SDLK_4)
       {
@@ -202,7 +199,7 @@ void Application::render(uint32_t cycle_time)
   else if(mode == TESTBATTLE)
     test_battle.render(renderer);
   else if(mode == OPTIONS)
-    cycle_time = cycle_time; // DO OPTIONS EXECUTION
+    cycle_time = cycle_time; // TODO: DO OPTIONS EXECUTION
   else if (mode == PAUSED)
     cycle_time = cycle_time;
 }
@@ -536,9 +533,6 @@ bool Application::run(std::string test_path, int map_lvl)
         SDL_RenderPresent(renderer);
 
       count++;
-
-      Sound::setMusicVolumes(system_options->getMusicLevel());
-      Sound::setAudioVolumes(system_options->getAudioLevel());
 
       /* Delay if VSync is not enabled */
       if(!system_options->isVsyncEnabled())

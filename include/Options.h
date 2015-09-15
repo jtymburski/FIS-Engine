@@ -20,6 +20,7 @@ class Fonts;
 
 #include "EnumFlags.h"
 #include "Fonts.h"
+#include "Sound.h"
 
 ENUM_FLAGS(OptionState)
 enum class OptionState
@@ -52,7 +53,7 @@ private:
   /* Sound levels */
   int32_t audio_level;
   int32_t music_level;
-
+  
   /* Auto run, in the map */
   //bool auto_run;
 
@@ -118,7 +119,7 @@ private:
   void setScreenResolution(uint8_t index);
 
   /* Enable or disable vertical refresh syncing */
-  void setVsync(bool enabled);
+  void setVsync(bool enabled); // TODO: re-implement - should be in GIT hist
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -126,7 +127,30 @@ private:
 public:
   /* Function to confirm the setup of the font */
   bool confirmFontSetup();
+  
+  /* Sound/Audio getter */
+  int32_t getAudioLevel();
+  
+  /* Returns the program configured base path, used for pathing throughout */
+  std::string getBasePath();
+  
+  /* Returns the value of a given OptionState flag */
+  bool getFlag(const OptionState &test_flag);
+  
+  /* Returns the path to the font to use throughout the application */
+  std::string getFont();
+  std::string getFont(uint8_t index);
 
+  /* Music getter */
+  int32_t getMusicLevel();
+
+  /* Returns the screen dimensions to be painted */
+  uint16_t getScreenHeight();
+  uint16_t getScreenWidth();
+  
+  /* Returns true if the sound is enabled */
+  bool isAudioEnabled();
+  
   /* Is the player instructed to always run? */
   bool isAutoRun();
 
@@ -136,38 +160,17 @@ public:
   /* Returns if linear filtering mode is enabled */
   bool isLinearFilteringEnabled();
 
-  /* Returns true if the sound is enabled */
-  bool isAudioEnabled();
-
   /* Returns if vertical refresh syncing is enabled */
   bool isVsyncEnabled();
 
-  /* Sound/Audio getters */
-  int32_t getAudioLevel();
-  int32_t getMusicLevel();
-
-  /* Returns the value of a given OptionState flag */
-  bool getFlag(const OptionState &test_flag);
-
-  /* Returns the program configured base path, used for pathing throughout */
-  std::string getBasePath();
-
-  /* Returns the path to the font to use throughout the application */
-  std::string getFont();
-  std::string getFont(uint8_t index);
-
-  /* Returns the screen dimensions to be painted */
-  uint16_t getScreenHeight();
-  uint16_t getScreenWidth();
-
   /* Audio setter */
-  bool setAudioLevel(int32_t new_level);
-
-  /* Sound setter */
-  bool setMusicLevel(int32_t new_level);
-
+  void setAudioLevel(int32_t new_level);
+  
   /* Sets an option flag to a given state */
   void setFlag(OptionState flags, bool set_value = true);
+  
+  /* Sound setter */
+  void setMusicLevel(int32_t new_level);
 
 /*============================================================================
  * OPERATOR FUNCTIONS
