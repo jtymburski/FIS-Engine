@@ -19,6 +19,7 @@
 #include "Options.h"
 //#include "SavedGame.h"
 #include "Sound.h"
+#include "SoundHandler.h"
 #include "Sprite.h"
 #include "TestBattle.h"
 #include "Text.h"
@@ -66,6 +67,9 @@ private:
 
   /* The renderer for handling all interactions with the window */
   SDL_Renderer* renderer;
+
+  /* Sound Handler */
+  SoundHandler sound_handler;
 
   /* All options available for the system */
   Options* system_options;

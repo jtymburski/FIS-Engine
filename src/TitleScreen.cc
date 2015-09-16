@@ -54,7 +54,7 @@ TitleScreen::TitleScreen(Options* running_config)
 /* Destructor function */
 TitleScreen::~TitleScreen()
 {
-  background_music.stop(false);
+  //background_music.stop(false);
   system_options = NULL;
   unsetMenu();
 }
@@ -163,13 +163,13 @@ void TitleScreen::enableView(bool enable)
   // TODO: Temporarily make music permanent
   if(enable)
   {
-    background_music.crossFade(game_music.getChannelInt());
+    //background_music.crossFade(game_music.getChannelInt());
     //background_music.play();
   }
   /* Disables all relevant control for the view */
   else
   {
-    game_music.crossFade(background_music.getChannelInt());
+    //game_music.crossFade(background_music.getChannelInt());
     //background_music.stop();
   }
 }
@@ -330,24 +330,25 @@ bool TitleScreen::setConfiguration(Options* running_config)
 /* Sets the music in the title screen - TODO: Encapsulate in file load? */
 void TitleScreen::setMusic()
 {
-  /* Sound setup */
-  background_music.setChannel(SoundChannels::MUSIC1);
-  background_music.setSoundFile(base_path + 
-                                "sound/unlicensed/ag_theme.ogg");
-  background_music.setLoopForever();
-  background_music.setFadeTime(2000);
-  background_music.setVolume(system_options->getMusicLevel());
-  
+  // TODO: CLEAN-UP
 
-  game_music.setChannel(SoundChannels::MUSIC2);
-  game_music.setSoundFile(base_path + "sound/unlicensed/space_cowboy.ogg");
-  game_music.setFadeTime(2000);
-  game_music.setLoopForever();
-  game_music.setVolume(system_options->getMusicLevel());
+  /* Sound setup */
+  //background_music.setChannel(SoundChannels::MUSIC1);
+  //background_music.setSoundFile(base_path + 
+  //                              "sound/unlicensed/ag_theme.ogg");
+  //background_music.setLoopForever();
+  //background_music.setFadeTime(2000);
+  //background_music.setVolume(system_options->getMusicLevel());
   
-  menu_click_sound.setChannel(SoundChannels::MENUS);
-  menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
-  menu_click_sound.setVolume(system_options->getAudioLevel());
+  //game_music.setChannel(SoundChannels::MUSIC2);
+  //game_music.setSoundFile(base_path + "sound/unlicensed/space_cowboy.ogg");
+  //game_music.setFadeTime(2000);
+  //game_music.setLoopForever();
+  //game_music.setVolume(system_options->getMusicLevel());
+  
+  //menu_click_sound.setChannel(SoundChannels::MENUS);
+  //menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
+  //menu_click_sound.setVolume(system_options->getAudioLevel());
 }
 
 /* Updates the title screen. Necessary for visual updates */

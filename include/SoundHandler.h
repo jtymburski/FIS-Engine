@@ -9,6 +9,8 @@
 #ifndef SOUNDHANDLER_H
 #define SOUNDHANDLER_H
 
+#include <map>
+
 #include "Sound.h"
 #include "XmlData.h"
 
@@ -24,8 +26,8 @@ public:
 
 private:
   /* Audio Sets */
-  std::vector<Sound*> audio_music;
-  std::vector<Sound*> audio_sound;
+  std::map<int, Sound*> audio_music;
+  std::map<int, Sound*> audio_sound;
 
   /* Queue */
   std::vector<SoundQueue> queue;
@@ -38,37 +40,35 @@ private:
  *============================================================================*/
 private:
   /* Create new sound files, based on ID */
-  void createAudioMusic(int id);
-  void createAudioSound(int id);
+  Sound* createAudioMusic(int id);
+  Sound* createAudioSound(int id);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
   /* Add sound files */
-  bool addAudioMusic(Sound* chunk);
-  bool addAudioSound(Sound* chunk);
+  bool addMusic(Sound* chunk);
+  bool addSound(Sound* chunk);
 
   /* Add to queue */
   void addToQueue(const SoundQueue& entry);
   void addToQueue(std::vector<SoundQueue> entries);
-
-  /* Clear */
-  void clear();
 
   /* Getters for sound files */
   Sound* getAudioMusic(int id);
   Sound* getAudioSound(int id);
 
   /* Load data from file */
-  bool loadData(XmlData data, int index, std::string base_path);
+  bool load(XmlData data, int index, std::string base_path);
 
   /* Process the queue */
   void process();
 
   /* Remove sound files */
-  bool removeAudioMusic(int id);
-  bool removeAudioSound(int id);
+  void removeAll();
+  bool removeMusic(int id);
+  bool removeSound(int id);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

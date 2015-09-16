@@ -106,10 +106,13 @@ public:
   
   /* Returns the volume of the sound chunk */
   uint8_t getVolume();
-  
+ 
+  /* Returns if the chunk is playing */
+  bool isPlaying();
+
   /* Play function. If sound is set, it will play the sound for the given number
    * of loops */
-  bool play(bool stop_channel = true);
+  bool play(bool stop_channel = false);
   
   /* Sets the channel integer to be used for playing the chunk */
   void setChannel(SoundChannels channel);
@@ -133,7 +136,7 @@ public:
   void setVolume(uint8_t volume);
   
   /* Stop function. Will stop the sound, if playing */
-  bool stop(bool stop_channel = true);
+  bool stop(bool skip_fade = false);
   
   /* Unset the sound file and frees the memory */
   void unsetSoundFile();
@@ -142,6 +145,13 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Returns channel int corresponding to the channel enum */
+  static int getChannelInt(SoundChannels channel);
+
+  /* Status if given channel input is playing */
+  static bool isChannelPlaying(int channel);
+  static bool isChannelPlaying(SoundChannels channel);
+
   /* Pause all channels or select channels */
   static void pauseAllChannels();
   static void pauseChannel(SoundChannels channel);
@@ -149,11 +159,15 @@ public:
   /* Resume all channels or select channels */
   static void resumeAllChannels();
   static void resumeChannel(SoundChannels channel);
-  
+ 
   /* Set volumes */
   static int setAudioVolumes(int new_volume);
   static int setMasterVolume(int new_volume);
   static int setMusicVolumes(int new_volume);
+
+  /* Stop all channels or select channels */
+  static void stopAllChannels();
+  static void stopChannel(SoundChannels channel);
 };
 
 #endif // SOUND_H

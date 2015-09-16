@@ -70,27 +70,31 @@ Sound::~Sound()
  *              channels. This takes a channel ID and tries to play this sound
  *              first and if successful, begins to stop the given channel ID.
  *              This uses the fade time from the new class fading in to fade out
- *              the other class.
+ *              the other class. Only executes if the channel is different than
+ *              the set channel in this class.
  *
  * Inputs: int channel - the channel ID, used for sound mixing
  * Output: none
  */
 void Sound::crossFade(int channel)
 {
-  /* Attempt to play the current audio file */
-  bool success = play();
-
-  /* If successful, begin to transition the passed in function out */
-  if(success)
+  if(channel != getChannelInt() && channel >= 0 && getChannelInt() >= 0)
   {
-    if(Mix_FadingChannel(channel) == MIX_FADING_IN)
-      Mix_HaltChannel(channel);
-    else if(Mix_FadingChannel(channel) == MIX_NO_FADING)
+    /* Attempt to play the current audio file */
+    bool success = play();
+
+    /* If successful, begin to transition the passed in function out */
+    if(success)
     {
-      if(fade_time > 0)
-        Mix_FadeOutChannel(channel, fade_time);
-      else
+      if(Mix_FadingChannel(channel) == MIX_FADING_IN)
         Mix_HaltChannel(channel);
+      else if(Mix_FadingChannel(channel) == MIX_NO_FADING)
+      {
+        if(fade_time > 0)
+          Mix_FadeOutChannel(channel, fade_time);
+        else
+          Mix_HaltChannel(channel);
+      }
     }
   }
 }
@@ -107,7 +111,8 @@ void Sound::crossFade(int channel)
  */
 void Sound::crossFade(SoundChannels channel)
 {
-  crossFade(static_cast<int>(channel));
+  if(channel != SoundChannels::UNASSIGNED)
+    crossFade(getChannelInt(channel));
 }
 
 /*
@@ -131,7 +136,7 @@ SoundChannels Sound::getChannel()
  */
 int Sound::getChannelInt()
 {
-  return static_cast<int>(channel);
+  return getChannelInt(channel);
 }
 
 /*
@@ -197,6 +202,27 @@ uint8_t Sound::getVolume()
 }
 
 /*
+ * Description: Returns if the chunk is playing on its assigned channel.
+ *
+ * Inputs: none
+ * Output: bool - true if the sound chunk is playing
+ */
+bool Sound::isPlaying()
+{
+  if(channel != SoundChannels::UNASSIGNED)
+  {
+    int channel_id = getChannelInt();
+
+    if(Mix_Playing(channel_id) > 0 &&
+       Mix_GetChunk(channel_id) == raw_data)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+/*
  * Description: Play function. This handles playing the sound file that was
  *              configured in this class. It will use the number of loops
  *              setup as well as the file. If the file was playing, it
@@ -206,7 +232,8 @@ uint8_t Sound::getVolume()
  *              stopping.
  *
  * Inputs: bool stop_channel - should the channel be stopped regardless of what
- *                             is playing.
+ *                             is playing. Default false. If false, only stops
+ *                             this channel if this chunk is playing on it.
  * Output: bool - if the play call was successful
  */
 bool Sound::play(bool stop_channel)
@@ -215,15 +242,21 @@ bool Sound::play(bool stop_channel)
 
   /* Only proceed if the sound chunk is set and if the stop was successful */
   if(raw_data != NULL && channel != SoundChannels::UNASSIGNED
-                      && stop(stop_channel))
+                      && stop(true))
   {
-    /* Try to play on a new channel */
+    int channel_int = getChannelInt();
+
+    /* If stop channel, clean out all other playing */
+    if(stop_channel)
+      stopChannel(channel);
+
+    /* Try to play on the channel */
     int play_channel = -1;
     if(fade_time > 0)
       play_channel =
-            Mix_FadeInChannel(getChannelInt(), raw_data, loop_count, fade_time);
+            Mix_FadeInChannel(channel_int, raw_data, loop_count, fade_time);
     else
-      play_channel = Mix_PlayChannel(getChannelInt(), raw_data, loop_count);
+      play_channel = Mix_PlayChannel(channel_int, raw_data, loop_count);
 
     /* Check the status of the played channel */
     if(play_channel < 0)
@@ -246,7 +279,7 @@ bool Sound::play(bool stop_channel)
  */
 void Sound::setChannel(SoundChannels channel)
 {
-  if(stop(false))
+  if(stop(true))
     this->channel = channel;
 }
 
@@ -371,36 +404,32 @@ void Sound::setVolume(uint8_t volume)
  * Description: Stop function. This handles stopping the sound file that was
  *              configured in this class. It will fade out the sound file if
  *              the fade time is greater than 0. If the input is true, it will
- *              halt the channel regardless of if this class has the chunk
- *              that is playing on it.
+ *              halt the channel instantly instead of waiting for the set fade
+ *              out time. This will only stop the channel if the chunk is
+ *              playing.
  *
- * Inputs: bool stop_channel - if the channel should be stopped regardless if
- *                             this class is the chunk that's playing
- * Output: bool - status if the stop occurred
+ * Inputs: bool skip_fade - true if the fade time should be negated. Default
+ *                          to false.
+ * Output: bool - status if the current chunk is stopped or stopping
  */
-bool Sound::stop(bool stop_channel)
+bool Sound::stop(bool skip_fade)
 {
-  if(channel != SoundChannels::UNASSIGNED)
+  if(isPlaying())
   {
     int channel_id = getChannelInt();
 
-    /* Stop the playback, if relevant */
-    if(stop_channel || Mix_GetChunk(channel_id) == raw_data)
-    {
-      if(fade_time > 0)
-        Mix_FadeOutChannel(channel_id, fade_time);
-      else
-        Mix_HaltChannel(channel_id);
-    }
+    /* Stop the chunk */
+    if(fade_time > 0 && !skip_fade)
+      Mix_FadeOutChannel(channel_id, fade_time);
+    else
+      Mix_HaltChannel(channel_id);
 
-    /* Check the status of the playing */
-    if(!Mix_Playing(channel_id) ||
-       Mix_FadingChannel(channel_id) == MIX_FADING_OUT ||
-       Mix_FadingChannel(channel_id) == MIX_FADING_IN)
+    /* Check the status */
+    if(Mix_Playing(channel_id) == 0 || 
+       Mix_FadingChannel(channel_id) == MIX_FADING_OUT)
       return true;
     return false;
   }
-
   return true;
 }
 
@@ -417,7 +446,7 @@ bool Sound::stop(bool stop_channel)
 void Sound::unsetSoundFile()
 {
   /* Just stop this class, if it's the playing one */
-  stop(false);
+  stop(true);
 
   /* Free the sound chunk */
   if(raw_data != NULL)
@@ -428,6 +457,42 @@ void Sound::unsetSoundFile()
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+  
+/*
+ * Description: Returns the corresponding integer for the channel enumerator. If
+ *              less than 0, invalid.
+ *
+ * Inputs: SoundChannels channel - the channel enumerator
+ * Output: int - the integer representation of the enum
+ */
+int Sound::getChannelInt(SoundChannels channel)
+{
+  return static_cast<int>(channel);
+}
+
+/*
+ * Description: Returns if the given channel integer is playing.
+ *
+ * Inputs: int channel - the channel number to check
+ * Output: bool - true if the channel is playing
+ */
+bool Sound::isChannelPlaying(int channel)
+{
+  return (Mix_Playing(channel) > 0);
+}
+
+/*
+ * Description: Returns if the given channel enum is playing.
+ *
+ * Inputs: SoundChannels channel - the channel enum to check
+ * Output: bool - true if the channel is playing
+ */
+bool Sound::isChannelPlaying(SoundChannels channel)
+{
+  if(channel != SoundChannels::UNASSIGNED)
+    return isChannelPlaying(getChannelInt(channel));
+  return false;
+}
 
 /*
  * Description: Pause all channels of sound.
@@ -448,7 +513,8 @@ void Sound::pauseAllChannels()
  */
 void Sound::pauseChannel(SoundChannels channel)
 {
-  Mix_Pause(static_cast<int>(channel));
+  if(channel != SoundChannels::UNASSIGNED)
+    Mix_Pause(getChannelInt(channel));
 }
 
 /*
@@ -470,9 +536,10 @@ void Sound::resumeAllChannels()
  * Inputs: SoundChannels channel - the enumerated channel to pause
  * Output: none
  */
-void resumeChannel(SoundChannels channel)
+void Sound::resumeChannel(SoundChannels channel)
 {
-  Mix_Resume(static_cast<int>(channel));
+  if(channel != SoundChannels::UNASSIGNED)
+    Mix_Resume(getChannelInt(channel));
 }
 
 /*
@@ -549,4 +616,27 @@ int Sound::setMusicVolumes(int new_volume)
   
   /* Return volume */
   return new_volume;
+}
+
+/*
+ * Description: Stops all channels with no fade out time.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Sound::stopAllChannels()
+{
+  Mix_HaltChannel(-1);
+}
+
+/*
+ * Description: Stops the given channel with no fade time.
+ *
+ * Inputs: SoundChannels channel - the channel to halt
+ * Output: none
+ */
+void Sound::stopChannel(SoundChannels channel)
+{
+  if(channel != SoundChannels::UNASSIGNED)
+    Mix_HaltChannel(getChannelInt(channel));
 }
