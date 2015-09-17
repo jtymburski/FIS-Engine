@@ -1034,6 +1034,12 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
                           geography[map_index][0].size());
     }
   }
+  /* Test: Play Sound */
+  else if(event.keysym.sym == SDLK_3)
+  {
+    if(event_handler != nullptr)
+      event_handler->triggerSound(1000, SoundChannels::TILES);
+  }
   /* Test: trigger grey scale */
   else if(event.keysym.sym == SDLK_g)
   {
@@ -1749,6 +1755,17 @@ void Map::unloadMap()
 bool Map::update(int cycle_time)
 {
   std::vector<std::vector<Tile*>> tile_set;
+
+  /* Check on music */
+  // TODO: LINK WITH CURRENT RUNNING MUSIC - once loading is working
+  if(event_handler != nullptr && event_handler->getSoundHandler() != nullptr)
+  {
+    uint32_t id = 1000;
+    
+    Sound* chunk = event_handler->getSoundHandler()->getAudioMusic(id);
+    if(chunk != nullptr && !chunk->isPlaying())
+      event_handler->triggerMusic(id);
+  }
 
   /* Check on player interaction */
   if(player != NULL && player->getTarget() != NULL

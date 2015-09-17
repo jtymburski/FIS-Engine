@@ -20,7 +20,7 @@ class Fonts;
 
 #include "EnumFlags.h"
 #include "Fonts.h"
-#include "Sound.h"
+#include "SoundHandler.h"
 
 ENUM_FLAGS(OptionState)
 enum class OptionState
@@ -53,7 +53,7 @@ private:
   /* Sound levels */
   int32_t audio_level;
   int32_t music_level;
-  
+
   /* Auto run, in the map */
   //bool auto_run;
 
@@ -72,6 +72,9 @@ private:
   /* Resolution of the screen currently being used */
   uint8_t resolution_x;
   uint8_t resolution_y;
+
+  /* Sound handling class */
+  SoundHandler* sound_handler;
 
   /* Vertical refresh syncing enable */
   //bool vsync_enabled;
@@ -127,16 +130,16 @@ private:
 public:
   /* Function to confirm the setup of the font */
   bool confirmFontSetup();
-  
+
   /* Sound/Audio getter */
   int32_t getAudioLevel();
-  
+
   /* Returns the program configured base path, used for pathing throughout */
   std::string getBasePath();
-  
+
   /* Returns the value of a given OptionState flag */
   bool getFlag(const OptionState &test_flag);
-  
+
   /* Returns the path to the font to use throughout the application */
   std::string getFont();
   std::string getFont(uint8_t index);
@@ -147,10 +150,10 @@ public:
   /* Returns the screen dimensions to be painted */
   uint16_t getScreenHeight();
   uint16_t getScreenWidth();
-  
+
   /* Returns true if the sound is enabled */
   bool isAudioEnabled();
-  
+
   /* Is the player instructed to always run? */
   bool isAutoRun();
 
@@ -165,12 +168,15 @@ public:
 
   /* Audio setter */
   void setAudioLevel(int32_t new_level);
-  
+
   /* Sets an option flag to a given state */
   void setFlag(OptionState flags, bool set_value = true);
-  
+
   /* Sound setter */
   void setMusicLevel(int32_t new_level);
+
+  /* Sets the sound handler used. If unset, no sounds will play */
+  void setSoundHandler(SoundHandler* new_handler);
 
 /*============================================================================
  * OPERATOR FUNCTIONS

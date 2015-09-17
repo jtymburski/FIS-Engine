@@ -155,6 +155,9 @@ public:
   bool getRenderThings(uint8_t render_level, MapPerson*& person, 
                        MapThing*& thing, MapInteractiveObject*& io) const;
 
+  /* Returns the top most sound ID that could be stepped on */
+  int32_t getSoundID();
+
   /* Returns the tile status */
   TileStatus getStatus() const;
 

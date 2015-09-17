@@ -23,21 +23,28 @@ Application::Application(std::string base_path)
   this->base_path = base_path;
   initialized = false;
   renderer = NULL;
-  system_options = new Options(base_path);
-
   window = NULL;
+
+  /* System Options */
+  system_options = new Options(base_path);
+  system_options->setSoundHandler(&sound_handler);
 
   /* Initialize update variables */
   update_rate = kUPDATE_RATE;
   update_sync = 0;
 
-  /* Set the title screen parameters */
+  /* Game Handler */
   game_handler.setConfiguration(system_options);
+  game_handler.setSoundHandler(&sound_handler);
+
+  /* Test battle */
   test_battle.setConfiguration(system_options);
+
+  /* Title Screen */
   title_screen.setConfiguration(system_options);
+  title_screen.setSoundHandler(&sound_handler);
 
   /* Sets the current mode */
-  title_screen.setMusic();
   changeMode(TITLESCREEN);
   title_screen.enableView(true);
 }
@@ -114,13 +121,13 @@ void Application::handleEvents()
 
       if (press_event.keysym.sym == SDLK_F3)
       {
-        system_options->setAudioLevel(system_options->getAudioLevel() - 15);
-        system_options->setMusicLevel(system_options->getMusicLevel() - 15);
+        //system_options->setAudioLevel(system_options->getAudioLevel() - 15);
+        system_options->setMusicLevel(system_options->getMusicLevel() - 10);
       }
       else if (press_event.keysym.sym == SDLK_F4)
       {
-        system_options->setAudioLevel(system_options->getAudioLevel() + 15);
-        system_options->setMusicLevel(system_options->getMusicLevel() + 15);
+        //system_options->setAudioLevel(system_options->getAudioLevel() + 15);
+        system_options->setMusicLevel(system_options->getMusicLevel() + 10);
       }
       else if (press_event.keysym.sym == SDLK_4)
       {
@@ -513,6 +520,9 @@ bool Application::run(std::string test_path, int map_lvl)
        * This returns true if the application should shut down */
       if(updateViews(cycle_time))
         quit = true;
+
+      /* Play through sound queue */
+      sound_handler.process();
 
       /* Clear screen */
       if(mode != PAUSED)

@@ -15,27 +15,52 @@
 /* Constructor: Sets up a blank template, nothing will play */
 SoundHandler::SoundHandler()
 {
+  // TODO: TEMP - REMOVE: create test sound files
   char* directory = SDL_GetBasePath();
   std::string base_path(directory);
   SDL_free(directory);
 
-  /* Create test sound files - TODO remove */
+  /* ---- MUSIC ---- */
   Sound* title_music = new Sound();
-  title_music->setID(0);
+  title_music->setID(Sound::kID_MUSIC_TITLE);
   title_music->setFadeTime(2000);
   title_music->setSoundFile(base_path + "sound/unlicensed/ag_theme.ogg");
   addMusic(title_music);
 
+  /* ---- CUSTOM MUSIC ---- */
   Sound* game_music = new Sound();
   game_music->setID(1000);
   game_music->setFadeTime(2500);
-  game_music->setSoundFile(base_path + "sound/unlicensed/space_cowboy.ogg");
+  game_music->setSoundFile(base_path +
+                           "sound/ambience/background_menu_sound.wav");
   addMusic(game_music);
 
+  /* ---- SOUND ---- */
   Sound* menu_sound = new Sound();
-  menu_sound->setID(0);
+  menu_sound->setID(Sound::kID_SOUND_MENU_CHG);
   menu_sound->setSoundFile(base_path + "sound/functional/menu_click.wav");
   addSound(menu_sound);
+
+  Sound* menu_nxt_sound = new Sound();
+  menu_nxt_sound->setID(Sound::kID_SOUND_MENU_NEXT);
+  menu_nxt_sound->setSoundFile(base_path + "sound/functional/menu_next.wav");
+  addSound(menu_nxt_sound);
+
+  Sound* menu_prv_sound = new Sound();
+  menu_prv_sound->setID(Sound::kID_SOUND_MENU_PREV);
+  menu_prv_sound->setSoundFile(base_path + "sound/functional/menu_prev.wav");
+  addSound(menu_prv_sound);
+
+  /* ---- CUSTOM SOUND ---- */
+  Sound* grass_sound = new Sound();
+  grass_sound->setID(1000);
+  grass_sound->setSoundFile(base_path + "sound/map/grass01.wav");
+  addSound(grass_sound);
+
+  Sound* metal_sound = new Sound();
+  metal_sound->setID(1001);
+  metal_sound->setSoundFile(base_path + "sound/map/metal01.wav");
+  addSound(metal_sound);
 }
 
 /* Destructor function */
@@ -49,7 +74,7 @@ SoundHandler::~SoundHandler()
  *============================================================================*/
 
 /* Create new sound files, based on ID */
-Sound* SoundHandler::createAudioMusic(int id)
+Sound* SoundHandler::createAudioMusic(uint32_t id)
 {
   Sound* found_chunk = getAudioMusic(id);
 
@@ -69,7 +94,7 @@ Sound* SoundHandler::createAudioMusic(int id)
 }
 
 /* Create new sound files, based on ID */
-Sound* SoundHandler::createAudioSound(int id)
+Sound* SoundHandler::createAudioSound(uint32_t id)
 {
   Sound* found_chunk = getAudioSound(id);
 
@@ -92,7 +117,7 @@ Sound* SoundHandler::createAudioSound(int id)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
-  
+
 /* Add sound files */
 bool SoundHandler::addMusic(Sound* chunk)
 {
@@ -106,7 +131,7 @@ bool SoundHandler::addMusic(Sound* chunk)
     /* Modify chunk settings */
     chunk->setChannel(SoundChannels::MUSIC1);
     chunk->setLoopForever();
-    
+
     /* Add new */
     auto ret = audio_music.insert(std::pair<int, Sound*>(id, chunk));
     if(ret.second == false)
@@ -144,19 +169,32 @@ bool SoundHandler::addSound(Sound* chunk)
 }
 
 /* Add to queue */
-void SoundHandler::addToQueue(const SoundQueue& entry)
+void SoundHandler::addToQueue(uint32_t id, SoundChannels channel,
+                              bool process_force)
 {
-  queue.push_back(entry);
+  addToQueue({id, channel}, process_force);
 }
 
 /* Add to queue */
-void SoundHandler::addToQueue(std::vector<SoundQueue> entries)
+void SoundHandler::addToQueue(const SoundQueue& entry,
+                              bool process_force)
+{
+  queue.push_back(entry);
+  if(process_force)
+    process();
+}
+
+/* Add to queue */
+void SoundHandler::addToQueue(std::vector<SoundQueue> entries,
+                              bool process_force)
 {
   queue.insert(queue.end(), entries.begin(), entries.end());
+  if(process_force)
+    process();
 }
 
 /* Getters for sound files */
-Sound* SoundHandler::getAudioMusic(int id)
+Sound* SoundHandler::getAudioMusic(uint32_t id)
 {
   auto iter = audio_music.find(id);
   if(iter != audio_music.end())
@@ -165,12 +203,30 @@ Sound* SoundHandler::getAudioMusic(int id)
 }
 
 /* Getters for sound files */
-Sound* SoundHandler::getAudioSound(int id)
+Sound* SoundHandler::getAudioSound(uint32_t id)
 {
   auto iter = audio_sound.find(id);
   if(iter != audio_sound.end())
     return iter->second;
   return nullptr;
+}
+
+/* Is the given ID music or sound file valid and set */
+bool SoundHandler::isMusicSet(uint32_t id)
+{
+  Sound* chunk = getAudioMusic(id);
+  if(chunk != nullptr && chunk->getRawData() != nullptr)
+    return true;
+  return false;
+}
+
+/* Is the given ID music or sound file valid and set */
+bool SoundHandler::isSoundSet(uint32_t id)
+{
+  Sound* chunk = getAudioSound(id);
+  if(chunk != nullptr && chunk->getRawData() != nullptr)
+    return true;
+  return false;
 }
 
 /* Load data from file */
@@ -225,7 +281,7 @@ void SoundHandler::process()
   for(uint32_t i = 0; i < queue.size(); i++)
   {
     /* -- MUSIC QUEUE ITEM -- */
-    if(queue[i].channel == SoundChannels::MUSIC1 || 
+    if(queue[i].channel == SoundChannels::MUSIC1 ||
        queue[i].channel == SoundChannels::MUSIC2)
     {
       bool playing_mus1 = Sound::isChannelPlaying(SoundChannels::MUSIC1);
@@ -269,6 +325,9 @@ void SoundHandler::process()
     /* -- SOUND QUEUE ITEM -- */
     else if(queue[i].channel != SoundChannels::UNASSIGNED)
     {
+      /* Try and stop the channel prior - test: might remove */
+      Sound::stopChannel(queue[i].channel);
+
       /* Only process if the channel is not playing */
       if(!Sound::isChannelPlaying(queue[i].channel))
       {
@@ -306,7 +365,7 @@ void SoundHandler::removeAll()
 }
 
 /* Remove sound files */
-bool SoundHandler::removeMusic(int id)
+bool SoundHandler::removeMusic(uint32_t id)
 {
   Sound* found = getAudioMusic(id);
   if(found != nullptr)
@@ -319,7 +378,7 @@ bool SoundHandler::removeMusic(int id)
 }
 
 /* Remvoe sound files */
-bool SoundHandler::removeSound(int id)
+bool SoundHandler::removeSound(uint32_t id)
 {
   Sound* found = getAudioSound(id);
   if(found != nullptr)
@@ -334,6 +393,6 @@ bool SoundHandler::removeSound(int id)
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-  
+
 /* Pause all channels or select channels */
 //static void pauseAllChannels();

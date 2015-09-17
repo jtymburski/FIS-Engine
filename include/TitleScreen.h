@@ -14,7 +14,7 @@
 
 #include "Music.h"
 #include "Options.h"
-#include "Sound.h"
+#include "SoundHandler.h"
 #include "Sprite.h"
 #include "Text.h"
 
@@ -56,10 +56,6 @@ private:
   uint16_t delay; // TODO: Remove or fix - for displaying poofs
   uint16_t delay2; // TODO: Remove or fix - for displaying poofs
 
-  /* Background music during title screen (and game music) */
-  Sound background_music;
-  Sound game_music; // TODO: Temporary
-
   /* The base path, for all rendering */
   std::string base_path;
 
@@ -74,9 +70,6 @@ private:
   uint16_t nav_time;
   bool nav_up;
 
-  /* Menu click audio, during selection changes */
-  Sound menu_click_sound;
-
   /* The render index of the top left of the title screen options */
   int render_index;
 
@@ -86,6 +79,9 @@ private:
   /* The options at the first menu level */
   std::vector<Text*> selected_options;
   std::vector<Text*> unselected_options;
+
+  /* Sound handling class */
+  SoundHandler* sound_handler;
 
   /* The configuration for display of the game */
   Options* system_options;
@@ -142,8 +138,8 @@ public:
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 
-  /* Sets the music in the title screen - TODO: Encapsulate in file load? */
-  void setMusic();
+  /* Sets the sound handler used. If unset, no sounds will play */
+  void setSoundHandler(SoundHandler* new_handler);
 
   /* Updates the title screen. Necessary for visual updates */
   bool update(int32_t cycle_time);

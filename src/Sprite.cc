@@ -22,6 +22,7 @@ const uint8_t Sprite::kDEFAULT_OPACITY = 255;
 const uint8_t Sprite::kDELTA_GREY_SCALE = 2;
 const uint8_t Sprite::kDOUBLE_DIGITS = 10;
 const float Sprite::kMAX_BRIGHTNESS = 2.0;
+const int32_t Sprite::kUNSET_SOUND_ID = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -57,6 +58,7 @@ Sprite::Sprite()
   rotation_angle = 0.0;
   size = 0;
   sequence = FORWARD;
+  sound_id = kUNSET_SOUND_ID;
   texture = NULL;
   texture_update = false;
 }
@@ -458,6 +460,14 @@ float Sprite::getRotation() const { return rotation_angle; }
  * Output: int - the size of the sprite list
  */
 int Sprite::getSize() const { return size; }
+
+/*
+ * Description: Returns the sound ID reference. If less than 0, invalid.
+ *
+ * Inputs: none
+ * Output: int32_t - the ID of sound chunk
+ */
+int32_t Sprite::getSoundID() const { return sound_id; }
 
 /*
  * Description: Returns the color distribution evenness, according to the temp.
@@ -1140,6 +1150,20 @@ void Sprite::setOpacity(uint8_t opacity)
  * Output: none
  */
 void Sprite::setRotation(float angle) { rotation_angle = angle; }
+
+/*
+ * Description: Sets the reference sound ID. If less than 0, unsets it.
+ *
+ * Inputs: int32_t id - the new sound reference id
+ * Output: none
+ */
+void Sprite::setSoundID(int32_t id)
+{
+  if(id < 0)
+    sound_id = kUNSET_SOUND_ID;
+  else
+    sound_id = id;
+}
 
 /*
  * Description: Stores the given RGB values as the temporary color balance

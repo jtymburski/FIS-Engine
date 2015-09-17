@@ -40,8 +40,8 @@ private:
  *============================================================================*/
 private:
   /* Create new sound files, based on ID */
-  Sound* createAudioMusic(int id);
-  Sound* createAudioSound(int id);
+  Sound* createAudioMusic(uint32_t id);
+  Sound* createAudioSound(uint32_t id);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -52,12 +52,18 @@ public:
   bool addSound(Sound* chunk);
 
   /* Add to queue */
-  void addToQueue(const SoundQueue& entry);
-  void addToQueue(std::vector<SoundQueue> entries);
+  void addToQueue(uint32_t id, SoundChannels channel,
+                  bool process_force = false);
+  void addToQueue(const SoundQueue& entry, bool process_force = false);
+  void addToQueue(std::vector<SoundQueue> entries, bool process_force = false);
 
   /* Getters for sound files */
-  Sound* getAudioMusic(int id);
-  Sound* getAudioSound(int id);
+  Sound* getAudioMusic(uint32_t id);
+  Sound* getAudioSound(uint32_t id);
+
+  /* Is the given ID music or sound file valid and set */
+  bool isMusicSet(uint32_t id);
+  bool isSoundSet(uint32_t id);
 
   /* Load data from file */
   bool load(XmlData data, int index, std::string base_path);
@@ -67,8 +73,8 @@ public:
 
   /* Remove sound files */
   void removeAll();
-  bool removeMusic(int id);
-  bool removeSound(int id);
+  bool removeMusic(uint32_t id);
+  bool removeSound(uint32_t id);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

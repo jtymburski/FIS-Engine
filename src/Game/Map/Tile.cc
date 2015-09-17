@@ -700,6 +700,32 @@ bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person,
 
   return valid_pointer;
 }
+  
+/*
+ * Description: Returns the sound ID of the first valid sprite with valid sound
+ *              ID on the tile. If none, will return -1. The order is:
+ *              LOWER5-LOWER1, BASE. Only checks the sprites and not the things.
+ *
+ * Inputs: none
+ * Output: int32_t - the found sound ID
+ */
+int32_t Tile::getSoundID()
+{
+  int found_id = -1;
+
+  /* Loop through lowers first */
+  for(int i = lower.size() - 1; found_id < 0 && i >= 0; i--)
+  {
+    if(lower[i] != nullptr && lower[i]->getSize() > 0)
+      found_id = lower[i]->getSoundID();
+  }
+
+  /* If still none found, proceed to check base */
+  if(found_id < 0 && base != nullptr && base->getSize() > 0)
+    found_id = base->getSoundID();
+
+  return found_id;
+}
 
 /* 
  * Description: Returns the status the tile is currently classified in. Uses

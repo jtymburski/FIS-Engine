@@ -26,6 +26,7 @@
 #include "Game/Player/Bubby.h"
 #include "Game/Player/Inventory.h"
 #include "Options.h"
+#include "SoundHandler.h"
 
 using std::begin;
 using std::end;
@@ -209,6 +210,9 @@ public:
 
   /* Sets the path of the game */
   bool setPath(std::string path, int level = 0);
+
+  /* Sets the sound handler used. If unset, no sounds will play */
+  void setSoundHandler(SoundHandler* new_handler);
 
   /* Unpause the game */
   //void unpause(); // TODO: implement

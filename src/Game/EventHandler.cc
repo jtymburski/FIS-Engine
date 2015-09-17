@@ -28,6 +28,7 @@ EventHandler::EventHandler()
 {
   event_queue.clear();
   queue_index = 0;
+  sound_handler = nullptr;
 }
 
 /* Destructor function */
@@ -35,6 +36,7 @@ EventHandler::~EventHandler()
 {
   event_queue.clear();
   queue_index = 0;
+  sound_handler = nullptr;
 }
 
 /*============================================================================
@@ -213,6 +215,18 @@ void EventHandler::executePickup(MapItem* item, bool walkover)
   event_queue.back().item = item;
 }
 
+//TODO: Conventions [04-10-15]
+KeyHandler& EventHandler::getKeyHandler()
+{
+  return key_handler;
+}
+  
+/* Returns a reference to the sound handler */
+SoundHandler* EventHandler::getSoundHandler()
+{
+  return sound_handler;
+}
+
 /* Clears the event handling poll queue */
 void EventHandler::pollClear()
 {
@@ -348,6 +362,35 @@ bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
   return false;
 }
 
+/* Sets the sound handler used. If unset, no sounds will play */
+void EventHandler::setSoundHandler(SoundHandler* new_handler)
+{
+  sound_handler = new_handler;
+}
+
+/* Trigger music file */
+void EventHandler::triggerMusic(uint32_t id)
+{
+  if(sound_handler != nullptr)
+  {
+    sound_handler->addToQueue(id, SoundChannels::MUSIC1);
+  }
+}
+
+/* Trigger sound file */
+void EventHandler::triggerSound(uint32_t id, SoundChannels channel)
+{
+  if(sound_handler != nullptr)
+  {
+    if(channel != SoundChannels::MUSIC1 || channel != SoundChannels::MUSIC2 ||
+       channel != SoundChannels::UNASSIGNED)
+    {
+      sound_handler->addToQueue(id, channel);
+    }
+  }
+}
+
+/* Update the event, with load data */
 Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
                                                            int file_index,
                                                            int section_index)
@@ -442,12 +485,6 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   }
 
   return event;
-}
-
-//TODO: Conventions [04-10-15]
-KeyHandler& EventHandler::getKeyHandler()
-{
-  return key_handler;
 }
 
 /*=============================================================================

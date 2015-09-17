@@ -16,6 +16,11 @@
 /* Constant Implementation - see header file for descriptions */
 const short Sound::kINFINITE_LOOP = -1;
 const int Sound::kUNSET_ID = -1;
+/* Public Constant Implementation */
+const uint32_t Sound::kID_MUSIC_TITLE = 0;
+const uint32_t Sound::kID_SOUND_MENU_CHG = 0;
+const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
+const uint32_t Sound::kID_SOUND_MENU_PREV = 2;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -34,7 +39,7 @@ Sound::Sound()
   id = kUNSET_ID;
   loop_count = 0;
   raw_data = NULL;
-  volume = MIX_MAX_VOLUME;
+  volume = MIX_MAX_VOLUME / 2;
 }
 
 /*

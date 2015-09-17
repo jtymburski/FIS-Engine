@@ -32,12 +32,13 @@ TitleScreen::TitleScreen(Options* running_config)
   action = NONE; 
   base_path = "";
   cursor_index = 0;
-  font = NULL;
+  font = nullptr;
   nav_down = false;
   nav_time = 0;
   nav_up = false;
   render_index = 0;
-  system_options = NULL;
+  sound_handler = nullptr;
+  system_options = nullptr;
  
   // TODO: TESTING - FIX
   rotate1 = 0;
@@ -54,7 +55,6 @@ TitleScreen::TitleScreen(Options* running_config)
 /* Destructor function */
 TitleScreen::~TitleScreen()
 {
-  //background_music.stop(false);
   system_options = NULL;
   unsetMenu();
 }
@@ -69,22 +69,26 @@ void TitleScreen::decrementSelected()
   if(cursor_index == 0)
     cursor_index = kNUM_MENU_ITEMS;
   cursor_index--;
-  
-  if (system_options->isAudioEnabled())
-    menu_click_sound.play();
+
+  /* Play sound */
+  if(sound_handler != nullptr)
+    sound_handler->addToQueue(Sound::kID_SOUND_MENU_CHG, 
+                              SoundChannels::MENUS);
 }
-  
+
 /* Increments the selected option */
 void TitleScreen::incrementSelected()
 {
   cursor_index++;
   if(cursor_index == kNUM_MENU_ITEMS)
     cursor_index = 0;
-  
-  if (system_options->isAudioEnabled())
-    menu_click_sound.play();
+
+  /* Play sound */
+  if(sound_handler != nullptr)
+    sound_handler->addToQueue(Sound::kID_SOUND_MENU_CHG,
+                              SoundChannels::MENUS);
 }
-  
+
 /* Sets the selected item. This gets polled by another class */
 void TitleScreen::setAction()
 {
@@ -159,19 +163,12 @@ void TitleScreen::unsetMenu()
  * or after it was visible */
 void TitleScreen::enableView(bool enable)
 {
-  /* Enables all relevant control for the view */
-  // TODO: Temporarily make music permanent
+  /* Enables all relevant control for the view - not used */
   if(enable)
-  {
-    //background_music.crossFade(game_music.getChannelInt());
-    //background_music.play();
-  }
+  {}
   /* Disables all relevant control for the view */
   else
-  {
-    //game_music.crossFade(background_music.getChannelInt());
-    //background_music.stop();
-  }
+  {}
 }
  
 /* Returns the active action */
@@ -183,7 +180,7 @@ TitleScreen::MenuItems TitleScreen::getAction()
     action = NONE;
     return triggered_action;
   }
-  
+
   return action;
 }
   
@@ -205,16 +202,25 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
     }
     else if(event.keysym.sym == SDLK_RETURN || event.keysym.sym == SDLK_SPACE)
     {
+      /* Play sound */
+      if(sound_handler != nullptr)
+        sound_handler->addToQueue(Sound::kID_SOUND_MENU_NEXT,
+                                  SoundChannels::MENUS, true);
+
+      /* Set action */
       setAction();
     }
     else if(event.keysym.sym == SDLK_ESCAPE)
     {
       if(cursor_index != (kNUM_MENU_ITEMS - 1))
       {
-        cursor_index = kNUM_MENU_ITEMS - 1;
+        /* Play sound */
+        if(sound_handler != nullptr)
+        sound_handler->addToQueue(Sound::kID_SOUND_MENU_PREV,
+                                  SoundChannels::MENUS);
 
-        if (system_options->isAudioEnabled())
-          menu_click_sound.play();
+        /* Change index */
+        cursor_index = kNUM_MENU_ITEMS - 1;
       }
     }
   }
@@ -270,8 +276,8 @@ bool TitleScreen::render(SDL_Renderer* renderer)
 
     /* Render title */
     title.render(renderer, 50, 50);
-
 #endif
+
     /* Paint the selected options on the screen */
     for(uint8_t i = 0; i < selected_options.size(); i++)
     {
@@ -327,28 +333,10 @@ bool TitleScreen::setConfiguration(Options* running_config)
   return false;
 }
 
-/* Sets the music in the title screen - TODO: Encapsulate in file load? */
-void TitleScreen::setMusic()
+/* Sets the sound handler used. If unset, no sounds will play */
+void TitleScreen::setSoundHandler(SoundHandler* new_handler)
 {
-  // TODO: CLEAN-UP
-
-  /* Sound setup */
-  //background_music.setChannel(SoundChannels::MUSIC1);
-  //background_music.setSoundFile(base_path + 
-  //                              "sound/unlicensed/ag_theme.ogg");
-  //background_music.setLoopForever();
-  //background_music.setFadeTime(2000);
-  //background_music.setVolume(system_options->getMusicLevel());
-  
-  //game_music.setChannel(SoundChannels::MUSIC2);
-  //game_music.setSoundFile(base_path + "sound/unlicensed/space_cowboy.ogg");
-  //game_music.setFadeTime(2000);
-  //game_music.setLoopForever();
-  //game_music.setVolume(system_options->getMusicLevel());
-  
-  //menu_click_sound.setChannel(SoundChannels::MENUS);
-  //menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
-  //menu_click_sound.setVolume(system_options->getAudioLevel());
+  sound_handler = new_handler;
 }
 
 /* Updates the title screen. Necessary for visual updates */
@@ -356,7 +344,16 @@ bool TitleScreen::update(int cycle_time)
 {
   /* Increment the nav time */
   nav_time += cycle_time;
- 
+
+  /* Make sure music is playing */
+  if(sound_handler != nullptr)
+  {
+    Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
+    if(title_music != nullptr && !title_music->isPlaying())
+      sound_handler->addToQueue(Sound::kID_MUSIC_TITLE, 
+                                SoundChannels::MUSIC1);
+  }
+
   /* Rotation testing */
   //rotate1 += 0.03125;//0.0625;//0.001;
   rotate2 += 0.03125;

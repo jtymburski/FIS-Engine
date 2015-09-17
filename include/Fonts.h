@@ -35,7 +35,7 @@ enum class FontName
 class Fonts
 {
 public:
-  Fonts(Options* system_options);
+  Fonts(Options* system_options = nullptr);
 
   ~Fonts();
 

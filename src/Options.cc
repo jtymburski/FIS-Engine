@@ -34,10 +34,16 @@ const uint16_t Options::kRESOLUTIONS_Y[] = {704, 705, 768, 1080, 1080, 4480};
 /* Constructor function */
 Options::Options(std::string base_path)
 {
+  audio_level = 0;
   this->base_path = base_path;
-  font_data = new Fonts(this);
-  
+  font = 0;
+  music_level = 0;
+  resolution_x = 0;
+  resolution_y = 0;
+  sound_handler = nullptr;
+
   setAllToDefault();
+  font_data = new Fonts(this);
 }
 
 Options::Options(const Options &source)
@@ -69,8 +75,8 @@ void Options::copySelf(const Options &source)
 void Options::setAllToDefault()
 {
   /* Sound options */
-  setAudioLevel(60);
-  setMusicLevel(60);
+  setAudioLevel(MIX_MAX_VOLUME / 2);
+  setMusicLevel(MIX_MAX_VOLUME / 4);
 
   /* Flags */
   setLinearFiltering(false);
@@ -235,13 +241,19 @@ void Options::setAudioLevel(int32_t new_level)
 void Options::setFlag(OptionState flag, bool set_value)
 {
   (set_value) ? (flags |= flag): (flags &= ~flag);
-  
+
   // TODO: repair. Especially regarding VSync, Full Screen, etc SDL
 }
 
 void Options::setMusicLevel(int32_t new_level)
 {
   music_level = Sound::setMusicVolumes(new_level);
+}
+
+/* Sets the sound handler used. If unset, no sounds will play */
+void Options::setSoundHandler(SoundHandler* new_handler)
+{
+  sound_handler = new_handler;
 }
 
 /*=============================================================================

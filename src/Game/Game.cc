@@ -1192,6 +1192,12 @@ void Game::unload(bool full_unload)
   }
 }
 
+/* Sets the sound handler used. If unset, no sounds will play */
+void Game::setSoundHandler(SoundHandler* new_handler)
+{
+  event_handler.setSoundHandler(new_handler);
+}
+
 /* Updates the game state. Returns true if the class is finished */
 bool Game::update(int32_t cycle_time)
 {

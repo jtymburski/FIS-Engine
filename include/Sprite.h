@@ -97,6 +97,9 @@ private:
   /* Direction */
   Sequencer sequence;
 
+  /* Sound Reference */
+  int32_t sound_id;
+
   /* The texture with the presently displayed frame + modifications */
   SDL_Texture* texture;
   bool texture_update;
@@ -109,6 +112,7 @@ private:
   const static uint8_t kDELTA_GREY_SCALE; /* Delta grey scale alpha */
   const static uint8_t kDOUBLE_DIGITS; /* the borderline to double digits */
   const static float kMAX_BRIGHTNESS; /* The max brightness value */
+  const static int32_t kUNSET_SOUND_ID; /* The unset ID sound */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -181,6 +185,9 @@ public:
 
   /* Returns the size of the sequence */
   int getSize() const;
+
+  /* Returns the sound ID reference */
+  int32_t getSoundID() const;
 
   /* Gets the temporary color balance spectrum values */
   uint8_t getTempColorBlue() const;
@@ -293,6 +300,9 @@ public:
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(float angle);
   void setRotation(int angle);
+
+  /* Sets the sound ID reference. Less than 0 unsets */
+  void setSoundID(int32_t id);
 
   /* Sets the temporary color balances for the sprite */
   void setTempColorBalance(uint8_t temp_red, uint8_t new_green, uint8_t new_blue);

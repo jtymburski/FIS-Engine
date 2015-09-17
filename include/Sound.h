@@ -78,6 +78,11 @@ private:
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
   const static int kUNSET_ID; /* The placeholder unset ID */
+public:
+  const static uint32_t kID_MUSIC_TITLE;
+  const static uint32_t kID_SOUND_MENU_CHG;
+  const static uint32_t kID_SOUND_MENU_NEXT;
+  const static uint32_t kID_SOUND_MENU_PREV;
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
