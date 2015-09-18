@@ -2,18 +2,18 @@
  * Class Name: MapPerson
  * Date Created: Dec 2 2012
  * Inheritance: MapThing
- * Description: The MapPerson class. An addition on top of MapThing that 
+ * Description: The MapPerson class. An addition on top of MapThing that
  *              expands the Thing into possible states to allow for walking
- *              in multiple directions and on multiple surfaces. At present, 
+ *              in multiple directions and on multiple surfaces. At present,
  *              it allows for the 4 directions (N,S,E,W) all on one surface
  *              (Ground). Future expansion is available for other surfaces
  *              such as water, flying, etc. The animation speed of the sprites
- *              is based on 2 frames of moving (3 total). During the 
+ *              is based on 2 frames of moving (3 total). During the
  *              cleanMatrix() phase, the animation speed is modified to
  *              match the number of frames. For example, if left has 4 frames,
  *              the animation speed will be halved.
  *
- * TODO: Glitch - when running up and then reverse part way through tile, 
+ * TODO: Glitch - when running up and then reverse part way through tile,
  *                the guy floats for a tiny period of time [2014-07-25]
  ******************************************************************************/
 #include "Game/Map/MapPerson.h"
@@ -31,7 +31,7 @@ const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* 
+/*
  * Description: Constructor for this class. Sets up an empty person with no
  *              data.
  *
@@ -42,14 +42,14 @@ MapPerson::MapPerson() : MapThing()
   running = false;
   starting_section = 0;
   steps = 0;
-  
+
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
   direction = Direction::NORTH;
   initializeStates();
 }
 
-/* 
+/*
  * Description: Constructor for this class. Sets up a person with the
  *              appropriate height and width (for the tile) and other info
  *              that may be required by the person.
@@ -64,15 +64,15 @@ MapPerson::MapPerson(int id, std::string name, std::string description)
   running = false;
   starting_section = 0;
   steps = 0;
-  
+
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
   direction = Direction::NORTH;
   initializeStates();
 }
 
-/* 
- * Description: Destructor function 
+/*
+ * Description: Destructor function
  */
 MapPerson::~MapPerson()
 {
@@ -106,11 +106,59 @@ void MapPerson::deleteStates()
   states.clear();
 }
 
-/* 
+/*
+ * Description: Returns the top most sound trigger that should be executed. 
+ *              Only called if the player, and whenever a move start trigger
+ *              is initiated.
+ *
+ * Inputs: none
+ * Output: int32_t - the sound ID found. If less than 0, none found
+ */
+int32_t MapPerson::getSoundTrigger()
+{
+  int sound_id = -1;
+
+  /* Blank out tile set */
+  std::vector<std::vector<Tile*>> set = getTileRender(0);
+
+  /* MapInteractiveObject - top level */
+  for(uint32_t i = 0; sound_id < 0 && i < set.size(); i++)
+  {
+    for(uint32_t j = 0; sound_id < 0 && j < set[i].size(); j++)
+    {
+      if(set[i][j] != nullptr && set[i][j]->getIO(0) != nullptr)
+        sound_id = set[i][j]->getIO(0)->getSoundID();
+    }
+  }
+
+  /* MapThing - second level */
+  for(uint32_t i = 0; sound_id < 0 && i < set.size(); i++)
+  {
+    for(uint32_t j = 0; sound_id < 0 && j < set[i].size(); j++)
+    {
+      if(set[i][j] != nullptr && set[i][j]->getThing(0) != nullptr)
+        sound_id = set[i][j]->getThing(0)->getSoundID();
+    }
+  }
+
+  /* Tile Sprites - third level */
+  for(uint32_t i = 0; sound_id < 0 && i < set.size(); i++)
+  {
+    for(uint32_t j = 0; sound_id < 0 && j < set[i].size(); j++)
+    {
+      if(set[i][j] != nullptr)
+        sound_id = set[i][j]->getSoundID();
+    }
+  }
+
+  return sound_id;
+}
+
+/*
  * Description: Initializes the internal states for all possibilities, based
- *              on the constants. Only called once, by the constructor for 
+ *              on the constants. Only called once, by the constructor for
  *              initialization.
- * 
+ *
  * Inputs: none
  * Output: none
  */
@@ -134,7 +182,7 @@ void MapPerson::initializeStates()
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
-  
+
 /*
  * Description: Adds the direction from the direction stack, if it's not
  *              currently on the stack. Used for movement of the person.
@@ -145,30 +193,30 @@ void MapPerson::initializeStates()
 void MapPerson::addDirection(Direction direction)
 {
   bool contains = false;
-  
+
   /* Check if the direction already exists */
   for(uint16_t i = 0; i < movement_stack.size(); i++)
     if(movement_stack[i] == direction)
       contains = true;
-  
+
   /* If it doesn't exist, push it onto the stack */
   if(!contains)
     movement_stack.push_back(direction);
 }
 
-/* 
- * Description: Checks if a move is allowed from the current person main 
+/*
+ * Description: Checks if a move is allowed from the current person main
  *              tile to the next tile that it is trying to move to. This
  *              handles the individual calculations for a single tile; used
  *              by the isMoveAllowed() function.
- * 
+ *
  * Inputs: Tile* previous - the tile moving from
  *         Tile* next - the next tile moving to
  *         uint8_t render_depth - the rendering depth, in the stack
  *         Direction move_request - the direction moving
  * Output: bool - returns if the move is allowed.
  */
-bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next, 
+bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
                                   uint8_t render_depth, Direction move_request)
 {
   bool move_allowed = true;
@@ -188,8 +236,8 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
       MapThing* next_thing = next->getThing(render_depth);
 
       if(!previous->getPassabilityExiting(move_request) ||
-         !next->getPassabilityEntering(move_request) || 
-         (prev_thing != NULL && 
+         !next->getPassabilityEntering(move_request) ||
+         (prev_thing != NULL &&
           !prev_thing->getPassabilityExiting(previous, move_request)) ||
          (prev_io != NULL &&
           !prev_io->getPassabilityExiting(previous, move_request)) ||
@@ -204,7 +252,7 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
       }
     }
     else if(next->getStatus() == Tile::OFF ||
-            (next->isPersonSet(render_depth) && 
+            (next->isPersonSet(render_depth) &&
              next->getPerson(render_depth) != this))
     {
       move_allowed = false;
@@ -214,12 +262,12 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
   return move_allowed;
 }
 
-/* 
- * Description: Calculates the move amount based on the cycle time and the 
+/*
+ * Description: Calculates the move amount based on the cycle time and the
  *              speed for how many pixels should be shifted. The calculation
  *              is based on 16ms for 2 pixel at speed 8. This is virtual from
  *              thing and adds on the check for running.
- * 
+ *
  * Inputs: int cycle_time - the time since the last update call
  * Output: float - the move amount in 0.0 to 1.0 of a pixel width
  */
@@ -234,7 +282,7 @@ float MapPerson::moveAmount(uint16_t cycle_time)
   /* Check to make sure it maxes out at one tile */
   if(move_amount > 1.0)
     move_amount = 1.0;
-  
+
   return move_amount;
 }
 
@@ -248,21 +296,21 @@ float MapPerson::moveAmount(uint16_t cycle_time)
 void MapPerson::removeDirection(Direction direction)
 {
   int index = -1;
-  
+
   /* Check if the direction already exists */
   for(uint16_t i = 0; i < movement_stack.size(); i++)
     if(movement_stack[i] == direction)
       index = i;
-  
+
   /* Try and find the direction */
   if(index >= 0)
     movement_stack.erase(movement_stack.begin() + index);
 }
 
-/* 
+/*
  * Description: Sets a new direction for the person on the map. It will update
  *              the parent frame so a new classifier is printed.
- * 
+ *
  * Inputs: Direction direction - the new direction to set
  *         bool set_movement - if the movement should be set as well
  * Output: bool - indicates if the directional movement changed
@@ -271,7 +319,7 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
 {
   bool changed = (this->direction != direction);
   bool movement_changed = false;
-  
+
   /* If moving, set the direction in map thing */
   if(set_movement)
     movement_changed = MapThing::setDirection(direction);
@@ -293,7 +341,7 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
 }
 
 /*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
+ * Description: Sets the tile in the sprite and sprite in the tile for the
  *              passed in objects. If it fails, it resets the pointers.
  *
  * Inputs: Tile* tile - the tile pointer to set the frame
@@ -313,7 +361,7 @@ bool MapPerson::setTile(Tile* tile, TileSprite* frames, bool no_events)
 }
 
 /*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
+ * Description: Sets the tile in the sprite and sprite in the tile for the
  *              passed in objects with regards to finishing a tile move.
  *
  * Inputs: Tile* old_tile - the tile the object was on previously
@@ -323,8 +371,8 @@ bool MapPerson::setTile(Tile* tile, TileSprite* frames, bool no_events)
  *         bool no_events - if events should trigger on the set
  * Output: bool - true if the set was successful
  */
-void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile, 
-                             uint8_t render_depth, bool reverse_last, 
+void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
+                             uint8_t render_depth, bool reverse_last,
                              bool no_events)
 {
   if(reverse_last)
@@ -340,7 +388,7 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
   else
   {
     old_tile->personMoveFinish(render_depth, no_events);
-	
+
     /* Special events if person and thing is set on tile at render level 0 */
     if(getID() == kPLAYER_ID && render_depth == 0 && old_tile->isIOSet(0)
                              && old_tile->getIO(0) != new_tile->getIO(0))
@@ -349,8 +397,8 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
 }
 
 /*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
- *              passed in objects with regards to beginning a tile move. If it 
+ * Description: Sets the tile in the sprite and sprite in the tile for the
+ *              passed in objects with regards to beginning a tile move. If it
  *              fails, it resets the pointers back to the original tile.
  *
  * Inputs: Tile* old_tile - the tile the object was on previously
@@ -359,7 +407,7 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
  *         bool no_events - if events should trigger on the set
  * Output: bool - true if the set was successful
  */
-bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile, 
+bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile,
                             uint8_t render_depth, bool no_events)
 {
   /* Attempt and set the tile */
@@ -384,23 +432,33 @@ bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile,
   return false;
 }
 
-/* 
+/*
  * Description: The tile move initialization call. To be called after
  *              passability checks have passed and the thing can be moved to
  *              the next tile. Sets the new main pointer and moves the current
  *              to the old spot. This is reimplemented from MapThing since it
  *              uses "Person" instead of "Thing" in tile.
- * 
+ *
  * Inputs: std::vector<std::vector<Tile*>> tile_set - the next set of frames
  *         bool no_events - should events trigger on move?
  * Output: bool - if the tile start was successfully started
  */
-bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set, 
+bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
                               bool no_events)
 {
   if(MapThing::tileMoveStart(tile_set, no_events))
   {
+    /* Sound trigger - only for the player person */
+    if(getID() == kPLAYER_ID && event_handler != nullptr)
+    {
+      int32_t sound_id = getSoundTrigger();
+      if(sound_id >= 0)
+        event_handler->triggerSound(sound_id, SoundChannels::TILES);
+    }
+
+    /* Step increment */
     steps++;
+
     return true;
   }
   return false;
@@ -409,8 +467,8 @@ bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
 /*
  * Description: Unsets the tile corresponding to the matrix at the x and y
  *              coordinate. However, since this is an private function, it does
- *              not confirm that the X and Y are in the valid range. Must be 
- *              checked or results are unknown. This will unset the thing from 
+ *              not confirm that the X and Y are in the valid range. Must be
+ *              checked or results are unknown. This will unset the thing from
  *              the tile corresponding to the frame and the tile from the frame.
  *
  * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
@@ -424,15 +482,15 @@ void MapPerson::unsetTile(uint32_t x, uint32_t y, bool no_events)
 
   /* Remove from main tile, if applicable */
   tile_main[x][y]->unsetPerson(render_depth, no_events);
-  if(getID() == kPLAYER_ID && render_depth == 0 && 
+  if(getID() == kPLAYER_ID && render_depth == 0 &&
      tile_main[x][y]->isIOSet(0))
     tile_main[x][y]->getIO(0)->triggerWalkOff(this);
-	
+
   /* Remove from previous tile, if applicable */
   if(tile_prev.size() > 0)
   {
     tile_prev[x][y]->unsetPerson(render_depth, no_events);
-	if(getID() == kPLAYER_ID && render_depth == 0 && 
+	if(getID() == kPLAYER_ID && render_depth == 0 &&
        tile_prev[x][y]->isIOSet(0))
       tile_prev[x][y]->getIO(0)->triggerWalkOff(this);
   }
@@ -456,13 +514,13 @@ void MapPerson::unsetTile(uint32_t x, uint32_t y, bool no_events)
  *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
-bool MapPerson::addThingInformation(XmlData data, int file_index, 
-                                    int section_index, SDL_Renderer* renderer, 
+bool MapPerson::addThingInformation(XmlData data, int file_index,
+                                    int section_index, SDL_Renderer* renderer,
                                     std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   bool success = true;
-  
+
   /* Parse the identifier for setting the person information */
   /*--------------------- FRAMES -----------------*/
   if(elements.size() >= 4 && elements[2] == "sprites")
@@ -471,7 +529,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
     SurfaceClassifier surface = GROUND;
     if(elements[0] == "ground")
       surface = GROUND;
-      
+
     /* Create the direction identifier */
     Direction direction = Direction::DIRECTIONLESS;
     if(elements[1] == "north")
@@ -486,7 +544,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
     /* Only proceed if the direction was a valid direction */
     SpriteMatrix* matrix = getState(surface, direction);
     if(matrix != NULL)
-      success &= matrix->addFileInformation(data, file_index + 3, 
+      success &= matrix->addFileInformation(data, file_index + 3,
                                             renderer, base_path);
     else
       success = false;
@@ -509,7 +567,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
   else
   {
     /* Proceed to parent */
-    success &= MapThing::addThingInformation(data, file_index, section_index, 
+    success &= MapThing::addThingInformation(data, file_index, section_index,
                                              renderer, base_path);
   }
 
@@ -530,7 +588,7 @@ std::string MapPerson::classDescriptor()
 }
 
 /*
- * Description: Takes the frame matrix, as it's been set up and removes any 
+ * Description: Takes the frame matrix, as it's been set up and removes any
  *              rows or columns at the end that have no valid frames set. A
  *              frame is classified as valid if it's not NULL and has renderable
  *              frames stored within it.
@@ -558,7 +616,7 @@ bool MapPerson::cleanMatrix(bool first_call)
         height = states[i][j]->height();
         width = states[i][j]->width();
       }
-      else if(states[i][j]->height() != height || 
+      else if(states[i][j]->height() != height ||
               states[i][j]->width() != width)
       {
         equal_size = false;
@@ -569,18 +627,18 @@ bool MapPerson::cleanMatrix(bool first_call)
   return equal_size;
 }
 
-/* 
+/*
  * Description: Clears out all person states that were initialized into this
  *              class. This includes the appropriate procedure of cleaning
  *              up the parent class and deleting all the pointers.
- * 
+ *
  * Inputs: none
  * Output: none
  */
 void MapPerson::clear()
 {
   unsetStates();
-  
+
   /* Clear direction and movement information */
   direction = Direction::NORTH;
   clearAllMovement();
@@ -591,11 +649,11 @@ void MapPerson::clear()
   MapThing::clear();
 }
 
-/* 
+/*
  * Description: Clears all active movement pointers that are in the current
  *              movement stack. This allows to halt all movement once the
  *              person has reached the next tile.
- * 
+ *
  * Inputs: none
  * Output: none
  */
@@ -604,9 +662,9 @@ void MapPerson::clearAllMovement()
   movement_stack.clear();
 }
 
-/* 
- * Description: Returns the direction that the MapPerson is currently set to. 
- * 
+/*
+ * Description: Returns the direction that the MapPerson is currently set to.
+ *
  * Inputs: none
  * Output: Direction - the direction enumerator for this class
  */
@@ -615,11 +673,11 @@ Direction MapPerson::getDirection()
   return direction;
 }
 
-/* 
+/*
  * Description: This is a reimplemented call from MapThing, gets the actual
  *              move request which will be the last key pressed by the
  *              keyboard, since it's utilized as a stack.
- * 
+ *
  * Inputs: none
  * Output: Direction - the direction movement.
  */
@@ -631,7 +689,7 @@ Direction MapPerson::getMoveRequest()
 }
 
 /*
- * Description: Returns the number of steps for the person, aka the number of 
+ * Description: Returns the number of steps for the person, aka the number of
  *              tiles walked on.
  *
  * Inputs: none
@@ -656,7 +714,7 @@ Direction MapPerson::getPredictedMoveRequest()
 }
 
 /*
- * Description: Returns the sprite state that is connected with the surface 
+ * Description: Returns the sprite state that is connected with the surface
  *              definition and the direction. Returns NULL if unset or
  *              invalid.
  *
@@ -665,14 +723,14 @@ Direction MapPerson::getPredictedMoveRequest()
  *         bool include_base - include base in possible set to return
  * Output: SpriteMatrix* - the state matrix pointer, that defines the data
  */
-SpriteMatrix* MapPerson::getState(SurfaceClassifier surface, 
+SpriteMatrix* MapPerson::getState(SurfaceClassifier surface,
                                   Direction direction, bool include_base)
 {
   int surface_index = static_cast<int>(surface);
   int dir_index = dirToInt(direction);
- 
+
   /* Check if it's a base and the frames from it should be used instead */
-  if(include_base && base != NULL && 
+  if(include_base && base != NULL &&
      (base_category == ThingBase::PERSON || base_category == ThingBase::NPC))
   {
     MapPerson* ref_base = static_cast<MapPerson*>(base);
@@ -685,7 +743,7 @@ SpriteMatrix* MapPerson::getState(SurfaceClassifier surface,
   else
   {
     if(surface_index >= 0 && dir_index >= 0 &&
-       surface_index < static_cast<int>(states.size()) && 
+       surface_index < static_cast<int>(states.size()) &&
        dir_index < static_cast<int>(states[surface_index].size()))
       return states[surface_index][dir_index];
   }
@@ -693,10 +751,10 @@ SpriteMatrix* MapPerson::getState(SurfaceClassifier surface,
   return NULL;
 }
 
-/* 
- * Description: Returns the surface classifier to what the map person is 
+/*
+ * Description: Returns the surface classifier to what the map person is
  *              standing on.
- * 
+ *
  * Inputs: none
  * Output: SurfaceClassifier - the surface enumerator for this class
  */
@@ -705,10 +763,10 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
   return surface;
 }
 
-/* 
- * Description: Reimplemented is move request call from map thing. This 
+/*
+ * Description: Reimplemented is move request call from map thing. This
  *              utilizes the key press stack to get movement options.
- * 
+ *
  * Inputs: none
  * Output: bool - returns if a move is requested.
  */
@@ -750,7 +808,7 @@ void MapPerson::keyDownEvent(SDL_KeyboardEvent event)
 /*
  * Description: Flushes the key presses. Used to stop the person movement
  *              without key release events.
- * 
+ *
  * Inputs: none
  * Output: none
  */
@@ -779,7 +837,7 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
 
 /*
  * Description: Resets the position of the person back to the initial starting
- *              point. This is the position that was set when the last 
+ *              point. This is the position that was set when the last
  *              setStartingTile() was called.
  *
  * Inputs: none
@@ -840,9 +898,9 @@ void MapPerson::setRunning(bool running)
   this->running = running;
 }
 
-/* 
+/*
  * Description: Sets the starting tiles, for rendering the person. This tile
- *              set needs to be equal to the size of the bounding box and 
+ *              set needs to be equal to the size of the bounding box and
  *              each corresponding frame will be set to the tile. Will fail
  *              if a thing is already set up in the corresponding spot.
  *
@@ -851,7 +909,7 @@ void MapPerson::setRunning(bool running)
  *         bool no_events - if no events should occur from setting the thing
  * Output: bool - true if the tiles are set
  */
-bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
                                 uint16_t section, bool no_events)
 {
   if(MapThing::setStartingTiles(tile_set, section, no_events))
@@ -865,7 +923,7 @@ bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
 }
 
 /*
- * Description: Sets an individial tile sprite in a specific surface and 
+ * Description: Sets an individial tile sprite in a specific surface and
  *              direction with a given x and y coordinate.
  *
  * Inputs: TileSprite* frame - the rendering tile sprite to add
@@ -876,8 +934,8 @@ bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
  *         bool delete_old - should old frame in its place be deleted?
  * Output: bool - true if the set was successful
  */
-bool MapPerson::setState(TileSprite* frame, SurfaceClassifier surface, 
-                         Direction direction, uint32_t x, uint32_t y, 
+bool MapPerson::setState(TileSprite* frame, SurfaceClassifier surface,
+                         Direction direction, uint32_t x, uint32_t y,
                          bool delete_old)
 {
   SpriteMatrix* matrix = getState(surface, direction);
@@ -893,7 +951,7 @@ bool MapPerson::setState(TileSprite* frame, SurfaceClassifier surface,
 }
 
 /*
- * Description: Sets a set of tile sprites in a specific surface and 
+ * Description: Sets a set of tile sprites in a specific surface and
  *              direction.
  *
  * Inputs: TileSprite* frame - the rendering tile sprite to add
@@ -919,10 +977,10 @@ bool MapPerson::setStates(std::vector<std::vector<TileSprite*>> frames,
   return false;
 }
 
-/* 
- * Description: Sets a new surface for the person on the map to sit on. It 
+/*
+ * Description: Sets a new surface for the person on the map to sit on. It
  *              will update the parent frame so the new classifier is printed.
- * 
+ *
  * Inputs: SurfaceClassifier surface - the new surface to set
  * Output: none
  */
@@ -938,7 +996,7 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  *
  * Inputs: int cycle_time - the time elapsed between updates
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none 
+ * Output: none
  */
 void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
@@ -946,7 +1004,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   {
     bool almost_there = false;
     bool reset = false;
-     
+
     /* If moving and almost on tile, finish move and check what to do next */
     if(!isMoving() || (almost_there = isAlmostOnTile(cycle_time)))
     {
@@ -1016,7 +1074,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
  *         bool delete_frames - true if the frames should be deleted from mem
  * Output: none
  */
-void MapPerson::unsetState(SurfaceClassifier surface, Direction direction, 
+void MapPerson::unsetState(SurfaceClassifier surface, Direction direction,
                            uint32_t x, uint32_t y, bool delete_frames)
 {
   SpriteMatrix* matrix = getState(surface, direction, false);
@@ -1037,7 +1095,7 @@ void MapPerson::unsetState(SurfaceClassifier surface, Direction direction,
  *         bool delete_frames - true if the frames should be deleted from mem
  * Output: none
  */
-void MapPerson::unsetStates(SurfaceClassifier surface, Direction direction, 
+void MapPerson::unsetStates(SurfaceClassifier surface, Direction direction,
                             bool delete_frames)
 {
   unsetTiles(true);
@@ -1087,11 +1145,11 @@ void MapPerson::unsetTiles(bool no_events)
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 
-/* 
- * Description: Integer converter from Direction enumerator to ensure that 
+/*
+ * Description: Integer converter from Direction enumerator to ensure that
  *              the compiler type doesn't affect the operation. This info
  *              is used within internal array operation
- * 
+ *
  * Inputs: Direction dir - the direction enumerator
  * Output: int - the converted integer from the enumerator
  */
@@ -1108,11 +1166,11 @@ int MapPerson::dirToInt(Direction dir)
   return kDIR_UNKNOWN;
 }
 
-/* 
- * Description: Direction enumerator converter from integer to ensure that 
+/*
+ * Description: Direction enumerator converter from integer to ensure that
  *              the compiler type doesn't affect the operation. This info
  *              is used within internal array operation
- * 
+ *
  * Inputs: int dir_index - the direction index, associated with the enum
  * Output: Direction - the direction enumerator, from the index
  */

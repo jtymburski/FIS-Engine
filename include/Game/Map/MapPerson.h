@@ -2,9 +2,9 @@
  * Class Name: MapPerson
  * Date Created: Oct 28 2012
  * Inheritance: MapThing
- * Description: The MapPerson class. An addition on top of MapThing that 
+ * Description: The MapPerson class. An addition on top of MapThing that
  *              expands the Thing into possible states to allow for walking
- *              in multiple directions and on multiple surfaces. At present, 
+ *              in multiple directions and on multiple surfaces. At present,
  *              it allows for the 4 directions (N,S,E,W) all on one surface
  *              (Ground). Future expansion is available for other surfaces
  *              such as water, flying, etc.
@@ -46,10 +46,10 @@ private:
 
   /* A counter of steps made on the map */
   uint32_t steps;
-  
+
   /* The surface that the person is walking on */
   SurfaceClassifier surface;
-  
+
   /* -------------------------- Constants ------------------------- */
   const static int8_t kDIR_EAST;        /* The EAST direction for moving */
   const static int8_t kDIR_NORTH;       /* The NORTH direction for moving */
@@ -58,13 +58,16 @@ private:
   const static int8_t kDIR_WEST;        /* The WEST direction for moving */
   const static uint8_t kTOTAL_DIRECTIONS; /* The max # of directions to move */
   const static uint8_t kTOTAL_SURFACES; /* The max # of surfaces to walk on */
-  
+
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
   /* Deletes the states */
   void deleteStates();
+
+  /* Get top most sound trigger ID */
+  int32_t getSoundTrigger();
 
   /* Initializes the states stack to an empty set */
   void initializeStates();
@@ -75,9 +78,9 @@ private:
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
-  
+
   /* Is move allowed, based on main tile and the next tile */
-  virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
+  virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t
                                  render_depth, Direction move_request);
 
   /* Determine the move amount of the person */
@@ -88,18 +91,18 @@ protected:
 
   /* Sets the direction that the person is travelling in */
   bool setDirection(Direction direction, bool set_movement = true);
-   
+
   /* Sets the tile of the selected with the corresponding frames */
-  virtual bool setTile(Tile* tile, TileSprite* frames, 
+  virtual bool setTile(Tile* tile, TileSprite* frames,
                        bool no_events = true);
-  virtual void setTileFinish(Tile* old_tile, Tile* new_tile, 
-                             uint8_t render_depth, bool reverse_last = false, 
+  virtual void setTileFinish(Tile* old_tile, Tile* new_tile,
+                             uint8_t render_depth, bool reverse_last = false,
                              bool no_events = false);
-  virtual bool setTileStart(Tile* old_tile, Tile* new_tile, 
+  virtual bool setTileStart(Tile* old_tile, Tile* new_tile,
                             uint8_t render_depth, bool no_events = false);
 
   /* Starts tile move. Relies on underlying logic for occurance */
-  bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set, 
+  bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
                      bool no_events = false);
 
   /* This unsets the tile, at the given frame coordinate */
@@ -111,13 +114,13 @@ protected:
 public:
   /* Adds person information from the XML file. Will be virtually re-called
    * by all children for proper operation */
-  virtual bool addThingInformation(XmlData data, int file_index, 
-                                   int section_index, SDL_Renderer* renderer, 
+  virtual bool addThingInformation(XmlData data, int file_index,
+                                   int section_index, SDL_Renderer* renderer,
                                    std::string base_path = "");
 
   /* Returns the class descriptor, useful for casting */
   virtual std::string classDescriptor();
-  
+
   /* Shrink the frame matrix to the valid size and removes all null and void
    * pointers.  */
   virtual bool cleanMatrix(bool first_call = true);
@@ -135,23 +138,23 @@ public:
 
   /* Returns the move request in the class (virtual reimplemented) */
   Direction getMoveRequest();
-  
+
   /* Returns the number of tiles walked on for the person */
   uint32_t getStepCount();
-  
+
   /* Returns the predicted move request in the class */
   virtual Direction getPredictedMoveRequest();
-  
+
   /* Returns the state at the defined surface and direction */
-  SpriteMatrix* getState(SurfaceClassifier surface, Direction direction, 
+  SpriteMatrix* getState(SurfaceClassifier surface, Direction direction,
                          bool include_base = true);
 
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
-  
+
   /* Determines if there is an active move request (virtual reimplemented) */
   bool isMoveRequested();
- 
+
   /* Determines if the person is running */
   bool isRunning();
 
@@ -159,39 +162,39 @@ public:
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyFlush();
   void keyUpEvent(SDL_KeyboardEvent event);
-  
+
   /* Resets the tile position */
   bool resetPosition();
-   
+
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
-  
+
   /* Sets if the person is running */
   void setRunning(bool running);
 
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
-  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                                uint16_t section, bool no_events = true); 
+  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
+                                uint16_t section, bool no_events = true);
 
   /* Sets a new state to add into the states list */
-  bool setState(TileSprite* frame, SurfaceClassifier surface, 
-                Direction direction, uint32_t x, uint32_t y, 
+  bool setState(TileSprite* frame, SurfaceClassifier surface,
+                Direction direction, uint32_t x, uint32_t y,
                 bool delete_old = true);
   bool setStates(std::vector<std::vector<TileSprite*>> frames,
-                 SurfaceClassifier surface, Direction direction, 
+                 SurfaceClassifier surface, Direction direction,
                  bool delete_old = true);
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
- 
+
   /* Updates the thing, based on the tick */
   virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
-  void unsetState(SurfaceClassifier surface, Direction direction, uint32_t x, 
+  void unsetState(SurfaceClassifier surface, Direction direction, uint32_t x,
                   uint32_t y, bool delete_frames = true);
-  void unsetStates(SurfaceClassifier surface, Direction direction, 
+  void unsetStates(SurfaceClassifier surface, Direction direction,
                    bool delete_frames = true);
   void unsetStates(bool delete_frames = true);
 

@@ -35,9 +35,10 @@ MapThing::MapThing()
   base = NULL;
   base_category = ThingBase::ISBASE;
   base_control = NULL;
-
   event_handler = NULL;
+  sound_id = kUNSET_ID;
   sprite_set = NULL;
+
   MapThing::clear();
 }
 
@@ -1338,6 +1339,19 @@ bool MapThing::getPassabilityExiting(Tile* frame_tile, Direction dir)
 }
 
 /*
+ * Description: Returns the reference sound ID. If less than 0, it is unset.
+ *
+ * Inputs: none
+ * Output: int32_t - the sound ID
+ */
+int32_t MapThing::getSoundID() const
+{
+  if(base != nullptr)
+    return base->getSoundID();
+  return sound_id;
+}
+
+/*
  * Description: Returns the speed that the thing is moving in. Default is 150.
  *
  * Inputs: none
@@ -1945,6 +1959,12 @@ bool MapThing::setID(int new_id)
   /* Otherwise, the ID is good */
   id = new_id;
 
+  /* Sound configuration - TODO: REMOVE */
+  if(classDescriptor() == "MapThing" && id == 10)
+    setSoundID(1002);
+  else if(classDescriptor() == "MapInteractiveObject" && id == 32)
+    setSoundID(1003);
+
   return true;
 }
 
@@ -2004,6 +2024,20 @@ void MapThing::setMovementPaused(bool paused)
 void MapThing::setName(std::string new_name)
 {
   name = new_name;
+}
+
+/*
+ * Description: Sets the reference sound ID. If less than 0, unsets it.
+ *
+ * Inputs: int32_t id - the new sound reference id
+ * Output: none
+ */
+void MapThing::setSoundID(int32_t id)
+{
+  if(id < 0)
+    sound_id = kUNSET_ID;
+  else
+    sound_id = id;
 }
 
 /*

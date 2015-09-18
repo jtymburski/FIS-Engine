@@ -18,6 +18,7 @@ const uint8_t EventHandler::kTELEPORT_ID = 0;
 const uint8_t EventHandler::kTELEPORT_SECTION = 3;
 const uint8_t EventHandler::kTELEPORT_X = 1;
 const uint8_t EventHandler::kTELEPORT_Y = 2;
+const int32_t EventHandler::kUNSET_ID = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -82,6 +83,14 @@ void EventHandler::setConversationValues(Conversation* reference, XmlData data,
                                             index + 1, section_index);
   }
 }
+  
+/* Trigger queue sound */
+void EventHandler::triggerQueueSound()
+{
+  if(event_queue[queue_index].event.sound_id >= 0)
+    triggerSound(event_queue[queue_index].event.sound_id, 
+                 SoundChannels::SECTORS);
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -94,11 +103,14 @@ Event EventHandler::createBlankEvent()
 }
 
 /* Creates the conversation initiation event */
-Event EventHandler::createConversationEvent(Conversation* new_conversation)
+Event EventHandler::createConversationEvent(Conversation* new_conversation,
+                                            int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
   new_event.classification = EventClassifier::STARTCONVO;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
 
   /* Use the existing conversation if it exists. Otherwise create new one */
   if(new_conversation != NULL)
@@ -116,11 +128,13 @@ Event EventHandler::createConversationEvent(Conversation* new_conversation)
 }
 
 /* Creates a give item event, with the appropriate parameters */
-Event EventHandler::createGiveItemEvent(int id, int count)
+Event EventHandler::createGiveItemEvent(int id, int count, int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
   new_event.classification = EventClassifier::GIVEITEM;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
 
   /* Fill in the event specific information */
   new_event.ints.push_back(id);
@@ -130,14 +144,17 @@ Event EventHandler::createGiveItemEvent(int id, int count)
 }
 
 /* Creates a notification event, that can fire and result in visible text */
-Event EventHandler::createNotificationEvent(std::string notification)
+Event EventHandler::createNotificationEvent(std::string notification, 
+                                            int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-
+  
   if(!notification.empty())
   {
     new_event.classification = EventClassifier::NOTIFICATION;
+    if(sound_id >= 0)
+      new_event.sound_id = sound_id;
 
     /* Set up the rest of the event */
     new_event.strings.push_back(notification);
@@ -145,24 +162,39 @@ Event EventHandler::createNotificationEvent(std::string notification)
 
   return new_event;
 }
+  
+/* Creates a sound event */
+Event EventHandler::createSoundEvent(int sound_id)
+{
+  /* Create the new event and identify */
+  Event new_event = createEventTemplate();
+  new_event.classification = EventClassifier::JUSTSOUND;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
+
+  return new_event;
+}
 
 /* Creates a start battle event */
-/* TODO: Add parameters. Battle not ready */
-Event EventHandler::createStartBattleEvent()
+Event EventHandler::createStartBattleEvent(int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
   new_event.classification = EventClassifier::RUNBATTLE;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
 
   return new_event;
 }
 
 /* Create a start map event */
-Event EventHandler::createStartMapEvent(int id)
+Event EventHandler::createStartMapEvent(int id, int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
   new_event.classification = EventClassifier::RUNMAP;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
 
   /* Fill in the event specific information */
   new_event.ints.push_back(id);
@@ -172,11 +204,14 @@ Event EventHandler::createStartMapEvent(int id)
 
 /* Creates a teleport event */
 Event EventHandler::createTeleportEvent(int thing_id, uint16_t tile_x,
-                                        uint16_t tile_y, uint16_t section_id)
+                                        uint16_t tile_y, uint16_t section_id,
+                                        int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
   new_event.classification = EventClassifier::TELEPORTTHING;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
 
   /* Fill in the event specific information */
   new_event.ints.push_back(thing_id);
@@ -191,18 +226,20 @@ Event EventHandler::createTeleportEvent(int thing_id, uint16_t tile_x,
 void EventHandler::executeEvent(Event event, MapPerson* initiator,
                                              MapThing* source)
 {
-  /* Create the executed event queue entry */
-  EventExecution executed_event;
-  executed_event.event = event;
-  executed_event.initiator = initiator;
-  executed_event.source = source;
+  if(event.classification != EventClassifier::NOEVENT)
+  {
+    /* Create the executed event queue entry */
+    EventExecution executed_event;
+    executed_event.event = event;
+    executed_event.initiator = initiator;
+    executed_event.source = source;
 
-  /* Push the event to the back of the queue */
-  event_queue.push_back(executed_event);
+    /* Push the event to the back of the queue */
+    event_queue.push_back(executed_event);
+  }
 }
 
 /* Executes a pickup item event */
-// TODO: Walkover variable needed??
 void EventHandler::executePickup(MapItem* item, bool walkover)
 {
   /* Create the event and identify */
@@ -242,6 +279,7 @@ bool EventHandler::pollConversation(Conversation** convo, MapThing** source)
   {
     *convo = event_queue[queue_index].event.convo;
     *source = event_queue[queue_index].source;
+    triggerQueueSound();
 
     return true;
   }
@@ -257,6 +295,7 @@ bool EventHandler::pollGiveItem(int* id, int* count)
   {
     *id = event_queue[queue_index].event.ints[kGIVE_ITEM_ID];
     *count = event_queue[queue_index].event.ints[kGIVE_ITEM_COUNT];
+    triggerQueueSound();
 
     return true;
   }
@@ -293,6 +332,7 @@ bool EventHandler::pollNotification(std::string* notification)
      event_queue[queue_index].event.strings.size() == 1)
   {
     *notification = event_queue[queue_index].event.strings.front();
+    triggerQueueSound();
 
     return true;
   }
@@ -314,6 +354,17 @@ bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 
   return false;
 }
+  
+/* Poll a sound event */
+bool EventHandler::pollSound()
+{
+  if(pollEventType() == EventClassifier::JUSTSOUND)
+  {
+    triggerQueueSound();
+    return true;
+  }
+  return false;
+}
 
 /* Poll a start battle event */
 bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source)
@@ -323,6 +374,7 @@ bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source)
   {
     *person = event_queue[queue_index].initiator;
     *source = event_queue[queue_index].source;
+    triggerQueueSound();
 
     return true;
   }
@@ -336,6 +388,8 @@ bool EventHandler::pollStartMap(int* id)
      event_queue[queue_index].event.ints.size() == 1)
   {
     *id = event_queue[queue_index].event.ints[kMAP_ID];
+    triggerQueueSound();
+
     return true;
   }
 
@@ -355,6 +409,7 @@ bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
     *x = event_queue[queue_index].event.ints[kTELEPORT_X];
     *y = event_queue[queue_index].event.ints[kTELEPORT_Y];
     *section_id = event_queue[queue_index].event.ints[kTELEPORT_SECTION];
+    triggerQueueSound();
 
     return true;
   }
@@ -506,6 +561,7 @@ Event EventHandler::copyEvent(Event source)
   event.classification = source.classification;
   event.convo = source.convo;
   event.ints = source.ints;
+  event.sound_id = source.sound_id;
   event.strings = source.strings;
 
   /* If convo, do the proper copy */
@@ -543,6 +599,8 @@ Event EventHandler::createEventTemplate()
   blank_event.classification = EventClassifier::NOEVENT;
   blank_event.convo = NULL;
   blank_event.ints.clear();
+  blank_event.sound_id = kUNSET_ID;
+  blank_event.strings.clear();
 
   return blank_event;
 }

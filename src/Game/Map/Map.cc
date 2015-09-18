@@ -1034,12 +1034,6 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
                           geography[map_index][0].size());
     }
   }
-  /* Test: Play Sound */
-  else if(event.keysym.sym == SDLK_3)
-  {
-    if(event_handler != nullptr)
-      event_handler->triggerSound(1000, SoundChannels::TILES);
-  }
   /* Test: trigger grey scale */
   else if(event.keysym.sym == SDLK_g)
   {

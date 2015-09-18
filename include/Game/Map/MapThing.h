@@ -76,6 +76,9 @@ protected:
   bool movement_paused;
   uint16_t speed;
 
+  /* Sound Reference */
+  int32_t sound_id;
+
   /* The main sprite frame data - contains passability and render depth */
   SpriteMatrix* sprite_set;
 
@@ -244,6 +247,9 @@ public:
   bool getPassabilityEntering(Tile* frame_tile, Direction dir);
   bool getPassabilityExiting(Tile* frame_tile, Direction dir);
 
+  /* Returns the sound ID reference */
+  int32_t getSoundID() const;
+
   /* Returns the speed that the thing is moving at */
   uint16_t getSpeed() const;
 
@@ -337,6 +343,9 @@ public:
 
   /* Sets the things name */
   void setName(std::string new_name);
+
+  /* Sets the sound ID reference. Less than 0 unsets */
+  void setSoundID(int32_t id);
 
   /* Sets the things speed */
   void setSpeed(uint16_t speed);

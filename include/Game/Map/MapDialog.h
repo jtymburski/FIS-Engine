@@ -38,21 +38,21 @@ public:
 
   /* Destructor function */
   ~MapDialog();
-  
+
   // TODO: add the shop implementation [2013-08-20]
   /* The dialog mode classifier to define the running mode:
    *  DISABLED - The dialog is not in use
    *  CONVERSATION - A conversation is currently running
-   *  NOTIFICATION - A notification display, shifts up then down 
+   *  NOTIFICATION - A notification display, shifts up then down
    *  SHOP - A numerical question for buying, in a shop for example */
   enum DialogMode{DISABLED, CONVERSATION, NOTIFICATION, SHOP};
-  
+
 private:
   /* Animation shifters */
   float animation_cursor;
   bool animation_cursor_up;
   float animation_shifter;
-  
+
   /* The currently running conversation information */
   Conversation conversation_info;
   bool conversation_ready;
@@ -61,7 +61,7 @@ private:
 
   /* The dialog alpha rating (for how visible) */
   uint8_t dialog_alpha;
-  
+
   /* The running dialog mode and status - used for display control */
   DialogMode dialog_mode;
   WindowStatus dialog_status;
@@ -79,9 +79,9 @@ private:
   TTF_Font* font_title;
 
   /* The frame controller for displaying the conversation and pickup */
-  Frame frame_bottom; 
+  Frame frame_bottom;
   Frame frame_right;
-  
+
   /* Image frames to be loaded for rendering */
   Frame img_convo; /* Main Dialog display */
   Frame img_convo_m; /* Conversation more to display indicator */
@@ -93,27 +93,24 @@ private:
   Frame img_opt_u; /* Option Up Arrow */
   Frame img_pick_b; /* Bottom pickup display corner */
   Frame img_pick_t; /* Top pickup display corner */
-  
+
   /* The queue that holds all bottom notifications that need to be displayed */
   std::vector<Notification> notification_queue;
   uint16_t notification_time;
-  
+
   /* The paused control settings */
   bool paused;
- 
+
   /* The pickup notification queue (right hand side) */
   float pickup_offset;
   std::vector<Notification> pickup_queue;
   WindowStatus pickup_status;
   uint16_t pickup_time;
   bool pickup_update;
-  
-  /* Sounds used throughout the menu system */
-  Sound sound_click;
-  
+
   /* The system options, used for rendering, settings, etc. */
   Options* system_options;
-  
+
   /* Used thing data for the current rendering application */
   MapThing* source;
   MapPerson* target;
@@ -167,7 +164,7 @@ private:
 
   /* Clears the vector conversation data */
   void clearConversation(Conversation* convo);
-  
+
   /* Clears all stored pointer data within the class */
   void clearData();
 
@@ -179,17 +176,17 @@ private:
 
   /* Executes an event, triggered from a conversation */
   void executeEvent();
-  
+
   /* Functions to acquire thing data, for painting to the screen */
   MapThing* getThingReference(int id);
 
   /* Render the options. Deletes previous options, if they exist */
-  void renderOptions(SDL_Renderer* renderer, 
+  void renderOptions(SDL_Renderer* renderer,
                      std::vector<std::string> options = {});
 
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
-  
+
   /* Sets the conversation - internal to the class */
   void setConversation(Conversation* new_convo = NULL);
 
@@ -198,12 +195,12 @@ private:
 
   /* Sets up the top waiting queued notification, to be displayed */
   void setupNotification(SDL_Renderer* renderer);
- 
+
   /* Sets up the top waiting pickup queued notification, to be displayed */
   void setupPickup(SDL_Renderer* renderer, bool update = false);
-  
+
   /* Setup the render text display. Also manages deletion of Text pointers */
-  void setupRenderText(std::vector<std::string> lines = {}, 
+  void setupRenderText(std::vector<std::string> lines = {},
                        bool delete_old = false);
 
 /*=============================================================================
@@ -215,26 +212,26 @@ public:
   std::vector<int> getConversationIDs();
 
   /* Initializes a conversation with the two given people. */
-  bool initConversation(Conversation* dialog_info, MapPerson* target, 
+  bool initConversation(Conversation* dialog_info, MapPerson* target,
                         MapThing* source);
-  bool initConversation(Conversation dialog_info, MapPerson* target, 
+  bool initConversation(Conversation dialog_info, MapPerson* target,
                         MapThing* source);
 
   /* Initializes a notification, using a string to be printed */
-  bool initNotification(std::string notification, bool single_line = false, 
+  bool initNotification(std::string notification, bool single_line = false,
                                                   int time_visible = -1);
 
   /* Initiailizes a pickup notification. These show up isolated from the
    * notification and conversation sequencing */
-  bool initPickup(Frame* thing_image, int thing_count = 1, 
+  bool initPickup(Frame* thing_image, int thing_count = 1,
                                       int time_visible = -1);
-  
+
   /* Returns if there is an active conversation (needs key presses passed in) */
   bool isConversationActive();
 
   /* Returns if there is a ready conversation just waiting to be displayed */
   bool isConversationReady();
-  
+
   /* Returns if the conversation is waiting for thing data to be setup */
   bool isConversationWaiting();
 
@@ -243,7 +240,7 @@ public:
 
   /* Returns if the class control system is paused */
   bool isPaused();
-  
+
   /* Key Down/Flush/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyFlush();
@@ -251,10 +248,10 @@ public:
 
   /* Loads all appropriate image data for rendering */
   bool loadImageConversation(std::string path, SDL_Renderer* renderer);
-  bool loadImageDialogShifts(std::string path_next, std::string path_more, 
+  bool loadImageDialogShifts(std::string path_next, std::string path_more,
                              SDL_Renderer* renderer);
   bool loadImageNameLeftRight(std::string path, SDL_Renderer* renderer);
-  bool loadImageOptions(std::string path_circle, std::string path_triangle, 
+  bool loadImageOptions(std::string path_circle, std::string path_triangle,
                         SDL_Renderer* renderer);
   bool loadImagePickupTopBottom(std::string path, SDL_Renderer* renderer);
 
@@ -263,7 +260,7 @@ public:
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
-  
+
   /* Set the conversation things as per to IDs from getConversationIDs() */
   bool setConversationThings(std::vector<MapThing*> things);
 
@@ -272,7 +269,7 @@ public:
 
   /* Sets if the class control is paused */
   void setPaused(bool paused);
-  
+
   /* Updates the map dialog, called on the tick */
   void update(int cycle_time);
 };

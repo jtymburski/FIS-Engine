@@ -61,6 +61,16 @@ SoundHandler::SoundHandler()
   metal_sound->setID(1001);
   metal_sound->setSoundFile(base_path + "sound/map/metal01.wav");
   addSound(metal_sound);
+
+  Sound* wood_sound = new Sound();
+  wood_sound->setID(1002);
+  wood_sound->setSoundFile(base_path + "sound/map/wood01.wav");
+  addSound(wood_sound);
+
+  Sound* bush_sound = new Sound();
+  bush_sound->setID(1003);
+  bush_sound->setSoundFile(base_path + "sound/map/bush01.wav");
+  addSound(bush_sound);
 }
 
 /* Destructor function */
@@ -325,8 +335,9 @@ void SoundHandler::process()
     /* -- SOUND QUEUE ITEM -- */
     else if(queue[i].channel != SoundChannels::UNASSIGNED)
     {
-      /* Try and stop the channel prior - test: might remove */
-      Sound::stopChannel(queue[i].channel);
+      /* Try and stop the channel prior - only where required */
+      if(queue[i].channel == SoundChannels::MENUS)
+        Sound::stopChannel(queue[i].channel);
 
       /* Only process if the channel is not playing */
       if(!Sound::isChannelPlaying(queue[i].channel))

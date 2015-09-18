@@ -37,8 +37,9 @@ enum class EventClassifier
   RUNBATTLE      = 3,
   RUNMAP         = 4,
   TELEPORTTHING  = 5,
-  STARTCONVO     = 6,
-  PICKUPITEM     = 7  /* All categories here and lower are not from Editor. */
+  JUSTSOUND      = 6,
+  STARTCONVO     = 7, /* Needs to be the last before the non-editor points */
+  PICKUPITEM     = 8  /* All categories here and lower are not from Editor. */
 };
 
 /*
@@ -49,6 +50,7 @@ struct Event
   EventClassifier classification;
   Conversation* convo;
   std::vector<int> ints;
+  int32_t sound_id;
   std::vector<std::string> strings;
 };
 
@@ -97,6 +99,7 @@ public:
   const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
   const static uint8_t kTELEPORT_X; /* Teleport thing X index */
   const static uint8_t kTELEPORT_Y; /* Teleport thing Y index */
+  const static int32_t kUNSET_ID; /* The unset ID - for sound ref */
 
 private:
   /* Event queue of what has been executed thus far, since the last clean
@@ -125,6 +128,9 @@ private:
   void setConversationValues(Conversation* reference, XmlData data,
                              int index, int section_index);
 
+  /* Trigger queue sound */
+  void triggerQueueSound();
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -133,25 +139,30 @@ public:
   Event createBlankEvent();
 
   /* Creates the conversation initiation event */
-  Event createConversationEvent(Conversation* new_conversation = NULL);
+  Event createConversationEvent(Conversation* new_conversation = NULL,
+                                int sound_id = kUNSET_ID);
 
   /* Creates a give item event, with the appropriate parameters */
-  Event createGiveItemEvent(int id = 0, int count = 0);
+  Event createGiveItemEvent(int id = 0, int count = 0, 
+                            int sound_id = kUNSET_ID);
 
   /* Creates a notification event, that can fire and result in visible text */
-  Event createNotificationEvent(std::string notification);
+  Event createNotificationEvent(std::string notification,
+                                int sound_id = kUNSET_ID);
+
+  /* Creates a sound event */
+  Event createSoundEvent(int sound_id = kUNSET_ID);
 
   /* Creates a start battle event */
-  Event createStartBattleEvent();
+  Event createStartBattleEvent(int sound_id = kUNSET_ID);
 
   /* Create a start map event */
-  Event createStartMapEvent(int id = 0);
+  Event createStartMapEvent(int id = 0, int sound_id = kUNSET_ID);
 
   /* Creates a teleport event */
   Event createTeleportEvent(int thing_id = 0, uint16_t tile_x = 0,
-                            uint16_t tile_y = 0, uint16_t section_id = 0);
-
-
+                            uint16_t tile_y = 0, uint16_t section_id = 0,
+                            int sound_id = kUNSET_ID);
 
   /* Execute the given event */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
@@ -186,6 +197,9 @@ public:
 
   /* Poll a pickup item event */
   bool pollPickupItem(MapItem** item, bool* walkover);
+
+  /* Poll a sound event */
+  bool pollSound();
 
   /* Poll a start battle event */
   bool pollStartBattle(MapPerson** person, MapThing** source);

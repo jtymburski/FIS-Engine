@@ -28,8 +28,8 @@ enum class SoundChannels : int
   MENUS      = 4,
   TILES      = 5,
   THINGS     = 6,
-  SECTORS    = 7,
-  TRIGGERS   = 8
+  TRIGGERS   = 7,
+  SECTORS    = 8
 };
 
 /*
