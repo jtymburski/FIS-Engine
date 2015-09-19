@@ -98,7 +98,13 @@ private:
   int32_t element_index;
 
   /* ------------ Constants --------------- */
-  const static uint16_t kBIGBAR_OFFSET;   /* Offset of bar off bottom */
+  const static uint16_t kALLY_HEIGHT; /* Ally display section height */
+
+  const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
+  const static float kBIGBAR_L;         /* The percentage of the left section */
+  const static float kBIGBAR_M1; /* The percentage of the middle section */
+  const static float kBIGBAR_M2; /* The percentage of the second middle */
+
   const static uint16_t kBIGBAR_CHOOSE;   /* Additional offset for choice */
   const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
 
@@ -122,6 +128,8 @@ private:
   const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
   const static uint8_t kTYPE_MAX;    /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
+
+  const static uint16_t kINFO_W; /* Width of enemy info bar */
 
   /*=============================================================================
    * PRIVATE FUNCTIONS - OPERATION
@@ -174,6 +182,7 @@ public:
    * PUBLIC FUNCTIONS - RENDERING
    *============================================================================*/
 public:
+  bool render();
 };
 
 #endif // BATTLEMENU_H

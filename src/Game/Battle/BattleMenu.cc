@@ -17,7 +17,12 @@
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
+const uint16_t BattleMenu::kALLY_HEIGHT{70};
+
 const uint16_t BattleMenu::kBIGBAR_CHOOSE{100};
+const float BattleMenu::kBIGBAR_L{0.2};
+const float BattleMenu::kBIGBAR_M1{0.1};
+const float BattleMenu::kBIGBAR_M2{0.3};
 const uint16_t BattleMenu::kBIGBAR_OFFSET{88};
 const uint16_t BattleMenu::kBIGBAR_R_OFFSET{25};
 
@@ -41,6 +46,8 @@ const uint8_t BattleMenu::kSKILL_TIME_GAP{18};
 const uint8_t BattleMenu::kTYPE_MARGIN{7};
 const uint8_t BattleMenu::kTYPE_MAX{5};
 const uint8_t BattleMenu::kTYPE_SELECT{3};
+
+const uint16_t BattleMenu::kINFO_W{180};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -569,6 +576,71 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 /*=============================================================================
  * PUBLIC FUNCTIONS - RENDERING
  *============================================================================*/
+
+bool BattleMenu::render()
+{
+  assert(renderer && config);
+  bool success{true};
+
+  if(status_window != WindowStatus::HIDING)
+  {
+    uint16_t screen_width = config->getScreenWidth();
+    uint16_t screen_height = config->getScreenHeight();
+
+    uint16_t bar_height = kBIGBAR_OFFSET + kBIGBAR_CHOOSE;
+    uint16_t section1_w = screen_width * kBIGBAR_L;
+
+    /* Render separator */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+    SDL_Rect rect;
+    rect.x = section1_w;
+    rect.y = screen_height - bar_height + kMENU_SEPARATOR_T;
+    rect.w = 1;
+    rect.h = screen_height - rect.y - kMENU_SEPARATOR_B;
+    SDL_RenderFillRect(renderer, &rect);
+
+    /* Render the second separator */
+    uint16_t section2_w = screen_width * kBIGBAR_M1;
+    SDL_Rect rect2;
+    rect2.x = rect.x + section2_w;
+    rect2.y = rect.y;
+    rect2.w = 1;
+    rect2.h = rect.h;
+    SDL_RenderFillRect(renderer, &rect2);
+
+    /* Get actions */
+    success &= renderActionTypes(rect.x, rect.y, section2_w, rect2.h);
+
+    /* Render the third section */
+    if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+    {
+      /* Render the third separator */
+      uint16_t section3_w = screen_width * kBIGBAR_M2;
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+      SDL_Rect rect3;
+      rect3.x = rect2.x + section3_w;
+      rect3.y = rect.y;
+      rect3.w = 1;
+      rect3.h = rect.h;
+      SDL_RenderFillRect(renderer, &rect3);
+
+      /* Render the actions/items, depending on category */
+      if(selected_action_type == ActionType::SKILL)
+      {
+        success &= renderSkills(rect2.x, rect2.y, section3_w, rect3.h);
+        success &= frames_skill_info[element_index]->render(
+            renderer, rect3.x + kTYPE_MARGIN, rect3.y);
+      }
+      if(selected_action_type == ActionType::ITEM)
+      {
+        // TODO: Render Items magically [07-13-15]
+        success = false;
+      }
+    }
+  }
+
+  return success;
+}
 
 /*
  * Description: Decrement a menu layer to a given layer index. Performs all

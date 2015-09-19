@@ -165,7 +165,7 @@ const uint8_t Battle::kALLY_QD_W = 94;
 
 const uint16_t Battle::kANIMATION_PROCESS = 2000;
 
-const uint16_t Battle::kBIGBAR_CHOOSE = 100;
+// const uint16_t Battle::kBIGBAR_CHOOSE = 100;
 const float Battle::kBIGBAR_L = 0.2;
 const float Battle::kBIGBAR_M1 = 0.1;
 const float Battle::kBIGBAR_M2 = 0.3;
@@ -192,7 +192,7 @@ const uint8_t Battle::kINFO_GREY = 200;
 const uint16_t Battle::kINFO_H = 50;
 const uint8_t Battle::kINFO_OPACITY = 166;
 const uint8_t Battle::kINFO_TRIANGLE = 6;
-const uint16_t Battle::kINFO_W = 180;
+// const uint16_t Battle::kINFO_W = 180;
 
 const uint8_t Battle::kENEMY_BAR_H = 8;
 const uint8_t Battle::kENEMY_BAR_OFFSET = 2;
@@ -208,11 +208,10 @@ const uint8_t Battle::kMAX_LAYERS = 10;
 const uint16_t Battle::kPERSON_SPREAD = 200;
 const uint16_t Battle::kPERSON_WIDTH = 256;
 const uint8_t Battle::kPERSON_KO_ALPHA = 50;
-const uint8_t Battle::kSCROLL_R = 2;
 
-//const uint8_t Battle::kTYPE_MARGIN = 7;
-//const uint8_t Battle::kTYPE_MAX = 5;
-//const uint8_t Battle::kTYPE_SELECT = 3;
+// const uint8_t Battle::kTYPE_MARGIN = 7;
+// const uint8_t Battle::kTYPE_MAX = 5;
+// const uint8_t Battle::kTYPE_SELECT = 3;
 
 /* ---- Color Constants ---- */
 const SDL_Color Battle::kSTRD_DMG_COLOR = {225, 225, 225, 255};
@@ -337,93 +336,94 @@ int32_t Battle::getBattleIndex(int32_t index, bool ally)
  *============================================================================*/
 
 // TODO: Fonts
-// void Battle::buildActionFrame(BattleActor* actor)
-// {
-// assert(actor && actor->getBasePerson());
-// auto person = actor->getBasePerson();
+void Battle::buildActionFrame(BattleActor* actor)
+{
+  assert(actor);
 
-// uint16_t width = kACTION_W;
-// uint16_t height = kACTION_H;
-// uint16_t x1 = width;
-// uint16_t y1 = 0;
-// uint16_t x2 = 0;
-// uint16_t y2 = kACTION_Y;
-// uint16_t x3 = width;
-// uint16_t y3 = height;
-// uint16_t border = kACTION_BORDER;
-// uint16_t cx1 = kACTION_CORNER_X;
-// uint16_t cy1 = kACTION_CORNER_Y;
-// uint16_t cx2 = cx1 - cy1 * 2;
-// uint16_t cy2 = cy1 / 2;
+  uint16_t width = kACTION_W;
+  uint16_t height = kACTION_H;
+  uint16_t x1 = width;
+  uint16_t y1 = 0;
+  uint16_t x2 = 0;
+  uint16_t y2 = kACTION_Y;
+  uint16_t x3 = width;
+  uint16_t y3 = height;
+  uint16_t border = kACTION_BORDER;
+  uint16_t cx1 = kACTION_CORNER_X;
+  uint16_t cy1 = kACTION_CORNER_Y;
+  uint16_t cx2 = cx1 - cy1 * 2;
+  uint16_t cy2 = cy1 / 2;
 
-// /* Create main rendering texture */
-// Frame* rendered_frame = new Frame();
-// SDL_Texture* texture =
-//     SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-//                       SDL_TEXTUREACCESS_TARGET, width, height);
-// SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  /* Create main rendering texture */
+  Frame* rendered_frame = new Frame();
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
-// /* Create underlay rendering texture */
-// SDL_Texture* texture2 =
-//     SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-//                       SDL_TEXTUREACCESS_TARGET, width, height);
-// SDL_SetTextureBlendMode(texture2, SDL_BLENDMODE_BLEND);
-// SDL_SetRenderTarget(renderer, texture2);
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-// SDL_RenderClear(renderer);
+  /* Create underlay rendering texture */
+  SDL_Texture* texture2 =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, width, height);
+  SDL_SetTextureBlendMode(texture2, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture2);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
 
-// /* Draw middle triangle */
-// SDL_SetRenderDrawColor(renderer, kACTION_COLOR_G, kACTION_COLOR_G,
-//                        kACTION_COLOR_G, 255);
-// Frame::renderTriangle(x1, y1 + border, x2 + cx1, y2 - cy1, x3, y3 - border,
-//                       renderer);
+  /* Draw middle triangle */
+  SDL_SetRenderDrawColor(renderer, kACTION_COLOR_G, kACTION_COLOR_G,
+                         kACTION_COLOR_G, 255);
+  Frame::renderTriangle(x1, y1 + border, x2 + cx1, y2 - cy1, x3, y3 - border,
+                        renderer);
 
-// /* Draw the inner triangle */
-// SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-// Frame::renderTriangle(x1, y1 + border * 2, x2 + cx1 * 2, y2 - cy1 * 2, x3,
-//                       y3 - border * 2, renderer);
+  /* Draw the inner triangle */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  Frame::renderTriangle(x1, y1 + border * 2, x2 + cx1 * 2, y2 - cy1 * 2, x3,
+                        y3 - border * 2, renderer);
 
-//  Render base to the main texture
-// SDL_SetRenderTarget(renderer, texture);
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-// SDL_RenderClear(renderer);
-// SDL_SetTextureAlphaMod(texture2, kACTION_COLOR_A);
-// SDL_RenderCopyEx(renderer, texture2, nullptr, nullptr, 0.0, nullptr,
-//                  SDL_FLIP_NONE);
-// SDL_DestroyTexture(texture2);
-// texture2 = nullptr;
+  /* Render base to the main texture */
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
+  SDL_SetTextureAlphaMod(texture2, kACTION_COLOR_A);
+  SDL_RenderCopyEx(renderer, texture2, nullptr, nullptr, 0.0, nullptr,
+                   SDL_FLIP_NONE);
+  SDL_DestroyTexture(texture2);
+  texture2 = nullptr;
 
-// /* Render top black border */
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-// for(uint16_t i = 0; i <= border; i++)
-//   SDL_RenderDrawLine(renderer, x2, y2 + i, x1, y1 + i);
+  /* Render top black border */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  for(uint16_t i = 0; i <= border; i++)
+    SDL_RenderDrawLine(renderer, x2, y2 + i, x1, y1 + i);
 
-// /* Render the person */
-// Sprite* action_frames = person->getDialogSprite();
-// if(action_frames != nullptr && action_frames->isFramesSet())
-//   action_frames->render(renderer, person->getActionX(), person->getActionY(),
-//                         action_frames->getCurrent()->getWidth(),
-//                         action_frames->getCurrent()->getHeight());
+  /* Render the person */
+  Sprite* action_frames = actor->getDialogSprite();
+  if(action_frames && action_frames->isFramesSet())
+  {
+    action_frames->render(renderer, actor->getDialogX(), actor->getDialogY(),
+                          action_frames->getCurrent()->getWidth(),
+                          action_frames->getCurrent()->getHeight());
+  }
 
-// /* Try and chop out the base of the person */
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-// SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-// for(uint16_t i = 0; i < height - y2; i++)
-//   SDL_RenderDrawLine(renderer, x2, y2 + i, x3, y3 + i - border / 2);
-// SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+  /* Try and chop out the base of the person */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+  for(uint16_t i = 0; i < height - y2; i++)
+    SDL_RenderDrawLine(renderer, x2, y2 + i, x3, y3 + i - border / 2);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-// /* Render bottom black border */
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-// for(uint16_t i = 0; i <= border; i++)
-//   SDL_RenderDrawLine(renderer, x2 + cx2, y2 + cy2 - i, x3, y3 - i);
+  /* Render bottom black border */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  for(uint16_t i = 0; i <= border; i++)
+    SDL_RenderDrawLine(renderer, x2 + cx2, y2 + cy2 - i, x3, y3 - i);
 
-// /* Finalize the frame */
-// rendered_frame->setTexture(texture);
-// SDL_RenderPresent(renderer);
-// SDL_SetRenderTarget(renderer, nullptr);
+  /* Finalize the frame */
+  rendered_frame->setTexture(texture);
+  SDL_RenderPresent(renderer);
+  SDL_SetRenderTarget(renderer, nullptr);
 
-// return rendered_frame;
-// }
+  actor->setActionFrame(rendered_frame);
+}
 
 // TODO: Grab
 void Battle::buildEnemyBackdrop()
@@ -693,11 +693,17 @@ void Battle::clearElements()
   render_elements.clear();
 }
 
+// NOTE: On menu rendering, render the friend info of the selected ally
+// ex. //
+/* Render the selecting person info */
+// uint16_t x = (section1_w - kINFO_W) / 2;
+// uint16_t y = screen_height - bar_height + (bar_height - kALLY_HEIGHT) / 2;
+//   success &= renderFriendInfo(screen_height, x, y, true);
+
 bool Battle::render(int32_t cycle_time)
 {
+  /* --------------- RENDER BATTLE MENU -------------- */
   (void)cycle_time;
-  //   this->renderer = renderer;
-
   // uint16_t height = 0;
   // bool success = true;
   // uint16_t width = 0;
@@ -752,9 +758,6 @@ bool Battle::render(int32_t cycle_time)
 
   //   /* Render battle bar (on bottom) */
   //   renderBar(renderer, width, height);
-
-  //   /* Render friend information */
-  //   BattleMenu *menu = battle->getBattleMenu();
 
   //   /* Determine whether the menu should be rendered */
   //   auto to_render_menu = true;
@@ -1174,71 +1177,6 @@ bool Battle::renderBattleBar()
 //       uint16_t x = (i * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
 //       success &=
 //           renderFriendInfo(renderer, friends_state[i], screen_height, x, y);
-//     }
-//   }
-
-//   return success;
-// }
-
-// /* Render menu at bottom of screen - for skill selecting */
-// bool Battle::renderMenu(SDL_Renderer *renderer, PersonState *state,
-//                                uint16_t screen_width, uint16_t screen_height)
-// {
-//   /* Initial set-up variables */
-//   uint16_t bar_height = kBIGBAR_OFFSET + kBIGBAR_CHOOSE;
-//   BattleMenu *menu = battle->getBattleMenu();
-//   int32_t layer_index = menu->getLayerIndex();
-//   uint16_t section1_w = screen_width * kBIGBAR_L;
-//   bool success = true;
-//   uint16_t x = (section1_w - kINFO_W) / 2;
-//   uint16_t y = screen_height - bar_height + (bar_height - kALLY_HEIGHT) / 2;
-
-//   /* Render the selecting person info */
-//   success &= renderFriendInfo(renderer, state, screen_height, x, y, true);
-
-//   /* Render separator */
-//   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-//   SDL_Rect rect;
-//   rect.x = section1_w;
-//   rect.y = screen_height - bar_height + kMENU_SEPARATOR_T;
-//   rect.w = 1;
-//   rect.h = screen_height - rect.y - kMENU_SEPARATOR_B;
-//   SDL_RenderFillRect(renderer, &rect);
-
-//   /* Render the second separator */
-//   uint16_t section2_w = screen_width * kBIGBAR_M1;
-//   SDL_Rect rect2;
-//   rect2.x = rect.x + section2_w;
-//   rect2.y = rect.y;
-//   rect2.w = 1;
-//   rect2.h = rect.h;
-//   SDL_RenderFillRect(renderer, &rect2);
-
-//   /* Get actions */
-//   success &=
-//       renderActionTypes(renderer, menu, rect.x, rect.y, section2_w, rect2.h);
-
-//   /* Render the third section */
-//   if(layer_index > 1)
-//   {
-//     /* Render the third separator */
-//     uint16_t section3_w = screen_width * kBIGBAR_M2;
-//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-//     SDL_Rect rect3;
-//     rect3.x = rect2.x + section3_w;
-//     rect3.y = rect.y;
-//     rect3.w = 1;
-//     rect3.h = rect.h;
-//     SDL_RenderFillRect(renderer, &rect3);
-
-//     /* Render the actions/items, depending on category */
-//     // TODO: Render Items magically [07-13-15]
-//     if(menu->getActionType() == ActionType::SKILL)
-//     {
-//       success &= renderActionSkills(renderer, menu, rect2.x, rect2.y,
-//                                     section3_w, rect3.h);
-//       success &= skill_info[menu->getElementIndex()]->render(
-//           renderer, rect3.x + kTYPE_MARGIN, rect3.y);
 //     }
 //   }
 
@@ -1838,7 +1776,7 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 {
   /* Assert everything important is not nullptr */
   assert(config);
-  //  assert(renderer);
+  assert(renderer);
   assert(friends);
   assert(foes);
 
@@ -1848,8 +1786,7 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
   /* Build ally and enemy info frames, action frames */
   for(auto& actor : actors)
   {
-    (void)actor;
-    // buildActionFrame(actor);
+    buildActionFrame(actor);
 
     // if(actor->getFlag(ActorState::ALLY))
     //   buildInfoAlly(actor);

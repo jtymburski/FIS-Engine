@@ -192,6 +192,9 @@ private:
   /* Flags for the actor */
   ActorState flags;
 
+  /* The action frame of the BattleActor */
+  Frame* frame_action;
+
   /* The info frame for the Battle Actor */
   Frame* frame_info;
 
@@ -248,6 +251,7 @@ private:
   void battleSetup(bool is_ally, bool can_run);
 
   /* Clearing methods */
+  void clearActionFrame();
   void clearAilments();
   void clearBattleItems();
   void clearBattleSkills();
@@ -293,6 +297,9 @@ public:
   /* Updates the state of the BattleActor */
   bool update(int32_t cycle_time);
 
+  /* Returns pointer to the constructed action frame */
+  Frame* getActionFrame();
+
   /* Returns a pointer to the active sprite based on the ActiveSprite enum */
   Sprite* getActiveSprite();
 
@@ -317,6 +324,9 @@ public:
   /* Pointer to the info frame */
   Frame* getInfoFrame();
 
+  /* Returns the sprite for the dialog (for action frames) */
+  Sprite* getDialogSprite();
+
   /* Returns the active sprites' x */
   int32_t getDialogX();
 
@@ -331,6 +341,9 @@ public:
 
   /* Returns the stats_rendered object */
   BattleStats& getStatsRendered();
+
+  /* Sets the battle actor's action frame */
+  void setActionFrame(Frame* action_frame);
 
   /* Assigns a new active sprite for the BattleActor */
   void setActiveSprite(ActiveSprite new_active_sprite);

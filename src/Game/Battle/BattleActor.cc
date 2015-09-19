@@ -33,6 +33,7 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
     : active_sprite{ActiveSprite::NONE},
       battle_index{battle_index},
       flags{static_cast<ActorState>(0)},
+      frame_action{nullptr},
       frame_info{nullptr},
       person_base{person_base},
       sprite_first_person{nullptr},
@@ -65,6 +66,7 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
  */
 BattleActor::~BattleActor()
 {
+  clearActionFrame();
   clearAilments();
   clearBattleItems();
   clearBattleSkills();
@@ -92,7 +94,7 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   // person_base->updateSkills();
 
   /* Reset the 'silenced' flag on skills */
-  //person_base->resetSkills();
+  // person_base->resetSkills();
 
   /* If the person's current VITA is >0, they are not KO'd */
   setFlag(ActorState::KO,
@@ -154,6 +156,13 @@ void BattleActor::clearBattleSkills()
   }
 
   battle_skills.clear();
+}
+
+void BattleActor::clearActionFrame()
+{
+  if(frame_action)
+    delete frame_action;
+  frame_action = nullptr;
 }
 
 void BattleActor::clearInfoFrame()
@@ -417,8 +426,10 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> all_targets)
   //         if(isInflicted(Infliction::SILENCE))
   //           battle_skill->valid_status = ValidStatus::SILENCED;
 
-  //         /* Check if the person can afford to use the skill -- current stats */
-  //         if(stats_actual.getValue(Attribute::QTDR) > battle_skill->true_cost)
+  //         /* Check if the person can afford to use the skill -- current stats
+  //         */
+  //         if(stats_actual.getValue(Attribute::QTDR) >
+  //         battle_skill->true_cost)
   //           battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
   //       }
   //       else
@@ -485,6 +496,11 @@ bool BattleActor::update(int32_t cycle_time)
   return true;
 }
 
+Frame* BattleActor::getActionFrame()
+{
+  return frame_action;
+}
+
 Sprite* BattleActor::getActiveSprite()
 {
   if(active_sprite == ActiveSprite::FIRST_PERSON)
@@ -522,6 +538,11 @@ Frame* BattleActor::getInfoFrame()
   return frame_info;
 }
 
+Sprite* BattleActor::getDialogSprite()
+{
+  return sprite_dialog;
+}
+
 int32_t BattleActor::getDialogX()
 {
   return dialog_x;
@@ -550,6 +571,12 @@ BattleStats& BattleActor::getStats()
 BattleStats& BattleActor::getStatsRendered()
 {
   return stats_rendered;
+}
+
+void BattleActor::setActionFrame(Frame* frame_action)
+{
+  clearActionFrame();
+  this->frame_action = frame_action;
 }
 
 void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
