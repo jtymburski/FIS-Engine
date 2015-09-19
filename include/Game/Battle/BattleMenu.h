@@ -143,6 +143,7 @@ private:
 
   /* Rendering functions */
   bool renderActionTypes(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+  bool renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS - OPERATION
@@ -206,9 +207,6 @@ public:
 //  * PUBLIC FUNCTIONS - OPERATION
 //  *============================================================================*/
 // public:
-//   /* Render the skills */
-//   bool renderSkills(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-
 //   /* Unset all BattleMenu information (for end of selection, etc) */
 //   void unsetAll(const bool &window_off = false);
 
@@ -270,9 +268,6 @@ public:
 //   /* Obtains the selected enumerated ActionType */
 //   ActionType getActionType();
 
-//   /* Obtains the index of action (Skill or Item lists) chosen */
-//   int32_t getActionIndex();
-
 //   /* Obtains user selected targets for the action from the Menu */
 //   // std::vector<int32_t> getActionTargets();
 
@@ -290,12 +285,6 @@ public:
 
 //   /* Finds the maximum index for the current layer */
 //   int32_t getMaxIndex();
-
-//   /* Returns the current selectable skills on the menu */
-//   std::vector<BattleSkill> getMenuSkills();
-
-//   /* Returns the current selectable items on the menu */
-//   std::vector<BattleItem> getMenuItems();
 
 //   /* Returns the vector of targets for the party */
 //   std::vector<int32_t> getPartyTargets(int32_t party_index);
@@ -326,14 +315,6 @@ public:
 
 //   /* Assigns the number of allies the curr person has (1 == self) */
 //   void setNumAllies(uint16_t num_allies);
-
-//   void setRenderer(SDL_Renderer* renderer);
-
-//   /* Assigns the vector of BattleSkills to choose from */
-//   bool setSelectableSkills(std::vector<BattleSkill*> new_menu_skills);
-
-//   /* Assigns a new selectable list of items for the menu */
-//   bool setSelectableItems(std::vector<BattleItem*> new_menu_items);
 
 //   /* Assigns valid targets for the menu */
 //   bool setSelectableTargets(std::vector<int32_t> valid_targets);

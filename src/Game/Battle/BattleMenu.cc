@@ -94,120 +94,6 @@ void BattleMenu::clearSkillFrames()
   frames_skill_name.clear();
 }
 
-bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t width,
-                                   uint32_t height)
-{
-  /* Fonts */
-  auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
-
-  /* Variable Construction */
-  SDL_Color color{255, 255, 255, 255};
-  bool success{true};
-  Text* t{new Text(font_header)};
-
-  /* Calculate starting Y co-ordinate */
-  int32_t start_y = 0;
-  t->setText(renderer, "Test", color);
-
-  if(valid_action_types.size() >= kTYPE_MAX)
-  {
-    start_y = y + kTYPE_MARGIN;
-  }
-  else
-  {
-    start_y =
-        y +
-        (height -
-         valid_action_types.size() * (t->getHeight() + kTYPE_MARGIN * 2)) /
-            2;
-  }
-
-  for(uint32_t i = 0; i < valid_action_types.size() && i < kTYPE_MAX; i++)
-  {
-    /* Set the text */
-    int32_t index = i + element_index;
-
-    /* Action Type at index */
-    auto type = valid_action_types.at(i);
-
-    std::string text_str = Helpers::actionTypeToStr(type);
-    success &= t->setText(renderer, text_str, color);
-
-    /* Calculate X/Y locations */
-    int32_t text_x = x + kTYPE_MARGIN * 2;
-    int32_t text_y =
-        start_y + kTYPE_MARGIN * (i + 1) + (t->getHeight() + kTYPE_MARGIN) * i;
-
-    /* If selected, draw background box */
-    if((menu_layer == BattleMenuLayer::TYPE_SELECTION &&
-        index == element_index) ||
-       (menu_layer != BattleMenuLayer::TYPE_SELECTION &&
-           type == selected_action_type))
-    {
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
-      SDL_Rect text_rect;
-      text_rect.x = text_x - kTYPE_SELECT;
-      text_rect.y = text_y - kTYPE_SELECT;
-      text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
-      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
-      SDL_RenderFillRect(renderer, &text_rect);
-    }
-
-    /* Render the Text */
-    success &= t->render(renderer, text_x, text_y);
-
-    /* Render the scrollbar, if needed */
-    if(valid_action_types.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
-    {
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-      uint16_t center_x = x + width - kTYPE_MARGIN * 2;
-      uint16_t center_y = text_y + t->getHeight() / 2;
-
-      /* Top of scroll */
-      if(i == 0)
-      {
-        if(element_index == 0)
-        {
-          success &= Frame::renderCircleFilled(center_x - 1, center_y,
-                                               kSCROLL_R, renderer);
-        }
-        else
-        {
-          center_y -= 1;
-          success &= Frame::renderTriangle(
-              center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
-              center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
-              renderer);
-        }
-      }
-
-      /* Bottom of scroll */
-      if(i == kTYPE_MAX - 1)
-      {
-        uint16_t bottom_index = element_index + kTYPE_MAX;
-
-        if(bottom_index == valid_action_types.size())
-        {
-          success &= Frame::renderCircleFilled(center_x - 1, center_y,
-                                               kSCROLL_R, renderer);
-        }
-        else
-        {
-          center_y += 1;
-          success &= Frame::renderTriangle(
-              center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
-              center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
-              renderer);
-        }
-      }
-    }
-  }
-
-  delete t;
-
-  return success;
-}
-
 // TODO: Colours/grayness for various BattleSkill validness? For items too
 bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
 {
@@ -417,6 +303,202 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   SDL_SetRenderTarget(renderer, nullptr);
 
   return texture;
+}
+
+bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
+                                   uint32_t h)
+{
+  /* Fonts */
+  auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
+
+  /* Variable Construction */
+  SDL_Color color{255, 255, 255, 255};
+  bool success{true};
+  Text* t{new Text(font_header)};
+
+  /* Calculate starting Y co-ordinate */
+  int32_t start_y = 0;
+  t->setText(renderer, "Test", color);
+
+  if(valid_action_types.size() >= kTYPE_MAX)
+  {
+    start_y = y + kTYPE_MARGIN;
+  }
+  else
+  {
+    start_y = y;
+    start_y +=
+        (h - valid_action_types.size() * (t->getHeight() + kTYPE_MARGIN * 2)) /
+        2;
+  }
+
+  for(uint32_t i = 0; i < valid_action_types.size() && i < kTYPE_MAX; i++)
+  {
+    /* Set the text */
+    int32_t index = i + element_index;
+
+    /* Action Type at index */
+    auto type = valid_action_types.at(i);
+
+    std::string text_str = Helpers::actionTypeToStr(type);
+    success &= t->setText(renderer, text_str, color);
+
+    /* Calculate X/Y locations */
+    int32_t text_x = x + kTYPE_MARGIN * 2;
+    int32_t text_y =
+        start_y + kTYPE_MARGIN * (i + 1) + (t->getHeight() + kTYPE_MARGIN) * i;
+
+    /* If selected, draw background box */
+    if((menu_layer == BattleMenuLayer::TYPE_SELECTION &&
+        index == element_index) ||
+       (menu_layer != BattleMenuLayer::TYPE_SELECTION &&
+        type == selected_action_type))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+      SDL_Rect text_rect;
+      text_rect.x = text_x - kTYPE_SELECT;
+      text_rect.y = text_y - kTYPE_SELECT;
+      text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
+      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
+      SDL_RenderFillRect(renderer, &text_rect);
+    }
+
+    /* Render the Text */
+    success &= t->render(renderer, text_x, text_y);
+
+    /* Render the scrollbar, if needed */
+    if(valid_action_types.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+      uint16_t center_x = x + w - kTYPE_MARGIN * 2;
+      uint16_t center_y = text_y + t->getHeight() / 2;
+
+      /* Top of scroll */
+      if(i == 0)
+      {
+        if(element_index == 0)
+        {
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        }
+        else
+        {
+          center_y -= 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
+              center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
+              renderer);
+        }
+      }
+
+      /* Bottom of scroll */
+      if(i == kTYPE_MAX - 1)
+      {
+        uint16_t bottom_index = element_index + kTYPE_MAX;
+
+        if(bottom_index == valid_action_types.size())
+        {
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        }
+        else
+        {
+          center_y += 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
+              center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
+              renderer);
+        }
+      }
+    }
+  }
+
+  delete t;
+
+  return success;
+}
+
+bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+{
+  bool success{true};
+
+  /* Start X/Y  */
+  int32_t text_x = x + kTYPE_MARGIN * 2;
+  int32_t text_y = 0;
+
+  if(frames_skill_name.size() >= kTYPE_MAX)
+  {
+    text_y = y + kTYPE_MARGIN;
+  }
+  else
+  {
+    for(const auto& frame_skill_name : frames_skill_name)
+      text_y += frame_skill_name->getHeight();
+
+    text_y = y + (h - text_y) / 2;
+  }
+
+  for(uint32_t i = 0; i < frames_skill_name.size() && i < kTYPE_MAX; i++)
+  {
+    int32_t index = i + element_index;
+
+    if(index == element_index)
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+      SDL_Rect text_rect;
+      text_rect.x = text_x - kTYPE_SELECT;
+      text_rect.y = text_y;
+      text_rect.w = frames_skill_name[index]->getWidth() + kTYPE_SELECT * 2;
+      text_rect.h = frames_skill_name[index]->getHeight();
+      SDL_RenderFillRect(renderer, &text_rect);
+    }
+
+    success &= frames_skill_name[index]->render(renderer, text_x, text_y);
+
+    if(frames_skill_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+      uint16_t center_x = x + w - kTYPE_MARGIN * 2;
+      uint16_t center_y = text_y + frames_skill_name[i]->getHeight() / 2;
+
+      /* Top of scroll */
+      if(i == 0)
+      {
+        if(element_index == 0)
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        else
+        {
+          center_y -= 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
+              center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
+              renderer);
+        }
+      }
+
+      /* Bottom of scroll */
+      if(i == kTYPE_MAX - 1)
+      {
+        uint16_t bottom_index = element_index + kTYPE_MAX;
+        if(bottom_index == frames_skill_name.size())
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        else
+        {
+          center_y += 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
+              center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
+              renderer);
+        }
+      }
+    }
+
+    text_y += frames_skill_name[index]->getHeight();
+  }
+
+  return success;
 }
 
 /*=============================================================================
@@ -1074,131 +1156,6 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-// TODO
-// bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t width,
-//                               uint32_t height)
-// {
-// bool success = true;
-
-// /* Calculate the start x and y */
-// int text_x = x + kTYPE_MARGIN * 2;
-// int text_y = 0;
-// if(skill_names.size() >= kTYPE_MAX)
-// {
-//   text_y = y + kTYPE_MARGIN;
-// }
-// else
-// {
-//   for(uint16_t i = 0; i < skill_names.size(); i++)
-//     text_y += skill_names[i]->getHeight();
-//   text_y = y + (height - text_y) / 2;
-// }
-
-// /* Loop through all skills */
-// for(uint16_t i = 0; i < skill_names.size() && i < kTYPE_MAX; i++)
-// {
-//   uint16_t index = i + index_actions;
-
-//   /* If selected, draw background box */
-//   if(index == menu->getElementIndex())
-//   {
-//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
-//     SDL_Rect text_rect;
-//     text_rect.x = text_x - kTYPE_SELECT;
-//     text_rect.y = text_y;
-//     text_rect.w = skill_names[index]->getWidth() + kTYPE_SELECT * 2;
-//     text_rect.h = skill_names[index]->getHeight();
-//     SDL_RenderFillRect(renderer, &text_rect);
-//   }
-
-//   /* Render the text */
-//   success &= skill_names[index]->render(renderer, text_x, text_y);
-
-//   /* Render the scroll bar, if relevant */
-//   if(skill_names.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
-//   {
-//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-//     uint16_t center_x = x + width - kTYPE_MARGIN * 2;
-//     uint16_t center_y = text_y + skill_names[i]->getHeight() / 2;
-
-//     /* Top of scroll */
-//     if(i == 0)
-//     {
-//       if(index_actions == 0)
-//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-//                                              kSCROLL_R, renderer);
-//       else
-//       {
-//         center_y -= 1;
-//         success &= Frame::renderTriangle(
-//             center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
-//             center_y + kSCROLL_R, center_x + kSCROLL_R, center_y +
-//             kSCROLL_R,
-//             renderer);
-//       }
-//     }
-
-//     /* Bottom of scroll */
-//     if(i == kTYPE_MAX - 1)
-//     {
-//       uint16_t bottom_index = index_actions + kTYPE_MAX;
-//       if(bottom_index == skill_names.size())
-//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-//                                              kSCROLL_R, renderer);
-//       else
-//       {
-//         center_y += 1;
-//         success &= Frame::renderTriangle(
-//             center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
-//             center_y - kSCROLL_R, center_x + kSCROLL_R, center_y -
-//             kSCROLL_R,
-//             renderer);
-//       }
-//     }
-//   }
-
-//   /* Increment height */
-//   text_y += skill_names[index]->getHeight();
-// }
-
-// return success;
-//  return true;
-//}
-
-/*
- * Description: Unset all the battle menu parameters to default, thereby getting
- *              it ready for a new person/new turn.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::unsetAll(const bool& window_off)
-// {
-//   valid_actions.clear();
-//   menu_items.clear();
-//   valid_targets.clear();
-//   selected_targets.clear();
-//   menu_skills.clear();
-
-//   selected_item = nullptr;
-//   current_user = nullptr;
-
-//   action_type = ActionType::NONE;
-//   action_scope = ActionScope::NO_SCOPE;
-//   flags = static_cast<MenuState>(0);
-
-//   qtdr_cost_paid = 0;
-//   person_index = 0;
-//   layer_index = 1;
-//   element_index = 0;
-
-//   // TODO: Window/rendering status on unset?
-//   if(window_off)
-//     window_status = WindowStatus::OFF;
-//   else
-//     window_status = WindowStatus::ON;
-// }
-
 /*
  * Description: Determines whether an ActionType has been chosen for current
  *              menu selection occurence.
@@ -1715,18 +1672,6 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 // }
 
 /*
- * Description: Returns the selected index of current action (ex. the index
- *              along the vector of items/skills which is selected).
- *
- * Inputs: none
- * Output: int32_t - the index of the selected acion
- */
-// int32_t BattleMenu::getActionIndex()
-// {
-//   return element_index;
-// }
-
-/*
  * Description: Returns the list of action target indexes which were selected
  *              by the user of the action.
  *
@@ -1747,17 +1692,6 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 // Person* BattleMenu::getCurrentUser()
 // {
 //   return current_user;
-// }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// int32_t BattleMenu::getElementIndex()
-// {
-//   return element_index;
 // }
 
 /* Get targets hovered over during the selection process */
@@ -1798,17 +1732,6 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 // }
 
 /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// int32_t BattleMenu::getLayerIndex()
-// {
-//   return layer_index;
-// }
-
-/*
  * Description: Returns the current value for maximum selection index based
  *              on the layering of hte menu.
  *
@@ -1829,25 +1752,13 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 //     return valid_targets.size() - 1;
 
 //   return 0;
-// }
-
+//
 /*
- * Description: Returns a vector of BattleSkill objects.
- *
- * Inputs: none
- * Output: std::vector<BattleSkill> - the vector of BattleSkill objects.
- */
-// std::vector<BattleSkill*> BattleMenu::getMenuSkills()
-// {
-//   return menu_skills;
-// }
-
-/*
- * Description: Returns the pointer to the currently selected Skill object.
- *
- * Inputs: none
- * Output: Skill* - pointer to the currently selected Skill object.
- */
+* Description: Returns the pointer to the currently selected Skill object.
+*
+* Inputs: none
+* Output: Skill* - pointer to the currently selected Skill object.
+*/
 // BattleSkill* BattleMenu::getSelectedSkill()
 // {
 //   return selected_skill;
@@ -1862,28 +1773,6 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 // BattleItem* BattleMenu::getSelectedItem()
 // {
 //   return selected_item;
-// }
-
-/*
- * Description: Returns the vector of BattleMenu objects.
- *
- * Inputs: none
- * Output: std::vector<BattleItem> - the vector of Battle item objects.
- */
-// std::vector<BattleItem*> BattleMenu::getMenuItems()
-// {
-//   return menu_items;
-// }
-
-/*
- * Description: Returns the vector of BattleMenu objects.
- *
- * Inputs: none
- * Output: std::vector<BattleItem> - the vector of Battle item objects.
- */
-// int32_t BattleMenu::getPersonIndex()
-// {
-//   return person_index;
 // }
 
 /*
@@ -1948,39 +1837,6 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 // int32_t BattleMenu::getQtdrCostPaid()
 // {
 //   return qtdr_cost_paid;
-// }
-
-// std::vector<ActionType> BattleMenu::getValidActionTypes()
-// {
-//   return current_user->getValidActions();
-// }
-
-/*
- * Description: Returns the enumerated WindowSatus of the BattleMenu.
- *
- * Inputs: none
- * Output: WindowStatus - enumerated window status.
- */
-// WindowStatus BattleMenu::getWindowStatus()
-// {
-//   return window_status;
-// }
-
-/*
- * Description: Assigns a number of allies the current person will have for
- *              selection.
- *
- * Inputs: uint16_t - a new number of allies to assign
- * Output: none
- */
-// void BattleMenu::setNumAllies(uint16_t new_num_allies)
-// {
-//   num_allies = new_num_allies;
-// }
-
-// void BattleMenu::setRenderer(SDL_Renderer* renderer)
-// {
-//   this->renderer = renderer;
 // }
 
 /*
@@ -2086,18 +1942,4 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 //   }
 
 //   return (!valid_targets.empty());
-// }
-
-/*
- * Description: Assigns a new window status for the battle menu. This allows the
- *              battle menu to turn to an inactive state during other modes
- *              of battle than select action ally to prevent the game from
- *              sending key down events when they are not needed
- *
- * Inputs: new_window_status - the new status for the window
- * Output: none
- */
-// void BattleMenu::setWindowStatus(WindowStatus new_window_status)
-// {
-//   window_status = new_window_status;
 // }
