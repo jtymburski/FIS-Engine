@@ -37,6 +37,9 @@ private:
   /* Is the person running? */
   bool running;
 
+  /* Sound delay */
+  int sound_delay;
+
   /* The initial tile location to start movement on */
   std::vector<std::vector<Tile*>> starting_tiles;
 
@@ -51,6 +54,8 @@ private:
   SurfaceClassifier surface;
 
   /* -------------------------- Constants ------------------------- */
+  const static int kDELAY_MAX; /* The maximum delay (in milliseconds) */
+  const static int kDELAY_MIN; /* The minimum delay (in milliseconds) */
   const static int8_t kDIR_EAST;        /* The EAST direction for moving */
   const static int8_t kDIR_NORTH;       /* The NORTH direction for moving */
   const static int8_t kDIR_SOUTH;       /* The SOUTH direction for moving */

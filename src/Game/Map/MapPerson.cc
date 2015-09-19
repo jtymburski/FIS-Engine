@@ -19,6 +19,8 @@
 #include "Game/Map/MapPerson.h"
 
 /* Constant Implementation - see header file for descriptions */
+const int MapPerson::kDELAY_MAX = 180000;
+const int MapPerson::kDELAY_MIN = 30000;
 const int8_t MapPerson::kDIR_EAST = 1;
 const int8_t MapPerson::kDIR_NORTH = 0;
 const int8_t MapPerson::kDIR_SOUTH = 2;
@@ -40,6 +42,7 @@ const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
 MapPerson::MapPerson() : MapThing()
 {
   running = false;
+  sound_delay = -1;
   starting_section = 0;
   steps = 0;
 
@@ -1060,6 +1063,21 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     /* Animate and move the person */
     moveThing(cycle_time);
     animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
+
+    /* Sound trigger for person/npc - for now, only player (TODO:FUTURE) */
+    if(getID() == 0 && base_category != ThingBase::ISBASE && getSoundID() >= 0)
+    {
+      if(sound_delay > 0)
+      {
+        sound_delay -= cycle_time;
+        if(sound_delay <= 0 && event_handler != nullptr)
+          event_handler->triggerSound(getSoundID(), SoundChannels::THINGS);
+      }
+
+      /* If sound delay is nil or less, re-generate */
+      if(sound_delay <= 0)
+        sound_delay = Helpers::randU(kDELAY_MIN, kDELAY_MAX);
+    }
   }
 }
 

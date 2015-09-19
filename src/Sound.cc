@@ -17,6 +17,7 @@
 const short Sound::kINFINITE_LOOP = -1;
 const int Sound::kUNSET_ID = -1;
 /* Public Constant Implementation */
+const int Sound::kDEFAULT_FREQUENCY = 22050;
 const uint32_t Sound::kID_MUSIC_TITLE = 0;
 const uint32_t Sound::kID_SOUND_MENU_CHG = 0;
 const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
@@ -37,6 +38,7 @@ Sound::Sound()
   channel = SoundChannels::UNASSIGNED;
   fade_time = 0;
   id = kUNSET_ID;
+  length = 0;
   loop_count = 0;
   raw_data = NULL;
   volume = MIX_MAX_VOLUME / 2;
@@ -165,6 +167,18 @@ uint32_t Sound::getFadeTime()
 int Sound::getID()
 {
   return id;
+}
+
+/*
+ * Description: Returns the length in milliseconds of the chunk within the sound
+ *              file. If unset, will be 0.
+ *
+ * Inputs: none
+ * Output: int - the length in milliseconds
+ */
+int Sound::getLength()
+{
+  return length;
 }
 
 /*
@@ -379,6 +393,10 @@ bool Sound::setSoundFile(std::string path)
     unsetSoundFile();
     raw_data = sound;
     Mix_VolumeChunk(raw_data, volume);
+
+    /* Calculate length: raw / ((hz * 2 bytes * 1 (1mono, 2stereo)) / 1000) */
+    length = raw_data->alen / ((Sound::kDEFAULT_FREQUENCY * 2 * 1) / 1000);
+
     return true;
   }
 
@@ -430,7 +448,7 @@ bool Sound::stop(bool skip_fade)
       Mix_HaltChannel(channel_id);
 
     /* Check the status */
-    if(Mix_Playing(channel_id) == 0 || 
+    if(Mix_Playing(channel_id) == 0 ||
        Mix_FadingChannel(channel_id) == MIX_FADING_OUT)
       return true;
     return false;
@@ -457,12 +475,13 @@ void Sound::unsetSoundFile()
   if(raw_data != NULL)
     Mix_FreeChunk(raw_data);
   raw_data = NULL;
+  length = 0;
 }
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-  
+
 /*
  * Description: Returns the corresponding integer for the channel enumerator. If
  *              less than 0, invalid.
@@ -535,7 +554,7 @@ void Sound::resumeAllChannels()
 }
 
 /*
- * Description: Resumes a single channel of sound, based on the enumerator. 
+ * Description: Resumes a single channel of sound, based on the enumerator.
  *              This only does something if they were paused previously.
  *
  * Inputs: SoundChannels channel - the enumerated channel to pause
@@ -578,8 +597,8 @@ int Sound::setAudioVolumes(int new_volume)
 }
 
 /*
- * Description: Sets the volume of all channels to the designated volume. If 
- *              less then 0, set to 0. If greater than max, set to max (128). 
+ * Description: Sets the volume of all channels to the designated volume. If
+ *              less then 0, set to 0. If greater than max, set to max (128).
  *
  * Inputs: int new_volume - the new volume level to set all audio channels.
  * Output: none
@@ -591,7 +610,7 @@ int Sound::setMasterVolume(int new_volume)
     new_volume = 0;
   if(new_volume > MIX_MAX_VOLUME)
     new_volume = MIX_MAX_VOLUME;
-  
+
   /* Set volumes */
   Mix_Volume(-1, new_volume);
 
@@ -614,11 +633,11 @@ int Sound::setMusicVolumes(int new_volume)
     new_volume = 0;
   if(new_volume > MIX_MAX_VOLUME)
     new_volume = MIX_MAX_VOLUME;
-  
+
   /* Set volumes */
   Mix_Volume((int)SoundChannels::MUSIC1, new_volume);
   Mix_Volume((int)SoundChannels::MUSIC2, new_volume);
-  
+
   /* Return volume */
   return new_volume;
 }

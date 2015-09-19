@@ -5,7 +5,7 @@
  * Description: Handles all sound used within the game. This individual class
  *              only handles playing a single sound at one time. If you click
  *              play while it's still playing, it will stop the previous
- *              execution. However, if you create multiple sound files, SDL 
+ *              execution. However, if you create multiple sound files, SDL
  *              allows up to 8 files being mixed together at once before
  *              returning the channel full error.
  ******************************************************************************/
@@ -60,11 +60,14 @@ private:
 
   /* The time to fade the sound in. If 0, no fade */
   uint32_t fade_time;
- 
+
   /* Sound ID */
   int id;
 
-  /* The number of times to play the sound. It will be loop_count+1 
+  /* Length, in milliseconds - calculated on creation */
+  int length;
+
+  /* The number of times to play the sound. It will be loop_count+1
    * except for -1, which is infinite loop */
   int loop_count;
 
@@ -73,12 +76,13 @@ private:
 
   /* The volume that the chunk will play at */
   uint8_t volume;
-  
+
   /* --------------------- CONSTANTS --------------------- */
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
   const static int kUNSET_ID; /* The placeholder unset ID */
 public:
+  const static int kDEFAULT_FREQUENCY; /* Sound frequency - DO NOT CHANGE */
   const static uint32_t kID_MUSIC_TITLE;
   const static uint32_t kID_SOUND_MENU_CHG;
   const static uint32_t kID_SOUND_MENU_NEXT;
@@ -96,32 +100,35 @@ public:
    * calls to get feedback on the sound */
   SoundChannels getChannel();
   int getChannelInt();
-  
+
   /* Returns the time that the chunk will be faded in or out */
   uint32_t getFadeTime();
- 
+
   /* Returns the ID */
   int getID();
+
+  /* Returns the length, in milliseconds, of the chunk */
+  int getLength();
 
   /* Returns the loop count, the number of times it will play for */
   int getLoopCount();
 
   /* Returns the raw chunk data, of the loaded sound. NULL if inactive */
   Mix_Chunk* getRawData();
-  
+
   /* Returns the volume of the sound chunk */
   uint8_t getVolume();
- 
+
   /* Returns if the chunk is playing */
   bool isPlaying();
 
   /* Play function. If sound is set, it will play the sound for the given number
    * of loops */
   bool play(bool stop_channel = false);
-  
+
   /* Sets the channel integer to be used for playing the chunk */
   void setChannel(SoundChannels channel);
-  
+
   /* Sets the fade time for the sound chunk sequence (in msec) */
   void setFadeTime(uint32_t time);
 
@@ -136,13 +143,13 @@ public:
 
   /* Trys to set the sound file to the given path */
   bool setSoundFile(std::string path);
-  
+
   /* Sets the volume that the chunk will be played at. */
   void setVolume(uint8_t volume);
-  
+
   /* Stop function. Will stop the sound, if playing */
   bool stop(bool skip_fade = false);
-  
+
   /* Unset the sound file and frees the memory */
   void unsetSoundFile();
 
@@ -160,11 +167,11 @@ public:
   /* Pause all channels or select channels */
   static void pauseAllChannels();
   static void pauseChannel(SoundChannels channel);
-  
+
   /* Resume all channels or select channels */
   static void resumeAllChannels();
   static void resumeChannel(SoundChannels channel);
- 
+
   /* Set volumes */
   static int setAudioVolumes(int new_volume);
   static int setMasterVolume(int new_volume);

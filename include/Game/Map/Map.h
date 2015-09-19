@@ -46,13 +46,13 @@ private:
   std::vector<MapItem*> base_items;
   std::vector<MapPerson*> base_persons;
   std::vector<MapThing*> base_things;
-  
+
   /* The base system path to the resources */
   std::string base_path;
-  
+
   /* A reference blank event for setting events in the game */
   EventHandler* event_handler;
-  
+
   /* The item store menu */
   ItemStore item_menu;
 
@@ -71,6 +71,11 @@ private:
   // /* The status bar on the map */
   // MapStatusBar map_status_bar; // TODO: Remove
 
+  /* Music ID Stack */
+  std::vector<uint32_t> music_ids;
+  int music_index;
+  int music_runtime;
+
   // /* The players info on the map */
   std::vector<MapInteractiveObject*> ios;
   std::vector<MapItem*> items;
@@ -83,32 +88,32 @@ private:
 
   /* The system options, used for rendering, settings, etc. */
   Options* system_options;
-  
+
   /* The number of pixels for each tile in the class */
   uint16_t tile_height;
   uint16_t tile_width;
-  
+
   // /* The time that has elapsed for each draw cycle */
   // int time_elapsed;
 
   /* The viewport for the map, controls positioning */
   MapViewport viewport;
 
-  // /* Weather effect on the overall map (May be pushed to the sector level at 
+  // /* Weather effect on the overall map (May be pushed to the sector level at
    // * a later time) */
   // Weather* weather_effect;
 
   /* Status of the zoom on the map */
   bool zoom_in;
   bool zoom_out;
-  
+
   // /* The painting monitoring parameters */
   // QString frames_per_second;
   // int paint_animation;
   // int paint_frames;
   // int paint_time;
 
-  // /*------------------- Constants -----------------------*/
+  /*------------------- Constants -----------------------*/
   // const static int kDOUBLE_DIGITS;    /* The point when integers are more
   //                                      * than a single digit */
   // const static int kELEMENT_DATA;     /* Element data type for sprite */
@@ -117,6 +122,7 @@ private:
   const static uint8_t kFILE_SECTION_ID; /* The section identifier, for file */
   const static uint8_t kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static uint8_t kFILE_TILE_ROW; /* The tile depth in XML of row */
+  const static uint8_t kMUSIC_REPEAT; /* Number of times each song repeats */
   const static uint8_t kPLAYER_ID;     /* The player ID for computer control */
   const static uint16_t kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
 
@@ -125,15 +131,15 @@ private:
  *===========================================================================*/
 private:
   /* Adds sprite data, as per data from the file */
-  bool addSpriteData(XmlData data, std::string id, 
+  bool addSpriteData(XmlData data, std::string id,
                      int file_index, SDL_Renderer* renderer);
-  
+
   /* Adds tile data, as per data from the file */
   bool addTileData(XmlData data, uint16_t section_index);
 
   /* Adds thing data, as per data from the file */
   bool addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer);
-  bool addThingData(XmlData data, uint16_t section_index, 
+  bool addThingData(XmlData data, uint16_t section_index,
                     SDL_Renderer* renderer);
 
   /* Returns the item, based on the ID */
@@ -159,27 +165,27 @@ private:
   std::vector<std::vector<Tile*>> getTileMatrix(
                MapThing* thing, Direction direction = Direction::DIRECTIONLESS);
   std::vector<std::vector<Tile*>> getTileMatrix(uint16_t section,
-                                                uint16_t x, uint16_t y, 
-                                                uint16_t width, 
+                                                uint16_t x, uint16_t y,
+                                                uint16_t width,
                                                 uint16_t height);
 
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);
-  
+
   /* Initiates a thing action, based on the action key being hit */
   void initiateThingInteraction(MapPerson* initiator);
- 
+
   /* Parse coordinate info from file to give the designated tile coordinates
    * to update */
   bool parseCoordinateInfo(std::string row, std::string col, uint16_t index,
-                           uint16_t* r_start, uint16_t* r_end, 
+                           uint16_t* r_start, uint16_t* r_end,
                            uint16_t* c_start, uint16_t* c_end);
-                           
+
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);
-  
+
   /* Splits the ID into a vector of IDs */
-  std::vector< std::vector<int32_t> > splitIdString(std::string id, 
+  std::vector< std::vector<int32_t> > splitIdString(std::string id,
                                                     bool matrix = false);
 
   /* Updates the height and width, based on zoom factors */
@@ -210,7 +216,7 @@ public:
                  std::vector<uint32_t> counts,
                  std::vector<int32_t> cost_modifiers,
                  std::string name = "", bool show_empty = false);
-  
+
   // /* Checks whether the viewport contains any tiles with the given sector */
   // bool isInSector(int index);
 
@@ -220,27 +226,27 @@ public:
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
- 
+
   /* Loads the map data */
-  bool loadData(XmlData data, int index, SDL_Renderer* renderer, 
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 std::string base_path);
   void loadDataFinish(SDL_Renderer* renderer);
 
   /* Picks up the total number of the item */
   bool pickupItem(MapItem* item);
-  
+
   /* Renders the map */
   bool render(SDL_Renderer* renderer);
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
-  
+
   /* Teleport a thing, based on the given coordinates */
   void teleportThing(int id, int tile_x, int tile_y, int section_id);
 
   /* Handles all the necessary clean up when map focus is lost */
   void unfocus();
-  
+
   /* Unload the map, if there is one loaded */
   void unloadMap();
 

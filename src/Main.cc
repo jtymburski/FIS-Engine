@@ -41,7 +41,7 @@ bool initSDL()
   /* Init SDL mixer, and open the audio with the chosen settings */
   int buffers = 1024; /* Size of audio buffers in memory - possibly to 4096? */
   int channels = 1;   /* 1 channel = mono, 2 = stereo */
-  int rate = 22050;   /* Frequency of Audio Playback */
+  int rate = Sound::kDEFAULT_FREQUENCY;   /* Frequency of Audio Playback */
   /* 8 mixing channels are chosen by default. Currently have 9. Once sectors
    * are active, will need to enable more (or if any more are added) */
   if(!Mix_Init(MIX_INIT_OGG) || 

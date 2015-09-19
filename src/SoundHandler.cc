@@ -35,6 +35,24 @@ SoundHandler::SoundHandler()
                            "sound/ambience/background_menu_sound.wav");
   addMusic(game_music);
 
+  Sound* game_music2 = new Sound();
+  game_music2->setID(1001);
+  game_music2->setFadeTime(2500);
+  game_music2->setSoundFile(base_path + "sound/3.ogg");
+  addMusic(game_music2);
+
+  Sound* game_music3 = new Sound();
+  game_music3->setID(1002);
+  game_music3->setFadeTime(3000);
+  game_music3->setSoundFile(base_path + "sound/4.ogg");
+  addMusic(game_music3);
+
+  Sound* game_music4 = new Sound();
+  game_music4->setID(1003);
+  game_music4->setFadeTime(2750);
+  game_music4->setSoundFile(base_path + "sound/5.ogg");
+  addMusic(game_music4);
+
   /* ---- SOUND ---- */
   Sound* menu_sound = new Sound();
   menu_sound->setID(Sound::kID_SOUND_MENU_CHG);
@@ -71,6 +89,11 @@ SoundHandler::SoundHandler()
   bush_sound->setID(1003);
   bush_sound->setSoundFile(base_path + "sound/map/bush01.wav");
   addSound(bush_sound);
+
+  Sound* shot_bear_sound = new Sound();
+  shot_bear_sound->setID(1004);
+  shot_bear_sound->setSoundFile(base_path + "sound/map/events/shot_bear01.wav");
+  addSound(shot_bear_sound);
 }
 
 /* Destructor function */

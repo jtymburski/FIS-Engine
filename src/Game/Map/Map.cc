@@ -29,6 +29,7 @@ const uint8_t Map::kFILE_GAME_TYPE = 1;
 const uint8_t Map::kFILE_SECTION_ID = 2;
 const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
+const uint8_t Map::kMUSIC_REPEAT = 3;
 const uint8_t Map::kPLAYER_ID = 0;
 const uint16_t Map::kZOOM_TILE_SIZE = 16;
 
@@ -44,6 +45,8 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   this->event_handler = event_handler;
   loaded = false;
   map_index = 0;
+  music_index = -1;
+  music_runtime = -1;
   player = NULL;
   system_options = NULL;
 
@@ -1301,6 +1304,12 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 /* Finishes the load - last call on successful data */
 void Map::loadDataFinish(SDL_Renderer* renderer)
 {
+  /* Music clean-up - TODO: IN FILE!! */
+  music_ids.push_back(1000);
+  music_ids.push_back(1001);
+  music_ids.push_back(1002);
+  music_ids.push_back(1003);
+
   /* Load the item menu sprites - TODO: In file? */
   item_menu.loadImageBackend("sprites/Overlay/item_store_left.png",
                              "sprites/Overlay/item_store_right.png",
@@ -1618,7 +1627,7 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
       /* Change the starting tile for the thing */
       if(found_thing != nullptr)
       {
-        std::vector<std::vector<Tile*>> matrix = getTileMatrix(section, x, y, 
+        std::vector<std::vector<Tile*>> matrix = getTileMatrix(section, x, y,
                              found_thing->getWidth(), found_thing->getHeight());
 
         if(found_thing->setStartingTiles(matrix, section))
@@ -1647,6 +1656,11 @@ void Map::unloadMap()
   map_index = 0;
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
+
+  /* Reset music references */
+  music_ids.clear();
+  music_index = -1;
+  music_runtime = -1;
 
   /* Deletes the sprite data stored */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
@@ -1755,7 +1769,7 @@ bool Map::update(int cycle_time)
   if(event_handler != nullptr && event_handler->getSoundHandler() != nullptr)
   {
     uint32_t id = 1000;
-    
+
     Sound* chunk = event_handler->getSoundHandler()->getAudioMusic(id);
     if(chunk != nullptr && !chunk->isPlaying())
       event_handler->triggerMusic(id);

@@ -643,6 +643,10 @@ void Game::pollEvents()
       event_handler.pollGiveItem(&id, &count);
       eventGiveItem(id, count);
     }
+    else if(classification == EventClassifier::JUSTSOUND)
+    {
+      event_handler.pollSound();
+    }
     else if(classification == EventClassifier::NOTIFICATION)
     {
       std::string notification;

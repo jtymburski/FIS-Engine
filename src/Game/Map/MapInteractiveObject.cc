@@ -3,7 +3,7 @@
  * Date Created: Dec 2 2012
  * Inheritance: MapThing
  * Description: This is the object is a specialization of the stock map thing
- *              that allows interaction from key presses by players in 
+ *              that allows interaction from key presses by players in
  *              nearby slots. Pressing the key will toggle the object and allow
  *              it to change states. These objects are unmovable and are of the
  *              typical interactive objects such as doors, chests, etc.
@@ -24,7 +24,7 @@ const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
  *===========================================================================*/
 
 /*
- * Description: Base constructor function. No parameters. Initializes all 
+ * Description: Base constructor function. No parameters. Initializes all
  *              parameters blank.
  *
  * Inputs: none
@@ -41,9 +41,9 @@ MapInteractiveObject::MapInteractiveObject() : MapThing()
   time_return = kRETURN_TIME_UNUSED;
 }
 
-/* 
- * Description: ID based constructor function. Sets up an interactive object 
- *              with the base introduction parameters. 
+/*
+ * Description: ID based constructor function. Sets up an interactive object
+ *              with the base introduction parameters.
  *
  * Inputs: int id - the id of the MIO
  *         std::string name - the name of the MIO
@@ -195,7 +195,7 @@ int MapInteractiveObject::getNodeLength()
 
 /*
  * Description: Returns the state node at the tail of the stack (last ID)
- * 
+ *
  * Inputs: none
  * Output: StateNode* - the node pointer for the tail state
  */
@@ -241,7 +241,7 @@ void MapInteractiveObject::setParentFrames()
       else
         base_control->forward = true;
       animate(0, true, false);
-      
+
       /* Treat the sprite sequence according to the order, if it's in reverse
        * or not */
       if(!shifting_forward)
@@ -262,7 +262,7 @@ void MapInteractiveObject::setParentFrames()
 }
 
 /*
- * Description: Shifts the current state node to the next one, based on the 
+ * Description: Shifts the current state node to the next one, based on the
  *              direction designated in the class. Passes the call to
  *              shiftNext() or shiftPrevious(), as applicable.
  *
@@ -294,7 +294,7 @@ bool MapInteractiveObject::shift()
     else
       status = true;
   }
-  
+
   return status;
 }
 
@@ -330,8 +330,8 @@ bool MapInteractiveObject::shiftNext()
 }
 
 /*
- * Description: Shifts to the previous state in the linear linked list. This 
- *              shifts to a node with a lesser ID (left). This also handles 
+ * Description: Shifts to the previous state in the linear linked list. This
+ *              shifts to a node with a lesser ID (left). This also handles
  *              event triggers and animations.
  *
  * Inputs: none
@@ -363,19 +363,19 @@ bool MapInteractiveObject::shiftPrevious()
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
-/* 
- * Description: Checks if a move is allowed from the current IO main 
+/*
+ * Description: Checks if a move is allowed from the current IO main
  *              tile to the next tile that it is trying to move to. This
  *              handles the individual calculations for a single tile; used
  *              by the isMoveAllowed() function.
- * 
+ *
  * Inputs: Tile* previous - the tile moving from
  *         Tile* next - the next tile moving to
  *         uint8_t render_depth - the rendering depth, in the stack
  *         Direction move_request - the direction moving
  * Output: bool - returns if the move is allowed.
  */
-bool MapInteractiveObject::isTileMoveAllowed(Tile* previous, Tile* next, 
+bool MapInteractiveObject::isTileMoveAllowed(Tile* previous, Tile* next,
                                    uint8_t render_depth, Direction move_request)
 {
   bool move_allowed = true;
@@ -407,7 +407,7 @@ bool MapInteractiveObject::isTileMoveAllowed(Tile* previous, Tile* next,
 }
 
 /*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
+ * Description: Sets the tile in the sprite and sprite in the tile for the
  *              passed in objects. If it fails, it resets the pointers.
  *
  * Inputs: Tile* tile - the tile pointer to set the frame
@@ -415,7 +415,7 @@ bool MapInteractiveObject::isTileMoveAllowed(Tile* previous, Tile* next,
  *         bool no_events - if events should trigger on the set
  * Output: bool - true if the set was successful
  */
-bool MapInteractiveObject::setTile(Tile* tile, TileSprite* frames, 
+bool MapInteractiveObject::setTile(Tile* tile, TileSprite* frames,
                                    bool no_events)
 {
   (void)no_events;
@@ -429,7 +429,7 @@ bool MapInteractiveObject::setTile(Tile* tile, TileSprite* frames,
 }
 
 /*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
+ * Description: Sets the tile in the sprite and sprite in the tile for the
  *              passed in objects with regards to finishing a tile move.
  *
  * Inputs: Tile* old_tile - the tile the object was on previously
@@ -439,8 +439,8 @@ bool MapInteractiveObject::setTile(Tile* tile, TileSprite* frames,
  *         bool no_events - if events should trigger on the set
  * Output: bool - true if the set was successful
  */
-void MapInteractiveObject::setTileFinish(Tile* old_tile, Tile* new_tile, 
-                                       uint8_t render_depth, bool reverse_last, 
+void MapInteractiveObject::setTileFinish(Tile* old_tile, Tile* new_tile,
+                                       uint8_t render_depth, bool reverse_last,
                                        bool no_events)
 {
   (void)no_events;
@@ -452,8 +452,8 @@ void MapInteractiveObject::setTileFinish(Tile* old_tile, Tile* new_tile,
 }
 
 /*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
- *              passed in objects with regards to beginning a tile move. If it 
+ * Description: Sets the tile in the sprite and sprite in the tile for the
+ *              passed in objects with regards to beginning a tile move. If it
  *              fails, it resets the pointers back to the original tile.
  *
  * Inputs: Tile* old_tile - the tile the object was on previously
@@ -462,7 +462,7 @@ void MapInteractiveObject::setTileFinish(Tile* old_tile, Tile* new_tile,
  *         bool no_events - if events should trigger on the set
  * Output: bool - true if the set was successful
  */
-bool MapInteractiveObject::setTileStart(Tile* old_tile, Tile* new_tile, 
+bool MapInteractiveObject::setTileStart(Tile* old_tile, Tile* new_tile,
                                         uint8_t render_depth, bool no_events)
 {
   (void)no_events;
@@ -478,8 +478,8 @@ bool MapInteractiveObject::setTileStart(Tile* old_tile, Tile* new_tile,
 /*
  * Description: Unsets the tile corresponding to the matrix at the x and y
  *              coordinate. However, since this is an private function, it does
- *              not confirm that the X and Y are in the valid range. Must be 
- *              checked or results are unknown. This will unset the thing from 
+ *              not confirm that the X and Y are in the valid range. Must be
+ *              checked or results are unknown. This will unset the thing from
  *              the tile corresponding to the frame and the tile from the frame.
  *
  * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
@@ -519,9 +519,9 @@ void MapInteractiveObject::unsetTile(uint32_t x, uint32_t y, bool no_events)
  *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
-bool MapInteractiveObject::addThingInformation(XmlData data, int file_index, 
-                                               int section_index, 
-                                               SDL_Renderer* renderer, 
+bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
+                                               int section_index,
+                                               SDL_Renderer* renderer,
                                                std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
@@ -560,8 +560,8 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
     }
   }
   /*--------------- STATES FOR MIO -----------------*/
-  else if(identifier == "states" && elements.size() > 2 && 
-          (elements[1] == "state" || elements[1] == "transition") && 
+  else if(identifier == "states" && elements.size() > 2 &&
+          (elements[1] == "state" || elements[1] == "transition") &&
           data.getKey(file_index + 1) == "id")
   {
     int index = std::stoi(data.getKeyValue(file_index + 1));
@@ -586,7 +586,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
         render_matrix = node_head->transition->getRenderMatrix();
 
       /* Clear the node if it has the wrong data in it */
-      if((elements[1] == "state" && modified_node->transition != NULL) || 
+      if((elements[1] == "state" && modified_node->transition != NULL) ||
          (elements[1] == "transition" && modified_node->state != NULL))
         clearNode(index);
 
@@ -603,8 +603,15 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
         }
 
         /* Update the state */
-        success &= modified_node->state->addFileInformation(data, 
+        success &= modified_node->state->addFileInformation(data,
                             file_index + 2, section_index, renderer, base_path);
+
+        // TODO: REMOVE - TEMP SOUND TEST
+        if(getID() == 32 && index == 0)
+        {
+          modified_node->state->setExitEvent
+                                     (event_handler->createSoundEvent(1003));
+        }
       }
       /*--------------------- TRANSITION FRAMES -----------------*/
       else if(elements[1] == "transition")
@@ -619,7 +626,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
         }
 
         /* Update the transition */
-        success &= modified_node->transition->addFileInformation(data, 
+        success &= modified_node->transition->addFileInformation(data,
                                            file_index + 3, renderer, base_path);
       }
     }
@@ -627,8 +634,8 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   else
   {
     /* Proceed to parent */
-    success &= MapThing::addThingInformation(data, file_index, 
-                                             section_index, renderer, 
+    success &= MapThing::addThingInformation(data, file_index,
+                                             section_index, renderer,
                                              base_path);
   }
 
@@ -649,7 +656,7 @@ std::string MapInteractiveObject::classDescriptor()
 }
 
 /*
- * Description: Takes the frame matrix, as it's been set up and removes any 
+ * Description: Takes the frame matrix, as it's been set up and removes any
  *              rows or columns at the end that have no valid frames set. A
  *              frame is classified as valid if it's not NULL and has renderable
  *              frames stored within it.
@@ -664,7 +671,7 @@ bool MapInteractiveObject::cleanMatrix(bool first_call)
   uint16_t height = 0;
   uint16_t width = 0;
   StateNode* node = node_head;
-  
+
   /* Parse through each node and check/clean the data involved */
   while(node != NULL)
   {
@@ -714,7 +721,7 @@ void MapInteractiveObject::clear()
   shifting_forward = true;
   time_elapsed = 0;
   time_return = kRETURN_TIME_UNUSED;
-  
+
   /* Clear states */
   unsetFrames();
 
@@ -794,7 +801,7 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
 
 /*
  * Description: Resets the MIO back to the head state.
- * 
+ *
  * Inputs: none
  * Output: none
  */
@@ -895,7 +902,7 @@ bool MapInteractiveObject::setState(MapState* state)
 }
 
 /*
- * Description: Sets the passed in transition state at the tail end of the MIO 
+ * Description: Sets the passed in transition state at the tail end of the MIO
  *              stack.
  *
  * Inputs: MapState* state - new transition state to append to the stack
@@ -942,7 +949,7 @@ void MapInteractiveObject::triggerWalkOff(MapPerson* trigger)
   if(trigger != NULL && person_on == trigger)
   {
     /* Trigger walk off interaction */
-    if(node_current != NULL && node_current->state != NULL && 
+    if(node_current != NULL && node_current->state != NULL &&
        node_current->state->getInteraction() == MapState::WALKOFF)
       shift();
 
@@ -981,9 +988,9 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none 
+ * Output: none
  */
-void MapInteractiveObject::update(int cycle_time, 
+void MapInteractiveObject::update(int cycle_time,
                                   std::vector<std::vector<Tile*>> tile_set)
 {
   (void)tile_set;
@@ -997,10 +1004,10 @@ void MapInteractiveObject::update(int cycle_time,
     if(base != NULL)
     {
       /* Only proceed if frames are changed and a transitional sequence */
-      if(frames_changed && node_current != NULL && 
+      if(frames_changed && node_current != NULL &&
          node_current->transition != NULL)
       {
-        if(base_control->forward && 
+        if(base_control->forward &&
            base_control->curr_frame == 0)
         {
           /* Try and shift to the next state. If fails, re-animate transition */
@@ -1011,10 +1018,10 @@ void MapInteractiveObject::update(int cycle_time,
             time_elapsed = 0;
           }
         }
-        else if(!base_control->forward && 
+        else if(!base_control->forward &&
                 (base_control->curr_frame + 1) == base_control->num_frames)
         {
-          /* Try and shift to the previous state. If fails, re-animate 
+          /* Try and shift to the previous state. If fails, re-animate
            * transition */
           if(!shiftPrevious())
           {
@@ -1029,10 +1036,10 @@ void MapInteractiveObject::update(int cycle_time,
     else
     {
       /* Only proceed if frames are changed and a transitional sequence */
-      if(frames_changed && node_current != NULL && 
+      if(frames_changed && node_current != NULL &&
          node_current->transition != NULL)
       {
-        if(node_current->transition->isDirectionForward() && 
+        if(node_current->transition->isDirectionForward() &&
            node_current->transition->isAtFirst())
         {
           /* Try and shift to the next state. If fails, re-animate transition */
@@ -1043,10 +1050,10 @@ void MapInteractiveObject::update(int cycle_time,
             time_elapsed = 0;
           }
         }
-        else if(!node_current->transition->isDirectionForward() && 
+        else if(!node_current->transition->isDirectionForward() &&
                 node_current->transition->isAtEnd())
         {
-          /* Try and shift to the previous state. If fails, re-animate 
+          /* Try and shift to the previous state. If fails, re-animate
            * transition */
           if(!shiftPrevious())
           {
@@ -1057,7 +1064,7 @@ void MapInteractiveObject::update(int cycle_time,
         }
       }
     }
-  
+
     /* Determine if the cycle time has passed on activity response */
     if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head
                                                 && node_current->state != NULL)
@@ -1077,19 +1084,19 @@ void MapInteractiveObject::update(int cycle_time,
  *              MIO.
  *
  * Inputs: bool delete_state - should the old frames be deleted?
- * Output: none 
+ * Output: none
  */
 void MapInteractiveObject::unsetFrames(bool delete_frames)
 {
   StateNode* node = node_head;
   unsetMatrix();
-  
+
   /* Proceed to delete all nodes */
   while(node != NULL)
   {
     StateNode* temp_node = node;
     node = node->next;
-    
+
     /* Proceed to delete all relevant data */
     if(delete_frames && nodes_delete)
     {

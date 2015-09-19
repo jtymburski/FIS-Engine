@@ -89,7 +89,7 @@ void EventHandler::triggerQueueSound()
 {
   if(event_queue[queue_index].event.sound_id >= 0)
     triggerSound(event_queue[queue_index].event.sound_id, 
-                 SoundChannels::SECTORS);
+                 SoundChannels::TRIGGERS);
 }
 
 /*============================================================================
