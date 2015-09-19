@@ -17,12 +17,14 @@
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
-const uint16_t BattleMenu::kBIGBAR_CHOOSE = 100;
-const uint16_t BattleMenu::kBIGBAR_OFFSET = 88;
-const uint16_t BattleMenu::kBIGBAR_R_OFFSET = 25;
+const uint16_t BattleMenu::kBIGBAR_CHOOSE{100};
+const uint16_t BattleMenu::kBIGBAR_OFFSET{88};
+const uint16_t BattleMenu::kBIGBAR_R_OFFSET{25};
 
 const uint8_t BattleMenu::kMENU_SEPARATOR_B{8};
 const uint8_t BattleMenu::kMENU_SEPARATOR_T{12};
+
+const uint8_t BattleMenu::kSCROLL_R{2};
 
 const uint8_t BattleMenu::kSKILL_BORDER{10};
 const uint8_t BattleMenu::kSKILL_BORDER_WIDTH{1};
@@ -65,7 +67,11 @@ BattleMenu::BattleMenu()
 }
 
 /*=============================================================================
- * PRIVATE FUNCTIONS
+ * PRIVATE FUNCTIONS - Operation
+ *============================================================================*/
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS - Display
  *============================================================================*/
 
 void BattleMenu::clearSkillFrames()
@@ -88,7 +94,120 @@ void BattleMenu::clearSkillFrames()
   frames_skill_name.clear();
 }
 
-// TODO: Bring QD frame to BattleMenu [09-15-15]
+bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t width,
+                                   uint32_t height)
+{
+  /* Fonts */
+  auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
+
+  /* Variable Construction */
+  SDL_Color color{255, 255, 255, 255};
+  bool success{true};
+  Text* t{new Text(font_header)};
+
+  /* Calculate starting Y co-ordinate */
+  int32_t start_y = 0;
+  t->setText(renderer, "Test", color);
+
+  if(valid_action_types.size() >= kTYPE_MAX)
+  {
+    start_y = y + kTYPE_MARGIN;
+  }
+  else
+  {
+    start_y =
+        y +
+        (height -
+         valid_action_types.size() * (t->getHeight() + kTYPE_MARGIN * 2)) /
+            2;
+  }
+
+  for(uint32_t i = 0; i < valid_action_types.size() && i < kTYPE_MAX; i++)
+  {
+    /* Set the text */
+    int32_t index = i + element_index;
+
+    /* Action Type at index */
+    auto type = valid_action_types.at(i);
+
+    std::string text_str = Helpers::actionTypeToStr(type);
+    success &= t->setText(renderer, text_str, color);
+
+    /* Calculate X/Y locations */
+    int32_t text_x = x + kTYPE_MARGIN * 2;
+    int32_t text_y =
+        start_y + kTYPE_MARGIN * (i + 1) + (t->getHeight() + kTYPE_MARGIN) * i;
+
+    /* If selected, draw background box */
+    if((menu_layer == BattleMenuLayer::TYPE_SELECTION &&
+        index == element_index) ||
+       (menu_layer != BattleMenuLayer::TYPE_SELECTION &&
+           type == selected_action_type))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+      SDL_Rect text_rect;
+      text_rect.x = text_x - kTYPE_SELECT;
+      text_rect.y = text_y - kTYPE_SELECT;
+      text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
+      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
+      SDL_RenderFillRect(renderer, &text_rect);
+    }
+
+    /* Render the Text */
+    success &= t->render(renderer, text_x, text_y);
+
+    /* Render the scrollbar, if needed */
+    if(valid_action_types.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+      uint16_t center_x = x + width - kTYPE_MARGIN * 2;
+      uint16_t center_y = text_y + t->getHeight() / 2;
+
+      /* Top of scroll */
+      if(i == 0)
+      {
+        if(element_index == 0)
+        {
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        }
+        else
+        {
+          center_y -= 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
+              center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
+              renderer);
+        }
+      }
+
+      /* Bottom of scroll */
+      if(i == kTYPE_MAX - 1)
+      {
+        uint16_t bottom_index = element_index + kTYPE_MAX;
+
+        if(bottom_index == valid_action_types.size())
+        {
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        }
+        else
+        {
+          center_y += 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
+              center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
+              renderer);
+        }
+      }
+    }
+  }
+
+  delete t;
+
+  return success;
+}
+
 // TODO: Colours/grayness for various BattleSkill validness? For items too
 bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
 {
@@ -114,7 +233,8 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
     frames_skill_name.push_back(new Frame());
     frames_skill_info.push_back(new Frame());
 
-    /* ValidStatus of the Battle skill -> reflects the colour of Skill frame */
+    /* ValidStatus of the Battle skill -> reflects the colour of Skill frame
+     */
     // TODO: Alternate ValidStatus colours depending on Skill condition?
     if(skill->valid_status == ValidStatus::VALID)
       success &= t->setText(renderer, skill->skill->getName(), color);
@@ -277,8 +397,7 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   /* Render the description */
   uint16_t line_width = width - text_x;
   std::vector<std::string> desc_set =
-      Text::splitLine(font_subheader,
-                      skill->getDescription(), line_width);
+      Text::splitLine(font_subheader, skill->getDescription(), line_width);
 
   text_y += t1.getHeight() + kSKILL_DESC_GAP;
   for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
@@ -339,7 +458,7 @@ bool BattleMenu::buildData()
   return false;
 }
 
-/* Assigns the Renderer */
+/* Assigns the configuration of the BattleMenu */
 bool BattleMenu::setConfig(Options* config)
 {
   this->config = config;
@@ -954,100 +1073,6 @@ void BattleMenu::setRenderer(SDL_Renderer* renderer)
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
-
-// bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t width,
-//                                    uint32_t height)
-// {
-// /* Get actions */
-// SDL_Color color = {255, 255, 255, 255};
-// bool success = true;
-// Text* t = new Text(font_header);
-// std::vector<ActionType> types = menu->getValidActionTypes();
-
-// /* Calculate the start y */
-// int start_y = 0;
-// t->setText(renderer, "Test", color);
-// if(types.size() >= kTYPE_MAX)
-//   start_y = y + kTYPE_MARGIN;
-// else
-//   start_y =
-//       y + (height - types.size() * (t->getHeight() + kTYPE_MARGIN * 2)) / 2;
-
-// /* Loop through all actions */
-// for(uint16_t i = 0; i < types.size() && i < kTYPE_MAX; i++)
-// {
-//   /* Set the text */
-//   uint16_t index = i + index_types;
-//   std::string text_str = Helpers::actionTypeToStr(types[index]);
-//   success &= t->setText(renderer, text_str, color);
-
-//   /* Calculate x and y location */
-//   int text_x = x + kTYPE_MARGIN * 2; //+ (width - t->getWidth()) / 2;
-//   int text_y =
-//       start_y + kTYPE_MARGIN * (i + 1) + (t->getHeight() + kTYPE_MARGIN) * i;
-
-//   /* If selected, draw background box */
-//   if((menu->getLayerIndex() == 1 && index == menu->getElementIndex()) ||
-//      (menu->getLayerIndex() != 1 && types[index] == menu->getActionType()))
-//   {
-//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
-//     SDL_Rect text_rect;
-//     text_rect.x = text_x - kTYPE_SELECT;
-//     text_rect.y = text_y - kTYPE_SELECT;
-//     text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
-//     text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
-//     SDL_RenderFillRect(renderer, &text_rect);
-//   }
-
-//    Render the text
-//   success &= t->render(renderer, text_x, text_y);
-
-//   /* Render the scroll bar, if relevant */
-//   if(types.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
-//   {
-//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-//     uint16_t center_x = x + width - kTYPE_MARGIN * 2;
-//     uint16_t center_y = text_y + t->getHeight() / 2;
-
-//     /* Top of scroll */
-//     if(i == 0)
-//     {
-//       if(index_types == 0)
-//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-//                                              kSCROLL_R, renderer);
-//       else
-//       {
-//         center_y -= 1;
-//         success &= Frame::renderTriangle(
-//             center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
-//             center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
-//             renderer);
-//       }
-//     }
-
-//     /* Bottom of scroll */
-//     if(i == kTYPE_MAX - 1)
-//     {
-//       uint16_t bottom_index = index_types + kTYPE_MAX;
-//       if(bottom_index == types.size())
-//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-//                                              kSCROLL_R, renderer);
-//       else
-//       {
-//         center_y += 1;
-//         success &= Frame::renderTriangle(
-//             center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
-//             center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
-//             renderer);
-//       }
-//     }
-//   }
-// }
-// delete t;
-
-// return success;
-// return true;
-//}
 
 // TODO
 // bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t width,

@@ -530,7 +530,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
             int item_count = std::stoi(item_set.back());
 
             Item* new_item = new Item(getItem(item_id));
-            
+
             AddStatus status =
                 edit_party->getInventory()->add(new_item, item_count);
             if(status == AddStatus::GOOD_DELETE)
@@ -1155,7 +1155,10 @@ bool Game::setConfiguration(Options* running_config)
 
     /* Battle configuration setup */
     if(battle_ctrl)
+    {
       battle_ctrl->setConfig(running_config);
+      battle_ctrl->setDisplayData(battle_display_data);
+    }
 
     /* Battle display data configuration */
     if(battle_display_data)

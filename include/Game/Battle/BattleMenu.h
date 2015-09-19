@@ -105,6 +105,8 @@ private:
   const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
   const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */
 
+  const static uint8_t kSCROLL_R; /* Radius on scroll renders */
+
   const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
   const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
   const static uint8_t kSKILL_DESC_GAP;   /* Gap between name and description */
@@ -125,18 +127,23 @@ private:
    * PRIVATE FUNCTIONS - OPERATION
    *============================================================================*/
 private:
-  /* Clears the Skill Frames */
-  void clearSkillFrames();
-
-  /* Creates teh skill frames */
-  SDL_Texture* createSkillFrame(BattleSkill* battle_skill, uint32_t width,
-                                uint32_t height);
-  bool createSkillFrames(uint32_t width_left, uint32_t width_right);
-
   /*=============================================================================
    * PUBLIC FUNCTIONS - RENDERING
    *============================================================================*/
 private:
+  /* Clears the Skill Frames */
+  void clearSkillFrames();
+
+  /* Creates a Frame for a given BattleSkill */
+  SDL_Texture* createSkillFrame(BattleSkill* battle_skill, uint32_t width,
+                                uint32_t height);
+
+  /* Constructs all SkillFrames for the current BattleSkills */
+  bool createSkillFrames(uint32_t width_left, uint32_t width_right);
+
+  /* Rendering functions */
+  bool renderActionTypes(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+
   /*=============================================================================
    * PUBLIC FUNCTIONS - OPERATION
    *============================================================================*/
@@ -148,7 +155,7 @@ public:
   bool buildData();
 
   /* Return the value of a given BattleMenuState flag */
-  bool getFlag(const BattleMenuState &test_flag);
+  bool getFlag(const BattleMenuState& test_flag);
 
   /* Assigns the Renderer */
   bool setConfig(Options* config);
@@ -157,7 +164,7 @@ public:
   bool setDisplayData(BattleDisplayData* battle_display_data);
 
   /* Assigns a BattleMenuState flag a given value */
-  void setFlag(BattleMenuState flags, const bool &set_value = true);
+  void setFlag(BattleMenuState flags, const bool& set_value = true);
 
   /* Assigns the Renderer of BattleMenu elements */
   void setRenderer(SDL_Renderer* renderer);
@@ -330,8 +337,6 @@ public:
 
 //   /* Assigns valid targets for the menu */
 //   bool setSelectableTargets(std::vector<int32_t> valid_targets);
-
-
 
 //   /* Set the window status for the Battle menu */
 //   void setWindowStatus(WindowStatus new_window_status);
