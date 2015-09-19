@@ -20,7 +20,7 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
-#include "Game/Battle/BattleDisplayData.h"
+//#include "Game/Battle/BattleDisplayData.h"
 //#include "Game/Battle/BattleEvent.h"
 #include "Game/Battle/BattleActor.h"
 #include "Game/Battle/Buffer.h"
@@ -93,6 +93,7 @@ struct ActorUpkeep
   UpkeepState upkeep_state;
 };
 
+//TODO - Throw this into the BattleEvent
 // struct BattleEvent
 // {
 //   ProcessingState processing_state;
@@ -309,28 +310,11 @@ private:
 
   const static uint8_t kMAX_CHARS; /* Max number of foes in battle */
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
-  const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
-  const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */
+
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
   const static uint8_t kPERSON_KO_ALPHA; /* Opacity of a person at death */
   const static uint8_t kSCROLL_R; /* Radius on scroll renders */
-
-  const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
-  const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
-  const static uint8_t kSKILL_DESC_GAP; /* Gap between name and description */
-  const static uint8_t kSKILL_DESC_LINES; /* Max number of description lines */
-  const static uint8_t kSKILL_DESC_SEP; /* Gap between lines in description */
-  const static uint8_t kSKILL_FRAME_S; /* Small frame size on skill info */
-  const static uint8_t kSKILL_FRAME_L; /* Large frame size on skill info */
-  const static uint8_t kSKILL_QD_GAP; /* Gap between top edge and QD icon */
-  const static uint8_t kSKILL_SEP; /* Separator between image and text */
-  const static uint8_t kSKILL_SUCCESS; /* Gap between success and cooldown */
-  const static uint8_t kSKILL_TIME_GAP; /* Gap between cooldown and bottom */
-
-  const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
-  const static uint8_t kTYPE_MAX; /* Max number of action types to render */
-  const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
 
   /* ---- Color Constants ---- */
   const static SDL_Color kSTRD_DMG_COLOR;
@@ -437,6 +421,9 @@ public:
 
   /* Assigns a configuration to the Battle */
   bool setConfig(Options* config);
+
+  /* Assigns the DisplayData (various constructed frames) for display */
+  bool setDisplayData(BattleDisplayData* battle_display_data);
 
   /* Sets a CombatState flag */
   void setFlagCombat(CombatState test_flag, const bool& set_value);

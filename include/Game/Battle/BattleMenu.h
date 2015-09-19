@@ -1,280 +1,337 @@
 /*******************************************************************************
-* ClassBattle Name: Menu [Declaration]
-* Date Created: April 13th, 2018
+* Class Name: BattleMenu [Declaration]
+* Date Created: April 13th, 2013
+* Date Redesigned: September 14th, 2015
+*
 * Inheritance: None
 * Description:
 *
 * Notes
 * -----
 *
-* [1]: [1: Action Type Layer] - [2: Selection Layer] -    [3: Target Layer]
-*      -------------------     ------------------------   -----------------
-*      <Skill>                 --- <Select skill> ------  <Skill dependable>
-*      <Item>                  --- <Select items> ------  <Item dependable>
-*      <Defend>                -------------------------  <Self target>
-*      <Guard>                 -------------------------  <Ally Non-self target>
-*      <Implode>               -------------------------  <Self>
-*      <Run>                   -------------------------  -----------------
-*      <Pass>                  -------------------------  -----------------
+* [1]:
 *
-*      [4: Verification Layer]
-*      -----------------------
-*      All -> Confirm [Y/N]
-*******************************************************************************/
+* TODO
+* ----
+*****************************************************************************/
 #ifndef BATTLEMENU_H
 #define BATTLEMENU_H
 
 #include <SDL2/SDL.h>
 
-#include "EnumFlags.h"
-#include "EnumDb.h"
-#include "Options.h"
 #include "Game/Battle/BattleActor.h"
+#include "Game/Battle/BattleDisplayData.h"
 
-#include <vector>
-
-using std::begin;
-using std::end;
-
-ENUM_FLAGS(MenuState)
-enum class MenuState
+enum BattleMenuLayer
 {
-  ACTION_SELECTED    = 1 << 0,
-  SKILL_SELECTED     = 1 << 1,
-  TARGETS_ASSIGNED   = 1 << 2,
-  SCOPE_ASSIGNED     = 1 << 3,
-  SELECTION_VERIFIED = 1 << 4
+  ZEROTH_LAYER = 0,
+  TYPE_SELECTION = 1,
+  ACTION_SELECTION = 2,
+  TARGET_SELECTION = 3
+};
+
+ENUM_FLAGS(BattleMenuState)
+enum class BattleMenuState
+{
+  SELECTION_COMPLETE = 1 << 0
 };
 
 class BattleMenu
 {
 public:
-  /* BattleMenu */
+  /* BattleMenu Default Initialization Function */
   BattleMenu();
 
 private:
-  /* The QTDR cost paid for a selected action */
-  int32_t qtdr_cost_paid;
+  /* The BattleActor which is using the Menu */
+  BattleActor* actor;
 
-  /* Valid action types for the current person index */
-  std::vector<ActionType> valid_actions;
+  /* The display data for the Battle */
+  BattleDisplayData* battle_display_data;
 
-  /* The current selectable items on the menu */
-  std::vector<BattleItem*> menu_items;
+  /* Configuration pointer for the BattleMenu */
+  Options* config;
 
-  /* Current skill set for Skills to be chosen from */
-  std::vector<BattleSkill*> menu_skills;
-
-  /* Remaining valid targets that can be chosen and already chosen targets */
-  std::vector<BattleActor*> valid_targets;
-  std::vector<BattleActor*> selected_targets;
-
-  /* The type of the action that was chosen (if selection_completed) */
-  ActionType action_type;
-
-  /* The scope of the action */
-  ActionScope action_scope;
-
-  /* Potentially selected object pointers */
-  BattleSkill* selected_skill;
-  BattleItem*  selected_item;
-
-  /* Set of BattleMenuState flags */
-  MenuState flags;
-
-  /* The window status of the BattleMenu */
-  WindowStatus window_status;
-
-  /* Pointer to the current user of the Battle menu */
-  BattleActor* current_user;
-
-  SDL_Renderer* renderer;
-
-  /* Vectors of skill names and skill info frames */
+  /* Vector of frames for skill infos */
   std::vector<Frame*> frames_skill_info;
+
+  /* The frames for skill names */
   std::vector<Frame*> frames_skill_name;
 
-  /* Menu indexes */
-  uint16_t    num_allies;
-  int32_t   person_index;
-  int32_t    layer_index;
-  int32_t  element_index;
+  /* The QD frame */
+  Frame frame_qd;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /* The flags for the class */
+  BattleMenuState flags;
+
+  /* The current menu layer */
+  BattleMenuLayer menu_layer;
+
+  /* The assigned Renderer */
+  SDL_Renderer* renderer;
+
+  /* The selected action_scope */
+  ActionScope selected_action_scope;
+
+  /* The selected action type */
+  ActionType selected_action_type;
+
+  /* The selected battle skill */
+  BattleSkill* selected_battle_skill;
+
+  /* The selected battle item */
+  BattleSkill* selected_battle_item;
+
+  /* The window status of the GUI */
+  WindowStatus status_window;
+
+  /* The vector of action types available for choice on the menu */
+  std::vector<ActionType> valid_action_types;
+
+  /* Selectable battle items */
+  std::vector<BattleItem*> valid_battle_items;
+
+  /* Selectable battle */
+  std::vector<BattleSkill*> valid_battle_skills;
+
+  /* The current element index for the menu */
+  int32_t element_index;
+
+  /* ------------ Constants --------------- */
+  const static uint16_t kBIGBAR_OFFSET;   /* Offset of bar off bottom */
+  const static uint16_t kBIGBAR_CHOOSE;   /* Additional offset for choice */
+  const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
+
+  const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
+  const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */
+
+  const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
+  const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
+  const static uint8_t kSKILL_DESC_GAP;   /* Gap between name and description */
+  const static uint8_t kSKILL_DESC_LINES; /* Max number of description lines */
+  const static uint8_t kSKILL_DESC_SEP;   /* Gap between lines in description */
+  const static uint8_t kSKILL_FRAME_S;    /* Small frame size on skill info */
+  const static uint8_t kSKILL_FRAME_L;    /* Large frame size on skill info */
+  const static uint8_t kSKILL_QD_GAP;     /* Gap between top edge and QD icon */
+  const static uint8_t kSKILL_SEP;        /* Separator between image and text */
+  const static uint8_t kSKILL_SUCCESS;    /* Gap between success and cooldown */
+  const static uint8_t kSKILL_TIME_GAP;   /* Gap between cooldown and bottom */
+
+  const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
+  const static uint8_t kTYPE_MAX;    /* Max number of action types to render */
+  const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
+
+  /*=============================================================================
+   * PRIVATE FUNCTIONS - OPERATION
+   *============================================================================*/
 private:
-  /* Clears the skill frames */
+  /* Clears the Skill Frames */
   void clearSkillFrames();
 
-  /* Creates the skill name and info frames */
-  SDL_Texture* createSkillFrame(uint32_t width, uint32_t height);
+  /* Creates teh skill frames */
+  SDL_Texture* createSkillFrame(BattleSkill* battle_skill, uint32_t width,
+                                uint32_t height);
   bool createSkillFrames(uint32_t width_left, uint32_t width_right);
 
-  /* Decrement the current menu layer */
-  bool decrementLayer(const int32_t &new_layer_index);
-
-  /* Increment the current menu layer */
-  bool incrementLayer(const int32_t &new_layer_index);
-
-  /* Adding and removing target selections */
-  bool addTarget(const int32_t &new_target);
-  bool addPartyTargets(const int32_t &party_index);
-  bool removeLastTarget(const bool &clear_all = false);
-
-  /* Methods for containing code for each key addition */
-  void keyDownAlpha(const char &c);
-  void keyDownCancel();
-  void keyDownDecrement();
-  void keyDownIncrement();
-  void keyDownSelect();
-
-  /* Returns the first target of a desired party (if exists) */
-  int32_t getPartyTargetIndex(bool opposite);
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS - RENDERING
+   *============================================================================*/
+private:
+  /*=============================================================================
+   * PUBLIC FUNCTIONS - OPERATION
+   *============================================================================*/
 public:
-  /* Render the skills */
-  bool renderSkills(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+  /* Clears the information in the menu - for a new person/turn */
+  void clear();
 
-  /* Unset all BattleMenu information (for end of selection, etc) */
-  void unsetAll(const bool &window_off = false);
-
-  /* Returns the state of a chosen type of action */
-  bool isActionTypeSelected();
-
-  /* Returns the state of the current menu selection */
-  bool isActionSelected();
-
-  /* Returns whether the current action index has valid targets */
-  bool indexHasTargets();
-
-  /* Key press evnet for menu operation */
-  bool keyDownEvent(SDL_KeyboardEvent event);
-
-  /* Sets to the next left index */
-  void nextLeftIndex();
-
-  /* Sets to the next right index (if exists) */
-  void nextRightIndex();
-
-  /* Is the given index a valid index? */
-  bool isValidIndex(int32_t check_index);
-
-  /* Sets to the most left index */
-  void mostLeftIndex();
-
-  /* Sets to the most right index */
-  void mostRightIndex();
-
-  /* Swaps the party selection to the proper index */
-  void swapPartyIndex();
-
-  /* Layer 2 printing of items to choose from */
-  void printItems();
-
-  /* Prints out the state of the menu */
-  void printMenuState();
-
-  /* Layer 1 printing of skills to choose from */
-  void printSkills();
-
-  /* Resets the menu data to be used for a new Person */
-  void reset(Person* const new_user, const uint32_t &new_person_index);
-
-  /* Selects a random action (Skill) with a random target, or PASS if failed */
-  void selectRandomAction();
-
-  /* Returns whether some index of the current selected type has targets */
-  bool someIndexHasTargets();
-
-  /* Prints out the list of (selected and) valid targets to choose from */
-  void printTargets(const bool &print_selected = false);
-
-  /* Layer 0 printing of actions to choose from */
-  void printValidActions();
-
-  /* Obtains the selected enumerated ActionType */
-  ActionType getActionType();
-
-  /* Obtains the index of action (Skill or Item lists) chosen */
-  int32_t getActionIndex();
-
-  /* Obtains user selected targets for the action from the Menu */
-  // std::vector<int32_t> getActionTargets();
-
-  /* Get a pointer to the current person */
-  // Person* getCurrentUser();
-
-  /* Get the element index (ex. index of skill selection */
-  int32_t getElementIndex();
-
-  /* Get targets hovered over during the selection process */
-  std::vector<int32_t> getHoverTargets();
-
-  /* Obtain the layer index of the menu */
-  int32_t getLayerIndex();
-
-  /* Finds the maximum index for the current layer */
-  int32_t getMaxIndex();
+  /* Constructs other battle menu data (like the QD frame) */
+  bool buildData();
 
   /* Return the value of a given BattleMenuState flag */
-  bool getMenuFlag(const MenuState &test_flag);
+  bool getFlag(const BattleMenuState &test_flag);
 
-  /* Returns the current selectable skills on the menu */
-  std::vector<BattleSkill> getMenuSkills();
+  /* Assigns the Renderer */
+  bool setConfig(Options* config);
 
-  /* Returns the current selectable items on the menu */
-  std::vector<BattleItem> getMenuItems();
-
-  /* Returns the vector of targets for the party */
-  std::vector<int32_t> getPartyTargets(int32_t party_index);
-
-  /* Return the index of the person assigned to the menu */
-  int32_t getPersonIndex();
-
-  /* Returns a vector of random targets */
-  std::vector<int32_t> getRandomTargets();
-
-  /* Obtain the true QD cost paid by a user (to return the right amount) */
-  int32_t getQtdrCostPaid();
-
-  /* The currently selected Skill (if set) */
-  BattleSkill* getSelectedSkill();
-
-  /* The currently selected Item (if set) */
-  Item* getSelectedItem();
-
-  /* Returns a vector of action types the user may use */
-  std::vector<ActionType> getValidActionTypes();
-
-  /* Returns the window status of the BattleMenu */
-  WindowStatus getWindowStatus();
-
-  /* Assigns the scope of the skill when a skill has been chosen */
-  // void setActionScope(const ActionScope &new_action_scope);
-
-  /* Assigns the number of allies the curr person has (1 == self) */
-  void setNumAllies(uint16_t num_allies);
-
-  void setRenderer(SDL_Renderer* renderer);
-
-  /* Assigns the vector of BattleSkills to choose from */
-  bool setSelectableSkills(std::vector<BattleSkill*> new_menu_skills);
-
-  /* Assigns a new selectable list of items for the menu */
-  bool setSelectableItems(std::vector<BattleItem*> new_menu_items);
-
-  /* Assigns valid targets for the menu */
-  bool setSelectableTargets(std::vector<int32_t> valid_targets);
+  /* Assigns the DisplayData object which holds various constructed frames */
+  bool setDisplayData(BattleDisplayData* battle_display_data);
 
   /* Assigns a BattleMenuState flag a given value */
-  void setMenuFlag(MenuState flags, const bool &set_value = true);
+  void setFlag(BattleMenuState flags, const bool &set_value = true);
 
-  /* Set the window status for the Battle menu */
-  void setWindowStatus(WindowStatus new_window_status);
+  /* Assigns the Renderer of BattleMenu elements */
+  void setRenderer(SDL_Renderer* renderer);
+
+  /*=============================================================================
+   * PUBLIC FUNCTIONS - RENDERING
+   *============================================================================*/
+public:
 };
 
-#endif //BATTLEMENU_H
+#endif // BATTLEMENU_H
+
+//   /* Decrement the current menu layer */
+//   bool decrementLayer(const int32_t &new_layer_index);
+
+//   /* Increment the current menu layer */
+//   bool incrementLayer(const int32_t &new_layer_index);
+
+//   /* Adding and removing target selections */
+//   bool addTarget(const int32_t &new_target);
+//   bool addPartyTargets(const int32_t &party_index);
+//   bool removeLastTarget(const bool &clear_all = false);
+
+//   /* Methods for containing code for each key addition */
+//   void keyDownAlpha(const char &c);
+//   void keyDownCancel();
+//   void keyDownDecrement();
+//   void keyDownIncrement();
+//   void keyDownSelect();
+
+//   /* Returns the first target of a desired party (if exists) */
+//   int32_t getPartyTargetIndex(bool opposite);
+
+// /*=============================================================================
+//  * PRIVATE FUNCTIONS - DISPLAY
+//  *============================================================================*/
+
+// /*=============================================================================
+//  * PUBLIC FUNCTIONS - OPERATION
+//  *============================================================================*/
+// public:
+//   /* Render the skills */
+//   bool renderSkills(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
+//   /* Unset all BattleMenu information (for end of selection, etc) */
+//   void unsetAll(const bool &window_off = false);
+
+//   /* Returns the state of a chosen type of action */
+//   bool isActionTypeSelected();
+
+//   /* Returns the state of the current menu selection */
+//   bool isActionSelected();
+
+//   /* Returns whether the current action index has valid targets */
+//   bool indexHasTargets();
+
+//   /* Key press evnet for menu operation */
+//   bool keyDownEvent(SDL_KeyboardEvent event);
+
+//   /* Sets to the next left index */
+//   void nextLeftIndex();
+
+//   /* Sets to the next right index (if exists) */
+//   void nextRightIndex();
+
+//   /* Is the given index a valid index? */
+//   bool isValidIndex(int32_t check_index);
+
+//   /* Sets to the most left index */
+//   void mostLeftIndex();
+
+//   /* Sets to the most right index */
+//   void mostRightIndex();
+
+//   /* Swaps the party selection to the proper index */
+//   void swapPartyIndex();
+
+//   /* Layer 2 printing of items to choose from */
+//   void printItems();
+
+//   /* Prints out the state of the menu */
+//   void printMenuState();
+
+//   /* Layer 1 printing of skills to choose from */
+//   void printSkills();
+
+//   /* Resets the menu data to be used for a new Person */
+//   void reset(Person* const new_user, const uint32_t &new_person_index);
+
+//   /* Selects a random action (Skill) with a random target, or PASS if failed
+//   */
+//   void selectRandomAction();
+
+//   /* Returns whether some index of the current selected type has targets */
+//   bool someIndexHasTargets();
+
+//   /* Prints out the list of (selected and) valid targets to choose from */
+//   void printTargets(const bool &print_selected = false);
+
+//   /* Layer 0 printing of actions to choose from */
+//   void printValidActions();
+
+//   /* Obtains the selected enumerated ActionType */
+//   ActionType getActionType();
+
+//   /* Obtains the index of action (Skill or Item lists) chosen */
+//   int32_t getActionIndex();
+
+//   /* Obtains user selected targets for the action from the Menu */
+//   // std::vector<int32_t> getActionTargets();
+
+//   /* Get a pointer to the current person */
+//   // Person* getCurrentUser();
+
+//   /* Get the element index (ex. index of skill selection */
+//   int32_t getElementIndex();
+
+//   /* Get targets hovered over during the selection process */
+//   std::vector<int32_t> getHoverTargets();
+
+//   /* Obtain the layer index of the menu */
+//   int32_t getLayerIndex();
+
+//   /* Finds the maximum index for the current layer */
+//   int32_t getMaxIndex();
+
+//   /* Returns the current selectable skills on the menu */
+//   std::vector<BattleSkill> getMenuSkills();
+
+//   /* Returns the current selectable items on the menu */
+//   std::vector<BattleItem> getMenuItems();
+
+//   /* Returns the vector of targets for the party */
+//   std::vector<int32_t> getPartyTargets(int32_t party_index);
+
+//   /* Return the index of the person assigned to the menu */
+//   int32_t getPersonIndex();
+
+//   /* Returns a vector of random targets */
+//   std::vector<int32_t> getRandomTargets();
+
+//   /* Obtain the true QD cost paid by a user (to return the right amount) */
+//   int32_t getQtdrCostPaid();
+
+//   /* The currently selected Skill (if set) */
+//   BattleSkill* getSelectedSkill();
+
+//   /* The currently selected Item (if set) */
+//   Item* getSelectedItem();
+
+//   /* Returns a vector of action types the user may use */
+//   std::vector<ActionType> getValidActionTypes();
+
+//   /* Returns the window status of the BattleMenu */
+//   WindowStatus getWindowStatus();
+
+//   /* Assigns the scope of the skill when a skill has been chosen */
+//   // void setActionScope(const ActionScope &new_action_scope);
+
+//   /* Assigns the number of allies the curr person has (1 == self) */
+//   void setNumAllies(uint16_t num_allies);
+
+//   void setRenderer(SDL_Renderer* renderer);
+
+//   /* Assigns the vector of BattleSkills to choose from */
+//   bool setSelectableSkills(std::vector<BattleSkill*> new_menu_skills);
+
+//   /* Assigns a new selectable list of items for the menu */
+//   bool setSelectableItems(std::vector<BattleItem*> new_menu_items);
+
+//   /* Assigns valid targets for the menu */
+//   bool setSelectableTargets(std::vector<int32_t> valid_targets);
+
+
+
+//   /* Set the window status for the Battle menu */
+//   void setWindowStatus(WindowStatus new_window_status);

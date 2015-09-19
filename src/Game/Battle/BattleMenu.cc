@@ -1,6 +1,7 @@
 /*******************************************************************************
 * Class Name: Battle [Implementation]
 * Date Created: February 23rd, 2014
+* Date Redesigned: September 14th, 2015
 * Inheritance: None
 * Description:
 *
@@ -11,12 +12,33 @@
 *
 * See .h file for TODOs
 *******************************************************************************/
-
 #include "Game/Battle/BattleMenu.h"
 
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
+const uint16_t BattleMenu::kBIGBAR_CHOOSE = 100;
+const uint16_t BattleMenu::kBIGBAR_OFFSET = 88;
+const uint16_t BattleMenu::kBIGBAR_R_OFFSET = 25;
+
+const uint8_t BattleMenu::kMENU_SEPARATOR_B{8};
+const uint8_t BattleMenu::kMENU_SEPARATOR_T{12};
+
+const uint8_t BattleMenu::kSKILL_BORDER{10};
+const uint8_t BattleMenu::kSKILL_BORDER_WIDTH{1};
+const uint8_t BattleMenu::kSKILL_DESC_GAP{10};
+const uint8_t BattleMenu::kSKILL_DESC_LINES{4};
+const uint8_t BattleMenu::kSKILL_DESC_SEP{4};
+const uint8_t BattleMenu::kSKILL_FRAME_S{32};
+const uint8_t BattleMenu::kSKILL_FRAME_L{64};
+const uint8_t BattleMenu::kSKILL_QD_GAP{15};
+const uint8_t BattleMenu::kSKILL_SEP{5};
+const uint8_t BattleMenu::kSKILL_SUCCESS{20};
+const uint8_t BattleMenu::kSKILL_TIME_GAP{18};
+
+const uint8_t BattleMenu::kTYPE_MARGIN{7};
+const uint8_t BattleMenu::kTYPE_MAX{5};
+const uint8_t BattleMenu::kTYPE_SELECT{3};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -28,15 +50,16 @@
  * Inputs: none
  */
 BattleMenu::BattleMenu()
-    : qtdr_cost_paid{0},
-      action_type{ActionType::NONE},
-      selected_item{nullptr},
-      flags{static_cast<MenuState>(0)},
-      window_status{WindowStatus::OFF},
-      current_user{nullptr},
-      num_allies{0},
-      person_index{0},
-      layer_index{0},
+    : actor{nullptr},
+      battle_display_data{nullptr},
+      config{nullptr},
+      frame_qd{Frame()},
+      flags{static_cast<BattleMenuState>(0)},
+      menu_layer{BattleMenuLayer::ZEROTH_LAYER},
+      renderer{nullptr},
+      selected_action_scope{ActionScope::NO_SCOPE},
+      selected_action_type{ActionType::NONE},
+      status_window{WindowStatus::HIDING},
       element_index{-1}
 {
 }
@@ -45,210 +68,306 @@ BattleMenu::BattleMenu()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-// void BattleMenu::clearSkillFrames()
-// {
-//   for(auto& skill_frame : frames_skill_info)
-//   {
-//     if(skill_frame)
-//       delete skill_frame;
-//     skill_frame = nullptr;
-//   }
+void BattleMenu::clearSkillFrames()
+{
+  for(auto& skill_frame : frames_skill_info)
+  {
+    if(skill_frame)
+      delete skill_frame;
+    skill_frame = nullptr;
+  }
 
-//   for(auto& name_frame : frames_skill_name)
-//   {
-//     if(skill_name)
-//       delete skill_name;
-//     skill_name = nullptr;
-//   }
+  for(auto& name_frame : frames_skill_name)
+  {
+    if(name_frame)
+      delete name_frame;
+    name_frame = nullptr;
+  }
 
-//   frames_skill_info.clear();
-//   frames_skill_name.clear();
-// }
+  frames_skill_info.clear();
+  frames_skill_name.clear();
+}
 
-// TODO
-// bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
-// {
-  // SDL_Color color = {255, 255, 255, 255};
-  // SDL_Color invalid_color = {100, 100, 100, 255};
-  // bool success = true;
-  // Text* t = new Text(font_header);
-  // uint16_t text_height = 0;
-  // uint16_t text_width = width_left - kTYPE_MARGIN * 8;
+// TODO: Bring QD frame to BattleMenu [09-15-15]
+// TODO: Colours/grayness for various BattleSkill validness? For items too
+bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
+{
+  /* A renderer and configuration must be assigned */
+  assert(renderer && config);
 
-  // /* Delete if skills are already rendered */
-  // deleteSkills();
-  // auto skills = menu->getMenuSkills();
+  SDL_Color color{255, 255, 255, 255};
+  SDL_Color invalid_color{100, 100, 100, 255};
+  bool success{true};
+  uint32_t text_height{0};
+  uint32_t text_width{width_left - kTYPE_MARGIN * 8};
 
-  // /* Loop through all skills */
-  // for(uint16_t i = 0; i < skills.size(); i++)
-  // {
-  //   /* Create new frame and access skill */
-  //   Skill* skill = skills[i].skill;
-  //   skill_names.push_back(new Frame());
-  //   skill_info.push_back(new Frame());
+  Text* t = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
 
-  //   /* Access the skill and render the information */
-  //   if(skill != nullptr)
-  //   {
-  //     /* Set the text */
-  //     if(skills.at(i).selectable)
-  //       success &= t->setText(renderer, skill->getName(), color);
-  //     else
-  //       success &= t->setText(renderer, skill->getName(), invalid_color);
+  /* Delete frames for skills if skills are already rendered */
+  clearSkillFrames();
 
-  //     if(text_height == 0)
-  //       text_height = t->getHeight() + kTYPE_MARGIN * 2;
+  for(auto& skill : valid_battle_skills)
+  {
+    /* Skill must have (a) valid pointer(s) */
+    assert(t && skill && skill->skill);
 
-  //     /* Create rendering texture */
-  //     SDL_Texture* texture =
-  //         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-  //                           SDL_TEXTUREACCESS_TARGET, text_width,
-  //                           text_height);
-  //     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-  //     SDL_SetRenderTarget(renderer, texture);
-  //     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  //     SDL_RenderClear(renderer);
+    frames_skill_name.push_back(new Frame());
+    frames_skill_info.push_back(new Frame());
 
-  //     /* Render the text */
-  //     success &= t->render(renderer, 0, kTYPE_MARGIN);
+    /* ValidStatus of the Battle skill -> reflects the colour of Skill frame */
+    // TODO: Alternate ValidStatus colours depending on Skill condition?
+    if(skill->valid_status == ValidStatus::VALID)
+      success &= t->setText(renderer, skill->skill->getName(), color);
+    else
+      success &= t->setText(renderer, skill->skill->getName(), invalid_color);
 
-  //     /* Render the QD */
-  //     if(!skills.at(i).selectable)
-  //       frame_qd.setAlpha(128);
-  //     uint16_t qd_x = text_width - frame_qd.getWidth();
-  //     success &= frame_qd.render(renderer, qd_x, kTYPE_MARGIN + 1);
-  //     frame_qd.setAlpha(255);
-  //     if(skills.at(i).selectable)
-  //       success &=
-  //           t->setText(renderer, std::to_string(skill->getCost()), color);
-  //     else
-  //       success &= t->setText(renderer, std::to_string(skill->getCost()),
-  //                             invalid_color);
-  //     success &=
-  //         t->render(renderer, qd_x - t->getWidth() - kSKILL_SEP,
-  //         kTYPE_MARGIN);
+    if(text_height == 0)
+      text_height = t->getHeight() + kTYPE_MARGIN * 2;
 
-  //     /* Set the new texture */
-  //     skill_names.back()->setTexture(texture);
-  //     SDL_SetRenderTarget(renderer, nullptr);
+    /* Create rendering texture */
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, text_width, text_height);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
 
-  //     /* Create the detailed skill information for this skill */
-  //     skill_info.back()->setTexture(createSkill(
-  //         renderer, skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
-  //         kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
-  //             kMENU_SEPARATOR_B));
-  //   }
-  // }
-  // delete t;
+    /* Render the text */
+    success &= t->render(renderer, 0, kTYPE_MARGIN);
 
-  // return success;
-//   return true;
-// }
+    /* Render the QD */
+    if(skill->valid_status == ValidStatus::VALID)
+      frame_qd.setAlpha(128);
 
-// SDL_Texture* BattleMenu::createSkillFrame(uint32_t width, uint32_t height)
-// {
-  // /* Create rendering texture */
-  // SDL_Texture* texture =
-  //     SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-  //                       SDL_TEXTUREACCESS_TARGET, width, height);
-  // SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-  // SDL_SetRenderTarget(renderer, texture);
-  // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  // SDL_RenderClear(renderer);
+    uint32_t qd_x = text_width - frame_qd.getWidth();
+    success &= frame_qd.render(renderer, qd_x, kTYPE_MARGIN + 1);
+    frame_qd.setAlpha(255);
 
-  // /* Render the skill box */
-  // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  // SDL_Rect rect_top;
-  // rect_top.x = kSKILL_BORDER;
-  // rect_top.y = kSKILL_BORDER;
-  // rect_top.w = kSKILL_FRAME_L;
-  // rect_top.h = kSKILL_FRAME_L;
-  // if(skill->getThumbnail() != nullptr)
-  //   skill->getThumbnail()->render(renderer, rect_top.x, rect_top.y);
-  // Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
+    if(skill->valid_status == ValidStatus::VALID)
+    {
+      success &=
+          t->setText(renderer, std::to_string(skill->skill->getCost()), color);
+    }
+    else
+    {
+      success &= t->setText(renderer, std::to_string(skill->skill->getCost()),
+                            invalid_color);
+    }
 
-  // /* Render the action scope */
-  // Frame* scope_frame = getScope(skill->getScope());
-  // SDL_Rect rect_bot;
-  // rect_bot.x = kSKILL_BORDER;
-  // rect_bot.h = kSKILL_FRAME_S;
-  // rect_bot.y = height - kSKILL_BORDER - rect_bot.h;
-  // rect_bot.w = kSKILL_FRAME_L;
-  // if(scope_frame != nullptr)
-  //   scope_frame->render(renderer, rect_bot.x, rect_bot.y);
-  // // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+    success &=
+        t->render(renderer, qd_x - t->getWidth() - kSKILL_SEP, kTYPE_MARGIN);
 
-  // /* Render the primary element */
-  // Frame* primary_frame = getElement(skill->getPrimary());
-  // rect_bot.x += rect_bot.w + kSKILL_BORDER;
-  // rect_bot.w = kSKILL_FRAME_S;
-  // if(primary_frame != nullptr)
-  //   primary_frame->render(renderer, rect_bot.x, rect_bot.y);
-  // // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+    frames_skill_name.back()->setTexture(texture);
+    SDL_SetRenderTarget(renderer, nullptr);
 
-  // /* Render the secondary element */
-  // Frame* secondary_frame = getElement(skill->getSecondary());
-  // rect_bot.x += rect_bot.w + kSKILL_BORDER;
-  // if(secondary_frame != nullptr)
-  // {
-  //   secondary_frame->render(renderer, rect_bot.x, rect_bot.y);
-  //   // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
-  // }
+    /* Create the detailed skill information for this skill */
+    frames_skill_info.back()->setTexture(createSkillFrame(
+        skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
+        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
+            kMENU_SEPARATOR_B));
+  }
 
-  // /* Render the cost */
-  // SDL_Color color = {255, 255, 255, 255};
-  // uint16_t qd_x = width - kSKILL_BORDER - frame_qd.getWidth();
-  // uint16_t qd_y = kSKILL_QD_GAP;
-  // frame_qd.render(renderer, qd_x, qd_y);
-  // Text t1(font_header);
-  // t1.setText(renderer, std::to_string(skill->getCost()), color);
-  // qd_x -= t1.getWidth() + kSKILL_SEP;
-  // t1.render(renderer, qd_x, qd_y - 1);
+  /* Delete the created text */
+  delete t;
 
-  // /* Render the name */
-  // t1.setText(renderer, skill->getName(), color);
-  // uint16_t text_x = rect_top.x + rect_top.w + kSKILL_BORDER;
-  // uint16_t text_y = qd_y - 1;
-  // t1.render(renderer, text_x, text_y);
+  return success;
+}
 
-  // /* Render the cooldown */
-  // uint16_t time_x = width - kSKILL_BORDER - frame_time.getWidth();
-  // uint16_t time_y = height - kSKILL_TIME_GAP - frame_time.getHeight();
-  // frame_time.render(renderer, time_x, time_y);
-  // t1.setText(renderer, std::to_string(skill->getCooldown()), color);
-  // time_x -= t1.getWidth() + kSKILL_SEP;
-  // t1.render(renderer, time_x, time_y - 1);
+SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
+                                          uint32_t width, uint32_t height)
+{
+  /* Grab the skill pointer */
+  auto skill = battle_skill->skill;
 
-  // /* Render the chance of success */
-  // time_x -= frame_percent.getWidth() + kSKILL_SUCCESS;
-  // frame_percent.render(renderer, time_x, time_y);
-  // t1.setText(renderer, std::to_string((int)skill->getChance()), color);
-  // t1.render(renderer, time_x - t1.getWidth() - kSKILL_SEP, time_y - 1);
+  /* Fonts */
+  TTF_Font* font_header = config->getFontTTF(FontName::BATTLE_HEADER);
+  TTF_Font* font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
 
-  // /* Render the description */
-  // uint16_t line_width = width - text_x;
-  // std::vector<std::string> desc_set =
-  //     Text::splitLine(font_subheader, skill->getDescription(), line_width);
-  // Text t2(font_subheader);
-  // text_y += t1.getHeight() + kSKILL_DESC_GAP;
-  // for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
-  // {
-  //   if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
-  //     t2.setText(renderer, Text::splitLine(font_subheader,
-  //                                          desc_set[i] + " " + desc_set[i +
-  //                                          1],
-  //                                          line_width, true).front(),
-  //                color);
-  //   else
-  //     t2.setText(renderer, desc_set[i], color);
-  //   t2.render(renderer, text_x,
-  //             text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
-  // }
+  /* Create rendering texture */
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
 
-  // /* Return the new texture */
-  // SDL_SetRenderTarget(renderer, nullptr);
-  // return texture;
-//}
+  /* Render the skill box */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_Rect rect_top;
+  rect_top.x = kSKILL_BORDER;
+  rect_top.y = kSKILL_BORDER;
+  rect_top.w = kSKILL_FRAME_L;
+  rect_top.h = kSKILL_FRAME_L;
+  if(skill->getThumbnail() != nullptr)
+    skill->getThumbnail()->render(renderer, rect_top.x, rect_top.y);
+  Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
+
+  /* Render the action scope */
+  Frame frame_scope = battle_display_data->getFrameScope(skill->getScope());
+  Frame* scope_frame = &frame_scope;
+
+  SDL_Rect rect_bot;
+  rect_bot.x = kSKILL_BORDER;
+  rect_bot.h = kSKILL_FRAME_S;
+  rect_bot.y = height - kSKILL_BORDER - rect_bot.h;
+  rect_bot.w = kSKILL_FRAME_L;
+  if(scope_frame != nullptr)
+    scope_frame->render(renderer, rect_bot.x, rect_bot.y);
+  // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+
+  /* Render the primary element */
+  Frame frame_primary =
+      battle_display_data->getFrameElement(skill->getPrimary());
+  Frame* primary_frame = &frame_primary;
+
+  rect_bot.x += rect_bot.w + kSKILL_BORDER;
+  rect_bot.w = kSKILL_FRAME_S;
+  if(primary_frame != nullptr)
+    primary_frame->render(renderer, rect_bot.x, rect_bot.y);
+  // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+
+  /* Render the secondary element */
+  Frame frame_secondary =
+      battle_display_data->getFrameElement(skill->getSecondary());
+  Frame* secondary_frame = &frame_secondary;
+  rect_bot.x += rect_bot.w + kSKILL_BORDER;
+  if(secondary_frame != nullptr)
+  {
+    secondary_frame->render(renderer, rect_bot.x, rect_bot.y);
+    // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+  }
+
+  /* Render the cost */
+  SDL_Color color = {255, 255, 255, 255};
+  uint16_t qd_x = width - kSKILL_BORDER - frame_qd.getWidth();
+  uint16_t qd_y = kSKILL_QD_GAP;
+  frame_qd.render(renderer, qd_x, qd_y);
+
+  Text t1(font_header);
+  Text t2(font_subheader);
+
+  t1.setText(renderer, std::to_string(skill->getCost()), color);
+  qd_x -= t1.getWidth() + kSKILL_SEP;
+  t1.render(renderer, qd_x, qd_y - 1);
+
+  /* Render the name */
+  t1.setText(renderer, skill->getName(), color);
+  uint16_t text_x = rect_top.x + rect_top.w + kSKILL_BORDER;
+  uint16_t text_y = qd_y - 1;
+  t1.render(renderer, text_x, text_y);
+
+  /* Render the cooldown */
+  auto frame_time = battle_display_data->getFrameTime();
+  uint16_t time_x = width - kSKILL_BORDER - frame_time.getWidth();
+  uint16_t time_y = height - kSKILL_TIME_GAP - frame_time.getHeight();
+  frame_time.render(renderer, time_x, time_y);
+  t1.setText(renderer, std::to_string(skill->getCooldown()), color);
+  time_x -= t1.getWidth() + kSKILL_SEP;
+  t1.render(renderer, time_x, time_y - 1);
+
+  /* Render the chance of success */
+  auto frame_percent = battle_display_data->getFramePercent();
+  time_x -= frame_percent.getWidth() + kSKILL_SUCCESS;
+  frame_percent.render(renderer, time_x, time_y);
+  t1.setText(renderer, std::to_string((int)skill->getChance()), color);
+  t1.render(renderer, time_x - t1.getWidth() - kSKILL_SEP, time_y - 1);
+
+  /* Render the description */
+  uint16_t line_width = width - text_x;
+  std::vector<std::string> desc_set =
+      Text::splitLine(font_subheader,
+                      skill->getDescription(), line_width);
+
+  text_y += t1.getHeight() + kSKILL_DESC_GAP;
+  for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
+  {
+    if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
+      t2.setText(renderer, Text::splitLine(font_subheader,
+                                           desc_set[i] + " " + desc_set[i + 1],
+                                           line_width, true).front(),
+                 color);
+    else
+      t2.setText(renderer, desc_set[i], color);
+    t2.render(renderer, text_x,
+              text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
+  }
+
+  /* Return the new texture */
+  SDL_SetRenderTarget(renderer, nullptr);
+
+  return texture;
+}
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS - OPERATION
+ *============================================================================*/
+
+/* Clears the information in the menu - for a new person/turn */
+void BattleMenu::clear()
+{
+  actor = nullptr;
+  clearSkillFrames();
+  setFlag(BattleMenuState::SELECTION_COMPLETE, false);
+  menu_layer = BattleMenuLayer::ZEROTH_LAYER;
+  selected_action_scope = ActionScope::NO_SCOPE;
+  selected_action_type = ActionType::NONE;
+  selected_battle_skill = nullptr;
+  selected_battle_item = nullptr;
+  status_window = WindowStatus::HIDING;
+  valid_action_types.clear();
+  valid_battle_items.clear();
+  valid_battle_skills.clear();
+  element_index = -1;
+}
+
+bool BattleMenu::getFlag(const BattleMenuState& test_flag)
+{
+  return static_cast<bool>((flags & test_flag) == test_flag);
+}
+
+bool BattleMenu::buildData()
+{
+  if(battle_display_data)
+  {
+    frame_qd = Frame(battle_display_data->getFrameQD());
+
+    return true;
+  }
+
+  return false;
+}
+
+/* Assigns the Renderer */
+bool BattleMenu::setConfig(Options* config)
+{
+  this->config = config;
+
+  return this->config;
+}
+
+bool BattleMenu::setDisplayData(BattleDisplayData* battle_display_data)
+{
+  this->battle_display_data = battle_display_data;
+
+  return this->battle_display_data;
+}
+
+void BattleMenu::setFlag(BattleMenuState flag, const bool& set_value)
+{
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
+}
+
+/* Assigns the Renderer of BattleMenu elements */
+void BattleMenu::setRenderer(SDL_Renderer* renderer)
+{
+  this->renderer = renderer;
+}
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS - RENDERING
+ *============================================================================*/
 
 /*
  * Description: Decrement a menu layer to a given layer index. Performs all
@@ -645,7 +764,8 @@ BattleMenu::BattleMenu()
 //         action_type = ActionType::NONE;
 
 // #ifdef UDEBUG
-//         std::cout << "No valid skills available, please select another action"
+//         std::cout << "No valid skills available, please select another
+//         action"
 //                   << std::endl;
 // #endif
 //       }
@@ -685,7 +805,8 @@ BattleMenu::BattleMenu()
 
 //     /* DEFEND, RUN, PASS actions require no other menus -> done */
 //     else if(action_type == ActionType::DEFEND ||
-//             action_type == ActionType::RUN || action_type == ActionType::PASS)
+//             action_type == ActionType::RUN || action_type ==
+//             ActionType::PASS)
 //     {
 //       layer_to_increment = 4;
 //     }
@@ -791,7 +912,8 @@ BattleMenu::BattleMenu()
 //         layer_to_increment = 4;
 //       }
 //     }
-//     else if(action_type == ActionType::RUN || action_type == ActionType::PASS)
+//     else if(action_type == ActionType::RUN || action_type ==
+//     ActionType::PASS)
 //     {
 //       layer_to_increment = 4;
 //     }
@@ -836,185 +958,185 @@ BattleMenu::BattleMenu()
 // bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t width,
 //                                    uint32_t height)
 // {
-  // /* Get actions */
-  // SDL_Color color = {255, 255, 255, 255};
-  // bool success = true;
-  // Text* t = new Text(font_header);
-  // std::vector<ActionType> types = menu->getValidActionTypes();
+// /* Get actions */
+// SDL_Color color = {255, 255, 255, 255};
+// bool success = true;
+// Text* t = new Text(font_header);
+// std::vector<ActionType> types = menu->getValidActionTypes();
 
-  // /* Calculate the start y */
-  // int start_y = 0;
-  // t->setText(renderer, "Test", color);
-  // if(types.size() >= kTYPE_MAX)
-  //   start_y = y + kTYPE_MARGIN;
-  // else
-  //   start_y =
-  //       y + (height - types.size() * (t->getHeight() + kTYPE_MARGIN * 2)) / 2;
+// /* Calculate the start y */
+// int start_y = 0;
+// t->setText(renderer, "Test", color);
+// if(types.size() >= kTYPE_MAX)
+//   start_y = y + kTYPE_MARGIN;
+// else
+//   start_y =
+//       y + (height - types.size() * (t->getHeight() + kTYPE_MARGIN * 2)) / 2;
 
-  // /* Loop through all actions */
-  // for(uint16_t i = 0; i < types.size() && i < kTYPE_MAX; i++)
-  // {
-  //   /* Set the text */
-  //   uint16_t index = i + index_types;
-  //   std::string text_str = Helpers::actionTypeToStr(types[index]);
-  //   success &= t->setText(renderer, text_str, color);
+// /* Loop through all actions */
+// for(uint16_t i = 0; i < types.size() && i < kTYPE_MAX; i++)
+// {
+//   /* Set the text */
+//   uint16_t index = i + index_types;
+//   std::string text_str = Helpers::actionTypeToStr(types[index]);
+//   success &= t->setText(renderer, text_str, color);
 
-  //   /* Calculate x and y location */
-  //   int text_x = x + kTYPE_MARGIN * 2; //+ (width - t->getWidth()) / 2;
-  //   int text_y =
-  //       start_y + kTYPE_MARGIN * (i + 1) + (t->getHeight() + kTYPE_MARGIN) * i;
+//   /* Calculate x and y location */
+//   int text_x = x + kTYPE_MARGIN * 2; //+ (width - t->getWidth()) / 2;
+//   int text_y =
+//       start_y + kTYPE_MARGIN * (i + 1) + (t->getHeight() + kTYPE_MARGIN) * i;
 
-  //   /* If selected, draw background box */
-  //   if((menu->getLayerIndex() == 1 && index == menu->getElementIndex()) ||
-  //      (menu->getLayerIndex() != 1 && types[index] == menu->getActionType()))
-  //   {
-  //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
-  //     SDL_Rect text_rect;
-  //     text_rect.x = text_x - kTYPE_SELECT;
-  //     text_rect.y = text_y - kTYPE_SELECT;
-  //     text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
-  //     text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
-  //     SDL_RenderFillRect(renderer, &text_rect);
-  //   }
+//   /* If selected, draw background box */
+//   if((menu->getLayerIndex() == 1 && index == menu->getElementIndex()) ||
+//      (menu->getLayerIndex() != 1 && types[index] == menu->getActionType()))
+//   {
+//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+//     SDL_Rect text_rect;
+//     text_rect.x = text_x - kTYPE_SELECT;
+//     text_rect.y = text_y - kTYPE_SELECT;
+//     text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
+//     text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
+//     SDL_RenderFillRect(renderer, &text_rect);
+//   }
 
-  //    Render the text
-  //   success &= t->render(renderer, text_x, text_y);
+//    Render the text
+//   success &= t->render(renderer, text_x, text_y);
 
-  //   /* Render the scroll bar, if relevant */
-  //   if(types.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
-  //   {
-  //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-  //     uint16_t center_x = x + width - kTYPE_MARGIN * 2;
-  //     uint16_t center_y = text_y + t->getHeight() / 2;
+//   /* Render the scroll bar, if relevant */
+//   if(types.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+//   {
+//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+//     uint16_t center_x = x + width - kTYPE_MARGIN * 2;
+//     uint16_t center_y = text_y + t->getHeight() / 2;
 
-  //     /* Top of scroll */
-  //     if(i == 0)
-  //     {
-  //       if(index_types == 0)
-  //         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-  //                                              kSCROLL_R, renderer);
-  //       else
-  //       {
-  //         center_y -= 1;
-  //         success &= Frame::renderTriangle(
-  //             center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
-  //             center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
-  //             renderer);
-  //       }
-  //     }
+//     /* Top of scroll */
+//     if(i == 0)
+//     {
+//       if(index_types == 0)
+//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
+//                                              kSCROLL_R, renderer);
+//       else
+//       {
+//         center_y -= 1;
+//         success &= Frame::renderTriangle(
+//             center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
+//             center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
+//             renderer);
+//       }
+//     }
 
-  //     /* Bottom of scroll */
-  //     if(i == kTYPE_MAX - 1)
-  //     {
-  //       uint16_t bottom_index = index_types + kTYPE_MAX;
-  //       if(bottom_index == types.size())
-  //         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-  //                                              kSCROLL_R, renderer);
-  //       else
-  //       {
-  //         center_y += 1;
-  //         success &= Frame::renderTriangle(
-  //             center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
-  //             center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
-  //             renderer);
-  //       }
-  //     }
-  //   }
-  // }
-  // delete t;
+//     /* Bottom of scroll */
+//     if(i == kTYPE_MAX - 1)
+//     {
+//       uint16_t bottom_index = index_types + kTYPE_MAX;
+//       if(bottom_index == types.size())
+//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
+//                                              kSCROLL_R, renderer);
+//       else
+//       {
+//         center_y += 1;
+//         success &= Frame::renderTriangle(
+//             center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
+//             center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
+//             renderer);
+//       }
+//     }
+//   }
+// }
+// delete t;
 
-  // return success;
-  // return true;
+// return success;
+// return true;
 //}
 
 // TODO
 // bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t width,
 //                               uint32_t height)
 // {
-  // bool success = true;
+// bool success = true;
 
-  // /* Calculate the start x and y */
-  // int text_x = x + kTYPE_MARGIN * 2;
-  // int text_y = 0;
-  // if(skill_names.size() >= kTYPE_MAX)
-  // {
-  //   text_y = y + kTYPE_MARGIN;
-  // }
-  // else
-  // {
-  //   for(uint16_t i = 0; i < skill_names.size(); i++)
-  //     text_y += skill_names[i]->getHeight();
-  //   text_y = y + (height - text_y) / 2;
-  // }
+// /* Calculate the start x and y */
+// int text_x = x + kTYPE_MARGIN * 2;
+// int text_y = 0;
+// if(skill_names.size() >= kTYPE_MAX)
+// {
+//   text_y = y + kTYPE_MARGIN;
+// }
+// else
+// {
+//   for(uint16_t i = 0; i < skill_names.size(); i++)
+//     text_y += skill_names[i]->getHeight();
+//   text_y = y + (height - text_y) / 2;
+// }
 
-  // /* Loop through all skills */
-  // for(uint16_t i = 0; i < skill_names.size() && i < kTYPE_MAX; i++)
-  // {
-  //   uint16_t index = i + index_actions;
+// /* Loop through all skills */
+// for(uint16_t i = 0; i < skill_names.size() && i < kTYPE_MAX; i++)
+// {
+//   uint16_t index = i + index_actions;
 
-  //   /* If selected, draw background box */
-  //   if(index == menu->getElementIndex())
-  //   {
-  //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
-  //     SDL_Rect text_rect;
-  //     text_rect.x = text_x - kTYPE_SELECT;
-  //     text_rect.y = text_y;
-  //     text_rect.w = skill_names[index]->getWidth() + kTYPE_SELECT * 2;
-  //     text_rect.h = skill_names[index]->getHeight();
-  //     SDL_RenderFillRect(renderer, &text_rect);
-  //   }
+//   /* If selected, draw background box */
+//   if(index == menu->getElementIndex())
+//   {
+//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+//     SDL_Rect text_rect;
+//     text_rect.x = text_x - kTYPE_SELECT;
+//     text_rect.y = text_y;
+//     text_rect.w = skill_names[index]->getWidth() + kTYPE_SELECT * 2;
+//     text_rect.h = skill_names[index]->getHeight();
+//     SDL_RenderFillRect(renderer, &text_rect);
+//   }
 
-  //   /* Render the text */
-  //   success &= skill_names[index]->render(renderer, text_x, text_y);
+//   /* Render the text */
+//   success &= skill_names[index]->render(renderer, text_x, text_y);
 
-  //   /* Render the scroll bar, if relevant */
-  //   if(skill_names.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
-  //   {
-  //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-  //     uint16_t center_x = x + width - kTYPE_MARGIN * 2;
-  //     uint16_t center_y = text_y + skill_names[i]->getHeight() / 2;
+//   /* Render the scroll bar, if relevant */
+//   if(skill_names.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+//   {
+//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+//     uint16_t center_x = x + width - kTYPE_MARGIN * 2;
+//     uint16_t center_y = text_y + skill_names[i]->getHeight() / 2;
 
-  //     /* Top of scroll */
-  //     if(i == 0)
-  //     {
-  //       if(index_actions == 0)
-  //         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-  //                                              kSCROLL_R, renderer);
-  //       else
-  //       {
-  //         center_y -= 1;
-  //         success &= Frame::renderTriangle(
-  //             center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
-  //             center_y + kSCROLL_R, center_x + kSCROLL_R, center_y +
-  //             kSCROLL_R,
-  //             renderer);
-  //       }
-  //     }
+//     /* Top of scroll */
+//     if(i == 0)
+//     {
+//       if(index_actions == 0)
+//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
+//                                              kSCROLL_R, renderer);
+//       else
+//       {
+//         center_y -= 1;
+//         success &= Frame::renderTriangle(
+//             center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
+//             center_y + kSCROLL_R, center_x + kSCROLL_R, center_y +
+//             kSCROLL_R,
+//             renderer);
+//       }
+//     }
 
-  //     /* Bottom of scroll */
-  //     if(i == kTYPE_MAX - 1)
-  //     {
-  //       uint16_t bottom_index = index_actions + kTYPE_MAX;
-  //       if(bottom_index == skill_names.size())
-  //         success &= Frame::renderCircleFilled(center_x - 1, center_y,
-  //                                              kSCROLL_R, renderer);
-  //       else
-  //       {
-  //         center_y += 1;
-  //         success &= Frame::renderTriangle(
-  //             center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
-  //             center_y - kSCROLL_R, center_x + kSCROLL_R, center_y -
-  //             kSCROLL_R,
-  //             renderer);
-  //       }
-  //     }
-  //   }
+//     /* Bottom of scroll */
+//     if(i == kTYPE_MAX - 1)
+//     {
+//       uint16_t bottom_index = index_actions + kTYPE_MAX;
+//       if(bottom_index == skill_names.size())
+//         success &= Frame::renderCircleFilled(center_x - 1, center_y,
+//                                              kSCROLL_R, renderer);
+//       else
+//       {
+//         center_y += 1;
+//         success &= Frame::renderTriangle(
+//             center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
+//             center_y - kSCROLL_R, center_x + kSCROLL_R, center_y -
+//             kSCROLL_R,
+//             renderer);
+//       }
+//     }
+//   }
 
-  //   /* Increment height */
-  //   text_y += skill_names[index]->getHeight();
-  // }
+//   /* Increment height */
+//   text_y += skill_names[index]->getHeight();
+// }
 
-  // return success;
+// return success;
 //  return true;
 //}
 
@@ -1114,7 +1236,8 @@ BattleMenu::BattleMenu()
 //       action_scope = menu_skills.at(element_index).skill->getScope();
 
 //       if(action_scope == ActionScope::TWO_ALLIES)
-//         has_targets |= menu_skills.at(element_index).ally_targets.size() >= 2;
+//         has_targets |= menu_skills.at(element_index).ally_targets.size() >=
+//         2;
 //       else if(action_scope == ActionScope::TWO_ENEMIES)
 //         has_targets |= menu_skills.at(element_index).foe_targets.size() >= 2;
 //       else
@@ -1144,7 +1267,8 @@ BattleMenu::BattleMenu()
  *         uint32_t new_person_index - corresponding index of the person
  * Output: none
  */
-// void BattleMenu::reset(Person* const new_user, const uint32_t& new_person_index)
+// void BattleMenu::reset(Person* const new_user, const uint32_t&
+// new_person_index)
 // {
 //   unsetAll();
 
@@ -1189,7 +1313,8 @@ BattleMenu::BattleMenu()
 // {
 //   auto index = 0;
 
-//   for(auto it = begin(valid_actions); it != end(valid_actions); ++it, ++index)
+//   for(auto it = begin(valid_actions); it != end(valid_actions); ++it,
+//   ++index)
 //   {
 //     if(index == element_index)
 //       std::cout << "[X]";
@@ -1235,7 +1360,8 @@ BattleMenu::BattleMenu()
 //           std::cout << ", " << (*jt)->getName();
 //       }
 
-//       std::cout << "] - [" << Helpers::actionScopeToStr((*it).skill->getScope())
+//       std::cout << "] - [" <<
+//       Helpers::actionScopeToStr((*it).skill->getScope())
 //                 << "]" << std::endl;
 //     }
 //   }
@@ -1263,7 +1389,8 @@ BattleMenu::BattleMenu()
 //   }
 
 //   std::cout << "Valid Targets Remaining: " << std::endl;
-//   for(auto it = begin(valid_targets); it != end(valid_targets); ++it, ++index)
+//   for(auto it = begin(valid_targets); it != end(valid_targets); ++it,
+//   ++index)
 //   {
 //      If the index matches the element index or if the action scope is always
 //      * highlighting, display an 'X' on it
@@ -1413,7 +1540,8 @@ BattleMenu::BattleMenu()
 //     std::cout << " --- " << (*it).item->getName() << " -- [ " << (*it).amount
 //               << " ] -- [";
 
-//     for(auto jt = begin((*it).all_targets); jt != end((*it).all_targets); ++jt)
+//     for(auto jt = begin((*it).all_targets); jt != end((*it).all_targets);
+//     ++jt)
 //     {
 //       std::cout << (*jt)->getName() << ", ";
 //     }
@@ -1613,32 +1741,33 @@ BattleMenu::BattleMenu()
 // {
 //   std::vector<int32_t> hover_targets;
 
-  // if(action_type == ActionType::SKILL || action_type == ActionType::GUARD ||
-  //    action_type == ActionType::ITEM)
-  // {
-  //   for(uint16_t i = 0; i < valid_targets.size(); i++)
-  //   {
-  //     /* If the index matches the element index or if the action scope is always
-  //      * highlighting, display an 'X' on it
-  //      * The following action scopes will always choose all selectable targets:
-  //      * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
-  //     if(action_scope == ActionScope::ALL_ALLIES ||
-  //        action_scope == ActionScope::ALL_ENEMIES ||
-  //        action_scope == ActionScope::ALL_ALLIES_KO ||
-  //        action_scope == ActionScope::ALL_TARGETS ||
-  //        action_scope == ActionScope::ALL_NOT_USER ||
-  //        (i == element_index && action_scope != ActionScope::ONE_PARTY))
-  //     {
-  //       hover_targets.push_back(valid_targets[i]);
-  //     }
-  //   }
+// if(action_type == ActionType::SKILL || action_type == ActionType::GUARD ||
+//    action_type == ActionType::ITEM)
+// {
+//   for(uint16_t i = 0; i < valid_targets.size(); i++)
+//   {
+//     /* If the index matches the element index or if the action scope is
+//     always
+//      * highlighting, display an 'X' on it
+//      * The following action scopes will always choose all selectable targets:
+//      * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
+//     if(action_scope == ActionScope::ALL_ALLIES ||
+//        action_scope == ActionScope::ALL_ENEMIES ||
+//        action_scope == ActionScope::ALL_ALLIES_KO ||
+//        action_scope == ActionScope::ALL_TARGETS ||
+//        action_scope == ActionScope::ALL_NOT_USER ||
+//        (i == element_index && action_scope != ActionScope::ONE_PARTY))
+//     {
+//       hover_targets.push_back(valid_targets[i]);
+//     }
+//   }
 
-  //   if(action_scope == ActionScope::ONE_PARTY)
-  //   {
-  //     if(valid_targets.size() > static_cast<size_t>(element_index))
-  //       hover_targets = getPartyTargets(valid_targets.at(element_index));
-  //   }
-  // }
+//   if(action_scope == ActionScope::ONE_PARTY)
+//   {
+//     if(valid_targets.size() > static_cast<size_t>(element_index))
+//       hover_targets = getPartyTargets(valid_targets.at(element_index));
+//   }
+// }
 
 //   return hover_targets;
 // }
@@ -1675,17 +1804,6 @@ BattleMenu::BattleMenu()
 //     return valid_targets.size() - 1;
 
 //   return 0;
-// }
-
-/*
- * Description: Returns the value of a given MenuState flag
- *
- * Inputs: test_flag - enumerated flag to test the value for
- * Output: bool - the boolean value of the flag
- */
-// bool BattleMenu::getMenuFlag(const MenuState& test_flag)
-// {
-//   return static_cast<bool>((flags & test_flag) == test_flag);
 // }
 
 /*
@@ -1841,24 +1959,13 @@ BattleMenu::BattleMenu()
 // }
 
 /*
- * Description: Assigns a MenuState flag a given set value.
- *
- * Inputs: MenuState flag - flag to be assigned a value.
- *         bool set_value - value to assign the flag to.
- * Output: none
- */
-// void BattleMenu::setMenuFlag(MenuState flag, const bool& set_value)
-// {
-//   (set_value) ? (flags |= flag) : (flags &= ~flag);
-// }
-
-/*
  * Description: Assigns the selectable vector of BattleSkills to the Menu.
  *
  * Inputs: std::vector<BattleSkill> new_menu_skills - new menu skill vector
  * Output: bool - true if the new Battle skills were non-empty.
  */
-// bool BattleMenu::setSelectableSkills(std::vector<BattleSkill*> new_menu_skills)
+// bool BattleMenu::setSelectableSkills(std::vector<BattleSkill*>
+// new_menu_skills)
 // {
 //   menu_skills = new_menu_skills;
 //   auto temp_index = element_index;
@@ -1931,9 +2038,11 @@ BattleMenu::BattleMenu()
 //   }
 
 //   if(action_type == ActionType::SKILL &&
-//      getMenuFlag(MenuState::SKILL_SELECTED) && selected_skill.skill != nullptr)
+//      getMenuFlag(MenuState::SKILL_SELECTED) && selected_skill.skill !=
+//      nullptr)
 //   {
-//     /* Default offensive skills to opposing party, vice versa for defensive */
+//     /* Default offensive skills to opposing party, vice versa for defensive
+//     */
 //     if(selected_skill.skill->getFlag(SkillFlags::OFFENSIVE))
 //       element_index = getPartyTargetIndex(true);
 //     else

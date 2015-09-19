@@ -144,6 +144,9 @@ public:
   std::string getFont();
   std::string getFont(uint8_t index);
 
+  /* Returns a pointer to a constructed font by enumerated value */
+  TTF_Font* getFontTTF(FontName font);
+
   /* Music getter */
   int32_t getMusicLevel();
 

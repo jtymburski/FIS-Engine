@@ -204,28 +204,15 @@ const uint16_t Battle::kALLIES_OFFSET = 328;
 
 const uint8_t Battle::kMAX_CHARS = 5;
 const uint8_t Battle::kMAX_LAYERS = 10;
-const uint8_t Battle::kMENU_SEPARATOR_B = 8;
-const uint8_t Battle::kMENU_SEPARATOR_T = 12;
+
 const uint16_t Battle::kPERSON_SPREAD = 200;
 const uint16_t Battle::kPERSON_WIDTH = 256;
 const uint8_t Battle::kPERSON_KO_ALPHA = 50;
 const uint8_t Battle::kSCROLL_R = 2;
 
-const uint8_t Battle::kSKILL_BORDER = 10;
-const uint8_t Battle::kSKILL_BORDER_WIDTH = 1;
-const uint8_t Battle::kSKILL_DESC_GAP = 10;
-const uint8_t Battle::kSKILL_DESC_LINES = 4;
-const uint8_t Battle::kSKILL_DESC_SEP = 4;
-const uint8_t Battle::kSKILL_FRAME_S = 32;
-const uint8_t Battle::kSKILL_FRAME_L = 64;
-const uint8_t Battle::kSKILL_QD_GAP = 15;
-const uint8_t Battle::kSKILL_SEP = 5;
-const uint8_t Battle::kSKILL_SUCCESS = 20;
-const uint8_t Battle::kSKILL_TIME_GAP = 18;
-
-const uint8_t Battle::kTYPE_MARGIN = 7;
-const uint8_t Battle::kTYPE_MAX = 5;
-const uint8_t Battle::kTYPE_SELECT = 3;
+//const uint8_t Battle::kTYPE_MARGIN = 7;
+//const uint8_t Battle::kTYPE_MAX = 5;
+//const uint8_t Battle::kTYPE_SELECT = 3;
 
 /* ---- Color Constants ---- */
 const SDL_Color Battle::kSTRD_DMG_COLOR = {225, 225, 225, 255};
@@ -1932,21 +1919,40 @@ bool Battle::getFlagRender(RenderState test_flag)
   return static_cast<bool>((flags_render & test_flag) == test_flag);
 }
 
-OutcomeType Battle::getOutcomeType()
-{
-  return outcome;
-}
+OutcomeType Battle::getOutcomeType() { return outcome; }
 
-TurnState Battle::getTurnState()
-{
-  return turn_state;
-}
+TurnState Battle::getTurnState() { return turn_state; }
 
 bool Battle::setConfig(Options* config)
 {
+  bool success{config};
+
   this->config = config;
 
-  return this->config;
+  if(battle_menu)
+    success &= battle_menu->setConfig(config);
+
+  return success;
+}
+
+bool Battle::setDisplayData(BattleDisplayData* battle_display_data)
+{
+  bool success{config};
+
+  this->config = config;
+
+  if(battle_menu)
+    success &= battle_menu->setConfig(config);
+
+  if(battle_display_data)
+  {
+    this->battle_display_data = battle_display_data;
+
+    if(battle_menu)
+      return battle_menu->setDisplayData(battle_display_data);
+  }
+
+  return false;
 }
 
 void Battle::setFlagCombat(CombatState flag, const bool& set_value)

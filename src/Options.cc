@@ -190,6 +190,16 @@ std::string Options::getFont(uint8_t index)
   return "";
 }
 
+/* Returns a constructed font by enumerated value */
+TTF_Font* Options::getFontTTF(FontName font)
+{
+  if(font_data)
+    return font_data->getFont(font);
+
+  return nullptr;
+}
+
+
 int32_t Options::getMusicLevel()
 {
   return music_level;

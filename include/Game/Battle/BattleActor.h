@@ -25,8 +25,6 @@
 
 /* Ailment <-- --> Battle Actor communication */
 class Ailment;
-class BattleStats;
-class BattleActor;
 
 #include "Game/Battle/BattleStats.h"
 #include "Game/Player/Ailment.h"
@@ -137,6 +135,7 @@ struct BattleSkill
   /* The true cost of the BattleSkill */
   uint32_t true_cost;
 
+  /* The valid targets for the Battle Skill */
   std::vector<BattleActor*> targets;
 };
 
@@ -157,6 +156,7 @@ struct BattleItem
   /* The # of items of this type available */
   uint32_t amount;
 
+  /* The valid targets for the valid item */
   std::vector<BattleActor*> targets;
 };
 
