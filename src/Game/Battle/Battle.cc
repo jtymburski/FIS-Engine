@@ -729,11 +729,13 @@ bool Battle::render(int32_t cycle_time)
 
     /* Render the enemies in their present state */
     success &= renderEnemies();
+    success &= renderEnemiesInfo();
 
     // FUTURE - Midlays go over the enemies, but under the allies
 
     /* Render the allies in their present states */
     success &= renderAllies();
+    // success &= renderAlliesInfo();
   }
 
   /* --------------- RENDER BATTLE MENU -------------- */
@@ -974,10 +976,6 @@ bool Battle::renderAllies()
       success &= ally->getActiveSprite()->render(renderer, getActorX(ally),
                                                  getActorY(ally));
     }
-    else
-    {
-
-    }
   }
 
   return success;
@@ -1016,10 +1014,68 @@ bool Battle::renderEnemies()
   return success;
 }
 
-// TODO
+// TODO: Comment
 bool Battle::renderEnemiesInfo()
 {
-  return true;
+  bool success = true;
+  int32_t y = 0;
+
+  /* Render the box */
+  if(frame_enemy_backdrop)
+    y = kENEMIES_OFFSET - kENEMIES_BAR_GAP - frame_enemy_backdrop->getHeight();
+  else
+    success = false;
+
+  for(auto& enemy : getEnemies())
+  {
+    if(enemy && enemy->getInfoFrame() && enemy->getBasePerson())
+    {
+      /* Calculate health bar amount and color */
+      auto x = config->getScreenWidth() - kPERSON_WIDTH -
+               std::abs(enemy->getIndex()) * kPERSON_SPREAD;
+
+      /* Render enemy backdrop */
+      success &= frame_enemy_backdrop->render(renderer, x, y);
+
+      /* Get the percent of vitality, and set it at least at 1% */
+      auto health_pc = (float)enemy->getPCVita() / 100.0;
+      health_pc = Helpers::setInRange(health_pc, 1.0, 100.0);
+
+      if(health_pc >= 0.5)
+      {
+        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1 - health_pc) * 2),
+                               kCOLOR_BASE, 0, 255);
+      }
+      else
+      {
+        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE,
+                               kCOLOR_BASE * health_pc * 2, 0, 255);
+      }
+
+      /* Calculate health bar render amount */
+      auto health_am = (kENEMY_BAR_W + kENEMY_BAR_TRIANGLE) * health_pc;
+
+      if(health_am == 0 && health_pc > 0.0)
+        health_am = 1;
+      else if(health_am == (kENEMY_BAR_W + kENEMY_BAR_TRIANGLE) &&
+              health_pc < 1.0)
+        --health_am;
+
+      /* Render health bar */
+      Frame::renderBar(x + (kINFO_W - kENEMY_BAR_W) / 2 + 1,
+                       y + (kINFO_H - kENEMY_BAR_H) / 2 + kENEMY_BAR_OFFSET,
+                       health_am, kENEMY_BAR_H,
+                       (float)kENEMY_BAR_TRIANGLE / kENEMY_BAR_H, renderer);
+
+      /* Render foe info */
+      success &= enemy->getInfoFrame()->render(renderer, x, y);
+
+      /* Render ailments */
+      renderAilmentsActor(enemy, x + kINFO_W / 2, y, true);
+    }
+  }
+
+  return success;
 }
 
 // TODO
@@ -1029,60 +1085,6 @@ bool Battle::renderEnemyInfo(BattleActor* actor)
 
   return true;
 }
-
-// // TODO: Comment
-// bool Battle::renderFoesInfo(SDL_Renderer *renderer,
-//                                    uint16_t screen_width)
-// {
-//   // std::vector<Person*> foes_list = getFoes();
-//   bool success = true;
-
-//   /* Render the box */
-//   uint16_t y = kFOES_OFFSET - kFOES_BAR_GAP - foes_backdrop->getHeight();
-//   for(uint8_t i = 0; i < foes_state.size(); i++)
-//   {
-//     if(foes_state[i]->self != nullptr && foes_state[i]->info != nullptr &&
-//        foes_state[i]->tp != nullptr)
-//     {
-//       /* Render the frame */
-//       uint16_t x = screen_width - kPERSON_WIDTH - i * kPERSON_SPREAD;
-//       success &= foes_backdrop->render(renderer, x, y);
-
-//       /* Calculate health bar amount and color */
-//       float health_percent = foes_state[i]->self->getVitaPercent();
-//       health_percent = health_percent > 1.0 ? 1.0 : health_percent;
-//       if(health_percent >= 0.5)
-//         SDL_SetRenderDrawColor(renderer,
-//                                kCOLOR_BASE * ((1 - health_percent) * 2),
-//                                kCOLOR_BASE, 0, 255);
-//       else
-//         SDL_SetRenderDrawColor(renderer, kCOLOR_BASE,
-//                                kCOLOR_BASE * health_percent * 2, 0, 255);
-
-//       /* Calculate health bar render amount */
-//       int health_amount = (kFOE_BAR_W + kFOE_BAR_TRIANGLE) * health_percent;
-//       if(health_amount == 0 && health_percent > 0.0)
-//         health_amount = 1;
-//       else if(health_amount == (kFOE_BAR_W + kFOE_BAR_TRIANGLE) &&
-//               health_percent < 1.0)
-//         health_amount--;
-
-//       /* Render health bar */
-//       Frame::renderBar(x + (kINFO_W - kFOE_BAR_W) / 2 + 1,
-//                        y + (kINFO_H - kFOE_BAR_H) / 2 + kFOE_BAR_OFFSET,
-//                        health_amount, kFOE_BAR_H,
-//                        (float)kFOE_BAR_TRIANGLE / kFOE_BAR_H, renderer);
-
-//       /* Render foe info */
-//       success &= foes_state[i]->info->render(renderer, x, y);
-
-//       /* Render ailments */
-//       renderAilment(renderer, foes_state[i]->self, x + kINFO_W / 2, y, true);
-//     }
-//   }
-
-//   return success;
-// }
 
 // // TODO: Comment
 // bool Battle::renderFriendInfo(SDL_Renderer *renderer, PersonState *state,
@@ -1710,7 +1712,8 @@ int32_t Battle::getActorX(BattleActor* actor)
     for(const auto& ally : getAllies())
     {
       if(ally == actor)
-        return config->getScreenWidth() - kPERSON_WIDTH - actor->getIndex() * kPERSON_SPREAD;
+        return config->getScreenWidth() - kPERSON_WIDTH -
+               actor->getIndex() * kPERSON_SPREAD;
     }
   }
   else if(actor)
@@ -1818,16 +1821,17 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
   {
     buildActionFrame(actor);
 
-    // if(actor->getFlag(ActorState::ALLY))
-    //   buildInfoAlly(actor);
-    // else
-    //   buildInfoEnemy(actor);
+    if(actor->getFlag(ActorState::ALLY))
+      buildInfoAlly(actor);
+    else
+      buildInfoEnemy(actor);
   }
 
   /* Set the sprite for the Battle background */
   setBackground(background);
 
-  // createFoeBackDrop()
+  /* Construct the enemy backdrop */
+  buildEnemyBackdrop();
 
   turn_state = TurnState::BEGIN;
 

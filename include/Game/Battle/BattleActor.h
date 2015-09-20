@@ -342,6 +342,12 @@ public:
   /* Returns the stats_rendered object */
   BattleStats& getStatsRendered();
 
+  /* Returns the % of vitality the actor has available (rounded) */
+  uint32_t getPCVita();
+
+  /* Returns the % of quantum drive the actor has available (rounded) */
+  uint32_t getPCQtdr();
+
   /* Sets the battle actor's action frame */
   void setActionFrame(Frame* action_frame);
 

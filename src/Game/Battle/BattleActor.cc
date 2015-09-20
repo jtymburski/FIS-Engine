@@ -554,7 +554,7 @@ int32_t BattleActor::getDialogY()
 }
 
 // TODO: Bubbification cost
-// TODO: Halfcost infliction cost
+// TODO: Halfcost infsliction cost
 uint32_t BattleActor::getSkillCost(Skill* test_skill)
 {
   if(test_skill)
@@ -571,6 +571,32 @@ BattleStats& BattleActor::getStats()
 BattleStats& BattleActor::getStatsRendered()
 {
   return stats_rendered;
+}
+
+/* Returns the % of vitality the actor has available (rounded) */
+uint32_t BattleActor::getPCVita()
+{
+  auto vita = stats_actual.getValue(Attribute::VITA);
+  auto max_vita = stats_actual.getValue(Attribute::MVIT);
+  float proportion = 0.0;
+
+  if(max_vita != 0)
+    proportion = (float)vita / (float)max_vita;
+
+  return std::round(proportion * 100);
+}
+
+/* Returns the % of quantum drive the actor has available (rounded) */
+uint32_t BattleActor::getPCQtdr()
+{
+  auto qtdr = stats_actual.getValue(Attribute::QTDR);
+  auto max_qtdr = stats_actual.getValue(Attribute::MQTD);
+  float proportion = 0.0;
+
+  if(max_qtdr != 0)
+    proportion = (float)qtdr / (float)max_qtdr;
+
+  return std::round(proportion * 100);
 }
 
 void BattleActor::setActionFrame(Frame* frame_action)
@@ -647,16 +673,16 @@ std::vector<BattleActor*>
 BattleActor::getLivingTargets(std::vector<BattleActor*> targets)
 {
   targets.erase(std::remove_if(begin(targets), end(targets),
-                            [&](BattleActor* actor) -> bool
-                            {
-                              if(actor)
-                              {
-                                return (!actor->getFlag(ActorState::KO) &&
-                                        actor->getFlag(ActorState::ALIVE));
-                              }
+                               [&](BattleActor* actor) -> bool
+                               {
+                                 if(actor)
+                                 {
+                                   return (!actor->getFlag(ActorState::KO) &&
+                                           actor->getFlag(ActorState::ALIVE));
+                                 }
 
-                              return true;
-                            }),
+                                 return true;
+                               }),
                 end(targets));
 
   return targets;
@@ -666,8 +692,7 @@ std::vector<BattleActor*>
 BattleActor::getRemovedUser(BattleActor* user,
                             std::vector<BattleActor*> targets)
 {
-  targets.erase(std::remove(begin(targets), end(targets), user),
-                end(targets));
+  targets.erase(std::remove(begin(targets), end(targets), user), end(targets));
 
   return targets;
 }
