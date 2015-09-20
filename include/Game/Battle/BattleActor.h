@@ -92,10 +92,10 @@ enum class SpriteState
 
 enum class GuardingState
 {
-  NONE, /* This person is not guarding nor being guarded or shielded */
+  NONE,      /* This person is not guarding nor being guarded or shielded */
   DEFENDING, /* This person is defending */
-  GUARDING, /* This person is guarding another person presently */
-  GUARDED, /* This person is being guarded by another person */
+  GUARDING,  /* This person is guarding another person presently */
+  GUARDED,   /* This person is being guarded by another person */
   GUARDED_DEFENDING /* This person is defending & being guarded */
 };
 
@@ -353,6 +353,26 @@ public:
 
   /* Assigns a new info frame to the Battle Actor */
   void setInfoFrame(Frame* info_frame);
+
+  /*=============================================================================
+   * PRIVATE STATIC FUNCTIONS
+   *============================================================================*/
+private:
+  /* Returns vector of allied targets based on input user/targets */
+  static std::vector<BattleActor*>
+  getAllyTargets(BattleActor* user, std::vector<BattleActor*> targets);
+
+  /* Returns vector of enemy targets baesd on input user/targets */
+  static std::vector<BattleActor*>
+  getEnemyTargets(BattleActor* user, std::vector<BattleActor*> targets);
+
+  /* Gets vector of living targets based on input targets */
+  static std::vector<BattleActor*>
+  getLivingTargets(std::vector<BattleActor*> targets);
+
+  /* Gets vector with removed user, if found, of given input user/targets */
+  static std::vector<BattleActor*>
+  getRemovedUser(BattleActor* user, std::vector<BattleActor*> targets);
 
   /*=============================================================================
    * PUBLIC STATIC FUNCTIONS

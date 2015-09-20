@@ -1564,6 +1564,8 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   /* Set up battle */
   auto background = new Sprite(
       base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
+
+  battle_logic->setRenderer(renderer);
   battle_logic->startBattle(party_friends, party_foes, background);
 }
 

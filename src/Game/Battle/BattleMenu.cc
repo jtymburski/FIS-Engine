@@ -49,6 +49,8 @@ const uint8_t BattleMenu::kTYPE_SELECT{3};
 
 const uint16_t BattleMenu::kINFO_W{180};
 
+const std::vector<int32_t> BattleMenu::kINDEX_ORDER{-5, -4, -3, -1, -2,
+                                                    2,  1,  3,  4,  5};
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -76,6 +78,91 @@ BattleMenu::BattleMenu()
 /*=============================================================================
  * PRIVATE FUNCTIONS - Operation
  *============================================================================*/
+
+std::vector<BattleActor*> BattleMenu::getSelectableTargets()
+{
+  std::vector<BattleActor*> selectable_targets;
+
+  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+  {
+    if(selected_action_type == ActionType::SKILL)
+    {
+      if((uint32_t)element_index < valid_battle_skills.size())
+        if(valid_battle_skills.at(element_index))
+          selectable_targets = valid_battle_skills.at(element_index)->targets;
+    }
+    else if(selected_action_type == ActionType::ITEM)
+    {
+      if((uint32_t)element_index < valid_battle_items.size())
+        if(valid_battle_items.at(element_index))
+          selectable_targets = valid_battle_items.at(element_index)->targets;
+    }
+  }
+
+  return selectable_targets;
+}
+
+/* kINDEX_ORDER {-5, -4, -3, -1, -2, 2, 1, 3, 4, 5} */
+BattleActor* BattleMenu::getMostLeft()
+{
+  assert(actor);
+
+  BattleActor* most_left = nullptr;
+  auto targets = getSelectableTargets();
+
+  /* If the actor is an Enemy, find the most left negative index which is among
+   * a valid target in the targets vector, otherwise for allies */
+  for(auto ordered : kINDEX_ORDER)
+  {
+    for(auto target : targets)
+    {
+      assert(target);
+      if(actor->getIndex() < 0)
+      {
+        if(target->getIndex() < 0 && target->getIndex() == ordered)
+          most_left = target;
+      }
+      if(actor->getIndex() > 0)
+      {
+        if(target->getIndex() < 0 && target->getIndex() == ordered)
+          most_left = target;
+      }
+    }
+  }
+
+  return most_left;
+}
+
+BattleActor* BattleMenu::getMostRight()
+{
+  assert(actor);
+
+  BattleActor* most_right = nullptr;
+
+  std::vector<int32_t> reversed = kINDEX_ORDER;
+  std::reverse(begin(reversed), end(reversed));
+  auto targets = getSelectableTargets();
+
+  for(auto ordered : reversed)
+  {
+    for(auto target : targets)
+    {
+      assert(target);
+      if(actor->getIndex() < 0)
+      {
+        if(target->getIndex() < 0 && target->getIndex() == ordered)
+          most_right = target;
+      }
+      if(actor->getIndex() > 0)
+      {
+        if(target->getIndex() < 0 && target->getIndex() == ordered)
+          most_right = target;
+      }
+    }
+  }
+
+  return most_right;
+}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS - Display
@@ -571,6 +658,16 @@ void BattleMenu::setFlag(BattleMenuState flag, const bool& set_value)
 void BattleMenu::setRenderer(SDL_Renderer* renderer)
 {
   this->renderer = renderer;
+}
+
+void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)
+{
+  this->valid_battle_skills = menu_skills;
+}
+
+void BattleMenu::setSelectableItems(std::vector<BattleItem*> menu_items)
+{
+  this->valid_battle_items = menu_items;
 }
 
 /*=============================================================================
@@ -1229,114 +1326,6 @@ bool BattleMenu::render()
  *============================================================================*/
 
 /*
- * Description: Determines whether an ActionType has been chosen for current
- *              menu selection occurence.
- *
- * Inputs: none
- * Output: bool - true if an action type has been selected for das Menu.
- */
-// bool BattleMenu::isActionTypeSelected()
-// {
-//   return (action_type != ActionType::NONE);
-// }
-
-/*
- * Description: Determines whether there is some index of the current element
- *              which has a valid target selection possible.
- *
- * Inputs: none
- * Output: bool - true if there exists valid target selections for curr. elm.
- */
-// bool BattleMenu::someIndexHasTargets()
-// {
-//   auto has_targets = false;
-//   auto old_index = element_index;
-//   auto old_layer_index = layer_index;
-
-//   if(element_index != -1)
-//   {
-//     if((action_type == ActionType::SKILL && !menu_skills.empty()) ||
-//        (action_type == ActionType::ITEM && !menu_items.empty()))
-//     {
-//       layer_index = 2;
-
-//       for(element_index = 0; element_index <= getMaxIndex(); element_index++)
-//         has_targets |= indexHasTargets();
-//     }
-//   }
-
-//   element_index = old_index;
-//   layer_index = old_layer_index;
-
-//   return has_targets;
-// }
-
-/*
- * Description: Determines whether the current selected index (of a Skill or
- *              Item selection) has valid targets to be chosen. If not,
- *              the selection should not be able to be be chosen.
- *
- * Inputs: checking_all - if this function is called from someIndexHasTargets
- * Output: bool - true if the index is valid
- */
-// bool BattleMenu::indexHasTargets()
-// {
-//   auto has_targets = false;
-
-//   if(element_index != -1 && layer_index == 2)
-//   {
-//     if(action_type == ActionType::SKILL)
-//     {
-//       action_scope = menu_skills.at(element_index).skill->getScope();
-
-//       if(action_scope == ActionScope::TWO_ALLIES)
-//         has_targets |= menu_skills.at(element_index).ally_targets.size() >=
-//         2;
-//       else if(action_scope == ActionScope::TWO_ENEMIES)
-//         has_targets |= menu_skills.at(element_index).foe_targets.size() >= 2;
-//       else
-//         has_targets |= menu_skills.at(element_index).all_targets.size() > 0;
-//     }
-//     else if(action_type == ActionType::ITEM)
-//     {
-//       action_scope = menu_items.at(element_index).item_skill->getScope();
-
-//       if(action_scope == ActionScope::TWO_ALLIES)
-//         has_targets |= menu_items.at(element_index).ally_targets.size() >= 2;
-//       else if(action_scope == ActionScope::TWO_ENEMIES)
-//         has_targets |= menu_items.at(element_index).foe_targets.size() >= 2;
-//       else
-//         has_targets |= menu_items.at(element_index).all_targets.size() > 0;
-//     }
-//   }
-
-//   return has_targets;
-// }
-
-/*
- * Description: Resets the BattleMenu for a new user for a new turn, given
- *              a pointer to the user and the index they correspond to.
- *
- * Inputs: Person* new_user - pointer to the new person
- *         uint32_t new_person_index - corresponding index of the person
- * Output: none
- */
-// void BattleMenu::reset(Person* const new_user, const uint32_t&
-// new_person_index)
-// {
-//   unsetAll();
-
-//   num_allies = 0;
-//   current_user = new_user;
-//   person_index = new_person_index;
-
-//   if(current_user != nullptr)
-//   {
-//     valid_actions = current_user->getValidActions();
-//   }
-// }
-
-/*
  * Description: Selects a random action among the list of available menu.
  *              This function is used in lieu of the menu for ailments
  *              such as
@@ -1357,194 +1346,10 @@ bool BattleMenu::render()
 //   }
 // }
 
-/*
- * Description: Prints out the valid actions types for the non-GUI battle.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::printValidActions()
-// {
-//   auto index = 0;
-
-//   for(auto it = begin(valid_actions); it != end(valid_actions); ++it,
-//   ++index)
-//   {
-//     if(index == element_index)
-//       std::cout << "[X]";
-//     else
-//       std::cout << "[ ]";
-
-//     std::cout << " -- " << Helpers::actionTypeToStr(*it) << std::endl;
-//   }
-
-//   std::cout << std::endl;
-// }
-
-/*
- * Description: Prints out the list of available skills for the current menu
- *              setup.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::printSkills()
-// {
-//   if(current_user != nullptr)
-//   {
-//     auto index = 0;
-//     // auto elements = menu_skills->getElements(current_user->getLevel());
-
-//     for(auto it = begin(menu_skills); it != end(menu_skills); ++it, ++index)
-//     {
-//       if(index == element_index)
-//         std::cout << "[X]";
-//       else
-//         std::cout << "[ ]";
-
-//       std::cout << " -- [ " << (*it).skill->getCost() << " QD ] -- "
-//                 << (*it).skill->getName() << " -- [";
-
-//       for(auto jt = begin((*it).all_targets); jt != end((*it).all_targets);
-//           ++jt)
-//       {
-//         if(jt == begin((*it).all_targets))
-//           std::cout << (*jt)->getName();
-//         else
-//           std::cout << ", " << (*jt)->getName();
-//       }
-
-//       std::cout << "] - [" <<
-//       Helpers::actionScopeToStr((*it).skill->getScope())
-//                 << "]" << std::endl;
-//     }
-//   }
-// }
-
-/*
- * Description: Prints out the target selection for current selectable targets.
- *
- * Inputs: none
- * Output: bool - whether to print selected targets or not.
- */
-// void BattleMenu::printTargets(const bool& print_selected)
-// {
-//   auto index = 0;
-
-//   if(print_selected)
-//   {
-//     if(selected_targets.size() > 0)
-//       std::cout << "Selected Targets: " << std::endl;
-
-//     for(auto it = begin(selected_targets); it != end(selected_targets); ++it)
-//       std::cout << *it << " ";
-
-//     std::cout << std::endl;
-//   }
-
-//   std::cout << "Valid Targets Remaining: " << std::endl;
-//   for(auto it = begin(valid_targets); it != end(valid_targets); ++it,
-//   ++index)
-//   {
-//      If the index matches the element index or if the action scope is always
-//      * highlighting, display an 'X' on it
-//      * The following action scopes will always choose all selectable targets:
-//      * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER
-//     if(action_scope == ActionScope::ALL_ALLIES ||
-//        action_scope == ActionScope::ALL_ENEMIES ||
-//        action_scope == ActionScope::ALL_ALLIES_KO ||
-//        action_scope == ActionScope::ALL_TARGETS ||
-//        action_scope == ActionScope::ALL_NOT_USER || index == element_index)
-//     {
-//       std::cout << "[X]";
-//     }
-//     else
-//     {
-//       std::cout << "[ ]";
-//     }
-
-//     std::cout << " --- " << (*it) << std::endl;
-//   }
-// }
-
 // bool BattleMenu::isValidIndex(int32_t check_index)
 // {
 //   auto it = std::find(begin(valid_targets), end(valid_targets), check_index);
 //   return it != end(valid_targets);
-// }
-
-/*
- * Description:
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::mostLeftIndex()
-// {
-//   if(person_index < 0)
-//   {
-//     if(isValidIndex(-5))
-//       person_index = -5;
-//     if(isValidIndex(-4))
-//       person_index = -4;
-//     if(isValidIndex(-3))
-//       person_index = -3;
-//     if(isValidIndex(-1))
-//       person_index = -1;
-//     if(isValidIndex(-2))
-//       person_index = -2;
-//   }
-//   else
-//   {
-//     if(isValidIndex(2))
-//       person_index = 2;
-//     if(isValidIndex(1))
-//       person_index = 1;
-//     if(isValidIndex(3))
-//       person_index = 3;
-//     if(isValidIndex(4))
-//       person_index = 4;
-//     if(isValidIndex(5))
-//       person_index = 5;
-//   }
-
-//   person_index = 0;
-// }
-
-/*
- * Description:
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::mostRightIndex()
-// {
-//   if(person_index < 0)
-//   {
-//     if(isValidIndex(-2))
-//       person_index = -2;
-//     else if(isValidIndex(-1))
-//       person_index = -1;
-//     else if(isValidIndex(-3))
-//       person_index = -3;
-//     else if(isValidIndex(-4))
-//       person_index = -4;
-//     else if(isValidIndex(-5))
-//       person_index = -5;
-//   }
-//   else
-//   {
-//     if(isValidIndex(5))
-//       person_index = 5;
-//     else if(isValidIndex(4))
-//       person_index = 4;
-//     else if(isValidIndex(3))
-//       person_index = 3;
-//     else if(isValidIndex(1))
-//       person_index = 1;
-//     else if(isValidIndex(2))
-//       person_index = 2;
-//   }
 // }
 
 /*
@@ -1898,76 +1703,6 @@ bool BattleMenu::render()
 //   }
 
 //   return random_targets;
-// }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// int32_t BattleMenu::getQtdrCostPaid()
-// {
-//   return qtdr_cost_paid;
-// }
-
-/*
- * Description: Assigns the selectable vector of BattleSkills to the Menu.
- *
- * Inputs: std::vector<BattleSkill> new_menu_skills - new menu skill vector
- * Output: bool - true if the new Battle skills were non-empty.
- */
-// bool BattleMenu::setSelectableSkills(std::vector<BattleSkill*>
-// new_menu_skills)
-// {
-//   menu_skills = new_menu_skills;
-//   auto temp_index = element_index;
-//   auto temp_layer = layer_index;
-//   auto temp_action_type = action_type;
-
-//   layer_index = 2;
-//   action_type = ActionType::SKILL;
-
-//   for(size_t index = 0; index < menu_skills.size(); index++)
-//   {
-//     element_index = index;
-//     menu_skills[index].selectable = indexHasTargets();
-//   }
-
-//   element_index = temp_index;
-//   layer_index = temp_layer;
-//   action_type = temp_action_type;
-
-//   return !menu_skills.empty();
-// }
-
-/*
- * Description: Assigns a vector of selectable Battle Items to the Menu.
- *
- * Inputs: std::vector<BattleItem> - vector of BattleItems.
- * Output: bool - true if the vector was non-empty.
- */
-// bool BattleMenu::setSelectableItems(std::vector<BattleItem*> new_menu_items)
-// {
-//   menu_items = new_menu_items;
-//   auto temp_index = element_index;
-//   auto temp_layer = layer_index;
-//   auto temp_action_type = action_type;
-
-//   layer_index = 2;
-//   action_type = ActionType::ITEM;
-
-//   for(size_t index = 0; index < menu_items.size(); index++)
-//   {
-//     element_index = index;
-//     menu_items[index].selectable = indexHasTargets();
-//   }
-
-//   element_index = temp_index;
-//   layer_index = temp_layer;
-//   action_type = temp_action_type;
-
-//   return !menu_items.empty();
 // }
 
 /*

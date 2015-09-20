@@ -131,13 +131,24 @@ private:
 
   const static uint16_t kINFO_W; /* Width of enemy info bar */
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS - OPERATION
-   *============================================================================*/
+  const static std::vector<int32_t> kINDEX_ORDER;
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS - OPERATION
+ *============================================================================*/
 private:
-  /*=============================================================================
-   * PUBLIC FUNCTIONS - RENDERING
-   *============================================================================*/
+  /* Targets which are currently possible to select */
+  std::vector<BattleActor*> getSelectableTargets();
+
+  /* Returns the most left selectable BattleActor */
+  BattleActor* getMostLeft();
+
+  /* Returns the most right selectable BattleActor */
+  BattleActor* getMostRight();
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS - RENDERING
+ *============================================================================*/
 private:
   /* Clears the Skill Frames */
   void clearSkillFrames();
@@ -153,9 +164,9 @@ private:
   bool renderActionTypes(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
   bool renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS - OPERATION
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC FUNCTIONS - OPERATION
+ *============================================================================*/
 public:
   /* Clears the information in the menu - for a new person/turn */
   void clear();
@@ -177,6 +188,12 @@ public:
 
   /* Assigns the Renderer of BattleMenu elements */
   void setRenderer(SDL_Renderer* renderer);
+
+  /* Assigns selectable skills */
+  void setSelectableSkills(std::vector<BattleSkill*> menu_skills);
+
+  /* Assigns selectable items */
+  void setSelectableItems(std::vector<BattleItem*> menu_items);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS - RENDERING
@@ -216,17 +233,8 @@ public:
 //  * PUBLIC FUNCTIONS - OPERATION
 //  *============================================================================*/
 // public:
-//   /* Unset all BattleMenu information (for end of selection, etc) */
-//   void unsetAll(const bool &window_off = false);
-
-//   /* Returns the state of a chosen type of action */
-//   bool isActionTypeSelected();
-
 //   /* Returns the state of the current menu selection */
 //   bool isActionSelected();
-
-//   /* Returns whether the current action index has valid targets */
-//   bool indexHasTargets();
 
 //   /* Key press evnet for menu operation */
 //   bool keyDownEvent(SDL_KeyboardEvent event);
@@ -264,9 +272,6 @@ public:
 //   /* Selects a random action (Skill) with a random target, or PASS if failed
 //   */
 //   void selectRandomAction();
-
-//   /* Returns whether some index of the current selected type has targets */
-//   bool someIndexHasTargets();
 
 //   /* Prints out the list of (selected and) valid targets to choose from */
 //   void printTargets(const bool &print_selected = false);
@@ -324,9 +329,3 @@ public:
 
 //   /* Assigns the number of allies the curr person has (1 == self) */
 //   void setNumAllies(uint16_t num_allies);
-
-//   /* Assigns valid targets for the menu */
-//   bool setSelectableTargets(std::vector<int32_t> valid_targets);
-
-//   /* Set the window status for the Battle menu */
-//   void setWindowStatus(WindowStatus new_window_status);

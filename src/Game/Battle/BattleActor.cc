@@ -596,16 +596,136 @@ void BattleActor::setInfoFrame(Frame* frame_info)
 }
 
 /*=============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
+
+/* Grab all allied targets for given user */
+std::vector<BattleActor*>
+BattleActor::getAllyTargets(BattleActor* user,
+                            std::vector<BattleActor*> targets)
+{
+  assert(user);
+  std::vector<BattleActor*> valid_targets;
+
+  for(const auto& target : targets)
+  {
+    if(target)
+    {
+      if(user->getIndex() > 0 && target->getIndex() > 0)
+        valid_targets.push_back(target);
+      else if(user->getIndex() < 0 && target->getIndex() < 0)
+        valid_targets.push_back(target);
+    }
+  }
+
+  return valid_targets;
+}
+
+/* Grab all enemy targets for given user */
+std::vector<BattleActor*>
+BattleActor::getEnemyTargets(BattleActor* user,
+                             std::vector<BattleActor*> targets)
+{
+  assert(user);
+  std::vector<BattleActor*> valid_targets;
+
+  for(const auto& target : targets)
+  {
+    if(target)
+    {
+      if(user->getIndex() < 0 && target->getIndex() > 0)
+        valid_targets.push_back(target);
+      else if(user->getIndex() > 0 && target->getIndex() < 0)
+        valid_targets.push_back(target);
+    }
+  }
+
+  return valid_targets;
+}
+
+std::vector<BattleActor*>
+BattleActor::getLivingTargets(std::vector<BattleActor*> targets)
+{
+  targets.erase(std::remove_if(begin(targets), end(targets),
+                            [&](BattleActor* actor) -> bool
+                            {
+                              if(actor)
+                              {
+                                return (!actor->getFlag(ActorState::KO) &&
+                                        actor->getFlag(ActorState::ALIVE));
+                              }
+
+                              return true;
+                            }),
+                end(targets));
+
+  return targets;
+}
+
+std::vector<BattleActor*>
+BattleActor::getRemovedUser(BattleActor* user,
+                            std::vector<BattleActor*> targets)
+{
+  targets.erase(std::remove(begin(targets), end(targets), user),
+                end(targets));
+
+  return targets;
+}
+
+/*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+
 std::vector<BattleActor*>
 BattleActor::getTargetsFromScope(BattleActor* user, ActionScope scope,
                                  std::vector<BattleActor*> targets)
 {
+  assert(user);
+
   std::vector<BattleActor*> valid_targets;
-  (void)user;
-  (void)scope;
-  (void)targets;
+
+  /* User Scope - only the user is selectable */
+  if(scope == ActionScope::USER)
+  {
+    valid_targets.push_back(user);
+  }
+  /* One Target - any one of the valid targets */
+  else if(scope == ActionScope::ONE_TARGET || scope == ActionScope::ONE_PARTY ||
+          scope == ActionScope::ALL_TARGETS)
+  {
+    valid_targets = targets;
+  }
+  /* One Enemy - any enemy opponent whose index sign is opposite the user */
+  else if(scope == ActionScope::ONE_ENEMY ||
+          scope == ActionScope::TWO_ENEMIES ||
+          scope == ActionScope::ALL_ENEMIES)
+  {
+    valid_targets = getEnemyTargets(user, targets);
+  }
+  else if(scope == ActionScope::ONE_ALLY || scope == ActionScope::TWO_ALLIES ||
+          scope == ActionScope::ALL_ALLIES)
+  {
+    valid_targets = getAllyTargets(user, targets);
+  }
+  else if(scope == ActionScope::ONE_ALLY_NOT_USER)
+  {
+    valid_targets = getAllyTargets(user, targets);
+    valid_targets = getRemovedUser(user, valid_targets);
+  }
+  else if(scope == ActionScope::ONE_ALLY_KO ||
+          scope == ActionScope::ALL_ALLIES_KO)
+  {
+    auto allies = getAllyTargets(user, targets);
+    auto living = getLivingTargets(targets);
+
+    /* Subtract Living Targets */
+    std::set_difference(begin(allies), end(allies), begin(living), end(living),
+                        std::inserter(valid_targets, begin(valid_targets)));
+  }
+  else if(scope == ActionScope::NOT_USER || scope == ActionScope::ALL_NOT_USER)
+  {
+    valid_targets = getRemovedUser(user, targets);
+  }
 
   return valid_targets;
 }

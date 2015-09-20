@@ -44,6 +44,7 @@ enum class ActionOccasion : std::uint8_t
 /*
  * Description: Possible target scopes may have in Battle
  *
+ * USER - Only the user is selectable
  * ONE_ENEMY - the skill strikes a choice of one enemy (other party)
  * TWO_ENEMIES - the skills strikes a choice of two enemies (other party)
  * ALL_ENEMIES - the skill strikes all enemies on opposing team
