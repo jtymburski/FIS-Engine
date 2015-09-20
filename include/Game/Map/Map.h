@@ -31,6 +31,19 @@
 #include "Options.h"
 #include "Sprite.h"
 
+/* Sub map structure - contains all data related only to each sub */
+// TODO: Move thing instances into this struct
+struct SubMap
+{
+  /* Tile data */
+  std::vector<std::vector<Tile*>> tiles;
+
+  /* Sound data */
+  std::vector<uint32_t> music;
+  int32_t weather;
+};
+
+/* Class for map control */
 class Map
 {
 public:
@@ -56,11 +69,6 @@ private:
   /* The item store menu */
   ItemStore item_menu;
 
-  /* The actual tiles that comprise a map, dynamically sized */
-  std::vector<std::vector<std::vector<Tile*>>> geography;
-  uint16_t map_index;
-  std::vector<Sprite*> tile_sprites;
-
   /* Indication if the map has been loaded */
   bool loaded;
 
@@ -68,11 +76,13 @@ private:
   MapDialog map_dialog;
   // MapMenu map_menu;
 
+  /* Map reference index for current sub-map */
+  uint16_t map_index;
+
   // /* The status bar on the map */
   // MapStatusBar map_status_bar; // TODO: Remove
 
   /* Music ID Stack */
-  std::vector<uint32_t> music_ids;
   int music_index;
   int music_runtime;
 
@@ -86,12 +96,18 @@ private:
   // /* The sectors on the map (for rooms, caves, houses etc) */
   // QList<Sector> sectors;
 
+  /* The set of map data */
+  std::vector<SubMap> sub_map;
+
   /* The system options, used for rendering, settings, etc. */
   Options* system_options;
 
   /* The number of pixels for each tile in the class */
   uint16_t tile_height;
   uint16_t tile_width;
+
+  /* Tile Sprites */
+  std::vector<Sprite*> tile_sprites;
 
   // /* The time that has elapsed for each draw cycle */
   // int time_elapsed;
@@ -107,16 +123,7 @@ private:
   bool zoom_in;
   bool zoom_out;
 
-  // /* The painting monitoring parameters */
-  // QString frames_per_second;
-  // int paint_animation;
-  // int paint_frames;
-  // int paint_time;
-
   /*------------------- Constants -----------------------*/
-  // const static int kDOUBLE_DIGITS;    /* The point when integers are more
-  //                                      * than a single digit */
-  // const static int kELEMENT_DATA;     /* Element data type for sprite */
   const static uint8_t kFILE_CLASSIFIER; /* The file tile classification text */
   const static uint8_t kFILE_GAME_TYPE; /* The game type classifier */
   const static uint8_t kFILE_SECTION_ID; /* The section identifier, for file */

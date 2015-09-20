@@ -122,6 +122,9 @@ public:
    * or after it was visible */
   void enableView(bool enable);
 
+  /* First update call each time the view changes - must be called */
+  void firstUpdate();
+
   /* Returns the active action */
   MenuItems getAction();
 

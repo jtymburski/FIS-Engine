@@ -72,8 +72,8 @@ void TitleScreen::decrementSelected()
 
   /* Play sound */
   if(sound_handler != nullptr)
-    sound_handler->addToQueue(Sound::kID_SOUND_MENU_CHG, 
-                              SoundChannels::MENUS);
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG, 
+                                  SoundChannels::MENUS);
 }
 
 /* Increments the selected option */
@@ -85,8 +85,8 @@ void TitleScreen::incrementSelected()
 
   /* Play sound */
   if(sound_handler != nullptr)
-    sound_handler->addToQueue(Sound::kID_SOUND_MENU_CHG,
-                              SoundChannels::MENUS);
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                  SoundChannels::MENUS);
 }
 
 /* Sets the selected item. This gets polled by another class */
@@ -170,7 +170,22 @@ void TitleScreen::enableView(bool enable)
   else
   {}
 }
- 
+  
+/* First update call each time the view changes - must be called */
+void TitleScreen::firstUpdate()
+{
+  std::cout << "FIRST CALL - TITLE SCREEN" << std::endl;
+
+  /* Music trigger, if relevant. Otherwise, stop tunes */
+  //if(sound_handler != nullptr)
+  //{
+  //  Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
+  //  if(title_music != nullptr && !title_music->isPlaying())
+  //    sound_handler->addToQueue(Sound::kID_MUSIC_TITLE, 
+  //                              SoundChannels::MUSIC1);
+  //}
+}
+
 /* Returns the active action */
 TitleScreen::MenuItems TitleScreen::getAction()
 {
@@ -204,8 +219,8 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
     {
       /* Play sound */
       if(sound_handler != nullptr)
-        sound_handler->addToQueue(Sound::kID_SOUND_MENU_NEXT,
-                                  SoundChannels::MENUS, true);
+        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
+                                      SoundChannels::MENUS, true);
 
       /* Set action */
       setAction();
@@ -216,8 +231,8 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
       {
         /* Play sound */
         if(sound_handler != nullptr)
-        sound_handler->addToQueue(Sound::kID_SOUND_MENU_PREV,
-                                  SoundChannels::MENUS);
+        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
+                                      SoundChannels::MENUS);
 
         /* Change index */
         cursor_index = kNUM_MENU_ITEMS - 1;
@@ -346,13 +361,13 @@ bool TitleScreen::update(int cycle_time)
   nav_time += cycle_time;
 
   /* Make sure music is playing */
-  if(sound_handler != nullptr)
-  {
-    Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
-    if(title_music != nullptr && !title_music->isPlaying())
-      sound_handler->addToQueue(Sound::kID_MUSIC_TITLE, 
-                                SoundChannels::MUSIC1);
-  }
+  //if(sound_handler != nullptr)
+  //{
+  //  Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
+  //  if(title_music != nullptr && !title_music->isPlaying())
+  //    sound_handler->addToQueue(Sound::kID_MUSIC_TITLE, 
+  //                              SoundChannels::MUSIC1);
+  //}
 
   /* Rotation testing */
   //rotate1 += 0.03125;//0.0625;//0.001;

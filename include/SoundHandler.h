@@ -52,10 +52,11 @@ public:
   bool addSound(Sound* chunk);
 
   /* Add to queue */
-  void addToQueue(uint32_t id, SoundChannels channel,
-                  bool process_force = false);
-  void addToQueue(const SoundQueue& entry, bool process_force = false);
-  void addToQueue(std::vector<SoundQueue> entries, bool process_force = false);
+  void addPlayToQueue(uint32_t id, SoundChannels channel,
+                      bool process_force = false);
+  void addPlayToQueue(std::vector<SoundQueue> entries, 
+                      bool process_force = false);
+  void addStopToQueue(SoundChannels channel, bool process_force = false);
 
   /* Getters for sound files */
   Sound* getAudioMusic(uint32_t id);
@@ -67,6 +68,9 @@ public:
 
   /* Load data from file */
   bool load(XmlData data, int index, std::string base_path);
+
+  /* Load sounds - TODO: REMOVE - TEMPORARY */
+  void loadSounds();
 
   /* Process the queue */
   void process();

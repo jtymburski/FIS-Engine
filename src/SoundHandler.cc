@@ -15,85 +15,6 @@
 /* Constructor: Sets up a blank template, nothing will play */
 SoundHandler::SoundHandler()
 {
-  // TODO: TEMP - REMOVE: create test sound files
-  char* directory = SDL_GetBasePath();
-  std::string base_path(directory);
-  SDL_free(directory);
-
-  /* ---- MUSIC ---- */
-  Sound* title_music = new Sound();
-  title_music->setID(Sound::kID_MUSIC_TITLE);
-  title_music->setFadeTime(2000);
-  title_music->setSoundFile(base_path + "sound/unlicensed/ag_theme.ogg");
-  addMusic(title_music);
-
-  /* ---- CUSTOM MUSIC ---- */
-  Sound* game_music = new Sound();
-  game_music->setID(1000);
-  game_music->setFadeTime(2500);
-  game_music->setSoundFile(base_path +
-                           "sound/ambience/background_menu_sound.wav");
-  addMusic(game_music);
-
-  Sound* game_music2 = new Sound();
-  game_music2->setID(1001);
-  game_music2->setFadeTime(2500);
-  game_music2->setSoundFile(base_path + "sound/3.ogg");
-  addMusic(game_music2);
-
-  Sound* game_music3 = new Sound();
-  game_music3->setID(1002);
-  game_music3->setFadeTime(3000);
-  game_music3->setSoundFile(base_path + "sound/4.ogg");
-  addMusic(game_music3);
-
-  Sound* game_music4 = new Sound();
-  game_music4->setID(1003);
-  game_music4->setFadeTime(2750);
-  game_music4->setSoundFile(base_path + "sound/5.ogg");
-  addMusic(game_music4);
-
-  /* ---- SOUND ---- */
-  Sound* menu_sound = new Sound();
-  menu_sound->setID(Sound::kID_SOUND_MENU_CHG);
-  menu_sound->setSoundFile(base_path + "sound/functional/menu_click.wav");
-  addSound(menu_sound);
-
-  Sound* menu_nxt_sound = new Sound();
-  menu_nxt_sound->setID(Sound::kID_SOUND_MENU_NEXT);
-  menu_nxt_sound->setSoundFile(base_path + "sound/functional/menu_next.wav");
-  addSound(menu_nxt_sound);
-
-  Sound* menu_prv_sound = new Sound();
-  menu_prv_sound->setID(Sound::kID_SOUND_MENU_PREV);
-  menu_prv_sound->setSoundFile(base_path + "sound/functional/menu_prev.wav");
-  addSound(menu_prv_sound);
-
-  /* ---- CUSTOM SOUND ---- */
-  Sound* grass_sound = new Sound();
-  grass_sound->setID(1000);
-  grass_sound->setSoundFile(base_path + "sound/map/grass01.wav");
-  addSound(grass_sound);
-
-  Sound* metal_sound = new Sound();
-  metal_sound->setID(1001);
-  metal_sound->setSoundFile(base_path + "sound/map/metal01.wav");
-  addSound(metal_sound);
-
-  Sound* wood_sound = new Sound();
-  wood_sound->setID(1002);
-  wood_sound->setSoundFile(base_path + "sound/map/wood01.wav");
-  addSound(wood_sound);
-
-  Sound* bush_sound = new Sound();
-  bush_sound->setID(1003);
-  bush_sound->setSoundFile(base_path + "sound/map/bush01.wav");
-  addSound(bush_sound);
-
-  Sound* shot_bear_sound = new Sound();
-  shot_bear_sound->setID(1004);
-  shot_bear_sound->setSoundFile(base_path + "sound/map/events/shot_bear01.wav");
-  addSound(shot_bear_sound);
 }
 
 /* Destructor function */
@@ -202,28 +123,45 @@ bool SoundHandler::addSound(Sound* chunk)
 }
 
 /* Add to queue */
-void SoundHandler::addToQueue(uint32_t id, SoundChannels channel,
-                              bool process_force)
+void SoundHandler::addPlayToQueue(uint32_t id, SoundChannels channel,
+                                  bool process_force)
 {
-  addToQueue({id, channel}, process_force);
+  if(channel != SoundChannels::UNASSIGNED)
+  {
+    SoundQueue entry = {id, channel, false};
+    queue.push_back(entry);
+    if(process_force)
+      process();
+  }
 }
 
 /* Add to queue */
-void SoundHandler::addToQueue(const SoundQueue& entry,
-                              bool process_force)
+void SoundHandler::addPlayToQueue(std::vector<SoundQueue> entries,
+                                  bool process_force)
 {
-  queue.push_back(entry);
-  if(process_force)
-    process();
+  if(entries.size() > 0)
+  {
+    /* Process all entries - no stop allowed */
+    for(uint32_t i = 0; i < entries.size(); i++)
+      entries[i].stop = false;
+
+    /* Append entries */
+    queue.insert(queue.end(), entries.begin(), entries.end());
+    if(process_force)
+      process();
+  }
 }
 
-/* Add to queue */
-void SoundHandler::addToQueue(std::vector<SoundQueue> entries,
-                              bool process_force)
+/* Add stop channel to queue */
+void SoundHandler::addStopToQueue(SoundChannels channel, bool process_force)
 {
-  queue.insert(queue.end(), entries.begin(), entries.end());
-  if(process_force)
-    process();
+  if(channel != SoundChannels::UNASSIGNED)
+  {
+    SoundQueue entry = {0, channel, true};
+    queue.push_back(entry);
+    if(process_force)
+      process();
+  }
 }
 
 /* Getters for sound files */
@@ -306,6 +244,90 @@ bool SoundHandler::load(XmlData data, int index, std::string base_path)
 
   return success;
 }
+  
+/* Load sounds - TODO: REMOVE - TEMPORARY */
+void SoundHandler::loadSounds()
+{
+  // TODO: TEMP - REMOVE: create test sound files
+  char* directory = SDL_GetBasePath();
+  std::string base_path(directory);
+  SDL_free(directory);
+
+  /* ---- MUSIC ---- */
+  Sound* title_music = new Sound();
+  title_music->setID(Sound::kID_MUSIC_TITLE);
+  title_music->setFadeTime(2000);
+  title_music->setSoundFile(base_path + "sound/unlicensed/ag_theme.ogg");
+  addMusic(title_music);
+
+  /* ---- CUSTOM MUSIC ---- */
+  Sound* game_music = new Sound();
+  game_music->setID(1000);
+  game_music->setFadeTime(2500);
+  game_music->setSoundFile(base_path +
+                           "sound/ambience/background_menu_sound.wav");
+  addMusic(game_music);
+
+  Sound* game_music2 = new Sound();
+  game_music2->setID(1001);
+  game_music2->setFadeTime(2500);
+  game_music2->setSoundFile(base_path + "sound/3.ogg");
+  addMusic(game_music2);
+
+  Sound* game_music3 = new Sound();
+  game_music3->setID(1002);
+  game_music3->setFadeTime(3000);
+  game_music3->setSoundFile(base_path + "sound/4.ogg");
+  addMusic(game_music3);
+
+  Sound* game_music4 = new Sound();
+  game_music4->setID(1003);
+  game_music4->setFadeTime(2750);
+  game_music4->setSoundFile(base_path + "sound/5.ogg");
+  addMusic(game_music4);
+
+  /* ---- SOUND ---- */
+  Sound* menu_sound = new Sound();
+  menu_sound->setID(Sound::kID_SOUND_MENU_CHG);
+  menu_sound->setSoundFile(base_path + "sound/functional/menu_click.wav");
+  addSound(menu_sound);
+
+  Sound* menu_nxt_sound = new Sound();
+  menu_nxt_sound->setID(Sound::kID_SOUND_MENU_NEXT);
+  menu_nxt_sound->setSoundFile(base_path + "sound/functional/menu_next.wav");
+  addSound(menu_nxt_sound);
+
+  Sound* menu_prv_sound = new Sound();
+  menu_prv_sound->setID(Sound::kID_SOUND_MENU_PREV);
+  menu_prv_sound->setSoundFile(base_path + "sound/functional/menu_prev.wav");
+  addSound(menu_prv_sound);
+
+  /* ---- CUSTOM SOUND ---- */
+  Sound* grass_sound = new Sound();
+  grass_sound->setID(1000);
+  grass_sound->setSoundFile(base_path + "sound/map/grass01.wav");
+  addSound(grass_sound);
+
+  Sound* metal_sound = new Sound();
+  metal_sound->setID(1001);
+  metal_sound->setSoundFile(base_path + "sound/map/metal01.wav");
+  addSound(metal_sound);
+
+  Sound* wood_sound = new Sound();
+  wood_sound->setID(1002);
+  wood_sound->setSoundFile(base_path + "sound/map/wood01.wav");
+  addSound(wood_sound);
+
+  Sound* bush_sound = new Sound();
+  bush_sound->setID(1003);
+  bush_sound->setSoundFile(base_path + "sound/map/bush01.wav");
+  addSound(bush_sound);
+
+  Sound* shot_bear_sound = new Sound();
+  shot_bear_sound->setID(1004);
+  shot_bear_sound->setSoundFile(base_path + "sound/map/events/shot_bear01.wav");
+  addSound(shot_bear_sound);
+}
 
 /* Process the queue */
 void SoundHandler::process()
@@ -313,66 +335,98 @@ void SoundHandler::process()
   /* Loop through queue */
   for(uint32_t i = 0; i < queue.size(); i++)
   {
-    /* -- MUSIC QUEUE ITEM -- */
+    /* -- MUSIC OR WEATHER QUEUE ITEM -- */
     if(queue[i].channel == SoundChannels::MUSIC1 ||
-       queue[i].channel == SoundChannels::MUSIC2)
+       queue[i].channel == SoundChannels::MUSIC2 ||
+       queue[i].channel == SoundChannels::WEATHER1 ||
+       queue[i].channel == SoundChannels::WEATHER2)
     {
-      bool playing_mus1 = Sound::isChannelPlaying(SoundChannels::MUSIC1);
-      bool playing_mus2 = Sound::isChannelPlaying(SoundChannels::MUSIC2);
-
-      /* State both playing - stop one */
-      if(playing_mus1 && playing_mus2)
+      /* Channel selector - music or weather */
+      SoundChannels channel1 = SoundChannels::MUSIC1;
+      SoundChannels channel2 = SoundChannels::MUSIC2;
+      if(queue[i].channel == SoundChannels::WEATHER1 || 
+         queue[i].channel == SoundChannels::WEATHER2)
       {
-        Sound::stopChannel(SoundChannels::MUSIC2);
-        playing_mus2 = Sound::isChannelPlaying(SoundChannels::MUSIC2);
+        channel1 = SoundChannels::WEATHER1;
+        channel2 = SoundChannels::WEATHER2;
       }
 
-      /* Only proceed if at least one channel isn't active anymore */
-      if(!playing_mus1 || !playing_mus2)
+      /* Play processing */
+      if(!queue[i].stop)
       {
-        /* Get sound file */
-        Sound* found_chunk = getAudioMusic(queue[i].id);
-        if(found_chunk != nullptr && !found_chunk->isPlaying())
+        /* Check current channel status */
+        bool playing_mus1 = Sound::isChannelPlaying(channel1);
+        bool playing_mus2 = Sound::isChannelPlaying(channel2);
+
+        /* State both playing - stop one */
+        if(playing_mus1 && playing_mus2)
         {
-          /* Channel 1 is active */
-          if(playing_mus1)
+          Sound::stopChannel(channel2);
+          playing_mus2 = Sound::isChannelPlaying(channel2);
+        }
+
+        /* Only proceed if at least one channel isn't active anymore */
+        if(!playing_mus1 || !playing_mus2)
+        {
+          /* Get sound file */
+          Sound* found_chunk = getAudioMusic(queue[i].id);
+          if(found_chunk != nullptr && !found_chunk->isPlaying())
           {
-            found_chunk->setChannel(SoundChannels::MUSIC2);
-            found_chunk->crossFade(SoundChannels::MUSIC1);
-          }
-          /* Channel 2 is active */
-          else if(playing_mus2)
-          {
-            found_chunk->setChannel(SoundChannels::MUSIC1);
-            found_chunk->crossFade(SoundChannels::MUSIC2);
-          }
-          /* No channels are active */
-          else
-          {
-            found_chunk->setChannel(SoundChannels::MUSIC1);
-            found_chunk->play();
+            /* Channel 1 is active */
+            if(playing_mus1)
+            {
+              found_chunk->setChannel(channel2);
+              found_chunk->crossFade(channel1);
+            }
+            /* Channel 2 is active */
+            else if(playing_mus2)
+            {
+              found_chunk->setChannel(channel1);
+              found_chunk->crossFade(channel2);
+            }
+            /* No channels are active */
+            else
+            {
+              found_chunk->setChannel(channel1);
+              found_chunk->play();
+            }
           }
         }
+      }
+      /* Stop processing */
+      else
+      {
+        Sound::stopChannel(channel1);
+        Sound::stopChannel(channel2);
       }
     }
     /* -- SOUND QUEUE ITEM -- */
     else if(queue[i].channel != SoundChannels::UNASSIGNED)
     {
-      /* Try and stop the channel prior - only where required */
-      if(queue[i].channel == SoundChannels::MENUS)
-        Sound::stopChannel(queue[i].channel);
-
-      /* Only process if the channel is not playing */
-      if(!Sound::isChannelPlaying(queue[i].channel))
+      /* Play processing */
+      if(!queue[i].stop)
       {
-        /* Try and find the sound chunk - and ensure its not playing */
-        Sound* found_chunk = getAudioSound(queue[i].id);
-        if(found_chunk != nullptr && !found_chunk->isPlaying())
+        /* Try and stop the channel prior - only where required */
+        if(queue[i].channel == SoundChannels::MENUS)
+          Sound::stopChannel(queue[i].channel);
+
+        /* Only process if the channel is not playing */
+        if(!Sound::isChannelPlaying(queue[i].channel))
         {
-          /* Update channel and play */
-          found_chunk->setChannel(queue[i].channel);
-          found_chunk->play();
+          /* Try and find the sound chunk - and ensure its not playing */
+          Sound* found_chunk = getAudioSound(queue[i].id);
+          if(found_chunk != nullptr && !found_chunk->isPlaying())
+          {
+            /* Update channel and play */
+            found_chunk->setChannel(queue[i].channel);
+            found_chunk->play();
+          }
         }
+      }
+      /* Stop processing */
+      else
+      {
+        Sound::stopChannel(queue[i].channel);
       }
     }
   }

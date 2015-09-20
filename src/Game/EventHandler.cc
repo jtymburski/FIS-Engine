@@ -423,12 +423,21 @@ void EventHandler::setSoundHandler(SoundHandler* new_handler)
   sound_handler = new_handler;
 }
 
+/* Trigger Audio Stop - on channel */
+void EventHandler::triggerAudioStop(SoundChannels channel)
+{
+  if(sound_handler != nullptr)
+  {
+    sound_handler->addStopToQueue(channel);
+  }
+}
+
 /* Trigger music file */
 void EventHandler::triggerMusic(uint32_t id)
 {
   if(sound_handler != nullptr)
   {
-    sound_handler->addToQueue(id, SoundChannels::MUSIC1);
+    sound_handler->addPlayToQueue(id, SoundChannels::MUSIC1);
   }
 }
 
@@ -440,8 +449,17 @@ void EventHandler::triggerSound(uint32_t id, SoundChannels channel)
     if(channel != SoundChannels::MUSIC1 || channel != SoundChannels::MUSIC2 ||
        channel != SoundChannels::UNASSIGNED)
     {
-      sound_handler->addToQueue(id, channel);
+      sound_handler->addPlayToQueue(id, channel);
     }
+  }
+}
+
+/* Trigger weather file */
+void EventHandler::triggerWeather(uint32_t id)
+{
+  if(sound_handler != nullptr)
+  {
+    sound_handler->addPlayToQueue(id, SoundChannels::WEATHER1);
   }
 }
 

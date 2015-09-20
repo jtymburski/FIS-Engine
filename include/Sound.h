@@ -39,6 +39,8 @@ struct SoundQueue
 {
   uint32_t id;
   SoundChannels channel;
+
+  bool stop;
 };
 
 /* Sound class */

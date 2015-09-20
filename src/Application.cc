@@ -449,6 +449,9 @@ bool Application::initialize()
   initialized = true;
   if(success)
   {
+    /* Load sounds - TODO: Encapsulate in load?? */
+    sound_handler.loadSounds();
+
     /* Set the title screen background - TODO: Encapsulate in load?? */
     title_screen.setBackground("sprites/Title/old_title.png", renderer);
   }

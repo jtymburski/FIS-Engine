@@ -213,9 +213,11 @@ public:
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);
 
-  /* Trigger sound file */
+  /* Triggers for all sounds */
+  void triggerAudioStop(SoundChannels channel);
   void triggerMusic(uint32_t id);
   void triggerSound(uint32_t id, SoundChannels channel);
+  void triggerWeather(uint32_t id);
 
   /* Updates the event from the data in the file */
   Event updateEvent(Event event, XmlData data, int file_index,

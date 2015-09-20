@@ -22,8 +22,6 @@
 #include "Game/Map/Map.h"
 
 /* Constant Implementation - see header file for descriptions */
-// const int Map::kDOUBLE_DIGITS = 10;
-// const int Map::kELEMENT_DATA = 0;
 const uint8_t Map::kFILE_CLASSIFIER = 3;
 const uint8_t Map::kFILE_GAME_TYPE = 1;
 const uint8_t Map::kFILE_SECTION_ID = 2;
@@ -179,7 +177,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
             /* Add the sprite to all the applicable tiles */
             for(int r = row_start; r < row_end; r++)
               for(int c = col_start; c < col_end; c++)
-                success &= geography[section_index][r][c]->
+                success &= sub_map[section_index].tiles[r][c]->
                                   addSprite(found_sprite,
                                             data.getElement(kFILE_CLASSIFIER),
                                             data.getKeyValue(kFILE_CLASSIFIER));
@@ -219,7 +217,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
           /* Set the passability */
           if(element == "passability")
           {
-            success &= geography[section_index][r][c]->
+            success &= sub_map[section_index].tiles[r][c]->
                     addPassability(data.getDataString(),
                                    data.getElement(kFILE_CLASSIFIER),
                                    data.getKeyValue(kFILE_CLASSIFIER));
@@ -229,10 +227,10 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
           {
             /* Classify between enter and exit events */
             if(data.getKeyValue(kFILE_CLASSIFIER) == "enter")
-              success &= geography[section_index][r][c]->
+              success &= sub_map[section_index].tiles[r][c]->
                     updateEnterEvent(data, kFILE_CLASSIFIER + 3, section_index);
             else if(data.getKeyValue(kFILE_CLASSIFIER) == "exit")
-              success &= geography[section_index][r][c]->
+              success &= sub_map[section_index].tiles[r][c]->
                      updateExitEvent(data, kFILE_CLASSIFIER + 3, section_index);
           }
         }
@@ -568,8 +566,8 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section,
   uint16_t range_y = y + height - 1;
 
   /* Confirm range is within valid parameters of map */
-  if(geography.size() > section && geography[section].size() > range_x &&
-     geography[section][range_x].size() > range_y)
+  if(sub_map.size() > section && sub_map[section].tiles.size() > range_x &&
+     sub_map[section].tiles[range_x].size() > range_y)
   {
     /* Load the tiles that correspond to the thing */
     for(uint16_t i = x; i <= range_x; i++)
@@ -577,7 +575,7 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section,
       std::vector<Tile*> tile_col;
 
       for(uint16_t j = y; j <= range_y; j++)
-        tile_col.push_back(geography[section][i][j]);
+        tile_col.push_back(sub_map[section].tiles[i][j]);
       tile_set.push_back(tile_col);
     }
   }
@@ -590,25 +588,29 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
   /* Make sure width and height are valid */
   if(width > 0 && height > 0)
   {
+    /* Create clear section */
+    SubMap map_section;
+    map_section.weather = -1;
+
     /* Make sure the vector is of correct size first */
-    std::vector<std::vector<Tile*>> map_section;
-    while(geography.size() <= section_index)
-      geography.push_back(map_section);
+    while(sub_map.size() <= section_index)
+      sub_map.push_back(map_section);
 
     /* Make sure it is of the correct width */
     std::vector<Tile*> line_width;
-    while(geography[section_index].size() < static_cast<uint32_t>(width))
-      geography[section_index].push_back(line_width);
+    while(sub_map[section_index].tiles.size() < static_cast<uint32_t>(width))
+      sub_map[section_index].tiles.push_back(line_width);
 
     /* Make sure it is of the correct height for each column */
-    for(uint32_t i = 0; i < geography[section_index].size(); i++)
+    for(uint32_t i = 0; i < sub_map[section_index].tiles.size(); i++)
     {
-      while(geography[section_index][i].size() < static_cast<uint32_t>(height))
+      while(sub_map[section_index].tiles[i].size() < 
+                                                 static_cast<uint32_t>(height))
       {
-        int height = geography[section_index][i].size();
-        geography[section_index][i].push_back(
-                                   new Tile(event_handler, tile_width,
-                                            tile_height, i, height));
+        int height = sub_map[section_index].tiles[i].size();
+        sub_map[section_index].tiles[i].push_back(
+                                            new Tile(event_handler, tile_width,
+                                                     tile_height, i, height));
       }
     }
 
@@ -667,11 +669,11 @@ void Map::initiateThingInteraction(MapPerson* initiator)
             uint16_t x = starting_x + i;
             uint16_t y = starting_y + j;
 
-            if(x < geography[map_index].size() &&
-               y < geography[map_index][x].size())
+            if(x < sub_map[map_index].tiles.size() &&
+               y < sub_map[map_index].tiles[x].size())
             {
               /* Check for person */
-              person_found = geography[map_index][x][y]->getPersonMain(0);
+              person_found = sub_map[map_index].tiles[x][y]->getPersonMain(0);
               if(person_found != NULL)
               {
                 if(person_found == initiator)
@@ -682,11 +684,11 @@ void Map::initiateThingInteraction(MapPerson* initiator)
 
               /* Check for thing */
               if(!finished && thing_found == NULL)
-                thing_found = geography[map_index][x][y]->getThing(0);
+                thing_found = sub_map[map_index].tiles[x][y]->getThing(0);
 
               /* Check for IO */
               if(!finished && io_found == NULL)
-                io_found = geography[map_index][x][y]->getIO(0);
+                io_found = sub_map[map_index].tiles[x][y]->getIO(0);
 
               /* Check for item(s) */
               if(!finished && items_found.size() == 0)
@@ -739,36 +741,35 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
     /* Determine the row of parsing - limit to map size */
     *r_start += std::stoul(row_list.front());
     *r_end += std::stoul(row_list.back()) + 1;
-    if(*r_start > geography[index].size())
-      *r_start = geography[index].size();
-    if(*r_end > geography[index].size())
-      *r_end = geography[index].size();
+    if(*r_start > sub_map[index].tiles.size())
+      *r_start = sub_map[index].tiles.size();
+    if(*r_end > sub_map[index].tiles.size())
+      *r_end = sub_map[index].tiles.size();
 
     /* Determine the column of parsing - limit to map size */
     *c_start += std::stoul(col_list.front());
     *c_end += std::stoul(col_list.back()) + 1;
-    if(*c_start > geography[index][*r_start].size())
-      *c_start = geography[index][*r_start].size();
-    if(*c_end > geography[index][*r_start].size())
-      *c_end = geography[index][*r_start].size();
+    if(*c_start > sub_map[index].tiles[*r_start].size())
+      *c_start = sub_map[index].tiles[*r_start].size();
+    if(*c_end > sub_map[index].tiles[*r_start].size())
+      *c_end = sub_map[index].tiles[*r_start].size();
 
     return true;
   }
-
   return false;
 }
 
 /* Changes the map section index - what is displayed */
 bool Map::setSectionIndex(uint16_t index)
 {
-  if(index < geography.size() && geography[index].size() > 0)
+  if(index < sub_map.size() && sub_map[index].tiles.size() > 0)
   {
     map_index = index;
-    viewport.setMapSize(geography[index].size(), geography[index][0].size());
+    viewport.setMapSize(sub_map[index].tiles.size(), 
+                        sub_map[index].tiles[0].size());
 
     return true;
   }
-
   return false;
 }
 
@@ -880,12 +881,12 @@ void Map::updateTileSize()
   if(updated)
   {
     /* Update map tiles */
-    for(uint16_t i = 0; i < geography.size(); i++)
-      for(uint16_t j = 0; j < geography[i].size(); j++)
-        for(uint16_t k = 0; k < geography[i][j].size(); k++)
+    for(uint16_t i = 0; i < sub_map.size(); i++)
+      for(uint16_t j = 0; j < sub_map[i].tiles.size(); j++)
+        for(uint16_t k = 0; k < sub_map[i].tiles[j].size(); k++)
         {
-          geography[i][j][k]->setHeight(tile_height);
-          geography[i][j][k]->setWidth(tile_width);
+          sub_map[i].tiles[j][k]->setHeight(tile_height);
+          sub_map[i].tiles[j][k]->setWidth(tile_width);
         }
 
     /* Update viewport */
@@ -1005,38 +1006,6 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_SPACE)
     initiateThingInteraction(player);
   /* ---- START TEST CODE ---- */
-  /* Test: Change index to section 0 (main) and connected to player */
-  else if(event.keysym.sym == SDLK_1)
-  {
-    if(geography.size() > 0)
-    {
-      player->keyFlush();
-      viewport.setMapSize(geography[map_index].size(),
-                          geography[map_index][0].size());
-      player = persons.front();
-      setSectionIndex(player->getMapSection());
-    }
-  }
-  /* Test: Change index to section 1 (room) and connected to other character */
-  else if(event.keysym.sym == SDLK_2)
-  {
-    if(geography.size() > 1)
-    {
-      player->keyFlush();
-      viewport.setMapSize(geography[map_index].size(),
-                          geography[map_index][0].size());
-      for(uint16_t i = 0; i < persons.size(); i++)
-      {
-        if(persons[i]->getID() == 24)
-        {
-          player = persons[i];
-          setSectionIndex(player->getMapSection());
-        }
-      }
-      viewport.setMapSize(geography[map_index].size(),
-                          geography[map_index][0].size());
-    }
-  }
   /* Test: trigger grey scale */
   else if(event.keysym.sym == SDLK_g)
   {
@@ -1251,11 +1220,11 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(map_index >= 0)
     {
       /* Determine current height and width */
-      if(geography.size() > static_cast<uint16_t>(map_index) &&
-         geography[map_index].size() > 0)
+      if(sub_map.size() > static_cast<uint16_t>(map_index) &&
+         sub_map[map_index].tiles.size() > 0)
       {
-        height = geography[map_index].front().size();
-        width = geography[map_index].size();
+        height = sub_map[map_index].tiles.front().size();
+        width = sub_map[map_index].tiles.size();
       }
       else
       {
@@ -1305,10 +1274,10 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 void Map::loadDataFinish(SDL_Renderer* renderer)
 {
   /* Music clean-up - TODO: IN FILE!! */
-  music_ids.push_back(1000);
-  music_ids.push_back(1001);
-  music_ids.push_back(1002);
-  music_ids.push_back(1003);
+  //music_ids.push_back(1000);
+  //music_ids.push_back(1001);
+  //music_ids.push_back(1002);
+  //music_ids.push_back(1003);
 
   /* Load the item menu sprites - TODO: In file? */
   item_menu.loadImageBackend("sprites/Overlay/item_store_left.png",
@@ -1426,10 +1395,10 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   /* Modify the map index */
   if(player != NULL)
     map_index = player->getStartingSection();
-  if(geography.size() > map_index && geography[map_index].size() > 0)
+  if(sub_map.size() > map_index && sub_map[map_index].tiles.size() > 0)
   {
-    viewport.setMapSize(geography[map_index].size(),
-                        geography[map_index][0].size());
+    viewport.setMapSize(sub_map[map_index].tiles.size(),
+                        sub_map[map_index].tiles.front().size());
     if(player != NULL)
       viewport.lockOn(player);
   }
@@ -1454,7 +1423,7 @@ bool Map::render(SDL_Renderer* renderer)
 {
   bool success = true;
 
-  if(geography.size() > map_index)
+  if(sub_map.size() > map_index)
   {
     /* Grab the variables for viewport */
     uint16_t tile_x_start = viewport.getXTileStart();
@@ -1473,7 +1442,7 @@ bool Map::render(SDL_Renderer* renderer)
     {
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
       {
-        Tile* ref_tile = geography[map_index][i][j];
+        Tile* ref_tile = sub_map[map_index].tiles[i][j];
 
         /* Lower sprites */
         ref_tile->renderLower(renderer, x_offset, y_offset);
@@ -1495,14 +1464,15 @@ bool Map::render(SDL_Renderer* renderer)
         }
 
         /* Base map thing, if relevant */
-        MapThing* render_thing = geography[map_index][i][j]->getThing(0);
+        MapThing* render_thing = sub_map[map_index].tiles[i][j]->getThing(0);
         if(render_thing != NULL)
-          render_thing->renderMain(renderer, geography[map_index][i][j], 0,
+          render_thing->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                    x_offset, y_offset);
         /* Base map IO, if relevant */
-        MapInteractiveObject* render_io = geography[map_index][i][j]->getIO(0);
+        MapInteractiveObject* render_io = 
+                                      sub_map[map_index].tiles[i][j]->getIO(0);
         if(render_io != NULL)
-          render_io->renderMain(renderer, geography[map_index][i][j], 0,
+          render_io->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                 x_offset, y_offset);
       }
     }
@@ -1519,9 +1489,10 @@ bool Map::render(SDL_Renderer* renderer)
           MapThing* render_thing = NULL;
 
           /* Acquire render things and continue forward if some are not null */
-          if(geography[map_index][i][j]->getRenderThings(index, render_person,
-                                                         render_thing,
-                                                         render_io))
+          if(sub_map[map_index].tiles[i][j]->getRenderThings(index, 
+                                                             render_person,
+                                                             render_thing,
+                                                             render_io))
           {
             /* Different indexes result in different rendering procedures
              * If base index, render order is top item, thing, then person */
@@ -1531,11 +1502,17 @@ bool Map::render(SDL_Renderer* renderer)
               {
                 if(render_person->getMovement() == Direction::EAST ||
                    render_person->getMovement() == Direction::SOUTH)
+                {
                   render_person->renderPrevious(renderer,
-                         geography[map_index][i][j], index, x_offset, y_offset);
+                                                sub_map[map_index].tiles[i][j], 
+                                                index, x_offset, y_offset);
+                }
                 else
+                {
                   render_person->renderMain(renderer,
-                         geography[map_index][i][j], index, x_offset, y_offset);
+                                            sub_map[map_index].tiles[i][j],
+                                            index, x_offset, y_offset);
+                }
               }
             }
             /* Otherwise, render order is person, then thing */
@@ -1545,19 +1522,26 @@ bool Map::render(SDL_Renderer* renderer)
               {
                 if(render_person->getMovement() == Direction::EAST ||
                    render_person->getMovement() == Direction::SOUTH)
+                {
                   render_person->renderPrevious(renderer,
-                         geography[map_index][i][j], index, x_offset, y_offset);
+                                                sub_map[map_index].tiles[i][j],
+                                                index, x_offset, y_offset);
+                }
                 else
+                {
                   render_person->renderMain(renderer,
-                         geography[map_index][i][j], index, x_offset, y_offset);
+                                            sub_map[map_index].tiles[i][j],
+                                            index, x_offset, y_offset);
+                }
               }
 
               if(render_thing != NULL)
-                render_thing->renderMain(renderer, geography[map_index][i][j],
+                render_thing->renderMain(renderer, 
+                                         sub_map[map_index].tiles[i][j],
                                          index, x_offset, y_offset);
 
               if(render_io != NULL)
-                render_io->renderMain(renderer, geography[map_index][i][j],
+                render_io->renderMain(renderer, sub_map[map_index].tiles[i][j],
                                       index, x_offset, y_offset);
             }
           }
@@ -1568,7 +1552,8 @@ bool Map::render(SDL_Renderer* renderer)
     /* Render the upper tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
-        geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
+        sub_map[map_index].tiles[i][j]->renderUpper(renderer, 
+                                                    x_offset, y_offset);
 
     /* Render the map dialogs / pop-ups */
     item_menu.render(renderer);
@@ -1614,8 +1599,8 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
     uint16_t section = section_id;
 
     /* Ensure that the tile x and y is within the range */
-    if(section < geography.size() && geography[section].size() > x
-                                  && geography[section][x].size() > y)
+    if(section < sub_map.size() && sub_map[section].tiles.size() > x
+                                && sub_map[section].tiles[x].size() > y)
     {
       /* Find the thing */
       MapThing* found_thing = getPerson(id);
@@ -1658,7 +1643,7 @@ void Map::unloadMap()
   tile_width = tile_height;
 
   /* Reset music references */
-  music_ids.clear();
+  //music_ids.clear();
   music_index = -1;
   music_runtime = -1;
 
@@ -1735,27 +1720,26 @@ void Map::unloadMap()
   base_things.clear();
 
   /* Delete all the tiles that have been set */
-  for(uint16_t i = 0; i < geography.size(); i++)
+  for(uint16_t i = 0; i < sub_map.size(); i++)
   {
-    for(uint16_t j = 0; j < geography[i].size(); j++)
+    for(uint16_t j = 0; j < sub_map[i].tiles.size(); j++)
     {
-      for(uint16_t k = 0; k < geography[i][j].size(); k++)
+      for(uint16_t k = 0; k < sub_map[i].tiles[j].size(); k++)
       {
-        delete geography[i][j][k];
-        geography[i][j][k] = NULL;
+        delete sub_map[i].tiles[j][k];
+        sub_map[i].tiles[j][k] = NULL;
       }
-      geography[i][j].clear();
+      sub_map[i].tiles[j].clear();
     }
-    geography[i].clear();
+    sub_map[i].tiles.clear();
   }
-  geography.clear();
+  sub_map.clear();
 
   /* Reset the viewport */
   viewport.setMapSize(0, 0);
   viewport.lockOn(0, 0);
 
   /* Clear the remaining and disable the loading */
-  // clear();
   loaded = false;
 }
 
@@ -1766,14 +1750,14 @@ bool Map::update(int cycle_time)
 
   /* Check on music */
   // TODO: LINK WITH CURRENT RUNNING MUSIC - once loading is working
-  if(event_handler != nullptr && event_handler->getSoundHandler() != nullptr)
-  {
-    uint32_t id = 1000;
-
-    Sound* chunk = event_handler->getSoundHandler()->getAudioMusic(id);
-    if(chunk != nullptr && !chunk->isPlaying())
-      event_handler->triggerMusic(id);
-  }
+  //if(event_handler != nullptr && event_handler->getSoundHandler() != nullptr)
+  //{
+  //  uint32_t id = 1000;
+  //
+  //  Sound* chunk = event_handler->getSoundHandler()->getAudioMusic(id);
+  //  if(chunk != nullptr && !chunk->isPlaying())
+  //    event_handler->triggerMusic(id);
+  //}
 
   /* Check on player interaction */
   if(player != NULL && player->getTarget() != NULL
