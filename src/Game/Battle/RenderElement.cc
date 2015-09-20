@@ -710,7 +710,7 @@ void RenderElement::setSizeY(int32_t new_size_y)
 //   Text t(font_damage);
 //   t.setText(renderer, element->getText(), {0, 0, 0, 255});
 
-//   auto x = getPersonX(target);
+//   auto x = getActorX(target);
 //   x += kPERSON_WIDTH / 2;
 //   x -= t.getWidth() / 2;
 
@@ -749,7 +749,7 @@ void RenderElement::setSizeY(int32_t new_size_y)
 //   Text t(font_damage);
 //   t.setText(renderer, element->getText(), color);
 
-//   auto x = getPersonX(target);
+//   auto x = getActorX(target);
 //   x += kPERSON_WIDTH / 2;
 //   x -= t.getWidth() / 2;
 
@@ -775,7 +775,7 @@ void RenderElement::setSizeY(int32_t new_size_y)
 //   RenderElement *element =
 //       new RenderElement(RenderType::RGB_SPRITE_DEATH, 3000, 300, 2650);
 //   element->setColor({255, 0, 0, 255});
-//   element->setCoordinates(getPersonX(target), getPersonY(target));
+//   element->setCoordinates(getActorX(target), getPersonY(target));
 //   element->setSprite(getPersonSprite(target));
 //   element->setFlasher(target);
 //   render_elements.push_back(element);
@@ -806,7 +806,7 @@ void RenderElement::setSizeY(int32_t new_size_y)
 //   Text t(font_damage);
 //   t.setText(renderer, element->getText(), color);
 
-//   auto x = getPersonX(target);
+//   auto x = getActorX(target);
 //   x += kPERSON_WIDTH / 2;
 //   x -= t.getWidth() / 2;
 
@@ -832,7 +832,7 @@ void RenderElement::setSizeY(int32_t new_size_y)
 //   new_plep->createTexture(renderer);
 
 //   RenderElement *plep_render =
-//       new RenderElement(new_plep, getPersonX(target), getPersonY(target), 1);
+//       new RenderElement(new_plep, getActorX(target), getPersonY(target), 1);
 //   render_elements.push_back(plep_render);
 
 //   return plep_render;

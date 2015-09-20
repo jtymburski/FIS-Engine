@@ -298,7 +298,7 @@ private:
   const static uint16_t kINFO_H;       /* Height of enemy info bar */
   const static uint8_t kINFO_OPACITY;  /* Opacity of black background in info */
   const static uint8_t kINFO_TRIANGLE; /* Height of triangle in info corner */
-  // const static uint16_t kINFO_W; /* Width of enemy info bar */
+  const static uint16_t kINFO_W; /* Width of enemy info bar */
 
   const static uint8_t kENEMY_BAR_H;      /* Height of health bar for foes */
   const static uint8_t kENEMY_BAR_OFFSET; /* Offset of foe health off center */
@@ -362,15 +362,15 @@ private:
 
   /* Renders the Battle bar on the screen */
   bool renderBattleBar();
-  bool renderAilments();
-  // bool renderAilmentsOnActor(BattleActor* actor, uint32_t x, uint32_t y, bool
-  // full_border;
+
+  bool renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y, bool f);
+
   bool renderAllies();
   bool renderAlliesInfo();
   bool renderAllyInfo(BattleActor* ally);
   bool renderEnemies();
   bool renderEnemiesInfo();
-  bool renderEnemyInfo(BattleActor* enemy);
+  bool renderEnemyInfo(BattleActor* actor);
 
   /* Rendering updates */
   void updateRendering(int32_t cycle_time);

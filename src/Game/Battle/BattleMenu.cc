@@ -281,8 +281,8 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   auto skill = battle_skill->skill;
 
   /* Fonts */
-  TTF_Font* font_header = config->getFontTTF(FontName::BATTLE_HEADER);
-  TTF_Font* font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
+  auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
+  auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
 
   /* Create rendering texture */
   SDL_Texture* texture =

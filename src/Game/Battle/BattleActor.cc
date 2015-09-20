@@ -107,12 +107,12 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   if(is_ally)
   {
     setFlag(ActorState::ALLY, true);
-    active_sprite = ActiveSprite::THIRD_PERSON;
+    active_sprite = ActiveSprite::FIRST_PERSON;
   }
   /* Set up for enemies */
   else
   {
-    active_sprite = ActiveSprite::FIRST_PERSON;
+    active_sprite = ActiveSprite::THIRD_PERSON;
   }
 
   /* Reset the action types useable by the battle actor */

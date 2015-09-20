@@ -192,7 +192,7 @@ const uint8_t Battle::kINFO_GREY = 200;
 const uint16_t Battle::kINFO_H = 50;
 const uint8_t Battle::kINFO_OPACITY = 166;
 const uint8_t Battle::kINFO_TRIANGLE = 6;
-// const uint16_t Battle::kINFO_W = 180;
+const uint16_t Battle::kINFO_W = 180;
 
 const uint8_t Battle::kENEMY_BAR_H = 8;
 const uint8_t Battle::kENEMY_BAR_OFFSET = 2;
@@ -285,14 +285,19 @@ void Battle::buildBattleActors(Party* allies, Party* enemies)
 {
   for(uint32_t i = 0; i < allies->getSize(); i++)
   {
-    actors.push_back(new BattleActor(
-        allies->getMember(i), getBattleIndex(i, true), true, true, renderer));
+    auto new_ally = new BattleActor(
+        allies->getMember(i), getBattleIndex(i, true), true, true, renderer);
+
+    /* Add the new ally to the vector of actors of the Battle */
+    actors.push_back(new_ally);
   }
   for(uint32_t i = 0; i < enemies->getSize(); i++)
   {
-    actors.push_back(new BattleActor(enemies->getMember(i),
-                                     getBattleIndex(i, false), false, true,
-                                     renderer));
+    auto new_enemy = new BattleActor(
+        enemies->getMember(i), getBattleIndex(i, false), false, true, renderer);
+
+    /* Add the new enemy to the vector of actors of the Battle */
+    actors.push_back(new_enemy);
   }
 }
 
@@ -323,7 +328,7 @@ int32_t Battle::getBattleIndex(int32_t index, bool ally)
 
   if(!ally && index == 0)
     return -1;
-  else if(!ally && index == 1)
+  else if(!ally && index == -1)
     return -2;
   else if(!ally)
     return (-index - 1);
@@ -335,7 +340,6 @@ int32_t Battle::getBattleIndex(int32_t index, bool ally)
  * PRIVATE FUNCTIONS - Battle Display
  *============================================================================*/
 
-// TODO: Fonts
 void Battle::buildActionFrame(BattleActor* actor)
 {
   assert(actor);
@@ -425,254 +429,257 @@ void Battle::buildActionFrame(BattleActor* actor)
   actor->setActionFrame(rendered_frame);
 }
 
-// TODO: Grab
 void Battle::buildEnemyBackdrop()
 {
-  // /* Sizing variables */
-  // uint16_t width = kINFO_W;
-  // uint16_t height = kINFO_H;
-  // uint8_t black_opacity = kINFO_OPACITY;
-  // uint8_t triangle_width = kINFO_TRIANGLE;
-  // uint8_t border = kINFO_BORDER;
-  // uint8_t grey_color = kINFO_GREY;
+  /* Sizing variables */
+  uint16_t width = kINFO_W;
+  uint16_t height = kINFO_H;
+  uint8_t black_opacity = kINFO_OPACITY;
+  uint8_t triangle_width = kINFO_TRIANGLE;
+  uint8_t border = kINFO_BORDER;
+  uint8_t grey_color = kINFO_GREY;
 
-  // /* Create rendering texture */
-  // Frame* rendered_frame = new Frame();
-  // SDL_Texture* texture =
-  //     SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-  //                       SDL_TEXTUREACCESS_TARGET, width, height);
-  // SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-  // SDL_SetRenderTarget(renderer, texture);
-  // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  // SDL_RenderClear(renderer);
+  /* Create rendering texture */
+  Frame* rendered_frame = new Frame();
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
 
-  // /* Draw center rectangle */
-  // SDL_SetRenderDrawColor(renderer, 0, 0, 0, black_opacity);
-  // SDL_Rect rect;
-  // rect.x = border + triangle_width - 1;
-  // rect.y = border - 1;
-  // rect.w = width - triangle_width * 2 - border;
-  // rect.h = height - border;
-  // SDL_RenderFillRect(renderer, &rect);
+  /* Draw center rectangle */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, black_opacity);
+  SDL_Rect rect;
+  rect.x = border + triangle_width - 1;
+  rect.y = border - 1;
+  rect.w = width - triangle_width * 2 - border;
+  rect.h = height - border;
+  SDL_RenderFillRect(renderer, &rect);
 
-  // /* Draw top right triangle */
-  // uint16_t x_top = rect.x + rect.w;
-  // uint16_t y_top = rect.y;
-  // Frame::renderTriangle(x_top, y_top, x_top, y_top + triangle_width,
-  //                       x_top + triangle_width, y_top + triangle_width,
-  //                       renderer);
+  /* Draw top right triangle */
+  uint16_t x_top = rect.x + rect.w;
+  uint16_t y_top = rect.y;
+  Frame::renderTriangle(x_top, y_top, x_top, y_top + triangle_width,
+                        x_top + triangle_width, y_top + triangle_width,
+                        renderer);
 
-  // /* Draw right rectangle */
-  // SDL_Rect rect2;
-  // rect2.x = rect.x + rect.w;
-  // rect2.y = y_top + triangle_width + 1;
-  // rect2.w = triangle_width;
-  // rect2.h = rect.h - triangle_width * 2 - border;
-  // SDL_RenderFillRect(renderer, &rect2);
+  /* Draw right rectangle */
+  SDL_Rect rect2;
+  rect2.x = rect.x + rect.w;
+  rect2.y = y_top + triangle_width + 1;
+  rect2.w = triangle_width;
+  rect2.h = rect.h - triangle_width * 2 - border;
+  SDL_RenderFillRect(renderer, &rect2);
 
-  // /* Draw right bottom triangle */
-  // y_top = rect2.y + rect2.h;
-  // Frame::renderTriangle(x_top, y_top, x_top + triangle_width, y_top, x_top,
-  //                       y_top + triangle_width, renderer);
+  /* Draw right bottom triangle */
+  y_top = rect2.y + rect2.h;
+  Frame::renderTriangle(x_top, y_top, x_top + triangle_width, y_top, x_top,
+                        y_top + triangle_width, renderer);
 
-  // /* Draw left top triangle */
-  // x_top = rect.x;
-  // y_top = rect.y;
-  // Frame::renderTriangle(x_top, y_top, x_top, y_top + triangle_width,
-  //                       x_top - triangle_width, y_top + triangle_width,
-  //                       renderer);
+  /* Draw left top triangle */
+  x_top = rect.x;
+  y_top = rect.y;
+  Frame::renderTriangle(x_top, y_top, x_top, y_top + triangle_width,
+                        x_top - triangle_width, y_top + triangle_width,
+                        renderer);
 
-  // /* Draw left rectangle */
-  // rect2.x = x_top - triangle_width;
-  // SDL_RenderFillRect(renderer, &rect2);
+  /* Draw left rectangle */
+  rect2.x = x_top - triangle_width;
+  SDL_RenderFillRect(renderer, &rect2);
 
-  // /* Draw left bottom triangle */
-  // y_top = rect2.y + rect2.h;
-  // Frame::renderTriangle(x_top, y_top, x_top - triangle_width, y_top, x_top,
-  //                       y_top + triangle_width, renderer);
+  /* Draw left bottom triangle */
+  y_top = rect2.y + rect2.h;
+  Frame::renderTriangle(x_top, y_top, x_top - triangle_width, y_top, x_top,
+                        y_top + triangle_width, renderer);
 
-  // /* First single pixel border */
-  // SDL_SetRenderDrawColor(renderer, grey_color, grey_color, grey_color, 255);
-  // SDL_Point points[9];
-  // points[0].x = rect.x;
-  // points[0].y = rect.y;
-  // points[1].x = points[0].x + rect.w - 1;
-  // points[1].y = points[0].y;
-  // points[2].x = points[1].x + triangle_width;
-  // points[2].y = points[1].y + triangle_width;
-  // points[3].x = points[2].x;
-  // points[3].y = points[2].y + rect2.h + 1;
-  // points[4].x = points[3].x - triangle_width;
-  // points[4].y = points[3].y + triangle_width;
-  // points[5].x = points[4].x - rect.w + 1;
-  // points[5].y = points[4].y;
-  // points[6].x = points[5].x - triangle_width;
-  // points[6].y = points[5].y - triangle_width;
-  // points[7].x = points[6].x;
-  // points[7].y = points[6].y - rect2.h - 1;
-  // points[8].x = points[7].x + triangle_width;
-  // points[8].y = points[7].y - triangle_width;
-  // SDL_RenderDrawLines(renderer, points, 9);
+  /* First single pixel border */
+  SDL_SetRenderDrawColor(renderer, grey_color, grey_color, grey_color, 255);
+  SDL_Point points[9];
+  points[0].x = rect.x;
+  points[0].y = rect.y;
+  points[1].x = points[0].x + rect.w - 1;
+  points[1].y = points[0].y;
+  points[2].x = points[1].x + triangle_width;
+  points[2].y = points[1].y + triangle_width;
+  points[3].x = points[2].x;
+  points[3].y = points[2].y + rect2.h + 1;
+  points[4].x = points[3].x - triangle_width;
+  points[4].y = points[3].y + triangle_width;
+  points[5].x = points[4].x - rect.w + 1;
+  points[5].y = points[4].y;
+  points[6].x = points[5].x - triangle_width;
+  points[6].y = points[5].y - triangle_width;
+  points[7].x = points[6].x;
+  points[7].y = points[6].y - rect2.h - 1;
+  points[8].x = points[7].x + triangle_width;
+  points[8].y = points[7].y - triangle_width;
+  SDL_RenderDrawLines(renderer, points, 9);
 
-  // /* Second single pixel border */
-  // points[0].y -= 1;
-  // points[1].y -= 1;
-  // points[2].x += 1;
-  // points[3].x += 1;
-  // points[4].y += 1;
-  // points[5].y += 1;
-  // points[6].x -= 1;
-  // points[7].x -= 1;
-  // points[8].y -= 1;
-  // SDL_RenderDrawLines(renderer, points, 9);
+  /* Second single pixel border */
+  points[0].y -= 1;
+  points[1].y -= 1;
+  points[2].x += 1;
+  points[3].x += 1;
+  points[4].y += 1;
+  points[5].y += 1;
+  points[6].x -= 1;
+  points[7].x -= 1;
+  points[8].y -= 1;
+  SDL_RenderDrawLines(renderer, points, 9);
 
-  // /* Finalize the frame */
-  // SDL_SetRenderTarget(renderer, nullptr);
-  // rendered_frame->setTexture(texture);
-  // frame_enemy_backdrop = rendered_frame;
+  /* Finalize the frame */
+  SDL_SetRenderTarget(renderer, nullptr);
+  rendered_frame->setTexture(texture);
+  frame_enemy_backdrop = rendered_frame;
 }
 
 // TODO: grab fonts
-// void Battle::buildInfoAlly(BattleActor* ally)
-// {
-// assert(ally && ally->getBasePerson());
+void Battle::buildInfoAlly(BattleActor* ally)
+{
+  /* Sizing variables */
+  uint8_t health_height = kALLY_HEALTH_H;
+  uint8_t health_triangle = kALLY_HEALTH_TRIANGLE;
+  uint8_t health_width = kALLY_HEALTH_W;
+  uint16_t height = kALLY_HEIGHT;
+  uint8_t qd_height = kALLY_QD_H;
+  uint8_t qd_offset = kALLY_QD_OFFSET;
+  uint8_t qd_triangle = kALLY_QD_TRIANGLE;
+  uint8_t qd_width = kALLY_QD_W;
+  uint16_t width = kINFO_W;
 
-// /* Sizing variables */
-// uint8_t health_height = kALLY_HEALTH_H;
-// uint8_t health_triangle = kALLY_HEALTH_TRIANGLE;
-// uint8_t health_width = kALLY_HEALTH_W;
-// uint16_t height = kALLY_HEIGHT;
-// uint8_t qd_height = kALLY_QD_H;
-// uint8_t qd_offset = kALLY_QD_OFFSET;
-// uint8_t qd_triangle = kALLY_QD_TRIANGLE;
-// uint8_t qd_width = kALLY_QD_W;
-// uint16_t width = kINFO_W;
+  /* Fonts */
+  auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
+  auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
 
-// /* Create rendering texture */
-// SDL_Texture *texture =
-//     SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-//                       SDL_TEXTUREACCESS_TARGET, width, height);
-// SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-// SDL_SetRenderTarget(renderer, texture);
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-// SDL_RenderClear(renderer);
+  /* Create rendering texture */
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
 
-// /* Render the health bar border */
-// SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-// SDL_Point border[5];
-// border[0].x = (width - health_width) / 2;
-// border[0].y = (height - health_height) / 2;
-// border[1].x = border[0].x + health_width + health_triangle;
-// border[1].y = border[0].y;
-// border[2].x = border[1].x - health_triangle;
-// border[2].y = border[1].y + health_height;
-// border[3].x = border[2].x - health_width - health_triangle;
-// border[3].y = border[2].y;
-// border[4].x = border[0].x;
-// border[4].y = border[0].y;
-// SDL_RenderDrawLines(renderer, border, 5);
+  /* Render the health bar border */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_Point border[5];
+  border[0].x = (width - health_width) / 2;
+  border[0].y = (height - health_height) / 2;
+  border[1].x = border[0].x + health_width + health_triangle;
+  border[1].y = border[0].y;
+  border[2].x = border[1].x - health_triangle;
+  border[2].y = border[1].y + health_height;
+  border[3].x = border[2].x - health_width - health_triangle;
+  border[3].y = border[2].y;
+  border[4].x = border[0].x;
+  border[4].y = border[0].y;
+  SDL_RenderDrawLines(renderer, border, 5);
 
-// /* Render background of QD Bar */
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-// uint8_t qd_x =
-//     border[0].x + health_width - qd_offset - qd_triangle - qd_width;
-// uint8_t qd_y = border[0].y + health_height - (qd_height / 2);
-// Frame::renderBar(qd_x, qd_y, qd_width + qd_triangle, qd_height,
-//                  (float)qd_triangle / qd_height, renderer);
+  /* Render background of QD Bar */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  uint8_t qd_x =
+      border[0].x + health_width - qd_offset - qd_triangle - qd_width;
+  uint8_t qd_y = border[0].y + health_height - (qd_height / 2);
+  Frame::renderBar(qd_x, qd_y, qd_width + qd_triangle, qd_height,
+                   (float)qd_triangle / qd_height, renderer);
 
-// /* Render the ally name */
-// SDL_Color color = {255, 255, 255, 255};
-// Text *t = new Text(font_header);
-// t->setText(renderer, ally->getBasePerson()->getName(), color);
-// t->render(renderer, (width - t->getWidth()) / 2,
-//           (border[0].y - t->getHeight()) / 2);
-// delete t;
+  /* Render the ally name */
+  SDL_Color color = {255, 255, 255, 255};
+  Text* t = new Text(font_header);
+  t->setText(renderer, ally->getBasePerson()->getName(), color);
+  t->render(renderer, (width - t->getWidth()) / 2,
+            (border[0].y - t->getHeight()) / 2);
+  delete t;
 
-// /* Render the ally level */
-// t = new Text(font_subheader);
-// t->setText(renderer, "Level " +
-// std::to_string(ally->getBasePerson()->getLevel()), color);
-// t->render(renderer, (width - t->getWidth()) / 2,
-//           border[0].y + health_height + qd_height / 2 +
-//               (height - border[0].y - health_height - qd_height / 2 -
-//                t->getHeight()) /
-//                   2);
-// delete t;
+  /* Render the ally level */
+  t = new Text(font_subheader);
+  t->setText(renderer,
+             "Level " + std::to_string(ally->getBasePerson()->getLevel()),
+             color);
+  t->render(renderer, (width - t->getWidth()) / 2,
+            border[0].y + health_height + qd_height / 2 +
+                (height - border[0].y - health_height - qd_height / 2 -
+                 t->getHeight()) /
+                    2);
+  delete t;
 
-// /* Set the new frame */
-// Frame *ally_info = new Frame();
-// ally_info->setTexture(texture);
+  /* Set the new frame */
+  Frame* ally_info = new Frame();
+  ally_info->setTexture(texture);
 
-// /* Clear render connection */
-// SDL_SetRenderTarget(renderer, nullptr);
+  /* Clear render connection */
+  SDL_SetRenderTarget(renderer, nullptr);
 
-// ally->setInfoFrame(ally_info);
-// }
+  ally->setInfoFrame(ally_info);
+}
 
-// TODO: grab fonts
-// void Battle::buildInfoEnemy(BattleActor* enemy)
-// {
-// /* Assert the enemy and their corresponding base person are set */
-// assert(enemy && enemy->getBasePerson());
+/* Build the enemy info for a given enemy actor */
+void Battle::buildInfoEnemy(BattleActor* enemy)
+{
+  /* Sizing variables */
+  uint16_t bar_width = kENEMY_BAR_W;
+  uint8_t bar_triangle_width = kENEMY_BAR_TRIANGLE;
+  uint8_t bar_height = kENEMY_BAR_H;
+  uint8_t bar_offset = kENEMY_BAR_OFFSET;
 
-// /* Sizing variables */
-// uint16_t bar_width = kENEMY_BAR_W;
-// uint8_t bar_triangle_width = kENEMY_BAR_TRIANGLE;
-// uint8_t bar_height = kENEMY_BAR_H;
-// uint8_t bar_offset = kENEMY_BAR_OFFSET;
+  /* Fonts */
+  auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
+  auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
 
-// /* Create rendering texture */
-// SDL_Texture* texture =
-//     SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-//                       SDL_TEXTUREACCESS_TARGET, kINFO_W, kINFO_H);
-// SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-// SDL_SetRenderTarget(renderer, texture);
-// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-// SDL_RenderClear(renderer);
+  /* Create rendering texture */
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, kINFO_W, kINFO_H);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
 
-// /* Render the health bar border */
-// SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-// SDL_Point border[5];
-// border[0].x = (kINFO_W - bar_width) / 2;
-// border[0].y = (kINFO_H - bar_height) / 2 + bar_offset;
-// border[1].x = border[0].x + bar_width + bar_triangle_width;
-// border[1].y = border[0].y;
-// border[2].x = border[1].x - bar_triangle_width;
-// border[2].y = border[1].y + bar_height;
-// border[3].x = border[2].x - bar_width - bar_triangle_width;
-// border[3].y = border[2].y;
-// border[4].x = border[0].x;
-// border[4].y = border[0].y;
-// SDL_RenderDrawLines(renderer, border, 5);
+  /* Render the health bar border */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_Point border[5];
+  border[0].x = (kINFO_W - bar_width) / 2;
+  border[0].y = (kINFO_H - bar_height) / 2 + bar_offset;
+  border[1].x = border[0].x + bar_width + bar_triangle_width;
+  border[1].y = border[0].y;
+  border[2].x = border[1].x - bar_triangle_width;
+  border[2].y = border[1].y + bar_height;
+  border[3].x = border[2].x - bar_width - bar_triangle_width;
+  border[3].y = border[2].y;
+  border[4].x = border[0].x;
+  border[4].y = border[0].y;
+  SDL_RenderDrawLines(renderer, border, 5);
 
-// /* Render the enemy name */
-// SDL_Color color = {255, 255, 255, 255};
-// Text* t = new Text(font_header);
-// t->setText(renderer, enemy->getBasePerson()->getName(), color);
-// t->render(renderer, (kINFO_W - t->getWidth()) / 2,
-//           (border[0].y - t->getHeight()) / 2);
-// delete t;
+  /* Render the enemy name */
+  SDL_Color color = {255, 255, 255, 255};
+  Text* t = new Text(font_header);
+  t->setText(renderer, enemy->getBasePerson()->getName(), color);
+  t->render(renderer, (kINFO_W - t->getWidth()) / 2,
+            (border[0].y - t->getHeight()) / 2);
+  delete t;
 
-// /* Render the enemy level */
-// t = new Text(font_subheader);
-// t->setText(renderer,
-//            "Level " + std::to_string(enemy->getBasePerson()->getLevel()),
-//            color);
-// t->render(renderer, (kINFO_W - t->getWidth()) / 2,
-//           border[0].y + bar_height +
-//               (kINFO_H - border[0].y - bar_height - t->getHeight()) / 2);
-// delete t;
+  /* Render the enemy level */
+  t = new Text(font_subheader);
+  t->setText(renderer,
+             "Level " + std::to_string(enemy->getBasePerson()->getLevel()),
+             color);
+  t->render(renderer, (kINFO_W - t->getWidth()) / 2,
+            border[0].y + bar_height +
+                (kINFO_H - border[0].y - bar_height - t->getHeight()) / 2);
+  delete t;
 
-// /* Set the new frame */
-// Frame* enemy_info = new Frame();
-// enemy_info->setTexture(texture);
+  /* Set the new frame */
+  Frame* enemy_info = new Frame();
+  enemy_info->setTexture(texture);
 
-// /* Clear render connection */
-// SDL_SetRenderTarget(renderer, nullptr);
+  /* Clear render connection */
+  SDL_SetRenderTarget(renderer, nullptr);
 
-// /* Set the info frame */
-// enemy->setInfoFrame(enemy_info);
-// }
+  /* Set the info frame */
+  enemy->setInfoFrame(enemy_info);
+}
 
 void Battle::clearBackground()
 {
@@ -700,26 +707,36 @@ void Battle::clearElements()
 // uint16_t y = screen_height - bar_height + (bar_height - kALLY_HEIGHT) / 2;
 //   success &= renderFriendInfo(screen_height, x, y, true);
 
+// Other todos:
+// -- Midlays
+// -- Overlays
 bool Battle::render(int32_t cycle_time)
 {
+  auto success = false;
+
+  if(config && turn_state != TurnState::FINISHED)
+  {
+    auto height = config->getScreenHeight();
+    auto width = config->getScreenWidth();
+
+    success = true;
+
+    /* Bottom layer is the background */
+    if(background)
+      success &= background->render(renderer, 0, 0, width, height);
+
+    // FUTURE - Render overlays here.
+
+    /* Render the enemies in their present state */
+    success &= renderEnemies();
+
+    // FUTURE - Midlays go over the enemies, but under the allies
+
+    /* Render the allies in their present states */
+    success &= renderAllies();
+  }
+
   /* --------------- RENDER BATTLE MENU -------------- */
-  (void)cycle_time;
-  // uint16_t height = 0;
-  // bool success = true;
-  // uint16_t width = 0;
-
-  // /* Check the options for screen height and width */
-  // if(system_options != nullptr)
-  // {
-  //   height = system_options->getScreenHeight();
-  //   width = system_options->getScreenWidth();
-  // }
-
-  // if(battle != nullptr && rendering_state != TurnState::DESTRUCT)
-  // {
-  //   /* Render background */
-  //   if(background != nullptr)
-  //     success &= background->render(renderer, 0, 0, width, height);
 
   //   /* Render overlays - over background modifiers */
   //   for(uint8_t i = 0; i < overlays.size(); i++)
@@ -850,7 +867,7 @@ bool Battle::render(int32_t cycle_time)
   //   return success;
   // }
 
-  return false;
+  return success;
 }
 
 bool Battle::renderBattleBar()
@@ -867,105 +884,151 @@ bool Battle::renderBattleBar()
   return true;
 }
 
+bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
+                                 bool full_border)
+{
+  /* Big problems if calling with nullptr actor */
+  assert(actor);
+
+  /* Get ailment(s) and render holding box */
+  auto ailments = actor->getAilments();
+
+  if(ailments.size() > 0 && ailments.front())
+  {
+    /* Front ailment frame */
+    auto fr = battle_display_data->getFrameAilment(ailments.front()->getType());
+
+    /* Sizing variables */
+    uint16_t gap = kAILMENT_GAP;
+    uint16_t border = kAILMENT_BORDER;
+
+    /* Render rectangle */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, kAILMENT_OPACITY);
+    SDL_Rect rect;
+    rect.w = (fr.getWidth() + gap * 2) * ailments.size() + border * 2;
+    rect.h = (fr.getHeight() + gap * 2) + border;
+    rect.x = x - rect.w / 2;
+    rect.y = y - rect.h;
+    SDL_RenderFillRect(renderer, &rect);
+
+    /* Render rectangle border */
+    if(!actor->getFlag(ActorState::ALLY))
+      SDL_SetRenderDrawColor(renderer, kINFO_GREY, kINFO_GREY, kINFO_GREY, 255);
+    else
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    SDL_Point points[5];
+    points[0].x = rect.x;
+    points[0].y = rect.y + rect.h - 1;
+    points[1].x = rect.x;
+    points[1].y = rect.y;
+    points[2].x = rect.x + rect.w - 1;
+    points[2].y = rect.y;
+    points[3].x = points[2].x;
+    points[3].y = points[0].y;
+    if(full_border)
+    {
+      points[0].y += 1;
+      points[3].y = points[0].y;
+      points[4].x = points[0].x;
+      points[4].y = points[0].y;
+      SDL_RenderDrawLines(renderer, points, 5);
+    }
+    else
+    {
+      SDL_RenderDrawLines(renderer, points, 4);
+    }
+
+    /* Render the ailments */
+    rect.x += border + gap;
+    rect.y += border + gap;
+
+    for(auto& ailment : ailments)
+    {
+      if(ailment)
+      {
+        Frame f = battle_display_data->getFrameAilment(ailment->getType());
+        f.render(renderer, rect.x, rect.y);
+        rect.x += f.getWidth() + gap * 2;
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
 // TODO
-// bool Battle::renderAilments()
-// {
-//   // Render each battle actor's ailments.
-// }
+bool Battle::renderAllies()
+{
+  bool success = true;
 
-// bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
-//                                  bool full_border)
-// {
-// /* Get ailment(s) and render holding box */
-// std::vector<Ailment *> ailments = battle->getPersonAilments(person);
-// if(ailments.size() > 0)
-// {
-//   /* Sizing variables */
-//   uint16_t gap = kAILMENT_GAP;
-//   uint16_t border = kAILMENT_BORDER;
+  /* Render each ally */
+  for(const auto& ally : getAllies())
+  {
+    // TODO - For now, render the active sprite
+    if(ally && ally->getActiveSprite())
+    {
 
-//   /* Render rectangle */
-//   SDL_SetRenderDrawColor(renderer, 255, 255, 255, kAILMENT_OPACITY);
-//   SDL_Rect rect;
-//   rect.w = (this->ailments.front().getWidth() + gap * 2) * ailments.size()
-//   +
-//            border * 2;
-//   rect.h = (this->ailments.front().getHeight() + gap * 2) + border;
-//   rect.x = x - rect.w / 2;
-//   rect.y = y - rect.h;
-//   SDL_RenderFillRect(renderer, &rect);
+      success &= ally->getActiveSprite()->render(renderer, getActorX(ally),
+                                                 getActorY(ally));
+    }
+    else
+    {
 
-//   /* Render rectangle border */
-//   if(foe)
-//     SDL_SetRenderDrawColor(renderer, kINFO_GREY, kINFO_GREY, kINFO_GREY,
-//     255);
-//   else
-//     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-//   SDL_Point points[5];
-//   points[0].x = rect.x;
-//   points[0].y = rect.y + rect.h - 1;
-//   points[1].x = rect.x;
-//   points[1].y = rect.y;
-//   points[2].x = rect.x + rect.w - 1;
-//   points[2].y = rect.y;
-//   points[3].x = points[2].x;
-//   points[3].y = points[0].y;
-//   if(full_border)
-//   {
-//     points[0].y += 1;
-//     points[3].y = points[0].y;
-//     points[4].x = points[0].x;
-//     points[4].y = points[0].y;
-//     SDL_RenderDrawLines(renderer, points, 5);
-//   }
-//   else
-//   {
-//     SDL_RenderDrawLines(renderer, points, 4);
-//   }
+    }
+  }
 
-//   /* Render the ailments */
-//   rect.x += border + gap;
-//   rect.y += border + gap;
-//   for(uint16_t j = 0; j < ailments.size(); j++)
-//   {
-//     Frame *f = getAilment(ailments[j]->getType());
-//     f->render(renderer, rect.x, rect.y);
-//     rect.x += f->getWidth() + gap * 2;
-//   }
+  return success;
+}
 
-//   return true;
-// }
-// }
+// TODO
+bool Battle::renderAlliesInfo()
+{
+  return true;
+}
 
-// /* Renders the foes */
-// // TODO: Comment
-// bool Battle::renderFoes(SDL_Renderer *renderer)
-// {
-//   bool success = false;
+// TODO
+bool Battle::renderAllyInfo(BattleActor* actor)
+{
+  (void)actor;
 
-//   for(const auto &foe_state : foes_state)
-//   {
-//     if(foe_state->tp != nullptr)
-//     {
-//       auto foe = foe_state->self;
+  return true;
+}
 
-//       if(!foe_state->dying && !foe_state->bobbing)
-//       {
-//         success &=
-//             foe_state->tp->render(renderer, getPersonX(foe),
-//             getPersonY(foe));
-//       }
-//       else if(!foe_state->dying && (foe_state->bobbing ||
-//       foe_state->running))
-//       {
-//         success &= foe_state->tp->render(renderer, foe_state->x,
-//         foe_state->y);
-//       }
-//     }
-//   }
+// TODO
+bool Battle::renderEnemies()
+{
+  bool success = true;
 
-//   return success;
-// }
+  /* Render each enemy */
+  for(const auto& enemy : getEnemies())
+  {
+    // TODO - For now, just render the active sprite
+    if(enemy && enemy->getActiveSprite())
+    {
+      success &= enemy->getActiveSprite()->render(renderer, getActorX(enemy),
+                                                  getActorY(enemy));
+    }
+  }
+
+  return success;
+}
+
+// TODO
+bool Battle::renderEnemiesInfo()
+{
+  return true;
+}
+
+// TODO
+bool Battle::renderEnemyInfo(BattleActor* actor)
+{
+  (void)actor;
+
+  return true;
+}
 
 // // TODO: Comment
 // bool Battle::renderFoesInfo(SDL_Renderer *renderer,
@@ -1125,35 +1188,6 @@ bool Battle::renderBattleBar()
 //   {
 //     success &= renderAilment(renderer, state->self, x + kINFO_W / 2,
 //                              screen_height - kBIGBAR_OFFSET);
-//   }
-
-//   return success;
-// }
-
-// /* Renders the friends */
-// // TODO: Comment
-// bool Battle::renderFriends(SDL_Renderer *renderer)
-// {
-//   bool success = true;
-
-//   /* Render the friends */
-//   for(const auto &ally_state : friends_state)
-//   {
-//     if(ally_state->active_sprite && ally_state->self)
-//     {
-//       /* If the ally isn't dying, render them */
-//       if(!ally_state->dying && !ally_state->bobbing)
-//       {
-//         success &= ally_state->active_sprite->render(
-//             renderer, getPersonX(ally_state->self),
-//             getPersonY(ally_state->self));
-//       }
-//       else if(ally_state->bobbing)
-//       {
-//         success &= ally_state->active_sprite->render(renderer, ally_state->x,
-//                                                      ally_state->y);
-//       }
-//     }
 //   }
 
 //   return success;
@@ -1640,7 +1674,7 @@ void Battle::updateRenderAllies(int32_t cycle_time)
   //       }
   //       else
   //       {
-  //         state->x = getPersonX(state->self) +
+  //         state->x = getActorX(state->self) +
   //                    kBOB_AMOUNT * sin(state->elapsed_time * kBOB_RATE);
   //         state->y = getPersonY(state->self);
   //       }
@@ -1658,7 +1692,7 @@ void Battle::updateRenderAllies(int32_t cycle_time)
   //       }
   //       else
   //       {
-  //         state->x = getPersonX(state->self) +
+  //         state->x = getActorX(state->self) +
   //                    kRUN_AMOUNT * sin(state->elapsed_time * kRUN_RATE);
   //         state->y = getPersonY(state->self);
   //       }
@@ -1671,15 +1705,12 @@ void Battle::updateRenderAllies(int32_t cycle_time)
 
 int32_t Battle::getActorX(BattleActor* actor)
 {
-  auto i = 0;
-
   if(actor && actor->getFlag(ActorState::ALLY))
   {
     for(const auto& ally : getAllies())
     {
       if(ally == actor)
-        return config->getScreenWidth() - kPERSON_WIDTH - i * kPERSON_SPREAD;
-      ++i;
+        return config->getScreenWidth() - kPERSON_WIDTH - actor->getIndex() * kPERSON_SPREAD;
     }
   }
   else if(actor)
@@ -1687,8 +1718,7 @@ int32_t Battle::getActorX(BattleActor* actor)
     for(const auto& enemy : getEnemies())
     {
       if(enemy == actor)
-        return i * kPERSON_SPREAD;
-      ++i;
+        return std::abs(actor->getIndex()) * kPERSON_SPREAD;
     }
   }
 
@@ -1856,9 +1886,15 @@ bool Battle::getFlagRender(RenderState test_flag)
   return static_cast<bool>((flags_render & test_flag) == test_flag);
 }
 
-OutcomeType Battle::getOutcomeType() { return outcome; }
+OutcomeType Battle::getOutcomeType()
+{
+  return outcome;
+}
 
-TurnState Battle::getTurnState() { return turn_state; }
+TurnState Battle::getTurnState()
+{
+  return turn_state;
+}
 
 bool Battle::setConfig(Options* config)
 {
@@ -1985,7 +2021,7 @@ bool Battle::setBackground(Sprite* background)
 //       {
 //         getState(curr_event->user)->bobbing = true;
 //         getState(curr_event->user)->elapsed_time = 0;
-//         getState(curr_event->user)->x = getPersonX(curr_event->user);
+//         getState(curr_event->user)->x = getActorX(curr_event->user);
 //         getState(curr_event->user)->y = getPersonY(curr_event->user);
 //       }
 //     }
@@ -2000,7 +2036,7 @@ bool Battle::setBackground(Sprite* background)
 //       {
 //         getState(curr_event->user)->running = true;
 //         getState(curr_event->user)->elapsed_time = 0;
-//         getState(curr_event->user)->x = getPersonX(curr_event->user);
+//         getState(curr_event->user)->x = getActorX(curr_event->user);
 //         getState(curr_event->user)->y = getPersonY(curr_event->user);
 //       }
 //     }
