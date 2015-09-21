@@ -44,9 +44,8 @@ Application::Application(std::string base_path)
   title_screen.setConfiguration(system_options);
   title_screen.setSoundHandler(&sound_handler);
 
-  /* Sets the current mode */
-  changeMode(TITLESCREEN);
-  title_screen.enableView(true);
+  /* Sets the current mode - paused mode */
+  changeMode(PAUSED);
 }
 
 Application::~Application()
@@ -73,18 +72,20 @@ bool Application::changeMode(AppMode mode)
     /* Changes to execute on the views closing */
     if(this->mode == TITLESCREEN)
       title_screen.enableView(false);
+    else if(this->mode == GAME)
+      game_handler.enableView(false);
+    else if(this->mode == PAUSED)
+      Sound::resumeAllChannels();
 
-    this->temp_mode = this->mode;
-    this->mode      = mode;
+    this->mode = mode;
 
     /* Changes to execute on the views opening */
     if(this->mode == TITLESCREEN)
       title_screen.enableView(true);
-
-    if (this->mode == PAUSED)
+    else if(this->mode == GAME)
+      game_handler.enableView(true);
+    else if(this->mode == PAUSED)
       Sound::pauseAllChannels();
-    else
-      Sound::resumeAllChannels();
   }
 
   return allow;
@@ -454,6 +455,9 @@ bool Application::initialize()
 
     /* Set the title screen background - TODO: Encapsulate in load?? */
     title_screen.setBackground("sprites/Title/old_title.png", renderer);
+
+    /* Finally enable the relevant view */
+    changeMode(TITLESCREEN);
   }
   /* Uninitialize everything, if the init sequence failed */
   else if(!isInitialized())

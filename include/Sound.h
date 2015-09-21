@@ -82,6 +82,7 @@ private:
   /* --------------------- CONSTANTS --------------------- */
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
+  const static int kSTOP_FADE; /* Stop fade time on channel */
   const static int kUNSET_ID; /* The placeholder unset ID */
 public:
   const static int kDEFAULT_FREQUENCY; /* Sound frequency - DO NOT CHANGE */
@@ -180,8 +181,8 @@ public:
   static int setMusicVolumes(int new_volume);
 
   /* Stop all channels or select channels */
-  static void stopAllChannels();
-  static void stopChannel(SoundChannels channel);
+  static void stopAllChannels(int fade = kSTOP_FADE);
+  static void stopChannel(SoundChannels channel, int fade = kSTOP_FADE);
 };
 
 #endif // SOUND_H

@@ -286,6 +286,14 @@ void SoundHandler::loadSounds()
   game_music4->setSoundFile(base_path + "sound/5.ogg");
   addMusic(game_music4);
 
+  /* ---- WEATHER ---- */
+  Sound* game_weather1 = new Sound();
+  game_weather1->setVolume(25);
+  game_weather1->setID(2000);
+  game_weather1->setFadeTime(2000);
+  game_weather1->setSoundFile(base_path + "sound/map/storm.ogg");
+  addMusic(game_weather1);
+
   /* ---- SOUND ---- */
   Sound* menu_sound = new Sound();
   menu_sound->setID(Sound::kID_SOUND_MENU_CHG);
@@ -426,7 +434,7 @@ void SoundHandler::process()
       /* Stop processing */
       else
       {
-        Sound::stopChannel(queue[i].channel);
+        Sound::stopChannel(queue[i].channel, 0);
       }
     }
   }

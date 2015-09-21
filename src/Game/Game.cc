@@ -65,17 +65,19 @@ Game::Game(Options* running_config)
   active_renderer = nullptr;
   base_path = "";
   battle_ctrl = nullptr;
+  battle_display_data = nullptr;
   config = nullptr;
   game_path = kSTARTING_PATH;
   loaded = false;
-  map_ctrl = nullptr;
   map_lvl = kSTARTING_MAP;
   mode = DISABLED;
   player_main = nullptr;
 
-  /* Set up battle and map classes - initial */
-  map_ctrl = new Map(config, &event_handler);
+  /* Set up map class */
+  map_ctrl.setConfiguration(config);
+  map_ctrl.setEventHandler(&event_handler);
 
+  /* Set up battle class */
   battle_ctrl = new Battle();
   battle_display_data = new BattleDisplayData();
 
@@ -100,11 +102,6 @@ Game::~Game()
   if(battle_display_data)
     delete battle_display_data;
   battle_display_data = nullptr;
-
-  /* Delete map */
-  if(map_ctrl)
-    delete map_ctrl;
-  map_ctrl = nullptr;
 }
 
 /*============================================================================
@@ -286,37 +283,32 @@ bool Game::eventGiveItem(int id, int count)
     /* If inserted, notify that the pickup was a success */
     if(inserted)
     {
-      if(map_ctrl != nullptr)
-        map_ctrl->initNotification(found_item->getThumb(), count);
+      map_ctrl.initNotification(found_item->getThumb(), count);
       return true;
     }
     /* Otherwise, notify that item could not be received */
     else
     {
-      if(map_ctrl != nullptr)
-        map_ctrl->initNotification("Insufficient room in inventory to fit " +
-                                   std::to_string(count) + " " +
-                                   found_item->getName());
+      map_ctrl.initNotification("Insufficient room in inventory to fit " +
+                                std::to_string(count) + " " +
+                                found_item->getName());
     }
 
     return inserted;
   }
-
   return false;
 }
 
 /* Initiates a conversation event */
 void Game::eventInitConversation(Conversation* convo, MapThing* source)
 {
-  if(map_ctrl != nullptr)
-    map_ctrl->initConversation(convo, source);
+  map_ctrl.initConversation(convo, source);
 }
 
 /* Initiates a notification event (in map) */
 void Game::eventInitNotification(std::string notification)
 {
-  if(map_ctrl != nullptr)
-    map_ctrl->initNotification(notification);
+  map_ctrl.initNotification(notification);
 }
 
 /* The pickup item event - from walking over or triggering from action key */
@@ -327,8 +319,8 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
     bool was_inserted = eventGiveItem(item->getGameID(), item->getCount());
 
     /* If the insert was successful, pickup the item */
-    if(map_ctrl != nullptr && was_inserted)
-      map_ctrl->pickupItem(item);
+    if(was_inserted)
+      map_ctrl.pickupItem(item);
   }
 }
 
@@ -358,8 +350,7 @@ void Game::eventSwitchMap(int map_id)
 /* Teleport thing event, based on ID and coordinates */
 void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 {
-  if(map_ctrl != nullptr)
-    map_ctrl->teleportThing(thing_id, x, y, section_id);
+  map_ctrl.teleportThing(thing_id, x, y, section_id);
 }
 
 /* Load game */
@@ -413,7 +404,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
         else if(data.getElement(index + 1) == "map" &&
                 data.getKeyValue(index + 1) == level)
         {
-          success &= map_ctrl->loadData(data, index + 2, renderer, base_path);
+          success &= map_ctrl.loadData(data, index + 2, renderer, base_path);
         }
       }
     } while(!done); // && success); // TODO: Success in loop??
@@ -432,7 +423,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
     }
 
     /* Clean up map */
-    map_ctrl->loadDataFinish(renderer);
+    map_ctrl.loadDataFinish(renderer);
 
     mode = MAP;
   }
@@ -669,7 +660,9 @@ void Game::pollEvents()
       {
         /* Try and find parties and start battle */
         if(person != nullptr && source != nullptr)
+        {
           eventStartBattle(Party::kID_SLEUTH, source->getGameID());
+        }
       }
     }
     else if(classification == EventClassifier::RUNMAP)
@@ -797,6 +790,24 @@ void Game::removeSkillSets()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+  
+/* Enable view trigger */
+void Game::enableView(bool enable)
+{
+  std::cout << "Enable Game View: " << enable << std::endl;
+  std::cout << "Mode: " << (int)mode << std::endl;
+
+  if(enable)
+  {
+    if(mode == MAP)
+      map_ctrl.enableView(enable);
+  }
+  else
+  {
+    if(mode == MAP)
+      map_ctrl.enableView(enable);
+  }
+}
 
 /* Returns a pointer to a given action by index or by ID */
 Action* Game::getAction(const int32_t& index, const bool& by_id)
@@ -1084,7 +1095,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   else
   {
     if(mode == MAP)
-      return map_ctrl->keyDownEvent(event);
+      return map_ctrl.keyDownEvent(event);
     else if(mode == BATTLE)
       return battle_ctrl->keyDownEvent(event);
   }
@@ -1102,7 +1113,7 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
   }
   else if(mode == MAP)
   {
-    map_ctrl->keyUpEvent(event);
+    map_ctrl.keyUpEvent(event);
   }
 }
 
@@ -1122,7 +1133,7 @@ bool Game::render(SDL_Renderer* renderer)
 
   if(mode == MAP)
   {
-    return map_ctrl->render(renderer);
+    return map_ctrl.render(renderer);
   }
   else if(mode == BATTLE)
   {
@@ -1150,8 +1161,7 @@ bool Game::setConfiguration(Options* running_config)
     base_path = config->getBasePath();
 
     /* Set in secondary classes */
-    if(map_ctrl)
-      map_ctrl->setConfiguration(running_config);
+    map_ctrl.setConfiguration(running_config);
 
     /* Battle configuration setup */
     if(battle_ctrl)
@@ -1188,7 +1198,7 @@ void Game::unload(bool full_unload)
   if(loaded)
   {
     /* Unload map first */
-    map_ctrl->unloadMap();
+    map_ctrl.unloadMap();
 
     /* Unload game data */
     if(full_unload)
@@ -1217,9 +1227,9 @@ bool Game::update(int32_t cycle_time)
   event_handler.getKeyHandler().update(cycle_time);
 
   /* MAP MODE */
-  if(mode == MAP && map_ctrl)
+  if(mode == MAP)
   {
-    return map_ctrl->update(cycle_time);
+    return map_ctrl.update(cycle_time);
   }
   /* BATTLE MODE */
   else if(mode == BATTLE && battle_ctrl)

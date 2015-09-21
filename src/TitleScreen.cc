@@ -165,7 +165,9 @@ void TitleScreen::enableView(bool enable)
 {
   /* Enables all relevant control for the view - not used */
   if(enable)
-  {}
+  {
+    firstUpdate();
+  }
   /* Disables all relevant control for the view */
   else
   {}
@@ -174,16 +176,16 @@ void TitleScreen::enableView(bool enable)
 /* First update call each time the view changes - must be called */
 void TitleScreen::firstUpdate()
 {
-  std::cout << "FIRST CALL - TITLE SCREEN" << std::endl;
-
   /* Music trigger, if relevant. Otherwise, stop tunes */
-  //if(sound_handler != nullptr)
-  //{
-  //  Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
-  //  if(title_music != nullptr && !title_music->isPlaying())
-  //    sound_handler->addToQueue(Sound::kID_MUSIC_TITLE, 
-  //                              SoundChannels::MUSIC1);
-  //}
+  if(sound_handler != nullptr)
+  {
+    Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
+    if(title_music != nullptr)
+      sound_handler->addPlayToQueue(Sound::kID_MUSIC_TITLE, 
+                                    SoundChannels::MUSIC1);
+    else
+      sound_handler->addStopToQueue(SoundChannels::MUSIC1);
+  }
 }
 
 /* Returns the active action */
@@ -359,15 +361,6 @@ bool TitleScreen::update(int cycle_time)
 {
   /* Increment the nav time */
   nav_time += cycle_time;
-
-  /* Make sure music is playing */
-  //if(sound_handler != nullptr)
-  //{
-  //  Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
-  //  if(title_music != nullptr && !title_music->isPlaying())
-  //    sound_handler->addToQueue(Sound::kID_MUSIC_TITLE, 
-  //                              SoundChannels::MUSIC1);
-  //}
 
   /* Rotation testing */
   //rotate1 += 0.03125;//0.0625;//0.001;

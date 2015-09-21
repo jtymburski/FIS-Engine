@@ -27,7 +27,7 @@ const uint8_t Map::kFILE_GAME_TYPE = 1;
 const uint8_t Map::kFILE_SECTION_ID = 2;
 const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
-const uint8_t Map::kMUSIC_REPEAT = 3;
+const uint32_t Map::kMUSIC_REPEAT = 15000;//120000; /* 2 minutes */
 const uint8_t Map::kPLAYER_ID = 0;
 const uint16_t Map::kZOOM_TILE_SIZE = 16;
 
@@ -40,10 +40,10 @@ Map::Map(Options* running_config, EventHandler* event_handler)
 {
   /* Set initial variables */
   base_path = "";
-  this->event_handler = event_handler;
+  this->event_handler = NULL;
   loaded = false;
   map_index = 0;
-  music_index = -1;
+  music_id = -1;
   music_runtime = -1;
   player = NULL;
   system_options = NULL;
@@ -53,14 +53,11 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   tile_width = tile_height;
   zoom_in = false;
   zoom_out = false;
-
-  /* Set options configuration */
   viewport.setTileSize(tile_width, tile_height);
+  
+  /* Set options and event handler */
   setConfiguration(running_config);
-
-  /* Set up the map displays */
-  item_menu.setEventHandler(event_handler);
-  map_dialog.setEventHandler(event_handler);
+  setEventHandler(event_handler);
 }
 
 /* Destructor function */
@@ -418,6 +415,92 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   return false;
 }
 
+/* Audio start/stop triggers */
+void Map::audioStart()
+{
+  /* Try and stop, if relevant */
+  if(music_id >= 0)
+    audioStop();
+
+  /* Fire the ship up */
+  audioUpdate(true);
+}
+
+/* Audio start/stop triggers */
+void Map::audioStop()
+{
+  if(event_handler)
+  {
+    if(map_index < sub_map.size() && music_id >= 0)
+    {
+      event_handler->triggerAudioStop(SoundChannels::MUSIC1);
+      if(sub_map[map_index].weather >= 0)
+        event_handler->triggerAudioStop(SoundChannels::WEATHER1);
+    }
+  }
+
+  music_id = -1;
+  music_runtime = -1;
+}
+
+/* Audio update trigger. Either on song switch time or sub-map change */
+void Map::audioUpdate(bool sub_change)
+{
+  if(event_handler != nullptr && map_index < sub_map.size())
+  {
+    std::cout << "Audio Update: " << map_index << std::endl;
+
+    /* Find music index */
+    bool music_base = true;
+    int music_index = -1;
+    if(sub_map[map_index].music.size() > 0)
+    {
+      music_base = false;
+      music_index = Helpers::randInt(sub_map[map_index].music.size() - 1);
+    }
+    else if(sub_map[0].music.size() > 0)
+    {
+      music_base = true;
+      music_index = Helpers::randInt(sub_map[0].music.size() - 1);
+    }
+
+    /* If index found, process it */
+    if(music_index >= 0)
+    {
+      /* Check ID */
+      int new_id = -1;
+      if(music_base)
+        new_id = sub_map[0].music[music_index];
+      else
+        new_id = sub_map[map_index].music[music_index];
+
+      /* If different, update */
+      if(new_id != music_id)
+      {
+        std::cout << "New Map Music: " << new_id << std::endl;
+        music_id = new_id;
+        event_handler->triggerMusic(music_id);
+      }
+
+      music_runtime = kMUSIC_REPEAT;
+    }
+    else
+    {
+      music_id = -1;
+    }
+
+    /* Weather */
+    if(sub_change)
+    {
+      /* Find weather */
+      if(sub_map[map_index].weather >= 0)
+        event_handler->triggerWeather(sub_map[map_index].weather);
+      else
+        event_handler->triggerAudioStop(SoundChannels::WEATHER1);
+    }
+  }
+}
+
 /* Returns the interactive object, based on the ID */
 MapInteractiveObject* Map::getIO(uint16_t id)
 {
@@ -764,9 +847,19 @@ bool Map::setSectionIndex(uint16_t index)
 {
   if(index < sub_map.size() && sub_map[index].tiles.size() > 0)
   {
+    /* Sound trigger on sub change */
+    bool trigger_update = false;
+    if(map_index != index)
+      trigger_update = true;
+
+    /* Update the index and viewport */
     map_index = index;
     viewport.setMapSize(sub_map[index].tiles.size(), 
                         sub_map[index].tiles[0].size());
+
+    /* Update sound now that index is fresh */
+    if(trigger_update)
+      audioUpdate(true);
 
     return true;
   }
@@ -897,6 +990,25 @@ void Map::updateTileSize()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/* Enable view trigger */
+void Map::enableView(bool enable)
+{
+  std::cout << "Enable Map View: " << enable << std::endl;
+
+  /* Stop call for other music - in case no music is available in the map */
+  if(event_handler)
+    event_handler->triggerAudioStop(SoundChannels::MUSIC1);
+
+  if(enable)
+  {
+    audioStart();
+  }
+  else
+  {
+    audioStop();
+  }
+}
 
 // MapPerson* Map::getPlayer()
 // {
@@ -1274,10 +1386,24 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 void Map::loadDataFinish(SDL_Renderer* renderer)
 {
   /* Music clean-up - TODO: IN FILE!! */
-  //music_ids.push_back(1000);
-  //music_ids.push_back(1001);
-  //music_ids.push_back(1002);
-  //music_ids.push_back(1003);
+  if(sub_map.size() > 0)
+  {
+    sub_map[0].music.push_back(1003);
+    if(sub_map.size() > 13)
+    {
+      sub_map[13].music.push_back(1000);
+      sub_map[13].weather = 2000;
+    }
+    if(sub_map.size() > 15)
+    {
+      sub_map[15].music.push_back(1001);
+      sub_map[15].music.push_back(1002);
+    }
+    if(sub_map.size() > 16)
+    {
+      sub_map[16].weather = 2000;
+    }
+  }
 
   /* Load the item menu sprites - TODO: In file? */
   item_menu.loadImageBackend("sprites/Overlay/item_store_left.png",
@@ -1584,6 +1710,16 @@ bool Map::setConfiguration(Options* running_config)
 
   return false;
 }
+  
+/* Sets the operational event handler */
+void Map::setEventHandler(EventHandler* event_handler)
+{
+  /* Primary link */
+  this->event_handler = event_handler;
+
+  /* Secondary links */
+  map_dialog.setEventHandler(event_handler);
+}
 
 // Possibly make the teleport add the ability of shifting map thing
 void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
@@ -1643,9 +1779,7 @@ void Map::unloadMap()
   tile_width = tile_height;
 
   /* Reset music references */
-  //music_ids.clear();
-  music_index = -1;
-  music_runtime = -1;
+  audioStop();
 
   /* Deletes the sprite data stored */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
@@ -1749,15 +1883,12 @@ bool Map::update(int cycle_time)
   std::vector<std::vector<Tile*>> tile_set;
 
   /* Check on music */
-  // TODO: LINK WITH CURRENT RUNNING MUSIC - once loading is working
-  //if(event_handler != nullptr && event_handler->getSoundHandler() != nullptr)
-  //{
-  //  uint32_t id = 1000;
-  //
-  //  Sound* chunk = event_handler->getSoundHandler()->getAudioMusic(id);
-  //  if(chunk != nullptr && !chunk->isPlaying())
-  //    event_handler->triggerMusic(id);
-  //}
+  if(music_id >= 0)
+  {
+    music_runtime -= cycle_time;
+    if(music_runtime < 0)
+      audioUpdate();
+  }
 
   /* Check on player interaction */
   if(player != NULL && player->getTarget() != NULL

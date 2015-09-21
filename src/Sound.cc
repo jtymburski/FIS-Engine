@@ -15,6 +15,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const short Sound::kINFINITE_LOOP = -1;
+const int Sound::kSTOP_FADE = 1500;
 const int Sound::kUNSET_ID = -1;
 /* Public Constant Implementation */
 const int Sound::kDEFAULT_FREQUENCY = 22050;
@@ -645,22 +646,31 @@ int Sound::setMusicVolumes(int new_volume)
 /*
  * Description: Stops all channels with no fade out time.
  *
- * Inputs: none
+ * Inputs: int fade - the ms to fade the channel. Default value 1500
  * Output: none
  */
-void Sound::stopAllChannels()
+void Sound::stopAllChannels(int fade)
 {
-  Mix_HaltChannel(-1);
+  if(fade > 0)
+    Mix_FadeOutChannel(-1, fade);
+  else
+    Mix_HaltChannel(-1);
 }
 
 /*
  * Description: Stops the given channel with no fade time.
  *
  * Inputs: SoundChannels channel - the channel to halt
+ *         int fade - the ms to fade the channel. Default value 1500
  * Output: none
  */
-void Sound::stopChannel(SoundChannels channel)
+void Sound::stopChannel(SoundChannels channel, int fade)
 {
   if(channel != SoundChannels::UNASSIGNED)
-    Mix_HaltChannel(getChannelInt(channel));
+  {
+    if(fade > 0)
+      Mix_FadeOutChannel(getChannelInt(channel), fade);
+    else
+      Mix_HaltChannel(getChannelInt(channel));
+  }
 }

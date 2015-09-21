@@ -83,7 +83,7 @@ private:
   // MapStatusBar map_status_bar; // TODO: Remove
 
   /* Music ID Stack */
-  int music_index;
+  int music_id;
   int music_runtime;
 
   // /* The players info on the map */
@@ -129,7 +129,7 @@ private:
   const static uint8_t kFILE_SECTION_ID; /* The section identifier, for file */
   const static uint8_t kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static uint8_t kFILE_TILE_ROW; /* The tile depth in XML of row */
-  const static uint8_t kMUSIC_REPEAT; /* Number of times each song repeats */
+  const static uint32_t kMUSIC_REPEAT; /* Milliseconds each song repeats */
   const static uint8_t kPLAYER_ID;     /* The player ID for computer control */
   const static uint16_t kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
 
@@ -148,6 +148,11 @@ private:
   bool addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer);
   bool addThingData(XmlData data, uint16_t section_index,
                     SDL_Renderer* renderer);
+
+  /* Audio start/stop triggers */
+  void audioStart();
+  void audioStop();
+  void audioUpdate(bool sub_change = false);
 
   /* Returns the item, based on the ID */
   MapItem* getItem(uint16_t id);
@@ -202,6 +207,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Enable view trigger */
+  void enableView(bool enable);
+
   // /* Returns the map person, for access */
   // MapPerson* getPlayer();
 
@@ -247,6 +255,9 @@ public:
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
+
+  /* Sets the operational event handler */
+  void setEventHandler(EventHandler* event_handler);
 
   /* Teleport a thing, based on the given coordinates */
   void teleportThing(int id, int tile_x, int tile_y, int section_id);

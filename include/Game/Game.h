@@ -87,7 +87,7 @@ private:
   bool loaded;
 
   /* Map variables */
-  Map* map_ctrl; /* Main class */
+  Map map_ctrl; /* Main class */
   int map_lvl; /* Active level number */
 
   /* The mode that the game is currently running at */
@@ -174,6 +174,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Enable view trigger */
+  void enableView(bool enable);
+
   /* Getter functions for game objects */
   Action* getAction(const int32_t &index, const bool &by_id = true);
   Category* getClass(const int32_t &index, const bool &by_id = true);
