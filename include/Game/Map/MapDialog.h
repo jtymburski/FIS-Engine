@@ -207,6 +207,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Clear all trigger - wipes out all queues and the current conversation */
+  void clearAll(bool include_convo = false);
+
   /* Returns the thing IDs from the waiting conversation - return nothing if
    * the conversation isn't waiting */
   std::vector<int> getConversationIDs();

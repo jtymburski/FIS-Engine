@@ -19,8 +19,8 @@
 #include "Game/Map/MapPerson.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int MapPerson::kDELAY_MAX = 180000;
-const int MapPerson::kDELAY_MIN = 30000;
+const int MapPerson::kDELAY_MAX = 600000;
+const int MapPerson::kDELAY_MIN = 60000;
 const int8_t MapPerson::kDIR_EAST = 1;
 const int8_t MapPerson::kDIR_NORTH = 0;
 const int8_t MapPerson::kDIR_SOUTH = 2;

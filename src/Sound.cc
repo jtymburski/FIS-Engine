@@ -19,7 +19,18 @@ const int Sound::kSTOP_FADE = 1500;
 const int Sound::kUNSET_ID = -1;
 /* Public Constant Implementation */
 const int Sound::kDEFAULT_FREQUENCY = 22050;
+const uint32_t Sound::kID_MUSIC_BATTLE = 2;
+const uint32_t Sound::kID_MUSIC_LOADING = 1;
 const uint32_t Sound::kID_MUSIC_TITLE = 0;
+const uint32_t Sound::kID_SOUND_BTL_CONFUSE = 3;
+const uint32_t Sound::kID_SOUND_BTL_DEATH = 4;
+const uint32_t Sound::kID_SOUND_BTL_FIRE = 5;
+const uint32_t Sound::kID_SOUND_BTL_HIBERNATE = 6;
+const uint32_t Sound::kID_SOUND_BTL_LOWER = 7;
+const uint32_t Sound::kID_SOUND_BTL_PARALYSIS = 8;
+const uint32_t Sound::kID_SOUND_BTL_PLEP = 9;
+const uint32_t Sound::kID_SOUND_BTL_RAISE = 10;
+const uint32_t Sound::kID_SOUND_BTL_SILENCE = 11;
 const uint32_t Sound::kID_SOUND_MENU_CHG = 0;
 const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
 const uint32_t Sound::kID_SOUND_MENU_PREV = 2;
@@ -146,6 +157,14 @@ int Sound::getChannelInt()
 {
   return getChannelInt(channel);
 }
+  
+/* Returns the fade status */
+Mix_Fading Sound::getFadeStatus()
+{
+  if(isPlaying())
+    return Mix_FadingChannel(getChannelInt());
+  return MIX_NO_FADING;
+}
 
 /*
  * Description: Returns the time to fade in or out this sound class when play
@@ -254,15 +273,16 @@ bool Sound::isPlaying()
  * Inputs: bool stop_channel - should the channel be stopped regardless of what
  *                             is playing. Default false. If false, only stops
  *                             this channel if this chunk is playing on it.
+ *         bool skip_fade - true to skip stop and start fade on play trigger
  * Output: bool - if the play call was successful
  */
-bool Sound::play(bool stop_channel)
+bool Sound::play(bool stop_channel, bool skip_fade)
 {
   bool success = false;
 
   /* Only proceed if the sound chunk is set and if the stop was successful */
   if(raw_data != NULL && channel != SoundChannels::UNASSIGNED
-                      && stop(true))
+                      && stop(skip_fade))
   {
     int channel_int = getChannelInt();
 
@@ -272,7 +292,7 @@ bool Sound::play(bool stop_channel)
 
     /* Try to play on the channel */
     int play_channel = -1;
-    if(fade_time > 0)
+    if(fade_time > 0 && !skip_fade)
       play_channel =
             Mix_FadeInChannel(channel_int, raw_data, loop_count, fade_time);
     else
@@ -299,7 +319,7 @@ bool Sound::play(bool stop_channel)
  */
 void Sound::setChannel(SoundChannels channel)
 {
-  if(stop(true))
+  if(stop())
     this->channel = channel;
 }
 
@@ -442,10 +462,10 @@ bool Sound::stop(bool skip_fade)
   {
     int channel_id = getChannelInt();
 
-    /* Stop the chunk */
-    if(fade_time > 0 && !skip_fade)
+    /* Stop the chunk, if relevant */
+    if(fade_time > 0 && !skip_fade && getFadeStatus() != MIX_FADING_OUT)
       Mix_FadeOutChannel(channel_id, fade_time);
-    else
+    if(skip_fade || fade_time <= 0)
       Mix_HaltChannel(channel_id);
 
     /* Check the status */

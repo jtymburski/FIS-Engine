@@ -46,7 +46,8 @@ public:
     DISABLED       = 0,
     MAP            = 1,
     BATTLE         = 2,
-    VICTORY_SCREEN = 3
+    VICTORY_SCREEN = 3,
+    LOADING        = 4
   };
 
 private:
@@ -123,6 +124,9 @@ private:
   Category* addRace(const int32_t &id);
   Skill* addSkill(const int32_t &id);
   SkillSet* addSkillSet(const int32_t &id);
+
+  /* Change the mode that the game is running */
+  bool changeMode(GameMode mode);
 
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);

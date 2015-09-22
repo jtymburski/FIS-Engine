@@ -27,7 +27,7 @@ const uint8_t Map::kFILE_GAME_TYPE = 1;
 const uint8_t Map::kFILE_SECTION_ID = 2;
 const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
-const uint32_t Map::kMUSIC_REPEAT = 15000;//120000; /* 2 minutes */
+const uint32_t Map::kMUSIC_REPEAT = 300000; /* 5 minutes */
 const uint8_t Map::kPLAYER_ID = 0;
 const uint16_t Map::kZOOM_TILE_SIZE = 16;
 
@@ -448,7 +448,7 @@ void Map::audioUpdate(bool sub_change)
 {
   if(event_handler != nullptr && map_index < sub_map.size())
   {
-    std::cout << "Audio Update: " << map_index << std::endl;
+    std::cout << "  > Map Audio Update Sub ID: " << map_index << std::endl;
 
     /* Find music index */
     bool music_base = true;
@@ -477,7 +477,7 @@ void Map::audioUpdate(bool sub_change)
       /* If different, update */
       if(new_id != music_id)
       {
-        std::cout << "New Map Music: " << new_id << std::endl;
+        std::cout << "   > Map Music Trigger ID: " << new_id << std::endl;
         music_id = new_id;
         event_handler->triggerMusic(music_id);
       }
@@ -857,9 +857,12 @@ bool Map::setSectionIndex(uint16_t index)
     viewport.setMapSize(sub_map[index].tiles.size(), 
                         sub_map[index].tiles[0].size());
 
-    /* Update sound now that index is fresh */
+    /* Update sound and dialog now that index is fresh */
     if(trigger_update)
+    {
       audioUpdate(true);
+      map_dialog.clearAll();
+    }
 
     return true;
   }
@@ -994,8 +997,6 @@ void Map::updateTileSize()
 /* Enable view trigger */
 void Map::enableView(bool enable)
 {
-  std::cout << "Enable Map View: " << enable << std::endl;
-
   /* Stop call for other music - in case no music is available in the map */
   if(event_handler)
     event_handler->triggerAudioStop(SoundChannels::MUSIC1);
@@ -1108,15 +1109,6 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       return true;
     }
   }
-  /* If item menu is active, send keys there */
-  else if(item_menu.isActive())
-    item_menu.keyDownEvent(event);
-  /* If conversation is active, send keys there */
-  else if(map_dialog.isConversationActive())
-    map_dialog.keyDownEvent(event);
-  /* Interact initiation from player */
-  else if(event.keysym.sym == SDLK_SPACE)
-    initiateThingInteraction(player);
   /* ---- START TEST CODE ---- */
   /* Test: trigger grey scale */
   else if(event.keysym.sym == SDLK_g)
@@ -1134,6 +1126,9 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     player->resetPosition();
 	  setSectionIndex(player->getStartingSection());
   }
+  /* Test: Dialog Reset */
+  else if(event.keysym.sym == SDLK_5)
+    map_dialog.clearAll(true);
   /* Test: Pick up test. Time limit */
   else if(event.keysym.sym == SDLK_6)
     map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
@@ -1242,32 +1237,41 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_l)
   {
     if(player != NULL)
-	{
-	  SDL_Rect bbox = player->getBoundingBox();
-	  SDL_Rect bpixel = player->getBoundingPixels();
+	  {
+	    SDL_Rect bbox = player->getBoundingBox();
+	    SDL_Rect bpixel = player->getBoundingPixels();
 
-	  std::cout << "----" << std::endl;
-	  std::cout << "Location X: " << bbox.x << " - " << bpixel.x << std::endl;
-	  std::cout << "Location Y: " << bbox.y << " - " << bpixel.y << std::endl;
-	  std::cout << "Width: " << bbox.w << " - " << bpixel.w << std::endl;
-	  std::cout << "Height: " << bbox.h << " - " << bpixel.h << std::endl;
-	  std::cout << "----" << std::endl;
-	}
+	    std::cout << "----" << std::endl;
+	    std::cout << "Location X: " << bbox.x << " - " << bpixel.x << std::endl;
+	    std::cout << "Location Y: " << bbox.y << " - " << bpixel.y << std::endl;
+	    std::cout << "Width: " << bbox.w << " - " << bpixel.w << std::endl;
+	    std::cout << "Height: " << bbox.h << " - " << bpixel.h << std::endl;
+	    std::cout << "----" << std::endl;
+	  }
   }
   /* ---- END TEST CODE ---- */
+  /* If item menu is active, send keys there */
+  else if(item_menu.isActive())
+    item_menu.keyDownEvent(event);
+  /* If conversation is active, send keys there */
+  else if(map_dialog.isConversationActive())
+    map_dialog.keyDownEvent(event);
+  /* Interact initiation from player */
+  else if(event.keysym.sym == SDLK_SPACE)
+    initiateThingInteraction(player);
   /* Otherwise, send keys to player for control */
   else if(player != NULL)
   {
     if(event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT)
       player->setRunning(true);
-    else if(event.keysym.sym == SDLK_3)
+    else if(event.keysym.sym == SDLK_1)
     {
       viewport.lockOn(player);
     }
-    else if(event.keysym.sym == SDLK_4)
+    else if(event.keysym.sym == SDLK_2)
     {
-      if(persons.size() >= 1)
-        viewport.lockOn(persons[1]);
+      if(getPerson(10000) != nullptr)
+        viewport.lockOn(getPerson(10000));
     }
     else
       player->keyDownEvent(event);
@@ -1775,9 +1779,10 @@ void Map::unloadMap()
 {
   /* Reset the index and applicable parameters */
   map_index = 0;
+  map_dialog.clearAll(true);
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
-
+  
   /* Reset music references */
   audioStop();
 

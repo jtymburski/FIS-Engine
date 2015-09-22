@@ -62,9 +62,8 @@ Application::~Application()
 /* Change the mode that the application is running */
 bool Application::changeMode(AppMode mode)
 {
-  bool allow = true;
-
   /* Run logic to determine if mode switch is allowed - currently empty */
+  bool allow = true;
 
   /* If allowed, make change */
   if(allow && this->mode != mode)
@@ -282,9 +281,9 @@ bool Application::updateViews(int cycle_time)
       else if(action_item == TitleScreen::GAME)
       {
         /* Load game, if not loaded */
+        changeMode(GAME);
         if(!game_handler.isLoaded())
           game_handler.load(renderer);
-        changeMode(GAME);
       }
       else if(action_item == TitleScreen::BATTLE)
       {

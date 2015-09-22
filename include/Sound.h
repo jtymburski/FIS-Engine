@@ -86,7 +86,18 @@ private:
   const static int kUNSET_ID; /* The placeholder unset ID */
 public:
   const static int kDEFAULT_FREQUENCY; /* Sound frequency - DO NOT CHANGE */
+  const static uint32_t kID_MUSIC_BATTLE;
+  const static uint32_t kID_MUSIC_LOADING;
   const static uint32_t kID_MUSIC_TITLE;
+  const static uint32_t kID_SOUND_BTL_CONFUSE;
+  const static uint32_t kID_SOUND_BTL_DEATH;
+  const static uint32_t kID_SOUND_BTL_FIRE;
+  const static uint32_t kID_SOUND_BTL_HIBERNATE;
+  const static uint32_t kID_SOUND_BTL_LOWER;
+  const static uint32_t kID_SOUND_BTL_PARALYSIS;
+  const static uint32_t kID_SOUND_BTL_PLEP;
+  const static uint32_t kID_SOUND_BTL_RAISE;
+  const static uint32_t kID_SOUND_BTL_SILENCE;
   const static uint32_t kID_SOUND_MENU_CHG;
   const static uint32_t kID_SOUND_MENU_NEXT;
   const static uint32_t kID_SOUND_MENU_PREV;
@@ -103,6 +114,9 @@ public:
    * calls to get feedback on the sound */
   SoundChannels getChannel();
   int getChannelInt();
+
+  /* Returns the fade status */
+  Mix_Fading getFadeStatus();
 
   /* Returns the time that the chunk will be faded in or out */
   uint32_t getFadeTime();
@@ -127,7 +141,7 @@ public:
 
   /* Play function. If sound is set, it will play the sound for the given number
    * of loops */
-  bool play(bool stop_channel = false);
+  bool play(bool stop_channel = false, bool skip_fade = false);
 
   /* Sets the channel integer to be used for playing the chunk */
   void setChannel(SoundChannels channel);

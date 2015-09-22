@@ -718,6 +718,42 @@ void MapDialog::setupRenderText(std::vector<std::string> lines, bool delete_old)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+  
+/*
+ * Description: Clears all queues of conversation items, notifications, and
+ *              pickups from the dialog stack. Called on map changes or any
+ *              clears.
+ *
+ * Inputs: bool include_convo - true to clear convo as well. default false
+ * Output: none
+ */
+void MapDialog::clearAll(bool include_convo)
+{
+  /* If in conversation */
+  if(dialog_mode == CONVERSATION)
+  {
+    if(include_convo)
+    {
+      renderOptions(NULL);
+      setupRenderText();
+      setConversation();
+
+      dialog_mode = DISABLED;
+      dialog_status = WindowStatus::OFF;
+    }
+  }
+  /* Otherwise, not conversation */
+  else
+  {
+    dialog_mode = DISABLED;
+    dialog_status = WindowStatus::OFF;
+  }
+  notification_queue.clear();
+
+  /* Pick up */
+  pickup_queue.clear();
+  pickup_status = WindowStatus::OFF;
+}
 
 /*
  * Description: Returns a unique list of conversation map thing IDs from the

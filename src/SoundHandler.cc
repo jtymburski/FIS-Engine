@@ -369,17 +369,25 @@ void SoundHandler::process()
         /* State both playing - stop one */
         if(playing_mus1 && playing_mus2)
         {
-          Sound::stopChannel(channel2);
+          Sound::stopChannel(channel2, 0);
           playing_mus2 = Sound::isChannelPlaying(channel2);
         }
 
-        /* Only proceed if at least one channel isn't active anymore */
-        if(!playing_mus1 || !playing_mus2)
+        /* Get the relevant sound chunk */
+        Sound* found_chunk = getAudioMusic(queue[i].id);
+        if(found_chunk != nullptr)
         {
-          /* Get sound file */
-          Sound* found_chunk = getAudioMusic(queue[i].id);
-          if(found_chunk != nullptr && !found_chunk->isPlaying())
+          /* Only proceed if at least one channel isn't active anymore */
+          if(!playing_mus1 || !playing_mus2)
           {
+            /* If chunk is playing and not on either channels, kill it */
+            if(found_chunk->isPlaying() &&
+               found_chunk->getChannel() != channel1 &&
+               found_chunk->getChannel() != channel2)
+            {
+              found_chunk->stop(true);
+            }
+
             /* Channel 1 is active */
             if(playing_mus1)
             {

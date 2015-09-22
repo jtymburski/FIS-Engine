@@ -240,6 +240,41 @@ SkillSet* Game::addSkillSet(const int32_t& id)
   return new_set;
 }
 
+/* Change the mode that the game is running */
+bool Game::changeMode(GameMode mode)
+{
+  /* Run logic to determine if mode switch is allowed - currently always true */
+  bool allow = true;
+
+  /* If allowed, make change */
+  if(allow && this->mode != mode)
+  {
+    /* Changes to execute on the view closing */
+    if(this->mode == MAP)
+      map_ctrl.enableView(false);
+
+    this->mode = mode;
+
+    /* PRINT - TEMPORARY */
+    if(this->mode == DISABLED)
+      std::cout << "GAME MODE: DISABLED" << std::endl;
+    else if(this->mode == MAP)
+      std::cout << "GAME MODE: MAP" << std::endl;
+    else if(this->mode == BATTLE)
+      std::cout << "GAME MODE: BATTLE" << std::endl;
+    else if(this->mode == VICTORY_SCREEN)
+      std::cout << "GAME MODE: VICTORY" << std::endl;
+    else if(this->mode == LOADING)
+      std::cout << "GAME MODE: LOADING" << std::endl;
+
+    /* Changes to execute on the view opening */
+    if(this->mode == MAP)
+      map_ctrl.enableView(true);
+  }
+
+  return allow;
+}
+
 /* A give item event, based on an ID and count (triggered from stored event */
 bool Game::eventGiveItem(int id, int count)
 {
@@ -327,12 +362,12 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 /* Starts a battle event. Using the given information */
 void Game::eventStartBattle(int person_id, int source_id)
 {
-  if(person_id >= 0 && source_id >= 0)
+  if(person_id >= 0 && source_id >= 0 && mode == MAP)
   {
     if(battle_ctrl)
     {
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
-      mode = BATTLE;
+      changeMode(BATTLE);
     }
   }
 }
@@ -371,6 +406,9 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
   /* Ensure nothing is loaded - if full load is false, just unloads map */
   unload(full_load);
+
+  /* Loading trigger */
+  changeMode(LOADING);
 
   /* Initial set-up */
   player_main = new Player();
@@ -424,13 +462,13 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
-
-    mode = MAP;
+    changeMode(MAP);
   }
   /* If failed, unload */
   else
   {
     unload();
+    changeMode(DISABLED);
   }
   loaded = success;
 
@@ -794,19 +832,10 @@ void Game::removeSkillSets()
 /* Enable view trigger */
 void Game::enableView(bool enable)
 {
-  std::cout << "Enable Game View: " << enable << std::endl;
-  std::cout << "Mode: " << (int)mode << std::endl;
-
-  if(enable)
-  {
-    if(mode == MAP)
-      map_ctrl.enableView(enable);
-  }
+  if(enable && isLoaded())
+    changeMode(MAP);
   else
-  {
-    if(mode == MAP)
-      map_ctrl.enableView(enable);
-  }
+    changeMode(DISABLED);
 }
 
 /* Returns a pointer to a given action by index or by ID */
@@ -1072,8 +1101,10 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     load(active_renderer);
   }
   /* Show item store dialog in map */
-  else if(event.keysym.sym == SDLK_5)
+  else if(event.keysym.sym == SDLK_4)
   {
+    std::cout << "TODO FUTURE: ITEM STORE TRIGGER" << std::endl;
+
     // TODO: Future
     // if (map_ctrl != nullptr)
     //{
@@ -1197,6 +1228,8 @@ void Game::unload(bool full_unload)
 {
   if(loaded)
   {
+    changeMode(DISABLED);
+
     /* Unload map first */
     map_ctrl.unloadMap();
 
@@ -1205,7 +1238,6 @@ void Game::unload(bool full_unload)
       removeAll();
 
     loaded = false;
-    mode = DISABLED;
   }
 }
 
@@ -1237,7 +1269,7 @@ bool Game::update(int32_t cycle_time)
     if(battle_ctrl->getTurnState() == TurnState::FINISHED)
     {
       battle_ctrl->stopBattle();
-      mode = MAP;
+      changeMode(MAP);
     }
     else
     {
