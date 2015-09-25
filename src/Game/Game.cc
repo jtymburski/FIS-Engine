@@ -411,7 +411,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   changeMode(LOADING);
 
   /* Initial set-up */
-  player_main = new Player();
+  if(full_load)
+    player_main = new Player();
 
   /* Create the file handler */
   FileHandler fh(base_file, false, true, encryption);

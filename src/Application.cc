@@ -10,6 +10,9 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
+const std::string Application::kPATH = "maps/design_map.ugv";
+//const std::string Application::kPATH = "maps/Univursa.ugv";
+const bool Application::kPATH_ENCRYPTED = false;
 const uint8_t Application::kUPDATE_CHANGE_LIMIT = 5;
 const uint8_t Application::kUPDATE_RATE = 32;
 
@@ -196,6 +199,52 @@ void Application::handleEvents()
   }
 }
 
+/* Load */
+bool Application::load()
+{
+  bool done = false;
+  int index = 0;
+  bool read_success = true;
+  bool success = true;
+
+  /* Create the file handler */
+  FileHandler fh(kPATH, false, true, kPATH_ENCRYPTED);
+  XmlData data;
+
+  /* Start the file read */
+  success &= fh.start();
+
+  /* If file open was successful, move forward */
+  if(success)
+  {
+    std::cout << "Application Load: " << fh.getDate() << std::endl;
+
+    do
+    {
+      /* Read set of XML data */
+      data = fh.readXmlData(&done, &read_success);
+      success &= read_success;
+
+      /* Only proceed if defined for core application */
+      if(data.getElement(index) == "app")
+      {
+        /* Sounds */
+        if(data.getElement(index + 1) == "music" || 
+           data.getElement(index + 1) == "sound")
+        {
+          sound_handler.load(data, index + 1, system_options->getBasePath());
+        }
+      }
+    } while(!done); // && success); // TODO: Success in loop??
+  }
+
+  /* Stop the file read */
+  success &= fh.stop();
+
+  return success;
+}
+
+/* Renders the current view and all relevant visual data */
 void Application::render(uint32_t cycle_time)
 {
   /* Handle the individual action items, depending on whats running */
@@ -211,11 +260,19 @@ void Application::render(uint32_t cycle_time)
     cycle_time = cycle_time;
 }
 
+/* Revert to temporary mode */
 bool Application::revertMode()
 {
   changeMode(temp_mode);
 
   return false;
+}
+
+/* Unloads all loaded application data */
+void Application::unload()
+{
+  /* Clean up sounds */
+  sound_handler.removeAll();
 }
 
 /* Returns the latched cycle time */
@@ -261,6 +318,7 @@ int Application::updateCycleTime(int cycle_time)
   return update_time;
 }
 
+/* Handles actions in views, depending on what's active */
 bool Application::updateViews(int cycle_time)
 {
   bool quit = false;
@@ -445,24 +503,24 @@ bool Application::initialize()
     success = false;
   }
 
-  /* If successful, confirm the initialization */
-  initialized = true;
+  /* If successful, attempt final load sequence */
   if(success)
   {
-    /* Load sounds - TODO: Encapsulate in load?? */
-    sound_handler.loadSounds();
+    success &= load();
 
     /* Set the title screen background - TODO: Encapsulate in load?? */
     title_screen.setBackground("sprites/Title/old_title.png", renderer);
 
-    /* Finally enable the relevant view */
-    changeMode(TITLESCREEN);
+    if(success)
+    {
+      initialized = true;
+      changeMode(TITLESCREEN);
+    }
   }
+
   /* Uninitialize everything, if the init sequence failed */
-  else if(!isInitialized())
-  {
+  if(!isInitialized())
     uninitialize();
-  }
 
 	return success;
 }
@@ -557,27 +615,27 @@ bool Application::run(std::string test_path, int map_lvl)
 
     return true;
   }
-
   return false;
 }
 
 void Application::uninitialize()
 {
-  if(initialized)
+  /* Unloads application data */
+  unload();
+
+  /* Clean up the renderer */
+  // TODO: Game needs to be brought down prior to render destruction
+  if(renderer != NULL)
   {
-    /* Clean up the renderer */
-    if(renderer != NULL)
-    {
-      Helpers::deleteWhiteMask();
-      SDL_DestroyRenderer(renderer);
-    }
-    renderer = NULL;
-
-    /* Clean up the window */
-    if(window != NULL)
-      SDL_DestroyWindow(window);
-    window = NULL;
-
-    initialized = false;
+    Helpers::deleteWhiteMask();
+    SDL_DestroyRenderer(renderer);
   }
+  renderer = NULL;
+
+  /* Clean up the window */
+  if(window != NULL)
+    SDL_DestroyWindow(window);
+  window = NULL;
+
+  initialized = false;
 }

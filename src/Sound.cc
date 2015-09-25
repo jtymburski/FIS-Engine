@@ -405,8 +405,8 @@ bool Sound::setSoundFile(std::string path)
     /* Determine if the setting of the sound was valid */
     if(sound == NULL)
     {
-      std::cerr << "[WARNING] Unable to load WAV file: "
-                << Mix_GetError() << std::endl;
+      std::cerr << "[WARNING] Unable to load WAV file: " << path << std::endl;
+                //<< Mix_GetError() << std::endl;
       return false;
     }
 

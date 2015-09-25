@@ -88,6 +88,8 @@ private:
   SDL_Window* window;
 
   /*------------------- Constants -----------------------*/
+  const static std::string kPATH; /* The main application path */
+  const static bool kPATH_ENCRYPTED; /* The main path - is it encrypted */
   const static uint8_t kUPDATE_CHANGE_LIMIT; /* The # of different frame times
                                               * allowed */
   const static uint8_t kUPDATE_RATE; /* The minimum ms per update sequence */
@@ -102,14 +104,21 @@ private:
   /* Goes through all available events that are currently on the stack */
   void handleEvents();
 
+  /* Load */
+  bool load();
+
   /* Log an Error */
-  void logError(std::ostream &os, const std::string &msg);
-  void logSDLError(std::ostream &os, const std::string &msg);
+  //void logError(std::ostream &os, const std::string &msg); // TODO?
+  //void logSDLError(std::ostream &os, const std::string &msg);
 
   /* Renders the current view and all relevant visual data */
   void render(uint32_t cycle_time);
 
+  /* Revert to temporary mode */
   bool revertMode();
+
+  /* Unloads all loaded application data */
+  void unload();
 
   /* Update the cycle time and return the update time sequence */
   int updateCycleTime(int cycle_time);

@@ -69,9 +69,6 @@ public:
   /* Load data from file */
   bool load(XmlData data, int index, std::string base_path);
 
-  /* Load sounds - TODO: REMOVE - TEMPORARY */
-  void loadSounds();
-
   /* Process the queue */
   void process();
 
