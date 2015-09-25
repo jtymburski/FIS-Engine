@@ -112,6 +112,7 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   /* Set up for enemies */
   else
   {
+    setFlag(ActorState::ALLY, false);
     active_sprite = ActiveSprite::THIRD_PERSON;
   }
 

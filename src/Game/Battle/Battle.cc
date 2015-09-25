@@ -285,16 +285,16 @@ void Battle::buildBattleActors(Party* allies, Party* enemies)
 {
   for(uint32_t i = 0; i < allies->getSize(); i++)
   {
-    auto new_ally = new BattleActor(
-        allies->getMember(i), getBattleIndex(i, true), true, true, renderer);
+    auto new_ally = new BattleActor(allies->getMember(i), getBattleIndex(i),
+                                    true, true, renderer);
 
     /* Add the new ally to the vector of actors of the Battle */
     actors.push_back(new_ally);
   }
   for(uint32_t i = 0; i < enemies->getSize(); i++)
   {
-    auto new_enemy = new BattleActor(
-        enemies->getMember(i), getBattleIndex(i, false), false, true, renderer);
+    auto new_enemy = new BattleActor(enemies->getMember(i), getBattleIndex(i),
+                                     false, true, renderer);
 
     /* Add the new enemy to the vector of actors of the Battle */
     actors.push_back(new_enemy);
@@ -313,27 +313,14 @@ void Battle::clearBattleActors()
   actors.clear();
 }
 
-int32_t Battle::getBattleIndex(int32_t index, bool ally)
+int32_t Battle::getBattleIndex(int32_t index)
 {
-  /* Adjusted battle index:
-    *  Enemies [-5 -4 -3 -1 -2]
-    *  Allies  [ 2  1  3  4  5]
-    */
-  if(ally && index == 0)
-    return 1;
-  else if(ally && index == 1)
+  if(index == 1)
     return 0;
-  else if(ally)
-    return index - 1;
+  if(index == 0)
+    return 1;
 
-  if(!ally && index == 0)
-    return -1;
-  else if(!ally && index == -1)
-    return -2;
-  else if(!ally)
-    return (-index - 1);
-
-  return 0;
+  return index;
 }
 
 /*=============================================================================
@@ -658,6 +645,7 @@ void Battle::buildInfoEnemy(BattleActor* enemy)
   t->setText(renderer, enemy->getBasePerson()->getName(), color);
   t->render(renderer, (kINFO_W - t->getWidth()) / 2,
             (border[0].y - t->getHeight()) / 2);
+
   delete t;
 
   /* Render the enemy level */
@@ -735,7 +723,7 @@ bool Battle::render(int32_t cycle_time)
 
     /* Render the allies in their present states */
     success &= renderAllies();
-    // success &= renderAlliesInfo();
+    success &= renderAlliesInfo();
   }
 
   /* --------------- RENDER BATTLE MENU -------------- */
@@ -982,20 +970,6 @@ bool Battle::renderAllies()
 }
 
 // TODO
-bool Battle::renderAlliesInfo()
-{
-  return true;
-}
-
-// TODO
-bool Battle::renderAllyInfo(BattleActor* actor)
-{
-  (void)actor;
-
-  return true;
-}
-
-// TODO
 bool Battle::renderEnemies()
 {
   bool success = true;
@@ -1031,26 +1005,16 @@ bool Battle::renderEnemiesInfo()
     if(enemy && enemy->getInfoFrame() && enemy->getBasePerson())
     {
       /* Calculate health bar amount and color */
-      auto x = config->getScreenWidth() - kPERSON_WIDTH -
-               std::abs(enemy->getIndex()) * kPERSON_SPREAD;
+      auto x = getActorX(enemy);
 
       /* Render enemy backdrop */
       success &= frame_enemy_backdrop->render(renderer, x, y);
 
       /* Get the percent of vitality, and set it at least at 1% */
       auto health_pc = (float)enemy->getPCVita() / 100.0;
-      health_pc = Helpers::setInRange(health_pc, 1.0, 100.0);
+      health_pc = Helpers::setInRange(health_pc, 0.0, 0.5);
 
-      if(health_pc >= 0.5)
-      {
-        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1 - health_pc) * 2),
-                               kCOLOR_BASE, 0, 255);
-      }
-      else
-      {
-        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE,
-                               kCOLOR_BASE * health_pc * 2, 0, 255);
-      }
+      setupHealthDraw(enemy, health_pc);
 
       /* Calculate health bar render amount */
       auto health_am = (kENEMY_BAR_W + kENEMY_BAR_TRIANGLE) * health_pc;
@@ -1086,138 +1050,143 @@ bool Battle::renderEnemyInfo(BattleActor* actor)
   return true;
 }
 
+// TODO: Comment
+bool Battle::renderAllyInfo(BattleActor* ally)
+{
+  auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
+  bool success = true;
+  // bool below = true;
+
+  auto x = getActorX(ally);
+  auto y = config->getScreenHeight() - kALLY_HEIGHT;
+
+  /* Get the percent of vitality, and set it at least at 1% */
+  auto health_pc = (float)ally->getPCVita() / 100.0;
+  health_pc = Helpers::setInRange(health_pc, 0.0, 1.0);
+
+  setupHealthDraw(ally, health_pc);
+
+  uint16_t health_x = x + 1 + (kINFO_W - kALLY_HEALTH_W) / 2;
+  uint16_t health_y = y + (kALLY_HEIGHT - kALLY_HEALTH_H) / 2;
+
+  /* Calculate health bar render amount */
+  int health_amount = (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE - 1) * health_pc;
+
+  if(health_amount == 0 && health_pc > 0.0)
+    health_amount = 1;
+  else if(health_amount == (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE) &&
+          health_pc < 1.0)
+    health_amount--;
+
+  /* Render health bar */
+  success &=
+      Frame::renderBar(health_x, health_y, health_amount, kALLY_HEALTH_H,
+                       (float)kALLY_HEALTH_TRIANGLE / kALLY_HEALTH_H, renderer);
+
+  /* Render friends info */
+  success &= ally->getInfoFrame()->render(renderer, x, y);
+
+  /* Calculate qd bar amount and color */
+  float qd_percent = ally->getPCQtdr();
+  SDL_SetRenderDrawColor(renderer, 58, 170, 198, 255);
+  uint16_t qd_x = health_x + kALLY_HEALTH_W - kALLY_QD_OFFSET -
+                  kALLY_QD_TRIANGLE - kALLY_QD_W;
+  uint16_t qd_y = health_y + kALLY_HEALTH_H - (kALLY_QD_H / 2);
+
+  /* Calculate qd bar render amount */
+  int qd_amount = (kALLY_QD_W + kALLY_QD_TRIANGLE - 1) * qd_percent;
+  if(qd_amount == 0 && qd_percent > 0.0)
+    qd_amount = 1;
+  else if(qd_amount == (kALLY_QD_W + kALLY_QD_TRIANGLE) && qd_percent < 1.0)
+    qd_amount--;
+
+  /* Render the qd bar */
+  success &= Frame::renderBar(qd_x + 1, qd_y, qd_amount, kALLY_QD_H,
+                              (float)kALLY_QD_TRIANGLE / kALLY_QD_H, renderer);
+
+  /* Render the qd bar border */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_Point border[5];
+  border[0].x = qd_x;
+  border[0].y = qd_y;
+  border[1].x = border[0].x + kALLY_QD_W + kALLY_QD_TRIANGLE;
+  border[1].y = border[0].y;
+  border[2].x = border[1].x - kALLY_QD_TRIANGLE;
+  border[2].y = border[1].y + kALLY_QD_H;
+  border[3].x = border[2].x - kALLY_QD_W - kALLY_QD_TRIANGLE;
+  border[3].y = border[2].y;
+  border[4].x = border[0].x;
+  border[4].y = border[0].y;
+  SDL_RenderDrawLines(renderer, border, 5);
+
+  /* Health Text Amount */
+  SDL_Color color = {255, 255, 255, 255};
+  Text* t = new Text(font_subheader);
+  success &= t->setText(
+      renderer,
+      std::to_string(ally->getStatsRendered().getValue(Attribute::VITA)),
+      color);
+  success &= t->render(
+      renderer, health_x + (kALLY_HEALTH_W - t->getWidth()) / 2, health_y);
+
+  /* QD Text Amount */
+  success &= t->setText(
+      renderer,
+      std::to_string(ally->getStatsRendered().getValue(Attribute::QTDR)),
+      color);
+  success &= t->render(renderer, qd_x + (kALLY_QD_W - t->getWidth()) / 2, qd_y);
+  delete t;
+
+  /* Render ailments */
+  // if(below)
+  // {
+  //   uint16_t ailment_y = y + kALLY_HEIGHT + kAILMENT_GAP * 2 +
+  //                        kAILMENT_BORDER * 2 + ailments.front().getHeight();
+  //   success &= renderAilment(renderer, state->self, x + kINFO_W / 2,
+  //   ailment_y,
+  //                            false, true);
+  // }
+  // else
+  // {
+  //   success &= renderAilment(renderer, state->self, x + kINFO_W / 2,
+  //                            screen_height - kBIGBAR_OFFSET);
+  // }
+
+  return success;
+}
+
+bool Battle::setupHealthDraw(BattleActor* actor, float health_pc)
+{
+  if(renderer && actor && actor->getBasePerson())
+  {
+    if(health_pc >= 0.5)
+    {
+      SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1 - health_pc) * 2),
+                             kCOLOR_BASE, 0, 255);
+    }
+    else
+    {
+      SDL_SetRenderDrawColor(renderer, kCOLOR_BASE, kCOLOR_BASE * health_pc * 2,
+                             0, 255);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
 // // TODO: Comment
-// bool Battle::renderFriendInfo(SDL_Renderer *renderer, PersonState *state,
-//                                      uint16_t screen_height, uint16_t x,
-//                                      uint16_t y, bool below)
-// {
-//   bool success = true;
+bool Battle::renderAlliesInfo()
+{
+  bool success = true;
 
-//   /* Calculate health bar amount and color */
-//   float health_percent = state->self->getVitaPercent();
-//   health_percent = health_percent > 1.0 ? 1.0 : health_percent;
+  for(const auto& ally : getAllies())
+    if(ally && ally->getBasePerson() && ally->getInfoFrame())
+      success &= renderAllyInfo(ally);
 
-//   if(health_percent >= 0.5)
-//     SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1 - health_percent) *
-//     2),
-//                            kCOLOR_BASE, 0, 255);
-//   else
-//     SDL_SetRenderDrawColor(renderer, kCOLOR_BASE,
-//                            kCOLOR_BASE * health_percent * 2, 0, 255);
-
-//   uint16_t health_x = x + (kINFO_W - kALLY_HEALTH_W) / 2;
-//   uint16_t health_y = y + (kALLY_HEIGHT - kALLY_HEALTH_H) / 2;
-
-//   /* Calculate health bar render amount */
-//   int health_amount =
-//       (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE - 1) * health_percent;
-
-//   if(health_amount == 0 && health_percent > 0.0)
-//     health_amount = 1;
-//   else if(health_amount == (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE) &&
-//           health_percent < 1.0)
-//     health_amount--;
-
-//   /* Render health bar */
-//   success &=
-//       Frame::renderBar(health_x + 1, health_y, health_amount, kALLY_HEALTH_H,
-//                        (float)kALLY_HEALTH_TRIANGLE / kALLY_HEALTH_H,
-//                        renderer);
-
-//   /* Render friends info */
-//   success &= state->info->render(renderer, x, y);
-
-//   /* Calculate qd bar amount and color */
-//   float qd_percent = state->self->getQDPercent();
-//   SDL_SetRenderDrawColor(renderer, 58, 170, 198, 255);
-//   uint16_t qd_x = health_x + kALLY_HEALTH_W - kALLY_QD_OFFSET -
-//                   kALLY_QD_TRIANGLE - kALLY_QD_W;
-//   uint16_t qd_y = health_y + kALLY_HEALTH_H - (kALLY_QD_H / 2);
-
-//   /* Calculate qd bar render amount */
-//   int qd_amount = (kALLY_QD_W + kALLY_QD_TRIANGLE - 1) * qd_percent;
-//   if(qd_amount == 0 && qd_percent > 0.0)
-//     qd_amount = 1;
-//   else if(qd_amount == (kALLY_QD_W + kALLY_QD_TRIANGLE) && qd_percent < 1.0)
-//     qd_amount--;
-
-//   /* Render the qd bar */
-//   success &= Frame::renderBar(qd_x + 1, qd_y, qd_amount, kALLY_QD_H,
-//                               (float)kALLY_QD_TRIANGLE / kALLY_QD_H,
-//                               renderer);
-
-//   /* Render the qd bar border */
-//   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-//   SDL_Point border[5];
-//   border[0].x = qd_x;
-//   border[0].y = qd_y;
-//   border[1].x = border[0].x + kALLY_QD_W + kALLY_QD_TRIANGLE;
-//   border[1].y = border[0].y;
-//   border[2].x = border[1].x - kALLY_QD_TRIANGLE;
-//   border[2].y = border[1].y + kALLY_QD_H;
-//   border[3].x = border[2].x - kALLY_QD_W - kALLY_QD_TRIANGLE;
-//   border[3].y = border[2].y;
-//   border[4].x = border[0].x;
-//   border[4].y = border[0].y;
-//   SDL_RenderDrawLines(renderer, border, 5);
-
-//   /* Health Text Amount */
-//   AttributeSet set = state->self->getCurr();
-//   SDL_Color color = {255, 255, 255, 255};
-//   Text *t = new Text(font_subheader);
-//   success &= t->setText(renderer, std::to_string(set.getStat("VITA")),
-//   color);
-//   success &= t->render(
-//       renderer, health_x + (kALLY_HEALTH_W - t->getWidth()) / 2, health_y);
-
-//   /* QD Text Amount */
-//   success &= t->setText(renderer, std::to_string(set.getStat("QTDR")),
-//   color);
-//   success &= t->render(renderer, qd_x + (kALLY_QD_W - t->getWidth()) / 2,
-//   qd_y);
-//   delete t;
-
-//   /* Render ailments */
-//   if(below)
-//   {
-//     uint16_t ailment_y = y + kALLY_HEIGHT + kAILMENT_GAP * 2 +
-//                          kAILMENT_BORDER * 2 + ailments.front().getHeight();
-//     success &= renderAilment(renderer, state->self, x + kINFO_W / 2,
-//     ailment_y,
-//                              false, true);
-//   }
-//   else
-//   {
-//     success &= renderAilment(renderer, state->self, x + kINFO_W / 2,
-//                              screen_height - kBIGBAR_OFFSET);
-//   }
-
-//   return success;
-// }
-
-// // TODO: Comment
-// bool Battle::renderFriendsInfo(SDL_Renderer *renderer,
-//                                       uint16_t screen_height)
-// {
-//   bool success = true;
-
-//   /* Render the box */
-//   uint16_t y = screen_height - kALLY_HEIGHT;
-//   for(uint8_t i = 0; i < friends_state.size(); i++)
-//   {
-//     if(friends_state[i]->self != nullptr && friends_state[i]->info != nullptr
-//     &&
-//        friends_state[i]->fp != nullptr)
-//     {
-//       /* Render the info */
-//       uint16_t x = (i * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
-//       success &=
-//           renderFriendInfo(renderer, friends_state[i], screen_height, x, y);
-//     }
-//   }
-
-//   return success;
-// }
+  return success;
+}
 
 void Battle::updateRendering(int32_t cycle_time)
 {
@@ -1710,18 +1679,18 @@ int32_t Battle::getActorX(BattleActor* actor)
   if(actor && actor->getFlag(ActorState::ALLY))
   {
     for(const auto& ally : getAllies())
-    {
       if(ally == actor)
-        return config->getScreenWidth() - kPERSON_WIDTH -
-               actor->getIndex() * kPERSON_SPREAD;
-    }
+        return actor->getIndex() * kPERSON_SPREAD;
   }
   else if(actor)
   {
     for(const auto& enemy : getEnemies())
     {
       if(enemy == actor)
-        return std::abs(actor->getIndex()) * kPERSON_SPREAD;
+      {
+        return config->getScreenWidth() - kPERSON_WIDTH -
+               std::abs(actor->getIndex()) * kPERSON_SPREAD;
+      }
     }
   }
 

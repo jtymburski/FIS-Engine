@@ -651,32 +651,6 @@ void TestBattle::createClasses()
 }
 
 /* ------------------------------------------------------------------------- */
-/* Create fonts */
-/* ------------------------------------------------------------------------- */
-void TestBattle::createFonts()
-{
-  if(game_config != nullptr)
-  {
-    /* Try and create the new fonts */
-    TTF_Font* regular_font =
-        Text::createFont(game_config->getBasePath() + game_config->getFont(),
-                         16, TTF_STYLE_BOLD);
-
-    /* If successful, insert the new fonts. Otherwise, delete */
-    if(regular_font != nullptr)
-    {
-      deleteFonts();
-      font_normal = regular_font;
-    }
-    else
-    {
-      TTF_CloseFont(regular_font);
-      regular_font = nullptr;
-    }
-  }
-}
-
-/* ------------------------------------------------------------------------- */
 /* Create menu */
 /* ------------------------------------------------------------------------- */
 void TestBattle::createMenu()
@@ -1261,15 +1235,6 @@ void TestBattle::deleteClasses()
 }
 
 /* ------------------------------------------------------------------------- */
-/* Delete fonts */
-/* ------------------------------------------------------------------------- */
-void TestBattle::deleteFonts()
-{
-  TTF_CloseFont(font_normal);
-  font_normal = NULL;
-}
-
-/* ------------------------------------------------------------------------- */
 /* Delete menu */
 /* ------------------------------------------------------------------------- */
 void TestBattle::deleteMenu()
@@ -1347,7 +1312,6 @@ void TestBattle::destroy()
 
   /* Delete fonts and menus */
   deleteMenu();
-  deleteFonts();
 }
 
 /* Battle destruction */
@@ -1745,11 +1709,15 @@ bool TestBattle::setConfiguration(Options* running_config)
     /* Battle configuration setup */
     battle_logic->setConfig(running_config);
 
+    font_normal = game_config->getFontTTF(FontName::REGULAR_FONT);
+
+  if(!font_normal)
+    std::cout << "Error loading test battle font" << std::endl;
+
     /* Text setup */
     deleteMenu();
-    deleteFonts();
-    createFonts();
     createMenu();
+
 
     return true;
   }

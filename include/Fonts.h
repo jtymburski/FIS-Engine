@@ -29,7 +29,8 @@ enum class FontName
   BATTLE_DAMAGE,
   BATTLE_HEADER,
   BATTLE_SUBHEADER,
-  BATTLE_TURN
+  BATTLE_TURN,
+  REGULAR_FONT
 };
 
 class Fonts

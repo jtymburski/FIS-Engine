@@ -336,7 +336,7 @@ private:
   void clearBattleActors();
 
   /* Returns the modified index of a given index value */
-  int32_t getBattleIndex(int32_t index, bool ally);
+  int32_t getBattleIndex(int32_t index);
 
   /*=============================================================================
    * PRIVATE FUNCTIONS - Battle Display
@@ -371,6 +371,8 @@ private:
   bool renderEnemies();
   bool renderEnemiesInfo();
   bool renderEnemyInfo(BattleActor* actor);
+
+  bool setupHealthDraw(BattleActor* actor, float health_pc);
 
   /* Rendering updates */
   void updateRendering(int32_t cycle_time);

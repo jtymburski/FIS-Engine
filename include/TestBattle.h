@@ -209,7 +209,6 @@ private:
   /* Create sub calls */
   void createActions();
   void createClasses();
-  void createFonts();
   void createMenu();
   Person* createPerson(int id, TestPerson type, SDL_Renderer* renderer,
                        uint8_t level = 1, bool include_ai = true);
@@ -220,7 +219,6 @@ private:
   /* Delete sub calls */
   void deleteActions();
   void deleteClasses();
-  void deleteFonts();
   void deleteMenu();
   void deleteRaces();
   void deleteSkills();
