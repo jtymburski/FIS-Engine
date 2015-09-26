@@ -33,7 +33,8 @@ class Application
 {
 public:
   /* Constructor function */
-  Application(std::string base_path = "");
+  Application(std::string base_path = "", std::string app_path = "",
+              int app_map = 0);
 
   /* Destructor function */
   ~Application();
@@ -47,10 +48,15 @@ public:
     TESTBATTLE  = 2,
     OPTIONS     = 3,
     PAUSED      = 4,
-    EXIT        = 5
+    LOADING     = 5,
+    EXIT        = 6
   };
 
 private:
+  /* The configured path for operation */
+  int app_map;
+  std::string app_path;
+
   /* The base path, for accessing resources */
   std::string base_path;
 
@@ -60,10 +66,13 @@ private:
   /* Status if the subsystems have been successfully initialized */
   bool initialized;
 
+  /* Loading frame */
+  Frame load_frame;
+
   /* The current application that is running, under the head application
    * management */
   AppMode mode;
-  AppMode temp_mode;
+  AppMode mode_temp;
 
   /* The renderer for handling all interactions with the window */
   SDL_Renderer* renderer;
@@ -88,8 +97,10 @@ private:
   SDL_Window* window;
 
   /*------------------- Constants -----------------------*/
+  const static std::string kLOGO_ICON; /* The logo icon path */
   const static std::string kPATH; /* The main application path */
   const static bool kPATH_ENCRYPTED; /* The main path - is it encrypted */
+  const static int kPATH_MAP; /* The default map index */
   const static uint8_t kUPDATE_CHANGE_LIMIT; /* The # of different frame times
                                               * allowed */
   const static uint8_t kUPDATE_RATE; /* The minimum ms per update sequence */
@@ -100,6 +111,9 @@ private:
 private:
   /* Change the mode that the application is running */
   bool changeMode(AppMode mode);
+
+  /* Display loading frame */
+  void displayLoadingFrame();
 
   /* Goes through all available events that are currently on the stack */
   void handleEvents();
@@ -137,7 +151,10 @@ public:
   bool isInitialized();
 
   /* Runs the application */
-  bool run(std::string test_path = "", int map_lvl = 0);
+  bool run(bool skip_title = false);
+
+  /* Sets the application path */
+  void setPath(std::string path, int level = 0, bool skip_title = false);
 
   /* Uninitializes all set functions in the application. Used to wind down
    * and no rendering will take place after this. */

@@ -332,7 +332,7 @@ void SoundHandler::process()
       {
         /* Try and stop the channel prior - only where required */
         if(queue[i].channel == SoundChannels::MENUS)
-          Sound::stopChannel(queue[i].channel);
+          Sound::stopChannel(queue[i].channel, 0);
 
         /* Only process if the channel is not playing */
         if(!Sound::isChannelPlaying(queue[i].channel))

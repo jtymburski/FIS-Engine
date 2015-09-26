@@ -10,9 +10,11 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-const std::string Application::kPATH = "maps/design_map.ugv";
-//const std::string Application::kPATH = "maps/Univursa.ugv";
+const std::string Application::kLOGO_ICON = 
+                                       "sprites/General/univ-logo-small.png";
+const std::string Application::kPATH = "maps/Univursa.ugv";
 const bool Application::kPATH_ENCRYPTED = false;
+const int Application::kPATH_MAP = 0;
 const uint8_t Application::kUPDATE_CHANGE_LIMIT = 5;
 const uint8_t Application::kUPDATE_RATE = 32;
 
@@ -20,9 +22,20 @@ const uint8_t Application::kUPDATE_RATE = 32;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-Application::Application(std::string base_path)
+Application::Application(std::string base_path, std::string app_path,
+                         int app_map)
 {
   /* Initialize the variables */
+  if(app_path.empty())
+  {
+    this->app_path = kPATH;
+    this->app_map = kPATH_MAP;
+  }
+  else
+  {
+    this->app_path = app_path;
+    this->app_map = app_map;
+  }
   this->base_path = base_path;
   initialized = false;
   renderer = NULL;
@@ -88,9 +101,33 @@ bool Application::changeMode(AppMode mode)
       game_handler.enableView(true);
     else if(this->mode == PAUSED)
       Sound::pauseAllChannels();
+    else if(this->mode == LOADING)
+      displayLoadingFrame();
+
+    /* Finally, load game if it isn't loaded and it's game mode */
+    if(this->mode == GAME)
+    {
+      if(!game_handler.isLoadedCore())
+        game_handler.load(renderer, true);
+      else if(!game_handler.isLoadedSub())
+        game_handler.load(renderer, false);
+    }
   }
 
   return allow;
+}
+
+/* Display loading frame */
+void Application::displayLoadingFrame()
+{
+  /* Render draw color and clear */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  SDL_RenderClear(renderer);
+
+  /* Render loading frame */
+  load_frame.render(renderer, 0, 0, system_options->getScreenWidth(),
+                    system_options->getScreenHeight());
+  SDL_RenderPresent(renderer);
 }
 
 /* Goes through all available events that are currently on the stack */
@@ -122,17 +159,36 @@ void Application::handleEvents()
     {
       SDL_KeyboardEvent press_event = event.key;
 
+      /* -- Audio level decrease -- */
       if (press_event.keysym.sym == SDLK_F3)
       {
         //system_options->setAudioLevel(system_options->getAudioLevel() - 15);
         system_options->setMusicLevel(system_options->getMusicLevel() - 10);
       }
+      /* -- Audio level increase -- */
       else if (press_event.keysym.sym == SDLK_F4)
       {
         //system_options->setAudioLevel(system_options->getAudioLevel() + 15);
         system_options->setMusicLevel(system_options->getMusicLevel() + 10);
       }
-      else if (press_event.keysym.sym == SDLK_4)
+      /* -- Refresh config: cycle maps -- */
+      else if(press_event.keysym.sym == SDLK_F5)
+      {
+        /* Decide on which reload */
+        if(app_path != "maps/design_map.ugv")
+        {
+          setPath("maps/design_map.ugv");
+        }
+        else
+        {
+          int new_map = app_map + 1;
+          if(new_map > 2)
+            new_map = 0;
+          setPath(app_path, new_map);
+        }
+      }
+      /* -- Pause toggle -- */
+      else if(press_event.keysym.sym == SDLK_F9)
       {
         if (mode == PAUSED)
         {
@@ -140,18 +196,29 @@ void Application::handleEvents()
         }
         else
         {
+          mode_temp = mode;
           changeMode(PAUSED);
         }
       }
+      /* -- Full Screen toggle -- */
+      else if(press_event.keysym.sym == SDLK_F11)
+      {
+        uint32_t full_flag = SDL_WINDOW_FULLSCREEN;
+        uint32_t flags = SDL_GetWindowFlags(window);
+        bool is_fullscreen = (flags & full_flag) > 0;
+
+        /* If full screen, disable */
+        if(is_fullscreen)
+        {
+          SDL_SetWindowFullscreen(window, 0);
+        }
+        /* otherwise, enable */
+        else
+        {
+          SDL_SetWindowFullscreen(window, full_flag);
+        }
+      }
       /* Send the key to the relevant view */
-      else if(press_event.keysym.sym == SDLK_F7)
-      {
-        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-      }
-      else if(press_event.keysym.sym == SDLK_F8)
-      {
-        SDL_SetWindowFullscreen(window, 0);
-      }
       else if(mode == TITLESCREEN)
       {
         title_screen.keyDownEvent(press_event);
@@ -208,7 +275,7 @@ bool Application::load()
   bool success = true;
 
   /* Create the file handler */
-  FileHandler fh(kPATH, false, true, kPATH_ENCRYPTED);
+  FileHandler fh(app_path, false, true, kPATH_ENCRYPTED);
   XmlData data;
 
   /* Start the file read */
@@ -218,6 +285,9 @@ bool Application::load()
   if(success)
   {
     std::cout << "Application Load: " << fh.getDate() << std::endl;
+
+    /* Display loading frame */
+    changeMode(LOADING);
 
     do
     {
@@ -229,17 +299,24 @@ bool Application::load()
       if(data.getElement(index) == "app")
       {
         /* Sounds */
-        if(data.getElement(index + 1) == "music" || 
+        if(data.getElement(index + 1) == "music" ||
            data.getElement(index + 1) == "sound")
         {
           sound_handler.load(data, index + 1, system_options->getBasePath());
         }
       }
-    } while(!done); // && success); // TODO: Success in loop??
+    } while(!done && success);
   }
 
   /* Stop the file read */
   success &= fh.stop();
+
+  /* If success, load into game handler with default map */
+  if(success)
+    game_handler.setPath(app_path, kPATH_MAP, false);
+
+  /* Change mode back to title screen */
+  changeMode(TITLESCREEN);
 
   return success;
 }
@@ -263,7 +340,7 @@ void Application::render(uint32_t cycle_time)
 /* Revert to temporary mode */
 bool Application::revertMode()
 {
-  changeMode(temp_mode);
+  changeMode(mode_temp);
 
   return false;
 }
@@ -271,6 +348,12 @@ bool Application::revertMode()
 /* Unloads all loaded application data */
 void Application::unload()
 {
+  /* Change mode back to title screen */
+  changeMode(TITLESCREEN);
+  
+  /* Clean up game */
+  game_handler.unload();
+
   /* Clean up sounds */
   sound_handler.removeAll();
 }
@@ -338,10 +421,7 @@ bool Application::updateViews(int cycle_time)
       }
       else if(action_item == TitleScreen::GAME)
       {
-        /* Load game, if not loaded */
         changeMode(GAME);
-        if(!game_handler.isLoaded())
-          game_handler.load(renderer);
       }
       else if(action_item == TitleScreen::BATTLE)
       {
@@ -392,11 +472,20 @@ bool Application::initialize()
                               system_options->getScreenWidth(),
                               system_options->getScreenHeight(),
                               flags);
+
+    /* If failed, create error */
     if(window == NULL)
     {
       std::cerr << "[ERROR] Window could not be created. SDL error: "
                 << SDL_GetError() << std::endl;
       success = false;
+    }
+    /* Otherwise, create window icon */
+    else
+    {
+      std::string icon_path = base_path + kLOGO_ICON;
+      SDL_Surface* surface = IMG_Load(icon_path.c_str());
+      SDL_SetWindowIcon(window, surface);
     }
   }
 
@@ -434,7 +523,7 @@ bool Application::initialize()
         else
         {
           std::cerr << "[ERROR]: Error attempting to discern ren. driver"
-              << std::endl;
+                    << std::endl;
         }
 
         delete renderer_info;
@@ -481,16 +570,12 @@ bool Application::initialize()
 
       /* Create helper graphical portions */
       Helpers::createWhiteMask(renderer);
-
+      load_frame.setTexture(system_options->getBasePath() + 
+                            "sprites/General/loading.png",
+                            renderer);
+      
+      /* Set render color */
       SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
-
-      /* Render logo */
-      Frame logo;
-      logo.setTexture(system_options->getBasePath() + "sprites/Title/logo.png",
-                      renderer);
-      logo.render(renderer, 0, 0, system_options->getScreenWidth(),
-                  system_options->getScreenHeight());
-      SDL_RenderPresent(renderer);
     }
   }
 
@@ -514,7 +599,7 @@ bool Application::initialize()
     if(success)
     {
       initialized = true;
-      changeMode(TITLESCREEN);
+      game_handler.setPath(app_path, app_map, false);
     }
   }
 
@@ -532,7 +617,7 @@ bool Application::isInitialized()
 }
 
 /* Runs the application */
-bool Application::run(std::string test_path, int map_lvl)
+bool Application::run(bool skip_title)
 {
   uint32_t count = 1;
   uint32_t cycle_time = kUPDATE_RATE;
@@ -550,13 +635,9 @@ bool Application::run(std::string test_path, int map_lvl)
 
   if(isInitialized())
   {
-    /* If the test path isn't empty, jump straight to the game */
-    if(!test_path.empty())
-    {
-      game_handler.setPath(test_path, map_lvl);
-      game_handler.load(renderer);
+    /* If skip title triggered, jump straight to map */
+    if(skip_title)
       changeMode(GAME);
-    }
 
     /* Main application loop */
     while(!quit)
@@ -618,6 +699,37 @@ bool Application::run(std::string test_path, int map_lvl)
   return false;
 }
 
+/* Sets the application path */
+void Application::setPath(std::string path, int level, bool skip_title)
+{
+  if(!path.empty() && level >= 0 && isInitialized())
+  {
+    /* If path is different then app path, full re-load */
+    if(app_path != path)
+    {
+      /* Unload internal resources */
+      unload();
+
+      /* Set new path */
+      app_path = path;
+      app_map = level;
+
+      /* Load */
+      load();
+    }
+
+    /* Finally, load information into game */
+    app_map = level;
+    game_handler.setPath(app_path, app_map, true);
+
+    /* Go to game mode, if skip title is enabled */
+    if(skip_title && mode != GAME)
+      changeMode(GAME);
+  }
+}
+
+/* Uninitializes all set functions in the application. Used to wind down
+ * and no rendering will take place after this. */
 void Application::uninitialize()
 {
   /* Unloads application data */

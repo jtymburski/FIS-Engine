@@ -85,7 +85,8 @@ private:
   std::vector<Skill*> list_skill;
 
   /* Is the game loaded? */
-  bool loaded;
+  bool loaded_core;
+  bool loaded_sub;
 
   /* Map variables */
   Map map_ctrl; /* Main class */
@@ -105,8 +106,8 @@ private:
 
   /* ------------ Constants --------------- */
 public:
-  static const uint32_t kSTARTING_MAP; /* Starting map ID */
-  static const std::string kSTARTING_PATH; /* Starting game path */
+  //static const uint32_t kSTARTING_MAP; /* Starting map ID */
+  //static const std::string kSTARTING_PATH; /* Starting game path */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -152,7 +153,7 @@ private:
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
             std::string inst_file = "", bool encryption = false,
-            bool full_load = true);
+            bool full_load = true, bool no_view_change = false);
 
   /* Load game data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer);
@@ -197,14 +198,17 @@ public:
   SkillSet* getSkillSet(const int32_t &index, const bool &by_id = true);
 
   /* Is the game loaded */
-  bool isLoaded();
+  //bool isLoaded();
+  bool isLoadedCore();
+  bool isLoadedSub();
 
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Load game */
-  bool load(SDL_Renderer* renderer);
+  bool load(SDL_Renderer* renderer, bool full_load = true, 
+            bool no_view_change = false);
 
   /* Pauses der game in der Wald, ja ja ja */
   //void pause(); // TODO: implement
@@ -216,7 +220,8 @@ public:
   bool setConfiguration(Options* running_config);
 
   /* Sets the path of the game */
-  bool setPath(std::string path, int level = 0);
+  bool setPath(std::string path, int level = 0, bool load = false,
+               bool no_view_change = false);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);
@@ -226,6 +231,8 @@ public:
 
   /* Unload game */
   void unload(bool full_unload = true);
+  void unloadCore();
+  void unloadSub();
 
   /* Updates the game state */
   bool update(int cycle_time);

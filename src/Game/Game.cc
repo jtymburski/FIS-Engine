@@ -49,8 +49,8 @@
  * CONSTANTS
  *============================================================================*/
 
-const uint32_t Game::kSTARTING_MAP = 0;
-const std::string Game::kSTARTING_PATH = "maps/Univursa.ugv";
+//const uint32_t Game::kSTARTING_MAP = 0;
+//const std::string Game::kSTARTING_PATH = "maps/Univursa.ugv";
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -67,9 +67,10 @@ Game::Game(Options* running_config)
   battle_ctrl = nullptr;
   battle_display_data = nullptr;
   config = nullptr;
-  game_path = kSTARTING_PATH;
-  loaded = false;
-  map_lvl = kSTARTING_MAP;
+  game_path = "";
+  loaded_core = false;
+  loaded_sub = false;
+  map_lvl = -1;
   mode = DISABLED;
   player_main = nullptr;
 
@@ -394,7 +395,8 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 //        Otherwise, determine current map from inst first, then load correct
 //        base followed by correct inst map and all associated data.
 bool Game::load(std::string base_file, SDL_Renderer* renderer,
-                std::string inst_file, bool encryption, bool full_load)
+                std::string inst_file, bool encryption, bool full_load,
+                bool no_view_change)
 {
   (void)inst_file;
 
@@ -408,7 +410,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   unload(full_load);
 
   /* Loading trigger */
-  changeMode(LOADING);
+  if(!no_view_change)
+    changeMode(LOADING);
 
   /* Initial set-up */
   if(full_load)
@@ -463,15 +466,21 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
-    changeMode(MAP);
+    if(!no_view_change)
+      changeMode(MAP);
   }
   /* If failed, unload */
   else
   {
-    unload();
-    changeMode(DISABLED);
+    unload(full_load);
+    if(!no_view_change)
+      changeMode(DISABLED);
   }
-  loaded = success;
+
+  /* Update loaded status */
+  if(full_load)
+    loaded_core = success;
+  loaded_sub = success;
 
   return success;
 }
@@ -740,15 +749,22 @@ void Game::removeActions()
 /* Remove all game objects in the proper order */
 void Game::removeAll()
 {
+  /* Delete main Player */
+  delete player_main;
+  player_main = nullptr;
+
+  /* Delete parties and persons */
   removeParties();
   removePersonInstances();
   removePersonBases();
 
+  /* Delete items and sets */
   removeItems();
   removeClasses();
   removeRaces();
   removeSkillSets();
 
+  /* Delete skills and actions */
   removeFlavours();
   removeSkills();
   removeActions();
@@ -833,7 +849,7 @@ void Game::removeSkillSets()
 /* Enable view trigger */
 void Game::enableView(bool enable)
 {
-  if(enable && isLoaded())
+  if(enable && isLoadedCore() && isLoadedSub())
     changeMode(MAP);
   else
     changeMode(DISABLED);
@@ -1051,9 +1067,21 @@ SkillSet* Game::getSkillSet(const int32_t& index, const bool& by_id)
 }
 
 /* Is the game loaded */
-bool Game::isLoaded()
+//bool Game::isLoaded()
+//{
+//  return loaded;
+//}
+
+/* Is the game core data loaded */
+bool Game::isLoadedCore()
 {
-  return loaded;
+  return loaded_core;
+}
+
+/* Is the game sub data loaded */
+bool Game::isLoadedSub()
+{
+  return loaded_sub;
 }
 
 /* The key down events to be handled by the class */
@@ -1065,23 +1093,6 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     return true;
   }
   /* TESTING section - probably remove at end */
-  /* Switch the view to the map */
-  else if(event.keysym.sym == SDLK_F1)
-  {
-    mode = MAP;
-
-    // if(battle_ctrl != nullptr)
-    // {
-    //   delete battle_ctrl;
-    //   battle_ctrl = nullptr;
-    // }
-  }
-  /* Switch the view to the battle */
-  // else if(event.keysym.sym == SDLK_F2)
-  // {
-  //   if(battle_ctrl == nullptr)
-  //     eventStartBattle(0, 400);
-  // }
   /* Load game */
   else if(event.keysym.sym == SDLK_F5)
   {
@@ -1150,10 +1161,10 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 }
 
 /* Load game */
-bool Game::load(SDL_Renderer* renderer)
+bool Game::load(SDL_Renderer* renderer, bool full_load, bool no_view_change)
 {
-  // return load(game_path, renderer);
-  return load(base_path + game_path, renderer);
+  return load(base_path + game_path, renderer, "", false, 
+              full_load, no_view_change);
 }
 
 /* Renders the title screen */
@@ -1213,39 +1224,62 @@ bool Game::setConfiguration(Options* running_config)
 }
 
 /* Sets the path of the game */
-bool Game::setPath(std::string path, int level)
+bool Game::setPath(std::string path, int level, bool load, bool no_view_change)
 {
   if(!path.empty() && level >= 0)
   {
-    game_path = path;
-    map_lvl = level;
+    /* Only execute change if it's different */
+    if(path != game_path || map_lvl != level)
+    {
+      bool full_load = true;
+      if(path == game_path)
+        full_load = false;
+
+      /* Update info */
+      game_path = path;
+      map_lvl = level;
+    
+      /* If load enabled, load the new map */
+      if(load)
+        this->load(active_renderer, full_load, no_view_change);
+    }
+
     return true;
   }
   return false;
-}
-
-/* Unload the game - full unload = false will only unload map*/
-void Game::unload(bool full_unload)
-{
-  if(loaded)
-  {
-    changeMode(DISABLED);
-
-    /* Unload map first */
-    map_ctrl.unloadMap();
-
-    /* Unload game data */
-    if(full_unload)
-      removeAll();
-
-    loaded = false;
-  }
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */
 void Game::setSoundHandler(SoundHandler* new_handler)
 {
   event_handler.setSoundHandler(new_handler);
+}
+
+/* Unload the game - full unload = false will only unload map*/
+void Game::unload(bool full_unload)
+{
+  changeMode(DISABLED);
+
+  /* Unload map */
+  unloadSub();
+
+  /* Unload game data */
+  if(full_unload)
+    unloadCore();
+}
+
+/* Unloads the core data of the game */
+void Game::unloadCore()
+{
+  removeAll();
+  loaded_core = false;
+}
+
+/* Unloads the sub map data of the game */
+void Game::unloadSub()
+{
+  map_ctrl.unloadMap();
+  loaded_sub = false;
 }
 
 /* Updates the game state. Returns true if the class is finished */

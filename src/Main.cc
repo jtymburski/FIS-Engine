@@ -57,9 +57,9 @@ bool initSDL()
 int main(int argc, char** argv)
 {
   /* See if there is a map to skip all proceedings for */
-  std::string init_map = "";
+  std::string init_app = "";
   if(argc > 1)
-    init_map += argv[1];
+    init_app += argv[1];
   int map_lvl = 0;
   if(argc > 2)
     map_lvl = std::stoi(argv[2]);
@@ -76,9 +76,9 @@ int main(int argc, char** argv)
   if(success)
   {
     /* Create the application and start the run loop */
-    Application* game_app = new Application(dir_string);
+    Application* game_app = new Application(dir_string, init_app, map_lvl);
     if(game_app->initialize())
-      game_app->run(init_map, map_lvl);
+      game_app->run(!init_app.empty());
   
     /* Clean up the application, after the run loop is finished */
     game_app->uninitialize();
