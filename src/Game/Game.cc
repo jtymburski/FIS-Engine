@@ -395,8 +395,7 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 //        Otherwise, determine current map from inst first, then load correct
 //        base followed by correct inst map and all associated data.
 bool Game::load(std::string base_file, SDL_Renderer* renderer,
-                std::string inst_file, bool encryption, bool full_load,
-                bool no_view_change)
+                std::string inst_file, bool encryption, bool full_load)
 {
   (void)inst_file;
 
@@ -410,8 +409,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   unload(full_load);
 
   /* Loading trigger */
-  if(!no_view_change)
-    changeMode(LOADING);
+  changeMode(LOADING);
 
   /* Initial set-up */
   if(full_load)
@@ -423,7 +421,11 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
   /* Start the map read */
   success &= fh.start();
-  std::cout << "Date: " << fh.getDate() << std::endl;
+  std::string type = " - SUB";
+  if(full_load)
+    type = " - FULL";
+  std::cout << "--" << std::endl << "Game Load: " << fh.getDate() << type 
+            << std::endl << "--" << std::endl;
 
   /* If file open was successful, move forward */
   if(success)
@@ -466,15 +468,13 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
-    if(!no_view_change)
-      changeMode(MAP);
+    changeMode(MAP);
   }
   /* If failed, unload */
   else
   {
     unload(full_load);
-    if(!no_view_change)
-      changeMode(DISABLED);
+    changeMode(DISABLED);
   }
 
   /* Update loaded status */
@@ -1161,19 +1161,14 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 }
 
 /* Load game */
-bool Game::load(SDL_Renderer* renderer, bool full_load, bool no_view_change)
+bool Game::load(SDL_Renderer* renderer, bool full_load)
 {
-  return load(base_path + game_path, renderer, "", false, 
-              full_load, no_view_change);
+  return load(base_path + game_path, renderer, "", false, full_load);
 }
 
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
-  /* Make sure the active renderer is set up */
-  if(active_renderer == NULL)
-    active_renderer = renderer;
-
   if(mode == MAP)
   {
     return map_ctrl.render(renderer);
@@ -1224,7 +1219,7 @@ bool Game::setConfiguration(Options* running_config)
 }
 
 /* Sets the path of the game */
-bool Game::setPath(std::string path, int level, bool load, bool no_view_change)
+bool Game::setPath(std::string path, int level, bool load)
 {
   if(!path.empty() && level >= 0)
   {
@@ -1241,12 +1236,19 @@ bool Game::setPath(std::string path, int level, bool load, bool no_view_change)
     
       /* If load enabled, load the new map */
       if(load)
-        this->load(active_renderer, full_load, no_view_change);
+        this->load(active_renderer, full_load);
     }
 
     return true;
   }
   return false;
+}
+  
+/* Sets the active renderer to be used */
+void Game::setRenderer(SDL_Renderer* renderer)
+{
+  if(renderer != nullptr)
+    active_renderer = renderer;
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */

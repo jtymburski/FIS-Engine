@@ -607,11 +607,11 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
                             file_index + 2, section_index, renderer, base_path);
 
         // TODO: REMOVE - TEMP SOUND TEST
-        if(getID() == 32 && index == 0)
-        {
-          modified_node->state->setExitEvent
-                                     (event_handler->createSoundEvent(1003));
-        }
+        //if(getID() == 32 && index == 0)
+        //{
+        //  modified_node->state->setExitEvent
+        //                             (event_handler->createSoundEvent(1003));
+        //}
       }
       /*--------------------- TRANSITION FRAMES -----------------*/
       else if(elements[1] == "transition")

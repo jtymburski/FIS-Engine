@@ -276,8 +276,8 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer *renderer,
   }
   else if(element == "rotation")
     setRotation(data.getDataInteger());
-  else if(element == "sound") // TODO
-    std::cout << "Sprite Sound: " << data.getDataString() << std::endl;
+  else if(element == "sound_id")
+    setSoundID(data.getDataInteger());
 
   return success;
 }
@@ -1123,10 +1123,10 @@ void Sprite::setId(uint16_t id)
   this->id = id;
 
   // TODO: REMOVE - TESTING
-  if(id == 1)
-    setSoundID(1000);
-  else if(id >= 2 && id <= 133)
-    setSoundID(1001);
+  //if(id == 1)
+  //  setSoundID(1000);
+  //else if(id >= 2 && id <= 133)
+  //  setSoundID(1001);
 }
 
 void Sprite::setFlashing(bool flashing) { this->flashing = flashing; }

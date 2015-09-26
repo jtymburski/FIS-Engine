@@ -153,7 +153,7 @@ private:
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
             std::string inst_file = "", bool encryption = false,
-            bool full_load = true, bool no_view_change = false);
+            bool full_load = true);
 
   /* Load game data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer);
@@ -207,8 +207,7 @@ public:
   void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Load game */
-  bool load(SDL_Renderer* renderer, bool full_load = true, 
-            bool no_view_change = false);
+  bool load(SDL_Renderer* renderer, bool full_load = true);
 
   /* Pauses der game in der Wald, ja ja ja */
   //void pause(); // TODO: implement
@@ -220,8 +219,10 @@ public:
   bool setConfiguration(Options* running_config);
 
   /* Sets the path of the game */
-  bool setPath(std::string path, int level = 0, bool load = false,
-               bool no_view_change = false);
+  bool setPath(std::string path, int level = 0, bool load = false);
+
+  /* Sets the active renderer to be used */
+  void setRenderer(SDL_Renderer* renderer);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);

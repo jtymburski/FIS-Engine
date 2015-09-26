@@ -53,7 +53,7 @@ Sound::Sound()
   length = 0;
   loop_count = 0;
   raw_data = NULL;
-  volume = MIX_MAX_VOLUME / 2;
+  volume = MIX_MAX_VOLUME - MIX_MAX_VOLUME / 4;
 }
 
 /*
@@ -437,7 +437,8 @@ void Sound::setVolume(uint8_t volume)
 {
   if(volume > MIX_MAX_VOLUME)
     this->volume = MIX_MAX_VOLUME;
-  this->volume = volume;
+  else
+    this->volume = volume;
 
   /* Change the chunk volume related to this file */
   if(raw_data != NULL)

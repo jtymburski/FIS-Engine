@@ -164,12 +164,16 @@ void Application::handleEvents()
       {
         //system_options->setAudioLevel(system_options->getAudioLevel() - 15);
         system_options->setMusicLevel(system_options->getMusicLevel() - 10);
+        std::cout << "Music Level: " << system_options->getMusicLevel() 
+                  << std::endl;
       }
       /* -- Audio level increase -- */
       else if (press_event.keysym.sym == SDLK_F4)
       {
         //system_options->setAudioLevel(system_options->getAudioLevel() + 15);
         system_options->setMusicLevel(system_options->getMusicLevel() + 10);
+        std::cout << "Music Level: " << system_options->getMusicLevel() 
+                  << std::endl;
       }
       /* -- Refresh config: cycle maps -- */
       else if(press_event.keysym.sym == SDLK_F5)
@@ -284,7 +288,8 @@ bool Application::load()
   /* If file open was successful, move forward */
   if(success)
   {
-    std::cout << "Application Load: " << fh.getDate() << std::endl;
+    std::cout << "--" << std::endl << "Application Load: " << fh.getDate() 
+              << std::endl << "--" << std::endl;
 
     /* Display loading frame */
     changeMode(LOADING);
@@ -568,6 +573,9 @@ bool Application::initialize()
     {
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+      /* Set game handler renderer */
+      game_handler.setRenderer(renderer);
+
       /* Create helper graphical portions */
       Helpers::createWhiteMask(renderer);
       load_frame.setTexture(system_options->getBasePath() + 
@@ -717,10 +725,25 @@ void Application::setPath(std::string path, int level, bool skip_title)
       /* Load */
       load();
     }
+    /* Otherwise, only level update */
+    else if(app_map != level)
+    {
+      /* Unload game sub data */
+      game_handler.unloadSub();
 
-    /* Finally, load information into game */
-    app_map = level;
-    game_handler.setPath(app_path, app_map, true);
+      /* Set the new level */
+      app_map = level;
+      game_handler.setPath(app_path, app_map, false);
+
+      /* If mode is already in game, update the map accordingly */
+      if(mode == GAME)
+      {
+        if(!game_handler.isLoadedCore())
+          game_handler.load(renderer, true);
+        else if(!game_handler.isLoadedSub())
+          game_handler.load(renderer, false);
+      }
+    }
 
     /* Go to game mode, if skip title is enabled */
     if(skip_title && mode != GAME)
