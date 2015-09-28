@@ -149,16 +149,12 @@ Event EventHandler::createNotificationEvent(std::string notification,
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-  
-  if(!notification.empty())
-  {
-    new_event.classification = EventClassifier::NOTIFICATION;
-    if(sound_id >= 0)
-      new_event.sound_id = sound_id;
+  new_event.classification = EventClassifier::NOTIFICATION;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
 
-    /* Set up the rest of the event */
-    new_event.strings.push_back(notification);
-  }
+  /* Set up the rest of the event */
+  new_event.strings.push_back(notification);
 
   return new_event;
 }
@@ -472,16 +468,18 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   std::string category_str = data.getElement(file_index);
 
   /* Determine the category of the event that is being updated */
-  if(category_str == "giveitem")
+  if(category_str == "conversation")
+    category = EventClassifier::STARTCONVO;
+  else if(category_str == "giveitem")
     category = EventClassifier::GIVEITEM;
+  else if(category_str == "justsound")
+    category = EventClassifier::JUSTSOUND;
   else if(category_str == "notification")
     category = EventClassifier::NOTIFICATION;
   else if(category_str == "startbattle")
     category = EventClassifier::RUNBATTLE;
   else if(category_str == "startmap")
     category = EventClassifier::RUNMAP;
-  else if(category_str == "conversation")
-    category = EventClassifier::STARTCONVO;
   else if(category_str == "teleportthing")
     category = EventClassifier::TELEPORTTHING;
 
@@ -492,16 +490,29 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
 
     if(category == EventClassifier::GIVEITEM)
       event = createGiveItemEvent();
+    else if(category == EventClassifier::JUSTSOUND)
+      event = createSoundEvent();
+    else if(category == EventClassifier::NOTIFICATION)
+      event = createNotificationEvent();
+    else if(category == EventClassifier::RUNBATTLE)
+      event = createStartBattleEvent();
+    else if(category == EventClassifier::RUNMAP)
+      event = createStartMapEvent();
     else if(category == EventClassifier::STARTCONVO)
       event = createConversationEvent();
     else if(category == EventClassifier::TELEPORTTHING)
       event = createTeleportEvent();
-    else if(category == EventClassifier::RUNMAP)
-      event = createStartMapEvent();
   }
 
   /* Proceed to set up the event with the marked changes */
-  if(category == EventClassifier::GIVEITEM)
+  if(data.getElement(file_index + 1) == "sound_id" ||
+     category == EventClassifier::JUSTSOUND)
+  {
+    int32_t sound_id = data.getDataInteger();
+    if(sound_id >= 0)
+      event.sound_id = sound_id;
+  }
+  else if(category == EventClassifier::GIVEITEM)
   {
     /* Parse the event classifiers */
     std::string give_item_element = data.getElement(file_index + 1);
@@ -512,12 +523,17 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   }
   else if(category == EventClassifier::NOTIFICATION)
   {
-    event = createNotificationEvent(data.getDataString());
+    /* If the classifier is the only element */
+    if(data.getTailElements(file_index).size() == 1 ||
+       data.getElement(file_index + 1) == "text")
+    {
+      event.strings.at(0) = data.getDataString();
+    }
   }
-  else if(category == EventClassifier::RUNBATTLE)
-  {
-    event = createStartBattleEvent();
-  }
+  //else if(category == EventClassifier::RUNBATTLE)
+  //{
+  //  event = createStartBattleEvent();
+  //}
   else if(category == EventClassifier::RUNMAP)
   {
     /* Parse the event classifiers */

@@ -147,7 +147,7 @@ public:
                             int sound_id = kUNSET_ID);
 
   /* Creates a notification event, that can fire and result in visible text */
-  Event createNotificationEvent(std::string notification,
+  Event createNotificationEvent(std::string notification = "",
                                 int sound_id = kUNSET_ID);
 
   /* Creates a sound event */

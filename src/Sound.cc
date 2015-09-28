@@ -19,9 +19,11 @@ const int Sound::kSTOP_FADE = 1500;
 const int Sound::kUNSET_ID = -1;
 /* Public Constant Implementation */
 const int Sound::kDEFAULT_FREQUENCY = 22050;
+/* -- */
 const uint32_t Sound::kID_MUSIC_BATTLE = 2;
 const uint32_t Sound::kID_MUSIC_LOADING = 1;
 const uint32_t Sound::kID_MUSIC_TITLE = 0;
+/* -- */
 const uint32_t Sound::kID_SOUND_BTL_CONFUSE = 3;
 const uint32_t Sound::kID_SOUND_BTL_DEATH = 4;
 const uint32_t Sound::kID_SOUND_BTL_FIRE = 5;
@@ -34,6 +36,8 @@ const uint32_t Sound::kID_SOUND_BTL_SILENCE = 11;
 const uint32_t Sound::kID_SOUND_MENU_CHG = 0;
 const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
 const uint32_t Sound::kID_SOUND_MENU_PREV = 2;
+const uint32_t Sound::kID_SOUND_PICK_COIN = 12;
+const uint32_t Sound::kID_SOUND_PICK_ITEM = 13;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

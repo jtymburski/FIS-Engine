@@ -101,6 +101,8 @@ public:
   const static uint32_t kID_SOUND_MENU_CHG;
   const static uint32_t kID_SOUND_MENU_NEXT;
   const static uint32_t kID_SOUND_MENU_PREV;
+  const static uint32_t kID_SOUND_PICK_COIN;
+  const static uint32_t kID_SOUND_PICK_ITEM;
 
 /*=============================================================================
  * PUBLIC FUNCTIONS

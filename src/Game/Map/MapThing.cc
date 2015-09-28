@@ -797,6 +797,11 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
       sprite_set = new SpriteMatrix();
     sprite_set->setRenderMatrix(data.getDataString(&success));
   }
+  /*----------------- SOUND ID -----------------*/
+  else if(identifier == "sound_id" && elements.size() == 1)
+  {
+    setSoundID(data.getDataInteger(&success));
+  }
   /*--------------------- SPEED -----------------*/
   else if(identifier == "speed" && elements.size() == 1)
   {

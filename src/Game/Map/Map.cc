@@ -1346,6 +1346,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
       {
         height = 1;
         width = 1;
+        initiateMapSection(map_index, width, height);
       }
 
       /* -- SECTION WIDTH -- */
@@ -1361,6 +1362,20 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
         height = data.getDataInteger(&success);
         if(success)
           initiateMapSection(map_index, width, height);
+      }
+      /* -- MUSIC -- */
+      else if(data.getElement(index + 1) == "music")
+      {
+        int32_t music_id = data.getDataInteger(&success);
+        if(music_id >= 0)
+          sub_map[map_index].music.push_back(music_id);
+      }
+      /* -- WEATHER -- */
+      else if(data.getElement(index + 1) == "weather")
+      {
+        int32_t weather_id = data.getDataInteger(&success);
+        if(weather_id >= 0)
+          sub_map[map_index].weather = weather_id;
       }
       /* -- TILE SPRITES/EVENTS -- */
       else if(data.getElement(index + 1) == "base" ||
@@ -1541,6 +1556,24 @@ bool Map::pickupItem(MapItem* item)
   {
     /* Set the on map count to 0 */
     item->setCount(0);
+
+    /* Trigger sound */
+    if(event_handler != nullptr)
+    {
+      uint32_t item_id = Sound::kID_SOUND_PICK_ITEM;
+
+      if(item->getSoundID() >= 0)
+      {
+        item_id = item->getSoundID();
+      }
+      else if(item->getGameID() >= 0 && 
+              (uint32_t)item->getGameID() == Item::kID_MONEY)
+      {
+        item_id = Sound::kID_SOUND_PICK_COIN;
+      }
+
+      event_handler->triggerSound(item_id, SoundChannels::TRIGGERS);
+    }
 
     return true;
   }
