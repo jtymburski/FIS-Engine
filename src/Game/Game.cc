@@ -845,7 +845,7 @@ void Game::removeSkillSets()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-  
+
 /* Enable view trigger */
 void Game::enableView(bool enable)
 {
@@ -1176,15 +1176,18 @@ bool Game::render(SDL_Renderer* renderer)
   else if(mode == BATTLE)
   {
     /* Assign the rendererer to Battle and data container class */
-    battle_ctrl->setRenderer(renderer);
     battle_display_data->setRenderer(renderer);
 
     /* Build the data if it isn't built */
     if(renderer && !battle_display_data->isDataBuilt())
       battle_display_data->buildData();
+    else if(battle_display_data->isDataBuilt())
+    {
+      battle_ctrl->setRenderer(renderer);
 
-    /* Render the battle */
-    return battle_ctrl->render(0);
+      /* Render the battle */
+      return battle_ctrl->render();
+    }
   }
 
   return true;

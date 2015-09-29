@@ -17,8 +17,8 @@
 #include "Helpers.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint8_t  Helpers::kMAX_RENDER_DEPTH = 10;
-const uint16_t Helpers::kTILE_SIZE        = 64;
+const uint8_t Helpers::kMAX_RENDER_DEPTH = 10;
+const uint16_t Helpers::kTILE_SIZE = 64;
 
 SDL_Texture* Helpers::white_mask = NULL;
 
@@ -27,10 +27,10 @@ SDL_Texture* Helpers::white_mask = NULL;
  *============================================================================*/
 
 /* Seed the random number generators with high-precision */
-const uint32_t  Helpers::seed_original =
+const uint32_t Helpers::seed_original =
     std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
-std::mt19937    Helpers::rand_eng(seed_original);
+std::mt19937 Helpers::rand_eng(seed_original);
 std::mt19937_64 Helpers::rand_64_eng(seed_original);
 
 /*
@@ -49,16 +49,16 @@ std::mt19937_64 Helpers::rand_64_eng(seed_original);
  *                                    (bound to generate #s)
  * Output: bool - determination of the event
  */
-bool Helpers::chanceHappens(const uint32_t &pc_chance, const uint32_t &mag)
+bool Helpers::chanceHappens(const uint32_t& pc_chance, const uint32_t& mag)
 {
-  if (pc_chance >= mag)
+  if(pc_chance >= mag)
     return true;
-  if (pc_chance <= 0)
+  if(pc_chance <= 0)
     return false;
 
   auto random = randU(1, static_cast<int>(mag));
 
-  if (static_cast<uint32_t>(random) <= pc_chance)
+  if(static_cast<uint32_t>(random) <= pc_chance)
     return true;
   return false;
 }
@@ -81,7 +81,7 @@ bool Helpers::flipCoin()
  *         b - other bound to find a random float for
  * Output: float - random float between the two bounds
  */
-float Helpers::randFloat(const float &a, const float &b)
+float Helpers::randFloat(const float& a, const float& b)
 {
   auto min = std::min(a, b);
   auto max = std::max(a, b);
@@ -98,7 +98,7 @@ float Helpers::randFloat(const float &a, const float &b)
  * Inputs: const int &max - ref to the maximum value
  * Output: int - generated number in the range [0, max]
  */
-int Helpers::randInt(const int &max)
+int Helpers::randInt(const int& max)
 {
   return randU(0, max);
 }
@@ -111,7 +111,7 @@ int Helpers::randInt(const int &max)
  8         const int &b - const ref to one of the bounds
  * Output: int - the generated number between the two bounds
  */
-int Helpers::randU(const int &a, const int &b)
+int Helpers::randU(const int& a, const int& b)
 {
   auto min = std::min(a, b);
   auto max = std::max(a, b);
@@ -153,11 +153,11 @@ uint64_t Helpers::randU64()
  *         const int& x_times - const ref to # of times to roll the die
  * Output: int - the result of the die roll simulation
  */
-int Helpers::rollXS(const int &x_sides, const int &s_times)
+int Helpers::rollXS(const int& x_sides, const int& s_times)
 {
   auto total = 0;
 
-  for (auto i = 0; i < s_times; i++)
+  for(auto i = 0; i < s_times; i++)
     total += randU(0, x_sides + 1);
 
   return total;
@@ -174,39 +174,39 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  * Inputs: std::string - noun - noun to find a/an for
  * Output: std::string - "a" or "an" where required
  */
-std::string Helpers::a_An(const std::string &noun)
+std::string Helpers::a_An(const std::string& noun)
 {
-  if (noun.size() == 0)
+  if(noun.size() == 0)
     return "";
 
-  auto a_an        = "a";
+  auto a_an = "a";
   const auto lower = noun;
 
-  for (auto c : lower)
+  for(auto c : lower)
     c = tolower(c);
 
-  const auto &initial = noun.at(0);
+  const auto& initial = noun.at(0);
 
   /* General vowel vs. consonant rule ("u" is usually consonant) */
-  if (lower.size() == 1)
+  if(lower.size() == 1)
   {
-    if (isVowel(initial) && initial != 'u')
+    if(isVowel(initial) && initial != 'u')
       a_an = "an";
     a_an = "a";
   }
 
   /* Generally words that start with vowels are "an" */
-  if (isVowel(initial))
+  if(isVowel(initial))
     a_an = "an";
 
-  if ((initial == 'y') && !isVowel(lower.at(1)))
+  if((initial == 'y') && !isVowel(lower.at(1)))
     a_an = "a";
 
   /* Some exceptions for consonant and vowel sounds (e.g. "a eulogy") */
-  if (lower.substr(0, 2) == "eu" || lower.substr(0, 3) == "one" ||
-      lower.substr(0, 3) == "uni")
+  if(lower.substr(0, 2) == "eu" || lower.substr(0, 3) == "one" ||
+     lower.substr(0, 3) == "uni")
     a_an = "a";
-  else if (lower.substr(0, 3) == "hon")
+  else if(lower.substr(0, 3) == "hon")
     a_an = "an";
 
   return a_an;
@@ -218,23 +218,23 @@ std::string Helpers::a_An(const std::string &noun)
  * Inputs: ActionType - enumerated action type to find string for
  * Output: std::string - the string of the corresponding enumeration
  */
-std::string Helpers::actionTypeToStr(const ActionType &action_type)
+std::string Helpers::actionTypeToStr(const ActionType& action_type)
 {
-  if (action_type == ActionType::SKILL)
+  if(action_type == ActionType::SKILL)
     return "Skill";
-  else if (action_type == ActionType::ITEM)
+  else if(action_type == ActionType::ITEM)
     return "Item";
-  else if (action_type == ActionType::DEFEND)
+  else if(action_type == ActionType::DEFEND)
     return "Defend";
-  else if (action_type == ActionType::GUARD)
+  else if(action_type == ActionType::GUARD)
     return "Guard";
-  else if (action_type == ActionType::IMPLODE)
+  else if(action_type == ActionType::IMPLODE)
     return "Implode";
-  else if (action_type == ActionType::RUN)
+  else if(action_type == ActionType::RUN)
     return "Run";
-  else if (action_type == ActionType::PASS)
+  else if(action_type == ActionType::PASS)
     return "Pass";
-  else if (action_type == ActionType::NONE)
+  else if(action_type == ActionType::NONE)
     return "None";
 
   return "";
@@ -291,39 +291,39 @@ ActionScope Helpers::actionScopeFromStr(const std::string scope)
  * Inputs: ActionScope - enum of scope of actions for Skills
  * Output: std::string - string corresponding to the ActionScope
  */
-std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
+std::string Helpers::actionScopeToStr(const ActionScope& action_scope)
 {
-  if (action_scope == ActionScope::USER)
+  if(action_scope == ActionScope::USER)
     return "USER";
-  else if (action_scope == ActionScope::ONE_TARGET)
+  else if(action_scope == ActionScope::ONE_TARGET)
     return "ONE_TARGET";
-  else if (action_scope == ActionScope::ONE_ENEMY)
+  else if(action_scope == ActionScope::ONE_ENEMY)
     return "ONE_ENEMY";
-  else if (action_scope == ActionScope::TWO_ENEMIES)
+  else if(action_scope == ActionScope::TWO_ENEMIES)
     return "TWO_ENEMIES";
-  else if (action_scope == ActionScope::ALL_ENEMIES)
+  else if(action_scope == ActionScope::ALL_ENEMIES)
     return "ALL_ENEMIES";
-  else if (action_scope == ActionScope::ONE_ALLY)
+  else if(action_scope == ActionScope::ONE_ALLY)
     return "ONE_ALLY";
-  else if (action_scope == ActionScope::ONE_ALLY_NOT_USER)
+  else if(action_scope == ActionScope::ONE_ALLY_NOT_USER)
     return "ONE_ALLY_NOT_USER";
-  else if (action_scope == ActionScope::TWO_ALLIES)
+  else if(action_scope == ActionScope::TWO_ALLIES)
     return "TWO_ALLIES";
-  else if (action_scope == ActionScope::ALL_ALLIES)
+  else if(action_scope == ActionScope::ALL_ALLIES)
     return "ALL_ALLIES";
-  else if (action_scope == ActionScope::ONE_ALLY_KO)
+  else if(action_scope == ActionScope::ONE_ALLY_KO)
     return "ONE_ALLY_KO";
-  else if (action_scope == ActionScope::ALL_ALLIES_KO)
+  else if(action_scope == ActionScope::ALL_ALLIES_KO)
     return "ALL_ALLIES_KO";
-  else if (action_scope == ActionScope::ONE_PARTY)
+  else if(action_scope == ActionScope::ONE_PARTY)
     return "ONE_PARTY";
-  else if (action_scope == ActionScope::ALL_TARGETS)
+  else if(action_scope == ActionScope::ALL_TARGETS)
     return "ALL_TARGETS";
-  else if (action_scope == ActionScope::NOT_USER)
+  else if(action_scope == ActionScope::NOT_USER)
     return "NOT_USER";
-  else if (action_scope == ActionScope::ALL_NOT_USER)
+  else if(action_scope == ActionScope::ALL_NOT_USER)
     return "ALL_NOT_USER";
-  else if (action_scope == ActionScope::NO_SCOPE)
+  else if(action_scope == ActionScope::NO_SCOPE)
     return "NO_SCOPE";
 
   return "";
@@ -336,15 +336,15 @@ std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
  * Output: std::string - corresponding string form of the enum
  */
 /* Convert enumerated AI Difficulty to String */
-std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
+std::string Helpers::aiDifficultyToStr(const AIDifficulty& ai_difficulty)
 {
-  if (ai_difficulty == AIDifficulty::RANDOM)
+  if(ai_difficulty == AIDifficulty::RANDOM)
     return "RANDOM";
-  else if (ai_difficulty == AIDifficulty::PRIORITY)
+  else if(ai_difficulty == AIDifficulty::PRIORITY)
     return "PRIORITY";
-  else if (ai_difficulty == AIDifficulty::TACTICAL)
+  else if(ai_difficulty == AIDifficulty::TACTICAL)
     return "TACTICAL";
-  else if (ai_difficulty == AIDifficulty::DEEP_THOUGHT)
+  else if(ai_difficulty == AIDifficulty::DEEP_THOUGHT)
     return "DEEP_THOUGHT";
 
   return "";
@@ -356,27 +356,27 @@ std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
  * Inputs: AIPersonality - the enumerated personality type of an AI
  * Output: std::string - the corresponding string for the personality
  */
-std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
+std::string Helpers::aiPersonalityToStr(const AIPersonality& ai_personality)
 {
-  if (ai_personality == AIPersonality::MODERATOR)
+  if(ai_personality == AIPersonality::MODERATOR)
     return "MODERATOR";
-  else if (ai_personality == AIPersonality::AGGRESSOR)
+  else if(ai_personality == AIPersonality::AGGRESSOR)
     return "AGGRESSOR";
-  else if (ai_personality == AIPersonality::DEFENDER)
+  else if(ai_personality == AIPersonality::DEFENDER)
     return "DEFENDER";
-  else if (ai_personality == AIPersonality::PROTECTOR)
+  else if(ai_personality == AIPersonality::PROTECTOR)
     return "PROTECTOR";
-  else if (ai_personality == AIPersonality::RETALIATOR)
+  else if(ai_personality == AIPersonality::RETALIATOR)
     return "RETALIATOR";
-  else if (ai_personality == AIPersonality::MASOCHISTIC)
+  else if(ai_personality == AIPersonality::MASOCHISTIC)
     return "MASOCHISTIC";
-  else if (ai_personality == AIPersonality::ANNIHILATOR)
+  else if(ai_personality == AIPersonality::ANNIHILATOR)
     return "ANNIHILATOR";
-  else if (ai_personality == AIPersonality::RUNNER)
+  else if(ai_personality == AIPersonality::RUNNER)
     return "RUNNER";
-  else if (ai_personality == AIPersonality::PASSER)
+  else if(ai_personality == AIPersonality::PASSER)
     return "PASSER";
-  else if (ai_personality == AIPersonality::NONE)
+  else if(ai_personality == AIPersonality::NONE)
     return "NONE";
 
   return "";
@@ -388,7 +388,7 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
  * Inputs: std::string ail - string form of ailment
  * Output: Infliction - ailment enumeration
  */
-Infliction Helpers::ailmentFromStr(const std::string &ail)
+Infliction Helpers::ailmentFromStr(const std::string& ail)
 {
   std::string ail_up = ail;
   std::transform(ail_up.begin(), ail_up.end(), ail_up.begin(), toupper);
@@ -479,85 +479,85 @@ Infliction Helpers::ailmentFromStr(const std::string &ail)
  * Inputs: Infliction - enumerated type of Infliction
  * Output: std::string - the string of the enumeration
  */
-std::string Helpers::ailmentToStr(const Infliction &ail)
+std::string Helpers::ailmentToStr(const Infliction& ail)
 {
-  if (ail == Infliction::POISON)
+  if(ail == Infliction::POISON)
     return "POISON";
-  else if (ail == Infliction::BURN)
+  else if(ail == Infliction::BURN)
     return "BURN";
-  else if (ail == Infliction::SCALD)
+  else if(ail == Infliction::SCALD)
     return "SCALD";
-  else if (ail == Infliction::CHARR)
+  else if(ail == Infliction::CHARR)
     return "CHARR";
-  else if (ail == Infliction::BERSERK)
+  else if(ail == Infliction::BERSERK)
     return "BERSERK";
-  else if (ail == Infliction::CONFUSE)
+  else if(ail == Infliction::CONFUSE)
     return "CONFUSE";
-  else if (ail == Infliction::SILENCE)
+  else if(ail == Infliction::SILENCE)
     return "SILENCE";
-  else if (ail == Infliction::BUBBIFY)
+  else if(ail == Infliction::BUBBIFY)
     return "BUBBIFY";
-  else if (ail == Infliction::DEATHTIMER)
+  else if(ail == Infliction::DEATHTIMER)
     return "DEATHTIMER";
-  else if (ail == Infliction::PARALYSIS)
+  else if(ail == Infliction::PARALYSIS)
     return "PARALYSIS";
-  else if (ail == Infliction::BLINDNESS)
+  else if(ail == Infliction::BLINDNESS)
     return "BLINDNESS";
-  else if (ail == Infliction::DREADSTRUCK)
+  else if(ail == Infliction::DREADSTRUCK)
     return "DREADSTRUCK";
-  else if (ail == Infliction::DREAMSNARE)
+  else if(ail == Infliction::DREAMSNARE)
     return "DREAMSNARE";
-  else if (ail == Infliction::HELLBOUND)
+  else if(ail == Infliction::HELLBOUND)
     return "HELLBOUND";
-  else if (ail == Infliction::BOND)
+  else if(ail == Infliction::BOND)
     return "BOND";
-  else if (ail == Infliction::BONDED)
+  else if(ail == Infliction::BONDED)
     return "BONDED";
-  else if (ail == Infliction::ALLATKBUFF)
+  else if(ail == Infliction::ALLATKBUFF)
     return "ALLATKBUFF";
-  else if (ail == Infliction::ALLDEFBUFF)
+  else if(ail == Infliction::ALLDEFBUFF)
     return "ALLDEFBUFF";
-  else if (ail == Infliction::PHYBUFF)
+  else if(ail == Infliction::PHYBUFF)
     return "PHYBUFF";
-  else if (ail == Infliction::THRBUFF)
+  else if(ail == Infliction::THRBUFF)
     return "THRBUFF";
-  else if (ail == Infliction::POLBUFF)
+  else if(ail == Infliction::POLBUFF)
     return "POLBUFF";
-  else if (ail == Infliction::PRIBUFF)
+  else if(ail == Infliction::PRIBUFF)
     return "PRIBUFF";
-  else if (ail == Infliction::CHGBUFF)
+  else if(ail == Infliction::CHGBUFF)
     return "CHGBUFF";
-  else if (ail == Infliction::CYBBUFF)
+  else if(ail == Infliction::CYBBUFF)
     return "CYBBUFF";
-  else if (ail == Infliction::NIHBUFF)
+  else if(ail == Infliction::NIHBUFF)
     return "NIHBUFF";
-  else if (ail == Infliction::LIMBUFF)
+  else if(ail == Infliction::LIMBUFF)
     return "LIMBUFF";
-  else if (ail == Infliction::UNBBUFF)
+  else if(ail == Infliction::UNBBUFF)
     return "UNBBUFF";
-  else if (ail == Infliction::VITBUFF)
+  else if(ail == Infliction::VITBUFF)
     return "VITBUFF";
-  else if (ail == Infliction::QDBUFF)
+  else if(ail == Infliction::QDBUFF)
     return "QDBUFF";
-  else if (ail == Infliction::ROOTBOUND)
+  else if(ail == Infliction::ROOTBOUND)
     return "ROOTBOUND";
-  else if (ail == Infliction::DOUBLECAST)
+  else if(ail == Infliction::DOUBLECAST)
     return "DOUBLECAST";
-  else if (ail == Infliction::TRIPLECAST)
+  else if(ail == Infliction::TRIPLECAST)
     return "TRIPLECAST";
-  else if (ail == Infliction::HALFCOST)
+  else if(ail == Infliction::HALFCOST)
     return "HALFCOST";
-  else if (ail == Infliction::REFLECT)
+  else if(ail == Infliction::REFLECT)
     return "REFLECT";
-  else if (ail == Infliction::HIBERNATION)
+  else if(ail == Infliction::HIBERNATION)
     return "HIBERNATION";
-  else if (ail == Infliction::CURSE)
+  else if(ail == Infliction::CURSE)
     return "CURSE";
-  else if (ail == Infliction::METATETHER)
+  else if(ail == Infliction::METATETHER)
     return "METATETHER";
-  else if (ail == Infliction::MODULATE)
+  else if(ail == Infliction::MODULATE)
     return "MODULATE";
-  else if (ail == Infliction::INVALID)
+  else if(ail == Infliction::INVALID)
     return "INVALID";
 
   return "";
@@ -620,17 +620,17 @@ std::string Helpers::attributeToStr(Attribute attribute)
  * Inputs: CellState - enumerated state of a cell in signature
  * Output: std::string - string form of the given enumeration
  */
-std::string Helpers::cellToStr(const CellState &cell_state)
+std::string Helpers::cellToStr(const CellState& cell_state)
 {
-  if (cell_state == CellState::OPEN)
+  if(cell_state == CellState::OPEN)
     return "OPEN";
-  else if (cell_state == CellState::BUBBY)
+  else if(cell_state == CellState::BUBBY)
     return "BUBBY";
-  else if (cell_state == CellState::CLOSED)
+  else if(cell_state == CellState::CLOSED)
     return "CLOSED";
-  else if (cell_state == CellState::BLOCKED)
+  else if(cell_state == CellState::BLOCKED)
     return "BLOCKED";
-  else if (cell_state == CellState::LINK)
+  else if(cell_state == CellState::LINK)
     return "LINK";
 
   return "";
@@ -643,7 +643,7 @@ std::string Helpers::cellToStr(const CellState &cell_state)
  * Inputs: std::string curve - the string version of the ElementCurve
  * Output: ElementCurve - the enumerated version of the string
  */
-ElementCurve Helpers::curveFromString(const std::string &curve)
+ElementCurve Helpers::curveFromString(const std::string& curve)
 {
   std::string curve_up = curve;
   std::transform(curve_up.begin(), curve_up.end(), curve_up.begin(), toupper);
@@ -669,7 +669,7 @@ ElementCurve Helpers::curveFromString(const std::string &curve)
  *         bool simple - true if simple ('D'). false ('Normal'). default false.
  * Output: std::string - the converted string version
  */
-std::string Helpers::curveToString(const ElementCurve &curve, bool simple)
+std::string Helpers::curveToString(const ElementCurve& curve, bool simple)
 {
   /* Simple form is 'XS', 'S', etc. */
   if(simple)
@@ -709,7 +709,7 @@ std::string Helpers::curveToString(const ElementCurve &curve, bool simple)
  * Inputs: std::string element - string form of element
  * Output: Element - enum form of the element
  */
-Element Helpers::elementFromString(const std::string &element)
+Element Helpers::elementFromString(const std::string& element)
 {
   std::string ele_up = element;
   std::transform(ele_up.begin(), ele_up.end(), ele_up.begin(), toupper);
@@ -766,21 +766,21 @@ uint16_t Helpers::elementToInt(Element element)
  * Inputs: Element - enumerated form of element.
  * Output: std::string - string form of the element
  */
-std::string Helpers::elementToString(const Element &element)
+std::string Helpers::elementToString(const Element& element)
 {
-  if (element == Element::PHYSICAL)
+  if(element == Element::PHYSICAL)
     return "PHYSICAL";
-  else if (element == Element::FIRE)
+  else if(element == Element::FIRE)
     return "FIRE";
-  else if (element == Element::FOREST)
+  else if(element == Element::FOREST)
     return "FOREST";
-  else if (element == Element::ICE)
+  else if(element == Element::ICE)
     return "ICE";
-  else if (element == Element::ELECTRIC)
+  else if(element == Element::ELECTRIC)
     return "ELECTRIC";
-  else if (element == Element::DIGITAL)
+  else if(element == Element::DIGITAL)
     return "DIGITAL";
-  else if (element == Element::NIHIL)
+  else if(element == Element::NIHIL)
     return "VOID";
 
   return "";
@@ -789,119 +789,119 @@ std::string Helpers::elementToString(const Element &element)
 // TODO: Comment
 std::string Helpers::eventToStr(EventType event)
 {
-  if (event == EventType::ITEM_USE)
+  if(event == EventType::ITEM_USE)
     return "ITEM_USE";
-  if (event == EventType::SKILL_USE)
+  if(event == EventType::SKILL_USE)
     return "SKILL_USE";
-  if (event == EventType::SKILL_USE_FIZZLE)
+  if(event == EventType::SKILL_USE_FIZZLE)
     return "SKILL_USE_FIZZLE";
-  if (event == EventType::SKILL_COOLDOWN)
+  if(event == EventType::SKILL_COOLDOWN)
     return "SKILL_COOLDOWN";
-  if (event == EventType::IMPLODE)
+  if(event == EventType::IMPLODE)
     return "IMPLODE";
-  if (event == EventType::INSPECT)
+  if(event == EventType::INSPECT)
     return "INSPECT";
-  if (event == EventType::ATTEMPT_RUN)
+  if(event == EventType::ATTEMPT_RUN)
     return "ATTEMPT_RUN";
-  if (event == EventType::SUCCEED_RUN)
+  if(event == EventType::SUCCEED_RUN)
     return "SUCCEED_RUN";
-  if (event == EventType::FAIL_RUN)
+  if(event == EventType::FAIL_RUN)
     return "FAIL_RUN";
-  if (event == EventType::MISS_TURN)
+  if(event == EventType::MISS_TURN)
     return "MISS_TURN";
-  if (event == EventType::PASS)
+  if(event == EventType::PASS)
     return "PASS";
-  if (event == EventType::SKILL_MISS)
+  if(event == EventType::SKILL_MISS)
     return "SKILL_MISS";
-  if (event == EventType::ACTION_MISS)
+  if(event == EventType::ACTION_MISS)
     return "ACTION_MISS";
-  if (event == EventType::BLIND_MISS)
+  if(event == EventType::BLIND_MISS)
     return "BLIND_MISS";
-  if (event == EventType::DREAMSNARE_MISS)
+  if(event == EventType::DREAMSNARE_MISS)
     return "DREAMSNARE_MISS";
-  if (event == EventType::FIZZLE)
+  if(event == EventType::FIZZLE)
     return "FIZZLE";
-  if (event == EventType::STANDARD_DAMAGE)
+  if(event == EventType::STANDARD_DAMAGE)
     return "STANDARD_DAMAGE";
-  if (event == EventType::CRITICAL_DAMAGE)
+  if(event == EventType::CRITICAL_DAMAGE)
     return "CRITICAL_DAMAGE";
-  if (event == EventType::POISON_DAMAGE)
+  if(event == EventType::POISON_DAMAGE)
     return "POISON_DAMAGE";
-  if (event == EventType::BURN_DAMAGE)
+  if(event == EventType::BURN_DAMAGE)
     return "BURN_DAMAGE";
-  if (event == EventType::HITBACK_DAMAGE)
+  if(event == EventType::HITBACK_DAMAGE)
     return "HITBACK_DAMAGE";
-  if (event == EventType::METABOLIC_KILL)
+  if(event == EventType::METABOLIC_KILL)
     return "METABOLIC_KILL";
-  if (event == EventType::METABOLIC_DAMAGE)
+  if(event == EventType::METABOLIC_DAMAGE)
     return "METABOLIC_DAMAGE";
-  if (event == EventType::DEATH_COUNTDOWN)
+  if(event == EventType::DEATH_COUNTDOWN)
     return "DEATH_COUNTDOWN";
-  if (event == EventType::BOND)
+  if(event == EventType::BOND)
     return "BOND";
-  if (event == EventType::BONDING)
+  if(event == EventType::BONDING)
     return "BONDING";
-  if (event == EventType::BEGIN_DEFEND)
+  if(event == EventType::BEGIN_DEFEND)
     return "BEGIN_DEFEND";
-  if (event == EventType::BREAK_DEFEND)
+  if(event == EventType::BREAK_DEFEND)
     return "BREAK_DEFEND";
-  if (event == EventType::PERSIST_DEFEND)
+  if(event == EventType::PERSIST_DEFEND)
     return "PERSIST_DEFEND";
-  if (event == EventType::BREAK_GUARD)
+  if(event == EventType::BREAK_GUARD)
     return "BREAK_GUARD";
-  if (event == EventType::BEGIN_GUARD)
+  if(event == EventType::BEGIN_GUARD)
     return "BEGIN_GUARD";
-  if (event == EventType::PERSIST_GUARD)
+  if(event == EventType::PERSIST_GUARD)
     return "PERSIST_GUARD";
-  if (event == EventType::BREAK_GUARD)
+  if(event == EventType::BREAK_GUARD)
     return "BREAK_GUARD";
-  if (event == EventType::FAIL_GUARD)
+  if(event == EventType::FAIL_GUARD)
     return "FAIL_GUARD";
-  if (event == EventType::DEATH)
+  if(event == EventType::DEATH)
     return "DEATH";
-  if (event == EventType::INFLICTION)
+  if(event == EventType::INFLICTION)
     return "INFLICTION";
-  if (event == EventType::CURE_INFLICTION)
+  if(event == EventType::CURE_INFLICTION)
     return "CURE_INFLICTION";
-  if (event == EventType::ALTERATION)
+  if(event == EventType::ALTERATION)
     return "ALTERATION";
-  if (event == EventType::ASSIGNMENT)
+  if(event == EventType::ASSIGNMENT)
     return "ASSIGNMENT";
-  if (event == EventType::REVIVAL)
+  if(event == EventType::REVIVAL)
     return "REVIVAL";
-  if (event == EventType::HEAL_HEALTH)
+  if(event == EventType::HEAL_HEALTH)
     return "HEAL_HEATLH";
-  if (event == EventType::REGEN_VITA)
+  if(event == EventType::REGEN_VITA)
     return "REGEN_VITA";
-  if (event == EventType::HEAL_QD)
+  if(event == EventType::HEAL_QD)
     return "HEAL_QD";
-  if (event == EventType::REGEN_QTDR)
+  if(event == EventType::REGEN_QTDR)
     return "REGEN_QTDR";
-  if (event == EventType::ACTION_BEGIN)
+  if(event == EventType::ACTION_BEGIN)
     return "ACTION_BEGIN";
-  if (event == EventType::PARTY_DEATH)
+  if(event == EventType::PARTY_DEATH)
     return "PARTY_DEATH";
-  if (event == EventType::INFLICTION_FIZZLE)
+  if(event == EventType::INFLICTION_FIZZLE)
     return "INFLICTION_FIZZLE";
-  if (event == EventType::DEATHTIMER_DEATH)
+  if(event == EventType::DEATHTIMER_DEATH)
     return "DEATHTIMER_DEATH";
-  if (event == EventType::EXP_GAIN)
+  if(event == EventType::EXP_GAIN)
     return "EXP_GAIN";
-  if (event == EventType::EXP_LOSS)
+  if(event == EventType::EXP_LOSS)
     return "EXP_LOSS";
-  if (event == EventType::LEVEL_UP)
+  if(event == EventType::LEVEL_UP)
     return "LEVEL_UP";
-  if (event == EventType::EQUIP_EXP_GAIN)
+  if(event == EventType::EQUIP_EXP_GAIN)
     return "EQUIP_EXP_GAIN";
-  if (event == EventType::BUBBY_LEVEL_UP)
+  if(event == EventType::BUBBY_LEVEL_UP)
     return "BUBBY_LEVEL_UP";
-  if (event == EventType::GAIN_ITEM)
+  if(event == EventType::GAIN_ITEM)
     return "GAIN ITEM";
-  if (event == EventType::GAIN_MONEY)
+  if(event == EventType::GAIN_MONEY)
     return "GAIN MONEY";
-  if (event == EventType::ACTION_END)
+  if(event == EventType::ACTION_END)
     return "ACTION END";
-  if (event == EventType::NONE)
+  if(event == EventType::NONE)
     return "NONE";
 
   return "";
@@ -913,32 +913,32 @@ std::string Helpers::eventToStr(EventType event)
  * Inputs: char c - character to put on each line, ex. ' '
  * Output: none
  */
-void Helpers::flushConsole(const char &c)
+void Helpers::flushConsole(const char& c)
 {
-  for (int i = 0; i < 100; i++)
+  for(int i = 0; i < 100; i++)
     std::cout << c << std::endl;
 }
 
-//TODO - Comments
-std::string Helpers::gameKeyToStr(const GameKey &game_key)
+// TODO - Comments
+std::string Helpers::gameKeyToStr(const GameKey& game_key)
 {
-  if (game_key == GameKey::MOVE_LEFT)
+  if(game_key == GameKey::MOVE_LEFT)
     return "Left";
-  if (game_key == GameKey::MOVE_RIGHT)
+  if(game_key == GameKey::MOVE_RIGHT)
     return "Right";
-  if (game_key == GameKey::MOVE_UP)
+  if(game_key == GameKey::MOVE_UP)
     return "Up";
-  if (game_key == GameKey::MOVE_DOWN)
+  if(game_key == GameKey::MOVE_DOWN)
     return "Down";
-  if (game_key == GameKey::MENU)
+  if(game_key == GameKey::MENU)
     return "Menu";
-  if (game_key == GameKey::ACTION)
+  if(game_key == GameKey::ACTION)
     return "Action";
-  if (game_key == GameKey::CANCEL)
+  if(game_key == GameKey::CANCEL)
     return "Cancel";
-  if (game_key == GameKey::RUN)
+  if(game_key == GameKey::RUN)
     return "Run";
-  if (game_key == GameKey::DEBUG)
+  if(game_key == GameKey::DEBUG)
     return "Debug";
 
   return "None";
@@ -950,7 +950,7 @@ std::string Helpers::gameKeyToStr(const GameKey &game_key)
  * Inputs: char c - char to see if it is a vowel
  * Output: bool - true if the given char is a vowel
  */
-bool Helpers::isVowel(const char &c)
+bool Helpers::isVowel(const char& c)
 {
   return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
           c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U');
@@ -970,32 +970,31 @@ std::string Helpers::numToRoman(int value)
     std::string numeral;
   };
 
-  std::vector<roman_values> values
-  {
-    {1000, "M"},
-    {900, "CM"},
-    {500, "D"},
-    {400, "CD"},
-    {100, "C"},
-    {90, "XC"},
-    {50, "L"},
-    {40, "XL"},
-    {10, "X"},
-    {9, "IX"},
-    {5, "V"},
-    {4, "IV"},
-    {1, "I"},
-    {0, ""},
+  std::vector<roman_values> values{
+      {1000, "M"},
+      {900, "CM"},
+      {500, "D"},
+      {400, "CD"},
+      {100, "C"},
+      {90, "XC"},
+      {50, "L"},
+      {40, "XL"},
+      {10, "X"},
+      {9, "IX"},
+      {5, "V"},
+      {4, "IV"},
+      {1, "I"},
+      {0, ""},
   };
 
   std::string result = "";
 
-  for (auto it = begin(values); it != end(values); ++it)
+  for(auto it = begin(values); it != end(values); ++it)
   {
-    while (value >= (*it).numeral_value && value > 0)
+    while(value >= (*it).numeral_value && value > 0)
     {
       result += (*it).numeral;
-      value  -= (*it).numeral_value;
+      value -= (*it).numeral_value;
     }
   }
 
@@ -1008,7 +1007,7 @@ std::string Helpers::numToRoman(int value)
  * Inputs: std::string tier - string representation of PartyType
  * Output: PartyType - the enumeration of the string
  */
-PartyType Helpers::partyTypeFromStr(const std::string &type)
+PartyType Helpers::partyTypeFromStr(const std::string& type)
 {
   std::string type_up = type;
   std::transform(type_up.begin(), type_up.end(), type_up.begin(), toupper);
@@ -1033,7 +1032,7 @@ PartyType Helpers::partyTypeFromStr(const std::string &type)
  * Inputs: PartyType type - enum of type
  * Output: std::string - the string version of the enumeration
  */
-std::string Helpers::partyTypeToStr(const PartyType &type)
+std::string Helpers::partyTypeToStr(const PartyType& type)
 {
   if(type == PartyType::SLEUTH)
     return "SLEUTH";
@@ -1054,7 +1053,7 @@ std::string Helpers::partyTypeToStr(const PartyType &type)
  * Inputs: std::string regen_rate - string representation of RegenRate
  * Output: RegenRate - the enumeration of the string
  */
-RegenRate Helpers::regenRateFromStr(const std::string &regen_rate)
+RegenRate Helpers::regenRateFromStr(const std::string& regen_rate)
 {
   std::string regen_up = regen_rate;
   std::transform(regen_up.begin(), regen_up.end(), regen_up.begin(), toupper);
@@ -1077,17 +1076,17 @@ RegenRate Helpers::regenRateFromStr(const std::string &regen_rate)
  * Inputs: RegenRate - enumerated type of RegenRate
  * Output: std::string - the string of the enumeration
  */
-std::string Helpers::regenRateToStr(const RegenRate &regen_rate)
+std::string Helpers::regenRateToStr(const RegenRate& regen_rate)
 {
-  if (regen_rate == RegenRate::ZERO)
+  if(regen_rate == RegenRate::ZERO)
     return "ZERO";
-  else if (regen_rate == RegenRate::WEAK)
+  else if(regen_rate == RegenRate::WEAK)
     return "WEAK";
-  else if (regen_rate == RegenRate::NORMAL)
+  else if(regen_rate == RegenRate::NORMAL)
     return "NORMAL";
-  else if (regen_rate == RegenRate::STRONG)
+  else if(regen_rate == RegenRate::STRONG)
     return "STRONG";
-  else if (regen_rate == RegenRate::GRAND)
+  else if(regen_rate == RegenRate::GRAND)
     return "GRAND";
 
   return "";
@@ -1099,7 +1098,7 @@ std::string Helpers::regenRateToStr(const RegenRate &regen_rate)
  * Inputs: std::string tier - string representation of ItemTier
  * Output: ItemTier - the enumeration of the string
  */
-ItemTier Helpers::tierFromStr(const std::string &tier)
+ItemTier Helpers::tierFromStr(const std::string& tier)
 {
   std::string tier_up = tier;
   std::transform(tier_up.begin(), tier_up.end(), tier_up.begin(), toupper);
@@ -1126,7 +1125,7 @@ ItemTier Helpers::tierFromStr(const std::string &tier)
  * Inputs: ItemTier tier - enum representation of the tier
  * Output: std::string - the enumeration to a string
  */
-std::string Helpers::tierToStr(const ItemTier &tier)
+std::string Helpers::tierToStr(const ItemTier& tier)
 {
   if(tier == ItemTier::TRASH)
     return "TRASH";
@@ -1143,6 +1142,36 @@ std::string Helpers::tierToStr(const ItemTier &tier)
   return "";
 }
 
+std::string Helpers::turnStateToStr(const TurnState& turn_state)
+{
+  if(turn_state == TurnState::BEGIN)
+    return "BEGIN";
+  if(turn_state == TurnState::GENERAL_UPKEEP)
+    return "GENERAL_UPKEEP";
+  if(turn_state == TurnState::UPKEEP)
+    return "UPKEEP";
+  if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    return "SELECT_ACTION_ALLY";
+  if(turn_state == TurnState::SELECT_ACTION_ENEMY)
+    return "SELECT_ACTION_ENEMY";
+  if(turn_state == TurnState::ORDER_ACTIONS)
+    return "ORDER_ACTIONS";
+  if(turn_state == TurnState::PROCESS_ACTIONS)
+    return "PROCESS_ACTIONS";
+  if(turn_state == TurnState::CLEAN_UP)
+    return "CLEAN_UP";
+  if(turn_state == TurnState::LOSS)
+    return "LOSS";
+  if(turn_state == TurnState::VICTORY)
+    return "VICTORY";
+  if(turn_state == TurnState::RUNNING)
+    return "RUNNING";
+  if(turn_state == TurnState::STOPPED)
+    return "STOPPED";
+
+  return "FINISHED";
+}
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/
@@ -1154,21 +1183,21 @@ std::string Helpers::tierToStr(const ItemTier &tier)
  * Inputs: element - Enumerated element type to find attributes for
  * Output: std::pair<Attr, Attr> - the corresponding off/def enumerated attrs.
  */
-std::pair<Attribute, Attribute> Helpers::elementToStats(const Element &element)
+std::pair<Attribute, Attribute> Helpers::elementToStats(const Element& element)
 {
-  if (element == Element::PHYSICAL)
+  if(element == Element::PHYSICAL)
     return std::make_pair(Attribute::PHAG, Attribute::PHFD);
-  else if (element == Element::FIRE)
+  else if(element == Element::FIRE)
     return std::make_pair(Attribute::THAG, Attribute::THFD);
-  else if (element == Element::FOREST)
+  else if(element == Element::FOREST)
     return std::make_pair(Attribute::PRAG, Attribute::PRFD);
-  else if (element == Element::ICE)
+  else if(element == Element::ICE)
     return std::make_pair(Attribute::POAG, Attribute::POFD);
-  else if (element == Element::ELECTRIC)
+  else if(element == Element::ELECTRIC)
     return std::make_pair(Attribute::CHAG, Attribute::CHFD);
-  else if (element == Element::DIGITAL)
+  else if(element == Element::DIGITAL)
     return std::make_pair(Attribute::CYAG, Attribute::CYFD);
-  else if (element == Element::NIHIL)
+  else if(element == Element::NIHIL)
     return std::make_pair(Attribute::NIAG, Attribute::NIFD);
 
   return std::make_pair(Attribute::NONE, Attribute::NONE);
@@ -1185,9 +1214,9 @@ Element Helpers::getStrength(const Element& element)
 {
   uint8_t strength = static_cast<uint8_t>(element);
 
-  if (strength <= (1 >> 1))
+  if(strength <= (1 >> 1))
     return Element::NONE;
-  else if (strength == 1 >> 2)
+  else if(strength == 1 >> 2)
     return Element::NIHIL;
   else
     strength = strength >> 1;
@@ -1206,9 +1235,9 @@ Element Helpers::getWeakness(const Element& element)
 {
   uint8_t weakness = static_cast<uint8_t>(element);
 
-  if (weakness <= (1 >> 1))
+  if(weakness <= (1 >> 1))
     return Element::NONE;
-  else if (weakness == 1 >> 7)
+  else if(weakness == 1 >> 7)
     return Element::FIRE;
   else
     weakness = weakness >> 7;
@@ -1231,16 +1260,16 @@ Element Helpers::getWeakness(const Element& element)
  *         const int &iter - const ref int of the # of iterations for the table
  * Output: std::vector<int> - the vector containing the constructed table
  */
-std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min,
-                                             const uint32_t &max,
-                                             const uint32_t &iter)
+std::vector<uint32_t> Helpers::buildExpTable(const uint32_t& min,
+                                             const uint32_t& max,
+                                             const uint32_t& iter)
 {
   std::vector<uint32_t> table;
 
   auto b = log((double)max / min) / (iter - 1);
   auto a = (double)min / (exp(b) - 1.0);
 
-  for  (uint32_t i = 1; i <= iter; i++)
+  for(uint32_t i = 1; i <= iter; i++)
   {
     auto old_exp = round(a * exp(b * (i - 1)));
     auto new_exp = round(a * exp(b * i));
@@ -1291,8 +1320,7 @@ std::string Helpers::combine(std::string s, char c, bool before)
  * Output: std::vector<std::vector<std::string>> - a matrix of paths (in X
  *         and Y direction). As shown in the example above.
  */
-std::vector<std::vector<std::string>> Helpers::frameSeparator(
-    std::string path)
+std::vector<std::vector<std::string>> Helpers::frameSeparator(std::string path)
 {
   /* Split string on '[' */
   std::vector<std::string> first_split = split(path, '[');
@@ -1314,13 +1342,12 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
       /* Check if the first string in the set is valid in the 'A-B' category */
       std::vector<std::string> range_split = split(second_split.front(), '-');
       if(range_count < 2 && range_split.size() == 2 &&
-         range_split.front().size() == 1 &&
-         range_split.back().size() == 1 &&
+         range_split.front().size() == 1 && range_split.back().size() == 1 &&
          range_split.front().front() >= 'A' &&
          range_split.front().front() <= 'Z' &&
          range_split.back().front() >= 'A' &&
-         range_split.back().front() <= 'Z')// &&
-         //range_split.front().front() <= range_split.back().front())
+         range_split.back().front() <= 'Z') // &&
+      // range_split.front().front() <= range_split.back().front())
       {
         /* String contains a range that's identical (Eg B-B) */
         if(range_split.front().front() == range_split.back().front())
@@ -1361,8 +1388,8 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     {
       uint32_t base_elements = linear_set.size();
       std::vector<std::string> range_str = split(split_strings[i], '-');
-      int32_t new_elements = range_str.back().front() -
-                              range_str.front().front();
+      int32_t new_elements =
+          range_str.back().front() - range_str.front().front();
       uint32_t abs_elements = new_elements;
       if(new_elements < 0)
         abs_elements = 0 - new_elements;
@@ -1414,7 +1441,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     {
       std::vector<std::string> set_row;
       for(uint32_t j = 0; j < range2; j++)
-        set_row.push_back(linear_set[i+range1*j]);
+        set_row.push_back(linear_set[i + range1 * j]);
       set.push_back(set_row);
     }
   }
@@ -1435,7 +1462,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     /* Determine if it's x or y direction */
     bool x_dir = true;
     if(index > 0 && linear_set.front()[index] >= 'A' &&
-                    linear_set.front()[index - 1] <= 'Z')
+       linear_set.front()[index - 1] <= 'Z')
       x_dir = false;
 
     /* Handle it accordingly */
@@ -1499,10 +1526,11 @@ uint16_t Helpers::getTileSize()
  * Inputs: std::string &s - the string to trim whitespace from
  * Output: std::string& - the string with the whitespace removed
  */
-std::string& Helpers::ltrim(std::string &s)
+std::string& Helpers::ltrim(std::string& s)
 {
-  s.erase(begin(s), std::find_if(begin(s), end(s),
-          std::not1(std::ptr_fun<int, int>(std::isspace))));
+  s.erase(begin(s),
+          std::find_if(begin(s), end(s),
+                       std::not1(std::ptr_fun<int, int>(std::isspace))));
 
   return s;
 }
@@ -1518,8 +1546,8 @@ std::string& Helpers::ltrim(std::string &s)
                                  parsed data to return. Passed by reference.
  * Output: bool - status if the data is good and referenced vars are set
  */
-bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
-                         uint32_t &y_min, uint32_t &y_max)
+bool Helpers::parseRange(std::string sequence, uint32_t& x_min, uint32_t& x_max,
+                         uint32_t& y_min, uint32_t& y_max)
 {
   uint32_t x_max_tmp = 0;
   uint32_t x_min_tmp = 0;
@@ -1628,10 +1656,11 @@ std::vector<std::vector<uint16_t>> Helpers::parseRangeSet(std::string sequence)
  * Inputs: std::string &s - the string to trim whitespace from
  * Output: std::string& - the string with the whitespace removed
  */
-std::string& Helpers::rtrim(std::string &s)
+std::string& Helpers::rtrim(std::string& s)
 {
   s.erase(std::find_if(s.rbegin(), s.rend(),
-          std::not1(std::ptr_fun<int, int>(std::isspace))).base(), end(s));
+                       std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
+          end(s));
 
   return s;
 }
@@ -1650,7 +1679,7 @@ std::string& Helpers::rtrim(std::string &s)
  *         char delim - the character delimiter
  * Output: std::vector<std::string> - the split strings in array returned.
  */
-std::vector<std::string> Helpers::split(const std::string &line, char delim)
+std::vector<std::string> Helpers::split(const std::string& line, char delim)
 {
   std::vector<std::string> elements;
   std::string item;
@@ -1669,7 +1698,7 @@ std::vector<std::string> Helpers::split(const std::string &line, char delim)
  * Inputs: std::string &s - the string to trim whitespace from
  * Output: std::string& - the string with the whitespace removed
  */
-std::string& Helpers::trim(std::string &s)
+std::string& Helpers::trim(std::string& s)
 {
   return ltrim(rtrim(s));
 }
@@ -1690,9 +1719,9 @@ void Helpers::createWhiteMask(SDL_Renderer* renderer)
 {
   if(white_mask == NULL)
   {
-    white_mask = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                             SDL_TEXTUREACCESS_TARGET,
-                                             kTILE_SIZE, kTILE_SIZE);
+    white_mask =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, kTILE_SIZE, kTILE_SIZE);
     SDL_SetRenderTarget(renderer, white_mask);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);

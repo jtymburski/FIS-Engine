@@ -1660,7 +1660,7 @@ bool TestBattle::render(SDL_Renderer* renderer)
     /* Rendering primary */
     if(mode == TEST_BATTLE)
     {
-      battle_logic->render(0);
+      battle_logic->render();
     }
     else
     {

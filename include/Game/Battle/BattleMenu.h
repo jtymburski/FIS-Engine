@@ -33,7 +33,8 @@ enum BattleMenuLayer
 ENUM_FLAGS(BattleMenuState)
 enum class BattleMenuState
 {
-  SELECTION_COMPLETE = 1 << 0
+  SELECTION_COMPLETE = 1 << 0,
+  SKILL_FRAMES_BUILT = 1 << 1
 };
 
 class BattleMenu
@@ -157,9 +158,6 @@ private:
   SDL_Texture* createSkillFrame(BattleSkill* battle_skill, uint32_t width,
                                 uint32_t height);
 
-  /* Constructs all SkillFrames for the current BattleSkills */
-  bool createSkillFrames(uint32_t width_left, uint32_t width_right);
-
   /* Rendering functions */
   bool renderActionTypes(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
   bool renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
@@ -199,6 +197,10 @@ public:
    * PUBLIC FUNCTIONS - RENDERING
    *============================================================================*/
 public:
+    /* Constructs all SkillFrames for the current BattleSkills */
+  bool createSkillFrames(uint32_t width_left, uint32_t width_right);
+
+  /* Render the battle menu */
   bool render();
 };
 

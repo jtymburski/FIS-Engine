@@ -329,8 +329,6 @@ int32_t Battle::getBattleIndex(int32_t index)
 
 void Battle::buildActionFrame(BattleActor* actor)
 {
-  assert(actor);
-
   uint16_t width = kACTION_W;
   uint16_t height = kACTION_H;
   uint16_t x1 = width;
@@ -698,7 +696,7 @@ void Battle::clearElements()
 // Other todos:
 // -- Midlays
 // -- Overlays
-bool Battle::render(int32_t cycle_time)
+bool Battle::render()
 {
   auto success = false;
 
@@ -723,77 +721,52 @@ bool Battle::render(int32_t cycle_time)
 
     /* Render the allies in their present states */
     success &= renderAllies();
-    success &= renderAlliesInfo();
+
+    //   /* Render any death animations below the menu */
+    //   for(auto &element : render_elements)
+    //   {
+    //     if(element && element->getType() == RenderType::RGB_SPRITE_DEATH)
+    //     {
+    //       auto death_sprite = element->getSprite();
+    //       auto flasher      = element->getFlasher();
+
+    //       if(death_sprite && flasher)
+    //       {
+    //         if(element->getAlpha() >= kPERSON_KO_ALPHA)
+    //           death_sprite->setOpacity(element->getAlpha());
+    //         else
+    //           death_sprite->setOpacity(kPERSON_KO_ALPHA);
+
+    //         death_sprite->setColorBalance(element->calcColorRed(),
+    //                                       element->calcColorGreen(),
+    //                                       element->calcColorBlue());
+
+    //         death_sprite->render(renderer, element->getX(), element->getY());
+    //       }
+    //     }
+    //   }
+
+    /* Render battle bar (on bottom) */
+    success &= renderBattleBar();
+
+    /* --------------- RENDER BATTLE MENU -------------- */
+
+    /* Determine whether the menu should be rendered */
+    auto to_render_menu = (turn_state == TurnState::SELECT_ACTION_ALLY);
+    to_render_menu &= !getFlagCombat(CombatState::PHASE_DONE);
+
+    if(to_render_menu)
+    {
+      if(!battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
+        battle_menu->createSkillFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
+
+      success &= battle_menu->render();
+    }
+    else
+    {
+      success &= renderAlliesInfo();
+    }
   }
-
-  /* --------------- RENDER BATTLE MENU -------------- */
-
-  //   /* Render overlays - over background modifiers */
-  //   for(uint8_t i = 0; i < overlays.size(); i++)
-  //     success &= overlays[i]->render(renderer, 0, 0, width, height);
-
-  //   /* Render enemies */
-  //   success &= renderFoes(renderer);
-
-  //   /* Render player & enemy team */
-  //   success &= renderFriends(renderer);
-  //   success &= renderFoesInfo(renderer, width);
-
-  //   /* Render any death animations below the menu */
-  //   for(auto &element : render_elements)
-  //   {
-  //     if(element && element->getType() == RenderType::RGB_SPRITE_DEATH)
-  //     {
-  //       auto death_sprite = element->getSprite();
-  //       auto flasher      = element->getFlasher();
-
-  //       if(death_sprite && flasher)
-  //       {
-  //         if(element->getAlpha() >= kPERSON_KO_ALPHA)
-  //           death_sprite->setOpacity(element->getAlpha());
-  //         else
-  //           death_sprite->setOpacity(kPERSON_KO_ALPHA);
-
-  //         death_sprite->setColorBalance(element->calcColorRed(),
-  //                                       element->calcColorGreen(),
-  //                                       element->calcColorBlue());
-
-  //         death_sprite->render(renderer, element->getX(), element->getY());
-  //       }
-  //     }
-  //   }
-
-  //   /* Render battle bar (on bottom) */
-  //   renderBar(renderer, width, height);
-
-  //   /* Determine whether the menu should be rendered */
-  //   auto to_render_menu = true;
-
-  //   to_render_menu &= (rendering_state == TurnState::SELECT_ACTION_ALLY);
-  //   to_render_menu &= !battle->getBattleFlag(CombatState::PHASE_DONE);
-  //   to_render_menu &= menu->getLayerIndex() == 1 || menu->getLayerIndex() ==
-  //   2;
-  //   to_render_menu &= !getRenderFlag(RenderState::SHOW_INFO);
-
-  //   if(to_render_menu)
-  //   {
-  //      Checks the index of the rendering person for if the skills need to be
-  //      * updated
-  //     if(index_person != menu->getPersonIndex())
-  //     {
-  //       createSkills(renderer, menu, width * kBIGBAR_M2, width * kBIGBAR_R);
-  //       index_person = menu->getPersonIndex();
-  //     }
-
-  //     /* Renders the menu */
-  //     success &= renderMenu(
-  //         renderer, getFriendsState(menu->getPersonIndex() - 1), width,
-  //         height);
-  //   }
-  //   else
-  //   {
-  //     success &= renderFriendsInfo(renderer, height);
-  //   }
 
   //   for(const auto &element : render_elements)
   //   {
@@ -862,16 +835,18 @@ bool Battle::render(int32_t cycle_time)
 
 bool Battle::renderBattleBar()
 {
-  if(!(renderer && config && battle_display_data))
-    return false;
+  if(renderer && battle_display_data)
+  {
+    auto frame = battle_display_data->getBattleBar();
 
-  auto frame = battle_display_data->getBattleBar();
+    frame.render(renderer, 0,
+                 config->getScreenHeight() - kBIGBAR_OFFSET - bar_offset,
+                 config->getScreenWidth());
 
-  frame.render(renderer, 0,
-               config->getScreenHeight() - kBIGBAR_OFFSET - bar_offset,
-               config->getScreenWidth());
+    return true;
+  }
 
-  return true;
+  return false;
 }
 
 bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
@@ -1057,7 +1032,7 @@ bool Battle::renderAllyInfo(BattleActor* ally)
   bool success = true;
   // bool below = true;
 
-  auto x = getActorX(ally);
+  auto x = (ally->getIndex() * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
   auto y = config->getScreenHeight() - kALLY_HEIGHT;
 
   /* Get the percent of vitality, and set it at least at 1% */
@@ -1188,274 +1163,266 @@ bool Battle::renderAlliesInfo()
   return success;
 }
 
-void Battle::updateRendering(int32_t cycle_time)
-{
-  (void)cycle_time;
-  // if(background)
-  //   background->update(cycle_time);
+// if(background)
+//   background->update(cycle_time);
 
-  // updateRenderElements(cycle_time);
-  // updateRenderEnemies(cycle_time);
-  // updateRenderAllies(cycle_time);
+// if(turn_state == TurnState::CLEAN_UP)
+// {
+//   // index_person = 0;
+//   bar_offset   = 0;
+//   render_flags = static_cast<RenderState>(0);
+// }
 
-  // if(turn_state == TurnState::CLEAN_UP)
-  // {
-  //   // index_person = 0;
-  //   bar_offset   = 0;
-  //   render_flags = static_cast<RenderState>(0);
-  // }
+//  /* Update event processing delays */
+//   if(processing_delay > 0)
+//   {
+//     processing_delay -= cycle_time;
 
-  //  /* Update event processing delays */
-  //   if(processing_delay > 0)
-  //   {
-  //     processing_delay -= cycle_time;
+//     if(processing_delay > 0)
+//       delay = true;
+//   }
 
-  //     if(processing_delay > 0)
-  //       delay = true;
-  //   }
+//   /*-------------------------------------------------------------------------
+//    * BEGIN state
+//    *-----------------------------------------------------------------------*/
+//   if(rendering_state == TurnState::BEGIN)
+//   {
+//     bar_offset = 0;
 
-  //   /*-------------------------------------------------------------------------
-  //    * BEGIN state
-  //    *-----------------------------------------------------------------------*/
-  //   if(rendering_state == TurnState::BEGIN)
-  //   {
-  //     bar_offset = 0;
+//     setRenderFlag(RenderState::BEGIN_RENDERING, false);
 
-  //     setRenderFlag(RenderState::BEGIN_RENDERING, false);
+//     rendering_state = battle_state;
+//   }
+//   /*-------------------------------------------------------------------------
+//    * GENERAL_UPKEEP state
+//    *-----------------------------------------------------------------------*/
+//   else if(rendering_state == TurnState::GENERAL_UPKEEP)
+//   {
+//     bar_offset = 0;
 
-  //     rendering_state = battle_state;
-  //   }
-  //   /*-------------------------------------------------------------------------
-  //    * GENERAL_UPKEEP state
-  //    *-----------------------------------------------------------------------*/
-  //   else if(rendering_state == TurnState::GENERAL_UPKEEP)
-  //   {
-  //     bar_offset = 0;
+//     /* Upon general upkeep state, the screen needs to be dimmed and the
+//     text
+//      * "Turn X: Decide Your Fate" displayed on the screen. This screen dim
+//      * will use a RGB_Overlay RenderElement with fade-in and fade-out
+//      */
+//     if(getRenderFlag(RenderState::SCREEN_DIM) &&
+//        !getRenderFlag(RenderState::TURN_TEXT_CREATED))
+//     {
+//       processing_delay = 3500;
 
-  //     /* Upon general upkeep state, the screen needs to be dimmed and the
-  //     text
-  //      * "Turn X: Decide Your Fate" displayed on the screen. This screen dim
-  //      * will use a RGB_Overlay RenderElement with fade-in and fade-out
-  //      */
-  //     if(getRenderFlag(RenderState::SCREEN_DIM) &&
-  //        !getRenderFlag(RenderState::TURN_TEXT_CREATED))
-  //     {
-  //       processing_delay = 3500;
+//       SDL_Color shadow_color = {194, 59, 34, 255};
+//       RenderElement *turn_text =
+//           new RenderElement(RenderType::ACTION_TEXT, 1300, 500, 300);
 
-  //       SDL_Color shadow_color = {194, 59, 34, 255};
-  //       RenderElement *turn_text =
-  //           new RenderElement(RenderType::ACTION_TEXT, 1300, 500, 300);
+//       turn_text->setColor({0, 0, 0, 255});
+//       turn_text->setShadowColor(shadow_color);
+//       turn_text->setShadow();
 
-  //       turn_text->setColor({0, 0, 0, 255});
-  //       turn_text->setShadowColor(shadow_color);
-  //       turn_text->setShadow();
+//       auto turn_string = Helpers::numToRoman(battle->getTurnsElapsed() +
+//       1);
 
-  //       auto turn_string = Helpers::numToRoman(battle->getTurnsElapsed() +
-  //       1);
+//       // TODO: Remove [07-11-15]
+//       auto rand_int = Helpers::randInt(10);
 
-  //       // TODO: Remove [07-11-15]
-  //       auto rand_int = Helpers::randInt(10);
+//       if(rand_int == 9)
+//         turn_string = "Turn " + turn_string + " Kevins a Schweeb";
+//       else
+//         turn_string = "Turn " + turn_string + "  Decide Your Fate";
+//       // END TODO
 
-  //       if(rand_int == 9)
-  //         turn_string = "Turn " + turn_string + " Kevins a Schweeb";
-  //       else
-  //         turn_string = "Turn " + turn_string + "  Decide Your Fate";
-  //       // END TODO
+//       turn_text->setFont(font_turn);
+//       turn_text->setText(turn_string);
 
-  //       turn_text->setFont(font_turn);
-  //       turn_text->setText(turn_string);
+//       Text t(font_turn);
+//       t.setText(renderer, turn_text->getText(), shadow_color);
 
-  //       Text t(font_turn);
-  //       t.setText(renderer, turn_text->getText(), shadow_color);
+//       auto text_x = system_options->getScreenWidth() / 2;
+//       text_x -= t.getWidth() / 2;
+//       auto text_y = system_options->getScreenHeight() / 2;
+//       text_y -= t.getHeight() / 2;
 
-  //       auto text_x = system_options->getScreenWidth() / 2;
-  //       text_x -= t.getWidth() / 2;
-  //       auto text_y = system_options->getScreenHeight() / 2;
-  //       text_y -= t.getHeight() / 2;
+//       turn_text->setCoordinates(text_x, text_y);
+//       turn_text->setShadowCoordinates(kACTION_TEXT_SHADOW + 2,
+//                                       kACTION_TEXT_SHADOW + 2);
 
-  //       turn_text->setCoordinates(text_x, text_y);
-  //       turn_text->setShadowCoordinates(kACTION_TEXT_SHADOW + 2,
-  //                                       kACTION_TEXT_SHADOW + 2);
+//       render_elements.push_back(turn_text);
 
-  //       render_elements.push_back(turn_text);
+//       setRenderFlag(RenderState::TURN_TEXT_CREATED, true);
+//     }
 
-  //       setRenderFlag(RenderState::TURN_TEXT_CREATED, true);
-  //     }
+//     /* If the screen is not currently dimming, append a new render elmt */
+//     else if(!getRenderFlag(RenderState::SCREEN_DIMMING))
+//     {
+//       processing_delay = 750;
 
-  //     /* If the screen is not currently dimming, append a new render elmt */
-  //     else if(!getRenderFlag(RenderState::SCREEN_DIMMING))
-  //     {
-  //       processing_delay = 750;
+//       SDL_Color screen_dim_color = {0, 0, 0, 185};
 
-  //       SDL_Color screen_dim_color = {0, 0, 0, 185};
+//       RenderElement *dim_element =
+//           new RenderElement(RenderType::RGB_OVERLAY, 2000, 400, 300);
 
-  //       RenderElement *dim_element =
-  //           new RenderElement(RenderType::RGB_OVERLAY, 2000, 400, 300);
+//       dim_element->setColor(screen_dim_color);
+//       dim_element->setCoordinates(0, 0);
+//       dim_element->setSizeX(system_options->getScreenWidth());
+//       dim_element->setSizeY(system_options->getScreenHeight());
 
-  //       dim_element->setColor(screen_dim_color);
-  //       dim_element->setCoordinates(0, 0);
-  //       dim_element->setSizeX(system_options->getScreenWidth());
-  //       dim_element->setSizeY(system_options->getScreenHeight());
+//       render_elements.push_back(dim_element);
 
-  //       render_elements.push_back(dim_element);
+//       setRenderFlag(RenderState::SCREEN_DIMMING, true);
+//     }
+//     else
+//     {
+//       if(!delay <= 0 && !getRenderFlag(RenderState::TURN_TEXT_CREATED))
+//       {
+//         setRenderFlag(RenderState::SCREEN_DIM, true);
+//       }
+//       else if(processing_delay <= 0 &&
+//               getRenderFlag(RenderState::TURN_TEXT_CREATED))
+//       {
+//         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+//       }
+//     }
 
-  //       setRenderFlag(RenderState::SCREEN_DIMMING, true);
-  //     }
-  //     else
-  //     {
-  //       if(!delay <= 0 && !getRenderFlag(RenderState::TURN_TEXT_CREATED))
-  //       {
-  //         setRenderFlag(RenderState::SCREEN_DIM, true);
-  //       }
-  //       else if(processing_delay <= 0 &&
-  //               getRenderFlag(RenderState::TURN_TEXT_CREATED))
-  //       {
-  //         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-  //       }
-  //     }
+//     rendering_state = battle_state;
+//   }
+//   /*-------------------------------------------------------------------------
+//    * UPKEEP state
+//    *-----------------------------------------------------------------------*/
+//   else if(rendering_state == TurnState::UPKEEP)
+//   {
+//     bar_offset = 0;
 
-  //     rendering_state = battle_state;
-  //   }
-  //   /*-------------------------------------------------------------------------
-  //    * UPKEEP state
-  //    *-----------------------------------------------------------------------*/
-  //   else if(rendering_state == TurnState::UPKEEP)
-  //   {
-  //     bar_offset = 0;
+//     if(!getRenderFlag(RenderState::BEGIN_RENDERING))
+//     {
+//       setRenderFlag(RenderState::BEGIN_RENDERING, true);
+//       processing_delay = 350;
+//     }
+//     else if(!delay)
+//     {
+//       if(buffer->setRenderIndex())
+//       {
+//         curr_event = buffer->getCurrentEvent();
 
-  //     if(!getRenderFlag(RenderState::BEGIN_RENDERING))
-  //     {
-  //       setRenderFlag(RenderState::BEGIN_RENDERING, true);
-  //       processing_delay = 350;
-  //     }
-  //     else if(!delay)
-  //     {
-  //       if(buffer->setRenderIndex())
-  //       {
-  //         curr_event = buffer->getCurrentEvent();
+//         if(curr_event != nullptr)
+//         {
+//           updateEvent();
+//           buffer->setRendered(buffer->getIndex());
+//         }
+//       }
+//       else
+//       {
+//         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+//         setRenderFlag(RenderState::BEGIN_RENDERING, false);
+//       }
+//     }
 
-  //         if(curr_event != nullptr)
-  //         {
-  //           updateEvent();
-  //           buffer->setRendered(buffer->getIndex());
-  //         }
-  //       }
-  //       else
-  //       {
-  //         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-  //         setRenderFlag(RenderState::BEGIN_RENDERING, false);
-  //       }
-  //     }
+//     rendering_state = battle_state;
+//   }
+//   /*-------------------------------------------------------------------------
+//    * SELECT_ACTION_ALLY state
+//    *-----------------------------------------------------------------------*/
+//   else if(rendering_state == TurnState::SELECT_ACTION_ALLY)
+//   {
+//     /* Resetting index */
+//     if((index_layer == 3 || index_layer == 4) && menu->getLayerIndex() ==
+//     1)
+//     {
+//       index_actions = 0;
+//       index_types = 0;
+//     }
 
-  //     rendering_state = battle_state;
-  //   }
-  //   /*-------------------------------------------------------------------------
-  //    * SELECT_ACTION_ALLY state
-  //    *-----------------------------------------------------------------------*/
-  //   else if(rendering_state == TurnState::SELECT_ACTION_ALLY)
-  //   {
-  //     /* Resetting index */
-  //     if((index_layer == 3 || index_layer == 4) && menu->getLayerIndex() ==
-  //     1)
-  //     {
-  //       index_actions = 0;
-  //       index_types = 0;
-  //     }
+//     /* -- CHOOSING SKILLS -- */
+//     else if(menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2)
+//     {
+//       /* Modify the indexes */
+//       if(menu->getLayerIndex() == 1)
+//       {
+//         if(menu->getElementIndex() >= (index_types + kTYPE_MAX))
+//           index_types++;
+//         else if(menu->getElementIndex() < index_types)
+//           index_types--;
+//       }
+//       if(menu->getLayerIndex() == 2)
+//       {
+//         if(menu->getElementIndex() >= (index_actions + kTYPE_MAX))
+//           index_actions++;
+//         else if(menu->getElementIndex() < index_actions)
+//           index_actions--;
+//       }
 
-  //     /* -- CHOOSING SKILLS -- */
-  //     else if(menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2)
-  //     {
-  //       /* Modify the indexes */
-  //       if(menu->getLayerIndex() == 1)
-  //       {
-  //         if(menu->getElementIndex() >= (index_types + kTYPE_MAX))
-  //           index_types++;
-  //         else if(menu->getElementIndex() < index_types)
-  //           index_types--;
-  //       }
-  //       if(menu->getLayerIndex() == 2)
-  //       {
-  //         if(menu->getElementIndex() >= (index_actions + kTYPE_MAX))
-  //           index_actions++;
-  //         else if(menu->getElementIndex() < index_actions)
-  //           index_actions--;
-  //       }
+//       bar_offset = kBIGBAR_CHOOSE;
+//     }
+//     /* -- CHOOSING TARGETS -- */
+//     else if(menu->getLayerIndex() == 3)
+//     {
+//       bar_offset = 0;
+//     }
+//     /* -- CONFIRM CHOICE -- */
+//     else
+//     {
+//       bar_offset = 0;
+//     }
 
-  //       bar_offset = kBIGBAR_CHOOSE;
-  //     }
-  //     /* -- CHOOSING TARGETS -- */
-  //     else if(menu->getLayerIndex() == 3)
-  //     {
-  //       bar_offset = 0;
-  //     }
-  //     /* -- CONFIRM CHOICE -- */
-  //     else
-  //     {
-  //       bar_offset = 0;
-  //     }
+//     rendering_state = battle_state;
+//     index_layer = menu->getLayerIndex();
+//   }
+//   /*-------------------------------------------------------------------------
+//    * SELECT_ACTION_ENEMY state
+//    *-----------------------------------------------------------------------*/
+//   else if(rendering_state == TurnState::SELECT_ACTION_ENEMY)
+//   {
+//     bar_offset = 0;
+//     rendering_state = battle_state;
+//   }
+//   /*-------------------------------------------------------------------------
+//    * ORDER_ACTIONS state
+//    *-----------------------------------------------------------------------*/
+//   else if(rendering_state == TurnState::ORDER_ACTIONS)
+//   {
+//     bar_offset = 0;
+//     rendering_state = battle_state;
+//   }
+//   /*-------------------------------------------------------------------------
+//    * PROCESS_ACTIONS state
+//    *-----------------------------------------------------------------------*/
+//   else if(rendering_state == TurnState::PROCESS_ACTIONS)
+//   {
+//     bar_offset = 0;
+//     rendering_state = battle_state;
 
-  //     rendering_state = battle_state;
-  //     index_layer = menu->getLayerIndex();
-  //   }
-  //   /*-------------------------------------------------------------------------
-  //    * SELECT_ACTION_ENEMY state
-  //    *-----------------------------------------------------------------------*/
-  //   else if(rendering_state == TurnState::SELECT_ACTION_ENEMY)
-  //   {
-  //     bar_offset = 0;
-  //     rendering_state = battle_state;
-  //   }
-  //   /*-------------------------------------------------------------------------
-  //    * ORDER_ACTIONS state
-  //    *-----------------------------------------------------------------------*/
-  //   else if(rendering_state == TurnState::ORDER_ACTIONS)
-  //   {
-  //     bar_offset = 0;
-  //     rendering_state = battle_state;
-  //   }
-  //   /*-------------------------------------------------------------------------
-  //    * PROCESS_ACTIONS state
-  //    *-----------------------------------------------------------------------*/
-  //   else if(rendering_state == TurnState::PROCESS_ACTIONS)
-  //   {
-  //     bar_offset = 0;
-  //     rendering_state = battle_state;
+//     if(!getRenderFlag(RenderState::BEGIN_RENDERING))
+//     {
+//       setRenderFlag(RenderState::BEGIN_RENDERING, true);
+//       processing_delay = 500;
+//     }
+//     else if(!delay)
+//     {
+//       /* Render */
+//       if(buffer->setRenderIndex())
+//       {
+//         curr_event = buffer->getCurrentEvent();
 
-  //     if(!getRenderFlag(RenderState::BEGIN_RENDERING))
-  //     {
-  //       setRenderFlag(RenderState::BEGIN_RENDERING, true);
-  //       processing_delay = 500;
-  //     }
-  //     else if(!delay)
-  //     {
-  //       /* Render */
-  //       if(buffer->setRenderIndex())
-  //       {
-  //         curr_event = buffer->getCurrentEvent();
+//         if(curr_event != nullptr)
+//         {
+//           updateEvent();
+//           buffer->setRendered(buffer->getIndex());
+//         }
+//       }
+//       else
+//       {
+//         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+//         setRenderFlag(RenderState::BEGIN_RENDERING, false);
+//       }
+//     }
+//   }
 
-  //         if(curr_event != nullptr)
-  //         {
-  //           updateEvent();
-  //           buffer->setRendered(buffer->getIndex());
-  //         }
-  //       }
-  //       else
-  //       {
-  //         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-  //         setRenderFlag(RenderState::BEGIN_RENDERING, false);
-  //       }
-  //     }
-  //   }
-
-  //   /*-------------------------------------------------------------------------
-  //    * DESTRUCT state
-  //    *-----------------------------------------------------------------------*/
-  //   else if(rendering_state == TurnState::DESTRUCT)
-  //   {
-  //     stopBattle();
-  //   }
-  // }
-}
+//   /*-------------------------------------------------------------------------
+//    * DESTRUCT state
+//    *-----------------------------------------------------------------------*/
+//   else if(rendering_state == TurnState::DESTRUCT)
+//   {
+//     stopBattle();
+//   }
+// }
 
 void Battle::updateRenderElements(int32_t cycle_time)
 {
@@ -1813,18 +1780,6 @@ void Battle::stopBattle()
   clearBattleActors();
 
   turn_state = TurnState::STOPPED;
-}
-
-bool Battle::update(int32_t cycle_time)
-{
-  /* Update processing side of Battle */
-
-  /* Update rendering side of Battle */
-  updateRendering(cycle_time);
-
-  /* Render */
-
-  return false;
 }
 
 std::vector<BattleActor*> Battle::getAllies()
@@ -6043,28 +5998,58 @@ bool Battle::setBackground(Sprite* background)
 //  * Inputs: none
 //  * Output: none
 //  */
-// void Battle::setNextTurnState()
-// {
-//   /* Set the CURRENT_STATE to incomplete */
-//   setBattleFlag(CombatState::PHASE_DONE, false);
+void Battle::setNextTurnState()
+{
+  /* Set the CURRENT_STATE to incomplete */
+  setFlagCombat(CombatState::PHASE_DONE, false);
 
-//   /* If the Battle victory/loss has been complete, go to Destruct */
-//   if(getBattleFlag(CombatState::OUTCOME_PROCESSED))
-//   {
-//     setTurnState(TurnState::DESTRUCT);
-//     menu->unsetAll(true);
-//     // TODO [11-0614]: Eventhandler battle finish signal?
-//   }
+  //   /* If the Battle victory/loss has been complete, go to Destruct */
+  //   if(getBattleFlag(CombatState::OUTCOME_PROCESSED))
+  //   {
+  //     setTurnState(TurnState::DESTRUCT);
+  //     menu->unsetAll(true);
+  //     // TODO [11-0614]: Eventhandler battle finish signal?
+  //   }
 
-//   if(getTurnState() != TurnState::DESTRUCT)
-//   {
+  if(turn_state != TurnState::FINISHED)
+  {
+    /* After the Battle Begins, the general turn loop begins at General
+    Upkeep*/
+    if(turn_state == TurnState::BEGIN)
+    {
+      turn_state = TurnState::GENERAL_UPKEEP;
+    }
+
+    /* After general upkeep, each personal upkeep takes place */
+    else if(turn_state == TurnState::GENERAL_UPKEEP)
+    {
+      turn_state = TurnState::UPKEEP;
+      // if(turns_elapsed > 0)
+      //   upkeep();
+      // else
+      setFlagCombat(CombatState::PHASE_DONE);
+    }
+    /* After presonal upkeeps, the first turn order party selects actions
+    */
+    else if(turn_state == TurnState::UPKEEP)
+    {
+      turn_state = TurnState::SELECT_ACTION_ALLY;
+
+      // person_index = 1;
+      // if(anyUserSelection(true))
+      //   selectUserActions();
+      // else
+      setFlagCombat(CombatState::PHASE_DONE);
+    }
+  }
+}
+
 //     /* If the Battle has been won, go to victory */
 //     if(outcome == OutcomeType::VICTORY)
 //     {
 //       setTurnState(TurnState::VICTORY);
 //       battleWon();
 //     }
-
 //     /* If the Battle has been lost, GAME OVER */
 //     if(outcome == OutcomeType::DEFEAT)
 //     {
@@ -6077,48 +6062,6 @@ bool Battle::setBackground(Sprite* background)
 //     {
 //       setTurnState(TurnState::RUNNING);
 //       battleRun();
-//     }
-
-//     /* After the Battle Begins, the general turn loop begins at General
-//     Upkeep*/
-//     if(turn_state == TurnState::BEGIN)
-//     {
-//       setTurnState(TurnState::GENERAL_UPKEEP);
-//     }
-
-//     /* After general upkeep, each personal upkeep takes place */
-//     else if(turn_state == TurnState::GENERAL_UPKEEP)
-//     {
-//       setTurnState(TurnState::UPKEEP);
-
-//       if(turns_elapsed > 0)
-//         upkeep();
-//       else
-//         setBattleFlag(CombatState::PHASE_DONE);
-//     }
-//     /* After presonal upkeeps, the first turn order party selects actions */
-//     else if(turn_state == TurnState::UPKEEP)
-//     {
-//       if(turn_mode == TurnMode::FRIENDS_FIRST)
-//       {
-//         setTurnState(TurnState::SELECT_ACTION_ALLY);
-//         person_index = 1;
-
-//         if(anyUserSelection(true))
-//           selectUserActions();
-//         else
-//           setBattleFlag(CombatState::PHASE_DONE);
-//       }
-//       else if(turn_mode == TurnMode::ENEMIES_FIRST)
-//       {
-//         setTurnState(TurnState::SELECT_ACTION_ENEMY);
-//         person_index = -1;
-
-//         if(anyUserSelection(false))
-//           selectEnemyActions();
-//         else
-//           setBattleFlag(CombatState::PHASE_DONE);
-//       }
 //     }
 
 //     /* After the user selects actions, the enemy party may still need to
@@ -6480,30 +6423,7 @@ bool Battle::setBackground(Sprite* background)
 // void Battle::printTurnState()
 // {
 //   std::cout << "Current Battle State: ";
-//   if(turn_state == TurnState::BEGIN)
-//     std::cout << "BEGIN";
-//   else if(turn_state == TurnState::GENERAL_UPKEEP)
-//     std::cout << "GENERAL_UPKEEP";
-//   else if(turn_state == TurnState::UPKEEP)
-//     std::cout << "UPKEEP";
-//   else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-//     std::cout << "SELECT_ACTION_ALLY";
-//   else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-//     std::cout << "SELECT_ACTION_ENEMY";
-//   else if(turn_state == TurnState::ORDER_ACTIONS)
-//     std::cout << "ORDER_ACTIONS";
-//   else if(turn_state == TurnState::PROCESS_ACTIONS)
-//     std::cout << "PROCESS_ACTIONS";
-//   else if(turn_state == TurnState::CLEAN_UP)
-//     std::cout << "CLEAN_UP";
-//   else if(turn_state == TurnState::LOSS)
-//     std::cout << "LOSS";
-//   else if(turn_state == TurnState::VICTORY)
-//     std::cout << "VICTORY";
-//   else if(turn_state == TurnState::RUNNING)
-//     std::cout << "RUNNING";
-//   else if(turn_state == TurnState::DESTRUCT)
-//     std::cout << "DESTRUCT";
+
 //   std::cout << std::endl;
 // }
 
@@ -6516,13 +6436,21 @@ bool Battle::setBackground(Sprite* background)
 //  * Inputs: int32_t - the input cycle time of the battle.
 //  * Output: bool - false while not done
 //  */
-// bool Battle::update(int32_t cycle_time)
-// {
-//   if(getBattleFlag(CombatState::PHASE_DONE) &&
-//      !getBattleFlag(CombatState::OUTCOME_PROCESSED))
-//   {
-//     setNextTurnState();
-//   }
+bool Battle::update(int32_t cycle_time)
+{
+  (void)cycle_time; //TODO: WARNING
+  //std::cout << "Current Battle State:: " << Helpers::turnStateToStr(turn_state);
+
+  //if(getFlagCombat(CombatState::PHASE_DONE))
+  //  setNextTurnState();
+  //   if(getBattleFlag(CombatState::PHASE_DONE) &&
+  //      !getBattleFlag(CombatState::OUTCOME_PROCESSED))
+  //   {
+  //     setNextTurnState();
+  //   }
+
+  return false;
+}
 
 //   else if(turn_state == TurnState::GENERAL_UPKEEP)
 //   {

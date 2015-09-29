@@ -188,92 +188,6 @@ void BattleMenu::clearSkillFrames()
   frames_skill_name.clear();
 }
 
-// TODO: Colours/grayness for various BattleSkill validness? For items too
-bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
-{
-  /* A renderer and configuration must be assigned */
-  assert(renderer && config);
-
-  SDL_Color color{255, 255, 255, 255};
-  SDL_Color invalid_color{100, 100, 100, 255};
-  bool success{true};
-  uint32_t text_height{0};
-  uint32_t text_width{width_left - kTYPE_MARGIN * 8};
-
-  Text* t = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
-
-  /* Delete frames for skills if skills are already rendered */
-  clearSkillFrames();
-
-  for(auto& skill : valid_battle_skills)
-  {
-    /* Skill must have (a) valid pointer(s) */
-    assert(t && skill && skill->skill);
-
-    frames_skill_name.push_back(new Frame());
-    frames_skill_info.push_back(new Frame());
-
-    /* ValidStatus of the Battle skill -> reflects the colour of Skill frame
-     */
-    // TODO: Alternate ValidStatus colours depending on Skill condition?
-    if(skill->valid_status == ValidStatus::VALID)
-      success &= t->setText(renderer, skill->skill->getName(), color);
-    else
-      success &= t->setText(renderer, skill->skill->getName(), invalid_color);
-
-    if(text_height == 0)
-      text_height = t->getHeight() + kTYPE_MARGIN * 2;
-
-    /* Create rendering texture */
-    SDL_Texture* texture =
-        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                          SDL_TEXTUREACCESS_TARGET, text_width, text_height);
-    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderTarget(renderer, texture);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-
-    /* Render the text */
-    success &= t->render(renderer, 0, kTYPE_MARGIN);
-
-    /* Render the QD */
-    if(skill->valid_status == ValidStatus::VALID)
-      frame_qd.setAlpha(128);
-
-    uint32_t qd_x = text_width - frame_qd.getWidth();
-    success &= frame_qd.render(renderer, qd_x, kTYPE_MARGIN + 1);
-    frame_qd.setAlpha(255);
-
-    if(skill->valid_status == ValidStatus::VALID)
-    {
-      success &=
-          t->setText(renderer, std::to_string(skill->skill->getCost()), color);
-    }
-    else
-    {
-      success &= t->setText(renderer, std::to_string(skill->skill->getCost()),
-                            invalid_color);
-    }
-
-    success &=
-        t->render(renderer, qd_x - t->getWidth() - kSKILL_SEP, kTYPE_MARGIN);
-
-    frames_skill_name.back()->setTexture(texture);
-    SDL_SetRenderTarget(renderer, nullptr);
-
-    /* Create the detailed skill information for this skill */
-    frames_skill_info.back()->setTexture(createSkillFrame(
-        skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
-        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
-            kMENU_SEPARATOR_B));
-  }
-
-  /* Delete the created text */
-  delete t;
-
-  return success;
-}
-
 SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
                                           uint32_t width, uint32_t height)
 {
@@ -605,6 +519,7 @@ void BattleMenu::clear()
   actor = nullptr;
   clearSkillFrames();
   setFlag(BattleMenuState::SELECTION_COMPLETE, false);
+  setFlag(BattleMenuState::SKILL_FRAMES_BUILT, false);
   menu_layer = BattleMenuLayer::ZEROTH_LAYER;
   selected_action_scope = ActionScope::NO_SCOPE;
   selected_action_type = ActionType::NONE;
@@ -673,6 +588,95 @@ void BattleMenu::setSelectableItems(std::vector<BattleItem*> menu_items)
 /*=============================================================================
  * PUBLIC FUNCTIONS - RENDERING
  *============================================================================*/
+
+// TODO: Colours/grayness for various BattleSkill validness? For items too
+bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
+{
+  /* A renderer and configuration must be assigned */
+  assert(renderer && config);
+
+  SDL_Color color{255, 255, 255, 255};
+  SDL_Color invalid_color{100, 100, 100, 255};
+  bool success{true};
+  uint32_t text_height{0};
+  uint32_t text_width{width_left - kTYPE_MARGIN * 8};
+
+  Text* t = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
+
+  /* Delete frames for skills if skills are already rendered */
+  clearSkillFrames();
+
+  for(auto& skill : valid_battle_skills)
+  {
+    /* Skill must have (a) valid pointer(s) */
+    assert(t && skill && skill->skill);
+
+    frames_skill_name.push_back(new Frame());
+    frames_skill_info.push_back(new Frame());
+
+    /* ValidStatus of the Battle skill -> reflects the colour of Skill frame
+     */
+    // TODO: Alternate ValidStatus colours depending on Skill condition?
+    if(skill->valid_status == ValidStatus::VALID)
+      success &= t->setText(renderer, skill->skill->getName(), color);
+    else
+      success &= t->setText(renderer, skill->skill->getName(), invalid_color);
+
+    if(text_height == 0)
+      text_height = t->getHeight() + kTYPE_MARGIN * 2;
+
+    /* Create rendering texture */
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, text_width, text_height);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    /* Render the text */
+    success &= t->render(renderer, 0, kTYPE_MARGIN);
+
+    /* Render the QD */
+    if(skill->valid_status == ValidStatus::VALID)
+      frame_qd.setAlpha(128);
+
+    uint32_t qd_x = text_width - frame_qd.getWidth();
+    success &= frame_qd.render(renderer, qd_x, kTYPE_MARGIN + 1);
+    frame_qd.setAlpha(255);
+
+    if(skill->valid_status == ValidStatus::VALID)
+    {
+      success &=
+          t->setText(renderer, std::to_string(skill->skill->getCost()), color);
+    }
+    else
+    {
+      success &= t->setText(renderer, std::to_string(skill->skill->getCost()),
+                            invalid_color);
+    }
+
+    success &=
+        t->render(renderer, qd_x - t->getWidth() - kSKILL_SEP, kTYPE_MARGIN);
+
+    frames_skill_name.back()->setTexture(texture);
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    /* Create the detailed skill information for this skill */
+    frames_skill_info.back()->setTexture(createSkillFrame(
+        skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
+        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
+            kMENU_SEPARATOR_B));
+  }
+
+  /* Delete the created text */
+  delete t;
+
+  if(success)
+    setFlag(BattleMenuState::SKILL_FRAMES_BUILT, true);
+
+  return success;
+}
 
 bool BattleMenu::render()
 {

@@ -114,8 +114,6 @@ TTF_Font* Fonts::getFont(FontName font_name)
   if(it != end(fonts))
     return it->second;
 
-  std::cout << "Couldn't find da font" << std::endl;
-
   return nullptr;
 }
 

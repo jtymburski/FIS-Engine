@@ -35,7 +35,7 @@ using std::end;
 ENUM_FLAGS(CombatState)
 enum class CombatState
 {
-
+  PHASE_DONE = 1 << 0
 };
 
 ENUM_FLAGS(RenderState)
@@ -66,24 +66,6 @@ enum class OutcomeType
   ENEMIES_RUN,
   RETURN,
   NONE
-};
-
-/* Enumerated values for turn state */
-enum class TurnState
-{
-  BEGIN,               /* Setup of the battle */
-  GENERAL_UPKEEP,      /* General upkeep phase - weather etc. */
-  UPKEEP,              /* Personal upkeep - ailments etc. */
-  SELECT_ACTION_ALLY,  /* User choice of action/skill etc. */
-  SELECT_ACTION_ENEMY, /* Enemy choice of skill -> AI */
-  ORDER_ACTIONS,       /* Determines order of skills */
-  PROCESS_ACTIONS,     /* Determines outcomes of skills */
-  CLEAN_UP,            /* Cleanup after turn, turn incr. etc. */
-  LOSS,                /* LosStates stage returns to title */
-  VICTORY,             /* Victory displays the victory screen */
-  RUNNING,             /* Running condition */
-  FINISHED,
-  STOPPED /* Battle should be stopped */
 };
 
 struct ActorUpkeep
@@ -338,6 +320,9 @@ private:
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);
 
+  /* Sets the next turn state of the Battle */
+  void setNextTurnState();
+
   /*=============================================================================
    * PRIVATE FUNCTIONS - Battle Display
   *============================================================================*/
@@ -427,17 +412,17 @@ public:
   bool setDisplayData(BattleDisplayData* battle_display_data);
 
   /* Sets a CombatState flag */
-  void setFlagCombat(CombatState test_flag, const bool& set_value);
+  void setFlagCombat(CombatState test_flag, const bool& set_value = true);
 
   /* Set a RenderState flag */
-  void setFlagRender(RenderState test_flag, const bool& set_value);
+  void setFlagRender(RenderState test_flag, const bool& set_value = true);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS - Battle Display
    *============================================================================*/
 public:
   /* Renders the Battle */
-  bool render(int32_t cycle_time);
+  bool render();
 
   /* Assigns the battle display container object */
   bool setBattleDisplayData(BattleDisplayData* battle_display_data);

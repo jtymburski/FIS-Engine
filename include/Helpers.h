@@ -114,7 +114,7 @@ public:
 
   /* Converts an ElementCurve from string to the enumerated element */
   static ElementCurve curveFromString(const std::string &curve);
-  static std::string curveToString(const ElementCurve &curve, 
+  static std::string curveToString(const ElementCurve &curve,
                                    bool simple = true);
 
   /* Converts an enumerated element to a String */
@@ -148,6 +148,8 @@ public:
   /* Returns the enumerated tier to/from string form */
   static ItemTier tierFromStr(const std::string &tier);
   static std::string tierToStr(const ItemTier &tier);
+
+  static std::string turnStateToStr(const TurnState &turn_state);
 
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
