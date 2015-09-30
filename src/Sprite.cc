@@ -1121,12 +1121,6 @@ void Sprite::setHead(Frame *head)
 void Sprite::setId(uint16_t id) 
 { 
   this->id = id;
-
-  // TODO: REMOVE - TESTING
-  //if(id == 1)
-  //  setSoundID(1000);
-  //else if(id >= 2 && id <= 133)
-  //  setSoundID(1001);
 }
 
 void Sprite::setFlashing(bool flashing) { this->flashing = flashing; }

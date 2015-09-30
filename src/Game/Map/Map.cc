@@ -1404,26 +1404,6 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 /* Finishes the load - last call on successful data */
 void Map::loadDataFinish(SDL_Renderer* renderer)
 {
-  /* Music clean-up - TODO: IN FILE!! */
-  //if(sub_map.size() > 0)
-  //{
-  //  sub_map[0].music.push_back(1003);
-  //  if(sub_map.size() > 13)
-  //  {
-  //    sub_map[13].music.push_back(1000);
-  //    sub_map[13].weather = 2000;
-  //  }
-  //  if(sub_map.size() > 15)
-  //  {
-  //    sub_map[15].music.push_back(1001);
-  //    sub_map[15].music.push_back(1002);
-  //  }
-  //  if(sub_map.size() > 16)
-  //  {
-  //    sub_map[16].weather = 2000;
-  //  }
-  //}
-
   /* Load the item menu sprites - TODO: In file? */
   item_menu.loadImageBackend("sprites/Overlay/item_store_left.png",
                              "sprites/Overlay/item_store_right.png",

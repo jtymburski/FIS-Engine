@@ -1964,14 +1964,6 @@ bool MapThing::setID(int new_id)
   /* Otherwise, the ID is good */
   id = new_id;
 
-  /* Sound configuration - TODO: REMOVE */
-  //if(classDescriptor() == "MapThing" && id == 10)
-  //  setSoundID(1002);
-  //else if(classDescriptor() == "MapInteractiveObject" && id == 30)
-  //  setSoundID(1003);
-  //else if(classDescriptor() == "MapPerson" && id == 0)
-  //  setSoundID(1004);
-
   return true;
 }
 
