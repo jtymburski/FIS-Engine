@@ -84,6 +84,25 @@ Sound::~Sound()
   unsetSoundFile();
 }
 
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+  
+/* Copy function, to be called by a copy or equal operator constructor */
+void Sound::copySelf(const Sound &source)
+{
+  /* Core data */
+  channel = source.channel;
+  fade_time = source.fade_time;
+  id = source.id;
+  loop_count = source.loop_count;
+  volume = source.volume;
+  
+  /* Sound data - unable to be copied */
+  raw_data = nullptr;
+  length = 0;
+}
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -177,7 +196,7 @@ Mix_Fading Sound::getFadeStatus()
  * Inputs: none
  * Output: uint32_t - the fade time, in milliseconds
  */
-uint32_t Sound::getFadeTime()
+uint32_t Sound::getFadeTime() const
 {
   return fade_time;
 }
@@ -239,7 +258,7 @@ Mix_Chunk* Sound::getRawData()
  * Inputs: none
  * Output: uint8_t - the volume integer.
  */
-uint8_t Sound::getVolume()
+uint8_t Sound::getVolume() const
 {
   return volume;
 }
@@ -502,6 +521,30 @@ void Sound::unsetSoundFile()
     Mix_FreeChunk(raw_data);
   raw_data = NULL;
   length = 0;
+}
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Copy operator construction. This is called when the variable
+ *              already exists and equal operator used with another Sound.
+ *
+ * Inputs: const Sound &source - the source class constructor
+ * Output: Sound& - pointer to the copied class
+ */
+Sound& Sound::operator= (const Sound &source)
+{
+  /* Check for self assignment */
+  if(this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }
 
 /*=============================================================================

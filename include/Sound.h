@@ -104,6 +104,13 @@ public:
   const static uint32_t kID_SOUND_PICK_COIN;
   const static uint32_t kID_SOUND_PICK_ITEM;
 
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const Sound &source);
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -121,7 +128,7 @@ public:
   Mix_Fading getFadeStatus();
 
   /* Returns the time that the chunk will be faded in or out */
-  uint32_t getFadeTime();
+  uint32_t getFadeTime() const;
 
   /* Returns the ID */
   int getID();
@@ -136,7 +143,7 @@ public:
   Mix_Chunk* getRawData();
 
   /* Returns the volume of the sound chunk */
-  uint8_t getVolume();
+  uint8_t getVolume() const;
 
   /* Returns if the chunk is playing */
   bool isPlaying();
@@ -171,6 +178,12 @@ public:
 
   /* Unset the sound file and frees the memory */
   void unsetSoundFile();
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  Sound& operator= (const Sound &source);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
