@@ -608,12 +608,9 @@ enum class TurnState
   UPKEEP,              /* Personal upkeep - ailments etc. */
   SELECT_ACTION_ALLY,  /* User choice of action/skill etc. */
   SELECT_ACTION_ENEMY, /* Enemy choice of skill -> AI */
-  ORDER_ACTIONS,       /* Determines order of skills */
   PROCESS_ACTIONS,     /* Determines outcomes of skills */
   CLEAN_UP,            /* Cleanup after turn, turn incr. etc. */
-  LOSS,                /* LosStates stage returns to title */
-  VICTORY,             /* Victory displays the victory screen */
-  RUNNING,             /* Running condition */
+  OUTCOME,
   FINISHED,
   STOPPED /* Battle should be stopped */
 };

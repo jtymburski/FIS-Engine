@@ -185,7 +185,7 @@ public:
   void setFlag(BattleMenuState flags, const bool& set_value = true);
 
   /* Assigns the Renderer of BattleMenu elements */
-  void setRenderer(SDL_Renderer* renderer);
+  bool setRenderer(SDL_Renderer* renderer);
 
   /* Assigns selectable skills */
   void setSelectableSkills(std::vector<BattleSkill*> menu_skills);

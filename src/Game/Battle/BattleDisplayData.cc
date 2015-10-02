@@ -45,6 +45,22 @@ BattleDisplayData::~BattleDisplayData()
     if(event_plep.second)
       delete event_plep.second;
   pleps_events.clear();
+
+  if(frame_battle_bar)
+    delete frame_battle_bar;
+  frame_battle_bar = nullptr;
+
+  if(frame_percent)
+    delete frame_percent;
+  frame_percent = nullptr;
+
+  // if(frame_qd)
+  //   delete frame_qd;
+  // frame_qd = nullptr;
+
+  if(frame_time)
+    delete frame_time;
+  frame_time = nullptr;
 }
 
 /*=============================================================================
@@ -54,7 +70,7 @@ BattleDisplayData::~BattleDisplayData()
 void BattleDisplayData::buildBattleBar()
 {
   frame_battle_bar =
-      Frame(config->getBasePath() + "sprites/Overlay/battle.png", renderer);
+      new Frame(config->getBasePath() + "sprites/Overlay/battle.png", renderer);
 }
 
 void BattleDisplayData::buildFramesAilments()
@@ -255,15 +271,16 @@ void BattleDisplayData::buildFramesExtra()
   if(renderer)
   {
     frame_percent =
-        Frame(config->getBasePath() +
-                  "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png",
-              renderer);
+        new Frame(config->getBasePath() +
+                      "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png",
+                  renderer);
     frame_qd = Frame(config->getBasePath() +
-                         "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png",
-                     renderer);
-    frame_time = Frame(config->getBasePath() +
-                           "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png",
-                       renderer);
+                             "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png",
+                         renderer);
+    frame_time =
+        new Frame(config->getBasePath() +
+                      "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png",
+                  renderer);
   }
 }
 
@@ -403,12 +420,12 @@ bool BattleDisplayData::buildData()
   return false;
 }
 
-Frame BattleDisplayData::getBattleBar()
+Frame* BattleDisplayData::getBattleBar()
 {
   return frame_battle_bar;
 }
 
-Frame BattleDisplayData::getFramePercent()
+Frame* BattleDisplayData::getFramePercent()
 {
   return frame_percent;
 }
@@ -418,7 +435,7 @@ Frame BattleDisplayData::getFrameQD()
   return frame_qd;
 }
 
-Frame BattleDisplayData::getFrameTime()
+Frame* BattleDisplayData::getFrameTime()
 {
   return frame_time;
 }

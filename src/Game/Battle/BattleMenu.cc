@@ -15,11 +15,15 @@
 #include "Game/Battle/BattleMenu.h"
 
 /*=============================================================================
- * CONSTANTS
+ * CONSTANTS - Public (for use in Battle)
  *============================================================================*/
+
+/*=============================================================================
+ * CONSTANTS - Private
+ *============================================================================*/
+const uint16_t BattleMenu::kBIGBAR_CHOOSE{100};
 const uint16_t BattleMenu::kALLY_HEIGHT{70};
 
-const uint16_t BattleMenu::kBIGBAR_CHOOSE{100};
 const float BattleMenu::kBIGBAR_L{0.2};
 const float BattleMenu::kBIGBAR_M1{0.1};
 const float BattleMenu::kBIGBAR_M2{0.3};
@@ -274,19 +278,26 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
 
   /* Render the cooldown */
   auto frame_time = battle_display_data->getFrameTime();
-  uint16_t time_x = width - kSKILL_BORDER - frame_time.getWidth();
-  uint16_t time_y = height - kSKILL_TIME_GAP - frame_time.getHeight();
-  frame_time.render(renderer, time_x, time_y);
-  t1.setText(renderer, std::to_string(skill->getCooldown()), color);
-  time_x -= t1.getWidth() + kSKILL_SEP;
-  t1.render(renderer, time_x, time_y - 1);
-
-  /* Render the chance of success */
   auto frame_percent = battle_display_data->getFramePercent();
-  time_x -= frame_percent.getWidth() + kSKILL_SUCCESS;
-  frame_percent.render(renderer, time_x, time_y);
-  t1.setText(renderer, std::to_string((int)skill->getChance()), color);
-  t1.render(renderer, time_x - t1.getWidth() - kSKILL_SEP, time_y - 1);
+
+  if(frame_time && frame_percent)
+  {
+    uint16_t time_x = width - kSKILL_BORDER - frame_time->getWidth();
+    uint16_t time_y = height - kSKILL_TIME_GAP - frame_time->getHeight();
+
+    frame_time->render(renderer, time_x, time_y);
+
+    t1.setText(renderer, std::to_string(skill->getCooldown()), color);
+    time_x -= t1.getWidth() + kSKILL_SEP;
+    t1.render(renderer, time_x, time_y - 1);
+
+    /* Render the chance of success */
+    time_x -= frame_percent->getWidth() + kSKILL_SUCCESS;
+    frame_percent->render(renderer, time_x, time_y);
+
+    t1.setText(renderer, std::to_string((int)skill->getChance()), color);
+    t1.render(renderer, time_x - t1.getWidth() - kSKILL_SEP, time_y - 1);
+  }
 
   /* Render the description */
   uint16_t line_width = width - text_x;
@@ -570,9 +581,11 @@ void BattleMenu::setFlag(BattleMenuState flag, const bool& set_value)
 }
 
 /* Assigns the Renderer of BattleMenu elements */
-void BattleMenu::setRenderer(SDL_Renderer* renderer)
+bool BattleMenu::setRenderer(SDL_Renderer* renderer)
 {
   this->renderer = renderer;
+
+  return this->renderer;
 }
 
 void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)

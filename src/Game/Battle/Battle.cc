@@ -68,6 +68,9 @@
  * Defend Modifier (Base Damage Mod While Defending)
  * Guard Modifier (Base Damage Mod While Being Guarded)
  */
+
+const uint16_t Battle::kBIGBAR_CHOOSE{100};
+
 const size_t Battle::kMAX_AILMENTS = 50;
 const size_t Battle::kMAX_EACH_AILMENTS = 5;
 const uint16_t Battle::kMINIMUM_DAMAGE = 1;
@@ -835,13 +838,13 @@ bool Battle::render()
 
 bool Battle::renderBattleBar()
 {
-  if(renderer && battle_display_data)
+  if(renderer && battle_display_data && battle_display_data->isDataBuilt())
   {
     auto frame = battle_display_data->getBattleBar();
 
-    frame.render(renderer, 0,
-                 config->getScreenHeight() - kBIGBAR_OFFSET - bar_offset,
-                 config->getScreenWidth());
+    frame->render(renderer, 0,
+                  config->getScreenHeight() - kBIGBAR_OFFSET - bar_offset,
+                  config->getScreenWidth());
 
     return true;
   }
@@ -1374,14 +1377,6 @@ bool Battle::renderAlliesInfo()
 //     rendering_state = battle_state;
 //   }
 //   /*-------------------------------------------------------------------------
-//    * ORDER_ACTIONS state
-//    *-----------------------------------------------------------------------*/
-//   else if(rendering_state == TurnState::ORDER_ACTIONS)
-//   {
-//     bar_offset = 0;
-//     rendering_state = battle_state;
-//   }
-//   /*-------------------------------------------------------------------------
 //    * PROCESS_ACTIONS state
 //    *-----------------------------------------------------------------------*/
 //   else if(rendering_state == TurnState::PROCESS_ACTIONS)
@@ -1853,7 +1848,7 @@ bool Battle::setDisplayData(BattleDisplayData* battle_display_data)
       return battle_menu->setDisplayData(battle_display_data);
   }
 
-  return false;
+  return success;
 }
 
 void Battle::setFlagCombat(CombatState flag, const bool& set_value)
@@ -1872,10 +1867,14 @@ void Battle::setFlagRender(RenderState flag, const bool& set_value)
 
 bool Battle::setRenderer(SDL_Renderer* renderer)
 {
-  std::cout << "[BATTLE RENDERER] -- Assigning Battle renderer" << std::endl;
+  bool success{renderer};
+
   this->renderer = renderer;
 
-  return this->renderer;
+  if(battle_menu)
+    success &= battle_menu->setRenderer(renderer);
+
+  return success;
 }
 
 bool Battle::setBackground(Sprite* background)
@@ -3820,25 +3819,6 @@ bool Battle::setBackground(Sprite* background)
 //   setBattleFlag(CombatState::PHASE_DONE, false);
 //   setBattleFlag(CombatState::OUTCOME_PROCESSED, false);
 //   setBattleFlag(CombatState::OUTCOME_PERFORMED, false);
-// }
-
-// /*
-//  * Description: Orders the actions on the buffer by speed of the aggressor.
-//  *              By default, items will be take precedence over other actions
-//  *              (this is one advantage of items vs. skills), then the
-//  remaining
-//  *              actions will be sorted by the user of the action's momentum.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::orderActions()
-// {
-//   /* Re-order buffer itmes based on defined oredering */
-//   action_buffer->reorder();
-
-//   /* Order action state complete */
-//   setBattleFlag(CombatState::PHASE_DONE);
 // }
 
 // /*
@@ -6042,6 +6022,9 @@ void Battle::setNextTurnState()
       setFlagCombat(CombatState::PHASE_DONE);
     }
   }
+
+  std::cout << "Setting turn state: " << Helpers::turnStateToStr(turn_state)
+            << std::endl;
 }
 
 //     /* If the Battle has been won, go to victory */
@@ -6078,11 +6061,6 @@ void Battle::setNextTurnState()
 //         else
 //           setBattleFlag(CombatState::PHASE_DONE);
 //       }
-//       else if(turn_mode == TurnMode::ENEMIES_FIRST)
-//       {
-//         setTurnState(TurnState::ORDER_ACTIONS);
-//         orderActions();
-//       }
 //     }
 
 //     /* After enemies select actions, the users may still need to select
@@ -6090,11 +6068,6 @@ void Battle::setNextTurnState()
 //        or if not, order actions is called  */
 //     else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
 //     {
-//       if(turn_mode == TurnMode::FRIENDS_FIRST)
-//       {
-//         setTurnState(TurnState::ORDER_ACTIONS);
-//         orderActions();
-//       }
 //       else if(turn_mode == TurnMode::ENEMIES_FIRST)
 //       {
 //         setTurnState(TurnState::SELECT_ACTION_ALLY);
@@ -6108,12 +6081,6 @@ void Battle::setNextTurnState()
 //     }
 
 //     /* After the actions are ordered, the actions are processed */
-//     else if(turn_state == TurnState::ORDER_ACTIONS)
-//     {
-//       setTurnState(TurnState::PROCESS_ACTIONS);
-//       action_buffer->print(false);
-//     }
-
 //     /* After the actions are processed, Battle turn clean up occurs */
 //     else if(turn_state == TurnState::PROCESS_ACTIONS)
 //     {
@@ -6438,11 +6405,20 @@ void Battle::setNextTurnState()
 //  */
 bool Battle::update(int32_t cycle_time)
 {
-  (void)cycle_time; //TODO: WARNING
-  //std::cout << "Current Battle State:: " << Helpers::turnStateToStr(turn_state);
+  turns_elapsed++;
 
-  //if(getFlagCombat(CombatState::PHASE_DONE))
-  //  setNextTurnState();
+  if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    bar_offset = kBIGBAR_CHOOSE;
+
+  // std::cout << "Current Battle State:: " <<
+  // Helpers::turnStateToStr(turn_state);
+
+  if(turns_elapsed % 100 == 0)
+    setFlagCombat(CombatState::PHASE_DONE);
+
+  if(getFlagCombat(CombatState::PHASE_DONE))
+    setNextTurnState();
+
   //   if(getBattleFlag(CombatState::PHASE_DONE) &&
   //      !getBattleFlag(CombatState::OUTCOME_PROCESSED))
   //   {

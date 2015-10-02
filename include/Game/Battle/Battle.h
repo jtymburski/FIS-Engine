@@ -217,6 +217,8 @@ private:
   static const int16_t kREGEN_RATE_STRONG_PC;
   static const int16_t kREGEN_RATE_GRAND_PC;
 
+  static const uint16_t kBIGBAR_CHOOSE;
+
   /* -------- Battle Outcome Constants (See Implementation) ----------- */
   static const int16_t kALLY_KO_EXP_PC;
   static const int16_t kENEMY_RUN_EXP_PC;

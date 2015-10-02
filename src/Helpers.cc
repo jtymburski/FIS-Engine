@@ -1154,18 +1154,12 @@ std::string Helpers::turnStateToStr(const TurnState& turn_state)
     return "SELECT_ACTION_ALLY";
   if(turn_state == TurnState::SELECT_ACTION_ENEMY)
     return "SELECT_ACTION_ENEMY";
-  if(turn_state == TurnState::ORDER_ACTIONS)
-    return "ORDER_ACTIONS";
   if(turn_state == TurnState::PROCESS_ACTIONS)
     return "PROCESS_ACTIONS";
   if(turn_state == TurnState::CLEAN_UP)
     return "CLEAN_UP";
-  if(turn_state == TurnState::LOSS)
-    return "LOSS";
-  if(turn_state == TurnState::VICTORY)
-    return "VICTORY";
-  if(turn_state == TurnState::RUNNING)
-    return "RUNNING";
+  if(turn_state == TurnState::OUTCOME)
+    return "OUTCOME";
   if(turn_state == TurnState::STOPPED)
     return "STOPPED";
 

@@ -17,7 +17,7 @@ const uint8_t Frame::kDEFAULT_ALPHA = 255;
  *============================================================================*/
 
 /*
- * Description: Constructor for this class. Empty parameter, default 
+ * Description: Constructor for this class. Empty parameter, default
  *              initialization. Clears pointers and sets up the class
  *              for new data.
  *
@@ -37,7 +37,7 @@ Frame::Frame()
   width = 0;
 }
 
-/* 
+/*
  * Description: Constructor for this class. Takes path, next ptr, and previous
  *              ptr. Pointers are defaulted to NULL if not given.
  *
@@ -66,8 +66,8 @@ Frame::Frame(std::string path, SDL_Renderer* renderer, uint16_t angle,
  *         Frame* previous - pointer to previous frame, default to NULL
  *         Frame* next - pointer to next frame, default to NULL
  */
-Frame::Frame(std::string path, std::vector<std::string> adjustments, 
-             SDL_Renderer* renderer, uint16_t angle, Frame* previous, 
+Frame::Frame(std::string path, std::vector<std::string> adjustments,
+             SDL_Renderer* renderer, uint16_t angle, Frame* previous,
              Frame* next) : Frame()
 {
   setTexture(path, renderer, angle);
@@ -76,8 +76,8 @@ Frame::Frame(std::string path, std::vector<std::string> adjustments,
   setNext(next);
 }
 
-/* 
- * Description: Destructor function 
+/*
+ * Description: Destructor function
  */
 Frame::~Frame()
 {
@@ -92,7 +92,7 @@ Frame::~Frame()
 
 /*
  * Description: Executes an image adjustment based on string data that is stored
- *              within the file. Usually tied to the path of the sprite to 
+ *              within the file. Usually tied to the path of the sprite to
  *              indicate any extra adjustments.
  *
  * Inputs: std::string adjustment - the adjustment string (VF, HF)
@@ -102,7 +102,7 @@ Frame::~Frame()
 bool Frame::execImageAdjustment(std::string adjustment)
 {
   bool success = true;
-  
+
   /* Parse the adjustment and do the appropriate activity */
   if(adjustment == "VF" || adjustment == "vf")
   {
@@ -112,7 +112,7 @@ bool Frame::execImageAdjustment(std::string adjustment)
   {
     flipHorizontal();
   }
- 
+
   return success;
 }
 
@@ -126,11 +126,11 @@ bool Frame::execImageAdjustment(std::string adjustment)
 bool Frame::execImageAdjustments(std::vector<std::string> adjustments)
 {
   bool success = true;
-  
+
   /* Run through all the adjustments and execute them */
   for(size_t i = 0; i < adjustments.size(); i++)
     success &= execImageAdjustment(adjustments[i]);
-    
+
   return success;
 }
 
@@ -144,10 +144,10 @@ void Frame::flipHorizontal(bool flip)
 {
   /* Enables / Disables the horizontal flip */
   if(flip)
-    this->flip = 
+    this->flip =
                static_cast<SDL_RendererFlip>(this->flip |  SDL_FLIP_HORIZONTAL);
   else
-    this->flip = 
+    this->flip =
                static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_HORIZONTAL);
 }
 
@@ -163,7 +163,7 @@ void Frame::flipVertical(bool flip)
   if(flip)
     this->flip = static_cast<SDL_RendererFlip>(this->flip | SDL_FLIP_VERTICAL);
   else
-    this->flip = 
+    this->flip =
                  static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_VERTICAL);
 }
 
@@ -189,7 +189,7 @@ SDL_RendererFlip Frame::getFlip()
 {
   return flip;
 }
-  
+
 /*
  * Description: Returns the height of the texture stored in the class. Is 0 if
  *              the image isn't set.
@@ -202,7 +202,7 @@ int Frame::getHeight()
   return height;
 }
 
-/* 
+/*
  * Description: Gets next frame pointed to by this node
  *
  * Inputs: none
@@ -213,7 +213,7 @@ Frame* Frame::getNext()
   return next;
 }
 
-/* 
+/*
  * Description: Gets previous frame pointed to by this node
  *
  * Inputs: none
@@ -241,7 +241,7 @@ SDL_Texture* Frame::getTexture(bool grey_scale)
 
 /*
  * Description: Returns the SDL texture that is being stored in the frame.
- *              It is not necessarily NULL if the texture isn't set. Call 
+ *              It is not necessarily NULL if the texture isn't set. Call
  *              isTextureSet() to determine if it's been set. isGreyScale()
  *              function indicates whether the returned texture is the greyscale
  *              version of the active texture or not.
@@ -279,7 +279,7 @@ bool Frame::isGreyScale()
   return grey_scale;
 }
 
-/* 
+/*
  * Description: Returns if a texture is stored in this frame
  *
  * Inputs: bool grey_scale - set to true to check the grey scale texture
@@ -294,7 +294,7 @@ bool Frame::isTextureSet(bool grey_scale)
 
 /*
  * Description: Renders the stored image if it is set and with a viable renderer
- *              using the coordinates for location. 
+ *              using the coordinates for location.
  *
  * Inputs: SDL_Renderer* renderer - the rendering context for the GPU
  *         int x - the x pixel location of the top left
@@ -318,18 +318,18 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
       rect.h = h;
     if(w > 0)
       rect.w = w;
-    
+
     /* Render and return status */
-    return (SDL_RenderCopyEx(renderer, getTextureActive(), NULL, 
+    return (SDL_RenderCopyEx(renderer, getTextureActive(), NULL,
                              &rect, 0, NULL, flip) == 0);
   }
-  
+
   return false;
 }
 
 /*
  * Description: Renders the grey scale texture at the base and then renders the
- *              colored texture above that at the given alpha value. This is 
+ *              colored texture above that at the given alpha value. This is
  *              used for blending the greyscale to color and vice versa. Fails
  *              if there is no grey scale texture.
  *
@@ -341,7 +341,7 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
  *         int h - the height to render (in pixels)
  * Output: bool - status if the render occurred
  */
-bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y, 
+bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
                                                               int w, int h)
 {
   if(isTextureSet() && isTextureSet(true) && renderer != NULL)
@@ -349,28 +349,28 @@ bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
     uint8_t old_alpha = getAlpha();
     bool grey_scale = isGreyScale();
     bool success = true;
-    
+
     /* Render grey scale texture */
     useGreyScale(true);
     setAlpha(kDEFAULT_ALPHA - alpha);
     success &= render(renderer, x, y, w, h);
-    
+
     /* Render colored texture */
     useGreyScale(false);
     setAlpha(alpha);
     success &= render(renderer, x, y, w, h);
-    
+
     /* Return to normal parameters */
     useGreyScale(grey_scale);
     setAlpha(old_alpha);
-    
+
     return success;
   }
-  
+
   return false;
 }
 
-/* 
+/*
  * Description: Sets the rendering alpha modification. Needs to be set for each
  *              texture as this just emulates the call to SDL.
  *
@@ -384,7 +384,7 @@ void Frame::setAlpha(uint8_t alpha)
   SDL_SetTextureAlphaMod(texture_grey, alpha);
 }
 
-/* 
+/*
  * Description: Sets next frame pointer
  *
  * Inputs: Frame* next - pointer to next frame, can be NULL
@@ -396,7 +396,7 @@ bool Frame::setNext(Frame* next)
   return true;
 }
 
-/* 
+/*
  * Description: Sets next frame pointer
  *
  * Inputs: Frame* previous - pointer to previous frame, can be NULL
@@ -410,7 +410,7 @@ bool Frame::setPrevious(Frame* previous)
 
 /*
  * Description: Sets the SDL frame texture from a path file. This requires that
- *              the extension appropriately defines the file in order to 
+ *              the extension appropriately defines the file in order to
  *              properly work. If the image can be loaded, it automatically
  *              unsets the previous texture and sets this as the new one.
  *
@@ -421,22 +421,22 @@ bool Frame::setPrevious(Frame* previous)
  *         bool enable_greyscale - should a greyscale texture be created?
  * Output: bool - the success of loading the texture
  */
-bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle, 
+bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
                        bool no_warnings, bool enable_greyscale)
 {
   bool success = true;
 
 	/* Attempt to load the image */
   SDL_Surface* loaded_surface = IMG_Load(path.c_str());
-  
+
   /* If successful, unset previous and set the new texture */
   if(loaded_surface != NULL && renderer != NULL)
   {
     /* Unset the previous texture */
     unsetTexture();
-    
+
     /* Angle surface modification - only works for %90 angles */
-    if(angle > 0 && loaded_surface->h == loaded_surface->w && 
+    if(angle > 0 && loaded_surface->h == loaded_surface->w &&
        loaded_surface->format->BytesPerPixel == 4)
     {
       uint32_t* pixels = static_cast<uint32_t*>(loaded_surface->pixels);
@@ -446,7 +446,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
       for(int i = 0; i < loaded_surface->h; i++)
       {
         std::vector<uint32_t> pixels_row;
-        
+
         for(int j = 0; j < loaded_surface->w; j++)
           pixels_row.push_back(pixels[i*loaded_surface->w + j]);
         pixels_original.push_back(pixels_row);
@@ -463,11 +463,11 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
           if(angle == 90)
             index = j*loaded_surface->w + (loaded_surface->h - i - 1);
           else if(angle == 180)
-            index = (loaded_surface->w - i - 1)*loaded_surface->w + 
+            index = (loaded_surface->w - i - 1)*loaded_surface->w +
                     (loaded_surface->h - j - 1);
           else if(angle == 270)
             index = (loaded_surface->w - j - 1)*loaded_surface->w + i;
-         
+
           pixels[index] = pixels_original[i][j];
         }
       }
@@ -477,47 +477,47 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
     texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
     height = loaded_surface->h;
     width = loaded_surface->w;
-    
+
     /* Create the greyscale texture, if applicable */
     if(enable_greyscale && loaded_surface->format->BytesPerPixel == 4)
     {
       SDL_Surface* grey_surface = SDL_ConvertSurface(
                                      loaded_surface, loaded_surface->format, 0);
-      
+
       /* Change all the pixels to greyscale */
       uint32_t* grey_pixels = static_cast<uint32_t*>(grey_surface->pixels);
-      
+
       /* Parse each pixel and modify it's value */
       for(int i = 0; i < grey_surface->h; i++)
-      { 
+      {
         for(int j = 0; j < grey_surface->w; j++)
         {
           uint32_t* pixel = &grey_pixels[i*loaded_surface->w + j];
-          
+
           /* Get the color data */
           SDL_Color color;
-          SDL_GetRGBA(*pixel, grey_surface->format, &color.r, &color.g, 
+          SDL_GetRGBA(*pixel, grey_surface->format, &color.r, &color.g,
                                                     &color.b, &color.a);
 
           /* Modify the color data -> to greyscale */
           color.r = 0.21 * color.r + 0.71 * color.g + 0.07 * color.b;
           color.g = color.r;
           color.b = color.r;
-          
+
           /* Insert the new color data */
-          *pixel = SDL_MapRGBA(grey_surface->format, color.r, color.g, 
+          *pixel = SDL_MapRGBA(grey_surface->format, color.r, color.g,
                                                      color.b, color.a);
         }
       }
-      
+
       /* Create greyscale texture and then clean up */
       texture_grey = SDL_CreateTextureFromSurface(renderer, grey_surface);
       SDL_FreeSurface(grey_surface);
     }
-    
+
     /* Finally, set the alpha rating */
     setAlpha(alpha);
-    
+
     /* Clean Up */
     SDL_FreeSurface(loaded_surface);
   }
@@ -535,19 +535,19 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
   {
     /* Otherwise, return failed success */
     if(!no_warnings)
-      std::cerr << "[WARNING] Unable to load image \"" << path 
+      std::cerr << "[WARNING] Unable to load image \"" << path
                 << "\". SDL_image error: " << IMG_GetError() << std::endl;
     success = false;
   }
- 
+
   return success;
 }
 
 /*
  * Description: Sets the SDL frame texture from a path file. This requires that
- *              the extension appropriately defines the file in order to 
+ *              the extension appropriately defines the file in order to
  *              properly work. If the image can be loaded, it automatically
- *              unsets the previous texture and sets this as the new one. It 
+ *              unsets the previous texture and sets this as the new one. It
  *              also takes a stack of adjustments for flipping.
  *
  * Inputs: std::string path - the path to the image
@@ -558,16 +558,16 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
  *         bool enable_greyscale - should a greyscale texture be created?
  * Output: bool - the success of loading the texture
  */
-bool Frame::setTexture(std::string path, std::vector<std::string> adjustments, 
+bool Frame::setTexture(std::string path, std::vector<std::string> adjustments,
                                          SDL_Renderer* renderer, uint16_t angle,
-                                         bool no_warnings, 
+                                         bool no_warnings,
                                          bool enable_greyscale)
 {
   bool success = true;
 
   success &= execImageAdjustments(adjustments);
   success &= setTexture(path, renderer, angle, no_warnings, enable_greyscale);
-  
+
   return success;
 }
 
@@ -585,19 +585,19 @@ bool Frame::setTexture(SDL_Texture* texture)
   if(texture != NULL)
   {
     uint32_t format;
-    
+
     /* Clean up the existing texture */
     unsetTexture();
-    
+
     /* Set the new texture and appropriate parameters */
     this->texture = texture;
     SDL_QueryTexture(texture, &format, NULL, &width, &height);
-    
+
     setAlpha(alpha);
-    
+
     return true;
   }
-  
+
   return false;
 }
 
@@ -615,12 +615,12 @@ void Frame::unsetTexture()
   if(texture != NULL)
     SDL_DestroyTexture(texture);
   texture = NULL;
-  
+
   /* Delete greyscale texture */
   if(texture_grey != NULL)
     SDL_DestroyTexture(texture_grey);
   texture_grey = NULL;
-  
+
   /* Clear class parameters */
   grey_scale = false;
   height = 0;
@@ -648,14 +648,14 @@ bool Frame::useGreyScale(bool enable)
     grey_scale = false;
     return true;
   }
-  
+
   return false;
 }
 
 /*=============================================================================
  * PRIVATE STATIC FUNCTIONS
  *============================================================================*/
- 
+
 /*
  * Description: This draws a single horizontal line in SDL. It utilizes the
  *              SDL_RenderFillRect call since the drawLine with opacity leaves
@@ -667,7 +667,7 @@ bool Frame::useGreyScale(bool enable)
  *         SDL_Renderer* renderer - the rendering pointer
  * Output: none
  */
-void Frame::drawLine(int32_t x1, int32_t x2, int32_t y, 
+void Frame::drawLine(int32_t x1, int32_t x2, int32_t y,
                      SDL_Renderer* renderer)
 {
   SDL_Rect rect;
@@ -690,7 +690,7 @@ void Frame::drawLine(int32_t x1, int32_t x2, int32_t y,
  *         SDL_Renderer* renderer - the rendering pointer
  * Output: none
  */
-void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x, 
+void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x,
                      SDL_Renderer* renderer)
 {
   SDL_Rect rect;
@@ -716,8 +716,8 @@ void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x,
  *         bool flat_side - should the flat side be aliased?
  * Output: none
  */
-void Frame::renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3, 
-                                     uint16_t y1, uint16_t y23, 
+void Frame::renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
+                                     uint16_t y1, uint16_t y23,
                                      SDL_Renderer* renderer, bool aliasing,
                                      bool flat_side)
 {
@@ -813,8 +813,8 @@ void Frame::renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
  *         bool flat_side - should the flat side be aliased?
  * Output: none
  */
-void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3, 
-                                  uint16_t y12, uint16_t y3, 
+void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
+                                  uint16_t y12, uint16_t y3,
                                   SDL_Renderer* renderer, bool aliasing,
                                   bool flat_side)
 {
@@ -839,7 +839,7 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
   SDL_GetRenderDrawColor(renderer, &red, &green, &blue, &alpha);
   uint8_t half_alpha = alpha / 2;
   uint8_t quarter_alpha = half_alpha / 2;
-  
+
   /* Draw the lines to display the triangle (only horizontal) */
   for(uint16_t y = y3; y >= y12; y--)
   {
@@ -908,7 +908,7 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
  *         SDL_Renderer* renderer - the rendering graphical engine
  * Output: bool - did the object render?
  */
-bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length, 
+bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length,
                       uint16_t height, float slope, SDL_Renderer* renderer)
 {
   /* Prechecks */
@@ -939,7 +939,7 @@ bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length,
  *         SDL_Renderer* renderer - the rendering graphical engine
  * Output: bool - did it render?
  */
-bool Frame::renderCircle(int center_x, int center_y, uint16_t radius, 
+bool Frame::renderCircle(int center_x, int center_y, uint16_t radius,
                          SDL_Renderer* renderer)
 {
   if(renderer != NULL)
@@ -1026,7 +1026,7 @@ bool Frame::renderCircle(int center_x, int center_y, uint16_t radius,
  *         SDL_Renderer* renderer - the rendering graphical engine
  * Output: bool - did it render?
  */
-bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius, 
+bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
                                SDL_Renderer* renderer)
 {
   if(renderer != NULL)
@@ -1037,7 +1037,7 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
     int y = 0;
     int y0 = center_y;
     int delta = -radius;
-    
+
     /* Render end center points */
     SDL_RenderDrawPoint(renderer, x0, y0);
     if(radius > 0)
@@ -1133,7 +1133,7 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
  *         bool reverse - if the border should be calculated away from the rect
  * Output: bool - true if successful
  */
-bool Frame::renderRect(SDL_Rect rect, uint16_t border_width, 
+bool Frame::renderRect(SDL_Rect rect, uint16_t border_width,
                        SDL_Renderer* renderer, bool reverse)
 {
   if(renderer != NULL)
@@ -1180,20 +1180,20 @@ bool Frame::renderRect(SDL_Rect rect, uint16_t border_width,
  *         bool reverse - reverse the triangle?
  * Output: bool - was the triangle rendered?
  */
-bool Frame::renderRHTriangle(uint32_t x, uint32_t y, uint16_t height, 
+bool Frame::renderRHTriangle(uint32_t x, uint32_t y, uint16_t height,
                              SDL_Renderer* renderer, bool reverse)
 {
   if(reverse)
   {
-    return Frame::renderTriangle(x, y, x, y + height - 1, x - height, y + 
+    return Frame::renderTriangle(x, y, x, y + height - 1, x - height, y +
                                  height - 1, renderer);
   }
-  return renderTriangle(x, y, x, y + height - 1, x + height, y + height - 1, 
+  return renderTriangle(x, y, x, y + height - 1, x + height, y + height - 1,
                         renderer);
 }
 
 /*
- * Description: Renders a filled triangle, given 3 vectors and a rendering 
+ * Description: Renders a filled triangle, given 3 vectors and a rendering
  *              engine. Aliasing can be enabled on all edges. Utilizes private
  *              static functions for top and bottom half of triangle.
  *
@@ -1207,8 +1207,8 @@ bool Frame::renderRHTriangle(uint32_t x, uint32_t y, uint16_t height,
  *         bool aliasing - should aliasing be used on the edges?
  * Output: bool - was the triangle rendered?
  */
-bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, 
-                           uint16_t y2, uint16_t x3, uint16_t y3, 
+bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2,
+                           uint16_t y2, uint16_t x3, uint16_t y3,
                            SDL_Renderer* renderer, bool aliasing)
 {
   /* Only attempt to paint the triangle if renderer is valid */
@@ -1221,9 +1221,9 @@ bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2,
     int32_t y13_diff = y3 - y1;
 
     /* Check if the triangle is a valid triangle */
-    if((x1 == x2 && y1 == y2) || (x1 == x3 && y1 == y3) || 
-       (x2 == x3 && y2 == y3) || (y12_diff == 0 && y12_diff == y13_diff) || 
-       (y12_diff != 0 && y13_diff != 0 && 
+    if((x1 == x2 && y1 == y2) || (x1 == x3 && y1 == y3) ||
+       (x2 == x3 && y2 == y3) || (y12_diff == 0 && y12_diff == y13_diff) ||
+       (y12_diff != 0 && y13_diff != 0 &&
         ((float)x12_diff / y12_diff) == ((float)x13_diff / y13_diff)))
     {
       success = false;

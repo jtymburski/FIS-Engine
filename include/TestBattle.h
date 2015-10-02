@@ -11,6 +11,7 @@
 #include <chrono>
 #include <memory>
 
+#include "Game/Battle/BattleDisplayData.h"
 #include "Game/Battle/Battle.h"
 #include "Game/Player/Player.h"
 #include "Options.h"
@@ -25,32 +26,47 @@ public:
   ~TestBattle();
 
   /* Enumerator: Test battle selection items */
-  enum MenuItems{AC          = 0,   /* Arcadius */
-                 AA          = 1,   /* Aurora Agent */
-                 AAx2        = 2,   /* Aurora Agent x 2 */
-                 AAx5        = 3,   /* Aurora Agent x 5 */
-                 AAnAH       = 4,   /* Aurora Agent and Heavy */
-                 AH          = 5,   /* Aurora Heavy */
-                 AEnAD       = 6,   /* Aurora Engineer and Drone */
-                 AEnADx4     = 7,   /* Aurora Engineer and Drone x 4 */
-                 AAnAHnADnAE = 8,   /* Aurora Agent, Engg, Heavy, and Drone */
-                 REnRG       = 9,   /* Reverdile and Reverdling */
-                 REnRGx2     = 10,  /* Reverdile and Reverdling x 2 */
-                 REnRGx4     = 11,  /* Reverdile and Reverdling x 4 */
-                 RG          = 12,  /* Reverdling */
-                 RGx2        = 13,  /* Reverdling x 2 */
-                 RGx5        = 14}; /* Reverdling x 5 */
+  enum MenuItems
+  {
+    AC = 0, /* Arcadius */
+    AA = 1, /* Aurora Agent */
+    AAx2 = 2, /* Aurora Agent x 2 */
+    AAx5 = 3, /* Aurora Agent x 5 */
+    AAnAH = 4, /* Aurora Agent and Heavy */
+    AH = 5, /* Aurora Heavy */
+    AEnAD = 6, /* Aurora Engineer and Drone */
+    AEnADx4 = 7, /* Aurora Engineer and Drone x 4 */
+    AAnAHnADnAE = 8, /* Aurora Agent, Engg, Heavy, and Drone */
+    REnRG = 9, /* Reverdile and Reverdling */
+    REnRGx2 = 10, /* Reverdile and Reverdling x 2 */
+    REnRGx4 = 11, /* Reverdile and Reverdling x 4 */
+    RG = 12, /* Reverdling */
+    RGx2 = 13, /* Reverdling x 2 */
+    RGx5 = 14
+  }; /* Reverdling x 5 */
 
   /* Enumerator: Test mode for user input */
-  enum TestMode{SCENARIO    = 0,
-                FRIEND_LVL  = 1,
-                FOE_LVL     = 2,
-                TEST_BATTLE = 3,
-                NONE        = 4};
+  enum TestMode
+  {
+    SCENARIO = 0,
+    FRIEND_LVL = 1,
+    FOE_LVL = 2,
+    TEST_BATTLE = 3,
+    NONE = 4
+  };
 
   /* Enumerator: Person selection mode */
-  enum TestPerson{ARCADIUS, AURORAAGENT, AURORAHEAVY, AURORAENGG,
-                  AURORADRONE, REVERDILE, REVERDLING, PLAYER};
+  enum TestPerson
+  {
+    ARCADIUS,
+    AURORAAGENT,
+    AURORAHEAVY,
+    AURORAENGG,
+    AURORADRONE,
+    REVERDILE,
+    REVERDLING,
+    PLAYER
+  };
 
 private:
   /* Action sets */
@@ -62,6 +78,9 @@ private:
 
   /* The computed base path for resources in the application */
   std::string base_path;
+
+  /* Display Data Pointer */
+  BattleDisplayData* display_data;
 
   /* A current battle pointer */
   Battle* battle_logic;
@@ -196,9 +215,9 @@ private:
   const static std::string kMENU_FRIEND; /* Friend preface text */
   const static uint8_t kNUM_MENU_ITEMS; /* Number of menu items in screen */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
   /* Builds the ailment frames */
   void buildBattleDisplay(SDL_Renderer* renderer);
@@ -237,9 +256,9 @@ private:
   /* Start a battle with the selected parameters */
   void initBattle(SDL_Renderer* renderer);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*============================================================================
+   * PUBLIC FUNCTIONS
+   *===========================================================================*/
 public:
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);

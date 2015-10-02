@@ -424,7 +424,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   std::string type = " - SUB";
   if(full_load)
     type = " - FULL";
-  std::cout << "--" << std::endl << "Game Load: " << fh.getDate() << type 
+  std::cout << "--" << std::endl << "Game Load: " << fh.getDate() << type
             << std::endl << "--" << std::endl;
 
   /* If file open was successful, move forward */
@@ -1236,7 +1236,7 @@ bool Game::setPath(std::string path, int level, bool load)
       /* Update info */
       game_path = path;
       map_lvl = level;
-    
+
       /* If load enabled, load the new map */
       if(load)
         this->load(active_renderer, full_load);
@@ -1246,7 +1246,7 @@ bool Game::setPath(std::string path, int level, bool load)
   }
   return false;
 }
-  
+
 /* Sets the active renderer to be used */
 void Game::setRenderer(SDL_Renderer* renderer)
 {

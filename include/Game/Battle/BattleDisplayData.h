@@ -42,16 +42,16 @@ private:
   Options* config;
 
   /* The battle bar frame */
-  Frame frame_battle_bar;
+  Frame* frame_battle_bar;
 
   /* The accuracy percent frame */
-  Frame frame_percent;
+  Frame* frame_percent;
 
   /* The QD Frame */
   Frame frame_qd;
 
   /* The cooldown frame */
-  Frame frame_time;
+  Frame* frame_time;
 
   /* Frames for each type of Ailment */
   std::map<Infliction, Frame> frames_ailments;
@@ -122,16 +122,16 @@ public:
   bool buildData();
 
   /* Obtains the battle bar frame */
-  Frame getBattleBar();
+  Frame* getBattleBar();
 
   /* Returns the frame for percent */
-  Frame getFramePercent();
+  Frame* getFramePercent();
 
   /* Returns the frame for QD */
   Frame getFrameQD();
 
   /* Returns the frame for time */
-  Frame getFrameTime();
+  Frame* getFrameTime();
 
   /* Returns an ailment frame of a given Infliction */
   Frame getFrameAilment(Infliction ailment_frame);

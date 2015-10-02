@@ -29,7 +29,8 @@ const uint8_t TestBattle::kNUM_MENU_ITEMS = 16;
 /* Constructor function */
 /* ------------------------------------------------------------------------- */
 TestBattle::TestBattle(Options* running_config)
-    : sprite_paralysis{nullptr},
+    : display_data{nullptr},
+      sprite_paralysis{nullptr},
       sprite_confusion{nullptr},
       sprite_buff{nullptr},
       sprite_poison{nullptr},
@@ -55,6 +56,7 @@ TestBattle::TestBattle(Options* running_config)
       plep_ensnare{nullptr},
       plep_enrich{nullptr}
 {
+  display_data = new BattleDisplayData();
   base_path = "";
   battle_logic = nullptr;
   battle_start = false;
@@ -71,6 +73,8 @@ TestBattle::TestBattle(Options* running_config)
   battle_logic = new Battle();
 
   setConfiguration(running_config);
+
+  battle_logic->setDisplayData(display_data);
   create();
 }
 
@@ -80,6 +84,11 @@ TestBattle::TestBattle(Options* running_config)
 TestBattle::~TestBattle()
 {
   destroy();
+
+  if(display_data)
+    delete display_data;
+
+  display_data = nullptr;
 }
 
 /*=============================================================================
@@ -1530,6 +1539,8 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
       base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
 
   battle_logic->setRenderer(renderer);
+  display_data->setRenderer(renderer);
+  display_data->buildData();
   battle_logic->startBattle(party_friends, party_foes, background);
 }
 
@@ -1706,18 +1717,16 @@ bool TestBattle::setConfiguration(Options* running_config)
     game_config = running_config;
     base_path = game_config->getBasePath();
 
-    /* Battle configuration setup */
-    battle_logic->setConfig(running_config);
+    if(battle_logic)
+      battle_logic->setConfig(running_config);
+    if(display_data)
+      display_data->setConfig(running_config);
 
     font_normal = game_config->getFontTTF(FontName::REGULAR_FONT);
-
-  if(!font_normal)
-    std::cout << "Error loading test battle font" << std::endl;
 
     /* Text setup */
     deleteMenu();
     createMenu();
-
 
     return true;
   }
