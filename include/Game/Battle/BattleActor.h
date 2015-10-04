@@ -360,6 +360,9 @@ public:
   /* Assigns a new info frame to the Battle Actor */
   void setInfoFrame(Frame* info_frame);
 
+  /* Set the upkeep state of the BattleActor */
+  void setUpkeepState(UpkeepState state_upkeep);
+
   /*=============================================================================
    * PRIVATE STATIC FUNCTIONS
    *============================================================================*/

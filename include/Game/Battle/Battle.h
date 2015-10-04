@@ -102,6 +102,7 @@ struct ActorUpkeep
 class Battle
 {
 public:
+
   /* Constructs the Battle object */
   Battle();
 
@@ -318,6 +319,9 @@ private:
 
   /* Clear function for the battle actors */
   void clearBattleActors();
+
+  /* General upkeep phase */
+  void generalUpkeep();
 
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);

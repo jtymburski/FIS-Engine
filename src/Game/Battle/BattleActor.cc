@@ -622,6 +622,11 @@ void BattleActor::setInfoFrame(Frame* frame_info)
   this->frame_info = frame_info;
 }
 
+void BattleActor::setUpkeepState(UpkeepState state_upkeep)
+{
+  this->state_upkeep = state_upkeep;
+}
+
 /*=============================================================================
  * PRIVATE STATIC FUNCTIONS
  *============================================================================*/

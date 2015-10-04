@@ -316,6 +316,25 @@ void Battle::clearBattleActors()
   actors.clear();
 }
 
+void Battle::generalUpkeep()
+{
+#ifdef UDEBUG
+  std::cout << "\n=============\n";
+  std::cout << "  TURN " << Helpers::numToRoman(turns_elapsed + 1)
+            << "\n=============" << std::endl;
+#endif
+
+  /* First turn -> skip updates, other turns -> add to update */
+  if(turns_elapsed > 0)
+  {
+    for(auto& actor : actors)
+      if(actor)
+        actor->setUpkeepState(UpkeepState::UPKEEP_BEGIN);
+  }
+
+  setFlagCombat(CombatState::PHASE_DONE);
+}
+
 int32_t Battle::getBattleIndex(int32_t index)
 {
   if(index == 1)
@@ -3771,39 +3790,6 @@ bool Battle::setBackground(Sprite* background)
 // }
 
 // /*
-//  * Description: Deals with general upkeep including effects brought on by
-//  *              the current battle circumstances like weather that aren't
-//  *              or can't be dealt with in personal upkeep functions.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::generalUpkeep()
-// {
-// /* Print out the party state if either in UDEBUG or in TEXT battle mode */
-// #ifdef UDEBUG
-//   std::cout << "\n=============\n";
-//   std::cout << "  TURN " << Helpers::numToRoman(turns_elapsed + 1)
-//             << "\n=============" << std::endl;
-// #endif
-
-//   for(uint32_t i = 0; i < friends->getSize(); i++)
-//     if(friends->getMember(i)->getBFlag(BState::ALIVE))
-//       upkeep_persons.push_back(friends->getMember(i));
-//   for(uint32_t i = 0; i < foes->getSize(); i++)
-//     if(foes->getMember(i)->getBFlag(BState::ALIVE))
-//       upkeep_persons.push_back(foes->getMember(i));
-
-//   // TODO: Weather updates [03-01-14]
-
-//   setBattleFlag(CombatState::READY_TO_RENDER, false);
-//   setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-
-//   /* General upkeep phase complete */
-//   setBattleFlag(CombatState::PHASE_DONE);
-// }
-
-// /*
 //  * Description: Sets the flags of BattleState at the beginning of the Battle.
 //  *              By default, all Battles will be a random encounter unless
 //  *              there exists a person in the foes party which is: a
@@ -6405,6 +6391,7 @@ void Battle::setNextTurnState()
 //  */
 bool Battle::update(int32_t cycle_time)
 {
+  (void)cycle_time; //TODO: Warning
   turns_elapsed++;
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
@@ -6413,7 +6400,7 @@ bool Battle::update(int32_t cycle_time)
   // std::cout << "Current Battle State:: " <<
   // Helpers::turnStateToStr(turn_state);
 
-  if(turns_elapsed % 100 == 0)
+  if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY)
     setFlagCombat(CombatState::PHASE_DONE);
 
   if(getFlagCombat(CombatState::PHASE_DONE))
