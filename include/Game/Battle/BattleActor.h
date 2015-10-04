@@ -333,6 +333,9 @@ public:
   /* Returns the active sprites' y */
   int32_t getDialogY();
 
+  /* Gets the next selection state */
+  SelectionState getSelectionState();
+
   /* Obtains the real cost value of the Skill */
   uint32_t getSkillCost(Skill* test_skill);
 
@@ -359,6 +362,9 @@ public:
 
   /* Assigns a new info frame to the Battle Actor */
   void setInfoFrame(Frame* info_frame);
+
+  /* Assigns a selection state */
+  void setSelectionState(SelectionState state_selection);
 
   /* Set the upkeep state of the BattleActor */
   void setUpkeepState(UpkeepState state_upkeep);

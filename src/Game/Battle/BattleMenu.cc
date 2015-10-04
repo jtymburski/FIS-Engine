@@ -543,11 +543,6 @@ void BattleMenu::clear()
   element_index = -1;
 }
 
-bool BattleMenu::getFlag(const BattleMenuState& test_flag)
-{
-  return static_cast<bool>((flags & test_flag) == test_flag);
-}
-
 bool BattleMenu::buildData()
 {
   if(battle_display_data)
@@ -557,7 +552,26 @@ bool BattleMenu::buildData()
     return true;
   }
 
+
+
   return false;
+}
+
+BattleActor* BattleMenu::getActor()
+{
+  return actor;
+}
+
+bool BattleMenu::getFlag(const BattleMenuState& test_flag)
+{
+  return static_cast<bool>((flags & test_flag) == test_flag);
+}
+
+bool BattleMenu::setActor(BattleActor* actor)
+{
+  this->actor = actor;
+
+  return this->actor;
 }
 
 /* Assigns the configuration of the BattleMenu */

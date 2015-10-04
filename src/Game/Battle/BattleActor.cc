@@ -524,6 +524,16 @@ Person* BattleActor::getBasePerson()
   return person_base;
 }
 
+std::vector<BattleItem*> BattleActor::getBattleItems()
+{
+  return battle_items;
+}
+
+std::vector<BattleSkill*> BattleActor::getBattleSkills()
+{
+  return battle_skills;
+}
+
 bool BattleActor::getFlag(const ActorState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
@@ -552,6 +562,11 @@ int32_t BattleActor::getDialogX()
 int32_t BattleActor::getDialogY()
 {
   return dialog_y;
+}
+
+SelectionState BattleActor::getSelectionState()
+{
+  return state_selection;
 }
 
 // TODO: Bubbification cost
@@ -620,6 +635,11 @@ void BattleActor::setInfoFrame(Frame* frame_info)
 {
   clearInfoFrame();
   this->frame_info = frame_info;
+}
+
+void BattleActor::setSelectionState(SelectionState state_selection)
+{
+  this->state_selection = state_selection;
 }
 
 void BattleActor::setUpkeepState(UpkeepState state_upkeep)

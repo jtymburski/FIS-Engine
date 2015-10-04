@@ -172,8 +172,14 @@ public:
   /* Constructs other battle menu data (like the QD frame) */
   bool buildData();
 
+  /* Returns the current actor to the menu */
+  BattleActor* getActor();
+
   /* Return the value of a given BattleMenuState flag */
   bool getFlag(const BattleMenuState& test_flag);
+
+  /* Assign a new BattleActor for the BattleMenu */
+  bool setActor(BattleActor* actor);
 
   /* Assigns the Renderer */
   bool setConfig(Options* config);

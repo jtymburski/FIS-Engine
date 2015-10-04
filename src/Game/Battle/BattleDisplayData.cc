@@ -36,31 +36,32 @@ BattleDisplayData::BattleDisplayData()
  */
 BattleDisplayData::~BattleDisplayData()
 {
-  for(auto& ailment_plep : pleps_ailments)
-    if(ailment_plep.second)
-      delete ailment_plep.second;
-  pleps_ailments.clear();
+  //TODO: This fails?
+  // for(auto& ailment_plep : pleps_ailments)
+  //   if(ailment_plep.second)
+  //     delete ailment_plep.second;
+  // pleps_ailments.clear();
 
-  for(auto& event_plep : pleps_events)
-    if(event_plep.second)
-      delete event_plep.second;
-  pleps_events.clear();
+  // for(auto& event_plep : pleps_events)
+  //   if(event_plep.second)
+  //     delete event_plep.second;
+  // pleps_events.clear();
 
-  if(frame_battle_bar)
-    delete frame_battle_bar;
-  frame_battle_bar = nullptr;
+  // if(frame_battle_bar)
+  //   delete frame_battle_bar;
+  // frame_battle_bar = nullptr;
 
-  if(frame_percent)
-    delete frame_percent;
-  frame_percent = nullptr;
+  // if(frame_percent)
+  //   delete frame_percent;
+  // frame_percent = nullptr;
 
   // if(frame_qd)
   //   delete frame_qd;
   // frame_qd = nullptr;
 
-  if(frame_time)
-    delete frame_time;
-  frame_time = nullptr;
+  // if(frame_time)
+  //   delete frame_time;
+  // frame_time = nullptr;
 }
 
 /*=============================================================================

@@ -316,6 +316,18 @@ void Battle::clearBattleActors()
   actors.clear();
 }
 
+bool Battle::doesActorNeedToSelect(BattleActor* actor)
+{
+  bool to_select = (actor != nullptr);
+
+  if(to_select)
+  {
+    to_select &= (actor->getSelectionState() == SelectionState::NOT_SELECTED);
+  }
+
+  return to_select;
+}
+
 void Battle::generalUpkeep()
 {
 #ifdef UDEBUG
@@ -335,6 +347,45 @@ void Battle::generalUpkeep()
   setFlagCombat(CombatState::PHASE_DONE);
 }
 
+bool Battle::loadMenuForActor(BattleActor* actor)
+{
+  bool success = (actor != nullptr);
+  success &= (battle_menu != nullptr);
+
+  if (success)
+  {
+    success &= actor->buildBattleItems(actors);
+    success &= actor->buildBattleSkills(actors);
+
+    if(success)
+    {
+      battle_menu->clear();
+
+      success &= battle_menu->setActor(actor);
+      battle_menu->setSelectableItems(actor->getBattleItems());
+      battle_menu->setSelectableSkills(actor->getBattleSkills());
+
+    }
+  }
+
+  return success;
+
+}
+
+void Battle::updateUserSelection()
+{
+  assert(battle_menu);
+
+  /* If menu has a valid actor, update their selection */
+  if(battle_menu->getActor())
+  {
+
+  }
+
+  /* If the menu does not have a valid actor, load their data in */
+
+}
+
 int32_t Battle::getBattleIndex(int32_t index)
 {
   if(index == 1)
@@ -343,6 +394,15 @@ int32_t Battle::getBattleIndex(int32_t index)
     return 1;
 
   return index;
+}
+
+BattleActor* Battle::getNextMenuActor()
+{
+  for(const auto& ally : getAllies())
+    if (doesActorNeedToSelect(ally))
+      return ally;
+
+  return nullptr;
 }
 
 /*=============================================================================
@@ -2650,108 +2710,6 @@ bool Battle::setBackground(Sprite* background)
 //   }
 
 //   return false;
-// }
-
-// /*
-//  * Description: Builds the vector of BattleItem objects. Given a person index
-//  *              to build the item for, and a pair of Item, and amount
-//  objects,
-//  *              this method will build the BattleItems to be selected from in
-//  *              the BattleMenu and AI Module.
-//  *
-//  * Inputs: const int32_t p_index - the person index to build the items for.
-//  *         pair<Item, uint16_t> - the items and amounts of items selectable
-//  * Output: std::vector<BattleItem> - the construced vector of BattleItems
-//  */
-// std::vector<BattleItem>
-// Battle::buildBattleItems(const int32_t& p_index,
-//                          std::vector<std::pair<Item*, uint16_t>> items)
-// {
-//   curr_user = getPerson(p_index);
-//   std::vector<BattleItem> battle_items;
-
-//   if(curr_user != nullptr)
-//   {
-//     for(auto it = begin(items); it != end(items); ++it)
-//     {
-
-//       auto targets =
-//           getValidTargets(p_index, (*it).first->getUseSkill()->getScope());
-
-//       auto all_targets = getPersonsFromIndexes(targets);
-//       std::vector<Person*> friends_targets;
-//       std::vector<Person*> foes_targets;
-
-//       for(auto target : all_targets)
-//       {
-//         if(friends->isInParty(target))
-//           friends_targets.push_back(target);
-//         else
-//           foes_targets.push_back(target);
-//       }
-
-//       BattleItem new_battle_item;
-//       new_battle_item.item = (*it).first;
-//       new_battle_item.item_skill = (*it).first->getUseSkill();
-//       new_battle_item.amount = (*it).second;
-//       new_battle_item.all_targets = all_targets;
-//       new_battle_item.ally_targets = friends_targets;
-//       new_battle_item.foe_targets = foes_targets;
-
-//       battle_items.push_back(new_battle_item);
-//     }
-//   }
-
-//   return battle_items;
-// }
-
-// /*
-//  * Description: Constructs the vector of BattleSkill objects given a person
-//  *              index, and a SkillSet of useable skills.
-//  *
-//  * Inputs: int32_t p_index - the person index to the select the skills for.
-//  *         SkillSet* useable_skills - set of useable skills.
-//  * Output: std::vetor<BattleSkill> - constructed vector of BattleSkills
-//  */
-// std::vector<BattleSkill>
-// Battle::buildBattleSkills(const int32_t& p_index,
-//                           SkillSet* const useable_skills)
-// {
-//   curr_user = getPerson(p_index);
-//   std::vector<BattleSkill> battle_skills;
-
-//   if(curr_user != nullptr)
-//   {
-//     auto skill_elements = useable_skills->getElements(curr_user->getLevel());
-
-//     for(auto it = begin(skill_elements); it != end(skill_elements); ++it)
-//     {
-//       auto targets = getValidTargets(p_index, (*it).skill->getScope());
-//       auto all_targets = getPersonsFromIndexes(targets);
-
-//       std::vector<Person*> friends_targets;
-
-//       std::vector<Person*> foes_targets;
-
-//       for(auto target : all_targets)
-//       {
-//         if(friends->isInParty(target))
-//           friends_targets.push_back(target);
-//         else
-//           foes_targets.push_back(target);
-//       }
-
-//       BattleSkill new_battle_skill;
-//       new_battle_skill.skill = (*it).skill;
-//       new_battle_skill.all_targets = all_targets;
-//       new_battle_skill.ally_targets = friends_targets;
-//       new_battle_skill.foe_targets = foes_targets;
-
-//       battle_skills.push_back(new_battle_skill);
-//     }
-//   }
-
-//   return battle_skills;
 // }
 
 // void Battle::buildActionVariables(ActionType action_type,
@@ -5582,54 +5540,6 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-// /*
-//  * Description: Tests whether a person index is valid. If the person index is
-//  *              an invalid person, if the person is alive and if the person
-//  *              is not set to skip their next turn, this function returns
-//  true.
-//  *
-//  * Inputs: int32_t - the person index to test if it is valid for action sel.
-//  * Output: bool - the validity of the person index for action selection
-//  */
-// bool Battle::testPersonIndex(const int32_t& test_index)
-// {
-//   auto test_person = getPerson(test_index);
-
-//   if(test_person->getBFlag(BState::ALIVE))
-//   {
-//     auto skill_cooldown = action_buffer->hasCoolingSkill(test_person);
-
-//     if(test_person->getAilFlag(PersonAilState::SKIP_NEXT_TURN))
-//       return false;
-//     else if(skill_cooldown != nullptr)
-//       return false;
-
-//     return true;
-//   }
-
-//   return false;
-// }
-
-// // TODO: Comment
-// bool Battle::anyUserSelection(bool friends)
-// {
-//   auto any_user_selectable = false;
-//   auto temp_person_index = person_index;
-
-//   if(friends)
-//   {
-//     any_user_selectable |= testPersonIndex(1);
-//     any_user_selectable |= setNextPersonIndex();
-//   }
-//   else
-//   {
-//     any_user_selectable |= testPersonIndex(-1);
-//     any_user_selectable |= setNextPersonIndex();
-//   }
-
-//   person_index = temp_person_index;
-//   return any_user_selectable;
-// }
 
 // /*
 //  * Description: Upkeep function which calls each personal upkeep for each

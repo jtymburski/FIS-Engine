@@ -102,7 +102,6 @@ struct ActorUpkeep
 class Battle
 {
 public:
-
   /* Constructs the Battle object */
   Battle();
 
@@ -283,7 +282,7 @@ private:
   const static uint16_t kINFO_H;       /* Height of enemy info bar */
   const static uint8_t kINFO_OPACITY;  /* Opacity of black background in info */
   const static uint8_t kINFO_TRIANGLE; /* Height of triangle in info corner */
-  const static uint16_t kINFO_W; /* Width of enemy info bar */
+  const static uint16_t kINFO_W;       /* Width of enemy info bar */
 
   const static uint8_t kENEMY_BAR_H;      /* Height of health bar for foes */
   const static uint8_t kENEMY_BAR_OFFSET; /* Offset of foe health off center */
@@ -320,11 +319,23 @@ private:
   /* Clear function for the battle actors */
   void clearBattleActors();
 
+  /* Returns true if the given actor needs to select a menu option */
+  bool doesActorNeedToSelect(BattleActor* actor);
+
   /* General upkeep phase */
   void generalUpkeep();
 
+  /* Loads the menu for a given battle actor */
+  bool loadMenuForActor(BattleActor* actor);
+
+  /* Updates the selection of the user */
+  void updateUserSelection();
+
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);
+
+  /* Returns a pointer to the next actor needing to select for the menu */
+  BattleActor* getNextMenuActor();
 
   /* Sets the next turn state of the Battle */
   void setNextTurnState();
