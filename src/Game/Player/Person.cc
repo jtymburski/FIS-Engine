@@ -1974,44 +1974,6 @@ SkillSet* Person::getUseableSkills()
 }
 
 /*
- * Description: Calculates and prints the valid action types which this
- *person
- *              may perform in a battle in their current state
- *
- * Inputs: none
- * Output: std::vector<ActionType> - vector of enuemrated action types
- *possible
- */
-// std::vector<ActionType> Person::getValidActions()
-// {
-//   std::vector<ActionType> valid_action_types;
-
-//   if(getBFlag(BState::ATK_ENABLED) || getBFlag(BState::SKL_ENABLED))
-//     valid_action_types.push_back(ActionType::SKILL);
-
-//   if(getBFlag(BState::ITM_ENABLED))
-//     valid_action_types.push_back(ActionType::ITEM);
-
-//   if(getBFlag(BState::DEF_ENABLED))
-//     valid_action_types.push_back(ActionType::DEFEND);
-
-//   if(getBFlag(BState::GRD_ENABLED))
-//     valid_action_types.push_back(ActionType::GUARD);
-
-//   if(getBFlag(BState::IMP_ENABLED) && this->getLevel() >=
-//   kMIN_LVL_IMPLODE)
-//     valid_action_types.push_back(ActionType::IMPLODE);
-
-//   if(getBFlag(BState::RUN_ENABLED))
-//     valid_action_types.push_back(ActionType::RUN);
-
-//   if(getBFlag(BState::PAS_ENABLED))
-//     valid_action_types.push_back(ActionType::PASS);
-
-//   return valid_action_types;
-// }
-
-/*
  * Description: Sets the action x and y offset for the rendering person in
  *the
  *              battle action frame slide-away.

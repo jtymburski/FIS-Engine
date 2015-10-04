@@ -83,6 +83,185 @@ BattleMenu::BattleMenu()
  * PRIVATE FUNCTIONS - Operation
  *============================================================================*/
 
+bool BattleMenu::isIndexValid(int32_t index)
+{
+  if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
+    return ((uint32_t)index < valid_action_types.size());
+
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    if(selected_action_type == ActionType::SKILL)
+    {
+      return (valid_battle_skills.at(index)->valid_status ==
+              ValidStatus::VALID);
+    }
+    if(selected_action_type == ActionType::ITEM)
+    {
+      return (valid_battle_items.at(index)->valid_status == ValidStatus::VALID);
+    }
+  }
+
+  return false;
+}
+
+/*
+ * Description: Jump to element index based on alha numeric keys.
+ *
+ * Inputs:
+ * Output:
+ */
+/* Methods for containing code for each key action */
+// void BattleMenu::keyDownAlpha(const char& c)
+// {
+//   // auto index = menu_skills->getIndexOfAlpha(c);
+//   (void)c;
+//   auto index = -1; // TODO: [08-24-14] Redo menu alpha skill selection.
+
+//   if(index != -1)
+//     element_index = index;
+// }
+
+/*
+ * Description: Method for holding what happens when the player hits the
+ *              cancel Key.
+ *
+ * Inputs: none
+ * Output: none
+ */
+// void BattleMenu::keyDownCancel()
+// {
+//   auto decrement_to_layer = -1;
+
+//   if(layer_index == 2)
+//   {
+//     decrement_to_layer = 1;
+//   }
+//   else if(layer_index == 3)
+//   {
+//     /* Back on a SKILL or ITEM action will remove the last added target,
+//      * which depends on the scope of the action:
+//      *
+//      *    TWO_ENEMIES   - previous single target cleared
+//      *    TWO_ALLIES    - previous single target cleared
+//      *
+//      *    NO_SCOPE      - invalid
+//      *
+//      *    all others    - clear vector
+//      */
+//     if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
+//     {
+//       if(action_scope == ActionScope::NO_SCOPE)
+//       {
+//         decrement_to_layer = 2;
+//       }
+//       else if(action_scope == ActionScope::TWO_ENEMIES ||
+//               action_scope == ActionScope::TWO_ALLIES)
+//       {
+//          If the size is greater than 0, pop the last selected target off,
+//            or go back to the skill selection menu
+//         if(selected_targets.size() > 0)
+//           removeLastTarget();
+//         else
+//           decrement_to_layer = 2;
+//       }
+//       else
+//       {
+//         if(removeLastTarget(true))
+//         {
+//           decrement_to_layer = 2;
+//         }
+//       }
+//     }
+//     /* Hitting cancel on a GUARD action will reset the action_type */
+//     else if(action_type == ActionType::GUARD ||
+//             action_type == ActionType::DEFEND ||
+//             action_type == ActionType::PASS)
+//     {
+//       decrement_to_layer = 1;
+//     }
+//   }
+//   else if(layer_index == 4)
+//   {
+//     if(action_type == ActionType::DEFEND || action_type == ActionType::RUN ||
+//        action_type == ActionType::PASS)
+//       decrement_to_layer = 1;
+//     else
+//       decrement_to_layer = 3;
+//   }
+
+//   if(decrement_to_layer != -1)
+//     decrementLayer(decrement_to_layer);
+// }
+
+/*
+ * Description: Method for what happens when the player hits the decrement key.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void BattleMenu::keyDownDecrement()
+{
+  element_index = validPrevious();
+}
+
+/*
+ * Description: Method for what happens when the player hits the increment key.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void BattleMenu::keyDownIncrement()
+{
+  std::cout << "Element index pre: " << element_index << std::endl;
+  std::cout << "Valid action types: " << valid_action_types.size() << std::endl;
+  element_index = validNext();
+  std::cout << "Element index aft: " << element_index << std::endl;
+}
+
+// First valid index
+int32_t BattleMenu::validFirst()
+{
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    if(selected_action_type == ActionType::SKILL)
+    {
+      for(size_t i = 0; i < valid_battle_skills.size(); ++i)
+        if(isIndexValid(i))
+          return i;
+    }
+    else if(selected_action_type == ActionType::ITEM)
+    {
+      for(size_t i = 0; i < valid_battle_items.size(); ++i)
+        if(isIndexValid(i))
+          return i;
+    }
+  }
+
+  return -1;
+}
+
+// Last valid index
+int32_t BattleMenu::validLast()
+{
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    if(selected_action_type == ActionType::SKILL)
+    {
+      for(size_t i = valid_battle_skills.size(); i > 0; --i)
+        if(isIndexValid(i - 1))
+          return i;
+    }
+    else if(selected_action_type == ActionType::ITEM)
+    {
+      for(size_t i = valid_battle_items.size(); i > 0; --i)
+        if(isIndexValid(i - 1))
+          return i;
+    }
+  }
+
+  return -1;
+}
+
 std::vector<BattleActor*> BattleMenu::getSelectableTargets()
 {
   std::vector<BattleActor*> selectable_targets;
@@ -104,6 +283,17 @@ std::vector<BattleActor*> BattleMenu::getSelectableTargets()
   }
 
   return selectable_targets;
+}
+
+int32_t BattleMenu::getMaxIndex()
+{
+  if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
+    return valid_action_types.size() - 1;
+
+  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+    return getSelectableTargets().size() - 1;
+
+  return -1;
 }
 
 /* kINDEX_ORDER {-5, -4, -3, -1, -2, 2, 1, 3, 4, 5} */
@@ -166,6 +356,56 @@ BattleActor* BattleMenu::getMostRight()
   }
 
   return most_right;
+}
+
+int32_t BattleMenu::validNext()
+{
+  if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
+  {
+    if((uint32_t)element_index + 1 <= valid_action_types.size())
+      return element_index + 1;
+    else
+      return 0;
+  }
+
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    for(size_t i = element_index; i < (uint32_t)getMaxIndex(); i++)
+      if(isIndexValid(i))
+        return i;
+
+    return validFirst();
+  }
+
+  // TODO - targets
+
+  return -1;
+}
+
+int32_t BattleMenu::validPrevious()
+{
+  if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
+  {
+    if(element_index > 1)
+      return element_index - 1;
+    else
+      return valid_action_types.size() - 1;
+  }
+
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    for(auto i = element_index; i >= 0; --i)
+    {
+      if(isIndexValid(i))
+        return i;
+    }
+
+    return validLast();
+  }
+
+  // TODO - targets
+
+  return -1;
 }
 
 /*=============================================================================
@@ -552,7 +792,28 @@ bool BattleMenu::buildData()
     return true;
   }
 
+  return false;
+}
 
+void BattleMenu::ready()
+{
+  status_window = WindowStatus::SHOWING;
+  element_index = 1;
+  menu_layer = BattleMenuLayer::TYPE_SELECTION;
+}
+
+bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
+{
+  if(event.keysym.sym == SDLK_UP)
+  {
+    std::cout << "Key down decrement!" << std::endl;
+    keyDownDecrement();
+  }
+  else if(event.keysym.sym == SDLK_DOWN)
+  {
+    std::cout << "Key down increment!" << std::endl;
+    keyDownIncrement();
+  }
 
   return false;
 }
@@ -602,6 +863,11 @@ bool BattleMenu::setRenderer(SDL_Renderer* renderer)
   return this->renderer;
 }
 
+void BattleMenu::setSelectableTypes(std::vector<ActionType> valid_action_types)
+{
+  this->valid_action_types = valid_action_types;
+}
+
 void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)
 {
   this->valid_battle_skills = menu_skills;
@@ -610,6 +876,11 @@ void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)
 void BattleMenu::setSelectableItems(std::vector<BattleItem*> menu_items)
 {
   this->valid_battle_items = menu_items;
+}
+
+void BattleMenu::setWindowStatus(WindowStatus status_window)
+{
+  this->status_window = status_window;
 }
 
 /*=============================================================================
@@ -969,172 +1240,6 @@ bool BattleMenu::render()
 // }
 
 /*
- * Description: Jump to element index based on alha numeric keys.
- *
- * Inputs:
- * Output:
- */
-/* Methods for containing code for each key action */
-// void BattleMenu::keyDownAlpha(const char& c)
-// {
-//   // auto index = menu_skills->getIndexOfAlpha(c);
-//   (void)c;
-//   auto index = -1; // TODO: [08-24-14] Redo menu alpha skill selection.
-
-//   if(index != -1)
-//     element_index = index;
-// }
-
-/*
- * Description: Method for holding what happens when the player hits the
- *              cancel Key.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::keyDownCancel()
-// {
-//   auto decrement_to_layer = -1;
-
-//   if(layer_index == 2)
-//   {
-//     decrement_to_layer = 1;
-//   }
-//   else if(layer_index == 3)
-//   {
-//     /* Back on a SKILL or ITEM action will remove the last added target,
-//      * which depends on the scope of the action:
-//      *
-//      *    TWO_ENEMIES   - previous single target cleared
-//      *    TWO_ALLIES    - previous single target cleared
-//      *
-//      *    NO_SCOPE      - invalid
-//      *
-//      *    all others    - clear vector
-//      */
-//     if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
-//     {
-//       if(action_scope == ActionScope::NO_SCOPE)
-//       {
-//         decrement_to_layer = 2;
-//       }
-//       else if(action_scope == ActionScope::TWO_ENEMIES ||
-//               action_scope == ActionScope::TWO_ALLIES)
-//       {
-//          If the size is greater than 0, pop the last selected target off,
-//            or go back to the skill selection menu
-//         if(selected_targets.size() > 0)
-//           removeLastTarget();
-//         else
-//           decrement_to_layer = 2;
-//       }
-//       else
-//       {
-//         if(removeLastTarget(true))
-//         {
-//           decrement_to_layer = 2;
-//         }
-//       }
-//     }
-//     /* Hitting cancel on a GUARD action will reset the action_type */
-//     else if(action_type == ActionType::GUARD ||
-//             action_type == ActionType::DEFEND ||
-//             action_type == ActionType::PASS)
-//     {
-//       decrement_to_layer = 1;
-//     }
-//   }
-//   else if(layer_index == 4)
-//   {
-//     if(action_type == ActionType::DEFEND || action_type == ActionType::RUN ||
-//        action_type == ActionType::PASS)
-//       decrement_to_layer = 1;
-//     else
-//       decrement_to_layer = 3;
-//   }
-
-//   if(decrement_to_layer != -1)
-//     decrementLayer(decrement_to_layer);
-// }
-
-/*
- * Description: Method for what happens when the player hits the decrement key.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::keyDownDecrement()
-// {
-//   /* Move to the last index if on the first index */
-//   if(element_index == 0)
-//   {
-//     if(getLayerIndex() > 2)
-//     {
-//       element_index = getMaxIndex();
-
-//       if(action_type != ActionType::NONE && valid_targets.empty())
-//         for(; !indexHasTargets() && element_index > 0;)
-//           element_index--;
-//     }
-//   }
-//   else
-//   {
-//     element_index--;
-
-//     if(action_type != ActionType::NONE && valid_targets.empty())
-//     {
-//       for(; !indexHasTargets() && element_index > 0;)
-//         element_index--;
-//     }
-//   }
-// }
-
-/*
- * Description: Method for what happens when the player hits the increment key.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::keyDownIncrement()
-// {
-//   /* Increment the viewing index if it is less than the max index */
-//   if(element_index < getMaxIndex())
-//   {
-//     element_index++;
-
-//     if(action_type != ActionType::NONE && valid_targets.empty())
-//     {
-//       for(; !indexHasTargets() && element_index < getMaxIndex();)
-//         element_index++;
-
-//        If there are no valid targets at the end of the list, search
-//        * through again starting at the top of the vector until one has
-//        * been found. This next step ASSUMES there exists at least one
-//        * valid skill (which should have been checked already).
-
-//       if(element_index == getMaxIndex() && !indexHasTargets())
-//       {
-//         element_index = 0;
-
-//         for(; !indexHasTargets() && element_index < getMaxIndex();)
-//           element_index++;
-//       }
-//     }
-//   }
-//   /* Otherwise, set to the top index */
-//   else if(getLayerIndex() > 2)
-//   {
-//     element_index = 0;
-
-//     if(action_type != ActionType::NONE && valid_targets.empty())
-//     {
-//       for(; !indexHasTargets();)
-//         element_index++;
-//     }
-//   }
-// }
-
-/*
  * Description: Method for what happens when the player hits the select key.
  *
  * Inputs: none
@@ -1441,89 +1546,6 @@ bool BattleMenu::render()
 // }
 
 /*
- * Description: Method for processing keydown events.
- *
- * Inputs: SDL_KeyboardEvent event - the key down event.
- * Output: bool - true if ???
- */
-// bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
-// {
-//   auto change_index = false;
-
-//   if(event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_DOWN ||
-//      event.keysym.sym == SDLK_LEFT || event.keysym.sym == SDLK_RIGHT)
-//   {
-//     change_index = true;
-
-//     if(action_type == ActionType::SKILL)
-//     {
-//       if(layer_index == 3 && action_scope == ActionScope::ONE_PARTY)
-//       {
-//         change_index = false;
-
-//         std::cout << element_index << std::endl;
-//         if(element_index == 0)
-//           element_index = getMaxIndex();
-//         else if(element_index == getMaxIndex())
-//           element_index = 0;
-//         std::cout << element_index << ":" << getMaxIndex() << std::endl;
-//       }
-//     }
-
-//     if(layer_index == 4)
-//       change_index = false;
-//   }
-
-//   if(change_index)
-//   {
-//     if(event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_RIGHT)
-//     {
-//       if(layer_index == 3)
-//         keyDownIncrement();
-//       else
-//         keyDownDecrement();
-//     }
-//     else if(event.keysym.sym == SDLK_DOWN || event.keysym.sym == SDLK_LEFT)
-//     {
-//       if(layer_index == 3)
-//         keyDownDecrement();
-//       else
-//         keyDownIncrement();
-//     }
-//   }
-//   else if(event.keysym.sym == SDLK_SPACE)
-//     keyDownSelect();
-//   else if(event.keysym.sym == SDLK_BACKSPACE)
-//     keyDownCancel();
-//   else if(event.keysym.sym == SDLK_HOME)
-//     printMenuState();
-//   else if(static_cast<int>(event.keysym.sym) >= 'a' &&
-//           static_cast<int>(event.keysym.sym) <= 'z')
-//   {
-//     keyDownAlpha(static_cast<int>(event.keysym.sym));
-//   }
-//   else
-//   {
-// #ifdef UDEBUG
-//     std::cout << "CANNOT CHANGE INDEX" << std::endl;
-// #endif
-//   }
-
-// #ifdef UDEBUG
-//   if(current_user != nullptr)
-//   {
-//     std::cout << "Selecting action for person index: " << person_index
-//               << " named: " << current_user->getName() << std::endl;
-//   }
-
-//   if(getMenuFlag(MenuState::SELECTION_VERIFIED))
-//     std::cout << "Selection has been verified!\n" << std::endl;
-// #endif
-
-//   return false;
-// }
-
-/*
  * Description: Prints out the state of the menu for a non-gui battle based
  *              on the current layering index.
  *
@@ -1639,28 +1661,6 @@ bool BattleMenu::render()
 //   return hover_targets;
 // }
 
-/*
- * Description: Returns the current value for maximum selection index based
- *              on the layering of hte menu.
- *
- * Inputs: none
- * Output: int32_t - the maximum selectable index
- */
-// int32_t BattleMenu::getMaxIndex()
-// {
-//   if(layer_index == 1)
-//     return valid_actions.size() - 1;
-//   else if(layer_index == 2 && action_type == ActionType::SKILL)
-//     return menu_skills.size() - 1;
-//   else if(layer_index == 2 && action_type == ActionType::ITEM)
-//     return menu_items.size() - 1;
-//   else if(layer_index == 2)
-//     return 0;
-//   else if(layer_index == 3)
-//     return valid_targets.size() - 1;
-
-//   return 0;
-//
 /*
 * Description: Returns the pointer to the currently selected Skill object.
 *

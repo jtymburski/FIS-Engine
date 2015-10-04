@@ -369,7 +369,7 @@ private:
 
   bool renderAllies();
   bool renderAlliesInfo();
-  bool renderAllyInfo(BattleActor* ally);
+  bool renderAllyInfo(BattleActor* ally, bool for_menu = false);
   bool renderEnemies();
   bool renderEnemiesInfo();
   bool renderEnemyInfo(BattleActor* actor);

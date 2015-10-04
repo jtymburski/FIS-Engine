@@ -86,7 +86,7 @@ private:
   /* The window status of the GUI */
   WindowStatus status_window;
 
-  /* The vector of action types available for choice on the menu */
+  /* Vector of valid action types */
   std::vector<ActionType> valid_action_types;
 
   /* Selectable battle items */
@@ -134,12 +134,23 @@ private:
 
   const static std::vector<int32_t> kINDEX_ORDER;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS - OPERATION
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS - OPERATION
+   *============================================================================*/
 private:
+  bool isIndexValid(int32_t index);
+
+  /* Methods for containing code for each key addition */
+  void keyDownAlpha(const char& c);
+  void keyDownCancel();
+  void keyDownDecrement();
+  void keyDownIncrement();
+  void keyDownSelect();
+
   /* Targets which are currently possible to select */
   std::vector<BattleActor*> getSelectableTargets();
+
+  int32_t getMaxIndex();
 
   /* Returns the most left selectable BattleActor */
   BattleActor* getMostLeft();
@@ -147,9 +158,14 @@ private:
   /* Returns the most right selectable BattleActor */
   BattleActor* getMostRight();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS - RENDERING
- *============================================================================*/
+  int32_t validFirst();
+  int32_t validLast();
+  int32_t validNext();
+  int32_t validPrevious();
+
+  /*=============================================================================
+   * PUBLIC FUNCTIONS - RENDERING
+   *============================================================================*/
 private:
   /* Clears the Skill Frames */
   void clearSkillFrames();
@@ -162,15 +178,20 @@ private:
   bool renderActionTypes(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
   bool renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS - OPERATION
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS - OPERATION
+   *============================================================================*/
 public:
   /* Clears the information in the menu - for a new person/turn */
   void clear();
 
   /* Constructs other battle menu data (like the QD frame) */
   bool buildData();
+
+  void ready();
+
+  /* Key press evnet for menu operation */
+  bool keyDownEvent(SDL_KeyboardEvent event);
 
   /* Returns the current actor to the menu */
   BattleActor* getActor();
@@ -193,17 +214,23 @@ public:
   /* Assigns the Renderer of BattleMenu elements */
   bool setRenderer(SDL_Renderer* renderer);
 
+  /* Assigns selectable action types */
+  void setSelectableTypes(std::vector<ActionType> valid_action_types);
+
   /* Assigns selectable skills */
   void setSelectableSkills(std::vector<BattleSkill*> menu_skills);
 
   /* Assigns selectable items */
   void setSelectableItems(std::vector<BattleItem*> menu_items);
 
+  /* Assigns an enumerated window status value to the BattleMenu */
+  void setWindowStatus(WindowStatus status_window);
+
   /*=============================================================================
    * PUBLIC FUNCTIONS - RENDERING
    *============================================================================*/
 public:
-    /* Constructs all SkillFrames for the current BattleSkills */
+  /* Constructs all SkillFrames for the current BattleSkills */
   bool createSkillFrames(uint32_t width_left, uint32_t width_right);
 
   /* Render the battle menu */
@@ -223,13 +250,6 @@ public:
 //   bool addPartyTargets(const int32_t &party_index);
 //   bool removeLastTarget(const bool &clear_all = false);
 
-//   /* Methods for containing code for each key addition */
-//   void keyDownAlpha(const char &c);
-//   void keyDownCancel();
-//   void keyDownDecrement();
-//   void keyDownIncrement();
-//   void keyDownSelect();
-
 //   /* Returns the first target of a desired party (if exists) */
 //   int32_t getPartyTargetIndex(bool opposite);
 
@@ -243,9 +263,6 @@ public:
 // public:
 //   /* Returns the state of the current menu selection */
 //   bool isActionSelected();
-
-//   /* Key press evnet for menu operation */
-//   bool keyDownEvent(SDL_KeyboardEvent event);
 
 //   /* Sets to the next left index */
 //   void nextLeftIndex();

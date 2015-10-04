@@ -514,6 +514,22 @@ Sprite* BattleActor::getActiveSprite()
   return nullptr;
 }
 
+std::vector<ActionType> BattleActor::getValidActionTypes()
+{
+  resetActionTypes();
+
+  std::vector<ActionType> valid_types;
+
+  valid_types.push_back(ActionType::SKILL);
+
+  if(getFlag(ActorState::PAS_ENABLED))
+    valid_types.push_back(ActionType::PASS);
+
+  //TODO: Other action types [10-04-15]
+
+  return valid_types;
+}
+
 std::vector<Ailment*> BattleActor::getAilments()
 {
   return ailments;

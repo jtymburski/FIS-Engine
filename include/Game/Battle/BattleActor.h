@@ -303,6 +303,9 @@ public:
   /* Returns a pointer to the active sprite based on the ActiveSprite enum */
   Sprite* getActiveSprite();
 
+  /* Returns a vector of valid action types for the actor */
+  std::vector<ActionType> getValidActionTypes();
+
   /* Returns the ailments of the Battle Actor */
   std::vector<Ailment*> getAilments();
 

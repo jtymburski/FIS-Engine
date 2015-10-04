@@ -352,7 +352,7 @@ bool Battle::loadMenuForActor(BattleActor* actor)
   bool success = (actor != nullptr);
   success &= (battle_menu != nullptr);
 
-  if (success)
+  if(success)
   {
     success &= actor->buildBattleItems(actors);
     success &= actor->buildBattleSkills(actors);
@@ -362,14 +362,14 @@ bool Battle::loadMenuForActor(BattleActor* actor)
       battle_menu->clear();
 
       success &= battle_menu->setActor(actor);
+      battle_menu->setSelectableTypes(actor->getValidActionTypes());
       battle_menu->setSelectableItems(actor->getBattleItems());
       battle_menu->setSelectableSkills(actor->getBattleSkills());
-
+      battle_menu->ready();
     }
   }
 
   return success;
-
 }
 
 void Battle::updateUserSelection()
@@ -379,11 +379,16 @@ void Battle::updateUserSelection()
   /* If menu has a valid actor, update their selection */
   if(battle_menu->getActor())
   {
-
   }
-
   /* If the menu does not have a valid actor, load their data in */
+  else
+  {
+    std::cout << "Loading the menu for the actor!" << std::endl;
+    auto first_actor = getNextMenuActor();
 
+    if(first_actor)
+      loadMenuForActor(first_actor);
+  }
 }
 
 int32_t Battle::getBattleIndex(int32_t index)
@@ -399,7 +404,7 @@ int32_t Battle::getBattleIndex(int32_t index)
 BattleActor* Battle::getNextMenuActor()
 {
   for(const auto& ally : getAllies())
-    if (doesActorNeedToSelect(ally))
+    if(doesActorNeedToSelect(ally))
       return ally;
 
   return nullptr;
@@ -842,6 +847,10 @@ bool Battle::render()
       if(!battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
         battle_menu->createSkillFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
 
+      /* Render the selecting person info */
+      success &= renderAllyInfo(battle_menu->getActor(), true);
+
+      /* Render the menu */
       success &= battle_menu->render();
     }
     else
@@ -1108,14 +1117,26 @@ bool Battle::renderEnemyInfo(BattleActor* actor)
 }
 
 // TODO: Comment
-bool Battle::renderAllyInfo(BattleActor* ally)
+bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
 {
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
   bool success = true;
   // bool below = true;
 
-  auto x = (ally->getIndex() * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
-  auto y = config->getScreenHeight() - kALLY_HEIGHT;
+  auto x = 0;
+  auto y = 0;
+
+  if(for_menu)
+  {
+    auto b_height = kBIGBAR_OFFSET + kBIGBAR_CHOOSE;
+    x = ((config->getScreenWidth() * kBIGBAR_L) - kINFO_W) / 2;
+    y = config->getScreenHeight() - b_height + (b_height - kALLY_HEIGHT) / 2;
+  }
+  else
+  {
+    x = (ally->getIndex() * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
+    y = config->getScreenHeight() - kALLY_HEIGHT;
+  }
 
   /* Get the percent of vitality, and set it at least at 1% */
   auto health_pc = (float)ally->getPCVita() / 100.0;
@@ -1763,8 +1784,11 @@ int32_t Battle::getActorY(BattleActor* actor)
 // TODO
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
-  (void)event;
+  if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    battle_menu->keyDownEvent(event);
+
   return false;
+
 }
 // #ifdef UDEBUG
 //   if(!getBattleFlag(CombatState::OUTCOME_PROCESSED))
@@ -5540,7 +5564,6 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-
 // /*
 //  * Description: Upkeep function which calls each personal upkeep for each
 //  *              member in both friends and foes party.
@@ -6301,7 +6324,7 @@ void Battle::setNextTurnState()
 //  */
 bool Battle::update(int32_t cycle_time)
 {
-  (void)cycle_time; //TODO: Warning
+  (void)cycle_time; // TODO: Warning
   turns_elapsed++;
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
@@ -6315,6 +6338,9 @@ bool Battle::update(int32_t cycle_time)
 
   if(getFlagCombat(CombatState::PHASE_DONE))
     setNextTurnState();
+
+  if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    updateUserSelection();
 
   //   if(getBattleFlag(CombatState::PHASE_DONE) &&
   //      !getBattleFlag(CombatState::OUTCOME_PROCESSED))
