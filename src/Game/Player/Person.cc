@@ -301,8 +301,6 @@ void Person::setupClass()
     // curr_skills = base_person->curr_skills;
     learned_skills = nullptr;
     // learned_skills = base_person->learned_skills;
-    // temp_skills = nullptr;
-    // temp_skills = base_person->temp_skills;
     dmg_mod = base_person->dmg_mod;
     exp_mod = base_person->exp_mod;
 
@@ -1909,69 +1907,6 @@ std::vector<uint32_t> Person::getItemDrops()
 
 //   return RegenRate::ZERO;
 // }
-
-/*
- * Description: Calculates a vector of Skill ptrs containing all Skills the
- *              Person has current access to use for the Battle based upon
- *              their attribute values and the current settings of flags.
- *
- * Inputs: none
- * Output: SkillSet* useable skills
- */
-SkillSet* Person::getUseableSkills()
-{
-  // /* Delete the old temp skills ptr if set */
-  // if(temp_skills != nullptr)
-  //   delete temp_skills;
-
-  // /* Create a new temporary skills ptr */
-  // temp_skills = new SkillSet();
-
-  // /* Grab the SetElement useable from curr skills ptr at a given lvl */
-  // std::vector<SetElement> useable_skills;
-  // auto elements = curr_skills->getElements(level);
-
-  // for(auto it = begin(elements); it != end(elements); ++it)
-  // {
-  //   auto add_skill = true;
-
-  //   if((*it).enabled && !(*it).silenced)
-  //   {
-  //     auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
-
-  //     /* Adjust for Half Cost of skills */
-  //     if(getAilFlag(PersonAilState::HALF_COST))
-  //       if(skill_cost != 1)
-  //         skill_cost /= 2;
-
-  //      If the adjusted QD cost is 0, assert that ATK is enabled
-  //     if(skill_cost == 0 || (*it).skill->isBerserkSkill())
-  //       add_skill &= getBFlag(BState::ATK_ENABLED);
-  //     /* If the adjusted QD cost is > 0, asert that SKL is enabled */
-  //     else
-  //       add_skill &= getBFlag(BState::SKL_ENABLED);
-
-  //     add_skill &= (skill_cost <= temp_max_stats.getStat(Attribute::QTDR));
-
-  //     /* If the skill can still be added, push it to the useable elements */
-  //     if(add_skill)
-  //     {
-  //       useable_skills.push_back(*it);
-  //     }
-  //   }
-  // }
-
-  // if(temp_skills->addSkills(useable_skills))
-  // {
-  //   return temp_skills;
-  // }
-  // else
-  // {
-  //   std::cerr << "[Eror] Creating temp skill values." << std::endl;
-  // }
-
-  return nullptr;
-}
 
 /*
  * Description: Sets the action x and y offset for the rendering person in

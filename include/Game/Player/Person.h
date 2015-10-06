@@ -125,7 +125,6 @@ private:
   SkillSet* base_skills;
   SkillSet* curr_skills;
   SkillSet* learned_skills;
-  // SkillSet* temp_skills;
 
   /* Current modifier to damage for action outcomes (default = 1.00) */
   float dmg_mod;
@@ -418,9 +417,6 @@ public:
   /* Calculate and return the /turn RegenRates for QD & VITA */
   // RegenRate getQDRegenRate();
   // RegenRate getVitaRegenRate();
-
-  /* Calculates and determines current useable skills for Battle */
-  SkillSet* getUseableSkills();
 
   /* Returns a vector of valid enumerated action types */
   std::vector<ActionType> getValidActions();

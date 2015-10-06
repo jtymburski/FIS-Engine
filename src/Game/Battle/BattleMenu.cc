@@ -201,7 +201,9 @@ bool BattleMenu::isIndexValid(int32_t index)
  */
 void BattleMenu::keyDownDecrement()
 {
+  std::cout << "Element index pre: " << element_index << std::endl;
   element_index = validPrevious();
+  std::cout << "Element index aft: " << element_index << std::endl;
 }
 
 /*
@@ -212,10 +214,7 @@ void BattleMenu::keyDownDecrement()
  */
 void BattleMenu::keyDownIncrement()
 {
-  std::cout << "Element index pre: " << element_index << std::endl;
-  std::cout << "Valid action types: " << valid_action_types.size() << std::endl;
   element_index = validNext();
-  std::cout << "Element index aft: " << element_index << std::endl;
 }
 
 // First valid index
@@ -362,7 +361,7 @@ int32_t BattleMenu::validNext()
 {
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
   {
-    if((uint32_t)element_index + 1 <= valid_action_types.size())
+    if((uint32_t)element_index + 1 < valid_action_types.size())
       return element_index + 1;
     else
       return 0;
@@ -386,7 +385,7 @@ int32_t BattleMenu::validPrevious()
 {
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
   {
-    if(element_index > 1)
+    if(element_index > 0)
       return element_index - 1;
     else
       return valid_action_types.size() - 1;
@@ -574,28 +573,24 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
   SDL_Color color{255, 255, 255, 255};
   bool success{true};
   Text* t{new Text(font_header)};
+  uint32_t valid_size{(uint32_t)valid_action_types.size()};
 
   /* Calculate starting Y co-ordinate */
-  int32_t start_y = 0;
+  int32_t start_y{0};
   t->setText(renderer, "Test", color);
 
-  if(valid_action_types.size() >= kTYPE_MAX)
+  if(valid_size >= kTYPE_MAX)
   {
     start_y = y + kTYPE_MARGIN;
   }
   else
   {
     start_y = y;
-    start_y +=
-        (h - valid_action_types.size() * (t->getHeight() + kTYPE_MARGIN * 2)) /
-        2;
+    start_y += (h - valid_size * (t->getHeight() + kTYPE_MARGIN * 2)) / 2;
   }
 
-  for(uint32_t i = 0; i < valid_action_types.size() && i < kTYPE_MAX; i++)
+  for(uint32_t i = 0; i < valid_size && i < kTYPE_MAX; i++)
   {
-    /* Set the text */
-    int32_t index = i + element_index;
-
     /* Action Type at index */
     auto type = valid_action_types.at(i);
 
@@ -609,7 +604,7 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
 
     /* If selected, draw background box */
     if((menu_layer == BattleMenuLayer::TYPE_SELECTION &&
-        index == element_index) ||
+        i == (uint32_t)element_index) ||
        (menu_layer != BattleMenuLayer::TYPE_SELECTION &&
         type == selected_action_type))
     {
@@ -699,7 +694,7 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
   for(uint32_t i = 0; i < frames_skill_name.size() && i < kTYPE_MAX; i++)
   {
-    int32_t index = i + element_index;
+    int32_t index = i;
 
     if(index == element_index)
     {
@@ -798,22 +793,18 @@ bool BattleMenu::buildData()
 void BattleMenu::ready()
 {
   status_window = WindowStatus::SHOWING;
-  element_index = 1;
+  element_index = 0;
   menu_layer = BattleMenuLayer::TYPE_SELECTION;
 }
 
 bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 {
   if(event.keysym.sym == SDLK_UP)
-  {
-    std::cout << "Key down decrement!" << std::endl;
     keyDownDecrement();
-  }
   else if(event.keysym.sym == SDLK_DOWN)
-  {
-    std::cout << "Key down increment!" << std::endl;
     keyDownIncrement();
-  }
+  else if(event.keysym.sym == SDLK_RETURN || event.keysym.sym == SDLK_SPACE)
+    keyDownSelect();
 
   return false;
 }
@@ -871,6 +862,8 @@ void BattleMenu::setSelectableTypes(std::vector<ActionType> valid_action_types)
 void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)
 {
   this->valid_battle_skills = menu_skills;
+
+  std::cout << "assigning battle skills size: " << menu_skills.size() << std::endl;
 }
 
 void BattleMenu::setSelectableItems(std::vector<BattleItem*> menu_items)
@@ -983,11 +976,11 @@ bool BattleMenu::render()
 
   if(status_window != WindowStatus::HIDING)
   {
-    uint16_t screen_width = config->getScreenWidth();
-    uint16_t screen_height = config->getScreenHeight();
-
-    uint16_t bar_height = kBIGBAR_OFFSET + kBIGBAR_CHOOSE;
-    uint16_t section1_w = screen_width * kBIGBAR_L;
+    uint32_t screen_width{config->getScreenWidth()};
+    uint32_t screen_height{config->getScreenHeight()};
+    uint32_t bar_height{kBIGBAR_OFFSET + kBIGBAR_CHOOSE};
+    uint32_t section1_w{(uint32_t)(screen_width * kBIGBAR_L)};
+    uint32_t section2_w{(uint32_t)(screen_width * kBIGBAR_M1)};
 
     /* Render separator */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
@@ -999,7 +992,6 @@ bool BattleMenu::render()
     SDL_RenderFillRect(renderer, &rect);
 
     /* Render the second separator */
-    uint16_t section2_w = screen_width * kBIGBAR_M1;
     SDL_Rect rect2;
     rect2.x = rect.x + section2_w;
     rect2.y = rect.y;
@@ -1023,12 +1015,19 @@ bool BattleMenu::render()
       rect3.h = rect.h;
       SDL_RenderFillRect(renderer, &rect3);
 
-      /* Render the actions/items, depending on category */
+      /* Render the skills/items, depending on category */
       if(selected_action_type == ActionType::SKILL)
       {
+        std::cout << "[[Rendering Skill]" << std::endl;
+
         success &= renderSkills(rect2.x, rect2.y, section3_w, rect3.h);
-        success &= frames_skill_info[element_index]->render(
-            renderer, rect3.x + kTYPE_MARGIN, rect3.y);
+
+        if(element_index < getMaxIndex())
+        {
+          success &= frames_skill_info.at(element_index)->render(
+              renderer, rect3.x + kTYPE_MARGIN, rect3.y);
+        }
+
       }
       if(selected_action_type == ActionType::ITEM)
       {
@@ -1239,12 +1238,18 @@ bool BattleMenu::render()
 //   return true;
 // }
 
-/*
- * Description: Method for what happens when the player hits the select key.
- *
- * Inputs: none
- * Output: none
- */
+void BattleMenu::keyDownSelect()
+{
+  if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
+  {
+    if(element_index < getMaxIndex())
+      selected_action_type = valid_action_types.at(element_index);
+
+    menu_layer = BattleMenuLayer::ACTION_SELECTION;
+    element_index = validFirst();
+  }
+}
+
 // void BattleMenu::keyDownSelect()
 // {
 //   auto layer_to_increment = -1;

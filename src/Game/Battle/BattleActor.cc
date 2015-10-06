@@ -395,55 +395,57 @@ bool BattleActor::buildBattleItems(std::vector<BattleActor*> all_targets)
   return success;
 }
 
-bool BattleActor::buildBattleSkills(std::vector<BattleActor*> all_targets)
+bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
 {
-  (void)all_targets;
-  // /* Clear BattleSkills if they were previously created */
-  // clearBattleSkills();
+  /* Clear BattleSkills if they were previously created */
+  clearBattleSkills();
 
-  // bool success = person_base;
+  bool success = person_base;
 
-  // if(success)
-  // {
-  //   auto useable_skills = person_base->getUseableSkills()->getElements();
+  if(success)
+  {
+    auto curr_skills = person_base->getCurrSkills();
+    auto useable_skills = curr_skills->getElements(person_base->getLevel());
 
-  //   for(auto use_skill : useable_skills)
-  //   {
-  //     auto battle_skill = new BattleSkill();
+    for(auto& element : useable_skills)
+    {
+      auto battle_skill = new BattleSkill();
+      battle_skill->skill = element.skill;
 
-  //     if(use_skill && battle_skill)
-  //     {
-  //       battle_skill->targets =
-  //           getTargetsFromScope(this, use_skill->getScope(), all_targets);
+      if(battle_skill->skill)
+      {
+        auto skill = battle_skill->skill;
+        auto targets = getTargetsFromScope(this, skill->getScope(), a_targets);
 
-  //       battle_skill->true_cost = getSkillCost(use_skill);
+        battle_skill->targets = targets;
+        battle_skill->true_cost = getSkillCost(skill);
 
-  //       /* At first, the valid skill is valid if it has a target */
-  //       if(battle_skill->targets.size() > 0)
-  //       {
-  //         battle_skill->valid_status = ValidStatus::VALID;
+        bool is_valid{!battle_skill->targets.empty()};
 
-  //         /* Silenced Skill */
-  //         if(isInflicted(Infliction::SILENCE))
-  //           battle_skill->valid_status = ValidStatus::SILENCED;
+        if(is_valid)
+        {
+          battle_skill->valid_status = ValidStatus::VALID;
 
-  //         /* Check if the person can afford to use the skill -- current stats
-  //         */
-  //         if(stats_actual.getValue(Attribute::QTDR) >
-  //         battle_skill->true_cost)
-  //           battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
-  //       }
-  //       else
-  //         battle_skill->valid_status = ValidStatus::NO_TARGETS;
-  //     }
-  //     else
-  //     {
-  //       delete battle_skill;
-  //     }
-  //   }
-  // }
+          if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
+            battle_skill->valid_status = ValidStatus::SILENCED;
 
-  return true;
+          if(stats_actual.getValue(Attribute::QTDR) >= battle_skill->true_cost)
+            battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
+        }
+        else
+          battle_skill->valid_status = ValidStatus::NO_TARGETS;
+
+        battle_skills.push_back(battle_skill);
+      }
+      else
+      {
+        delete battle_skill;
+        battle_skill = nullptr;
+      }
+    }
+  }
+
+  return success;
 }
 
 /* Checks whether the BattleActor would be immune to a given Infliction */
@@ -525,7 +527,7 @@ std::vector<ActionType> BattleActor::getValidActionTypes()
   if(getFlag(ActorState::PAS_ENABLED))
     valid_types.push_back(ActionType::PASS);
 
-  //TODO: Other action types [10-04-15]
+  // TODO: Other action types [10-04-15]
 
   return valid_types;
 }

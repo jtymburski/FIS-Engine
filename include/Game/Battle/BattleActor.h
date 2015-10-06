@@ -16,7 +16,6 @@
 *
 * TODO
 * ----
-* [09-05-15]: Look at reconstructing BattleSkill/BattleItem objects
 * [09-05-15]: Guardee/Guard BattleActor pointers
 * [09-05-15]: Bubbified sprites, static objects [link into active sprite]
 *****************************************************************************/
