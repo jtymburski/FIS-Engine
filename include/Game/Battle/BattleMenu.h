@@ -33,8 +33,9 @@ enum BattleMenuLayer
 ENUM_FLAGS(BattleMenuState)
 enum class BattleMenuState
 {
-  SELECTION_COMPLETE = 1 << 0,
-  SKILL_FRAMES_BUILT = 1 << 1
+  READY  = 1 << 0,
+  SELECTION_COMPLETE = 1 << 1,
+  SKILL_FRAMES_BUILT = 1 << 2
 };
 
 class BattleMenu
@@ -58,9 +59,6 @@ private:
 
   /* The frames for skill names */
   std::vector<Frame*> frames_skill_name;
-
-  /* The QD frame */
-  Frame frame_qd;
 
   /* The flags for the class */
   BattleMenuState flags;

@@ -203,12 +203,6 @@ private:
   /* Recalculates the Person's base and base_max stats based on categories */
   void updateBaseStats();
 
-  /* Recalculates Curr skills based on flags */
-  void updateSkills();
-
-  /* Recalculates the Base skills based on categories */
-  void updateBaseSkills();
-
   /* Updates the level of the person based on their current total experience */
   void updateLevel();
 
@@ -283,6 +277,12 @@ public:
 
   /* Resets the action flags to their standard states */
   void resetActionFlags();
+
+    /* Recalculates Curr skills based on flags */
+  void updateSkills();
+
+  /* Recalculates the Base skills based on categories */
+  void updateBaseSkills();
 
   // /* Resets the AI module for a new turn */
   // bool resetAI();

@@ -68,7 +68,6 @@ BattleMenu::BattleMenu()
     : actor{nullptr},
       battle_display_data{nullptr},
       config{nullptr},
-      frame_qd{Frame()},
       flags{static_cast<BattleMenuState>(0)},
       menu_layer{BattleMenuLayer::ZEROTH_LAYER},
       renderer{nullptr},
@@ -434,6 +433,8 @@ void BattleMenu::clearSkillFrames()
 SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
                                           uint32_t width, uint32_t height)
 {
+  auto frame_qd = battle_display_data->getFrameQD();
+
   /* Grab the skill pointer */
   auto skill = battle_skill->skill;
 
@@ -498,9 +499,9 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
 
   /* Render the cost */
   SDL_Color color = {255, 255, 255, 255};
-  uint16_t qd_x = width - kSKILL_BORDER - frame_qd.getWidth();
+  uint16_t qd_x = width - kSKILL_BORDER - frame_qd->getWidth();
   uint16_t qd_y = kSKILL_QD_GAP;
-  frame_qd.render(renderer, qd_x, qd_y);
+  frame_qd->render(renderer, qd_x, qd_y);
 
   Text t1(font_header);
   Text t2(font_subheader);
@@ -764,6 +765,7 @@ void BattleMenu::clear()
 {
   actor = nullptr;
   clearSkillFrames();
+  setFlag(BattleMenuState::READY, false);
   setFlag(BattleMenuState::SELECTION_COMPLETE, false);
   setFlag(BattleMenuState::SKILL_FRAMES_BUILT, false);
   menu_layer = BattleMenuLayer::ZEROTH_LAYER;
@@ -778,23 +780,12 @@ void BattleMenu::clear()
   element_index = -1;
 }
 
-bool BattleMenu::buildData()
-{
-  if(battle_display_data)
-  {
-    frame_qd = Frame(battle_display_data->getFrameQD());
-
-    return true;
-  }
-
-  return false;
-}
-
 void BattleMenu::ready()
 {
   status_window = WindowStatus::SHOWING;
   element_index = 0;
   menu_layer = BattleMenuLayer::TYPE_SELECTION;
+  setFlag(BattleMenuState::READY, true);
 }
 
 bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
@@ -862,8 +853,6 @@ void BattleMenu::setSelectableTypes(std::vector<ActionType> valid_action_types)
 void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)
 {
   this->valid_battle_skills = menu_skills;
-
-  std::cout << "assigning battle skills size: " << menu_skills.size() << std::endl;
 }
 
 void BattleMenu::setSelectableItems(std::vector<BattleItem*> menu_items)
@@ -888,14 +877,19 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
 
   SDL_Color color{255, 255, 255, 255};
   SDL_Color invalid_color{100, 100, 100, 255};
+  SDL_Color unaffordable_color{200, 100, 100, 255};
+  SDL_Color no_targets_color{100, 100, 100, 255};
+
   bool success{true};
   uint32_t text_height{0};
   uint32_t text_width{width_left - kTYPE_MARGIN * 8};
 
   Text* t = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
+  auto frame_qd = battle_display_data->getFrameQD();
 
   /* Delete frames for skills if skills are already rendered */
   clearSkillFrames();
+
 
   for(auto& skill : valid_battle_skills)
   {
@@ -910,8 +904,14 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
     // TODO: Alternate ValidStatus colours depending on Skill condition?
     if(skill->valid_status == ValidStatus::VALID)
       success &= t->setText(renderer, skill->skill->getName(), color);
-    else
+    else if(skill->valid_status == ValidStatus::NOT_AFFORDABLE)
+      success &=
+          t->setText(renderer, skill->skill->getName(), unaffordable_color);
+    else if(skill->valid_status == ValidStatus::SILENCED)
       success &= t->setText(renderer, skill->skill->getName(), invalid_color);
+    else if(skill->valid_status == ValidStatus::NO_TARGETS)
+      success &=
+          t->setText(renderer, skill->skill->getName(), no_targets_color);
 
     if(text_height == 0)
       text_height = t->getHeight() + kTYPE_MARGIN * 2;
@@ -930,11 +930,12 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
 
     /* Render the QD */
     if(skill->valid_status == ValidStatus::VALID)
-      frame_qd.setAlpha(128);
+      frame_qd->setAlpha(128);
 
-    uint32_t qd_x = text_width - frame_qd.getWidth();
-    success &= frame_qd.render(renderer, qd_x, kTYPE_MARGIN + 1);
-    frame_qd.setAlpha(255);
+    uint32_t qd_x = text_width - frame_qd->getWidth();
+    success &= frame_qd->render(renderer, qd_x, kTYPE_MARGIN + 1);
+
+    frame_qd->setAlpha(255);
 
     if(skill->valid_status == ValidStatus::VALID)
     {
@@ -965,6 +966,8 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
 
   if(success)
     setFlag(BattleMenuState::SKILL_FRAMES_BUILT, true);
+  else
+    std::cout << "[Error] Building skill frames!" << std::endl;
 
   return success;
 }
@@ -1018,16 +1021,13 @@ bool BattleMenu::render()
       /* Render the skills/items, depending on category */
       if(selected_action_type == ActionType::SKILL)
       {
-        std::cout << "[[Rendering Skill]" << std::endl;
-
         success &= renderSkills(rect2.x, rect2.y, section3_w, rect3.h);
 
         if(element_index < getMaxIndex())
         {
-          success &= frames_skill_info.at(element_index)->render(
-              renderer, rect3.x + kTYPE_MARGIN, rect3.y);
+          success &= frames_skill_info.at(element_index)
+                         ->render(renderer, rect3.x + kTYPE_MARGIN, rect3.y);
         }
-
       }
       if(selected_action_type == ActionType::ITEM)
       {

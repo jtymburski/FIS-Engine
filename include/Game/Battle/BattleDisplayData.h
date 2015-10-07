@@ -48,7 +48,7 @@ private:
   Frame* frame_percent;
 
   /* The QD Frame */
-  Frame frame_qd;
+  Frame* frame_qd;
 
   /* The cooldown frame */
   Frame* frame_time;
@@ -128,7 +128,7 @@ public:
   Frame* getFramePercent();
 
   /* Returns the frame for QD */
-  Frame getFrameQD();
+  Frame* getFrameQD();
 
   /* Returns the frame for time */
   Frame* getFrameTime();

@@ -844,8 +844,11 @@ bool Battle::render()
 
     if(to_render_menu)
     {
-      if(!battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
+      if(battle_menu->getFlag(BattleMenuState::READY) &&
+         !battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
+      {
         battle_menu->createSkillFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
+      }
 
       /* Render the selecting person info */
       success &= renderAllyInfo(battle_menu->getActor(), true);
@@ -1078,7 +1081,7 @@ bool Battle::renderEnemiesInfo()
 
       /* Get the percent of vitality, and set it at least at 1% */
       auto health_pc = (float)enemy->getPCVita() / 100.0;
-      health_pc = Helpers::setInRange(health_pc, 0.0, 0.5);
+      health_pc = Helpers::setInRange(health_pc, 0.0, 1.0);
 
       setupHealthDraw(enemy, health_pc);
 
@@ -1165,7 +1168,9 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
   success &= ally->getInfoFrame()->render(renderer, x, y);
 
   /* Calculate qd bar amount and color */
-  float qd_percent = ally->getPCQtdr();
+  auto qd_percent = (float)ally->getPCQtdr() / 100.0;
+  qd_percent = Helpers::setInRange(qd_percent, 0.0, 1.0);
+
   SDL_SetRenderDrawColor(renderer, 58, 170, 198, 255);
   uint16_t qd_x = health_x + kALLY_HEALTH_W - kALLY_QD_OFFSET -
                   kALLY_QD_TRIANGLE - kALLY_QD_W;
@@ -1788,7 +1793,6 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     battle_menu->keyDownEvent(event);
 
   return false;
-
 }
 // #ifdef UDEBUG
 //   if(!getBattleFlag(CombatState::OUTCOME_PROCESSED))

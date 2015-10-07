@@ -275,7 +275,7 @@ void BattleDisplayData::buildFramesExtra()
         new Frame(config->getBasePath() +
                       "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png",
                   renderer);
-    frame_qd = Frame(config->getBasePath() +
+    frame_qd = new Frame(config->getBasePath() +
                              "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png",
                          renderer);
     frame_time =
@@ -431,7 +431,7 @@ Frame* BattleDisplayData::getFramePercent()
   return frame_percent;
 }
 
-Frame BattleDisplayData::getFrameQD()
+Frame* BattleDisplayData::getFrameQD()
 {
   return frame_qd;
 }

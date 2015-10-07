@@ -397,6 +397,8 @@ bool BattleActor::buildBattleItems(std::vector<BattleActor*> all_targets)
 
 bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
 {
+  person_base->updateBaseSkills();
+
   /* Clear BattleSkills if they were previously created */
   clearBattleSkills();
 
@@ -429,7 +431,7 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
           if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
             battle_skill->valid_status = ValidStatus::SILENCED;
 
-          if(stats_actual.getValue(Attribute::QTDR) >= battle_skill->true_cost)
+          if(battle_skill->true_cost > stats_actual.getValue(Attribute::QTDR))
             battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
         }
         else
