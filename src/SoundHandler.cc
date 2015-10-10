@@ -12,12 +12,19 @@
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-/* Constructor: Sets up a blank template, nothing will play */
+/*
+ * Description: Sets up a blank sound handler database. Nothing will play on 
+ *              initial trigger.
+ *
+ * Inputs: none
+ */
 SoundHandler::SoundHandler()
 {
 }
 
-/* Destructor function */
+/*
+ * Description: Destructor function
+ */
 SoundHandler::~SoundHandler()
 {
   removeAll();
@@ -27,7 +34,13 @@ SoundHandler::~SoundHandler()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-/* Create new sound files, based on ID */
+/*
+ * Description: Creates an audio music chunk with the appropriate properties
+ *              and the given ID and adds it to the music list in the database.
+ *
+ * Inputs: uint32_t id - the new ID for the music chunk
+ * Output: Sound* - the new music sound chunk
+ */
 Sound* SoundHandler::createAudioMusic(uint32_t id)
 {
   Sound* found_chunk = getAudioMusic(id);
@@ -47,7 +60,13 @@ Sound* SoundHandler::createAudioMusic(uint32_t id)
   return found_chunk;
 }
 
-/* Create new sound files, based on ID */
+/*
+ * Description: Creates an audio sound chunk with the appropriate properties
+ *              and the given ID and adds it to the sound list in the database.
+ *
+ * Inputs: uint32_t id - the new ID for the sound chunk
+ * Output: Sound* - the new one shot sound chunk
+ */
 Sound* SoundHandler::createAudioSound(uint32_t id)
 {
   Sound* found_chunk = getAudioSound(id);
@@ -67,12 +86,55 @@ Sound* SoundHandler::createAudioSound(uint32_t id)
   }
   return found_chunk;
 }
+  
+/*
+ * Description: Takes the queue before processing and provides any clean-up
+ *              if required. Current state just removes play triggers on similar
+ *              channels if stop triggers follow in the same queue.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void SoundHandler::queueCleanUp()
+{
+  /* Go through all entries */
+  for(int i = 0; i < (int)queue.size(); i++)
+  {
+    bool valid = true;
+
+    /* Check all next entries vs. current entry */
+    for(int j = i + 1; valid && j < (int)queue.size(); j++)
+    {
+      /* If a later entry is stopping an entry in the same queue that's playing,
+       * remove play entry */
+      if(queue[i].channel == queue[j].channel && 
+         !queue[i].stop && queue[j].stop)
+      {
+        valid = false;
+      }
+    }
+
+    /* Therefore, if not valid - delete */
+    if(!valid)
+    {
+      queue.erase(queue.begin() + i);
+      i--;
+    }
+  }
+}
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-/* Add sound files */
+/*
+ * Description: Adds the passed in audio chunk to the music queue, assuming the
+ *              ID is valid and the chunk is valid. Once added, this class takes
+ *              control of the memory.
+ *
+ * Inputs: Sound* chunk - the new chunk to add to the list
+ * Output: bool - true if the chunk was added to the music list
+ */
 bool SoundHandler::addMusic(Sound* chunk)
 {
   /* Check to make sure the chunk is valid */
@@ -97,7 +159,14 @@ bool SoundHandler::addMusic(Sound* chunk)
   return false;
 }
 
-/* Add sound files */
+/*
+ * Description: Adds the passed in audio chunk to the sound queue, assuming the
+ *              ID is valid and the chunk is valid. Once added, this class takes
+ *              control of the memory.
+ *
+ * Inputs: Sound* chunk - the new chunk to add to the list
+ * Output: bool - true if the chunk was added to the sound list
+ */
 bool SoundHandler::addSound(Sound* chunk)
 {
   /* Check to make sure the chunk is valid */
@@ -122,7 +191,16 @@ bool SoundHandler::addSound(Sound* chunk)
   return false;
 }
 
-/* Add to queue */
+/*
+ * Description: Add play trigger to queue for sound ID on the designated
+ *              channel. If force is enabled, it will immediately process the
+ *              queue.
+ *
+ * Inputs: uint32_t id - the sound ID to trigger
+ *         SoundChannels channel - the channel to trigger on
+ *         bool process_force - true to force a process call
+ * Output: none
+ */
 void SoundHandler::addPlayToQueue(uint32_t id, SoundChannels channel,
                                   bool process_force)
 {
@@ -135,7 +213,15 @@ void SoundHandler::addPlayToQueue(uint32_t id, SoundChannels channel,
   }
 }
 
-/* Add to queue */
+/*
+ * Description: Add play trigger stack to queue for sound ID on the designated
+ *              channels. If force is enabled, it will immediately process the
+ *              queue.
+ *
+ * Inputs: std::vector<SoundQueue> entries - a stack of entries to add to queue
+ *         bool process_force - true to force a process call
+ * Output: none
+ */
 void SoundHandler::addPlayToQueue(std::vector<SoundQueue> entries,
                                   bool process_force)
 {
@@ -152,7 +238,14 @@ void SoundHandler::addPlayToQueue(std::vector<SoundQueue> entries,
   }
 }
 
-/* Add stop channel to queue */
+/*
+ * Description: Add stop trigger to queue for the designated channel. If force
+ *              is enabled, it will immediately process the queue.
+ *
+ * Inputs: SoundChannels channel - the channel to stop playing
+ *         bool process_force - true to force a process call
+ * Output: none
+ */
 void SoundHandler::addStopToQueue(SoundChannels channel, bool process_force)
 {
   if(channel != SoundChannels::UNASSIGNED)
@@ -164,7 +257,13 @@ void SoundHandler::addStopToQueue(SoundChannels channel, bool process_force)
   }
 }
 
-/* Getters for sound files */
+/*
+ * Description: Returns audio chunk from the music stack with the connected ID.
+ *              If the ID is not found, returns null.
+ *
+ * Inputs: uint32_t id - the ID of the music chunk to find
+ * Output: Sound* - the found chunk
+ */
 Sound* SoundHandler::getAudioMusic(uint32_t id)
 {
   auto iter = audio_music.find(id);
@@ -173,7 +272,13 @@ Sound* SoundHandler::getAudioMusic(uint32_t id)
   return nullptr;
 }
 
-/* Getters for sound files */
+/*
+ * Description: Returns audio chunk from the sound stack with the connected ID.
+ *              If the ID is not found, returns null.
+ *
+ * Inputs: uint32_t id - the ID of the sound chunk to find
+ * Output: Sound* - the found chunk
+ */
 Sound* SoundHandler::getAudioSound(uint32_t id)
 {
   auto iter = audio_sound.find(id);
@@ -182,7 +287,13 @@ Sound* SoundHandler::getAudioSound(uint32_t id)
   return nullptr;
 }
 
-/* Is the given ID music or sound file valid and set */
+/*
+ * Description: Returns if there is an audio chunk in the music stack with the
+ *              given ID.
+ *
+ * Inputs: uint32_t id - the ID to find if valid in the music stack
+ * Output: bool - true if an audio chunk was found with the ID
+ */
 bool SoundHandler::isMusicSet(uint32_t id)
 {
   Sound* chunk = getAudioMusic(id);
@@ -191,7 +302,13 @@ bool SoundHandler::isMusicSet(uint32_t id)
   return false;
 }
 
-/* Is the given ID music or sound file valid and set */
+/*
+ * Description: Returns if there is an audio chunk in the sound stack with the
+ *              given ID.
+ *
+ * Inputs: uint32_t id - the ID to find if valid in the sound stack
+ * Output: bool - true if an audio chunk was found with the ID
+ */
 bool SoundHandler::isSoundSet(uint32_t id)
 {
   Sound* chunk = getAudioSound(id);
@@ -200,7 +317,14 @@ bool SoundHandler::isSoundSet(uint32_t id)
   return false;
 }
 
-/* Load data from file */
+/*
+ * Description: Loads the data from file associated with the sound database.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         std::string base_path - base path to project directory
+ * Output: bool - true if load was successful
+ */
 bool SoundHandler::load(XmlData data, int index, std::string base_path)
 {
   bool success = true;
@@ -246,9 +370,17 @@ bool SoundHandler::load(XmlData data, int index, std::string base_path)
   return success;
 }
   
-/* Process the queue */
+/*
+ * Description: Process the queue of sound and music triggers.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void SoundHandler::process()
 {
+  /* Pre-Processing */
+  queueCleanUp();
+
   /* Loop through queue */
   for(uint32_t i = 0; i < queue.size(); i++)
   {
@@ -360,7 +492,13 @@ void SoundHandler::process()
   queue.clear();
 }
 
-/* Remove sound files */
+/*
+ * Description: Removes all music and sound files from the database. If they
+ *              are playing, they will be stopped upon deletion.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void SoundHandler::removeAll()
 {
   /* Go through music files */
@@ -377,7 +515,13 @@ void SoundHandler::removeAll()
   queue.clear();
 }
 
-/* Remove sound files */
+/*
+ * description: Removes the music chunk from the database with the given id.
+ *              if there is no music chunk with the given id, it returns false.
+ *
+ * inputs: uint32_t id - the music chunk id to try and find and delete
+ * output: bool - true if the music chunk was found and removed
+ */
 bool SoundHandler::removeMusic(uint32_t id)
 {
   Sound* found = getAudioMusic(id);
@@ -390,7 +534,13 @@ bool SoundHandler::removeMusic(uint32_t id)
   return false;
 }
 
-/* Remvoe sound files */
+/*
+ * description: Removes the sound chunk from the database with the given id.
+ *              if there is no sound chunk with the given id, it returns false.
+ *
+ * inputs: uint32_t id - the sound chunk id to try and find and delete
+ * output: bool - true if the sound chunk was found and removed
+ */
 bool SoundHandler::removeSound(uint32_t id)
 {
   Sound* found = getAudioSound(id);

@@ -43,6 +43,9 @@ private:
   Sound* createAudioMusic(uint32_t id);
   Sound* createAudioSound(uint32_t id);
 
+  /* Clean up the queue - pre-processing */
+  void queueCleanUp();
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/

@@ -881,7 +881,7 @@ bool Person::isPowerGuarder()
 }
 
 /*
- * Description: Loads the data from file associated with the category.
+ * Description: Loads the data from file associated with the person.
  *
  * Inputs: XmlData data - the xml data structure
  *         int index - the element reference index

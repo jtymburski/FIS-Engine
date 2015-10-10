@@ -211,7 +211,7 @@ void Sprite::copySelf(const Sprite &source)
 
   setOpacity(source.getOpacity());
   setRotation(source.getRotation());
-  // setSound(); // TODO: Future?
+  setSoundID(source.getSoundID());
 }
 
 /*============================================================================
