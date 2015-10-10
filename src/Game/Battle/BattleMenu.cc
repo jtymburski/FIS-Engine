@@ -82,6 +82,25 @@ BattleMenu::BattleMenu()
  * PRIVATE FUNCTIONS - Operation
  *============================================================================*/
 
+bool BattleMenu::isActionOffensive()
+{
+  if(selected_action_type == ActionType::SKILL)
+  {
+    if(selected_battle_skill && selected_battle_skill->skill)
+      return selected_battle_skill->skill->getFlag(SkillFlags::OFFENSIVE);
+  }
+  else if(selected_action_type == ActionType::ITEM)
+  {
+    if(selected_battle_item)
+    {
+      auto use_skill = selected_battle_item->item->getUseSkill();
+      return use_skill->getFlag(SkillFlags::OFFENSIVE);
+    }
+  }
+
+  return false;
+}
+
 bool BattleMenu::isIndexValid(int32_t index)
 {
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
@@ -101,6 +120,21 @@ bool BattleMenu::isIndexValid(int32_t index)
   }
 
   return false;
+}
+
+int32_t BattleMenu::elementIndexOfActor(BattleActor* check_actor)
+{
+  int32_t index = 0;
+
+  for(const auto& actor : getSelectableTargets())
+  {
+    if(actor == check_actor)
+      return index;
+
+    ++index;
+  }
+
+  return -1;
 }
 
 /*
@@ -181,7 +215,8 @@ bool BattleMenu::isIndexValid(int32_t index)
 //   }
 //   else if(layer_index == 4)
 //   {
-//     if(action_type == ActionType::DEFEND || action_type == ActionType::RUN ||
+//     if(action_type == ActionType::DEFEND || action_type == ActionType::RUN
+//     ||
 //        action_type == ActionType::PASS)
 //       decrement_to_layer = 1;
 //     else
@@ -193,7 +228,8 @@ bool BattleMenu::isIndexValid(int32_t index)
 // }
 
 /*
- * Description: Method for what happens when the player hits the decrement key.
+ * Description: Method for what happens when the player hits the decrement
+ *key.
  *
  * Inputs: none
  * Output: none
@@ -206,7 +242,8 @@ void BattleMenu::keyDownDecrement()
 }
 
 /*
- * Description: Method for what happens when the player hits the increment key.
+ * Description: Method for what happens when the player hits the increment
+ *key.
  *
  * Inputs: none
  * Output: none
@@ -235,6 +272,9 @@ int32_t BattleMenu::validFirst()
     }
   }
 
+  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+    return elementIndexOfActor(getMostLeft(!isActionOffensive()));
+
   return -1;
 }
 
@@ -256,6 +296,9 @@ int32_t BattleMenu::validLast()
           return i;
     }
   }
+
+  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+    return elementIndexOfActor(getMostRight(!isActionOffensive()));
 
   return -1;
 }
@@ -280,6 +323,17 @@ std::vector<BattleActor*> BattleMenu::getSelectableTargets()
     }
   }
 
+  /* Subtract the already selected targets from the selectable targets vector
+   */
+  std::sort(begin(selectable_targets), end(selectable_targets));
+  std::sort(begin(selected_targets), end(selected_targets));
+
+  std::vector<BattleActor*> difference;
+
+  std::set_difference(begin(selectable_targets), end(selectable_targets),
+                      begin(selected_targets), end(selected_targets),
+                      std::back_inserter(difference));
+
   return selectable_targets;
 }
 
@@ -295,26 +349,29 @@ int32_t BattleMenu::getMaxIndex()
 }
 
 /* kINDEX_ORDER {-5, -4, -3, -1, -2, 2, 1, 3, 4, 5} */
-BattleActor* BattleMenu::getMostLeft()
+BattleActor* BattleMenu::getMostLeft(bool same_party)
 {
   assert(actor);
 
   BattleActor* most_left = nullptr;
   auto targets = getSelectableTargets();
 
-  /* If the actor is an Enemy, find the most left negative index which is among
+  /* If the actor is an Enemy, find the most left negative index which is
+   * among
    * a valid target in the targets vector, otherwise for allies */
   for(auto ordered : kINDEX_ORDER)
   {
     for(auto target : targets)
     {
       assert(target);
-      if(actor->getIndex() < 0)
+
+      if((actor->getIndex() < 0 && same_party) ||
+         (actor->getIndex() > 0 && !same_party))
       {
         if(target->getIndex() < 0 && target->getIndex() == ordered)
           most_left = target;
       }
-      if(actor->getIndex() > 0)
+      else
       {
         if(target->getIndex() < 0 && target->getIndex() == ordered)
           most_left = target;
@@ -325,7 +382,7 @@ BattleActor* BattleMenu::getMostLeft()
   return most_left;
 }
 
-BattleActor* BattleMenu::getMostRight()
+BattleActor* BattleMenu::getMostRight(bool same_party)
 {
   assert(actor);
 
@@ -340,12 +397,13 @@ BattleActor* BattleMenu::getMostRight()
     for(auto target : targets)
     {
       assert(target);
-      if(actor->getIndex() < 0)
+      if((actor->getIndex() < 0 && same_party) ||
+         (actor->getIndex() > 0 && !same_party))
       {
         if(target->getIndex() < 0 && target->getIndex() == ordered)
           most_right = target;
       }
-      if(actor->getIndex() > 0)
+      else
       {
         if(target->getIndex() < 0 && target->getIndex() == ordered)
           most_right = target;
@@ -368,14 +426,22 @@ int32_t BattleMenu::validNext()
 
   if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
-    for(size_t i = element_index; i < (uint32_t)getMaxIndex(); i++)
+    for(size_t i = element_index; i < (uint32_t)getMaxIndex(); ++i)
       if(isIndexValid(i))
         return i;
 
     return validFirst();
   }
 
-  // TODO - targets
+  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+  {
+    for(size_t i = element_index; i < (uint32_t)getSelectableTargets().size();
+        ++i)
+      if(isIndexValid(i))
+        return i;
+
+    return validFirst();
+  }
 
   return -1;
 }
@@ -390,7 +456,8 @@ int32_t BattleMenu::validPrevious()
       return valid_action_types.size() - 1;
   }
 
-  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION ||
+     menu_layer == BattleMenuLayer::TARGET_SELECTION)
   {
     for(auto i = element_index; i >= 0; --i)
     {
@@ -773,6 +840,7 @@ void BattleMenu::clear()
   selected_action_type = ActionType::NONE;
   selected_battle_skill = nullptr;
   selected_battle_item = nullptr;
+  selected_targets.clear();
   status_window = WindowStatus::HIDING;
   valid_action_types.clear();
   valid_battle_items.clear();
@@ -808,6 +876,11 @@ BattleActor* BattleMenu::getActor()
 bool BattleMenu::getFlag(const BattleMenuState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
+}
+
+std::vector<BattleActor*> BattleMenu::getSelectedTargets()
+{
+  return selected_targets;
 }
 
 bool BattleMenu::setActor(BattleActor* actor)
@@ -890,7 +963,6 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   /* Delete frames for skills if skills are already rendered */
   clearSkillFrames();
 
-
   for(auto& skill : valid_battle_skills)
   {
     /* Skill must have (a) valid pointer(s) */
@@ -929,7 +1001,7 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
     success &= t->render(renderer, 0, kTYPE_MARGIN);
 
     /* Render the QD */
-    if(skill->valid_status == ValidStatus::VALID)
+    if(skill->valid_status != ValidStatus::VALID)
       frame_qd->setAlpha(128);
 
     uint32_t qd_x = text_width - frame_qd->getWidth();
@@ -1145,7 +1217,8 @@ bool BattleMenu::render()
 
 /*
  * Description: Adds a new target by inded value to the array of selected
- *              targets and removes this new target from the vector of remaining
+ *              targets and removes this new target from the vector of
+ *remaining
  *              valid targets.
  *
  * Inputs: int32_t - index [can be +/- depending on party] of target to add
@@ -1153,7 +1226,8 @@ bool BattleMenu::render()
  */
 // bool BattleMenu::addTarget(const int32_t& new_target)
 // {
-//   auto it = std::find(begin(valid_targets), end(valid_targets), new_target);
+//   auto it = std::find(begin(valid_targets), end(valid_targets),
+//   new_target);
 
 //   if(it != end(valid_targets))
 //   {
@@ -1247,6 +1321,27 @@ void BattleMenu::keyDownSelect()
 
     menu_layer = BattleMenuLayer::ACTION_SELECTION;
     element_index = validFirst();
+  }
+  else if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    if(selected_action_type == ActionType::SKILL)
+    {
+      if((uint32_t)element_index < valid_battle_skills.size())
+        selected_battle_skill = valid_battle_skills.at(element_index);
+    }
+    else if(selected_action_type == ActionType::ITEM)
+    {
+      if((uint32_t)element_index < valid_battle_items.size())
+        selected_battle_item = valid_battle_items.at(element_index);
+    }
+
+    if(selected_action_type == ActionType::SKILL ||
+       selected_action_type == ActionType::ITEM)
+    {
+      menu_layer = BattleMenuLayer::TARGET_SELECTION;
+
+      element_index = elementIndexOfActor(getMostLeft(!isActionOffensive()));
+    }
   }
 }
 
@@ -1487,12 +1582,6 @@ void BattleMenu::keyDownSelect()
 //   }
 // }
 
-// bool BattleMenu::isValidIndex(int32_t check_index)
-// {
-//   auto it = std::find(begin(valid_targets), end(valid_targets), check_index);
-//   return it != end(valid_targets);
-// }
-
 /*
  * Description:
  *
@@ -1518,115 +1607,6 @@ void BattleMenu::keyDownSelect()
 //     person_index = temp_index;
 
 //   element_index = person_index;
-// }
-
-/*
- * Description: Prints out the available items for the BattleMenu.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::printItems()
-// {
-//   auto index = 0;
-
-//   for(auto it = begin(menu_items); it != end(menu_items); ++it, ++index)
-//   {
-//     if(index == element_index)
-//       std::cout << "[X]";
-//     else
-//       std::cout << "[ ]";
-
-//     std::cout << " --- " << (*it).item->getName() << " -- [ " << (*it).amount
-//               << " ] -- [";
-
-//     for(auto jt = begin((*it).all_targets); jt != end((*it).all_targets);
-//     ++jt)
-//     {
-//       std::cout << (*jt)->getName() << ", ";
-//     }
-
-//     std::cout << "]" << std::endl;
-//   }
-// }
-
-/*
- * Description: Prints out the state of the menu for a non-gui battle based
- *              on the current layering index.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::printMenuState()
-// {
-//   if(layer_index == 1)
-//     printValidActions();
-//   else if(layer_index == 2 && action_type == ActionType::SKILL)
-//     printSkills();
-//   else if(layer_index == 2 && action_type == ActionType::ITEM)
-//     printItems();
-//   else if(layer_index == 3)
-//     printTargets(true);
-//   else if(layer_index == 4)
-//   {
-//     std::cout << "Action Type: " << Helpers::actionTypeToStr(action_type)
-//               << " with name: ";
-
-//     if(action_type == ActionType::SKILL &&
-//        getMenuFlag(MenuState::SKILL_SELECTED))
-//     {
-//       std::cout << selected_skill.skill->getName();
-//     }
-//     else if(action_type == ActionType::ITEM)
-//       std::cout << selected_item->getName();
-//     else
-//       std::cout << "NONE";
-
-//     std::cout << std::endl
-//               << "Targeting person indexes: ";
-
-//     for(auto it = begin(selected_targets); it != end(selected_targets); ++it)
-//       std::cout << (*it) << ", ";
-
-//     std::cout << std::endl
-//               << "Select this action?" << std::endl;
-//   }
-// }
-
-/*
- * Description: Returns enumerated action type for the selected action. This
- *              will be ActionType::NONE if no action type is currently
- *              selected.
- *
- * Inputs:
- * Output:
- */
-// ActionType BattleMenu::getActionType()
-// {
-//   return action_type;
-// }
-
-/*
- * Description: Returns the list of action target indexes which were selected
- *              by the user of the action.
- *
- * Inputs: none
- * Output: std::vector<int32_t> - vector of indexes of selected targets
- */
-// std::vector<int32_t> BattleMenu::getActionTargets()
-// {
-//   return selected_targets;
-// }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// Person* BattleMenu::getCurrentUser()
-// {
-//   return current_user;
 // }
 
 /* Get targets hovered over during the selection process */
@@ -1664,28 +1644,6 @@ void BattleMenu::keyDownSelect()
 // }
 
 //   return hover_targets;
-// }
-
-/*
-* Description: Returns the pointer to the currently selected Skill object.
-*
-* Inputs: none
-* Output: Skill* - pointer to the currently selected Skill object.
-*/
-// BattleSkill* BattleMenu::getSelectedSkill()
-// {
-//   return selected_skill;
-// }
-
-/*
- * Description: Returns the pointer to the currently selected item objet.
- *
- * Inputs: none
- * Output: Item* - pointer to the Item object selected.
- */
-// BattleItem* BattleMenu::getSelectedItem()
-// {
-//   return selected_item;
 // }
 
 /*
@@ -1739,50 +1697,4 @@ void BattleMenu::keyDownSelect()
 //   }
 
 //   return random_targets;
-// }
-
-/*
- * Description: Assigns a vector of selectable targets (index values in vec).
- *
- * Inputs: std::vector<int32_t> new_menu_targets - the taget indexes
- * Output: bool - true if the targets are not empty.
- */
-// bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
-// {
-//   valid_targets = new_menu_targets;
-
-//   if(isValidIndex(1) && isValidIndex(2))
-//     std::swap(valid_targets[0], valid_targets[1]);
-
-//   if(isValidIndex(-1) && isValidIndex(-2))
-//   {
-//     auto neg_one = std::find(begin(valid_targets), end(valid_targets), -1);
-//     auto neg_two = std::find(begin(valid_targets), end(valid_targets), -2);
-//     std::iter_swap(neg_one, neg_two);
-//   }
-
-//   if(action_type == ActionType::SKILL &&
-//      getMenuFlag(MenuState::SKILL_SELECTED) && selected_skill.skill !=
-//      nullptr)
-//   {
-//     /* Default offensive skills to opposing party, vice versa for defensive
-//     */
-//     if(selected_skill.skill->getFlag(SkillFlags::OFFENSIVE))
-//       element_index = getPartyTargetIndex(true);
-//     else
-//       element_index = getPartyTargetIndex(false);
-//   }
-//   else
-//   {
-//   }
-
-//   if(action_type == ActionType::ITEM && selected_item != nullptr)
-//   {
-//     if(selected_item->getUseSkill()->getFlag(SkillFlags::OFFENSIVE))
-//       element_index = getPartyTargetIndex(true);
-//     else
-//       element_index = getPartyTargetIndex(false);
-//   }
-
-//   return (!valid_targets.empty());
 // }

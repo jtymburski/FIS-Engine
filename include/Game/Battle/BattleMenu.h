@@ -79,7 +79,10 @@ private:
   BattleSkill* selected_battle_skill;
 
   /* The selected battle item */
-  BattleSkill* selected_battle_item;
+  BattleItem* selected_battle_item;
+
+  /* Targets already selected */
+  std::vector<BattleActor*> selected_targets;
 
   /* The window status of the GUI */
   WindowStatus status_window;
@@ -136,7 +139,13 @@ private:
    * PRIVATE FUNCTIONS - OPERATION
    *============================================================================*/
 private:
+  /* Determines whether the current selection is off. (default enemy targ) */
+  bool isActionOffensive();
+
+  /* Determines whether a given element index is valid for selection purp. */
   bool isIndexValid(int32_t index);
+
+  int32_t elementIndexOfActor(BattleActor* check_actor);
 
   /* Methods for containing code for each key addition */
   void keyDownAlpha(const char& c);
@@ -151,12 +160,14 @@ private:
   int32_t getMaxIndex();
 
   /* Returns the most left selectable BattleActor */
-  BattleActor* getMostLeft();
+  BattleActor* getMostLeft(bool same_party = false);
 
   /* Returns the most right selectable BattleActor */
-  BattleActor* getMostRight();
+  BattleActor* getMostRight(bool same_party = false);
 
   int32_t validFirst();
+  int32_t validFirstEnemy();
+  int32_t validFirstAlly();
   int32_t validLast();
   int32_t validNext();
   int32_t validPrevious();
@@ -186,6 +197,7 @@ public:
   /* Constructs other battle menu data (like the QD frame) */
   bool buildData();
 
+  /* Sets the battle menu ready for use for a new person */
   void ready();
 
   /* Key press evnet for menu operation */
@@ -196,6 +208,9 @@ public:
 
   /* Return the value of a given BattleMenuState flag */
   bool getFlag(const BattleMenuState& test_flag);
+
+  /* Returns a vector of selected targets */
+  std::vector<BattleActor*> getSelectedTargets();
 
   /* Assign a new BattleActor for the BattleMenu */
   bool setActor(BattleActor* actor);
