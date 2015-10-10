@@ -142,9 +142,13 @@ private:
   /* Determines whether the current selection is off. (default enemy targ) */
   bool isActionOffensive();
 
+  /* Does the given BattleActor match? */
+  bool isActorMatch(BattleActor* target, bool same_party);
+
   /* Determines whether a given element index is valid for selection purp. */
   bool isIndexValid(int32_t index);
 
+  /* Get element index of a given BattleActor */
   int32_t elementIndexOfActor(BattleActor* check_actor);
 
   /* Methods for containing code for each key addition */
@@ -153,6 +157,14 @@ private:
   void keyDownDecrement();
   void keyDownIncrement();
   void keyDownSelect();
+
+  /* Methods for determining valid indexes on various circumstances */
+  int32_t validFirst();
+  int32_t validFirstEnemy();
+  int32_t validFirstAlly();
+  int32_t validLast();
+  int32_t validNext();
+  int32_t validPrevious();
 
   /* Targets which are currently possible to select */
   std::vector<BattleActor*> getSelectableTargets();
@@ -164,13 +176,6 @@ private:
 
   /* Returns the most right selectable BattleActor */
   BattleActor* getMostRight(bool same_party = false);
-
-  int32_t validFirst();
-  int32_t validFirstEnemy();
-  int32_t validFirstAlly();
-  int32_t validLast();
-  int32_t validNext();
-  int32_t validPrevious();
 
   /*=============================================================================
    * PUBLIC FUNCTIONS - RENDERING
@@ -208,6 +213,9 @@ public:
 
   /* Return the value of a given BattleMenuState flag */
   bool getFlag(const BattleMenuState& test_flag);
+
+  /* Current enumerated menu layer */
+  BattleMenuLayer getMenuLayer();
 
   /* Returns a vector of selected targets */
   std::vector<BattleActor*> getSelectedTargets();

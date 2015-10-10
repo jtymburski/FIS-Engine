@@ -429,13 +429,19 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
           battle_skill->valid_status = ValidStatus::VALID;
 
           if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
+          {
             battle_skill->valid_status = ValidStatus::SILENCED;
+          }
 
           if(battle_skill->true_cost > stats_actual.getValue(Attribute::QTDR))
+          {
             battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
+          }
         }
         else
+        {
           battle_skill->valid_status = ValidStatus::NO_TARGETS;
+        }
 
         battle_skills.push_back(battle_skill);
       }
@@ -683,9 +689,10 @@ BattleActor::getAllyTargets(BattleActor* user,
   {
     if(target)
     {
-      if(user->getIndex() > 0 && target->getIndex() > 0)
-        valid_targets.push_back(target);
-      else if(user->getIndex() < 0 && target->getIndex() < 0)
+      auto user_is_ally = user->getFlag(ActorState::ALLY);
+      auto target_is_ally = target->getFlag(ActorState::ALLY);
+
+      if(user_is_ally != target_is_ally)
         valid_targets.push_back(target);
     }
   }
@@ -705,9 +712,10 @@ BattleActor::getEnemyTargets(BattleActor* user,
   {
     if(target)
     {
-      if(user->getIndex() < 0 && target->getIndex() > 0)
-        valid_targets.push_back(target);
-      else if(user->getIndex() > 0 && target->getIndex() < 0)
+      auto user_is_ally = user->getFlag(ActorState::ALLY);
+      auto target_is_ally = target->getFlag(ActorState::ALLY);
+
+      if(user_is_ally != target_is_ally)
         valid_targets.push_back(target);
     }
   }

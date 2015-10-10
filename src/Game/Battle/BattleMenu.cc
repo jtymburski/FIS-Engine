@@ -101,6 +101,22 @@ bool BattleMenu::isActionOffensive()
   return false;
 }
 
+bool BattleMenu::isActorMatch(BattleActor* target, bool same)
+{
+  if(target && actor)
+  {
+    auto user_is_ally = actor->getFlag(ActorState::ALLY);
+    auto target_is_ally = actor->getFlag(ActorState::ALLY);
+
+    if(same)
+      return user_is_ally == target_is_ally;
+    else
+      return user_is_ally != target_is_ally;
+  }
+
+  return false;
+}
+
 bool BattleMenu::isIndexValid(int32_t index)
 {
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
@@ -357,26 +373,12 @@ BattleActor* BattleMenu::getMostLeft(bool same_party)
   auto targets = getSelectableTargets();
 
   /* If the actor is an Enemy, find the most left negative index which is
-   * among
-   * a valid target in the targets vector, otherwise for allies */
+   * among a valid target in the targets vector, otherwise for allies */
   for(auto ordered : kINDEX_ORDER)
   {
     for(auto target : targets)
-    {
-      assert(target);
-
-      if((actor->getIndex() < 0 && same_party) ||
-         (actor->getIndex() > 0 && !same_party))
-      {
-        if(target->getIndex() < 0 && target->getIndex() == ordered)
-          most_left = target;
-      }
-      else
-      {
-        if(target->getIndex() < 0 && target->getIndex() == ordered)
-          most_left = target;
-      }
-    }
+      if(isActorMatch(target, same_party))
+        most_left = target;
   }
 
   return most_left;
@@ -395,20 +397,8 @@ BattleActor* BattleMenu::getMostRight(bool same_party)
   for(auto ordered : reversed)
   {
     for(auto target : targets)
-    {
-      assert(target);
-      if((actor->getIndex() < 0 && same_party) ||
-         (actor->getIndex() > 0 && !same_party))
-      {
-        if(target->getIndex() < 0 && target->getIndex() == ordered)
-          most_right = target;
-      }
-      else
-      {
-        if(target->getIndex() < 0 && target->getIndex() == ordered)
-          most_right = target;
-      }
-    }
+      if(isActorMatch(target, same_party))
+        most_right = target;
   }
 
   return most_right;
@@ -500,6 +490,7 @@ void BattleMenu::clearSkillFrames()
 SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
                                           uint32_t width, uint32_t height)
 {
+  std::cout << "Building skill frame for: " << battle_skill->skill->getName() << std::endl;
   auto frame_qd = battle_display_data->getFrameQD();
 
   /* Grab the skill pointer */
@@ -762,7 +753,7 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
   for(uint32_t i = 0; i < frames_skill_name.size() && i < kTYPE_MAX; i++)
   {
-    int32_t index = i;
+    int32_t index = element_index + i;
 
     if(index == element_index)
     {
@@ -775,6 +766,7 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
       SDL_RenderFillRect(renderer, &text_rect);
     }
 
+    std::cout << "Rendering skill frames at: (" << text_x << "," << text_y << ")" <<  std::endl;
     success &= frames_skill_name[index]->render(renderer, text_x, text_y);
 
     if(frames_skill_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
@@ -878,6 +870,11 @@ bool BattleMenu::getFlag(const BattleMenuState& test_flag)
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
+BattleMenuLayer BattleMenu::getMenuLayer()
+{
+  return menu_layer;
+}
+
 std::vector<BattleActor*> BattleMenu::getSelectedTargets()
 {
   return selected_targets;
@@ -951,7 +948,7 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   SDL_Color color{255, 255, 255, 255};
   SDL_Color invalid_color{100, 100, 100, 255};
   SDL_Color unaffordable_color{200, 100, 100, 255};
-  SDL_Color no_targets_color{100, 100, 100, 255};
+  SDL_Color no_targets_color{255, 255, 255, 255};
 
   bool success{true};
   uint32_t text_height{0};
@@ -975,7 +972,10 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
      */
     // TODO: Alternate ValidStatus colours depending on Skill condition?
     if(skill->valid_status == ValidStatus::VALID)
+    {
+      std::cout << "Creating valid skill frame!" << std::endl;
       success &= t->setText(renderer, skill->skill->getName(), color);
+    }
     else if(skill->valid_status == ValidStatus::NOT_AFFORDABLE)
       success &=
           t->setText(renderer, skill->skill->getName(), unaffordable_color);
@@ -1341,6 +1341,8 @@ void BattleMenu::keyDownSelect()
       menu_layer = BattleMenuLayer::TARGET_SELECTION;
 
       element_index = elementIndexOfActor(getMostLeft(!isActionOffensive()));
+
+      std::cout << "Setting element index: " << element_index << std::endl;
     }
   }
 }

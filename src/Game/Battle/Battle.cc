@@ -840,7 +840,9 @@ bool Battle::render()
 
     /* Determine whether the menu should be rendered */
     auto to_render_menu = (turn_state == TurnState::SELECT_ACTION_ALLY);
+    auto curr_layer = battle_menu->getMenuLayer();
     to_render_menu &= !getFlagCombat(CombatState::PHASE_DONE);
+    to_render_menu &= !(curr_layer == BattleMenuLayer::TARGET_SELECTION);
 
     if(to_render_menu)
     {
@@ -6332,7 +6334,12 @@ bool Battle::update(int32_t cycle_time)
   turns_elapsed++;
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
-    bar_offset = kBIGBAR_CHOOSE;
+  {
+    if(battle_menu->getMenuLayer() == BattleMenuLayer::TARGET_SELECTION)
+      bar_offset = 0;
+    else
+      bar_offset = kBIGBAR_CHOOSE;
+  }
 
   // std::cout << "Current Battle State:: " <<
   // Helpers::turnStateToStr(turn_state);
