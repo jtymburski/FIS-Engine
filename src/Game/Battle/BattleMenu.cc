@@ -954,8 +954,13 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   uint32_t text_height{0};
   uint32_t text_width{width_left - kTYPE_MARGIN * 8};
 
+  // TODO: Mike, feel free to revise how I did this (with the second text).
+  // The important thing is you cannot call setText() with renderer when the
+  // renderer is set to the texture as the rendering window
   Text* t = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
+  Text* t2 = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
   auto frame_qd = battle_display_data->getFrameQD();
+  uint32_t qd_x = text_width - frame_qd->getWidth();
 
   /* Delete frames for skills if skills are already rendered */
   clearSkillFrames();
@@ -963,7 +968,7 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   for(auto& skill : valid_battle_skills)
   {
     /* Skill must have (a) valid pointer(s) */
-    assert(t && skill && skill->skill);
+    assert(t && t2 && skill && skill->skill);
 
     frames_skill_name.push_back(new Frame());
     frames_skill_info.push_back(new Frame());
@@ -985,6 +990,19 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
       success &=
           t->setText(renderer, skill->skill->getName(), no_targets_color);
 
+    /* Render cost */
+    if(skill->valid_status == ValidStatus::VALID)
+    {
+      success &=
+          t2->setText(renderer, std::to_string(skill->skill->getCost()), color);
+    }
+    else
+    {
+      success &= t2->setText(renderer, std::to_string(skill->skill->getCost()),
+                            invalid_color);
+    }
+    
+    /* Text height */
     if(text_height == 0)
       text_height = t->getHeight() + kTYPE_MARGIN * 2;
 
@@ -1003,12 +1021,13 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
     /* Render the QD */
     if(skill->valid_status != ValidStatus::VALID)
       frame_qd->setAlpha(128);
-
-    uint32_t qd_x = text_width - frame_qd->getWidth();
+    else
+      frame_qd->setAlpha(255);
     success &= frame_qd->render(renderer, qd_x, kTYPE_MARGIN + 1);
 
-    frame_qd->setAlpha(255);
-
+    // TODO: This can't be in the midst of the render to target because it uses
+    // the rendering engine
+/*
     if(skill->valid_status == ValidStatus::VALID)
     {
       success &=
@@ -1019,22 +1038,27 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
       success &= t->setText(renderer, std::to_string(skill->skill->getCost()),
                             invalid_color);
     }
+*/
 
+    /* Render the cost */
     success &=
-        t->render(renderer, qd_x - t->getWidth() - kSKILL_SEP, kTYPE_MARGIN);
+        t2->render(renderer, qd_x - t2->getWidth() - kSKILL_SEP, kTYPE_MARGIN);
 
+    /* Set texture and clear render target back to main */
     frames_skill_name.back()->setTexture(texture);
     SDL_SetRenderTarget(renderer, nullptr);
 
     /* Create the detailed skill information for this skill */
-    frames_skill_info.back()->setTexture(createSkillFrame(
-        skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
-        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
-            kMENU_SEPARATOR_B));
+    // TODO: Re-enable - doesn't seem to be the issue but I disabled for now
+    //frames_skill_info.back()->setTexture(createSkillFrame(
+    //    skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
+    //    kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
+    //        kMENU_SEPARATOR_B));
   }
 
   /* Delete the created text */
   delete t;
+  delete t2;
 
   if(success)
     setFlag(BattleMenuState::SKILL_FRAMES_BUILT, true);
