@@ -673,10 +673,6 @@ void BattleActor::setUpkeepState(UpkeepState state_upkeep)
   this->state_upkeep = state_upkeep;
 }
 
-/*=============================================================================
- * PRIVATE STATIC FUNCTIONS
- *============================================================================*/
-
 /* Grab all allied targets for given user */
 std::vector<BattleActor*>
 BattleActor::getAllyTargets(BattleActor* user,

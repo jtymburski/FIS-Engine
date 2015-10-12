@@ -54,13 +54,13 @@ private:
   Frame* frame_time;
 
   /* Frames for each type of Ailment */
-  std::map<Infliction, Frame> frames_ailments;
+  std::map<Infliction, Frame*> frames_ailments;
 
   /* Frames for each Element */
-  std::map<Element, Frame> frames_elements;
+  std::map<Element, Frame*> frames_elements;
 
   /* Frames for each ActionScope */
-  std::map<ActionScope, Frame> frames_scopes;
+  std::map<ActionScope, Frame*> frames_scopes;
 
   /* Pleps for each ailment */
   std::map<Infliction, Sprite*> pleps_ailments;
@@ -134,13 +134,13 @@ public:
   Frame* getFrameTime();
 
   /* Returns an ailment frame of a given Infliction */
-  Frame getFrameAilment(Infliction ailment_frame);
+  Frame* getFrameAilment(Infliction ailment_frame);
 
   /* Returns an element frame of a given element */
-  Frame getFrameElement(Element element_frame);
+  Frame* getFrameElement(Element element_frame);
 
   /* Returns a scope frame of a given action scope */
-  Frame getFrameScope(ActionScope scope_frame);
+  Frame* getFrameScope(ActionScope scope_frame);
 
   /* Returns a pointer to a Plep ailment sprite */
   Sprite* getPlepAilment(Infliction ailment);

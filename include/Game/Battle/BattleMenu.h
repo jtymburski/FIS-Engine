@@ -139,6 +139,9 @@ private:
    * PRIVATE FUNCTIONS - OPERATION
    *============================================================================*/
 private:
+  /* Returns the actor of a given element index */
+  BattleActor* actorOfElementIndex(int32_t index);
+
   /* Determines whether the current selection is off. (default enemy targ) */
   bool isActionOffensive();
 
@@ -165,6 +168,8 @@ private:
   int32_t validLast();
   int32_t validNext();
   int32_t validPrevious();
+
+  void unsetHoverTargets();
 
   /* Targets which are currently possible to select */
   std::vector<BattleActor*> getSelectableTargets();
@@ -217,8 +222,9 @@ public:
   /* Current enumerated menu layer */
   BattleMenuLayer getMenuLayer();
 
-  /* Returns a vector of selected targets */
-  std::vector<BattleActor*> getSelectedTargets();
+  /* Returns a vector of returning hovered/selected targets */
+  std::vector<BattleActor*> getTargetsHovered();
+  std::vector<BattleActor*> getTargetsSelected();
 
   /* Assign a new BattleActor for the BattleMenu */
   bool setActor(BattleActor* actor);
@@ -231,6 +237,8 @@ public:
 
   /* Assigns a BattleMenuState flag a given value */
   void setFlag(BattleMenuState flags, const bool& set_value = true);
+
+  void setHoverTargets();
 
   /* Assigns the Renderer of BattleMenu elements */
   bool setRenderer(SDL_Renderer* renderer);

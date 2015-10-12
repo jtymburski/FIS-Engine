@@ -966,8 +966,8 @@ bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
     /* Render rectangle */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, kAILMENT_OPACITY);
     SDL_Rect rect;
-    rect.w = (fr.getWidth() + gap * 2) * ailments.size() + border * 2;
-    rect.h = (fr.getHeight() + gap * 2) + border;
+    rect.w = (fr->getWidth() + gap * 2) * ailments.size() + border * 2;
+    rect.h = (fr->getHeight() + gap * 2) + border;
     rect.x = x - rect.w / 2;
     rect.y = y - rect.h;
     SDL_RenderFillRect(renderer, &rect);
@@ -1008,9 +1008,9 @@ bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
     {
       if(ailment)
       {
-        Frame f = battle_display_data->getFrameAilment(ailment->getType());
-        f.render(renderer, rect.x, rect.y);
-        rect.x += f.getWidth() + gap * 2;
+        auto f = battle_display_data->getFrameAilment(ailment->getType());
+        f->render(renderer, rect.x, rect.y);
+        rect.x += f->getWidth() + gap * 2;
       }
     }
 

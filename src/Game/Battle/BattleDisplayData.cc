@@ -36,7 +36,22 @@ BattleDisplayData::BattleDisplayData()
  */
 BattleDisplayData::~BattleDisplayData()
 {
-  //TODO: This fails?
+  for(auto& scope : frames_scopes)
+    if(scope.second)
+      delete scope.second;
+  frames_scopes.clear();
+
+  for(auto& element : frames_elements)
+    if(element.second)
+      delete element.second;
+  frames_elements.clear();
+
+  for(auto& ailment : frames_ailments)
+    if(ailment.second)
+      delete ailment.second;
+  frames_ailments.clear();
+
+  // TODO: This fails?
   // for(auto& ailment_plep : pleps_ailments)
   //   if(ailment_plep.second)
   //     delete ailment_plep.second;
@@ -365,19 +380,19 @@ void BattleDisplayData::buildPlepsEvents()
 void BattleDisplayData::setFrameAilment(Infliction type, std::string path)
 {
   if(renderer && type != Infliction::INVALID)
-    frames_ailments.emplace(type, Frame(path, renderer));
+    frames_ailments.emplace(type, new Frame(path, renderer));
 }
 
 void BattleDisplayData::setFrameElement(Element type, std::string path)
 {
   if(renderer && type != Element::NONE)
-    frames_elements.emplace(type, Frame(path, renderer));
+    frames_elements.emplace(type, new Frame(path, renderer));
 }
 
 void BattleDisplayData::setFrameScope(ActionScope type, std::string path)
 {
   if(renderer && type != ActionScope::NO_SCOPE)
-    frames_scopes.emplace(type, Frame(path, renderer));
+    frames_scopes.emplace(type, new Frame(path, renderer));
 }
 
 void BattleDisplayData::setPlepAilment(Infliction type, Sprite* plep)
@@ -441,7 +456,7 @@ Frame* BattleDisplayData::getFrameTime()
   return frame_time;
 }
 
-Frame BattleDisplayData::getFrameAilment(Infliction ailment_frame)
+Frame* BattleDisplayData::getFrameAilment(Infliction ailment_frame)
 {
   if(ailment_frame != Infliction::INVALID)
   {
@@ -451,10 +466,10 @@ Frame BattleDisplayData::getFrameAilment(Infliction ailment_frame)
       return found->second;
   }
 
-  return Frame();
+  return nullptr;
 }
 
-Frame BattleDisplayData::getFrameElement(Element element_frame)
+Frame* BattleDisplayData::getFrameElement(Element element_frame)
 {
   if(element_frame != Element::NONE)
   {
@@ -464,10 +479,10 @@ Frame BattleDisplayData::getFrameElement(Element element_frame)
       return found->second;
   }
 
-  return Frame();
+  return nullptr;
 }
 
-Frame BattleDisplayData::getFrameScope(ActionScope scope_frame)
+Frame* BattleDisplayData::getFrameScope(ActionScope scope_frame)
 {
   if(scope_frame != ActionScope::NO_SCOPE)
   {
@@ -477,7 +492,7 @@ Frame BattleDisplayData::getFrameScope(ActionScope scope_frame)
       return found->second;
   }
 
-  return Frame();
+  return nullptr;
 }
 
 Sprite* BattleDisplayData::getPlepAilment(Infliction ailment)

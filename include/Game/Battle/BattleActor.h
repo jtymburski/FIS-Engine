@@ -49,9 +49,10 @@ enum class ActorState
   PAS_ENABLED       = 1 << 11, /* Can the person use 'Pass'? */
   REVIVABLE         = 1 << 12, /* Can this person be revived if they are KO? */
   WAS_FLASHING      = 1 << 13, /* Was the actor just flashing? */
-  ALLY              = 1 << 14, /* Is this acotr an ally */
+  ALLY              = 1 << 14, /* Is this actor an ally */
   SELECTION_RANDOM  = 1 << 15,
   SELECTION_SKIP    = 1 << 16,
+  MENU_HOVERED      = 1 << 18
   // clang-format on
 };
 
@@ -372,9 +373,9 @@ public:
   void setUpkeepState(UpkeepState state_upkeep);
 
   /*=============================================================================
-   * PRIVATE STATIC FUNCTIONS
+   * PUBLIC STATIC FUNCTIONS
    *============================================================================*/
-private:
+public:
   /* Returns vector of allied targets based on input user/targets */
   static std::vector<BattleActor*>
   getAllyTargets(BattleActor* user, std::vector<BattleActor*> targets);
@@ -391,10 +392,6 @@ private:
   static std::vector<BattleActor*>
   getRemovedUser(BattleActor* user, std::vector<BattleActor*> targets);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
-public:
   /* Static method for grabbing valid targets from a given scope */
   static std::vector<BattleActor*>
   getTargetsFromScope(BattleActor* user, ActionScope scope,

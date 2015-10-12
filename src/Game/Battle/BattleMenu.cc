@@ -82,6 +82,17 @@ BattleMenu::BattleMenu()
  * PRIVATE FUNCTIONS - Operation
  *============================================================================*/
 
+BattleActor* BattleMenu::actorOfElementIndex(int32_t index)
+{
+  auto selectable_targets = getSelectableTargets();
+
+  for(uint32_t i = 0; i < selectable_targets.size(); i++)
+    if(index == elementIndexOfActor(selectable_targets.at(i)))
+      return selectable_targets.at(i);
+
+  return nullptr;
+}
+
 bool BattleMenu::isActionOffensive()
 {
   if(selected_action_type == ActionType::SKILL)
@@ -129,6 +140,7 @@ bool BattleMenu::isIndexValid(int32_t index)
       return (valid_battle_skills.at(index)->valid_status ==
               ValidStatus::VALID);
     }
+
     if(selected_action_type == ActionType::ITEM)
     {
       return (valid_battle_items.at(index)->valid_status == ValidStatus::VALID);
@@ -170,100 +182,29 @@ int32_t BattleMenu::elementIndexOfActor(BattleActor* check_actor)
 //     element_index = index;
 // }
 
-/*
- * Description: Method for holding what happens when the player hits the
- *              cancel Key.
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::keyDownCancel()
-// {
-//   auto decrement_to_layer = -1;
-
-//   if(layer_index == 2)
-//   {
-//     decrement_to_layer = 1;
-//   }
-//   else if(layer_index == 3)
-//   {
-//     /* Back on a SKILL or ITEM action will remove the last added target,
-//      * which depends on the scope of the action:
-//      *
-//      *    TWO_ENEMIES   - previous single target cleared
-//      *    TWO_ALLIES    - previous single target cleared
-//      *
-//      *    NO_SCOPE      - invalid
-//      *
-//      *    all others    - clear vector
-//      */
-//     if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
-//     {
-//       if(action_scope == ActionScope::NO_SCOPE)
-//       {
-//         decrement_to_layer = 2;
-//       }
-//       else if(action_scope == ActionScope::TWO_ENEMIES ||
-//               action_scope == ActionScope::TWO_ALLIES)
-//       {
-//          If the size is greater than 0, pop the last selected target off,
-//            or go back to the skill selection menu
-//         if(selected_targets.size() > 0)
-//           removeLastTarget();
-//         else
-//           decrement_to_layer = 2;
-//       }
-//       else
-//       {
-//         if(removeLastTarget(true))
-//         {
-//           decrement_to_layer = 2;
-//         }
-//       }
-//     }
-//     /* Hitting cancel on a GUARD action will reset the action_type */
-//     else if(action_type == ActionType::GUARD ||
-//             action_type == ActionType::DEFEND ||
-//             action_type == ActionType::PASS)
-//     {
-//       decrement_to_layer = 1;
-//     }
-//   }
-//   else if(layer_index == 4)
-//   {
-//     if(action_type == ActionType::DEFEND || action_type == ActionType::RUN
-//     ||
-//        action_type == ActionType::PASS)
-//       decrement_to_layer = 1;
-//     else
-//       decrement_to_layer = 3;
-//   }
-
-//   if(decrement_to_layer != -1)
-//     decrementLayer(decrement_to_layer);
-// }
-
-/*
- * Description: Method for what happens when the player hits the decrement
- *key.
- *
- * Inputs: none
- * Output: none
- */
-void BattleMenu::keyDownDecrement()
+void BattleMenu::keyDownCancel()
 {
-  std::cout << "Element index pre: " << element_index << std::endl;
-  element_index = validPrevious();
-  std::cout << "Element index aft: " << element_index << std::endl;
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    menu_layer = BattleMenuLayer::TYPE_SELECTION;
+    selected_action_type = ActionType::NONE;
+    element_index = 0;
+  }
+  else if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+  {
+    menu_layer = BattleMenuLayer::ACTION_SELECTION;
+    unsetHoverTargets();
+    selected_targets.clear();
+    element_index = 0;
+  }
 }
 
-/*
- * Description: Method for what happens when the player hits the increment
- *key.
- *
- * Inputs: none
- * Output: none
- */
+void BattleMenu::keyDownDecrement()
+{
+  element_index = validPrevious();
+}
+
+
 void BattleMenu::keyDownIncrement()
 {
   element_index = validNext();
@@ -301,14 +242,14 @@ int32_t BattleMenu::validLast()
   {
     if(selected_action_type == ActionType::SKILL)
     {
-      for(size_t i = valid_battle_skills.size(); i > 0; --i)
-        if(isIndexValid(i - 1))
+      for(int32_t i = valid_battle_skills.size() - 1; i >= 0; --i)
+        if(isIndexValid(i))
           return i;
     }
     else if(selected_action_type == ActionType::ITEM)
     {
-      for(size_t i = valid_battle_items.size(); i > 0; --i)
-        if(isIndexValid(i - 1))
+      for(int32_t i = valid_battle_items.size() - 1; i >= 0; --i)
+        if(isIndexValid(i))
           return i;
     }
   }
@@ -358,6 +299,14 @@ int32_t BattleMenu::getMaxIndex()
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
     return valid_action_types.size() - 1;
 
+  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  {
+    if(selected_action_type == ActionType::SKILL)
+      return valid_battle_skills.size() - 1;
+    else if(selected_action_type == ActionType::ITEM)
+      return valid_battle_items.size() - 1;
+  }
+
   if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
     return getSelectableTargets().size() - 1;
 
@@ -374,12 +323,16 @@ BattleActor* BattleMenu::getMostLeft(bool same_party)
 
   /* If the actor is an Enemy, find the most left negative index which is
    * among a valid target in the targets vector, otherwise for allies */
-  for(auto ordered : kINDEX_ORDER)
-  {
-    for(auto target : targets)
-      if(isActorMatch(target, same_party))
-        most_left = target;
-  }
+
+  // for(auto ordered : kINDEX_ORDER)
+  // {
+  //   auto ordered_actor =
+  //   for(auto target : targets)
+  //   {
+  //     if(isActorMatch(target, same_party))
+  //       most_left = target;
+  //   }
+  // }
 
   return most_left;
 }
@@ -394,12 +347,12 @@ BattleActor* BattleMenu::getMostRight(bool same_party)
   std::reverse(begin(reversed), end(reversed));
   auto targets = getSelectableTargets();
 
-  for(auto ordered : reversed)
-  {
-    for(auto target : targets)
-      if(isActorMatch(target, same_party))
-        most_right = target;
-  }
+  // for(auto ordered : reversed)
+  // {
+  //   for(auto target : targets)
+  //     if(isActorMatch(target, same_party))
+  //       most_right = target;
+  // }
 
   return most_right;
 }
@@ -416,17 +369,15 @@ int32_t BattleMenu::validNext()
 
   if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
-    for(size_t i = element_index; i < (uint32_t)getMaxIndex(); ++i)
+    for(int32_t i = element_index + 1; i <= getMaxIndex(); ++i)
       if(isIndexValid(i))
         return i;
 
     return validFirst();
   }
-
   if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
   {
-    for(size_t i = element_index; i < (uint32_t)getSelectableTargets().size();
-        ++i)
+    for(int32_t i = element_index; i <= getMaxIndex(); ++i)
       if(isIndexValid(i))
         return i;
 
@@ -449,7 +400,7 @@ int32_t BattleMenu::validPrevious()
   if(menu_layer == BattleMenuLayer::ACTION_SELECTION ||
      menu_layer == BattleMenuLayer::TARGET_SELECTION)
   {
-    for(auto i = element_index; i >= 0; --i)
+    for(auto i = element_index - 1; i >= 0; --i)
     {
       if(isIndexValid(i))
         return i;
@@ -487,18 +438,31 @@ void BattleMenu::clearSkillFrames()
   frames_skill_name.clear();
 }
 
+// TODO - seg fault
 SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
                                           uint32_t width, uint32_t height)
 {
-  std::cout << "Building skill frame for: " << battle_skill->skill->getName() << std::endl;
+  /* Grab the skill pointer, and QD frame from display data */
   auto frame_qd = battle_display_data->getFrameQD();
-
-  /* Grab the skill pointer */
   auto skill = battle_skill->skill;
+
+  assert(skill && frame_qd && config);
+  SDL_Color color{255, 255, 255, 255};
 
   /* Fonts */
   auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
+
+  Text t1(font_header);
+  Text t2(font_subheader);
+  Text t3(font_subheader);
+  Text t4(font_subheader);
+  Text t5(font_subheader);
+
+  t1.setText(renderer, std::to_string(skill->getCost()), color);
+  t2.setText(renderer, skill->getName(), color);
+  t3.setText(renderer, std::to_string(skill->getCooldown()), color);
+  t4.setText(renderer, std::to_string((int)skill->getChance()), color);
 
   /* Create rendering texture */
   SDL_Texture* texture =
@@ -521,33 +485,30 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the action scope */
-  Frame frame_scope = battle_display_data->getFrameScope(skill->getScope());
-  Frame* scope_frame = &frame_scope;
+  auto scope_frame = battle_display_data->getFrameScope(skill->getScope());
 
   SDL_Rect rect_bot;
   rect_bot.x = kSKILL_BORDER;
   rect_bot.h = kSKILL_FRAME_S;
   rect_bot.y = height - kSKILL_BORDER - rect_bot.h;
   rect_bot.w = kSKILL_FRAME_L;
-  if(scope_frame != nullptr)
+  if(scope_frame)
     scope_frame->render(renderer, rect_bot.x, rect_bot.y);
   // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the primary element */
-  Frame frame_primary =
+  auto primary_frame =
       battle_display_data->getFrameElement(skill->getPrimary());
-  Frame* primary_frame = &frame_primary;
 
   rect_bot.x += rect_bot.w + kSKILL_BORDER;
   rect_bot.w = kSKILL_FRAME_S;
-  if(primary_frame != nullptr)
+  if(primary_frame)
     primary_frame->render(renderer, rect_bot.x, rect_bot.y);
   // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the secondary element */
-  Frame frame_secondary =
+  auto secondary_frame =
       battle_display_data->getFrameElement(skill->getSecondary());
-  Frame* secondary_frame = &frame_secondary;
   rect_bot.x += rect_bot.w + kSKILL_BORDER;
   if(secondary_frame != nullptr)
   {
@@ -556,23 +517,18 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   }
 
   /* Render the cost */
-  SDL_Color color = {255, 255, 255, 255};
   uint16_t qd_x = width - kSKILL_BORDER - frame_qd->getWidth();
   uint16_t qd_y = kSKILL_QD_GAP;
   frame_qd->render(renderer, qd_x, qd_y);
 
-  Text t1(font_header);
-  Text t2(font_subheader);
-
-  t1.setText(renderer, std::to_string(skill->getCost()), color);
   qd_x -= t1.getWidth() + kSKILL_SEP;
   t1.render(renderer, qd_x, qd_y - 1);
 
   /* Render the name */
-  t1.setText(renderer, skill->getName(), color);
+
   uint16_t text_x = rect_top.x + rect_top.w + kSKILL_BORDER;
   uint16_t text_y = qd_y - 1;
-  t1.render(renderer, text_x, text_y);
+  t2.render(renderer, text_x, text_y);
 
   /* Render the cooldown */
   auto frame_time = battle_display_data->getFrameTime();
@@ -584,37 +540,35 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
     uint16_t time_y = height - kSKILL_TIME_GAP - frame_time->getHeight();
 
     frame_time->render(renderer, time_x, time_y);
-
-    t1.setText(renderer, std::to_string(skill->getCooldown()), color);
-    time_x -= t1.getWidth() + kSKILL_SEP;
-    t1.render(renderer, time_x, time_y - 1);
+    time_x -= t3.getWidth() + kSKILL_SEP;
+    t3.render(renderer, time_x, time_y - 1);
 
     /* Render the chance of success */
     time_x -= frame_percent->getWidth() + kSKILL_SUCCESS;
     frame_percent->render(renderer, time_x, time_y);
 
-    t1.setText(renderer, std::to_string((int)skill->getChance()), color);
-    t1.render(renderer, time_x - t1.getWidth() - kSKILL_SEP, time_y - 1);
+    t4.render(renderer, time_x - t4.getWidth() - kSKILL_SEP, time_y - 1);
   }
 
   /* Render the description */
-  uint16_t line_width = width - text_x;
-  std::vector<std::string> desc_set =
-      Text::splitLine(font_subheader, skill->getDescription(), line_width);
+  // uint16_t line_width = width - text_x;
+  // std::vector<std::string> desc_set =
+  //     Text::splitLine(font_subheader, skill->getDescription(), line_width);
 
-  text_y += t1.getHeight() + kSKILL_DESC_GAP;
-  for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
-  {
-    if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
-      t2.setText(renderer, Text::splitLine(font_subheader,
-                                           desc_set[i] + " " + desc_set[i + 1],
-                                           line_width, true).front(),
-                 color);
-    else
-      t2.setText(renderer, desc_set[i], color);
-    t2.render(renderer, text_x,
-              text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
-  }
+  // text_y += t4.getHeight() + kSKILL_DESC_GAP;
+  // for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
+  // {
+  //   if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
+  //     t5.setText(renderer, Text::splitLine(font_subheader,
+  //                                          desc_set[i] + " " + desc_set[i +
+  //                                          1],
+  //                                          line_width, true).front(),
+  //                color);
+  //   else
+  //     t5.setText(renderer, desc_set[i], color);
+  //   t5.render(renderer, text_x,
+  //             text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
+  // }
 
   /* Return the new texture */
   SDL_SetRenderTarget(renderer, nullptr);
@@ -753,7 +707,7 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
   for(uint32_t i = 0; i < frames_skill_name.size() && i < kTYPE_MAX; i++)
   {
-    int32_t index = element_index + i;
+    int32_t index = i;
 
     if(index == element_index)
     {
@@ -766,7 +720,6 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
       SDL_RenderFillRect(renderer, &text_rect);
     }
 
-    std::cout << "Rendering skill frames at: (" << text_x << "," << text_y << ")" <<  std::endl;
     success &= frames_skill_name[index]->render(renderer, text_x, text_y);
 
     if(frames_skill_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
@@ -856,6 +809,8 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     keyDownIncrement();
   else if(event.keysym.sym == SDLK_RETURN || event.keysym.sym == SDLK_SPACE)
     keyDownSelect();
+  else if(event.keysym.sym == SDLK_ESCAPE || event.keysym.sym == SDLK_BACKSPACE)
+    keyDownCancel();
 
   return false;
 }
@@ -875,7 +830,69 @@ BattleMenuLayer BattleMenu::getMenuLayer()
   return menu_layer;
 }
 
-std::vector<BattleActor*> BattleMenu::getSelectedTargets()
+std::vector<BattleActor*> BattleMenu::getTargetsHovered()
+{
+  std::vector<BattleActor*> hovered_targets;
+
+  auto selectable_targets = getSelectableTargets();
+
+  for(auto& target : selectable_targets)
+    if(target && target->getFlag(ActorState::MENU_HOVERED))
+      hovered_targets.push_back(target);
+
+
+  return hovered_targets;
+}
+
+void BattleMenu::unsetHoverTargets()
+{
+  auto selectable_targets = getSelectableTargets();
+
+  /* Unset current hovering targets */
+  for(auto& target : selectable_targets)
+    if(target)
+      target->setFlag(ActorState::MENU_HOVERED, false);
+}
+
+void BattleMenu::setHoverTargets()
+{
+  auto selectable_targets = getSelectableTargets();
+  unsetHoverTargets();
+
+  if(selected_action_scope == ActionScope::USER ||
+     selected_action_scope == ActionScope::ONE_TARGET ||
+     selected_action_scope == ActionScope::ONE_ENEMY ||
+     selected_action_scope == ActionScope::ONE_ALLY ||
+     selected_action_scope == ActionScope::TWO_ENEMIES ||
+     selected_action_scope == ActionScope::TWO_ALLIES ||
+     selected_action_scope == ActionScope::NOT_USER ||
+     selected_action_scope == ActionScope::ONE_ALLY_KO ||
+     selected_action_scope == ActionScope::ONE_ALLY_NOT_USER)
+  {
+    auto hovered_actor = actorOfElementIndex(element_index);
+
+    if(hovered_actor)
+      hovered_actor->setFlag(ActorState::MENU_HOVERED, true);
+  }
+  else if(selected_action_scope == ActionScope::ONE_PARTY)
+  {
+    auto hovered_actor = actorOfElementIndex(element_index);
+    auto hovered_party =
+        BattleActor::getAllyTargets(hovered_actor, selectable_targets);
+
+    for(auto& target : hovered_party)
+      if(target)
+        target->setFlag(ActorState::MENU_HOVERED, true);
+  }
+  else if(selected_action_scope == ActionScope::ALL_NOT_USER)
+  {
+    for(auto& target : selectable_targets)
+      if(target != actor)
+        target->setFlag(ActorState::MENU_HOVERED, true);
+  }
+}
+
+std::vector<BattleActor*> BattleMenu::getTargetsSelected()
 {
   return selected_targets;
 }
@@ -949,18 +966,15 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   SDL_Color invalid_color{100, 100, 100, 255};
   SDL_Color unaffordable_color{200, 100, 100, 255};
   SDL_Color no_targets_color{255, 255, 255, 255};
-
   bool success{true};
   uint32_t text_height{0};
   uint32_t text_width{width_left - kTYPE_MARGIN * 8};
+  Text t = Text(config->getFontTTF(FontName::BATTLE_HEADER));
+  Text t2 = Text(config->getFontTTF(FontName::BATTLE_HEADER));
 
-  // TODO: Mike, feel free to revise how I did this (with the second text).
-  // The important thing is you cannot call setText() with renderer when the
-  // renderer is set to the texture as the rendering window
-  Text* t = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
-  Text* t2 = new Text(config->getFontTTF(FontName::BATTLE_HEADER));
   auto frame_qd = battle_display_data->getFrameQD();
-  uint32_t qd_x = text_width - frame_qd->getWidth();
+
+  uint32_t qd_x{text_width - frame_qd->getWidth()};
 
   /* Delete frames for skills if skills are already rendered */
   clearSkillFrames();
@@ -968,43 +982,38 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   for(auto& skill : valid_battle_skills)
   {
     /* Skill must have (a) valid pointer(s) */
-    assert(t && t2 && skill && skill->skill);
+    assert(skill && skill->skill);
 
     frames_skill_name.push_back(new Frame());
     frames_skill_info.push_back(new Frame());
 
-    /* ValidStatus of the Battle skill -> reflects the colour of Skill frame
-     */
+    /* ValidStatus of the Battle skill -> reflects the color of skil.frm */
     // TODO: Alternate ValidStatus colours depending on Skill condition?
     if(skill->valid_status == ValidStatus::VALID)
-    {
-      std::cout << "Creating valid skill frame!" << std::endl;
-      success &= t->setText(renderer, skill->skill->getName(), color);
-    }
+      success &= t.setText(renderer, skill->skill->getName(), color);
     else if(skill->valid_status == ValidStatus::NOT_AFFORDABLE)
       success &=
-          t->setText(renderer, skill->skill->getName(), unaffordable_color);
+          t.setText(renderer, skill->skill->getName(), unaffordable_color);
     else if(skill->valid_status == ValidStatus::SILENCED)
-      success &= t->setText(renderer, skill->skill->getName(), invalid_color);
+      success &= t.setText(renderer, skill->skill->getName(), invalid_color);
     else if(skill->valid_status == ValidStatus::NO_TARGETS)
-      success &=
-          t->setText(renderer, skill->skill->getName(), no_targets_color);
+      success &= t.setText(renderer, skill->skill->getName(), no_targets_color);
 
     /* Render cost */
     if(skill->valid_status == ValidStatus::VALID)
     {
       success &=
-          t2->setText(renderer, std::to_string(skill->skill->getCost()), color);
+          t2.setText(renderer, std::to_string(skill->skill->getCost()), color);
     }
     else
     {
-      success &= t2->setText(renderer, std::to_string(skill->skill->getCost()),
+      success &= t2.setText(renderer, std::to_string(skill->skill->getCost()),
                             invalid_color);
     }
-    
+
     /* Text height */
     if(text_height == 0)
-      text_height = t->getHeight() + kTYPE_MARGIN * 2;
+      text_height = t.getHeight() + kTYPE_MARGIN * 2;
 
     /* Create rendering texture */
     SDL_Texture* texture =
@@ -1016,7 +1025,7 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
     SDL_RenderClear(renderer);
 
     /* Render the text */
-    success &= t->render(renderer, 0, kTYPE_MARGIN);
+    success &= t.render(renderer, 0, kTYPE_MARGIN);
 
     /* Render the QD */
     if(skill->valid_status != ValidStatus::VALID)
@@ -1025,45 +1034,25 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
       frame_qd->setAlpha(255);
     success &= frame_qd->render(renderer, qd_x, kTYPE_MARGIN + 1);
 
-    // TODO: This can't be in the midst of the render to target because it uses
-    // the rendering engine
-/*
-    if(skill->valid_status == ValidStatus::VALID)
-    {
-      success &=
-          t->setText(renderer, std::to_string(skill->skill->getCost()), color);
-    }
-    else
-    {
-      success &= t->setText(renderer, std::to_string(skill->skill->getCost()),
-                            invalid_color);
-    }
-*/
-
     /* Render the cost */
     success &=
-        t2->render(renderer, qd_x - t2->getWidth() - kSKILL_SEP, kTYPE_MARGIN);
+        t2.render(renderer, qd_x - t2.getWidth() - kSKILL_SEP, kTYPE_MARGIN);
 
     /* Set texture and clear render target back to main */
     frames_skill_name.back()->setTexture(texture);
     SDL_SetRenderTarget(renderer, nullptr);
 
     /* Create the detailed skill information for this skill */
-    // TODO: Re-enable - doesn't seem to be the issue but I disabled for now
-    //frames_skill_info.back()->setTexture(createSkillFrame(
-    //    skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
-    //    kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
-    //        kMENU_SEPARATOR_B));
-  }
+    auto info_texture = createSkillFrame(
+        skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
+        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
+            kMENU_SEPARATOR_B);
 
-  /* Delete the created text */
-  delete t;
-  delete t2;
+    frames_skill_info.back()->setTexture(info_texture);
+  }
 
   if(success)
     setFlag(BattleMenuState::SKILL_FRAMES_BUILT, true);
-  else
-    std::cout << "[Error] Building skill frames!" << std::endl;
 
   return success;
 }
@@ -1119,10 +1108,10 @@ bool BattleMenu::render()
       {
         success &= renderSkills(rect2.x, rect2.y, section3_w, rect3.h);
 
-        if(element_index < getMaxIndex())
+        if((uint32_t)element_index < frames_skill_info.size())
         {
-          success &= frames_skill_info.at(element_index)
-                         ->render(renderer, rect3.x + kTYPE_MARGIN, rect3.y);
+          success &= frames_skill_info[element_index]->render(
+              renderer, rect3.x + kTYPE_MARGIN, rect3.y);
         }
       }
       if(selected_action_type == ActionType::ITEM)
@@ -1136,206 +1125,6 @@ bool BattleMenu::render()
   return success;
 }
 
-/*
- * Description: Decrement a menu layer to a given layer index. Performs all
- *              necessary updating and reworking to do this.
- *
- * Inputs: int32_t new_layer_index - index of new layer to go to.
- * Output: bool - true if the decrement was successful.
- */
-// bool BattleMenu::decrementLayer(const int32_t& new_layer_index)
-// {
-//   auto success = false;
-
-//   if(new_layer_index <= 3)
-//   {
-//     valid_targets.clear();
-//     selected_targets.clear();
-
-//     element_index = 0;
-//     // TODO: element index must be valid [08-03-14]
-
-//     layer_index = 3;
-
-//     setMenuFlag(MenuState::TARGETS_ASSIGNED, false);
-//     setMenuFlag(MenuState::SCOPE_ASSIGNED, false);
-
-//     success = true;
-//   }
-
-//   if(new_layer_index <= 2)
-//   {
-//     if(qtdr_cost_paid != 0)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "Replacing " << qtdr_cost_paid << " QD paid for action."
-//                 << std::endl;
-// #endif
-
-//       current_user->getCurr().alterStat("QTDR", qtdr_cost_paid);
-//       qtdr_cost_paid = 0;
-//     }
-
-//     setMenuFlag(MenuState::SKILL_SELECTED, false);
-//     setMenuFlag(MenuState::ACTION_SELECTED, false);
-
-//     action_scope = ActionScope::NO_SCOPE;
-//     layer_index = 2;
-
-//     success = true;
-//   }
-
-//   if(new_layer_index <= 1)
-//   {
-//     action_type = ActionType::NONE;
-//     layer_index = 1;
-
-//     success = true;
-//   }
-
-//   return success;
-// }
-
-/*
- * Description: Increments the BattleMenu to a given layer index. Performs
- *              all necessary updating to make this happen,
- *
- * Inputs: int32_t - new layer index for the Battle menu
- * Output: bool - true if the incrementing occurs correctly
- */
-// bool BattleMenu::incrementLayer(const int32_t& new_layer_index)
-// {
-//   if(layer_index != new_layer_index)
-//     element_index = 0;
-
-//   if(new_layer_index == 2)
-//   {
-//     layer_index = 2;
-
-//     return true;
-//   }
-
-//   else if(new_layer_index == 3)
-//   {
-//     setMenuFlag(MenuState::SKILL_SELECTED, true);
-//     setMenuFlag(MenuState::ACTION_SELECTED, true);
-
-//     layer_index = 3;
-
-//     return true;
-//   }
-
-//   else if(new_layer_index == 4)
-//   {
-//     setMenuFlag(MenuState::SELECTION_VERIFIED, true);
-//     setMenuFlag(MenuState::SKILL_SELECTED, true);
-//     setMenuFlag(MenuState::ACTION_SELECTED, true);
-
-//     layer_index = 4;
-
-//     return true;
-//   }
-
-//   return false;
-// }
-
-/*
- * Description: Adds a new target by inded value to the array of selected
- *              targets and removes this new target from the vector of
- *remaining
- *              valid targets.
- *
- * Inputs: int32_t - index [can be +/- depending on party] of target to add
- * Output: bool - true if the target was added succesfully.
- */
-// bool BattleMenu::addTarget(const int32_t& new_target)
-// {
-//   auto it = std::find(begin(valid_targets), end(valid_targets),
-//   new_target);
-
-//   if(it != end(valid_targets))
-//   {
-//     selected_targets.push_back(*it);
-//     valid_targets.erase(it);
-
-//     if(valid_targets.size() > 0 && isValidIndex(0))
-//       element_index = 0;
-//     else
-//       element_index = -1;
-
-//     return true;
-//   }
-
-//   return false;
-// }
-
-/*
- * Description: Add all the targets of the same party of a given Index (based
- *              on whether the given index is positive or negative) to the
- *              vector of selected targets and remove them all from valid
- *              targets (although the selection should be complete)
- *
- * Inputs: int32_t party_index - given index of member to be added to targets
- * Output: bool - true if all party targets were added.
- */
-// bool BattleMenu::addPartyTargets(const int32_t& party_index)
-// {
-//   selected_targets = getPartyTargets(party_index);
-
-//   return true;
-// }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// std::vector<int32_t> BattleMenu::getPartyTargets(int32_t party_index)
-// {
-//   std::vector<int32_t> highlight_targets;
-
-//   for(auto it = begin(valid_targets); it != end(valid_targets); ++it)
-//     if((*it < 0 && party_index < 0) || (*it > 0 && party_index > 0))
-//       highlight_targets.push_back(*it);
-
-//   return highlight_targets;
-// }
-
-/*
- * Description: Attempts to remove the last added target.
- *
- * Inputs: bool clear_all - whether to clear all the target assignments.
- * Output: bool - true if ???
- */
-// bool BattleMenu::removeLastTarget(const bool& clear_all)
-// {
-//   if(clear_all && selected_targets.size() == 0)
-//   {
-//     return true;
-//   }
-//   else if(clear_all)
-//   {
-//     valid_targets.clear();
-//     selected_targets.clear();
-
-//      Make sure Battle update will assign new targets
-//     setMenuFlag(MenuState::TARGETS_ASSIGNED, false);
-
-//     return false;
-//   }
-
-//   if(selected_targets.size() > 0)
-//   {
-//     valid_targets.push_back(*(end(selected_targets) - 1));
-//     selected_targets.pop_back();
-
-//     return false;
-//   }
-
-//   return true;
-// }
-
 void BattleMenu::keyDownSelect()
 {
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
@@ -1345,6 +1134,7 @@ void BattleMenu::keyDownSelect()
 
     menu_layer = BattleMenuLayer::ACTION_SELECTION;
     element_index = validFirst();
+    std::cout << "Element index at selection: " << element_index << std::endl;
   }
   else if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
@@ -1365,362 +1155,24 @@ void BattleMenu::keyDownSelect()
       menu_layer = BattleMenuLayer::TARGET_SELECTION;
 
       element_index = elementIndexOfActor(getMostLeft(!isActionOffensive()));
+      setHoverTargets();
 
-      std::cout << "Setting element index: " << element_index << std::endl;
+      if(selected_action_type == ActionType::SKILL)
+        selected_action_scope = selected_battle_skill->skill->getScope();
+      else if(selected_action_type == ActionType::ITEM)
+      {
+        auto skill = selected_battle_item->item->getUseSkill();
+        selected_action_scope == skill->getScope();
+      }
+    }
+  }
+  else if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+  {
+    if(selected_action_scope != ActionScope::TWO_ALLIES &&
+       selected_action_scope != ActionScope::TWO_ENEMIES)
+    {
+      selected_targets = getTargetsHovered();
+      setFlag(BattleMenuState::SELECTION_COMPLETE);
     }
   }
 }
-
-// void BattleMenu::keyDownSelect()
-// {
-//   auto layer_to_increment = -1;
-
-//   if(layer_index == 1)
-//   {
-//     if(static_cast<uint32_t>(element_index) < valid_actions.size())
-//       action_type = valid_actions.at(element_index);
-
-// #ifdef UDEBUG
-//     std::cout << "Attempting selection of current action t+pe: "
-//               << Helpers::actionTypeToStr(action_type) << std::endl;
-// #endif
-
-//     /* Assert there are skills if the chosen action type is SKILL */
-//     if(action_type == ActionType::SKILL)
-//     {
-//       if(menu_skills.size() > 0 && someIndexHasTargets())
-//         layer_to_increment = 2;
-
-//       if(layer_to_increment == -1)
-//       {
-//         action_type = ActionType::NONE;
-
-// #ifdef UDEBUG
-//         std::cout << "No valid skills available, please select another
-//         action"
-//                   << std::endl;
-// #endif
-//       }
-//     }
-
-//     /* Else, assert there are items if the chosen action type is ITEM */
-//     else if(action_type == ActionType::ITEM)
-//     {
-//       if(menu_items.size() > 0 && someIndexHasTargets())
-//         layer_to_increment = 2;
-
-//       if(layer_to_increment == -1)
-//       {
-//         action_type = ActionType::NONE;
-
-// #ifdef UDEBUG
-//         std::cout << "No items available please select another action!"
-//                   << std::endl;
-// #endif
-//       }
-//     }
-
-//     /* If the selected action is GUARD, increment directly to target layer */
-//     else if(action_type == ActionType::GUARD)
-//     {
-//       if(num_allies > 1)
-//         layer_to_increment = 3;
-//       else
-//       {
-//         action_type = ActionType::NONE;
-
-// #ifdef UDEBUG
-//         std::cout << "No allies to guard!" << std::endl;
-// #endif
-//       }
-//     }
-
-//     /* DEFEND, RUN, PASS actions require no other menus -> done */
-//     else if(action_type == ActionType::DEFEND ||
-//             action_type == ActionType::RUN || action_type ==
-//             ActionType::PASS)
-//     {
-//       layer_to_increment = 4;
-//     }
-//   }
-
-//   else if(layer_index == 2)
-//   {
-//     /* Selection of skill index -> move to target menu */
-//     if(action_type == ActionType::SKILL)
-//     {
-//       if(static_cast<uint32_t>(element_index) < menu_skills.size())
-//       {
-//         if(indexHasTargets())
-//         {
-//           /* Grab the selected skill */
-//           selected_skill = menu_skills.at(element_index);
-//           setMenuFlag(MenuState::SKILL_SELECTED, true);
-
-//           /* Decrease the current user's QD by the cost required */
-//           auto true_cost = current_user->getTrueCost(selected_skill.skill);
-
-//           if(true_cost <= current_user->getCurr().getStat("QTDR"))
-//           {
-// #ifdef UDEBUG
-//             std::cout << "Decreasing " << current_user->getName() << "s QTDR"
-//                       << " by " << true_cost << "." << std::endl;
-// #endif
-
-//             layer_to_increment = 3;
-//             qtdr_cost_paid = true_cost;
-//             current_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
-//           }
-//           else
-//           {
-// #ifdef UDEBUG
-//             std::cout << "Cannot afford that skill!" << std::endl;
-// #endif
-//           }
-//         }
-// #ifdef UDEBUG
-//         std::cout << "Selected skill index has invalid targets" << std::endl;
-// #endif
-//       }
-//     }
-//     else if(action_type == ActionType::ITEM)
-//     {
-//       if(static_cast<uint32_t>(element_index) < menu_items.size())
-//       {
-//         layer_to_increment = 3;
-
-//         selected_item = menu_items.at(element_index).item;
-//       }
-//     }
-//   }
-//   else if(layer_index == 3)
-//   {
-//     if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
-//     {
-//       if(action_scope == ActionScope::ONE_PARTY)
-//       {
-//         addPartyTargets(valid_targets.at(element_index));
-
-//         if(selected_targets.size() > 0)
-//           layer_to_increment = 4;
-//       }
-//       else if(action_scope == ActionScope::ALL_ENEMIES ||
-//               action_scope == ActionScope::ALL_ALLIES ||
-//               action_scope == ActionScope::ALL_ALLIES_KO ||
-//               action_scope == ActionScope::ALL_TARGETS ||
-//               action_scope == ActionScope::ALL_NOT_USER)
-//       {
-//         while(valid_targets.size() > 0 && element_index != -1)
-//           addTarget(valid_targets.at(valid_targets.size() - 1));
-
-//         if(selected_targets.size() > 0)
-//           layer_to_increment = 4;
-//       }
-//       else if(action_scope == ActionScope::TWO_ENEMIES ||
-//               action_scope == ActionScope::TWO_ALLIES)
-//       {
-//         if(valid_targets.size() > 0 && element_index != -1)
-//           addTarget(valid_targets.at(element_index));
-
-//         if(selected_targets.size() == 2)
-//           layer_to_increment = 4;
-//       }
-//       else
-//       {
-//         if(valid_targets.size() > 0 && element_index != -1)
-//         {
-//           addTarget(valid_targets.at(element_index));
-//           layer_to_increment = 4;
-//         }
-//       }
-//     }
-//     else if(action_type == ActionType::DEFEND ||
-//             action_type == ActionType::GUARD ||
-//             action_type == ActionType::IMPLODE)
-//     {
-//       if(valid_targets.size() > 0 && element_index != -1)
-//       {
-//         addTarget(valid_targets.at(element_index));
-//         layer_to_increment = 4;
-//       }
-//     }
-//     else if(action_type == ActionType::RUN || action_type ==
-//     ActionType::PASS)
-//     {
-//       layer_to_increment = 4;
-//     }
-//   }
-//   else if(layer_index == 4)
-//   {
-//     setMenuFlag(MenuState::SELECTION_VERIFIED, true);
-//   }
-
-//   if(layer_to_increment != -1)
-//     incrementLayer(layer_to_increment);
-// }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// int32_t BattleMenu::getPartyTargetIndex(bool opposite)
-// {
-//   if(opposite)
-//   {
-//     for(int16_t index = valid_targets.size() - 1; index >= 0; index--)
-//       if(valid_targets.at(index) < 0)
-//         return index;
-//   }
-//   else
-//   {
-//     for(size_t index = 0; index < valid_targets.size(); index++)
-//       if(valid_targets.at(index) > 0)
-//         return index;
-//   }
-
-//   return 0;
-// }
-
-/*============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
-
-/*
- * Description: Selects a random action among the list of available menu.
- *              This function is used in lieu of the menu for ailments
- *              such as
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::selectRandomAction()
-// {
-//   if(menu_skills.size() > 0)
-//   {
-//     auto rand_elm = Helpers::randU(0, menu_skills.size() - 1);
-//     selected_skill = menu_skills.at(rand_elm);
-//     setMenuFlag(MenuState::SKILL_SELECTED, true);
-
-//     action_type = ActionType::SKILL;
-//     setMenuFlag(MenuState::ACTION_SELECTED, true);
-//   }
-// }
-
-/*
- * Description:
- *
- * Inputs: none
- * Output: none
- */
-// void BattleMenu::swapPartyIndex()
-// {
-//   auto temp_index = person_index;
-
-//   if(person_index < 0)
-//   {
-//     person_index = 1;
-//     mostLeftIndex();
-//   }
-//   else if(person_index > 0)
-//   {
-//     person_index = -1;
-//     mostRightIndex();
-//   }
-
-//   if(person_index == 0)
-//     person_index = temp_index;
-
-//   element_index = person_index;
-// }
-
-/* Get targets hovered over during the selection process */
-// TODO: Comment
-// std::vector<int32_t> BattleMenu::getHoverTargets()
-// {
-//   std::vector<int32_t> hover_targets;
-
-// if(action_type == ActionType::SKILL || action_type == ActionType::GUARD ||
-//    action_type == ActionType::ITEM)
-// {
-//   for(uint16_t i = 0; i < valid_targets.size(); i++)
-//   {
-//     /* If the index matches the element index or if the action scope is
-//     always
-//      * highlighting, display an 'X' on it
-//      * The following action scopes will always choose all selectable targets:
-//      * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
-//     if(action_scope == ActionScope::ALL_ALLIES ||
-//        action_scope == ActionScope::ALL_ENEMIES ||
-//        action_scope == ActionScope::ALL_ALLIES_KO ||
-//        action_scope == ActionScope::ALL_TARGETS ||
-//        action_scope == ActionScope::ALL_NOT_USER ||
-//        (i == element_index && action_scope != ActionScope::ONE_PARTY))
-//     {
-//       hover_targets.push_back(valid_targets[i]);
-//     }
-//   }
-
-//   if(action_scope == ActionScope::ONE_PARTY)
-//   {
-//     if(valid_targets.size() > static_cast<size_t>(element_index))
-//       hover_targets = getPartyTargets(valid_targets.at(element_index));
-//   }
-// }
-
-//   return hover_targets;
-// }
-
-/*
- * Description: Compiles randomized targets for the selected skill. (ex., for
- *              attacking while confused)
- *
- * Inputs: none
- * Output: std::vector<int32_t> - vector of targets
- */
-// std::vector<int32_t> BattleMenu::getRandomTargets()
-// {
-//   std::vector<int32_t> random_targets;
-
-//   if(action_scope == ActionScope::USER ||
-//      action_scope == ActionScope::ALL_ENEMIES ||
-//      action_scope == ActionScope::ALL_ALLIES ||
-//      action_scope == ActionScope::ALL_ALLIES_KO ||
-//      action_scope == ActionScope::ALL_TARGETS ||
-//      action_scope == ActionScope::ALL_NOT_USER)
-//   {
-//     random_targets = valid_targets;
-//   }
-//   else if(action_scope == ActionScope::ONE_TARGET ||
-//           action_scope == ActionScope::ONE_ENEMY ||
-//           action_scope == ActionScope::ONE_ALLY ||
-//           action_scope == ActionScope::ONE_ALLY_NOT_USER ||
-//           action_scope == ActionScope::ONE_ALLY_KO ||
-//           action_scope == ActionScope::NOT_USER)
-//   {
-//     random_targets = Helpers::getRandElements(valid_targets, 1);
-//   }
-//   else if(action_scope == ActionScope::TWO_ENEMIES ||
-//           action_scope == ActionScope::TWO_ALLIES)
-//   {
-//     random_targets = Helpers::getRandElements(valid_targets, 2);
-//   }
-//   else if(action_scope == ActionScope::ONE_PARTY)
-//   {
-//     if(Helpers::flipCoin())
-//     {
-//       for(const auto& target : valid_targets)
-//         if(target > 0)
-//           random_targets.push_back(target);
-//     }
-//     else
-//     {
-//       for(const auto& target : valid_targets)
-//         if(target < 0)
-//           random_targets.push_back(target);
-//     }
-//   }
-
-//   return random_targets;
-// }
