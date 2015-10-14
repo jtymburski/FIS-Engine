@@ -83,7 +83,6 @@ private:
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
   const static int kSTOP_FADE; /* Stop fade time on channel */
-  const static int kUNSET_ID; /* The placeholder unset ID */
 public:
   const static int kDEFAULT_FREQUENCY; /* Sound frequency - DO NOT CHANGE */
   const static uint32_t kID_MUSIC_BATTLE;
@@ -103,6 +102,7 @@ public:
   const static uint32_t kID_SOUND_MENU_PREV;
   const static uint32_t kID_SOUND_PICK_COIN;
   const static uint32_t kID_SOUND_PICK_ITEM;
+  const static int kUNSET_ID; /* The placeholder unset ID */
 
 /*============================================================================
  * PRIVATE FUNCTIONS

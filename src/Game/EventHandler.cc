@@ -466,6 +466,7 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
 {
   EventClassifier category = EventClassifier::NOEVENT;
   std::string category_str = data.getElement(file_index);
+  bool read_success;
 
   /* Determine the category of the event that is being updated */
   if(category_str == "conversation")
@@ -508,8 +509,8 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   if(data.getElement(file_index + 1) == "sound_id" ||
      category == EventClassifier::JUSTSOUND)
   {
-    int32_t sound_id = data.getDataInteger();
-    if(sound_id >= 0)
+    int32_t sound_id = data.getDataInteger(&read_success);
+    if(read_success && sound_id >= 0)
       event.sound_id = sound_id;
   }
   else if(category == EventClassifier::GIVEITEM)

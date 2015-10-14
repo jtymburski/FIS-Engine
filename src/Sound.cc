@@ -16,7 +16,6 @@
 /* Constant Implementation - see header file for descriptions */
 const short Sound::kINFINITE_LOOP = -1;
 const int Sound::kSTOP_FADE = 1500;
-const int Sound::kUNSET_ID = -1;
 /* Public Constant Implementation */
 const int Sound::kDEFAULT_FREQUENCY = 22050;
 /* -- */
@@ -38,6 +37,8 @@ const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
 const uint32_t Sound::kID_SOUND_MENU_PREV = 2;
 const uint32_t Sound::kID_SOUND_PICK_COIN = 12;
 const uint32_t Sound::kID_SOUND_PICK_ITEM = 13;
+/* -- */
+const int Sound::kUNSET_ID = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
