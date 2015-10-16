@@ -40,6 +40,7 @@ const uint8_t MapDialog::kOPACITY_MAX = 255;
 const uint8_t MapDialog::kOPTION_OFFSET = 50;
 const uint16_t MapDialog::kPAUSE_TIME = 750;
 const uint16_t MapDialog::kPICKUP_DISPLAY_TIME = 5000;
+const uint16_t MapDialog::kPICKUP_IMG_SIZE = 64;
 const uint8_t MapDialog::kPICKUP_TEXT_MARGIN = 10;
 const uint16_t MapDialog::kPICKUP_Y = 50;
 const float MapDialog::kSHIFT_TIME = 3;//.704;
@@ -582,11 +583,27 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
 
   /* Do some checking on height and width, before rendering */
   uint16_t frame_width = pickup.thing_image->getWidth();
-  if(frame_width < Helpers::getTileSize())
-    frame_width = Helpers::getTileSize();
+  //if(frame_width < Helpers::getTileSize())
+  //  frame_width = Helpers::getTileSize();
   uint16_t frame_height = pickup.thing_image->getHeight();
-  if(frame_height < Helpers::getTileSize())
-    frame_height = Helpers::getTileSize();
+  //if(frame_height < Helpers::getTileSize())
+  //  frame_height = Helpers::getTileSize();
+  if(frame_width >= frame_height)
+  {
+    if(frame_width != kPICKUP_IMG_SIZE)
+    {
+      frame_height *= ((kPICKUP_IMG_SIZE * 1.0) / frame_width);
+      frame_width = kPICKUP_IMG_SIZE;
+    }
+  }
+  else
+  {
+    if(frame_height != kPICKUP_IMG_SIZE)
+    {
+      frame_width *= ((kPICKUP_IMG_SIZE * 1.0) / frame_height);
+      frame_height = kPICKUP_IMG_SIZE;
+    }
+  }
 
   /* Determine render height and width */
   int render_height = img_pick_t.getHeight() + frame_height

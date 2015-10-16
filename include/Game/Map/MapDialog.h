@@ -147,6 +147,7 @@ private:
   const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */
   const static uint16_t kPAUSE_TIME; /* The time to hide or show the dialog */
   const static uint16_t kPICKUP_DISPLAY_TIME; /* Default pickup display time */
+  const static uint16_t kPICKUP_IMG_SIZE; /* Size of pickup image */
   const static uint8_t kPICKUP_TEXT_MARGIN; /* Margin between image and text */
   const static uint16_t kPICKUP_Y; /* The top left y coordinate */
   const static float kSHIFT_TIME; /* Time to make the display visible */
