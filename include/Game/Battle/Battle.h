@@ -154,6 +154,9 @@ private:
   /* The turn state of the Battle */
   TurnState turn_state;
 
+  /* The time elapsed for the Battle */
+  uint32_t time_elapsed;
+
   /* Elapsed turns of hte battle */
   uint16_t turns_elapsed;
 

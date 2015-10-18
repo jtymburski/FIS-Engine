@@ -274,9 +274,7 @@ void BattleActor::updateBrightness(int32_t cycle_time)
 
   //     if(test_person->getBFlag(BState::IS_SELECTING))
   //     {
-  //       brightness = 0.3 * sin((float)person_state->elapsed_time *
-  //       kCYCLE_RATE);
-  //       brightness = abs(brightness) + 0.7;
+
   //     }
   //   }
   //   else if(layer_index == 3 || layer_index == 4)

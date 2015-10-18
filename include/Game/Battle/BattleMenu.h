@@ -33,7 +33,7 @@ enum BattleMenuLayer
 ENUM_FLAGS(BattleMenuState)
 enum class BattleMenuState
 {
-  READY  = 1 << 0,
+  READY = 1 << 0,
   SELECTION_COMPLETE = 1 << 1,
   SKILL_FRAMES_BUILT = 1 << 2
 };
@@ -134,6 +134,7 @@ private:
   const static uint16_t kINFO_W; /* Width of enemy info bar */
 
   const static std::vector<int32_t> kINDEX_ORDER;
+  const static std::vector<int32_t> kREVERSE_ORDER;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS - OPERATION
@@ -161,15 +162,26 @@ private:
   void keyDownIncrement();
   void keyDownSelect();
 
+  BattleActor* targetOfOrderedIndex(std::vector<BattleActor*> actors,
+                                    int32_t ordered_index);
+
   /* Methods for determining valid indexes on various circumstances */
   int32_t validFirst();
   int32_t validFirstEnemy();
   int32_t validFirstAlly();
   int32_t validLast();
   int32_t validNext();
+  int32_t validNextAlly(BattleActor* curr_hovered);
+  int32_t validNextEnemy(BattleActor* curr_hovered);
   int32_t validPrevious();
+  int32_t validPreviousAlly(BattleActor* curr_hovered);
+  int32_t validPreviousEnemy(BattleActor* curr_hovered);
 
   void unsetHoverTargets();
+
+  /* Vector of Party targets */
+  std::vector<BattleActor*> getPartyTargets(std::vector<BattleActor*> actors,
+                                            bool allies);
 
   /* Targets which are currently possible to select */
   std::vector<BattleActor*> getSelectableTargets();
@@ -178,6 +190,8 @@ private:
 
   /* Returns the most left selectable BattleActor */
   BattleActor* getMostLeft(bool same_party = false);
+
+  void printSelectableTargets();
 
   /* Returns the most right selectable BattleActor */
   BattleActor* getMostRight(bool same_party = false);

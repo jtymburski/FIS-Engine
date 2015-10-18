@@ -248,6 +248,7 @@ Battle::Battle()
       outcome{OutcomeType::NONE},
       renderer{nullptr},
       turn_state{TurnState::STOPPED},
+      time_elapsed{0},
       turns_elapsed{0}
 {
   /* Create a new action buffer and a menu object */
@@ -1525,6 +1526,7 @@ void Battle::updateRendering(int32_t cycle_time)
 
 void Battle::updateRenderSprites(int32_t cycle_time)
 {
+  (void)cycle_time;
   auto brightness = 1.0;
 
   for(auto& actor : actors)
@@ -1535,18 +1537,25 @@ void Battle::updateRenderSprites(int32_t cycle_time)
       {
         brightness = 0.25;
 
-        // Update selecting person.
-
-        // Update selected targets
-
-        if(battle_menu->getMenuLayer() == BattleMenuLayer::TARGET_SELECTION)
+        /* Brightness for selecting person */
+        if(battle_menu->getMenuLayer() != BattleMenuLayer::TARGET_SELECTION)
+        {
+          if(battle_menu->getActor() == actor)
+          {
+            brightness = 0.3 * sin((float)time_elapsed * kCYCLE_RATE);
+            brightness = 0.7 + fabs(brightness);
+          }
+        }
+        /* Brightness for selected targets */
+        else if(battle_menu->getMenuLayer() ==
+                BattleMenuLayer::TARGET_SELECTION)
         {
           if(actor->getFlag(ActorState::MENU_HOVERED))
             brightness = 1.0;
         }
-
-        actor->getActiveSprite()->setBrightness(brightness);
       }
+
+      actor->getActiveSprite()->setBrightness(brightness);
     }
   }
 }
@@ -1661,105 +1670,104 @@ void Battle::updateRenderElements(int32_t cycle_time)
   // return success;
 }
 
-  // TODO: [09-06-15] - Update the enemy renderings
-  //   for(auto &state : foes_state)
-  // {
-  //   if(state && state->tp && state->self)
-  //   {
-  //     if(state->was_flashing)
-  //     {
-  //       state->tp->revertColorBalance();
-  //       state->tp->setFlashing(false);
-  //       state->was_flashing = false;
-  //     }
+// TODO: [09-06-15] - Update the enemy renderings
+//   for(auto &state : foes_state)
+// {
+//   if(state && state->tp && state->self)
+//   {
+//     if(state->was_flashing)
+//     {
+//       state->tp->revertColorBalance();
+//       state->tp->setFlashing(false);
+//       state->was_flashing = false;
+//     }
 
-  //     state->tp->setOpacity(updatePersonOpacity(state->self, cycle_time));
-  //     state->tp->setBrightness(calcPersonBrightness(state->self));
+//     state->tp->setOpacity(updatePersonOpacity(state->self, cycle_time));
+//     state->tp->setBrightness(calcPersonBrightness(state->self));
 
-  // TODO: Action sprites for enemies? [07-11-15]
-  // Update: Shake them instead of an action sprite.
-  // if (state->self->getBFlag(BState::IS_ATTACKING))
-  // {
-  //   if (state->self->getActionSprite() != nullptr)
-  //     state->tp = state->self->getActionSprite();
-  // }
-  // else
-  // {
-  //   state->tp = state->self->getThirdPerson();
-  // }
-  //   }
-  // }
+// TODO: Action sprites for enemies? [07-11-15]
+// Update: Shake them instead of an action sprite.
+// if (state->self->getBFlag(BState::IS_ATTACKING))
+// {
+//   if (state->self->getActionSprite() != nullptr)
+//     state->tp = state->self->getActionSprite();
+// }
+// else
+// {
+//   state->tp = state->self->getThirdPerson();
+// }
+//   }
+// }
 
+// TODO: [09-06-15] : Update the allies renderings
+// for(auto& state : friends_state)
+// {
+//   if(state && state->fp && state->self)
+//   {
+//     if(state->was_flashing)
+//     {
+//       state->fp->revertColorBalance();
+//       state->fp->setFlashing(false);
+//       state->was_flashing = false;
+//     }
 
-  // TODO: [09-06-15] : Update the allies renderings
-  // for(auto& state : friends_state)
-  // {
-  //   if(state && state->fp && state->self)
-  //   {
-  //     if(state->was_flashing)
-  //     {
-  //       state->fp->revertColorBalance();
-  //       state->fp->setFlashing(false);
-  //       state->was_flashing = false;
-  //     }
+//     state->fp->setOpacity(updatePersonOpacity(state->self, cycle_time));
+//     state->fp->setBrightness(calcPersonBrightness(state->self));
 
-  //     state->fp->setOpacity(updatePersonOpacity(state->self, cycle_time));
-  //     state->fp->setBrightness(calcPersonBrightness(state->self));
+//     /* Determine which sprite to use (Attacking/Normal) */
+//     if(state->self->getBFlag(BState::IS_ATTACKING))
+//     {
+//       if(state->self->getActionSprite())
+//       {
+//         state->active_sprite = state->as;
+//       }
+//     }
+//     else
+//     {
+//       state->active_sprite = state->fp;
+//     }
 
-  //     /* Determine which sprite to use (Attacking/Normal) */
-  //     if(state->self->getBFlag(BState::IS_ATTACKING))
-  //     {
-  //       if(state->self->getActionSprite())
-  //       {
-  //         state->active_sprite = state->as;
-  //       }
-  //     }
-  //     else
-  //     {
-  //       state->active_sprite = state->fp;
-  //     }
+//     /* Update position if bobbing */
+//     if(state->bobbing)
+//     {
+//       state->elapsed_time += cycle_time;
 
-  //     /* Update position if bobbing */
-  //     if(state->bobbing)
-  //     {
-  //       state->elapsed_time += cycle_time;
+//       if(state->elapsed_time >= kBOB_TIME)
+//       {
+//         state->elapsed_time = 0;
+//         state->bobbing = false;
+//         state->x = 0;
+//         state->y = 0;
+//       }
+//       else
+//       {
+//         state->x = getActorX(state->self) +
+//                    kBOB_AMOUNT * sin(state->elapsed_time * kBOB_RATE);
+//         state->y = getPersonY(state->self);
+//       }
+//     }
+//     else if(state->running)
+//     {
+//       state->elapsed_time += cycle_time;
 
-  //       if(state->elapsed_time >= kBOB_TIME)
-  //       {
-  //         state->elapsed_time = 0;
-  //         state->bobbing = false;
-  //         state->x = 0;
-  //         state->y = 0;
-  //       }
-  //       else
-  //       {
-  //         state->x = getActorX(state->self) +
-  //                    kBOB_AMOUNT * sin(state->elapsed_time * kBOB_RATE);
-  //         state->y = getPersonY(state->self);
-  //       }
-  //     }
-  //     else if(state->running)
-  //     {
-  //       state->elapsed_time += cycle_time;
+//       if(state->elapsed_time >= kRUN_TIME)
+//       {
+//         state->elapsed_time = 0;
+//         state->running = false;
+//         state->x = 0;
+//         state->y = 0;
+//       }
+//       else
+//       {
+//         state->x = getActorX(state->self) +
+//                    kRUN_AMOUNT * sin(state->elapsed_time * kRUN_RATE);
+//         state->y = getPersonY(state->self);
+//       }
+//     }
+//   }
+// }
 
-  //       if(state->elapsed_time >= kRUN_TIME)
-  //       {
-  //         state->elapsed_time = 0;
-  //         state->running = false;
-  //         state->x = 0;
-  //         state->y = 0;
-  //       }
-  //       else
-  //       {
-  //         state->x = getActorX(state->self) +
-  //                    kRUN_AMOUNT * sin(state->elapsed_time * kRUN_RATE);
-  //         state->y = getPersonY(state->self);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // return false;
+// return false;
 
 int32_t Battle::getActorX(BattleActor* actor)
 {
@@ -1902,6 +1910,8 @@ void Battle::stopBattle()
   clearBattleActors();
 
   turn_state = TurnState::STOPPED;
+  time_elapsed = 0;
+  turns_elapsed = 0;
 }
 
 std::vector<BattleActor*> Battle::getAllies()
@@ -6468,8 +6478,10 @@ void Battle::setNextTurnState()
 //  */
 bool Battle::update(int32_t cycle_time)
 {
-  updateRendering(cycle_time);
+  time_elapsed += cycle_time;
   turns_elapsed++;
+
+  updateRendering(cycle_time);
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
   {

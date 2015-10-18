@@ -53,7 +53,9 @@ const uint8_t BattleMenu::kTYPE_SELECT{3};
 
 const uint16_t BattleMenu::kINFO_W{180};
 
-const std::vector<int32_t> BattleMenu::kINDEX_ORDER{2, 1, 3, 4, 5};
+const std::vector<int32_t> BattleMenu::kINDEX_ORDER{1, 0, 2, 3, 4};
+const std::vector<int32_t> BattleMenu::kREVERSE_ORDER{4, 3, 2, 1, 0};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -116,9 +118,6 @@ bool BattleMenu::isActorMatch(BattleActor* target, bool same)
     auto user_is_ally = actor->getFlag(ActorState::ALLY);
     auto target_is_ally = target->getFlag(ActorState::ALLY);
 
-    std::cout << "User is ally: " << user_is_ally << std::endl;
-    std::cout << "Target is ally: " << target_is_ally << std::endl;
-
     if(same)
       return user_is_ally == target_is_ally;
     else
@@ -165,6 +164,16 @@ int32_t BattleMenu::elementIndexOfActor(BattleActor* check_actor)
   return -1;
 }
 
+BattleActor* BattleMenu::targetOfOrderedIndex(std::vector<BattleActor*> actors,
+                                              int32_t ordered)
+{
+  for(const auto& actor : actors)
+    if(actor && (actor->getIndex() == ordered))
+      return actor;
+
+  return nullptr;
+}
+
 /*
  * Description: Jump to element index based on alha numeric keys.
  *
@@ -207,11 +216,19 @@ void BattleMenu::keyDownCancel()
 void BattleMenu::keyDownDecrement()
 {
   element_index = validPrevious();
+
+  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+    setHoverTargets();
 }
 
 void BattleMenu::keyDownIncrement()
 {
+  printSelectableTargets();
+
   element_index = validNext();
+
+  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+    setHoverTargets();
 }
 
 // First valid index
@@ -259,7 +276,18 @@ int32_t BattleMenu::validLast()
   }
 
   if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
-    return elementIndexOfActor(getMostRight(!isActionOffensive()));
+  {
+    auto curr_hover = actorOfElementIndex(element_index);
+    auto is_ally = false;
+
+    if(curr_hover)
+      is_ally = curr_hover->getFlag(ActorState::ALLY);
+
+    if(is_ally)
+      return elementIndexOfActor(getMostLeft(true));
+    else
+      return elementIndexOfActor(getMostRight(false));
+  }
 
   return -1;
 }
@@ -289,6 +317,18 @@ std::vector<BattleActor*> BattleMenu::getSelectableTargets()
   return selectable_targets;
 }
 
+std::vector<BattleActor*>
+BattleMenu::getPartyTargets(std::vector<BattleActor*> actors, bool allies)
+{
+  std::vector<BattleActor*> party_targets;
+
+  for(const auto& actor : actors)
+    if(actor->getFlag(ActorState::ALLY) == allies)
+      party_targets.push_back(actor);
+
+  return party_targets;
+}
+
 int32_t BattleMenu::getMaxIndex()
 {
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
@@ -308,47 +348,73 @@ int32_t BattleMenu::getMaxIndex()
   return -1;
 }
 
-/* kINDEX_ORDER {-5, -4, -3, -1, -2, 2, 1, 3, 4, 5} */
-BattleActor* BattleMenu::getMostLeft(bool same_party)
+/* kINDEX_ORDER {2, 1, 3, 4, 5} */
+BattleActor* BattleMenu::getMostLeft(bool allied_party)
 {
-  std::cout << "Checking same party value: " << same_party << std::endl;
-
   assert(actor);
 
-  auto targets = getSelectableTargets();
+  auto targets = getPartyTargets(getSelectableTargets(), allied_party);
 
-  /* If the actor is an Enemy, find the most left negative index which is
-   * among a valid target in the targets vector, otherwise for allies */
-  for(auto ordered : kINDEX_ORDER)
+  if(allied_party)
   {
-    std::cout << "Searching ordered: " << ordered << std::endl;
-    for(auto& target : targets)
+    for(auto& ordered : kINDEX_ORDER)
     {
-      std::cout << "Searching target : " << target->getBasePerson()->getName()
-                << " with index: " << target->getIndex() << std::endl;
-      std::cout << "Is actor match? " << isActorMatch(target, same_party)
-                << std::endl;
-      if((target->getIndex() == ordered) && isActorMatch(target, same_party))
+      auto target = targetOfOrderedIndex(targets, ordered);
+
+      if(target)
         return target;
+    }
+  }
+  else
+  {
+    for(auto& ordered : kREVERSE_ORDER)
+    {
+      auto target = targetOfOrderedIndex(targets, ordered);
+
+      if(target)
+      {
+        std::cout << "Returning most left person: "
+                  << target->getBasePerson()->getName() << std::endl;
+        return target;
+      }
     }
   }
 
   return nullptr;
 }
 
-BattleActor* BattleMenu::getMostRight(bool same_party)
+void BattleMenu::printSelectableTargets()
+{
+  int32_t element = 0;
+
+  for(auto& target : getSelectableTargets())
+  {
+    std::cout << "[" << element << "] -- " << target->getBasePerson()->getName()
+              << " Index: " << target->getIndex() << std::endl;
+  }
+}
+
+BattleActor* BattleMenu::getMostRight(bool allied_party)
 {
   assert(actor);
 
-  std::vector<int32_t> reversed = kINDEX_ORDER;
-  std::reverse(begin(reversed), end(reversed));
+  auto targets = getPartyTargets(getSelectableTargets(), allied_party);
 
-  auto targets = getSelectableTargets();
+  if(allied_party)
+  {
+   //TODO - 10234
+  }
+  else
+  {
 
-  for(auto ordered : reversed)
-    for(auto& target : targets)
-      if((target->getIndex() == ordered) && isActorMatch(target, same_party))
+    for(int32_t ordered = 0; ordered < 5; ++ordered)
+    {
+      auto target = targetOfOrderedIndex(targets, ordered);
+
+      if(target)
         return target;
+    }
+  }
 
   return nullptr;
 }
@@ -362,8 +428,7 @@ int32_t BattleMenu::validNext()
     else
       return 0;
   }
-
-  if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
+  else if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
     for(int32_t i = element_index + 1; i <= getMaxIndex(); ++i)
       if(isIndexValid(i))
@@ -371,13 +436,86 @@ int32_t BattleMenu::validNext()
 
     return validFirst();
   }
-  if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+  else if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
   {
-    for(int32_t i = element_index; i <= getMaxIndex(); ++i)
-      if(isIndexValid(i))
-        return i;
+    auto curr_hover = actorOfElementIndex(element_index);
 
-    return validFirst();
+    if(curr_hover && curr_hover->getFlag(ActorState::ALLY))
+    {
+      // validNextAlly();
+    }
+    else if(curr_hover)
+    {
+      std::cout << "Finding next enemy for curr_hoverer: "
+                << curr_hover->getBasePerson()->getName() << std::endl;
+      return validNextEnemy(curr_hover);
+    }
+  }
+
+  return -1;
+}
+
+int32_t BattleMenu::validNextAlly(BattleActor* curr_hovered)
+{
+  (void)curr_hovered;
+  return -1;
+}
+
+int32_t BattleMenu::validNextEnemy(BattleActor* curr_hovered)
+{
+  auto targets = getPartyTargets(getSelectableTargets(), false);
+  auto next_index = -1;
+
+  for(auto it = begin(kREVERSE_ORDER); it != end(kREVERSE_ORDER); ++it)
+  {
+    if(*it == (curr_hovered->getIndex()))
+      if((it + 1) != end(kREVERSE_ORDER))
+        next_index = *(it + 1);
+  }
+
+  if(next_index != -1)
+  {
+    auto target = targetOfOrderedIndex(targets, next_index);
+
+    return elementIndexOfActor(target);
+  }
+  else
+  {
+    return elementIndexOfActor(getMostLeft(false));
+  }
+
+  return -1;
+}
+
+int32_t BattleMenu::validPreviousAlly(BattleActor* curr_hovered)
+{
+  (void)curr_hovered;
+  return -1;
+}
+
+int32_t BattleMenu::validPreviousEnemy(BattleActor* curr_hovered)
+{
+  auto targets = getPartyTargets(getSelectableTargets(), false);
+  auto prev_index = -1;
+
+  if(curr_hovered == getMostLeft(false))
+  {
+    return elementIndexOfActor(getMostRight(false));
+  }
+  else
+  {
+    for(auto it = begin(kREVERSE_ORDER) + 1; it != end(kREVERSE_ORDER); ++it)
+    {
+      if(*it == (curr_hovered->getIndex()))
+        prev_index = *(it - 1);
+    }
+
+    if(prev_index != -1)
+    {
+      auto target = targetOfOrderedIndex(targets, prev_index);
+
+      return elementIndexOfActor(target);
+    }
   }
 
   return -1;
@@ -393,8 +531,7 @@ int32_t BattleMenu::validPrevious()
       return valid_action_types.size() - 1;
   }
 
-  if(menu_layer == BattleMenuLayer::ACTION_SELECTION ||
-     menu_layer == BattleMenuLayer::TARGET_SELECTION)
+  else if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
     for(auto i = element_index - 1; i >= 0; --i)
     {
@@ -405,8 +542,18 @@ int32_t BattleMenu::validPrevious()
     return validLast();
   }
 
-  // TODO - targets
+  else if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+  {
+    auto curr_hover = actorOfElementIndex(element_index);
 
+    if(curr_hover->getFlag(ActorState::ALLY))
+    {
+    }
+    else if(curr_hover)
+    {
+      return validPreviousEnemy(curr_hover);
+    }
+  }
   return -1;
 }
 
@@ -799,11 +946,22 @@ void BattleMenu::ready()
 
 bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if(event.keysym.sym == SDLK_UP)
-    keyDownDecrement();
-  else if(event.keysym.sym == SDLK_DOWN)
-    keyDownIncrement();
-  else if(event.keysym.sym == SDLK_RETURN || event.keysym.sym == SDLK_SPACE)
+  if(menu_layer != BattleMenuLayer::TARGET_SELECTION)
+  {
+    if(event.keysym.sym == SDLK_UP)
+      keyDownDecrement();
+    else if(event.keysym.sym == SDLK_DOWN)
+      keyDownIncrement();
+  }
+  else
+  {
+    if(event.keysym.sym == SDLK_LEFT)
+      keyDownDecrement();
+    else if(event.keysym.sym == SDLK_RIGHT)
+      keyDownIncrement();
+  }
+
+  if(event.keysym.sym == SDLK_RETURN || event.keysym.sym == SDLK_SPACE)
     keyDownSelect();
   else if(event.keysym.sym == SDLK_ESCAPE || event.keysym.sym == SDLK_BACKSPACE)
     keyDownCancel();
@@ -867,13 +1025,7 @@ void BattleMenu::setHoverTargets()
     auto hovered_actor = actorOfElementIndex(element_index);
 
     if(hovered_actor)
-    {
-      std::cout << "Setting hovered actor: "
-                << hovered_actor->getBasePerson()->getName() << std::endl;
       hovered_actor->setFlag(ActorState::MENU_HOVERED, true);
-    }
-    else
-      std::cout << "No valid hover target!" << std::endl;
   }
   else if(selected_action_scope == ActionScope::ONE_PARTY)
   {
@@ -1135,11 +1287,9 @@ void BattleMenu::keyDownSelect()
 
     menu_layer = BattleMenuLayer::ACTION_SELECTION;
     element_index = validFirst();
-    std::cout << "Element index at selection: " << element_index << std::endl;
   }
   else if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
-    std::cout << "Element index: " << element_index << std::endl;
     if(selected_action_type == ActionType::SKILL)
     {
       if((uint32_t)element_index < valid_battle_skills.size())
@@ -1164,9 +1314,12 @@ void BattleMenu::keyDownSelect()
       }
 
       menu_layer = BattleMenuLayer::TARGET_SELECTION;
-      element_index = elementIndexOfActor(getMostLeft(!isActionOffensive()));
 
-      std::cout << "Most left element index: " << element_index << std::endl;
+      if(isActionOffensive())
+        element_index = elementIndexOfActor(getMostLeft(false));
+      else
+        element_index = elementIndexOfActor(getMostRight(true));
+
       setHoverTargets();
     }
   }
