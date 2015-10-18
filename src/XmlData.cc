@@ -396,10 +396,10 @@ int XmlData::getDataInteger(bool* success)
     return int_data;
   }
 
-  /* Otherwise, return fail status */
+  /* Otherwise, return fail status and negative integer */
   if(success != 0)
     *success = false;
-  return 0;
+  return -1;
 }
 
 /* 
