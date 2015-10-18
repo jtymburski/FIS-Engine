@@ -1118,8 +1118,8 @@ void Sprite::setHead(Frame *head)
  * Inputs: uint16_t id - the new identifier
  * Output: none
  */
-void Sprite::setId(uint16_t id) 
-{ 
+void Sprite::setId(uint16_t id)
+{
   this->id = id;
 }
 

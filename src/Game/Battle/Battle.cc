@@ -1026,12 +1026,19 @@ bool Battle::renderAllies()
   bool success = true;
 
   /* Render each ally */
-  for(const auto& ally : getAllies())
+  for(auto& ally : getAllies())
   {
+    auto brightness = 0.5;
     // TODO - For now, render the active sprite
     if(ally && ally->getActiveSprite())
     {
+      if(battle_menu->getMenuLayer() == BattleMenuLayer::TARGET_SELECTION)
+      {
+        if(ally->getFlag(ActorState::MENU_HOVERED))
+          brightness = 1.0;
+      }
 
+      ally->getActiveSprite()->setBrightness(brightness);
       success &= ally->getActiveSprite()->render(renderer, getActorX(ally),
                                                  getActorY(ally));
     }

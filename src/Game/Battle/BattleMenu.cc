@@ -53,8 +53,7 @@ const uint8_t BattleMenu::kTYPE_SELECT{3};
 
 const uint16_t BattleMenu::kINFO_W{180};
 
-const std::vector<int32_t> BattleMenu::kINDEX_ORDER{-5, -4, -3, -1, -2,
-                                                    2,  1,  3,  4,  5};
+const std::vector<int32_t> BattleMenu::kINDEX_ORDER{2, 1, 3, 4, 5};
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -204,7 +203,6 @@ void BattleMenu::keyDownDecrement()
   element_index = validPrevious();
 }
 
-
 void BattleMenu::keyDownIncrement()
 {
   element_index = validNext();
@@ -318,44 +316,35 @@ BattleActor* BattleMenu::getMostLeft(bool same_party)
 {
   assert(actor);
 
-  BattleActor* most_left = nullptr;
   auto targets = getSelectableTargets();
 
   /* If the actor is an Enemy, find the most left negative index which is
    * among a valid target in the targets vector, otherwise for allies */
+    for(auto ordered : kINDEX_ORDER)
+      for(auto& target : targets)
+        if((target->getIndex() == ordered) && isActorMatch(actor, same_party))
+          return target;
 
-  // for(auto ordered : kINDEX_ORDER)
-  // {
-  //   auto ordered_actor =
-  //   for(auto target : targets)
-  //   {
-  //     if(isActorMatch(target, same_party))
-  //       most_left = target;
-  //   }
-  // }
-
-  return most_left;
+  return nullptr;
 }
 
 BattleActor* BattleMenu::getMostRight(bool same_party)
 {
   assert(actor);
 
-  BattleActor* most_right = nullptr;
-
   std::vector<int32_t> reversed = kINDEX_ORDER;
   std::reverse(begin(reversed), end(reversed));
+
   auto targets = getSelectableTargets();
 
-  // for(auto ordered : reversed)
-  // {
-  //   for(auto target : targets)
-  //     if(isActorMatch(target, same_party))
-  //       most_right = target;
-  // }
+  for(auto ordered : reversed)
+    for(auto& target : targets)
+      if((target->getIndex() == ordered) && isActorMatch(actor, same_party))
+        return target;
 
-  return most_right;
+  return nullptr;
 }
+
 
 int32_t BattleMenu::validNext()
 {
@@ -840,7 +829,6 @@ std::vector<BattleActor*> BattleMenu::getTargetsHovered()
     if(target && target->getFlag(ActorState::MENU_HOVERED))
       hovered_targets.push_back(target);
 
-
   return hovered_targets;
 }
 
@@ -1155,6 +1143,7 @@ void BattleMenu::keyDownSelect()
       menu_layer = BattleMenuLayer::TARGET_SELECTION;
 
       element_index = elementIndexOfActor(getMostLeft(!isActionOffensive()));
+      std::cout << "Most left element index: " << element_index << std::endl;
       setHoverTargets();
 
       if(selected_action_type == ActionType::SKILL)
@@ -1162,7 +1151,7 @@ void BattleMenu::keyDownSelect()
       else if(selected_action_type == ActionType::ITEM)
       {
         auto skill = selected_battle_item->item->getUseSkill();
-        selected_action_scope == skill->getScope();
+        selected_action_scope = skill->getScope();
       }
     }
   }

@@ -260,6 +260,7 @@ bool BattleActor::resetActionTypes()
 void BattleActor::updateBrightness(int32_t cycle_time)
 {
   (void)cycle_time;
+
   // auto layer_index = battle->getBattleMenu()->getLayerIndex();
   // auto person_index = battle->getIndexOfPerson(test_person);
   // auto person_state = getState(test_person);
