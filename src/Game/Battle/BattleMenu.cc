@@ -83,11 +83,9 @@ BattleMenu::BattleMenu()
 
 BattleActor* BattleMenu::actorOfElementIndex(int32_t index)
 {
-  auto selectable_targets = getSelectableTargets();
-
-  for(uint32_t i = 0; i < selectable_targets.size(); i++)
-    if(index == elementIndexOfActor(selectable_targets.at(i)))
-      return selectable_targets.at(i);
+  for(const auto& target : getSelectableTargets())
+    if(elementIndexOfActor(target) == index)
+      return target;
 
   return nullptr;
 }
@@ -116,7 +114,10 @@ bool BattleMenu::isActorMatch(BattleActor* target, bool same)
   if(target && actor)
   {
     auto user_is_ally = actor->getFlag(ActorState::ALLY);
-    auto target_is_ally = actor->getFlag(ActorState::ALLY);
+    auto target_is_ally = target->getFlag(ActorState::ALLY);
+
+    std::cout << "User is ally: " << user_is_ally << std::endl;
+    std::cout << "Target is ally: " << target_is_ally << std::endl;
 
     if(same)
       return user_is_ally == target_is_ally;
@@ -191,10 +192,15 @@ void BattleMenu::keyDownCancel()
   }
   else if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
   {
-    menu_layer = BattleMenuLayer::ACTION_SELECTION;
+
     unsetHoverTargets();
+    menu_layer = BattleMenuLayer::ACTION_SELECTION;
+
     selected_targets.clear();
     element_index = 0;
+    selected_action_scope = ActionScope::NO_SCOPE;
+    selected_battle_skill = nullptr;
+    selected_battle_item = nullptr;
   }
 }
 
@@ -264,22 +270,13 @@ std::vector<BattleActor*> BattleMenu::getSelectableTargets()
 
   if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
   {
-    if(selected_action_type == ActionType::SKILL)
-    {
-      if((uint32_t)element_index < valid_battle_skills.size())
-        if(valid_battle_skills.at(element_index))
-          selectable_targets = valid_battle_skills.at(element_index)->targets;
-    }
-    else if(selected_action_type == ActionType::ITEM)
-    {
-      if((uint32_t)element_index < valid_battle_items.size())
-        if(valid_battle_items.at(element_index))
-          selectable_targets = valid_battle_items.at(element_index)->targets;
-    }
+    if(selected_action_type == ActionType::SKILL && selected_battle_skill)
+      selectable_targets = selected_battle_skill->targets;
+    else if(selected_action_type == ActionType::ITEM && selected_battle_item)
+      selectable_targets = selected_battle_item->targets;
   }
 
-  /* Subtract the already selected targets from the selectable targets vector
-   */
+  /* Sub. the already selected targets from the selectable targets vector */
   std::sort(begin(selectable_targets), end(selectable_targets));
   std::sort(begin(selected_targets), end(selected_targets));
 
@@ -314,16 +311,27 @@ int32_t BattleMenu::getMaxIndex()
 /* kINDEX_ORDER {-5, -4, -3, -1, -2, 2, 1, 3, 4, 5} */
 BattleActor* BattleMenu::getMostLeft(bool same_party)
 {
+  std::cout << "Checking same party value: " << same_party << std::endl;
+
   assert(actor);
 
   auto targets = getSelectableTargets();
 
   /* If the actor is an Enemy, find the most left negative index which is
    * among a valid target in the targets vector, otherwise for allies */
-    for(auto ordered : kINDEX_ORDER)
-      for(auto& target : targets)
-        if((target->getIndex() == ordered) && isActorMatch(actor, same_party))
-          return target;
+  for(auto ordered : kINDEX_ORDER)
+  {
+    std::cout << "Searching ordered: " << ordered << std::endl;
+    for(auto& target : targets)
+    {
+      std::cout << "Searching target : " << target->getBasePerson()->getName()
+                << " with index: " << target->getIndex() << std::endl;
+      std::cout << "Is actor match? " << isActorMatch(target, same_party)
+                << std::endl;
+      if((target->getIndex() == ordered) && isActorMatch(target, same_party))
+        return target;
+    }
+  }
 
   return nullptr;
 }
@@ -339,12 +347,11 @@ BattleActor* BattleMenu::getMostRight(bool same_party)
 
   for(auto ordered : reversed)
     for(auto& target : targets)
-      if((target->getIndex() == ordered) && isActorMatch(actor, same_party))
+      if((target->getIndex() == ordered) && isActorMatch(target, same_party))
         return target;
 
   return nullptr;
 }
-
 
 int32_t BattleMenu::validNext()
 {
@@ -860,7 +867,13 @@ void BattleMenu::setHoverTargets()
     auto hovered_actor = actorOfElementIndex(element_index);
 
     if(hovered_actor)
+    {
+      std::cout << "Setting hovered actor: "
+                << hovered_actor->getBasePerson()->getName() << std::endl;
       hovered_actor->setFlag(ActorState::MENU_HOVERED, true);
+    }
+    else
+      std::cout << "No valid hover target!" << std::endl;
   }
   else if(selected_action_scope == ActionScope::ONE_PARTY)
   {
@@ -1126,6 +1139,7 @@ void BattleMenu::keyDownSelect()
   }
   else if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
+    std::cout << "Element index: " << element_index << std::endl;
     if(selected_action_type == ActionType::SKILL)
     {
       if((uint32_t)element_index < valid_battle_skills.size())
@@ -1140,11 +1154,6 @@ void BattleMenu::keyDownSelect()
     if(selected_action_type == ActionType::SKILL ||
        selected_action_type == ActionType::ITEM)
     {
-      menu_layer = BattleMenuLayer::TARGET_SELECTION;
-
-      element_index = elementIndexOfActor(getMostLeft(!isActionOffensive()));
-      std::cout << "Most left element index: " << element_index << std::endl;
-      setHoverTargets();
 
       if(selected_action_type == ActionType::SKILL)
         selected_action_scope = selected_battle_skill->skill->getScope();
@@ -1153,6 +1162,12 @@ void BattleMenu::keyDownSelect()
         auto skill = selected_battle_item->item->getUseSkill();
         selected_action_scope = skill->getScope();
       }
+
+      menu_layer = BattleMenuLayer::TARGET_SELECTION;
+      element_index = elementIndexOfActor(getMostLeft(!isActionOffensive()));
+
+      std::cout << "Most left element index: " << element_index << std::endl;
+      setHoverTargets();
     }
   }
   else if(menu_layer == BattleMenuLayer::TARGET_SELECTION)

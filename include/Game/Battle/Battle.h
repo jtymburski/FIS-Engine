@@ -379,8 +379,7 @@ private:
   /* Rendering updates */
   void updateRendering(int32_t cycle_time);
   void updateRenderElements(int32_t cycle_time);
-  void updateRenderEnemies(int32_t cycle_time);
-  void updateRenderAllies(int32_t cycle_time);
+  void updateRenderSprites(int32_t cycle_time);
 
   /* Returns an X-value for a given Person */
   int32_t getActorX(BattleActor* actor);

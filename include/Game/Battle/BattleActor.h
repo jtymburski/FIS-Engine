@@ -52,7 +52,7 @@ enum class ActorState
   ALLY              = 1 << 14, /* Is this actor an ally */
   SELECTION_RANDOM  = 1 << 15,
   SELECTION_SKIP    = 1 << 16,
-  MENU_HOVERED      = 1 << 18
+  MENU_HOVERED      = 1 << 17
   // clang-format on
 };
 
