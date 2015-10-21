@@ -54,6 +54,12 @@ private:
   /* Configuration pointer for the BattleMenu */
   Options* config;
 
+  /* Frames of the item description/information */
+  std::vector<Frame*> frames_item_info;
+
+  /* Frames of the item name and quantity */
+  std::vector<Frame*> frames_item_name;
+
   /* Vector of frames for skill infos */
   std::vector<Frame*> frames_skill_info;
 
@@ -103,11 +109,11 @@ private:
   const static uint16_t kALLY_HEIGHT; /* Ally display section height */
 
   const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
-  const static float kBIGBAR_L;         /* The percentage of the left section */
+  const static float kBIGBAR_L; /* The percentage of the left section */
   const static float kBIGBAR_M1; /* The percentage of the middle section */
   const static float kBIGBAR_M2; /* The percentage of the second middle */
 
-  const static uint16_t kBIGBAR_CHOOSE;   /* Additional offset for choice */
+  const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
   const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
 
   const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
@@ -117,18 +123,18 @@ private:
 
   const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
   const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
-  const static uint8_t kSKILL_DESC_GAP;   /* Gap between name and description */
+  const static uint8_t kSKILL_DESC_GAP; /* Gap between name and description */
   const static uint8_t kSKILL_DESC_LINES; /* Max number of description lines */
-  const static uint8_t kSKILL_DESC_SEP;   /* Gap between lines in description */
-  const static uint8_t kSKILL_FRAME_S;    /* Small frame size on skill info */
-  const static uint8_t kSKILL_FRAME_L;    /* Large frame size on skill info */
-  const static uint8_t kSKILL_QD_GAP;     /* Gap between top edge and QD icon */
-  const static uint8_t kSKILL_SEP;        /* Separator between image and text */
-  const static uint8_t kSKILL_SUCCESS;    /* Gap between success and cooldown */
-  const static uint8_t kSKILL_TIME_GAP;   /* Gap between cooldown and bottom */
+  const static uint8_t kSKILL_DESC_SEP; /* Gap between lines in description */
+  const static uint8_t kSKILL_FRAME_S; /* Small frame size on skill info */
+  const static uint8_t kSKILL_FRAME_L; /* Large frame size on skill info */
+  const static uint8_t kSKILL_QD_GAP; /* Gap between top edge and QD icon */
+  const static uint8_t kSKILL_SEP; /* Separator between image and text */
+  const static uint8_t kSKILL_SUCCESS; /* Gap between success and cooldown */
+  const static uint8_t kSKILL_TIME_GAP; /* Gap between cooldown and bottom */
 
   const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
-  const static uint8_t kTYPE_MAX;    /* Max number of action types to render */
+  const static uint8_t kTYPE_MAX; /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
 
   const static uint16_t kINFO_W; /* Width of enemy info bar */
@@ -136,9 +142,16 @@ private:
   const static std::vector<int32_t> kINDEX_ORDER;
   const static std::vector<int32_t> kREVERSE_ORDER;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS - OPERATION
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS - RENDERING
+ *============================================================================*/
+private:
+  void setRectBot(SDL_Rect& srect, uint32_t height);
+  void setRectTop(SDL_Rect& rect);
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS - OPERATION
+ *============================================================================*/
 private:
   /* Returns the actor of a given element index */
   BattleActor* actorOfElementIndex(int32_t index);
@@ -200,8 +213,15 @@ private:
    * PUBLIC FUNCTIONS - RENDERING
    *============================================================================*/
 private:
+  /* Clears the Item frames */
+  void clearItemFrames();
+
   /* Clears the Skill Frames */
   void clearSkillFrames();
+
+  /* Creates the Frames for a given BattleItem */
+  SDL_Texture* createItemFrame(BattleItem* battle_item, uint32_t width,
+                               uint32_t height);
 
   /* Creates a Frame for a given BattleSkill */
   SDL_Texture* createSkillFrame(BattleSkill* battle_skill, uint32_t width,
@@ -273,6 +293,9 @@ public:
    * PUBLIC FUNCTIONS - RENDERING
    *============================================================================*/
 public:
+  /* Constructs all ItemFrames for the current BattleItems */
+  bool createItemFrames(uint32_t width_left, uint32_t width_right);
+
   /* Constructs all SkillFrames for the current BattleSkills */
   bool createSkillFrames(uint32_t width_left, uint32_t width_right);
 

@@ -80,7 +80,27 @@ BattleMenu::BattleMenu()
 }
 
 /*=============================================================================
- * PRIVATE FUNCTIONS - Operation
+ * PRIVATE FUNCTIONS - RENDERING
+ *============================================================================*/
+
+void BattleMenu::setRectBot(SDL_Rect& rect, uint32_t height)
+{
+  rect.x = kSKILL_BORDER;
+  rect.h = kSKILL_FRAME_S;
+  rect.y = height - kSKILL_BORDER - rect.h;
+  rect.w = kSKILL_FRAME_L;
+}
+
+void BattleMenu::setRectTop(SDL_Rect& rect)
+{
+  rect.x = kSKILL_BORDER;
+  rect.y = kSKILL_BORDER;
+  rect.w = kSKILL_FRAME_L;
+  rect.h = kSKILL_FRAME_L;
+}
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS - OPERATION
  *============================================================================*/
 
 BattleActor* BattleMenu::actorOfElementIndex(int32_t index)
@@ -402,7 +422,7 @@ BattleActor* BattleMenu::getMostRight(bool allied_party)
 
   if(allied_party)
   {
-   //TODO - 10234
+    // TODO - 10234
   }
   else
   {
@@ -561,6 +581,26 @@ int32_t BattleMenu::validPrevious()
  * PRIVATE FUNCTIONS - Display
  *============================================================================*/
 
+void BattleMenu::clearItemFrames()
+{
+  for(auto& item_frame : frames_item_info)
+  {
+    if(item_frame)
+      delete item_frame;
+    item_frame = nullptr;
+  }
+
+  for(auto& name_frame : frames_item_name)
+  {
+    if(name_frame)
+      delete name_frame;
+    name_frame = nullptr;
+  }
+
+  frames_item_info.clear();
+  frames_item_name.clear();
+}
+
 void BattleMenu::clearSkillFrames()
 {
   for(auto& skill_frame : frames_skill_info)
@@ -579,6 +619,13 @@ void BattleMenu::clearSkillFrames()
 
   frames_skill_info.clear();
   frames_skill_name.clear();
+}
+
+SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
+                                         uint32_t width, uint32_t height)
+{
+
+  return nullptr;
 }
 
 // TODO - seg fault
@@ -619,25 +666,20 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   /* Render the skill box */
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   SDL_Rect rect_top;
-  rect_top.x = kSKILL_BORDER;
-  rect_top.y = kSKILL_BORDER;
-  rect_top.w = kSKILL_FRAME_L;
-  rect_top.h = kSKILL_FRAME_L;
-  if(skill->getThumbnail() != nullptr)
+  setRectTop(rect_top);
+  if(skill->getThumbnail())
     skill->getThumbnail()->render(renderer, rect_top.x, rect_top.y);
+
   Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the action scope */
   auto scope_frame = battle_display_data->getFrameScope(skill->getScope());
 
   SDL_Rect rect_bot;
-  rect_bot.x = kSKILL_BORDER;
-  rect_bot.h = kSKILL_FRAME_S;
-  rect_bot.y = height - kSKILL_BORDER - rect_bot.h;
-  rect_bot.w = kSKILL_FRAME_L;
+  setRectBot(rect_bot, height);
+
   if(scope_frame)
     scope_frame->render(renderer, rect_bot.x, rect_bot.y);
-  // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the primary element */
   auto primary_frame =
@@ -647,17 +689,14 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   rect_bot.w = kSKILL_FRAME_S;
   if(primary_frame)
     primary_frame->render(renderer, rect_bot.x, rect_bot.y);
-  // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the secondary element */
   auto secondary_frame =
       battle_display_data->getFrameElement(skill->getSecondary());
   rect_bot.x += rect_bot.w + kSKILL_BORDER;
-  if(secondary_frame != nullptr)
-  {
+
+  if(secondary_frame)
     secondary_frame->render(renderer, rect_bot.x, rect_bot.y);
-    // Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
-  }
 
   /* Render the cost */
   uint16_t qd_x = width - kSKILL_BORDER - frame_qd->getWidth();
@@ -668,7 +707,6 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   t1.render(renderer, qd_x, qd_y - 1);
 
   /* Render the name */
-
   uint16_t text_x = rect_top.x + rect_top.w + kSKILL_BORDER;
   uint16_t text_y = qd_y - 1;
   t2.render(renderer, text_x, text_y);
@@ -1108,6 +1146,11 @@ void BattleMenu::setWindowStatus(WindowStatus status_window)
 /*=============================================================================
  * PUBLIC FUNCTIONS - RENDERING
  *============================================================================*/
+
+bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
+{
+  return true;
+}
 
 // TODO: Colours/grayness for various BattleSkill validness? For items too
 bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
