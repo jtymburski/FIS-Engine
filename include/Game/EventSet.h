@@ -36,6 +36,41 @@ enum class EventClassifier
 };
 
 /*
+ * Description: The locked state - properties in how to unlock
+ */
+enum class LockedState
+{
+  NONE = 0,
+  TRIGGER = 1,
+  ITEM = 2
+};
+
+/*
+ * Description: The state of the set of unlocked events.
+ */
+enum class UnlockedState
+{
+  NONE = 0,
+  ORDERED = 1,
+  RANDOM = 2
+};
+
+/*
+ * Description: Locked struct with properties related to locked events or
+ *              triggers.
+ */
+struct Locked
+{
+  LockedState state;
+
+  bool is_locked;
+  bool permanent;
+
+  std::vector<bool> bools;
+  std::vector<int> ints;
+};
+
+/*
  * Description: Event structure, to hold all pertinent event information
  */
 struct Event
@@ -45,6 +80,9 @@ struct Event
   std::vector<int> ints;
   int32_t sound_id;
   std::vector<std::string> strings;
+
+  bool one_shot;
+  bool has_exec;
 };
 
 /*
@@ -78,6 +116,11 @@ public:
   const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
   const static uint8_t kTELEPORT_X; /* Teleport thing X index */
   const static uint8_t kTELEPORT_Y; /* Teleport thing Y index */
+  /* ---- */
+  const static uint8_t kHAVE_ITEM_CONSUME; /* Have item consume index */
+  const static uint8_t kHAVE_ITEM_COUNT; /* Have item count index */
+  const static uint8_t kHAVE_ITEM_ID; /* Have item ID index */
+  /* ---- */
   const static int32_t kUNSET_ID; /* The unset ID - for sound ref */
 
 private:
@@ -85,31 +128,62 @@ private:
   Event events_locked;
   std::vector<Event> events_unlocked;
 
+  /* Get index - randomly set on getEvent() call */
+  int get_index;
+
+  /* Locked status struct */
+  Locked locked_status;
+
+  /* State of unlocked events */
+  UnlockedState unlocked_state;
+
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
   /* Returns the conversation at the given index */
-  Conversation* getConversation(Conversation* reference,
-                                std::vector<std::string> index_list);
-
-  /* Sets the conversation values of the pointed object, based on the XML
-   * file data */
-  void setConversationValues(Conversation* reference, XmlData data,
-                             int index, int section_index);
+  //Conversation* getConversation(Conversation* reference,
+  //                              std::vector<std::string> index_list);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Add calls, for lists */
+  void addEventUnlocked(Event new_event);
+
   /* Clears all event data within the class */
   void clear();
 
   /* Returns the event when accessed - depending on locked unlocked status */
-  Event* getEvent();
+  Event getEvent(bool trigger = true);
+
+  /* Individual getters for events */
+  Event getEventLocked();
+  std::vector<Event> getEventUnlocked();
+  Event getEventUnlocked(int index);
+
+  /* Returns the locked state struct */
+  Locked getLockedState();
+
+  /* Returns if the class is currently locked */
+  bool isLocked();
 
   /* Load data from file */
   bool loadData(XmlData data, int file_index, int section_index);
+
+  /* Individual setters for events */
+  void setEventLocked(Event new_event);
+  void setEventUnlocked(int index, Event new_event, bool replace = false);
+
+  /* Sets the locked status */
+  void setLocked(Locked new_locked);
+
+  /* Unset calls */
+  void unsetEventLocked();
+  void unsetEventUnlocked(int index);
+  void unsetEventUnlocked();
+  void unsetLocked();
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
@@ -124,38 +198,69 @@ public:
   /* Create blank event */
   static Event createBlankEvent();
 
+  /* Creates a blank locked struct */
+  static Locked createBlankLocked();
+
   /* Creates the conversation initiation event */
-  static Event createConversationEvent(Conversation* new_conversation = NULL,
+  static Event createEventConversation(Conversation* new_conversation = NULL,
                                        int sound_id = kUNSET_ID);
 
   /* Creates a give item event, with the appropriate parameters */
-  static Event createGiveItemEvent(int id = 0, int count = 0, 
+  static Event createEventGiveItem(int id = 0, int count = 0,
                                    int sound_id = kUNSET_ID);
 
   /* Creates a notification event, that can fire and result in visible text */
-  static Event createNotificationEvent(std::string notification = "",
+  static Event createEventNotification(std::string notification = "",
                                        int sound_id = kUNSET_ID);
 
   /* Creates a sound event */
-  static Event createSoundEvent(int sound_id = kUNSET_ID);
+  static Event createEventSound(int sound_id = kUNSET_ID);
 
   /* Creates a start battle event */
-  static Event createStartBattleEvent(int sound_id = kUNSET_ID);
+  static Event createEventStartBattle(int sound_id = kUNSET_ID);
 
   /* Create a start map event */
-  static Event createStartMapEvent(int id = 0, int sound_id = kUNSET_ID);
+  static Event createEventStartMap(int id = 0, int sound_id = kUNSET_ID);
 
   /* Creates a teleport event */
-  static Event createTeleportEvent(int thing_id = 0, uint16_t tile_x = 0,
+  static Event createEventTeleport(int thing_id = 0, uint16_t tile_x = 0,
                                    uint16_t tile_y = 0, uint16_t section_id = 0,
                                    int sound_id = kUNSET_ID);
+
+  /* Creates a have item check based lock */
+  static Locked createLockHaveItem(int id, int count = 1, bool consume = true,
+                                   bool permanent = true);
+
+  /* Created a trigger based lock */
+  static Locked createLockTriggered(bool permanent = true);
 
   /* Deletes the given event. Just clears the relevant memory */
   static Event deleteEvent(Event event);
 
+  /* Returns the conversation at the given index */
+  static Conversation* getConversation(Conversation* reference,
+                                       std::vector<std::string> index_list);
+
+  /* Unlocks the locked state, if the conditions are met */
+  static Locked unlockItem(Locked locked_state, int id, int count,
+                           bool &consume);
+  static Locked unlockTrigger(Locked locked_state);
+
+  /* Updates the conversation values of the pointed object, based on the XML
+   * file data */
+  static void updateConversation(Conversation* reference, XmlData data,
+                                 int index, int section_index);
+
   /* Updates the event from the data in the file */
   static Event updateEvent(Event event, XmlData data, int file_index,
                            int section_index);
+
+  /* Updates the event with one shot information */
+  static Event updateEventOneShot(Event event, bool one_shot);
+
+  /* Update the locked struct from the data in the file */
+  static Locked updateLocked(Locked locked_curr, XmlData data, int file_index,
+                             int section_index);
 };
 
 #endif // EVENTSET_H
