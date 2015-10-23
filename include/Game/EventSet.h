@@ -12,6 +12,7 @@
 /* Pre-declarations */
 struct Conversation;
 
+/* Includes */
 #include <string>
 #include <vector>
 
@@ -121,11 +122,11 @@ public:
   const static uint8_t kHAVE_ITEM_COUNT; /* Have item count index */
   const static uint8_t kHAVE_ITEM_ID; /* Have item ID index */
   /* ---- */
-  const static int32_t kUNSET_ID; /* The unset ID - for sound ref */
+  const static int32_t kUNSET_ID; /* The unset ID - for all IDs */
 
 private:
   /* Event sets */
-  Event events_locked;
+  Event event_locked;
   std::vector<Event> events_unlocked;
 
   /* Get index - randomly set on getEvent() call */
@@ -141,9 +142,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
-  /* Returns the conversation at the given index */
-  //Conversation* getConversation(Conversation* reference,
-  //                              std::vector<std::string> index_list);
+  /* Gets an event reference from the unlocked status. Will create if not
+   * there, if the variable has been set */
+  Event* getUnlockedRef(int index, bool create = true);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -166,6 +167,9 @@ public:
   /* Returns the locked state struct */
   Locked getLockedState();
 
+  /* Returns the unlocked state enum */
+  UnlockedState getUnlockedState();
+
   /* Returns if the class is currently locked */
   bool isLocked();
 
@@ -174,10 +178,13 @@ public:
 
   /* Individual setters for events */
   void setEventLocked(Event new_event);
-  void setEventUnlocked(int index, Event new_event, bool replace = false);
+  bool setEventUnlocked(int index, Event new_event, bool replace = false);
 
   /* Sets the locked status */
   void setLocked(Locked new_locked);
+
+  /* Sets the unlocked state */
+  void setUnlockedState(UnlockedState state);
 
   /* Unset calls */
   void unsetEventLocked();
@@ -228,8 +235,8 @@ public:
                                    int sound_id = kUNSET_ID);
 
   /* Creates a have item check based lock */
-  static Locked createLockHaveItem(int id, int count = 1, bool consume = true,
-                                   bool permanent = true);
+  static Locked createLockHaveItem(int id = -1, int count = 1, 
+                                   bool consume = true, bool permanent = true);
 
   /* Created a trigger based lock */
   static Locked createLockTriggered(bool permanent = true);
@@ -246,6 +253,9 @@ public:
                            bool &consume);
   static Locked unlockTrigger(Locked locked_state);
 
+  /* Unlock state used of locked state - will re-lock if not permanent */
+  static Locked unlockUsed(Locked locked_state);
+
   /* Updates the conversation values of the pointed object, based on the XML
    * file data */
   static void updateConversation(Conversation* reference, XmlData data,
@@ -259,8 +269,7 @@ public:
   static Event updateEventOneShot(Event event, bool one_shot);
 
   /* Update the locked struct from the data in the file */
-  static Locked updateLocked(Locked locked_curr, XmlData data, int file_index,
-                             int section_index);
+  static Locked updateLocked(Locked locked_curr, XmlData data, int file_index);
 };
 
 #endif // EVENTSET_H

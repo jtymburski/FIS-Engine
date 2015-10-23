@@ -60,6 +60,7 @@ SOURCES=src/Application.cc \
         src/TitleScreen.cc \
         src/XmlData.cc \
         src/Game/EventHandler.cc \
+				src/Game/EventSet.cc \
         src/Game/KeyHandler.cc \
         src/Game/Game.cc \
         src/Game/Battle/AIModule.cc \
