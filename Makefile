@@ -66,6 +66,8 @@ SOURCES=src/Application.cc \
         src/Game/Battle/AIModule.cc \
         src/Game/Battle/Battle.cc \
         src/Game/Battle/BattleActor.cc \
+        src/Game/Battle/BattleItem.cc \
+        src/Game/Battle/BattleSkill.cc \
         src/Game/Battle/BattleStats.cc \
         src/Game/Battle/BattleDisplayData.cc \
         src/Game/Battle/BattleMenu.cc \

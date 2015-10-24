@@ -615,6 +615,15 @@ enum class TurnState
   STOPPED /* Battle should be stopped */
 };
 
+enum class ValidStatus
+{
+  VALID,
+  NOT_AFFORDABLE,
+  SILENCED,
+  NO_TARGETS,
+  INVALID
+};
+
 /* The window display classifier to define how it's displayed:
  *  OFF - not showing
  *  SHOWING - rising from the bottom

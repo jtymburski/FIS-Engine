@@ -419,9 +419,7 @@ bool Battle::doesActorNeedToSelect(BattleActor* actor)
   bool to_select = (actor != nullptr);
 
   if(to_select)
-  {
     to_select &= (actor->getSelectionState() == SelectionState::NOT_SELECTED);
-  }
 
   return to_select;
 }
@@ -470,10 +468,68 @@ bool Battle::loadMenuForActor(BattleActor* actor)
   return success;
 }
 
+void Battle::updateEnemySelection()
+{
+  // auto module_actor = getCurrentModuleActor();
+
+  // if(module_actor)
+  // {
+  // }
+  // else
+  // {
+  //   auto next_actor = getNextModuleActor();
+
+  //   if(next_actor && next_actor->getBasePerson())
+  //   {
+  //     auto base_person = next_actor->getBasePerson();
+  //     auto curr_module = base_person->getAI();
+
+  //     if(curr_module)
+  //     {
+  //       base_person->resetAI();
+  //       // curr_module->setFriendTargets(getAllies());
+  //       // curr_module->setFoeTargets(getEnemies());
+  //     }
+
+  //    }
+  // }
+}
+
+//   /* If the current module selection is complete, attempt to add it into
+//   the
+//    * buffer. bufferEnemyAction() will update the person index if needed */
+//   if(curr_module == nullptr)
+//   {
+//     if(!testPersonIndex(person_index))
+//       setNextPersonIndex();
+
+//     update_module = true;
+//   }
+//   else if(curr_module->getFlag(AIState::SELECTION_COMPLETE))
+//   {
+//     update_module = bufferEnemyAction();
+//   }
+
+//     auto items = friends->getInventory()->getBattleItems();
+//     curr_module->setItems(buildBattleItems(person_index, items));
+
+//     auto skills = curr_user->getUseableSkills();
+//     auto battle_skills = buildBattleSkills(person_index, skills);
+
+//     if(hasInfliction(Infliction::BUBBIFY, curr_user))
+//       battle_skills = buildBattleSkills(person_index, bubbified_skills);
+
+//     curr_module->setSkills(battle_skills);
+//     curr_module->calculateAction();
+//   }
+//   else
+//   {
+//     /* Mark the enemy selection phase as complete on the max index */
+//     setBattleFlag(CombatState::PHASE_DONE);
+//   }
+
 void Battle::updateUserSelection()
 {
-  assert(battle_menu);
-
   auto menu_actor = battle_menu->getActor();
 
   /* If menu has a valid actor, update their selection */
@@ -510,18 +566,14 @@ void Battle::updateUserSelection()
   /* If the menu does not have a valid actor, load their data in */
   else
   {
-    std::cout << "Loading the menu for the actor!" << std::endl;
-    auto first_actor = getNextMenuActor();
-
     /* If there exists a menu actor requiring selection, load menu, else ->
-     * go to the next phase of battle (enemy selection / outcome phases) */
-    if(first_actor)
-      loadMenuForActor(first_actor);
+     * go to the next phase of battle (enemy selection / outcome phases */
+    auto next_actor = getNextMenuActor();
+
+    if(next_actor)
+      loadMenuForActor(next_actor);
     else
-    {
-      std::cout << "Last user selected!" << std::endl;
       setFlagCombat(CombatState::PHASE_DONE);
-    }
   }
 }
 
@@ -533,6 +585,24 @@ int32_t Battle::getBattleIndex(int32_t index)
     return 1;
 
   return index;
+}
+
+BattleActor* Battle::getCurrentModuleActor()
+{
+  for(const auto& enemy : getEnemies())
+    if(enemy && enemy->getSelectionState() == SelectionState::SELECTING)
+      return enemy;
+
+    return nullptr;
+}
+
+BattleActor* Battle::getNextModuleActor()
+{
+  for(const auto& enemy : getEnemies())
+    if(doesActorNeedToSelect(enemy))
+      return enemy;
+
+  return nullptr;
 }
 
 BattleActor* Battle::getNextMenuActor()
@@ -962,7 +1032,8 @@ bool Battle::render()
     //                                       element->calcColorGreen(),
     //                                       element->calcColorBlue());
 
-    //         death_sprite->render(renderer, element->getX(), element->getY());
+    //         death_sprite->render(renderer, element->getX(),
+    //         element->getY());
     //       }
     //     }
     //   }
@@ -1022,7 +1093,8 @@ bool Battle::render()
   //           t.setText(renderer, element->getText(),
   //           element->getShadowColor());
   //           t.setAlpha(element->getAlpha());
-  //           t.render(renderer, element->getShadowX(), element->getShadowY());
+  //           t.render(renderer, element->getShadowX(),
+  //           element->getShadowY());
   //         }
   //       }
   //     }
@@ -1655,9 +1727,23 @@ bool Battle::renderAlliesInfo()
 //   }
 // }
 
+void Battle::updateBarOffset()
+{
+  if(turn_state == TurnState::SELECT_ACTION_ALLY)
+  {
+    if(battle_menu->getMenuLayer() == BattleMenuLayer::TARGET_SELECTION)
+      bar_offset = 0;
+    else
+      bar_offset = kBIGBAR_CHOOSE;
+  }
+  else
+    bar_offset = 0;
+}
+
 void Battle::updateRendering(int32_t cycle_time)
 {
   updateRenderSprites(cycle_time);
+  updateBarOffset();
 }
 
 void Battle::updateRenderSprites(int32_t cycle_time)
@@ -5605,145 +5691,6 @@ bool Battle::setBackground(Sprite* background)
 // }
 
 // /*
-//  * Description: Sets up enemy AI Modules for a new person index to call
-//  *              bufferEnemyAction() to actually grab the data.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::selectEnemyActions()
-// {
-//   auto update_module = false;
-
-//   /* If the current module selection is complete, attempt to add it into
-//   the
-//    * buffer. bufferEnemyAction() will update the person index if needed */
-//   if(curr_module == nullptr)
-//   {
-//     if(!testPersonIndex(person_index))
-//       setNextPersonIndex();
-
-//     update_module = true;
-//   }
-//   else if(curr_module->getFlag(AIState::SELECTION_COMPLETE))
-//   {
-//     update_module = bufferEnemyAction();
-//   }
-
-//   /* Assert the person index exists in the Foes scope (-5 to -1) */
-//   if(update_module)
-//   {
-//     curr_user = getPerson(person_index);
-//     curr_module = curr_user->getAI();
-
-//     /* Reset the AI Module for a new turn decision, assign data */
-//     curr_user->resetAI();
-
-//     auto allies = getPersonsFromIndexes(getFriendsTargets());
-//     auto foes = getPersonsFromIndexes(getFoesTargets());
-
-//     curr_module->setFriendTargets(allies);
-//     curr_module->setFoeTargets(foes);
-
-//     auto items = friends->getInventory()->getBattleItems();
-//     curr_module->setItems(buildBattleItems(person_index, items));
-
-//     auto skills = curr_user->getUseableSkills();
-//     auto battle_skills = buildBattleSkills(person_index, skills);
-
-//     if(hasInfliction(Infliction::BUBBIFY, curr_user))
-//       battle_skills = buildBattleSkills(person_index, bubbified_skills);
-
-//     curr_module->setSkills(battle_skills);
-//     curr_module->calculateAction();
-//   }
-//   else
-//   {
-//     /* Mark the enemy selection phase as complete on the max index */
-//     setBattleFlag(CombatState::PHASE_DONE);
-//   }
-// }
-
-// /*
-//  * Description: Iterates through the person indexes for users to call
-//  *              bufferUserActions() for each index to actually get data.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::selectUserActions()
-// {
-//   auto update_menu = false;
-
-//   /* If an action has been selected for a valid person index, grab the
-//   info.
-//       and load it into the buffer */
-//   if(person_index == 1)
-//   {
-//     if(!testPersonIndex(person_index))
-//       setNextPersonIndex();
-
-//     update_menu = true;
-//   }
-//   if(person_index > 0 && menu->getMenuFlag(MenuState::SELECTION_VERIFIED))
-//   {
-//     update_menu = bufferUserAction();
-//   }
-
-//   /* If a menu action has been selected, update to the next person index.
-//   If
-//      the index is at the highest level, set the select user action phase
-//      done
-//      */
-//   if(update_menu)
-//   {
-//     curr_user = getPerson(person_index);
-
-//     if(curr_user != nullptr)
-//     {
-//       /* Update the curr person as selecting, remove all others as
-//       selecting
-//       */
-//       unsetActorsSelecting();
-//       curr_user->setBFlag(BState::IS_SELECTING, true);
-
-//       /* Construct useable battle skills or useable battle item structures
-//       */
-//       auto skills = curr_user->getUseableSkills();
-//       auto items = friends->getInventory()->getBattleItems();
-
-//       auto battle_skills = buildBattleSkills(person_index, skills);
-
-//       if(hasInfliction(Infliction::BUBBIFY, curr_user))
-//         battle_skills = buildBattleSkills(person_index, bubbified_skills);
-
-//       auto battle_items = buildBattleItems(person_index, items);
-
-//       /* Reload the menu information for the next person */
-//       menu->reset(curr_user, person_index);
-//       menu->setNumAllies(friends->getLivingMembers().size());
-//       menu->setSelectableSkills(battle_skills);
-//       menu->setSelectableItems(battle_items);
-
-// #ifdef UDEBUG
-//       if(hasInfliction(Infliction::CONFUSE, curr_user))
-//         menu->printMenuState();
-// #endif
-//     }
-//     else
-//     {
-//       std::cerr << "[Error]: Selection action for invalid person\n";
-//     }
-//   }
-//   else
-//   {
-//     /* Set the phase complete on the max person index */
-//     unsetActorsSelecting();
-//     setBattleFlag(CombatState::PHASE_DONE);
-//   }
-// }
-
-// /*
 //  * Description: Upkeep function which calls each personal upkeep for each
 //  *              member in both friends and foes party.
 //  *
@@ -6528,27 +6475,30 @@ bool Battle::update(int32_t cycle_time)
 
   updateRendering(cycle_time);
 
-  if(turn_state == TurnState::SELECT_ACTION_ALLY)
-  {
-    if(battle_menu->getMenuLayer() == BattleMenuLayer::TARGET_SELECTION)
-      bar_offset = 0;
-    else
-      bar_offset = kBIGBAR_CHOOSE;
-  }
-  else
-    bar_offset = 0;
-
   // std::cout << "Current Battle State:: " <<
   // Helpers::turnStateToStr(turn_state);
 
-  if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY && turn_state != TurnState::SELECT_ACTION_ENEMY)
+  // TODO: REMOVE THIS
+  if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY &&
+     turn_state != TurnState::SELECT_ACTION_ENEMY)
     setFlagCombat(CombatState::PHASE_DONE);
 
   if(getFlagCombat(CombatState::PHASE_DONE))
     setNextTurnState();
 
+  /* ----------------------- SELECT ACTION ALLY -----------------------------
+   */
+
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     updateUserSelection();
+
+  /* ----------------------- SELECT ACTION ENEMY ----------------------------
+   */
+
+  else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
+    updateEnemySelection();
+
+  /* ----------------------- PROCESS ACTIONS ---------------------------- */
 
   //   if(getBattleFlag(CombatState::PHASE_DONE) &&
   //      !getBattleFlag(CombatState::OUTCOME_PROCESSED))
@@ -6596,19 +6546,6 @@ bool Battle::update(int32_t cycle_time)
 //     }
 //   }
 
-//   /* During menu, if an action type has been chosen, inject valid targets for
-//    * the scope of the particular action type [if required] */
-//   else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-//   {
-//     if(menu != nullptr)
-//       menu->setWindowStatus(WindowStatus::ON);
-
-//     updateAllySelection();
-//   }
-//   else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-//   {
-//     updateEnemySelection();
-//   }
 //   else if(turn_state == TurnState::PROCESS_ACTIONS)
 //   {
 //     menu->setWindowStatus(WindowStatus::OFF);

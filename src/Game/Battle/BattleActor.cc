@@ -12,6 +12,7 @@
 * See .h file for TODOs
 ******************************************************************************/
 #include "Game/Player/Ailment.h"
+#include "Game/Player/Person.h"
 #include "Game/Battle/BattleActor.h"
 #include "Game/Battle/BattleStats.h"
 

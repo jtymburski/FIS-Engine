@@ -24,7 +24,12 @@
 
 /* Ailment <-- --> Battle Actor communication */
 class Ailment;
+class Person;
+class BattleSkill;
+class BattleItem;
 
+#include "Game/Battle/BattleSkill.h"
+#include "Game/Battle/BattleItem.h"
 #include "Game/Battle/BattleStats.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Person.h"
@@ -109,57 +114,6 @@ enum class UpkeepState
   UPKEEP_AILMENT_BEGIN,
   UPKEEP_AILMENT_FINISH,
   COMPLETE
-};
-
-enum class ValidStatus
-{
-  VALID,
-  NOT_AFFORDABLE,
-  SILENCED,
-  NO_TARGETS,
-  INVALID
-};
-
-/* Structure representing a skill and its possible targets for targ. selec. */
-struct BattleSkill
-{
-  /* Construct a BattleSkill object */
-  BattleSkill() : valid_status{ValidStatus::INVALID}, skill{nullptr}
-  {
-  }
-
-  /* The validity of this BattleSkill choice */
-  ValidStatus valid_status;
-
-  /* The pointer to the skill for this BattleSkill*/
-  Skill* skill;
-
-  /* The true cost of the BattleSkill */
-  uint32_t true_cost;
-
-  /* The valid targets for the Battle Skill */
-  std::vector<BattleActor*> targets;
-};
-
-/* Structure representing an item and its amt and possible targets */
-struct BattleItem
-{
-  /* Construct a BattleItem object */
-  BattleItem() : valid_status{ValidStatus::INVALID}, item{nullptr}, amount{0}
-  {
-  }
-
-  /* The validity of this BattleItem choice */
-  ValidStatus valid_status;
-
-  /* Pointer to the item which would be chosen */
-  Item* item;
-
-  /* The # of items of this type available */
-  uint32_t amount;
-
-  /* The valid targets for the valid item */
-  std::vector<BattleActor*> targets;
 };
 
 class BattleActor

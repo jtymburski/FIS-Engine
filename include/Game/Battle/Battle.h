@@ -334,11 +334,20 @@ private:
   /* Loads the menu for a given battle actor */
   bool loadMenuForActor(BattleActor* actor);
 
+  /* Update the selection of the enemies */
+  void updateEnemySelection();
+
   /* Updates the selection of the user */
   void updateUserSelection();
 
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);
+
+  /* Obtain pointer to currently selecting module actor */
+  BattleActor* getCurrentModuleActor();
+
+  /* Obtain pointer to next selecting module actor */
+  BattleActor* getNextModuleActor();
 
   /* Returns a pointer to the next actor needing to select for the menu */
   BattleActor* getNextMenuActor();
@@ -383,6 +392,7 @@ private:
   bool setupHealthDraw(BattleActor* actor, float health_pc);
 
   /* Rendering updates */
+  void updateBarOffset();
   void updateRendering(int32_t cycle_time);
   void updateRenderElements(int32_t cycle_time);
   void updateRenderSprites(int32_t cycle_time);
