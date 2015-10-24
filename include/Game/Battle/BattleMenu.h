@@ -256,6 +256,15 @@ public:
   /* Current enumerated menu layer */
   BattleMenuLayer getMenuLayer();
 
+  /* Ptr to selected BattleSkill */
+  BattleSkill* getSelectedBattleSkill();
+
+  /* Ptr to selected battle item */
+  BattleItem* getSelectedBattleItem();
+
+  /* Returns the type of action selected */
+  ActionType getSelectedType();
+
   /* Returns a vector of returning hovered/selected targets */
   std::vector<BattleActor*> getTargetsHovered();
   std::vector<BattleActor*> getTargetsSelected();

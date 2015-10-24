@@ -1022,6 +1022,21 @@ BattleMenuLayer BattleMenu::getMenuLayer()
   return menu_layer;
 }
 
+BattleSkill* BattleMenu::getSelectedBattleSkill()
+{
+  return selected_battle_skill;
+}
+
+BattleItem* BattleMenu::getSelectedBattleItem()
+{
+  return selected_battle_item;
+}
+
+ActionType BattleMenu::getSelectedType()
+{
+  return selected_action_type;
+}
+
 std::vector<BattleActor*> BattleMenu::getTargetsHovered()
 {
   std::vector<BattleActor*> hovered_targets;
@@ -1034,6 +1049,7 @@ std::vector<BattleActor*> BattleMenu::getTargetsHovered()
 
   return hovered_targets;
 }
+
 
 void BattleMenu::unsetHoverTargets()
 {

@@ -278,6 +278,103 @@ Battle::~Battle()
  * PRIVATE FUNCTIONS - Battle Operations
  *============================================================================*/
 
+bool Battle::bufferMenuSelection()
+{
+  std::cout << "Buffering menu selection!" << std::endl;
+
+  auto success = true;
+  auto actor = battle_menu->getActor();
+  auto action_type = battle_menu->getSelectedType();
+  auto targets = battle_menu->getTargetsSelected();
+
+  success &= (actor != nullptr);
+
+  if(success && action_type == ActionType::SKILL)
+  {
+    auto battle_skill = battle_menu->getSelectedBattleSkill();
+
+    success &= (battle_skill && battle_skill->skill);
+
+    if(success)
+    {
+      auto skill = battle_skill->skill;
+      auto cooldown = skill->getCooldown();
+
+      battle_buffer->addSkill(actor, skill, targets, cooldown, turns_elapsed);
+    }
+  }
+
+  return success;
+}
+
+//   curr_user = getPerson(person_index);
+//   auto is_confused = hasInfliction(Infliction::CONFUSE, curr_user);
+
+//   if(is_confused)
+//     action_targets = menu->getRandomTargets();
+
+//   /* Build the vector Person ptrs from the target index vector */
+//   std::vector<Person*> person_targets;
+
+//   for(auto it = begin(action_targets); it != end(action_targets); ++it)
+//     person_targets.push_back(getPerson(*it));
+
+//   /* Push the actions on to the Buffer */
+
+//   else if(action_type == ActionType::ITEM)
+//   {
+//     curr_item = menu->getSelectedItem();
+//     buffered = action_buffer->add(curr_user, curr_item, person_targets, 0,
+//                                   turns_elapsed);
+
+//     if(buffered)
+//     {
+// #ifdef UDEBUG
+//       std::cout << "{USING ITEM} " << curr_item->getName() << " from "
+//                 << "inventory and adding to buffer." << std::endl;
+// #endif
+
+//       friends->getInventory()->removeItemID(curr_item->getGameID());
+
+//       auto items = friends->getInventory()->getBattleItems();
+//       menu->setSelectableItems(buildBattleItems(person_index, items));
+//     }
+//   }
+//   else if(action_type == ActionType::DEFEND ||
+//           action_type == ActionType::GUARD ||
+//           action_type == ActionType::IMPLODE ||
+//           action_type == ActionType::RUN || action_type ==
+//           ActionType::PASS)
+//   {
+//     buffered = action_buffer->add(curr_user, action_type, person_targets,
+//     0,
+//                                   turns_elapsed);
+//   }
+//   else
+//   {
+//     std::cerr << "[Error]: Invalid action selected\n";
+//   }
+
+//   if(buffered)
+//   {
+//     if(curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
+//       curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
+//     else if(curr_user->getBFlag(BState::SELECTED_ACTION))
+//       curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
+//     else
+//       curr_user->setBFlag(BState::SELECTED_ACTION);
+
+//     if(canIncrementIndex(curr_user))
+//       return setNextPersonIndex();
+//   }
+//   else
+//   {
+//     std::cerr << "[Error]: Action buffer addition failure!" << std::endl;
+//   }
+
+//   return false;
+// }
+
 /*
  * Description:
  *
@@ -377,18 +474,54 @@ void Battle::updateUserSelection()
 {
   assert(battle_menu);
 
+  auto menu_actor = battle_menu->getActor();
+
   /* If menu has a valid actor, update their selection */
-  if(battle_menu->getActor())
+  if(menu_actor)
   {
+    auto state = menu_actor->getSelectionState();
+
+    if(battle_menu->getFlag(BattleMenuState::SELECTION_COMPLETE))
+    {
+      if(state == SelectionState::SELECTING)
+        menu_actor->setSelectionState(SelectionState::SELECTED_ACTION);
+      else if(state == SelectionState::SELECTING_2ND_ACTION)
+        menu_actor->setSelectionState(SelectionState::SELECTED_2ND_ACTION);
+      else if(state == SelectionState::SELECTING_3RD_ACTION)
+        menu_actor->setSelectionState(SelectionState::SELECTED_3RD_ACTION);
+
+      /* Add the current menu selection to the buffer */
+      assert(bufferMenuSelection());
+
+      /* Clear the menu for a new turn */
+      battle_menu->clear();
+    }
+    else
+    {
+      if(state == SelectionState::SELECTED_ACTION)
+        menu_actor->setSelectionState(SelectionState::SELECTING_2ND_ACTION);
+      else if(state == SelectionState::SELECTED_2ND_ACTION)
+        menu_actor->setSelectionState(SelectionState::SELECTING_3RD_ACTION);
+      else
+        menu_actor->setSelectionState(SelectionState::SELECTING);
+    }
   }
+
   /* If the menu does not have a valid actor, load their data in */
   else
   {
     std::cout << "Loading the menu for the actor!" << std::endl;
     auto first_actor = getNextMenuActor();
 
+    /* If there exists a menu actor requiring selection, load menu, else ->
+     * go to the next phase of battle (enemy selection / outcome phases) */
     if(first_actor)
       loadMenuForActor(first_actor);
+    else
+    {
+      std::cout << "Last user selected!" << std::endl;
+      setFlagCombat(CombatState::PHASE_DONE);
+    }
   }
 }
 
@@ -844,6 +977,8 @@ bool Battle::render()
     auto curr_layer = battle_menu->getMenuLayer();
     to_render_menu &= !getFlagCombat(CombatState::PHASE_DONE);
     to_render_menu &= !(curr_layer == BattleMenuLayer::TARGET_SELECTION);
+    // to_render_menu &=
+    //     !(battle_menu->getFlag(BattleMenuState::SELECTION_COMPLETE));
 
     if(to_render_menu)
     {
@@ -854,7 +989,8 @@ bool Battle::render()
       }
 
       /* Render the selecting person info */
-      success &= renderAllyInfo(battle_menu->getActor(), true);
+      if(battle_menu->getActor())
+        success &= renderAllyInfo(battle_menu->getActor(), true);
 
       /* Render the menu */
       success &= battle_menu->render();
@@ -2683,101 +2819,6 @@ bool Battle::setBackground(Sprite* background)
 //       curr_user->setBFlag(BState::SELECTED_ACTION);
 
 //     /* Find out whether to increment the processing person index */
-//     if(canIncrementIndex(curr_user))
-//       return setNextPersonIndex();
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Action buffer addition failure!" << std::endl;
-//   }
-
-//   return false;
-// }
-
-// /*
-//  * Description: This function is similar to bufferEnemyAction, but uses the
-//  *              BattleMenu class to determine a selected action instead of
-//  *              an AI Module for the person. This function ofnly grabs
-//  *              info from the menu, the Menu is actually UPDATED FOR NEW
-//  PEOPLE
-//  *              in Battle::update (or called from there). This function
-//  will
-//  *              grab the menu selected information and add it to the buffer
-//  if
-//  *              possible, and update the person index as necessary.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if a Buffer was successful
-//  */
-// bool Battle::bufferUserAction()
-// {
-//   auto buffered = false;
-//   auto action_type = menu->getActionType();
-//   auto action_targets = menu->getActionTargets();
-
-//   curr_user = getPerson(person_index);
-//   auto is_confused = hasInfliction(Infliction::CONFUSE, curr_user);
-
-//   if(is_confused)
-//     action_targets = menu->getRandomTargets();
-
-//   /* Build the vector Person ptrs from the target index vector */
-//   std::vector<Person*> person_targets;
-
-//   for(auto it = begin(action_targets); it != end(action_targets); ++it)
-//     person_targets.push_back(getPerson(*it));
-
-//   /* Push the actions on to the Buffer */
-//   if(action_type == ActionType::SKILL)
-//   {
-//     curr_skill = menu->getSelectedSkill().skill;
-//     buffered = action_buffer->add(curr_user, curr_skill, person_targets,
-//                                   menu->getSelectedSkill().skill->getCooldown(),
-//                                   turns_elapsed);
-//   }
-//   else if(action_type == ActionType::ITEM)
-//   {
-//     curr_item = menu->getSelectedItem();
-//     buffered = action_buffer->add(curr_user, curr_item, person_targets, 0,
-//                                   turns_elapsed);
-
-//     if(buffered)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "{USING ITEM} " << curr_item->getName() << " from "
-//                 << "inventory and adding to buffer." << std::endl;
-// #endif
-
-//       friends->getInventory()->removeItemID(curr_item->getGameID());
-
-//       auto items = friends->getInventory()->getBattleItems();
-//       menu->setSelectableItems(buildBattleItems(person_index, items));
-//     }
-//   }
-//   else if(action_type == ActionType::DEFEND ||
-//           action_type == ActionType::GUARD ||
-//           action_type == ActionType::IMPLODE ||
-//           action_type == ActionType::RUN || action_type ==
-//           ActionType::PASS)
-//   {
-//     buffered = action_buffer->add(curr_user, action_type, person_targets,
-//     0,
-//                                   turns_elapsed);
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Invalid action selected\n";
-//   }
-
-//   if(buffered)
-//   {
-//     if(curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
-//     else if(curr_user->getBFlag(BState::SELECTED_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
-//     else
-//       curr_user->setBFlag(BState::SELECTED_ACTION);
-
 //     if(canIncrementIndex(curr_user))
 //       return setNextPersonIndex();
 //   }
@@ -6084,7 +6125,11 @@ void Battle::setNextTurnState()
       // if(anyUserSelection(true))
       //   selectUserActions();
       // else
-      setFlagCombat(CombatState::PHASE_DONE);
+    }
+
+    else if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    {
+      turn_state = TurnState::SELECT_ACTION_ENEMY;
     }
   }
 
@@ -6490,11 +6535,13 @@ bool Battle::update(int32_t cycle_time)
     else
       bar_offset = kBIGBAR_CHOOSE;
   }
+  else
+    bar_offset = 0;
 
   // std::cout << "Current Battle State:: " <<
   // Helpers::turnStateToStr(turn_state);
 
-  if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY)
+  if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY && turn_state != TurnState::SELECT_ACTION_ENEMY)
     setFlagCombat(CombatState::PHASE_DONE);
 
   if(getFlagCombat(CombatState::PHASE_DONE))

@@ -316,6 +316,9 @@ private:
    * PRIVATE FUNCTIONS - Battle Operations
    *============================================================================*/
 private:
+  /* Buffer the current selection of the menu to the action buffer */
+  bool bufferMenuSelection();
+
   /* Construct the Battle actors from the given parties */
   void buildBattleActors(Party* allies, Party* enemies);
 
