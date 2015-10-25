@@ -27,7 +27,12 @@ const int32_t EventSet::kUNSET_ID = -1;
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* Constructor function */
+/*
+ * Description: Main constructor for event set. Sets up the event with nothing
+ *              set and no lock settings.
+ *
+ * Inputs: none
+ */
 EventSet::EventSet()
 {
   event_locked = createBlankEvent();
@@ -37,8 +42,20 @@ EventSet::EventSet()
   locked_status = createBlankLocked();
   unlocked_state = UnlockedState::NONE;
 }
+  
+/*
+ * Description: Copy constructor. Copies data from EventSet source
+ *
+ * Inputs: EventSet &source - the source to copy the data from
+ */
+EventSet::EventSet(const EventSet& source) : EventSet()
+{
+  copySelf(source);
+}
 
-/* Destructor function */
+/*
+ * Description: Destructor function
+ */
 EventSet::~EventSet()
 {
   clear();
@@ -47,9 +64,38 @@ EventSet::~EventSet()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+  
+/* Copy function, to be called by a copy or equal operator constructor */
+/*
+ * Description: Copies all data from source event set to this event set.
+ *
+ * Inputs: EventSet& source - the source to copy from
+ * Output: none
+ */
+void EventSet::copySelf(const EventSet& source)
+{
+  /* Clear data first */
+  clear();
 
-/* Gets an event reference from the unlocked status. Will create if not
- * there, if the variable has been set */
+  /* Copy data in */
+  event_locked = copyEvent(source.event_locked);
+  for(uint32_t i = 0; i < source.events_unlocked.size(); i++)
+    events_unlocked.push_back(copyEvent(source.events_unlocked[i]));
+  locked_status = source.locked_status;
+  unlocked_state = source.unlocked_state;
+}
+
+/*
+ * Description: Returns the unlocked event reference based on the index. If
+ *              create is true, it will create the unlocked and all missing in
+ *              the stack before it. If create is false, and the index is out
+ *              of the existing range, it will return null.
+ *
+ * Inputs: int index - the index of the event to find (0+ valid)
+ *         bool create - true to create events, if the index is out of range.
+ *                       Default true.
+ * Output: Event* - the found event pointer
+ */
 Event* EventSet::getUnlockedRef(int index, bool create)
 {
   Event* found_event = nullptr;
@@ -75,13 +121,24 @@ Event* EventSet::getUnlockedRef(int index, bool create)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Add calls, for lists */
+/*
+ * Description: Adds an event to the unlocked stack of events that can be used.
+ *
+ * Inputs: Event new_event - the new event to add to the unlocked stack
+ * Output: none
+ */
 void EventSet::addEventUnlocked(Event new_event)
 {
   events_unlocked.push_back(new_event);
 }
 
-/* Clears all event data within the class */
+/*
+ * Description: Clears all the event data from the class and unlocks and removes
+ *              all lock information.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void EventSet::clear()
 {
   get_index = -1;
@@ -92,7 +149,16 @@ void EventSet::clear()
   unsetLocked();
 }
 
-/* Returns the event when accessed - depending on locked unlocked status */
+/*
+ * Description: Returns the event when accessed which depends on the locked or
+ *              unlocked status, and if unlocked depends on the UnlockedState.
+ *              If trigger is set to true, it will identify this get event
+ *              will be triggering the returned event.
+ *
+ * Inputs: bool trigger - true if the returned event will be passed to the
+ *         EventHandler. Default to true.
+ * Output: Event - the returned event at the forefront of the get access
+ */
 Event EventSet::getEvent(bool trigger)
 {
   Event* found_event = nullptr;
@@ -168,7 +234,7 @@ Event EventSet::getEvent(bool trigger)
 
     /* If valid event found and unlocked, re-lock if lock is not permanent */
     if(found_event != nullptr && trigger)
-      locked_status = unlockUsed(locked_status);
+      unlockUsed(locked_status);
   }
 
   /* Trigger and return */
@@ -181,19 +247,35 @@ Event EventSet::getEvent(bool trigger)
   return createBlankEvent();
 }
 
-/* Individual getters for events */
+/*
+ * Description: Returns the event if the set is locked.
+ *
+ * Inputs: none
+ * Output: Event - the event associated with the locked status
+ */
 Event EventSet::getEventLocked()
 {
   return event_locked;
 }
 
-/* Individual getters for events */
+/*
+ * Description: Returns the stack of events if the set is unlocked.
+ *
+ * Inputs: none
+ * Output: std::vector<Event> - the event(s) associated with the unlocked status
+ */
 std::vector<Event> EventSet::getEventUnlocked()
 {
   return events_unlocked;
 }
 
-/* Individual getters for events */
+/*
+ * Description: Returns the event at the given index in the unlocked stack.
+ *
+ * Inputs: int index - the index in the unlocked stack
+ * Output: Event - the event associated with the index in the unlocked stack.
+ *                 It will return a blank event if the index is out of range
+ */
 Event EventSet::getEventUnlocked(int index)
 {
   if(index >= 0 && (uint32_t)index < events_unlocked.size())
@@ -201,25 +283,52 @@ Event EventSet::getEventUnlocked(int index)
   return createBlankEvent();
 }
 
-/* Returns the locked state struct */
+/*
+ * Desciption: Returns the locked state struct. This defines the locked
+ *             properties of the event set.
+ *
+ * Inputs: none
+ * Output: Locked - the locked state struct. See 'EventSet.h' for description
+ */
 Locked EventSet::getLockedState()
 {
   return locked_status;
 }
 
-/* Returns the unlocked state enum */
+/*
+ * Description: Returns the unlocked state of the set. This defines how the 
+ *              unlocked stack of events is accessed and handled during a get
+ *              call.
+ *
+ * Inputs: none
+ * Output: UnlockedState - the unlocked state enum of the set.
+ */
 UnlockedState EventSet::getUnlockedState()
 {
   return unlocked_state;
 }
 
-/* Returns if the class is currently locked */
+/*
+ * Description: Returns if the current state of the set is locked. If true, 
+ *              during a get, the locked event will be returned. Otherwise, 
+ *              the unlocked stack will be accessed.
+ *
+ * Inputs: none
+ * Output: bool - true if the set is currently locked.
+ */
 bool EventSet::isLocked()
 {
   return locked_status.is_locked;
 }
 
-/* Load data from file */
+/*
+ * Description: Loads the data from file associated with the event set.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int file_index - the element reference index
+ *         int section_index - the map section where the event is defined
+ * Output: bool - true if load was successful
+ */
 bool EventSet::loadData(XmlData data, int file_index, int section_index)
 {
   std::string category = data.getElement(file_index);
@@ -258,18 +367,49 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
     else if(def == "random")
       unlocked_state = UnlockedState::RANDOM;
   }
+  /* -- COMBATIBILITY: For old system -- */
+  else if(category == "event" || category == "tileevent" ||
+          category == "useevent" || category == "enterevent" ||
+          category == "exitevent" || category == "walkoverevent")
+  {
+    int index = 0; /* First event always acts as old system reference */
+    Event* found = getUnlockedRef(index);
+    if(found != nullptr)
+    {
+      *found = updateEvent(*found, data, file_index + 1, section_index);
+    }
+  }
 
   return true;
 }
 
-/* Individual setters for events */
+/*
+ * Description: Sets the event to be used while the set is locked. Once set,
+ *              the class takes control of any memory management.
+ *
+ * Inputs: Event new_event - the new event to use in a locked condition
+ * Output: none
+ */
 void EventSet::setEventLocked(Event new_event)
 {
   unsetEventLocked();
   event_locked = new_event;
 }
 
-/* Individual setters for events */
+/*
+ * Description: Sets the event to be used within the unlocked stack set at the
+ *              given index. If replace is true, will delete the event, at the
+ *              index if it exists. Otherwise, it will push index+ back one and
+ *              insert the new event. If the index is greater than the size of
+ *              the array, it will push the event to the back of the stack. Once
+ *              set, this class takes control of any memory management.
+ *
+ * Inputs: int index - the index in the unlocked stack to set the event
+ *         Event new_event - the new event to insert or set
+ *         bool replace - true to replace at index. false to insert. Default 
+ *                        false
+ * Output: bool - true if the insert or set was successful
+ */
 bool EventSet::setEventUnlocked(int index, Event new_event, bool replace)
 {
   bool success = false;
@@ -315,25 +455,51 @@ bool EventSet::setEventUnlocked(int index, Event new_event, bool replace)
   return success;
 }
 
-/* Sets the locked status */
+/*
+ * Description: Defines the locked information to use within the set. This
+ *              replaces any existing locked information with no saving of the
+ *              current running conditions (if set while the class is in
+ *              operation).
+ *
+ * Inputs: Locked new_locked - the new locked struct with lock information
+ * Output: none
+ */
 void EventSet::setLocked(Locked new_locked)
 {
   locked_status = new_locked;
 }
 
-/* Sets the unlocked state */
+/*
+ * Description: Defines the unlocked enum which defines how the class accesses
+ *              and utilizes the unlocked stack of events.
+ *
+ * Inputs: UnlockedState state - the state enumerator to use
+ * Output: none
+ */
 void EventSet::setUnlockedState(UnlockedState state)
 {
   unlocked_state = state;
 }
 
-/* Unset calls */
+/*
+ * Description: Unsets the locked event and replaces it with a blank one.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void EventSet::unsetEventLocked()
 {
   event_locked = deleteEvent(event_locked);
 }
 
-/* Unset calls */
+/*
+ * Description: Unsets the unlocked event at the given index. Once the index is
+ *              removed, its position is removed from the stack.
+ *
+ * Inputs: int index - the index in the unlocked stack to remove. If out of
+ *                     range, nothing occurs
+ * Output: none
+ */
 void EventSet::unsetEventUnlocked(int index)
 {
   if(index >= 0 && (uint32_t)index < events_unlocked.size())
@@ -344,7 +510,13 @@ void EventSet::unsetEventUnlocked(int index)
   }
 }
 
-/* Unset calls */
+/*
+ * Description: Unsets all unlocked events from the stack and clears out the
+ *              stack.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void EventSet::unsetEventUnlocked()
 {
   for(uint16_t i = 0; i < events_unlocked.size(); i++)
@@ -352,17 +524,55 @@ void EventSet::unsetEventUnlocked()
   events_unlocked.clear();
 }
 
-/* Unset calls */
+/*
+ * Description: Unsets the locked struct information and replaces it with a 
+ *              blank permanently unlocked version.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void EventSet::unsetLocked()
 {
   locked_status = createBlankLocked();
+}
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Copy operator construction. This is called when the variable
+ *              already exists and equal operator used with another
+ *              EventSet.
+ *
+ * Inputs: const EventSet& source - the source class constructor
+ * Output: EventSet& - pointer to the copied class
+ */
+EventSet& EventSet::operator=(const EventSet& source)
+{
+  /* Check for self assignment */
+  if(this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-/* Copies a passed in event */
+/*
+ * Description: Public static. Copies a past in event and returns the copied 
+ *              version as source. Function that calls it is in charge of 
+ *              deleting conversation, if that's been generated.
+ *
+ * Inputs: Event source - the event struct to copy
+ * Output: Event - the copied event
+ */
 Event EventSet::copyEvent(Event source)
 {
   /* Copy the event */
@@ -388,7 +598,12 @@ Event EventSet::copyEvent(Event source)
   return event;
 }
 
-/* Creates a blank conversation */
+/*
+ * Description: Public static. Creates a blank conversation entry.
+ *
+ * Inputs: none
+ * Output: Conversation - the blank conversation struct to insert
+ */
 Conversation EventSet::createBlankConversation()
 {
   Conversation convo;
@@ -401,7 +616,12 @@ Conversation EventSet::createBlankConversation()
   return convo;
 }
 
-/* Create blank event */
+/*
+ * Description: Public static. Creates a blank event with no defined event.
+ *
+ * Inputs: none
+ * Output: Event - the blank event struct to utilize
+ */
 Event EventSet::createBlankEvent()
 {
   Event blank_event;
@@ -418,7 +638,13 @@ Event EventSet::createBlankEvent()
   return blank_event;
 }
 
-/* Creates a blank locked struct */
+/*
+ * Description: Public static. Creates a blank locked struct with no lock and
+ *              permanently maintains that state.
+ *
+ * Inputs: none
+ * Output: Locked - the blank locked struct to utilize
+ */
 Locked EventSet::createBlankLocked()
 {
   Locked blank_locked;
@@ -432,7 +658,17 @@ Locked EventSet::createBlankLocked()
   return blank_locked;
 }
 
-/* Creates the conversation initiation event */
+/*
+ * Description: Public static. Creates a new conversation event with the passed
+ *              in conversation starting pointer (if null, one is created). The
+ *              control of memory management for conversation is handled by the
+ *              caller.
+ *
+ * Inputs: Conversation* new_conversation - the new conversation reference
+ *         int sound_id - the sound reference to connect to the event. Default
+ *                        to invalid
+ * Output: Event - the conversation event to utilize
+ */
 Event EventSet::createEventConversation(Conversation* new_conversation,
                                         int sound_id)
 {
@@ -458,7 +694,15 @@ Event EventSet::createEventConversation(Conversation* new_conversation,
   return new_event;
 }
 
-/* Creates a give item event, with the appropriate parameters */
+/*
+ * Description: Public static. Creates a new give item event with the passed 
+ *              ID and item count, with an optional connected sound ID.
+ *
+ * Inputs: int id - the give item reference ID
+ *         int count - the give item reference count
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the give item event to utilize
+ */
 Event EventSet::createEventGiveItem(int id, int count, int sound_id)
 {
   /* Create the event and identify */
@@ -474,7 +718,14 @@ Event EventSet::createEventGiveItem(int id, int count, int sound_id)
   return new_event;
 }
 
-/* Creates a notification event, that can fire and result in visible text */
+/*
+ * Description: Public static. Creates a new notification event with the passed
+ *              notification string, and an optional connected sound ID.
+ *
+ * Inputs: std::string notification - the notification string for the event
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the notification event to utilize
+ */
 Event EventSet::createEventNotification(std::string notification,
                                         int sound_id)
 {
@@ -490,7 +741,13 @@ Event EventSet::createEventNotification(std::string notification,
   return new_event;
 }
 
-/* Creates a sound event */
+/*
+ * Description: Public static. Creates a new sound only event with the passed 
+ *              sound ID.
+ *
+ * Inputs: int sound_id - the sound reference ID
+ * Output: Event - the sound only event to utilize
+ */
 Event EventSet::createEventSound(int sound_id)
 {
   /* Create the new event and identify */
@@ -502,7 +759,13 @@ Event EventSet::createEventSound(int sound_id)
   return new_event;
 }
 
-/* Creates a start battle event */
+/*
+ * Description: Public static. Creates a new start battle event with an optional
+ *              connected sound ID.
+ *
+ * Inputs: int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the start battle event to utilize
+ */
 Event EventSet::createEventStartBattle(int sound_id)
 {
   /* Create the event and identify */
@@ -514,7 +777,14 @@ Event EventSet::createEventStartBattle(int sound_id)
   return new_event;
 }
 
-/* Create a start map event */
+/*
+ * Description: Public static. Creates a new map switch event with the map ID
+ *              and an optional connected sound ID.
+ *
+ * Inputs: int id - the main map reference ID
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the switch map event to utilize
+ */
 Event EventSet::createEventStartMap(int id, int sound_id)
 {
   /* Create the event and identify */
@@ -529,7 +799,18 @@ Event EventSet::createEventStartMap(int id, int sound_id)
   return new_event;
 }
 
-/* Creates a teleport event */
+/*
+ * Description: Public static. Creates a new teleport thing event with the 
+ *              connected thing ID to teleport, the tile X and Y within the map
+ *              as well as the sub-map ID to teleport, and an optional connected
+ *              sound ID.
+ *
+ * Inputs: int thing_id - the thing instance ID to teleport
+ *         uint16_t tile_x - the X tile location (horizontal)
+ *         uint16_t tile_y - the Y tile location (vertical)
+ *         uint16_t sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the teleport thing event to utilize
+ */
 Event EventSet::createEventTeleport(int thing_id, uint16_t tile_x,
                                     uint16_t tile_y, uint16_t section_id,
                                     int sound_id)
@@ -549,7 +830,19 @@ Event EventSet::createEventTeleport(int thing_id, uint16_t tile_x,
   return new_event;
 }
 
-/* Creates a have item check based lock */
+/*
+ * Description: Public static. Creates a lock structure which can be unlocked
+ *              with an base item ID and count, and true if it is consumed. It
+ *              also includes a permanent flag: if true, once unlocked, it will
+ *              stay. Otherwise, after one get call, it re-locks.
+ *
+ * Inputs: int id - the item ID to check the count on
+ *         int count - the number of said item IDs that must exist to unlock
+ *         bool consume - true if it consumes the item on unlock. Default true
+ *         bool permanent - true if the unlock is permanent. Default true
+ * Output: Locked - structure with the lock properties. To be used in lock
+ *                  situations, such as EventSet
+ */
 Locked EventSet::createLockHaveItem(int id, int count, bool consume,
                                     bool permanent)
 {
@@ -566,7 +859,16 @@ Locked EventSet::createLockHaveItem(int id, int count, bool consume,
   return new_locked;
 }
 
-/* Created a trigger based lock */
+/*
+ * Description: Public static. Creates a lock structure which can be unlocked
+ *              only by a trigger event. It also includes a permanent flag: if
+ *              true, once unlocked, it will stay. Otherwise, after one get
+ *              call, it re-locks.
+ *
+ * Inputs: bool permanent - true if the unlock is permanent. Default true
+ * Output: Locked - structure with the lock properties. To be used in lock 
+ *                  situations, such as EventSet
+ */
 Locked EventSet::createLockTriggered(bool permanent)
 {
   /* Create the new lock struct and identify */
@@ -577,7 +879,13 @@ Locked EventSet::createLockTriggered(bool permanent)
   return new_locked;
 }
 
-/* Deletes the given event. Just clears the relevant memory */
+/*
+ * Description: Public static. Deletes the passed in event of all dynamic 
+ *              memory. Returns a blank event, as replacement.
+ *
+ * Inputs: Event event - the event struct to delete all dynamic memory
+ * Output: Event - blank event, to replace deleted event
+ */
 Event EventSet::deleteEvent(Event event)
 {
   /* Delet the existing event, if relevant */
@@ -588,7 +896,17 @@ Event EventSet::deleteEvent(Event event)
   return createBlankEvent();
 }
 
-/* Returns the conversation at the given index */
+/*
+ * Description: Public static. Takes the base conversation pointer with a list 
+ *              of indexes, such as 1,2,3,1,1,1 to indicate depth. It then 
+ *              returns a reference based on the depth path above. If the depth 
+ *              path doesn't exist, its created with blank conversation events.
+ *
+ * Inputs: Conversation* reference - the reference conversation to manipulate
+ *                                   and get the conversation element
+ *         std::vector<std::string> index_list - the list of indexes to parse
+ * Output: Conversation* - the found conversation instance reference
+ */
 Conversation* EventSet::getConversation(Conversation* reference,
                                         std::vector<std::string> index_list)
 {
@@ -610,12 +928,21 @@ Conversation* EventSet::getConversation(Conversation* reference,
   return convo;
 }
 
-/* Unlocks the locked state, if the conditions are met */
-Locked EventSet::unlockItem(Locked locked_state, int id, int count,
-                            bool &consume)
+/*
+ * Description: Public static. Attempts an unlock on the locked state (pass by 
+ *              ref) with the given item ID and count total from the calling 
+ *              parent. If valid, it updates the locked state and returns if the 
+ *              items are consumed or not.
+ *
+ * Inputs: Locked& locked_state - the locked state to manipulate
+ *         int id - the item ID that the player owns
+ *         int count - the item ID count in the player inventory
+ * Output: bool - true if the passed in item ID and count should be consumed
+ */
+bool EventSet::unlockItem(Locked& locked_state, int id, int count)
 {
   /* Starting values */
-  consume = false;
+  bool consume = false;
 
   if(locked_state.state == LockedState::ITEM &&
      locked_state.ints.size() > kHAVE_ITEM_COUNT &&
@@ -630,30 +957,48 @@ Locked EventSet::unlockItem(Locked locked_state, int id, int count,
     }
   }
 
-  return locked_state;
+  return consume;
 }
 
-/* Unlocks the locked state, if the conditions are met */
-Locked EventSet::unlockTrigger(Locked locked_state)
+/*
+ * Description: Public static. Attempts an unlock on the locked state (pass by 
+ *              ref) with a trigger event.
+ *
+ * Inputs: Locked& locked_state - the locked state to manipulate
+ * Output: none
+ */
+void EventSet::unlockTrigger(Locked& locked_state)
 {
   if(locked_state.state == LockedState::TRIGGER)
   {
     locked_state.is_locked = false;
   }
-
-  return locked_state;
 }
 
-/* Unlock state used of locked state - will re-lock if not permanent */
-Locked EventSet::unlockUsed(Locked locked_state)
+/*
+ * Description: Public static. Called on a locked state once an event was
+ *              triggered and used, or if the object the state was locking was
+ *              utilized. If the lock is not permanent, triggers a re-lock.
+ *
+ * Inputs: Locked& locked_state - the locked state to manipulate. Pass by ref
+ * Output: none
+ */
+void EventSet::unlockUsed(Locked& locked_state)
 {
   if(locked_state.state != LockedState::NONE && !locked_state.permanent)
     locked_state.is_locked = true;
-  return locked_state;
 }
 
-/* Updates the conversation values of the pointed object, based on the XML
- * file data */
+/*
+ * Description: Updates the reference conversation with the XML load data.
+ *
+ * Inputs: Conversation* reference - the reference conversation element to
+ *                                   update with the data
+ *         XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         int section_index - the map section where the event is defined
+ * Output: none
+ */
 void EventSet::updateConversation(Conversation* reference, XmlData data,
                                   int index, int section_index)
 {
@@ -673,7 +1018,15 @@ void EventSet::updateConversation(Conversation* reference, XmlData data,
   }
 }
 
-/* Updates the event from the data in the file */
+/*
+ * Description: Updates the event with the XML load data.
+ *
+ * Inputs: Event event - the event to update with the data
+ *         XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         int section_index - the map section where the event is defined
+ * Output: Event - the returned event after the load
+ */
 Event EventSet::updateEvent(Event event, XmlData data, int file_index,
                             int section_index)
 {
@@ -798,14 +1151,27 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   return event;
 }
 
-/* Updates the event with one shot information */
+/*
+ * Description: Updates the event with the one shot property (true or false)
+ *
+ * Inputs: Event event - the event to update
+ *         bool one_shot - set if the event is a one shot trigger only
+ * Output: Event - the updated event with the one shot property
+ */
 Event EventSet::updateEventOneShot(Event event, bool one_shot)
 {
   event.one_shot = one_shot;
   return event;
 }
 
-/* Update the locked struct from the data in the file */
+/*
+ * Description: Updates the locked struct with the XML load data.
+ *
+ * Inputs: Locked locked_curr - the locked struct to update
+ *         XmlData data - the xml data structure
+ *         int file_index - the element reference index
+ * Output: Locked - the updated locked struct
+ */
 Locked EventSet::updateLocked(Locked locked_curr, XmlData data, int file_index)
 {
   LockedState state = LockedState::NONE;

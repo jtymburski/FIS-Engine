@@ -105,6 +105,9 @@ class EventSet
 public:
   /* Constructor function */
   EventSet();
+  
+  /* Copy constructor */
+  EventSet(const EventSet& source);
 
   /* Destructor function */
   ~EventSet();
@@ -142,6 +145,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const EventSet& source);
+
   /* Gets an event reference from the unlocked status. Will create if not
    * there, if the variable has been set */
   Event* getUnlockedRef(int index, bool create = true);
@@ -192,6 +198,13 @@ public:
   void unsetEventUnlocked();
   void unsetLocked();
 
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  /* The copy operator */
+  EventSet& operator=(const EventSet& source);
+
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
@@ -209,7 +222,7 @@ public:
   static Locked createBlankLocked();
 
   /* Creates the conversation initiation event */
-  static Event createEventConversation(Conversation* new_conversation = NULL,
+  static Event createEventConversation(Conversation* new_conversation = nullptr,
                                        int sound_id = kUNSET_ID);
 
   /* Creates a give item event, with the appropriate parameters */
@@ -235,7 +248,7 @@ public:
                                    int sound_id = kUNSET_ID);
 
   /* Creates a have item check based lock */
-  static Locked createLockHaveItem(int id = -1, int count = 1, 
+  static Locked createLockHaveItem(int id = -1, int count = 1,
                                    bool consume = true, bool permanent = true);
 
   /* Created a trigger based lock */
@@ -249,12 +262,11 @@ public:
                                        std::vector<std::string> index_list);
 
   /* Unlocks the locked state, if the conditions are met */
-  static Locked unlockItem(Locked locked_state, int id, int count,
-                           bool &consume);
-  static Locked unlockTrigger(Locked locked_state);
+  static bool unlockItem(Locked& locked_state, int id, int count);
+  static void unlockTrigger(Locked& locked_state);
 
   /* Unlock state used of locked state - will re-lock if not permanent */
-  static Locked unlockUsed(Locked locked_state);
+  static void unlockUsed(Locked& locked_state);
 
   /* Updates the conversation values of the pointed object, based on the XML
    * file data */
