@@ -29,7 +29,6 @@ enum class AIState
   ACTION_INDEX_CHOSEN   = 1 << 2,
   ACTION_TARGETS_CHOSEN = 1 << 3,
   SCOPE_ASSIGNED        = 1 << 4,
-  TARGETS_ASSIGNED      = 1 << 5,
   SELECTION_COMPLETE    = 1 << 6,
   ADD_TO_RECORD         = 1 << 7
 };
@@ -78,11 +77,9 @@ private:
   int32_t chosen_action_index;
   int32_t qd_cost_paid;
 
+  BattleSkill* chosen_battle_skill;
   Skill* chosen_skill;
   Item*  chosen_item;
-
-  /* Possible friend and foe targets to choose from */
-  std::vector<BattleActor*> targets;
 
   /* Vector of chosen targets */
   std::vector<BattleActor*> chosen_targets;
@@ -260,6 +257,7 @@ public:
   uint16_t getActionsElapsedTotal();
 
   /* Chosen selected skills and items */
+  BattleSkill* getSelectedBattleSkill();
   Skill* getSelectedSkill();
   Item* getSelectedItem();
 
@@ -281,9 +279,6 @@ public:
 
   //  Assigns the vector of valid items
   bool setItems(std::vector<BattleItem*> new_items);
-
-  /* Assigns the vector of valid friend targets */
-  bool setTargets(std::vector<BattleActor*> new_valid_targets);
 
   /* Assigns a new difficulty */
   bool setDifficulty(const AIDifficulty &new_difficulty);

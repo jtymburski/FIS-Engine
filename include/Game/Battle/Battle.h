@@ -319,8 +319,18 @@ private:
   /* Buffer the current selection of the menu to the action buffer */
   bool bufferMenuSelection();
 
+  /* Buffer the module selection */
+  bool bufferModuleSelection();
+
+  /* Constructs AI Modules for the Battle */ //TODO - put where
+  void buildAI();
+
   /* Construct the Battle actors from the given parties */
   void buildBattleActors(Party* allies, Party* enemies);
+
+
+  /* Calculates an action selection for a given BattleActor // AIModule */
+  bool calculateEnemySelection(BattleActor* next_actor, AIModule* curr_module);
 
   /* Clear function for the battle actors */
   void clearBattleActors();
@@ -343,8 +353,14 @@ private:
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);
 
+  /* Returns the current AI Module pointer being worked on */
+  AIModule* getCurrentModule();
+
   /* Obtain pointer to currently selecting module actor */
   BattleActor* getCurrentModuleActor();
+
+  /* Returns the AI Module of a given BattleActor */
+  AIModule* getModuleOfActor(BattleActor* actor);
 
   /* Obtain pointer to next selecting module actor */
   BattleActor* getNextModuleActor();

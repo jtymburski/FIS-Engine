@@ -307,6 +307,132 @@ bool Battle::bufferMenuSelection()
   return success;
 }
 
+bool Battle::bufferModuleSelection()
+{
+  auto success = true;
+  auto curr_actor = getCurrentModuleActor();
+  auto curr_module = getCurrentModule();
+
+  if(curr_actor && curr_module)
+  {
+    auto action_type = curr_module->getActionType();
+    auto targets = curr_module->getChosenTargets();
+
+    if(action_type == ActionType::DEFEND)
+    {
+      battle_buffer->addDefend(curr_actor);
+    }
+    else if(action_type == ActionType::ITEM && curr_module->getSelectedItem())
+    {
+      auto item = curr_module->getSelectedItem();
+      battle_buffer->addItem(curr_actor, item, targets);
+    }
+    else if(action_type == ActionType::SKILL && curr_module->getSelectedSkill())
+    {
+      auto skill = curr_module->getSelectedSkill();
+      auto cooldown = skill->getCooldown();
+      battle_buffer->addSkill(curr_actor, skill, targets, cooldown,
+                              turns_elapsed);
+
+      /* Pay the required QTDR cost for the Skill */
+      auto true_cost = curr_module->getSelectedBattleSkill()->true_cost;
+      auto curr_qd = curr_actor->getStats().getBaseValue(Attribute::QTDR);
+
+      curr_actor->getStats().setBaseValue(Attribute::QTDR, curr_qd - true_cost);
+    }
+    else if(action_type == ActionType::PASS)
+    {
+      battle_buffer->addPass(curr_actor);
+    }
+    else if(action_type == ActionType::RUN)
+    {
+      battle_buffer->addRun(curr_actor);
+    }
+  }
+  else
+  {
+    success = false;
+  }
+
+  return success;
+}
+
+//   if(action_type == ActionType::SKILL)
+//   {
+//     /* Grab the current selected skill from the module and attempt to add
+//     it
+//     buffered = action_buffer->add(curr_user, curr_skill, action_targets,
+//                                   curr_skill->getCooldown(),
+//                                   turns_elapsed);
+
+//   }
+//   else if(action_type == ActionType::ITEM)
+//   {
+//     /* Grab the current selected item from the module and attempt to add it
+//      * into the buffer. */
+//     curr_item = curr_module->getSelectedItem();
+//     buffered = action_buffer->add(curr_user, curr_item, action_targets,
+//                                   curr_item->getUseSkill()->getCooldown(),
+//                                   turns_elapsed);
+
+//     if(buffered)
+//     {
+// #ifdef UDEBUG
+//       std::cout << "Removing " << curr_item->getName() << " from "
+//                 << "inventory and implementing to buffer." << std::endl;
+// #endif
+
+//       /* Remove the item from the inventory, update module with current
+//       items
+//       */
+//       foes->getInventory()->removeItemID(curr_item->getGameID());
+
+//       /* Grab the vector of pairs of item/amts and build battl item vector
+//        * and inject back into the AI Module for selection */
+//       auto items = foes->getInventory()->getBattleItems();
+//       curr_module->setItems(buildBattleItems(person_index, items));
+//     }
+//   }
+//   else if(action_type == ActionType::DEFEND ||
+//           action_type == ActionType::GUARD ||
+//           action_type == ActionType::IMPLODE ||
+//           action_type == ActionType::RUN || action_type ==
+//           ActionType::PASS)
+//   {
+//     /* Other action types add in to the buffer simply */
+//     buffered = action_buffer->add(curr_user, action_type, action_targets,
+//     0,
+//                                   turns_elapsed);
+//   }
+//   else
+//   {
+//     std::cerr << "[Error]: Enemy action selection has invalid action
+//     type\n";
+//   }
+
+//   if(buffered)
+//   {
+//     /* Check which flag to update, depending on whether the person can
+//      * use multiple actions per turn or not */
+//     if(curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
+//       curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
+//     else if(curr_user->getBFlag(BState::SELECTED_ACTION))
+//       curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
+//     else
+//       curr_user->setBFlag(BState::SELECTED_ACTION);
+
+//     /* Find out whether to increment the processing person index */
+//     if(canIncrementIndex(curr_user))
+//       return setNextPersonIndex();
+//   }
+//   else
+//   {
+//     std::cerr << "[Error]: Action buffer addition failure!" << std::endl;
+//   }
+
+//   return false;
+// }
+
 //   curr_user = getPerson(person_index);
 //   auto is_confused = hasInfliction(Infliction::CONFUSE, curr_user);
 
@@ -374,6 +500,22 @@ bool Battle::bufferMenuSelection()
 
 //   return false;
 // }
+
+void Battle::buildAI()
+{
+  for(auto& enemy : getEnemies())
+  {
+    if(enemy && enemy->getBasePerson())
+    {
+      if(enemy->getBasePerson()->getAI() == nullptr)
+      {
+        AIModule* new_ai_module = new AIModule();
+        new_ai_module->setParent(enemy);
+        enemy->getBasePerson()->setAI(new_ai_module);
+      }
+    }
+  }
+}
 
 /*
  * Description:
@@ -468,31 +610,56 @@ bool Battle::loadMenuForActor(BattleActor* actor)
   return success;
 }
 
+bool Battle::calculateEnemySelection(BattleActor* next_actor,
+                                     AIModule* curr_module)
+{
+  auto success = true;
+
+  success &= (next_actor != nullptr);
+  success &= (curr_module != nullptr);
+
+  if(success)
+  {
+    success &= next_actor->buildBattleItems(actors);
+    success &= next_actor->buildBattleSkills(actors);
+
+    curr_module->setItems(next_actor->getBattleItems());
+    curr_module->setSkills(next_actor->getBattleSkills());
+    curr_module->calculateAction();
+    curr_module->calculateTargets();
+  }
+
+  return success;
+}
+
 void Battle::updateEnemySelection()
 {
-  // auto module_actor = getCurrentModuleActor();
+  auto module_actor = getCurrentModuleActor();
+  auto curr_module = getCurrentModule();
 
-  // if(module_actor)
-  // {
-  // }
-  // else
-  // {
-  //   auto next_actor = getNextModuleActor();
+  if(module_actor && curr_module)
+  {
+    if(curr_module->getFlag(AIState::SELECTION_COMPLETE))
+      bufferModuleSelection();
 
-  //   if(next_actor && next_actor->getBasePerson())
-  //   {
-  //     auto base_person = next_actor->getBasePerson();
-  //     auto curr_module = base_person->getAI();
+    updateUserSelection();
+  }
+  else
+  {
+    auto next_actor = getNextModuleActor();
+    auto next_module = getModuleOfActor(next_actor);
 
-  //     if(curr_module)
-  //     {
-  //       base_person->resetAI();
-  //       // curr_module->setFriendTargets(getAllies());
-  //       // curr_module->setFoeTargets(getEnemies());
-  //     }
+    std::cout << "Next module actor: " << next_actor->getBasePerson()->getName()
+              << std::endl;
 
-  //    }
-  // }
+    if(next_actor && next_module)
+    {
+      next_module->resetForNewTurn(next_actor);
+      calculateEnemySelection(next_actor, next_module);
+    }
+    else
+      setFlagCombat(CombatState::PHASE_DONE);
+  }
 }
 
 //   /* If the current module selection is complete, attempt to add it into
@@ -530,7 +697,12 @@ void Battle::updateEnemySelection()
 
 void Battle::updateUserSelection()
 {
-  auto menu_actor = battle_menu->getActor();
+  BattleActor* menu_actor = nullptr;
+
+  if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    menu_actor = battle_menu->getActor();
+  else
+    menu_actor = getCurrentModuleActor();
 
   /* If menu has a valid actor, update their selection */
   if(menu_actor)
@@ -587,13 +759,31 @@ int32_t Battle::getBattleIndex(int32_t index)
   return index;
 }
 
+AIModule* Battle::getCurrentModule()
+{
+  auto curr_actor = getCurrentModuleActor();
+
+  if(curr_actor && curr_actor->getBasePerson())
+    return curr_actor->getBasePerson()->getAI();
+
+  return nullptr;
+}
+
 BattleActor* Battle::getCurrentModuleActor()
 {
   for(const auto& enemy : getEnemies())
     if(enemy && enemy->getSelectionState() == SelectionState::SELECTING)
       return enemy;
 
-    return nullptr;
+  return nullptr;
+}
+
+AIModule* Battle::getModuleOfActor(BattleActor* actor)
+{
+  if(actor && actor->getBasePerson())
+    return actor->getBasePerson()->getAI();
+
+  return nullptr;
 }
 
 BattleActor* Battle::getNextModuleActor()
@@ -2101,6 +2291,8 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
   assert(friends);
   assert(foes);
 
+  buildAI();
+
   /* Construct the Battle actor objects based on the persons in the parties */
   buildBattleActors(friends, foes);
 
@@ -2811,109 +3003,6 @@ bool Battle::setBackground(Sprite* background)
 //   setBattleFlag(CombatState::OUTCOME_PROCESSED);
 //   setBattleFlag(CombatState::OUTCOME_PERFORMED); // TODO [04-03-15]
 //   setNextTurnState();
-// }
-
-// /*
-//  * Description: Buffers an enemy action based on the current Person Index.
-//  *              This function will use the AI Module of the Person Index to
-//  *              get the enemy to select an action. From the AI Module, this
-//  *              function will grab the necessary information and compile it
-//  *              into a proper Buffer addition and determine whether the
-//  *              Enemy should select another action, or to increment the
-//  *              person index, or assign the Buffer Enemy Actions phase
-//  complete.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if an action was successfully buffered
-//  */
-// bool Battle::bufferEnemyAction()
-// {
-//   auto buffered = false;
-//   auto action_type = curr_module->getActionType();
-//   auto action_targets = curr_module->getChosenTargets();
-
-//   /* Get the current user pointer from the processing person indexd */
-//   curr_user = getPerson(person_index);
-
-//   if(action_type == ActionType::SKILL)
-//   {
-//     /* Grab the current selected skill from the module and attempt to add
-//     it
-//      * into the buffer. Store the cost paid for the skill */
-//     curr_skill = curr_module->getSelectedSkill();
-//     buffered = action_buffer->add(curr_user, curr_skill, action_targets,
-//                                   curr_skill->getCooldown(),
-//                                   turns_elapsed);
-
-//     /* Pay the required QTDR cost for the Skill */
-//     auto true_cost = curr_user->getTrueCost(curr_skill);
-//     curr_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
-//   }
-//   else if(action_type == ActionType::ITEM)
-//   {
-//     /* Grab the current selected item from the module and attempt to add it
-//      * into the buffer. */
-//     curr_item = curr_module->getSelectedItem();
-//     buffered = action_buffer->add(curr_user, curr_item, action_targets,
-//                                   curr_item->getUseSkill()->getCooldown(),
-//                                   turns_elapsed);
-
-//     if(buffered)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "Removing " << curr_item->getName() << " from "
-//                 << "inventory and implementing to buffer." << std::endl;
-// #endif
-
-//       /* Remove the item from the inventory, update module with current
-//       items
-//       */
-//       foes->getInventory()->removeItemID(curr_item->getGameID());
-
-//       /* Grab the vector of pairs of item/amts and build battl item vector
-//        * and inject back into the AI Module for selection */
-//       auto items = foes->getInventory()->getBattleItems();
-//       curr_module->setItems(buildBattleItems(person_index, items));
-//     }
-//   }
-//   else if(action_type == ActionType::DEFEND ||
-//           action_type == ActionType::GUARD ||
-//           action_type == ActionType::IMPLODE ||
-//           action_type == ActionType::RUN || action_type ==
-//           ActionType::PASS)
-//   {
-//     /* Other action types add in to the buffer simply */
-//     buffered = action_buffer->add(curr_user, action_type, action_targets,
-//     0,
-//                                   turns_elapsed);
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Enemy action selection has invalid action
-//     type\n";
-//   }
-
-//   if(buffered)
-//   {
-//     /* Check which flag to update, depending on whether the person can
-//      * use multiple actions per turn or not */
-//     if(curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
-//     else if(curr_user->getBFlag(BState::SELECTED_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
-//     else
-//       curr_user->setBFlag(BState::SELECTED_ACTION);
-
-//     /* Find out whether to increment the processing person index */
-//     if(canIncrementIndex(curr_user))
-//       return setNextPersonIndex();
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Action buffer addition failure!" << std::endl;
-//   }
-
-//   return false;
 // }
 
 // void Battle::buildActionVariables(ActionType action_type,
@@ -6077,6 +6166,10 @@ void Battle::setNextTurnState()
     else if(turn_state == TurnState::SELECT_ACTION_ALLY)
     {
       turn_state = TurnState::SELECT_ACTION_ENEMY;
+    }
+    else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
+    {
+      turn_state = TurnState::PROCESS_ACTIONS;
     }
   }
 

@@ -624,7 +624,9 @@ void BattleMenu::clearSkillFrames()
 SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
                                          uint32_t width, uint32_t height)
 {
-
+  (void)width;
+  (void)battle_item;
+  (void)height;
   return nullptr;
 }
 
@@ -1165,6 +1167,8 @@ void BattleMenu::setWindowStatus(WindowStatus status_window)
 
 bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
 {
+  (void)width_left;
+  (void)width_right;
   return true;
 }
 

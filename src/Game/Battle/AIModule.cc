@@ -1,19 +1,18 @@
-// //
-// /*******************************************************************************
-// // * Class Name: AI Module [Implementation]
-// // * Date Created: June 22, 2014
-// // * Inheritance: None
-// // * Description: The AI Module is an object describing the difficulty and
-// // *              personality for enemy decision making in Battle.
-// // *
-// // * Notes
-// // * -----
-// // *
-// // * [1]:
-// // *
-// // * See .h file for TODOs
-// //
-// *******************************************************************************/
+/******************************************************************************
+* Class Name: AI Module [Implementation]
+* Date Created: June 22, 2014
+* Inheritance: None
+* Description: The AI Module is an object describing the difficulty and
+*              personality for enemy decision making in Battle.
+*
+* Notes
+* -----
+*
+* [1]:
+*
+* See .h file for TODOs
+
+*******************************************************************************/
 #include "Game/Player/Person.h"
 #include "Game/Battle/AIModule.h"
 #include "Game/Battle/BattleActor.h"
@@ -511,6 +510,7 @@ bool AIModule::selectRandomAction()
     auto skills_size = valid_skills.size();
     auto rand_value = Helpers::randU(1, skills_size);
 
+    chosen_battle_skill = valid_skills.at(rand_value - 1);
     chosen_skill = valid_skills.at(rand_value - 1)->skill;
     chosen_action_index = rand_value;
     action_index_selected = true;
@@ -547,6 +547,13 @@ bool AIModule::selectRandomAction()
 
 bool AIModule::selectRandomTargets()
 {
+  std::vector<BattleActor*> targets{};
+
+  if(chosen_action_type == ActionType::SKILL && chosen_skill)
+    targets = chosen_battle_skill->targets;
+  else if(chosen_action_type == ActionType::ITEM && chosen_item)
+    targets = chosen_battle_skill->targets;
+
   auto successful = false;
   BattleActor* target_ptr = nullptr;
 
@@ -682,7 +689,6 @@ void AIModule::loadDefaults()
   setFlag(AIState::ACTION_INDEX_CHOSEN, false);
   setFlag(AIState::ACTION_TARGETS_CHOSEN, false);
   setFlag(AIState::SCOPE_ASSIGNED, false);
-  setFlag(AIState::TARGETS_ASSIGNED, false);
   setFlag(AIState::SELECTION_COMPLETE, false);
   setFlag(AIState::ADD_TO_RECORD, true);
 
@@ -697,12 +703,11 @@ void AIModule::loadDefaults()
   valid_items.clear();
 
   chosen_action_index = -1;
+  chosen_battle_skill = nullptr;
   chosen_skill = nullptr;
   chosen_item = nullptr;
 
   parent = nullptr;
-
-  targets.clear();
   chosen_targets.clear();
 
   actions_elapsed_total = 0;
@@ -817,7 +822,6 @@ void AIModule::resetForNewTurn(BattleActor* parent)
   setFlag(AIState::ACTION_INDEX_CHOSEN, false);
   setFlag(AIState::ACTION_TARGETS_CHOSEN, false);
   setFlag(AIState::SCOPE_ASSIGNED, false);
-  setFlag(AIState::TARGETS_ASSIGNED, false);
   setFlag(AIState::SELECTION_COMPLETE, false);
 
   chosen_action_type = ActionType::NONE;
@@ -828,12 +832,12 @@ void AIModule::resetForNewTurn(BattleActor* parent)
 
   chosen_action_index = -1;
   qd_cost_paid = 0;
+  chosen_battle_skill = nullptr;
   chosen_skill = nullptr;
   chosen_item = nullptr;
 
   skill_probabilities.clear();
   item_probabilities.clear();
-  targets.clear();
   chosen_targets.clear();
 
   if(parent != nullptr)
@@ -953,6 +957,11 @@ AIPersonality AIModule::getPrimPersonality()
 AIPersonality AIModule::getSecdPersonality()
 {
   return secd_personality;
+}
+
+BattleSkill* AIModule::getSelectedBattleSkill()
+{
+  return chosen_battle_skill;
 }
 
 /*
@@ -1099,21 +1108,6 @@ bool AIModule::setItems(std::vector<BattleItem*> new_items)
   valid_items = new_items;
 
   return (valid_items.size() != 0);
-}
-
-/*
- * Description: Assigns a new vector of foe targets for the AI Module to
- choose
- *
- * Inputs: new_valid_targets - the vector of foe pointers to choose as
- targets
- * Output: bool - truism
- */
-bool AIModule::setTargets(std::vector<BattleActor*> new_targets)
-{
-  targets = new_targets;
-
-  return true;
 }
 
 /*
