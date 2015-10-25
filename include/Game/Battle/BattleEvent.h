@@ -13,10 +13,34 @@
 * ----
 *****************************************************************************/
 
-#ifndef CLASSNAME_H
-#define CLASSNAME_H
+// TODO - Throw this into the BattleEvent
+// struct BattleEvent
+// {
+//   ProcessingState processing_state;
+//   ActionType curr_action_type;
 
-class ClassName
+//   Skill* curr_skill;
+//   Item*  curr_item;
+
+//   uint32_t curr_action_index;
+
+//   BattleActor* curr_actor;
+//   std::vector<BattleActor*> curr_targets;
+
+//   IgnoreState flags_ignore;
+
+//   Attribute prim_off;
+//   Attribute prim_def;
+//   Attribute secd_off;
+//   Attribute secd_def;
+//   Attribute user_attr;
+//   Attribute targ_attr;
+// };
+
+#ifndef BATTLE_EVENT_H
+#define BATTLE_EVENT_H
+
+class BattleEvent
 {
 public:
 
@@ -29,15 +53,6 @@ private:
  *============================================================================*/
 private:
 
-/*=============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
-public:
-
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-protected:
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -49,11 +64,7 @@ public:
  *============================================================================*/
 public:
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
-public:
 
 };
 
-#endif //CLASSNAME_H
+#endif //BATTLE_EVENT_H

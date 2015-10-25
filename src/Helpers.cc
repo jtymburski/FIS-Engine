@@ -342,10 +342,6 @@ std::string Helpers::aiDifficultyToStr(const AIDifficulty& ai_difficulty)
     return "RANDOM";
   else if(ai_difficulty == AIDifficulty::PRIORITY)
     return "PRIORITY";
-  else if(ai_difficulty == AIDifficulty::TACTICAL)
-    return "TACTICAL";
-  else if(ai_difficulty == AIDifficulty::DEEP_THOUGHT)
-    return "DEEP_THOUGHT";
 
   return "";
 }

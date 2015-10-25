@@ -278,6 +278,39 @@ Battle::~Battle()
  * PRIVATE FUNCTIONS - Battle Operations
  *============================================================================*/
 
+//ALPHA
+// Constructs AI
+void Battle::aiBuild()
+{
+  for(auto& enemy : getEnemies())
+  {
+    if(enemy && enemy->getBasePerson())
+    {
+      if(!enemy->getBasePerson()->getAI())
+      {
+        AIModule* new_ai_module = new AIModule();
+        new_ai_module->setParent(enemy);
+        enemy->getBasePerson()->setAI(new_ai_module);
+      }
+    }
+  }
+}
+
+//ALPHA
+// Clears AI.
+void Battle::aiClear()
+{
+  for(auto& enemy : getEnemies())
+  {
+    if(enemy && enemy->getBasePerson() && enemy->getBasePerson()->getAI())
+    {
+      auto module = enemy->getBasePerson()->getAI();
+      delete module;
+      module = nullptr;
+    }
+  }
+}
+
 bool Battle::bufferMenuSelection()
 {
   std::cout << "Buffering menu selection!" << std::endl;
@@ -358,172 +391,6 @@ bool Battle::bufferModuleSelection()
   return success;
 }
 
-//   if(action_type == ActionType::SKILL)
-//   {
-//     /* Grab the current selected skill from the module and attempt to add
-//     it
-//     buffered = action_buffer->add(curr_user, curr_skill, action_targets,
-//                                   curr_skill->getCooldown(),
-//                                   turns_elapsed);
-
-//   }
-//   else if(action_type == ActionType::ITEM)
-//   {
-//     /* Grab the current selected item from the module and attempt to add it
-//      * into the buffer. */
-//     curr_item = curr_module->getSelectedItem();
-//     buffered = action_buffer->add(curr_user, curr_item, action_targets,
-//                                   curr_item->getUseSkill()->getCooldown(),
-//                                   turns_elapsed);
-
-//     if(buffered)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "Removing " << curr_item->getName() << " from "
-//                 << "inventory and implementing to buffer." << std::endl;
-// #endif
-
-//       /* Remove the item from the inventory, update module with current
-//       items
-//       */
-//       foes->getInventory()->removeItemID(curr_item->getGameID());
-
-//       /* Grab the vector of pairs of item/amts and build battl item vector
-//        * and inject back into the AI Module for selection */
-//       auto items = foes->getInventory()->getBattleItems();
-//       curr_module->setItems(buildBattleItems(person_index, items));
-//     }
-//   }
-//   else if(action_type == ActionType::DEFEND ||
-//           action_type == ActionType::GUARD ||
-//           action_type == ActionType::IMPLODE ||
-//           action_type == ActionType::RUN || action_type ==
-//           ActionType::PASS)
-//   {
-//     /* Other action types add in to the buffer simply */
-//     buffered = action_buffer->add(curr_user, action_type, action_targets,
-//     0,
-//                                   turns_elapsed);
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Enemy action selection has invalid action
-//     type\n";
-//   }
-
-//   if(buffered)
-//   {
-//     /* Check which flag to update, depending on whether the person can
-//      * use multiple actions per turn or not */
-//     if(curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
-//     else if(curr_user->getBFlag(BState::SELECTED_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
-//     else
-//       curr_user->setBFlag(BState::SELECTED_ACTION);
-
-//     /* Find out whether to increment the processing person index */
-//     if(canIncrementIndex(curr_user))
-//       return setNextPersonIndex();
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Action buffer addition failure!" << std::endl;
-//   }
-
-//   return false;
-// }
-
-//   curr_user = getPerson(person_index);
-//   auto is_confused = hasInfliction(Infliction::CONFUSE, curr_user);
-
-//   if(is_confused)
-//     action_targets = menu->getRandomTargets();
-
-//   /* Build the vector Person ptrs from the target index vector */
-//   std::vector<Person*> person_targets;
-
-//   for(auto it = begin(action_targets); it != end(action_targets); ++it)
-//     person_targets.push_back(getPerson(*it));
-
-//   /* Push the actions on to the Buffer */
-
-//   else if(action_type == ActionType::ITEM)
-//   {
-//     curr_item = menu->getSelectedItem();
-//     buffered = action_buffer->add(curr_user, curr_item, person_targets, 0,
-//                                   turns_elapsed);
-
-//     if(buffered)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "{USING ITEM} " << curr_item->getName() << " from "
-//                 << "inventory and adding to buffer." << std::endl;
-// #endif
-
-//       friends->getInventory()->removeItemID(curr_item->getGameID());
-
-//       auto items = friends->getInventory()->getBattleItems();
-//       menu->setSelectableItems(buildBattleItems(person_index, items));
-//     }
-//   }
-//   else if(action_type == ActionType::DEFEND ||
-//           action_type == ActionType::GUARD ||
-//           action_type == ActionType::IMPLODE ||
-//           action_type == ActionType::RUN || action_type ==
-//           ActionType::PASS)
-//   {
-//     buffered = action_buffer->add(curr_user, action_type, person_targets,
-//     0,
-//                                   turns_elapsed);
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Invalid action selected\n";
-//   }
-
-//   if(buffered)
-//   {
-//     if(curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
-//     else if(curr_user->getBFlag(BState::SELECTED_ACTION))
-//       curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
-//     else
-//       curr_user->setBFlag(BState::SELECTED_ACTION);
-
-//     if(canIncrementIndex(curr_user))
-//       return setNextPersonIndex();
-//   }
-//   else
-//   {
-//     std::cerr << "[Error]: Action buffer addition failure!" << std::endl;
-//   }
-
-//   return false;
-// }
-
-void Battle::buildAI()
-{
-  for(auto& enemy : getEnemies())
-  {
-    if(enemy && enemy->getBasePerson())
-    {
-      if(enemy->getBasePerson()->getAI() == nullptr)
-      {
-        AIModule* new_ai_module = new AIModule();
-        new_ai_module->setParent(enemy);
-        enemy->getBasePerson()->setAI(new_ai_module);
-      }
-    }
-  }
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
 // TODO: Determine can run
 void Battle::buildBattleActors(Party* allies, Party* enemies)
 {
@@ -1630,7 +1497,6 @@ bool Battle::setupHealthDraw(BattleActor* actor, float health_pc)
   return false;
 }
 
-// // TODO: Comment
 bool Battle::renderAlliesInfo()
 {
   bool success = true;
@@ -2231,7 +2097,7 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
   buildBattleActors(friends, foes);
 
   /* Build AI Modules */
-  buildAI();
+  aiBuild();
 
   /* Build ally and enemy info frames, action frames */
   for(auto& actor : actors)
@@ -2258,6 +2124,7 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 void Battle::stopBattle()
 {
   /* Destroy the battle actors at the end of a Battle */
+  aiClear();
   clearBattleActors();
 
   turn_state = TurnState::STOPPED;
@@ -2657,174 +2524,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// /*******************************************************************************
-// * Class Name: Battle [Implementation]
-// * Date Created: February 23rd, 2014
-// * Inheritance: None
-// * Description:
-// *
-// * Notes
-// * -----
-// *
-// * [1]:
-// *
-// * See .h file for TODOs
-// *******************************************************************************/
-// #include "Game/Battle/Battle.h"
-
-// /* Description: Attempts to add an ailment to the vector of ailments
-//  *
-//  * Inputs: Infliction infliction_type - the type of infliction to create
-//  *         Person* inflictor - the person inflicting this ailment upon a
-//  victim
-//  *         uint16_t min_turns - the minimum # of turns to run the ailment
-//  for
-//  *         uint16_t max_turns - the amximum # of turns to run the ailment
-//  for
-//  *         int32_t chance - the chance the ailment has to cure each turn
-//  * Output: bool true if the ailment infliction was kosher
-//  */
-// bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
-//                         uint16_t min_turns, uint16_t max_turns, int32_t
-//                         chance)
-// {
-//   auto success = false;
-//   auto new_ailment =
-//       new Ailment(curr_target, infliction_type, inflictor, min_turns,
-//       max_turns,
-//                   static_cast<float>(chance));
-
-//   /* Default: set the ailment to be curable */
-//   new_ailment->setFlag(AilState::CURABLE, true);
-
-//   if(new_ailment->getFlag(AilState::INFLICTOR_SET) &&
-//      new_ailment->getFlag(AilState::VICTIM_SET))
-//   {
-//     ailments.push_back(new_ailment);
-
-//     if(new_ailment->getFlag(AilState::TO_APPLY))
-//       new_ailment->apply();
-//     success = true;
-//   }
-//   else
-//   {
-//     delete new_ailment;
-//     new_ailment = nullptr;
-//     success = false;
-//   }
-
-//   if(success)
-//   {
-// #ifdef UDEBUG
-//     std::cout << "{INFLICTION} " << curr_target->getName() << " has been "
-//               << "inflicted with " <<
-//               Helpers::ailmentToStr(infliction_type)
-//               << " lasting " << min_turns << " to " << max_turns << ".\n";
-// #endif
-//   }
-//   else
-//   {
-// #ifdef UDEBUG
-//     std::cerr << "[Error] Invalid ailment creation" << std::endl;
-// #endif
-//   }
-
-//   return success;
-// }
-
-// /*
-//  * Description: Recalculates ailment-related flags for a given target
-//  Person
-//  *              assuming a given ailment is being applied.
-//  *
-//  * Inputs: Person* target - the target having an ailment unapplied
-//  *         Ailment* ail   - the ailment being unapplied
-//  * Output: bool - true if the ailment flags were being recalculated.
-//  */
-// bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
-// {
-//   if(target != nullptr && ail != nullptr && ail->getVictim() == target)
-//   {
-//     /* Unapply the ailment (by the default effect) set to be removed */
-//     if(ail->getFlag(AilState::TO_UNAPPLY))
-//       ail->unapply();
-
-//     /* For all other ailments inflicted upon the given target, iterate
-//     through
-//      * and recalculate the necessary flag and stats values */
-//     auto person_ailments = getPersonAilments(target);
-//     std::vector<std::tuple<Ailment*, bool>> reapply_values;
-
-//     for(auto ill : person_ailments)
-//     {
-//       if(ill != ail)
-//       {
-//         auto new_tuple = std::make_tuple(ill, ill->toReapplyFlags());
-//         reapply_values.push_back(new_tuple);
-//       }
-//     }
-
-//     /* Find a base flag state */
-//     target->resetActionFlags();
-
-//     /* Reapply each ailment needed */
-//     for(auto& ill_tuple : reapply_values)
-//     {
-//       if(std::get<0>(ill_tuple) != nullptr && std::get<1>(ill_tuple))
-//       {
-//         std::get<0>(ill_tuple)->setFlag(AilState::TO_APPLY);
-//         std::get<0>(ill_tuple)->update(false);
-//       }
-//     }
-
-//     return true;
-//   }
-
-//   return false;
-// }
-
-// /*
-//  * Description: Removes a given ailment from the current target.
-//  *
-//  * Inputs: Ailment* remove_ailment - the ailment set to be removed
-//  * Output: bool - true if the ailment was found and removed, false
-//  otherwise
-//  */
-// bool Battle::removeAilment(Ailment* remove_ailment)
-// {
-//   auto found = false;
-//   auto success = false;
-
-//   for(auto& ailment : ailments)
-//   {
-//     if(ailment == remove_ailment)
-//     {
-//       /* Some ailments will alter flags that need to be recalculated */
-//       success = reCalcAilmentFlags(curr_target, ailment);
-
-//       found = true;
-//       delete ailment;
-//       ailment = nullptr;
-//     }
-//   }
-
-//   /* Remove all nullptr elements */
-//   ailments.erase(std::remove(begin(ailments), end(ailments), nullptr),
-//                  end(ailments));
-
-//   reCalcAilments(curr_target);
-
-//   return found && success;
-// }
-
-// /*
-//  * Description: Called when the Battle has been lost. Battle lost generally
-//  *              results in a return to title (event handler?)
-//  *
-//  * Inputs: none
-//  * Output: none
-//  * //TODO [08-24-14]: Finish battle lost functionality
-//  */
 // void Battle::battleLost()
 // {
 // #ifdef UDEBUG
@@ -2838,16 +2537,6 @@ bool Battle::setBackground(Sprite* background)
 //   // TODO: [11-14-14] Return to title after battle lost.
 // }
 
-// /*
-//  * Description: Called when the Battle is being run from. Runners from the
-//  *              battle will occur a penalty against their experience
-//  towards
-//  *              the next level. (This does not matter for enemies)
-//  *
-//  * Inputs: none
-//  * Output: none
-//  * //TODO [08-24-14]: Finish battle run functionality
-//  */
 // void Battle::battleRun()
 // {
 //   if(outcome == OutcomeType::ALLIES_RUN)
@@ -2881,12 +2570,6 @@ bool Battle::setBackground(Sprite* background)
 //   setNextTurnState();
 // }
 
-// /*
-//  * Description: Victory funcitonality for when the Battle is victorious
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 // void Battle::battleWon()
 // {
 // #ifdef UDEBUG
@@ -2994,18 +2677,6 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-// /*
-//  * Description: This function calculates the base damage of an action
-//  during
-//  *              battle. To do this, this function will also call functions
-//  like
-//  *              calcIgnoreFlags and calcElementalMods (elemental
-//  modifications
-//  *              have a huge impact on the actual damage resultant).
-//  *
-//  * Inputs: float crit_factor - the already determined crit factor to use
-//  * Output: int32_t - the base damage of the current action
-//  */
 // int32_t Battle::calcBaseDamage(const float& crit_factor)
 // {
 //   auto targ_attrs = temp_target_stats.at(pro_index);
@@ -3183,15 +2854,6 @@ bool Battle::setBackground(Sprite* background)
 //   return damage_round;
 // }
 
-// /*
-//  * Description: This function calculates elemental modifiers for the
-//  current
-//  *              action/person/target outcome processing. Damage is modified
-//  *              if the
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 // void Battle::calcElementalMods()
 // {
 //   /* Grab the temp attribute set for the curent processing target index */
@@ -3290,21 +2952,6 @@ bool Battle::setBackground(Sprite* background)
 //   targ_attrs.setStat(secd_targ_stat, secd_targ_mod);
 // }
 
-// /*
-//  * Description: Calculates the crit factor of the upcoming operation of
-//  *              curr_user vs. curr_target. As the distance between levels
-//  *              of the two persons become greater, the crit factor will
-//  change.
-//  *              As well, defendingand guarding and a person's UNBR stat
-//  will
-//  *              affect the crti factor. The crit factor is a multiplacted
-//  value
-//  *              applied to the base damage a target will receive in battle.
-//  *                ex. 100 damage * crit_factor of 2 = 200 damage total
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 // float Battle::calcCritFactor()
 // {
 //   /* Base crit factor */
@@ -3330,14 +2977,6 @@ bool Battle::setBackground(Sprite* background)
 //   return crit_factor;
 // }
 
-// /*
-//  * Description: Calculates the amount of experience a given ally will
-//  receive
-//  *              for defeating the foes.
-//  *
-//  * Inputs: Person* ally - the ally to calculate the experience for
-//  * Output: int32_t - the amount of experience the Person will earn
-//  */
 // int32_t Battle::calcExperience(Person* ally)
 // {
 //   int32_t exp = 0;
@@ -3404,16 +3043,6 @@ bool Battle::setBackground(Sprite* background)
 //   return damage_round;
 // }
 
-// /*
-//  * Description: Determines the state of the ignore flags based
-//  *              on the current action/skill. These flags will exclude
-//  *              certain attributes from being processed in the damage
-//  formula
-//  *              for the purposes of damage reduction magicalness.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if the ignore state was successfully calculated
-//  */
 // bool Battle::calcIgnoreState()
 // {
 //   auto success = false;
@@ -3534,12 +3163,6 @@ bool Battle::setBackground(Sprite* background)
 //   return success;
 // }
 
-// /*
-//  * Description: Determines the average level difference among targets
-//  *
-//  * Inputs: none
-//  * Output: int16_t - the [average] difference in level value
-//  */
 // int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
 // {
 //   if(curr_user)
@@ -3557,18 +3180,6 @@ bool Battle::setBackground(Sprite* background)
 //   return 0;
 // }
 
-// /*
-//  * Description: Calculates the turn regen rate for a given target for the
-//  given
-//  *              attribute (VITALITY or QUANTUM DRIVE). This regen rate is
-//  based
-//  *              on the combined rate of the given target's battle class and
-//  *              race class and will equate to some % of their VITA/QTDR.
-//  *
-//  * Inputs: Person* target - the target to calculate the turn regen for
-//  *         Attribtue attr - the attribute to calculate the regen value for
-//  * Output: int32_t - the value of the turn regen rate
-//  */
 // int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
 // {
 //   auto regen_amt = 0;
@@ -3603,75 +3214,6 @@ bool Battle::setBackground(Sprite* background)
 //   return regen_amt;
 // }
 
-// /*
-//  * Description: Determines whether the battle processing can be incremented
-//  or
-//  *              whether the current person index needs to select another
-//  action
-//  *              based on the person's battle flags.
-//  *
-//  * Inputs: Person* - person to check whether to increment action selection
-//  for
-//  * Output: bool - true if action selection should be incremented
-//  */
-// bool Battle::canIncrementIndex(Person* check_person)
-// {
-//   if((check_person->getBFlag(BState::SELECTED_ACTION) &&
-//       !check_person->getAilFlag(PersonAilState::TWO_SKILLS) &&
-//       !check_person->getAilFlag(PersonAilState::THREE_SKILLS)) ||
-//      (check_person->getBFlag(BState::SELECTED_2ND_ACTION) &&
-//       check_person->getAilFlag(PersonAilState::TWO_SKILLS) &&
-//       !check_person->getAilFlag(PersonAilState::THREE_SKILLS)) ||
-//      (check_person->getBFlag(BState::SELECTED_3RD_ACTION) &&
-//       check_person->getAilFlag(PersonAilState::THREE_SKILLS)))
-//   {
-//     return true;
-//   }
-
-//   return false;
-// }
-
-// /*
-//  * Description: Clears action variables, prepping it for a new
-//  action/person/
-//  *              target combination for turn processing.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::clearActionVariables()
-// {
-//   prim_off = Attribute::NONE;
-//   prim_def = Attribute::NONE;
-//   secd_off = Attribute::NONE;
-//   secd_def = Attribute::NONE;
-//   user_attr = Attribute::NONE;
-//   targ_attr = Attribute::NONE;
-
-//   temp_user_stats = AttributeSet();
-//   temp_user_max_stats = AttributeSet();
-
-//   temp_target_stats.clear();
-//   temp_target_max_stats.clear();
-
-//   curr_module = nullptr;
-//   curr_user = nullptr;
-//   curr_target = nullptr;
-//   curr_action = nullptr;
-//   curr_skill = nullptr;
-//   curr_item = nullptr;
-
-//   ignore_flags = static_cast<IgnoreState>(0);
-//   pro_index = 0;
-// }
-
-// /*
-//  * Description: Returns enumeration of party death [None, Friends, Foes,
-//  Both]
-//  *
-//  * Inputs: Party* - party to check death for.
-//  * Output: bool - true if the size of the living members vector is zero
-//  */
 // bool Battle::checkPartyDeath(Party* const check_party, Person* target)
 // {
 //   auto party_death = false;
@@ -3762,49 +3304,6 @@ bool Battle::setBackground(Sprite* background)
 //   setBattleFlag(CombatState::PHASE_DONE, true);
 // }
 
-// /*
-//  * Description: Determines the turn progression of the Battle. The party
-//  with
-//  *              the total greatest speed will generally go first. In the
-//  rare
-//  *              case that the party's have equal speed, the first party
-//  will
-//  *              randomly go first. Note that it really has little
-//  consequence
-//  *              in the outcome of Battle which parties go first since
-//  actions
-//  *              are ordered based upon user momentum.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::determineTurnMode()
-// {
-//   if(friends->getTotalSpeed() > foes->getTotalSpeed())
-//     setTurnMode(TurnMode::FRIENDS_FIRST);
-//   else if(friends->getTotalSpeed() < foes->getTotalSpeed())
-//     setTurnMode(TurnMode::ENEMIES_FIRST);
-//   else
-//   {
-//     if(Helpers::flipCoin())
-//       setTurnMode(TurnMode::FRIENDS_FIRST);
-//     else
-//       setTurnMode(TurnMode::ENEMIES_FIRST);
-//   }
-// }
-
-// /*
-//  * Description: Determines whether the current action will crit against the
-//  *              current target. This chance is determined by the base crit
-//  *              chance, a modifier based on the value of the action user's
-//  *              UNBR stat. In addition, bonus critical chance occurs
-//  *              proportional to the level difference of the action user's
-//  *              level and the action target's level.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if the current action will crit against the curr
-//  target.
-//  */
 // bool Battle::doesActionCrit()
 // {
 //   if(curr_user == nullptr || curr_target == nullptr)
@@ -3843,15 +3342,6 @@ bool Battle::setBackground(Sprite* background)
 //   return crit_happens;
 // }
 
-// /*
-//  * Description: Determines whether the current skill will entirely miss or
-//  *              if the processing of each of its actions will have a chance
-//  of
-//  *              occuring.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if the current skill will hit
-//  */
 // bool Battle::doesSkillHit(std::vector<Person*> targets)
 // {
 //   auto can_process = true;
@@ -3915,13 +3405,6 @@ bool Battle::setBackground(Sprite* background)
 //   return hits;
 // }
 
-// /*
-//  * Description: Determines whether the current action will miss its current
-//  *              target.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if the current action will hit
-//  */
 // bool Battle::doesActionHit()
 // {
 //   auto can_process = true;
@@ -3946,13 +3429,6 @@ bool Battle::setBackground(Sprite* background)
 //   return hit;
 // }
 
-// /*
-//  * Description: Determines whether the current person succeeds in running
-//  *              from the Battle.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if the current person succeeds in running
-//  */
 // bool Battle::doesCurrPersonRun()
 // {
 //   auto can_run_happen = true;
@@ -4005,19 +3481,7 @@ bool Battle::setBackground(Sprite* background)
 //   return run_happens;
 // }
 
-// /*
-//  * Description: Sets the flags of BattleState at the beginning of the
-//  Battle.
-//  *              By default, all Battles will be a random encounter unless
-//  *              there exists a person in the foes party which is: a
-//  mini-boss,
-//  *              a boss, or final boss. Also sets other flags to their
-//  default
-//  *              (undone) state.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
+
 // void Battle::loadBattleStateFlags()
 // {
 //   setBattleFlag(CombatState::PHASE_DONE, false);
@@ -4025,14 +3489,6 @@ bool Battle::setBackground(Sprite* background)
 //   setBattleFlag(CombatState::OUTCOME_PERFORMED, false);
 // }
 
-// /*
-//  * Description: This function performs the current events stored in the
-//  *              event buffer. As in, the actual outcome of the events
-//  happens.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 // void Battle::performEvents()
 // {
 // #ifdef UDEBUG
@@ -4352,12 +3808,6 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-// /*
-//  * Description: Sub-function to hold performing of some damage type event.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 // void Battle::performDamageEvent(BattleEvent* event)
 // {
 // #ifdef UDEBUG
@@ -4399,30 +3849,12 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-// /*
-//  * Description: Resets the miss next target and the next atk no effect
-//  flags
-//  for
-//  *              the next turn/attack for a given Person pointer.
-//  *
-//  * Inputs: Person* - user to reset turn flags for.
-//  * Output: none
-//  */
 // void Battle::resetTurnFlags(Person* user)
 // {
 //   user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
 //   user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
 // }
 
-// /*
-//  * Description: Deals with personal-related upkeep (such as processing
-//  damaging
-//  *              ailments, stat recalculations), at the beginning of each
-//  turn.
-//  *
-//  * Inputs: Person* - target perswon to perform upkeep for
-//  * Output: none
-//  */
 // void Battle::personalUpkeep(Person* const target)
 // {
 //   curr_target = target;
@@ -4484,30 +3916,9 @@ bool Battle::setBackground(Sprite* background)
 //   setBattleFlag(CombatState::READY_TO_RENDER, true);
 // }
 
-// /*
-//  * Description: Process the action selections (Items/Skills/Guard/etc.) in
-//  the
-//  *              buffer after they've been ordered. Will call functions like
-//  *              processSkill(std::vector<Person*> targets) to achieve this.
-//  *              Adds the processing effects as a vector events to the
-//  current
-//  *              events of Battle and waits for the rendering to be
-//  complete.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
+
 // void Battle::processBuffer()
 // {
-// #ifdef UDEBUG
-//   std::cout << "--- Processing Buffer ---" << std::endl
-//             << "Beg Proc: " << getBattleFlag(CombatState::BEGIN_PROCESSING)
-//             << std::endl
-//             << "Act Proc Comp: "
-//             << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE)
-//             << std::endl;
-// #endif
-
 //   /* If Buffer index == 0, don't increment, else, increment */
 //   if(getBattleFlag(CombatState::BEGIN_PROCESSING) &&
 //      getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
@@ -4687,16 +4098,6 @@ bool Battle::setBackground(Sprite* background)
 //   return can_guard;
 // }
 
-// /*
-//  * Description: Actually performs a guard pairing between the current user
-//  of
-//  *              a given BattleEvent pointer and the target stored in the
-//  event.
-//  *              Returns whether the guard pair was made successfully.
-//  *
-//  * Inputs: none
-//  * Output: bool - whether the guarding was performed successfully
-//  */
 // bool Battle::performGuard(BattleEvent* guard_event)
 // {
 //   /* If a guard ca be made, attempt to assign guardee and guarding persons.
@@ -4714,16 +4115,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// /*
-//  * Description: General process action function. Processes the outcome of
-//  one
-//  *              action against all targets for that action, creating and
-//  *              setting events as needed. Calls sub-functions for specific
-//  *              action type outcome determinations.
-//  *
-//  * Inputs: BattleEvent* battle_event - pointer to the begin action event
-//  * Output: bool - true if a party death has occured
-//  */
 // bool Battle::processAction(BattleEvent* battle_event)
 // {
 //   auto can_process = false;
@@ -4848,12 +4239,6 @@ bool Battle::setBackground(Sprite* background)
 //   return done;
 // }
 
-// /*
-//  * Description: Processes the ailment stored on temp_ailments[pro_index].
-//  *
-//  * Inputs: none
-//  * Output: bool - true if a party death occures during processing
-//  */
 // bool Battle::processAilment()
 // {
 //   /* The current ailment pointer being processed is the processing index of
@@ -4937,15 +4322,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// /*
-//  * Description: Processes the updating portion of the ailment from
-//  *              processAilment(). This includes creating and appending a
-//  damage
-//  *              event to the buffer if the ailment deals damage on update
-//  *
-//  * Inputs: Ailment* ail - the ailment to perform updating for
-//  * Output: bool - true if the damage from updateing causes party death
-//  */
 // bool Battle::processAilmentUpdate(Ailment* ail)
 // {
 //   /* Update the ailment with turn updating true (this sets the update
@@ -4980,17 +4356,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// /*
-//  * Description: Processes an alteration keywoard action against a vector of
-//  *              targets also given a vector of corresponding DamageTypes
-//  *
-//  * Inputs: BattleEvent* alter_event - pointer to the altering event
-//  *         Person* action_target - actual target of the alteration
-//  *         Person* factor_target - factor person for value calculation
-//  *
-//  * Output: bool - true if a party death (vic. cond.) occured during
-//  operation
-//  */
 // bool Battle::processAlterAction(BattleEvent* alter_event, Person*
 // action_target,
 //                                 Person* factor_target)
@@ -5058,20 +4423,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// /*
-//  * Description: Calculates the outcome of an "ASSIGN" type actions, one
-//  which
-//  *              the stat of a user/target will be assigned to a certain
-//  value
-//  *              or percentage of the user/target's stat.
-//  *
-//  * Inputs: BattleEvent* - the pointer to the assignment event
-//  *         action_target - the person who will have the assignment done on
-//  them.
-//  *         factor_target - the person who by which the action target
-//  changes
-//  * Output: bool - true if a party death occurs
-//  */
 // bool Battle::processAssignAction(BattleEvent* assign_event,
 //                                  Person* action_target, Person*
 //                                  factor_target)
@@ -5119,15 +4470,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// /*
-//  * Description: Calculates the outcome of a "DAMAGE" type action, one which
-//  *              will use Battle's general damage formula to bash the two
-//  *              skill powers together combined with the user and target's
-//  *              power values plus other factors.
-//  *
-//  * Inputs: BattleEvent* damage_event - the incoming damage event
-//  * Output: bool - true if a party death occurs during processing
-//  */
 // bool Battle::processDamageAction(BattleEvent* damage_event)
 // {
 //   auto party_death = false;
@@ -5167,17 +4509,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// /*
-//  * Description: Method to pre-determine the outcome of performing an amount
-//  *              of damage on the current target. This includes checking the
-//  *              death of the person and death of the party of the person
-//  (i.e.
-//  *              a victory/loss condition)
-//  *
-//  * Inputs: int32_t amount - the amount of damage that will be done to the
-//  user
-//  * Output: bool - true if a party death will occur
-//  */
 // bool Battle::processDamageAmount(int32_t amount)
 // {
 //   // TODO: The comments really need to be updated here. [03-07-15]
@@ -5205,18 +4536,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// /*
-//  * Description: Processes the outcome of a potential person death. If the
-//  last
-//  *              person in a party dies, this function will append a party
-//  death
-//  *              event.
-//  *
-//  * Inputs: Person* check_person - the person who will die
-//  * Output: bool - true if a party death occurs
-//  * TODO: Remove ailments
-//  * TODO: Guarding targets
-//  */
 // bool Battle::processPersonDeath(bool ally_target)
 // {
 //   std::vector<Person*> living_members;
@@ -5255,16 +4574,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// /*
-//  * Description: General relieve processing function. Turns an action buffer
-//  *              use of a relieve action into an event which can easily be
-//  *              rendered and performed to relieve a type of ailment
-//  *              from the given target (or targets)
-//  *
-//  * Inputs: none
-//  * Output: bool - true if a successful relieving event was added, false if
-//  fizz
-//  */
 // bool Battle::processRelieveAction()
 // {
 //   /* If the ailment attempting to be relieved is inflicted upon the current
@@ -5297,13 +4606,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// /*
-//  * Description: Calculates the outcome of a revive action on the current
-//  target.
-//  *
-//  * Inputs: BattleEvent* - pointer to the revive event to work with
-//  * Output: bool - true if a party death occurs (always false?)
-//  */
 // bool Battle::processReviveAction(BattleEvent* revive_event)
 // {
 //   auto heal_value = 1;
@@ -5334,16 +4636,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// /*
-//  * Description: Processes the outcome of an inflict action onto the event
-//  *              buffer. This includes determining whether the curr target
-//  can
-//  *              be inflicted with the action and the ailments which will be
-//  *              reset/overwritten for said infliction to take p[lace]
-//  *
-//  * Inputs: none
-//  * Output: bool //TODO
-//  */
 // bool Battle::processInflictAction()
 // {
 //   if(canInflict(curr_action->getAilment()))
@@ -5383,44 +4675,7 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// /*
-//  * Description: Determines whether a given infliction type can be newly
-//  *              instantiated upon the current target.
-//  *
-//  * Inputs: Infliction test_infliction - the infliction type to test
-//  * Output: bool - true if the person can be inflicted with given infliction
-//  */
-// bool Battle::canInflict(Infliction test_infliction)
-// {
-//   auto can_add = ailments.size() < kMAX_AILMENTS;
-//   auto person_ailments = getPersonAilments(curr_target);
 
-//   can_add &= (person_ailments.size() < kMAX_EACH_AILMENTS);
-
-//   // TODO: Instead of not being able to inflict, reset current ill?
-//   [12-20-14]
-//   can_add &= !(hasInfliction(test_infliction, curr_target));
-
-//   /* A bubbified person cannot be inflicted with other inflictions */
-//   if(test_infliction != Infliction::BUBBIFY)
-//     can_add &= !(curr_target->getAilFlag(PersonAilState::IS_BUBBY));
-
-//   if(can_add)
-//   {
-//     return !hasInfliction(test_infliction, curr_target);
-//   }
-
-//   return false;
-// }
-
-// /*
-//  * Description: Checks to see whether a given Ailment could legally be
-//  removed
-//  *              from the given target in the present Battle state.
-//  *
-//  * Inputs: Ailment* test_ailment - the potential ailment to be removed
-//  * Output: bool - true if the ailment could legally be removed
-//  */
 // bool Battle::canRelieve(Infliction test_infliction)
 // {
 //   auto person_ailments = getPersonAilments(curr_target);
@@ -5433,36 +4688,6 @@ bool Battle::setBackground(Sprite* background)
 //   return can_cure;
 // }
 
-// /*
-//  * Description: Determines and returns whether a given person has a given
-//  *              Infliction type.
-//  *
-//  * Inputs: Infliction type - the type of infliction checked for
-//  *         Person* check - the person to check
-//  * Output: bool - true if the given person has the given infliction
-//  */
-// bool Battle::hasInfliction(Infliction type, Person* check)
-// {
-//   bool has_infliction = false;
-
-//   if(check == nullptr)
-//     return false;
-
-//   for(auto& ailment : ailments)
-//     if(ailment->getType() == type && ailment->getVictim() == check)
-//       has_infliction = true;
-
-//   return has_infliction;
-// }
-
-// /*
-// * Description: Processes the current Item selected on the buffer for
-// *              each action in its using skill against a vector of targets
-// *              which were selected as targets of the item.
-// *
-// * Inputs: std::vetor<Person*> targets - the targets for the item
-// * Output: none
-// */
 // void Battle::processItem(std::vector<Person*> targets)
 // {
 //   // TODO [04-10-15]
@@ -5491,16 +4716,6 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-// /*
-//  * Description: Processes the current Skill action selected
-//  *              for each action in the Skill against a vector of targets
-//  which
-//  *              were selected as targets of the Skill
-//  *
-//  * Inputs: std::vector<Person*> - vector of targets for processing of curr
-//  Skill
-//  * Output: none
-//  */
 // void Battle::processSkill(std::vector<Person*> targets)
 // {
 //   /* Grab the current skill from the action buffer */
@@ -5632,12 +4847,6 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-// /*
-//  * Description:
-//  *
-//  * Inputs:
-//  * Output:
-//  */
 // bool Battle::processImplode(std::vector<Person*> targets)
 // {
 //   /* */
@@ -5647,12 +4856,6 @@ bool Battle::setBackground(Sprite* background)
 //   /* Assign the target, assert that the target is valid */
 //   assert(targets.size() > 0 && targets.at(0));
 //   curr_target = targets.at(0);
-
-// #ifdef UDEBUG
-//   std::cout << "{IMPLODE} Processing: " << curr_user->getName() <<
-//   std::endl;
-//   printPartyState();
-// #endif
 
 //   buildActionVariables(ActionType::IMPLODE, targets);
 
@@ -5686,18 +4889,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// /*
-//  * Description: Recalculates the ailments modification factors for a given
-//  *              Person* inflcited by all ailments. For proper reversible
-//  stat
-//  *              buffs, both the multiplicative effects and additive effects
-//  *              must be separately calculated and re-applied carefully to
-//  base
-//  *              stats.
-//  *
-//  * Inputs: Person* - person to recalculate ailment modification factors for
-//  * Output: none
-//  */
 // void Battle::reCalcAilments(Person* const target)
 // {
 //   auto temp_vita = target->getCurr().getStat(0);
@@ -5716,34 +4907,16 @@ bool Battle::setBackground(Sprite* background)
 //       ill->apply();
 // }
 
-// /*
-//  * Description: Upkeep function which calls each personal upkeep for each
-//  *              member in both friends and foes party.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 // void Battle::upkeep()
 // {
-// #ifdef UDEBUG
-//   std::cout << "---- Upkeep Processing ---- " << std::endl;
-// #endif
-
 //   if(!(getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS)))
 //   {
 //     setBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS, true);
 //   }
-
 //   if(upkeep_persons.size() > 0)
 //   {
-// #ifdef UDEBUG
-//     std::cout << "--- Personal Upkeep: " << upkeep_persons.at(0)->getName()
-//               << std::endl;
-// #endif
-
 //     /* If there is still people to upkeep, upkeep the first person */
 //     personalUpkeep(upkeep_persons.at(0));
-
 //     /* If that prerson's upkeep is complete, reset the flags and erase the
 //      * person from the upkeep persons vector */
 //     if(getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE))
@@ -5752,207 +4925,15 @@ bool Battle::setBackground(Sprite* background)
 //       setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
 //       setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
 //       setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
-
 //       upkeep_persons.erase(begin(upkeep_persons));
 //     }
 //   }
-
 //   /* If there are no remaining upkeep persons, the personal upkeep phase is
 //    * complete -> reset flags so update() will set the next turn state */
 //   if(upkeep_persons.size() == 0)
 //     setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, true);
 // }
 
-// /*
-//  * Description: Sub-function for update which holds data related to
-//  updating
-//  *              the battle during the ally selection phase.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::updateAllySelection()
-// {
-//   auto is_confused = hasInfliction(Infliction::CONFUSE, curr_user);
-
-//   if(menu->getMenuFlag(MenuState::SELECTION_VERIFIED))
-//   {
-//     selectUserActions();
-//   }
-//   else
-//   {
-//     if(is_confused && !menu->getMenuFlag(MenuState::ACTION_SELECTED))
-//     {
-//       bool valid = false;
-
-//       while(!valid)
-//       {
-//         menu->selectRandomAction();
-//         auto check_scope = menu->getSelectedSkill().skill->getScope();
-//         auto check_targets = getValidTargets(person_index, check_scope);
-
-//         if(check_targets.size() > 0)
-//           valid = true;
-//       }
-//     }
-//     else if(is_confused && menu->getMenuFlag(MenuState::TARGETS_ASSIGNED))
-//       menu->setMenuFlag(MenuState::SELECTION_VERIFIED);
-
-//     auto action_type = ActionType::NONE;
-
-//     if(menu->isActionTypeSelected())
-//       action_type = menu->getActionType();
-
-//     /* If the action index has been assigned and targets have not been
-//      * assigned yet (for that action index), find the scope of that action
-//      * the user wishes to use and inject the valid targets into the menu */
-//     if((menu->getMenuFlag(MenuState::ACTION_SELECTED) ||
-//         menu->getActionType() == ActionType::GUARD ||
-//         menu->getActionType() == ActionType::IMPLODE) &&
-//        !(menu->getActionType() == ActionType::DEFEND) &&
-//        !(menu->getActionType() == ActionType::PASS) &&
-//        !(menu->getActionType() == ActionType::RUN) &&
-//        !menu->getMenuFlag(MenuState::TARGETS_ASSIGNED))
-//     {
-//       auto scope = ActionScope::NO_SCOPE;
-//       std::vector<int32_t> targets;
-
-//       if(action_type == ActionType::SKILL)
-//         scope = menu->getSelectedSkill().skill->getScope();
-//       else if(action_type == ActionType::ITEM)
-//         scope = menu->getSelectedItem()->getUseSkill()->getScope();
-//       else if(action_type == ActionType::IMPLODE)
-//         scope = ActionScope::USER;
-
-//       // #ifdef UDEBUG
-//       //       std::cout << "Finding selectable targets for action with
-//       scope: "
-//       //                 << Helpers::actionScopeToStr(scope) << std::endl;
-//       // #endif
-
-//       if(action_type == ActionType::SKILL)
-//       {
-//         auto selected_skill = menu->getSelectedSkill();
-
-//         // #ifdef UDEBUG
-//         //         std::cout << "Selected Skill Name: " <<
-//         //         selected_skill.skill->getName()
-//         //                   << std::endl;
-//         // #endif
-
-//         targets = getIndexesOfPersons(selected_skill.all_targets);
-//       }
-//       else if(action_type == ActionType::ITEM)
-//       {
-//         // auto battle_item;
-//       }
-//       else if(action_type == ActionType::GUARD)
-//       {
-//         targets = getValidTargets(person_index,
-//         ActionScope::ONE_ALLY_NOT_USER);
-//       }
-
-//       if(!menu->setSelectableTargets(targets))
-//       {
-// #ifdef UDEBUG
-//         std::cout << "No selectable targets found! Select another action"
-//                   << " index!" << std::endl;
-// #endif
-//       }
-//       else
-//       {
-//         menu->setMenuFlag(MenuState::TARGETS_ASSIGNED);
-//         menu->setActionScope(scope);
-//         menu->setMenuFlag(MenuState::SCOPE_ASSIGNED);
-//         menu->printMenuState();
-//       }
-//     }
-//   }
-// }
-
-// /*
-//  * Description: Sub-update function call for update tick processing during
-//  *              enemy turn selection phase of the battle.
-//  *
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::updateEnemySelection()
-// {
-//   if(curr_module != nullptr)
-//   {
-//     auto action_type = curr_module->getActionType();
-
-//     if((curr_module->getFlag(AIState::ACTION_INDEX_CHOSEN) ||
-//         curr_module->getActionType() == ActionType::DEFEND ||
-//         curr_module->getActionType() == ActionType::GUARD ||
-//         curr_module->getActionType() == ActionType::IMPLODE) &&
-//        !curr_module->getFlag(AIState::TARGETS_ASSIGNED))
-//     {
-//       auto scope = ActionScope::NO_SCOPE;
-
-//       if(action_type == ActionType::SKILL)
-//         scope = curr_module->getSelectedSkill()->getScope();
-//       else if(action_type == ActionType::ITEM)
-//         scope = curr_module->getSelectedItem()->getUseSkill()->getScope();
-//       else if(action_type == ActionType::IMPLODE)
-//       {
-//         std::cout << "Setting action scope: ONE_ENEMY " << std::endl;
-//         scope = ActionScope::ONE_ENEMY;
-//       }
-//       else if(action_type == ActionType::DEFEND ||
-//               action_type == ActionType::RUN || action_type ==
-//               ActionType::PASS)
-//       {
-//         std::cout << "Setting action type:: USER" << std::endl;
-//         scope = ActionScope::USER;
-//       }
-//       else if(action_type == ActionType::GUARD)
-//       {
-//         scope = ActionScope::ONE_ALLY_NOT_USER;
-//       }
-
-// #ifdef UDEBUG
-//       std::cout << "Person Index: " << person_index
-//                 << " Finding selectable targets for enemy action w/ scope:
-//                 "
-//                 << Helpers::actionScopeToStr(scope) << std::endl;
-// #endif
-
-//       auto valid_targets = getValidTargets(person_index, scope);
-//       std::vector<Person*> friends_persons;
-//       std::vector<Person*> foes_persons;
-
-//       for(auto target : valid_targets)
-//       {
-//         if(target < 0)
-//           friends_persons.push_back(getPerson(target));
-//         else
-//           foes_persons.push_back(getPerson(target));
-//       }
-
-//       curr_module->setActionScope(scope);
-//       curr_module->setFriendTargets(friends_persons);
-//       curr_module->setFoeTargets(foes_persons);
-//       curr_module->setFlag(AIState::TARGETS_ASSIGNED, true);
-//       curr_module->calculateTargets();
-//     }
-//     else if(curr_module->getFlag(AIState::SELECTION_COMPLETE))
-//     {
-//       /* Set to the next enemy selection or finish enemy selections */
-//       selectEnemyActions();
-//     }
-//   }
-// }
-
-// /*
-//  * Description: Calls checkPartyDeath and assigns a LOSS or VICTORY
-//  condition
-//  *
-//  * Inputs: none
-//  * Output: bool - true if a party death has occured
-//  */
 // bool Battle::updatePartyDeaths(Person* target)
 // {
 //   if(target != nullptr)
@@ -5962,7 +4943,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// // TODO: Comment
 // void Battle::unsetActorsAttacking()
 // {
 //   for(auto& ally : friends->getMembers())
@@ -5973,7 +4953,6 @@ bool Battle::setBackground(Sprite* background)
 //       foe->setBFlag(BState::IS_ATTACKING, false);
 // }
 
-// // TODO: Comment
 // void Battle::unsetActorsSelecting()
 // {
 //   for(auto& ally : friends->getMembers())
@@ -5984,16 +4963,6 @@ bool Battle::setBackground(Sprite* background)
 //       foe->setBFlag(BState::IS_SELECTING, false);
 // }
 
-// /*
-//  * Description: Updates the state of a defending target. If they are a
-//  power
-//  *              defender, this means they are able to persist through
-//  further
-//  *              hits, but a non power defender may not.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if the target defense operation can be processed
-//  */
 // bool Battle::updateTargetDefense()
 // {
 //   auto can_process = true;
@@ -6049,14 +5018,6 @@ bool Battle::setBackground(Sprite* background)
 //     target->setBFlag(BState::IS_ATTACKING, true);
 // }
 
-// /*
-//  * Description: Updates the Battle to the next state based on its present
-//  state.
-//  *              Refreshes the phase and action done flags.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 void Battle::setNextTurnState()
 {
   /* Set the CURRENT_STATE to incomplete */
@@ -6072,42 +5033,16 @@ void Battle::setNextTurnState()
 
   if(turn_state != TurnState::FINISHED)
   {
-    /* After the Battle Begins, the general turn loop begins at General
-    Upkeep*/
     if(turn_state == TurnState::BEGIN)
-    {
       turn_state = TurnState::GENERAL_UPKEEP;
-    }
-
-    /* After general upkeep, each personal upkeep takes place */
     else if(turn_state == TurnState::GENERAL_UPKEEP)
-    {
       turn_state = TurnState::UPKEEP;
-      // if(turns_elapsed > 0)
-      //   upkeep();
-      // else
-      setFlagCombat(CombatState::PHASE_DONE);
-    }
-    /* After presonal upkeeps, the first turn order party selects actions
-    */
     else if(turn_state == TurnState::UPKEEP)
-    {
       turn_state = TurnState::SELECT_ACTION_ALLY;
-
-      // person_index = 1;
-      // if(anyUserSelection(true))
-      //   selectUserActions();
-      // else
-    }
-
     else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-    {
       turn_state = TurnState::SELECT_ACTION_ENEMY;
-    }
     else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-    {
       turn_state = TurnState::PROCESS_ACTIONS;
-    }
   }
 
   std::cout << "Setting turn state: " << Helpers::turnStateToStr(turn_state)
@@ -6194,299 +5129,6 @@ void Battle::setNextTurnState()
 //   }
 
 //   return false;
-// }
-
-// /*
-//  * Description: Assigns the next person index. If In selection action
-//  enemy,
-//  *              finds the next person index which needs action selected.
-//  Same
-//  *              for selection of user actions. If no next person is needed,
-//  *              this function returns false.
-//  *
-//  * Inputs: none
-//  * Output: bool - whether the next person index was set and is valid
-//  */
-// bool Battle::setNextPersonIndex()
-// {
-//   auto valid_person = false;
-
-//   if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-//   {
-//     for(int32_t i = person_index;
-//         (i >= (-1 * static_cast<int32_t>(foes->getSize()))) &&
-//         !valid_person;
-//         i--)
-//     {
-//       if((i < person_index) && testPersonIndex(i))
-//       {
-//         person_index = i;
-//         valid_person = true;
-//       }
-//     }
-//   }
-//   else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-//   {
-//     for(int32_t i = person_index;
-//         (i <= static_cast<int32_t>(friends->getSize())) && !valid_person;
-//         i++)
-//     {
-//       if((i > person_index) && testPersonIndex(i))
-//       {
-//         person_index = i;
-//         valid_person = true;
-//       }
-//     }
-//   }
-
-//   return valid_person;
-// }
-
-// /*
-//  * Description: Assigns a new value to the elapsed time
-//  *
-//  * Inputs: int32-t new_value - new value for total time elapsed in battle
-//  * Output: none
-//  */
-
-// /*
-//  * Description: Assigns a new value to the turns elapsed
-//  *
-//  * Inputs: uint16_t new_value - the new value for the turns elapsed
-//  * Output: none
-//  */
-// void Battle::setTurnsElapsed(const uint16_t& new_value)
-// {
-//   turns_elapsed = new_value;
-// }
-
-// /*
-//  * Description: Assigns a new turn mode to the Battle
-//  *
-//  * Inputs: TurnMode - new enumerated turn mode (FRIENDS_FIRST, etc.)
-//  * Output: none
-//  */
-
-// /*
-//  * Description: Updates the turn state of the Battle. Prints it if in
-//  UDEBUG
-//  *
-//  * Inputs: TurnState - new enumerated turn state for the Battle (UPKEEP,
-//  etc.)
-//  * Output: none
-//  */
-// void Battle::setTurnState(const TurnState& new_turn_state)
-// {
-//   turn_state = new_turn_state;
-
-// #ifdef UDEBUG
-//   printTurnState();
-// #endif
-// }
-
-// /*=============================================================================
-//  * PUBLIC FUNCTIONS
-//  *============================================================================*/
-
-// /*
-//  * Description: Process key down events for user selection of
-//  actions/outcome
-//  *              of battle.
-//  *
-//  * Inputs: SDL_KeyboardEvent - the key down event
-//  * Output: bool - false
-//  */
-
-// /*
-//  * Description: Method to print information about the Battle.
-//  *
-//  * Inputs: bool simple - true if to show a simple output of Battle
-//  information
-//  *         bool flags - true if to print out state of all flags
-//  *         bool party - true if to print out party state
-//  * Output: none
-//  */
-// void Battle::printAll(const bool& flags, const bool& party)
-// {
-//   std::cout << "==== Battle ====\n";
-
-//   std::cout << "Friends Size: " << friends->getSize();
-//   std::cout << "\nFoes Size: " << foes->getSize();
-//   std::cout << "\nTurns Elapsed: " << turns_elapsed;
-//   std::cout << "\n\n";
-
-//   /* For other processing flags, see print processing function */
-//   if(flags)
-//   {
-//     std::cout << "\nPHASE_DONE: " <<
-//     getBattleFlag(CombatState::PHASE_DONE);
-//     std::cout << "\nOUTCOME_PROCESSED: "
-//               << getBattleFlag(CombatState::OUTCOME_PROCESSED);
-//     std::cout << "\nOUTCOME PERFORMED: "
-//               << getBattleFlag(CombatState::OUTCOME_PERFORMED);
-//     std::cout << "\n\n";
-//   }
-
-//   if(party)
-//     printPartyState();
-
-//   std::cout << "==== / Battle ====\n" << std::endl;
-// }
-
-// /*
-//  * Description: Print out the etailed information for each person in
-//  friends
-//  *              and foes to the console.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::printPartyState()
-// {
-//   std::cout << "\n---- Friends ----\n";
-//   for(uint32_t i = 0; i < friends->getSize(); i++)
-//   {
-//     printPersonState(friends->getMember(i),
-//                      getIndexOfPerson(friends->getMember(i)));
-//   }
-
-//   std::cout << "---- Foes ----\n";
-//   for(uint32_t i = 0; i < foes->getSize(); i++)
-//     printPersonState(foes->getMember(i),
-//     getIndexOfPerson(foes->getMember(i)));
-//   std::cout << std::endl;
-// }
-
-// /*
-//  * Description: Prints out the state of a given person and their
-//  corresponding
-//  *              person index.
-//  *
-//  * Inputs: Person* - pointer to the member which to print out VITA/QTDR for
-//  *         int32_t - the person index of the person (only for display
-//  purposes)
-//  * Output: none
-//  */
-// void Battle::printPersonState(Person* const member, const int32_t&
-// person_index)
-// {
-//   if(member != nullptr)
-//   {
-//     std::cout << "[" << person_index << "] - " << member->getName() << " [
-//     Lv. "
-//               << member->getLevel()
-//               << " ] [Alive: " << member->getBFlag(BState::ALIVE) << "] \n"
-//               << "VITA: " << member->getCurr().getStat(0) << "/"
-//               << member->getTemp().getStat(0) << " ["
-//               << std::floor(member->getVitaPercent() * 100) << "%]\n"
-//               << "QTDR: " << member->getCurr().getStat(1) << "/"
-//               << member->getTemp().getStat(1) << " ["
-//               << std::floor(member->getQDPercent() * 100) << "%]\nILLS: ";
-
-//     auto person_ailments = getPersonAilments(member);
-
-//     for(auto& ailment : person_ailments)
-//       std::cout << Helpers::ailmentToStr(ailment->getType()) << " ";
-//     std::cout << "\n\n";
-//   }
-// }
-
-// /*
-//  * Description: Print out information regarding the Processing, rendering,
-//  *              performing loop of the battle at a given moment.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::printProcessingState(bool basic)
-// {
-//   if(basic)
-//   {
-//     std::cout << "\n--- Procesing State ---";
-
-//     if(curr_skill != nullptr)
-//       std::cout << "\nCurr Skill: " << curr_skill->getName();
-
-//     if(curr_item != nullptr)
-//       std::cout << "\nCurr Item: " << curr_item->getName();
-
-//     if(curr_user != nullptr)
-//       std::cout << "\nCurr User: " << curr_user->getName();
-
-//     if(curr_target != nullptr)
-//       std::cout << "\nCurr Target: " << curr_target->getName();
-
-//     std::cout << "\nCurr Action Index: " << curr_action_index << std::endl;
-//   }
-//   else
-//   {
-//     std::cout << "\n--- Processing State ---\n";
-//     std::cout << "Processing Index: " << pro_index << std::endl;
-//     std::cout << "Temp Ailments: " << temp_ailments.size() << std::endl;
-//     std::cout << "Upkeep Persons: " << upkeep_persons.size() << std::endl;
-//     std::cout << "\nRENDERING_COMPLETE: "
-//               << getBattleFlag(CombatState::RENDERING_COMPLETE);
-//     std::cout << "\nREADY TO RENDER: "
-//               << getBattleFlag(CombatState::READY_TO_RENDER);
-//     std::cout << "\nBEGIN_PROCESSING: "
-//               << getBattleFlag(CombatState::BEGIN_PROCESSING);
-//     std::cout << "\nBEGIN ACTION PROCESSING: "
-//               << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
-//     std::cout << "\nACTION PROCESSING COMPLETE: "
-//               << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
-//     std::cout << "\nLAST INDEX: " <<
-//     getBattleFlag(CombatState::LAST_INDEX);
-//     std::cout << "\nALL PROCESSING COMPLETE: "
-//               << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
-//     std::cout << "\nBEGIN PERSON UPKEEPS: "
-//               << getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS);
-//     std::cout << "\nPERSON UPKEEP COMPLETE: "
-//               << getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
-//     std::cout << "\nBEGIN AILMENT UPKEEPS: "
-//               << getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS);
-//     std::cout << "\nCURRENT AILMENT COMPLETE: "
-//               << getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
-//     std::cout << "\nALL UPKEEPS COMPLETE: "
-//               << getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE);
-//     std::cout << "\nOUTCOME PROCESSING: "
-//               << getBattleFlag(CombatState::OUTCOME_PROCESSED);
-//     std::cout << "\nOUTCOME PERFORMED: "
-//               << getBattleFlag(CombatState::OUTCOME_PERFORMED);
-//     std::cout << std::endl;
-//   }
-// }
-
-// /*
-//  * Description: Prints out the inventory information for a given Party*
-//  *
-//  * Inputs: Party* - pointer to print the inventory information for
-//  * Output: none
-//  */
-// void Battle::printInventory(Party* const target_party)
-// {
-//   if(target_party != nullptr && target_party->getInventory() != nullptr)
-//   {
-//     target_party->getInventory()->print();
-//   }
-//   else
-//   {
-//     std::cout << "[Warning]: Attempting to print null party or null
-//     inventory."
-//               << std::endl;
-//   }
-// }
-
-// /*
-//  * Description: Prints out the turn state of the Battle.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
-// void Battle::printTurnState()
-// {
-//   std::cout << "Current Battle State: ";
-
-//   std::cout << std::endl;
 // }
 
 // /*
@@ -6618,278 +5260,4 @@ bool Battle::update(int32_t cycle_time)
 //   }
 
 //   return false;
-// }
-
-// /*
-//  * Description: Returns the index integer of a a given Person ptr, or 0 if no
-//  *              pointer
-//  *
-//  * Inputs: Person* - returns the corresponding index of a given Person
-//  pointer
-//  * Output: int32_t - the corresponding index of the given pointer
-//  */
-// int32_t Battle::getTarget(Person* battle_member)
-// {
-//   for(uint32_t i = 0; i < friends->getSize(); i++)
-//     if(friends->getMember(i) == battle_member)
-//       return static_cast<int32_t>(i) + 1;
-
-//   for(uint32_t i = 0; i < foes->getSize(); i++)
-//     if(foes->getMember(i) == battle_member)
-//       return static_cast<int32_t>((i * -1) - 1);
-
-//   return 0;
-// }
-
-// /*
-//  * Description: Converts an index for a person to the corresponding Person*,
-//  *              or returns nullptr if there is no matching Person*
-//  *
-//  * Inputs: index - the index given for wanting the corresponding Person ptr
-//  * Output: Person* - pointer for the given index
-//  */
-// Person* Battle::getPerson(const int32_t& index)
-// {
-//   if(index < 0)
-//   {
-//     if((index + static_cast<int32_t>(foes->getSize())) > -1)
-//       return foes->getMember((index * -1) - 1);
-//   }
-//   else if(index > 0)
-//   {
-//     if(index - 1 < static_cast<int32_t>(friends->getSize()))
-//       return friends->getMember(index - 1);
-//   }
-
-//   return nullptr;
-// }
-
-// /*
-//  * Description: Compiles a vector of all possible targets in the current
-//  Battle
-//  *              from both the friends and foes party.
-//  *
-//  * Inputs: none
-//  * Output: std::vector<int32_t> - indexes of all possible targets
-//  */
-// std::vector<int32_t> Battle::getAllTargets()
-// {
-//   auto all_targets = getFriendsTargets();
-//   auto foes_targets = getFoesTargets();
-
-//   all_targets.insert(end(all_targets), begin(foes_targets),
-//   end(foes_targets));
-
-//   return all_targets;
-// }
-
-// /*
-//  * Description: Obtains all friendly battle member indexes. Will grab all
-//  living
-//  *              members or all dead members of the Foes party.
-//  *
-//  * Inputs: ko - whether to grab dead members. If false, will grab living
-//  members
-//  * Output: std::vector<int32_t> - indexes of needed persons in the Friends
-//  party
-//  */
-// std::vector<int32_t> Battle::getFriendsTargets(const bool& ko)
-// {
-//   std::vector<int32_t> friends_targets;
-
-//   for(uint32_t i = 0; i < friends->getSize(); i++)
-//   {
-//     auto member = friends->getMember(i);
-//     auto valid_target = false;
-
-//     valid_target |= (ko && !member->getBFlag(BState::ALIVE));
-//     valid_target |= (!ko && member->getBFlag(BState::ALIVE));
-
-//     if(valid_target)
-//       friends_targets.push_back(getTarget(friends->getMember(i)));
-//   }
-
-//   return friends_targets;
-// }
-
-// /*
-//  * Description: Obtains all unfriendly battle member indexes. Will grab all
-//  *              living members or all dead members in the Foes party.
-//  *
-//  * Inputs: ko - whether to grab dead members. If false, will grab living
-//  members
-//  * Output: std::vector<int32_t> - indexes of needed persons in the Foes party
-//  */
-// std::vector<int32_t> Battle::getFoesTargets(const bool& ko)
-// {
-//   std::vector<int32_t> foes_targets;
-
-//   for(uint32_t i = 0; i < foes->getSize(); i++)
-//   {
-//     auto member = foes->getMember(i);
-//     auto valid_target = false;
-
-//     valid_target |= (ko && !member->getBFlag(BState::ALIVE));
-//     valid_target |= (!ko && member->getBFlag(BState::ALIVE));
-
-//     if(valid_target)
-//       foes_targets.push_back(getTarget(foes->getMember(i)));
-//   }
-
-//   return foes_targets;
-// }
-
-// /*
-//  * Description: Obtains a vector of targets indexes for all members of a
-//  party
-//  *              given the index of one member of the party. This is trivial
-//  *              because all members of the same party will have the same
-//  signage
-//  *              (positive or negtaive).
-//  *
-//  * Inputs: int32_t check_index - a member of the party to find all targets
-//  for
-//  * Output: std::vector<int32_t> - constructed vector of all party indexes
-//  */
-// std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
-// {
-//   if(check_index < 0)
-//     return getFoesTargets();
-//   else
-//     return getFriendsTargets();
-
-//   return getFriendsTargets();
-// }
-
-// /*
-//  * Description: Function for converting integer person indexes into their
-//  *              respective Person pointers.
-//  *
-//  * Inputs: std::vector<int32_t> - vector of integer person indexes
-//  * Output: std::vector<Person*> - vector of corresponding Person pointers
-//  */
-// std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t>
-// indexes)
-// {
-//   std::vector<Person*> persons;
-
-//   for(auto it = begin(indexes); it != end(indexes); ++it)
-//     if(getPerson(*it) != nullptr)
-//       persons.push_back(getPerson(*it));
-
-//   return persons;
-// }
-
-// /*
-//  * Description: Function for converting Person pointers to their respective
-//  *              person indexes.
-//  *
-//  * Inputs: std::vector<Person*> - vector of Person pointers to find indexes
-//  of
-//  * Output: std::vector<int32_t> - vector of corresponding integer indexes
-//  */
-// std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person*>
-// persons)
-// {
-//   std::vector<int32_t> indexes;
-
-//   for(const auto& person : persons)
-//     if(getIndexOfPerson(person) != 0)
-//       indexes.push_back(getIndexOfPerson(person));
-
-//   return indexes;
-// }
-
-// /*
-//  * Description: Determines a person index value given a Person* to find it
-//  for.
-//  *
-//  * Inputs: Person* check_person - the person pointer to find the index of
-//  * Output: int32_t - the corresponding integer person index
-//  */
-// int32_t Battle::getIndexOfPerson(Person* check_person)
-// {
-//   /* For Friends members, their person index is party_index + 1  (1 - 5) */
-//   for(uint32_t i = 0; i < friends->getSize(); i++)
-//     if(check_person == friends->getMember(i))
-//       return static_cast<int32_t>(i + 1);
-
-//   /* For Foes members, their index is (-1 * party_index) - 1) (-1 to -5) */
-//   for(uint32_t i = 0; i < foes->getSize(); i++)
-//     if(check_person == foes->getMember(i))
-//       return (static_cast<int32_t>(i) * -1) - 1;
-
-//   return 0;
-// }
-
-// /*
-//  * Description: Obtains a vector of battle member indexes for a given user
-//  and
-//  *              scope. This checks all targets which the user can target
-//  *              based on the scope. (ex. NOT_USER is everybody but the user).
-//  *
-//  * Inputs: int32_t index - the person index for the user to check targets for
-//  *         ActionScope action_scope - the scope relating to targets
-//  * Output: std::vector<int32_t> - constructed vector of valid person targets
-//  */
-// std::vector<int32_t> Battle::getValidTargets(int32_t index,
-//                                              ActionScope action_scope)
-// {
-//   std::vector<int32_t> valid_targets;
-
-//   if(action_scope == ActionScope::USER)
-//   {
-//     valid_targets.push_back(index);
-//   }
-//   else if(action_scope == ActionScope::ONE_TARGET ||
-//           action_scope == ActionScope::ALL_TARGETS ||
-//           action_scope == ActionScope::ONE_PARTY)
-//   {
-//     valid_targets = getAllTargets();
-//   }
-//   else if(action_scope == ActionScope::NOT_USER ||
-//           action_scope == ActionScope::ALL_NOT_USER)
-//   {
-//     valid_targets = getAllTargets();
-//     std::remove(begin(valid_targets), end(valid_targets), index);
-//     valid_targets.pop_back();
-//   }
-//   else if(action_scope == ActionScope::ONE_ALLY_NOT_USER)
-//   {
-//     if(index > 0)
-//       valid_targets = getFriendsTargets();
-//     else if(index < 0)
-//       valid_targets = getFoesTargets();
-
-//     std::remove(begin(valid_targets), end(valid_targets), index);
-//     valid_targets.pop_back();
-//   }
-//   else if(action_scope == ActionScope::ONE_ENEMY ||
-//           action_scope == ActionScope::TWO_ENEMIES ||
-//           action_scope == ActionScope::ALL_ENEMIES)
-//   {
-//     if(index > 0)
-//       valid_targets = getFoesTargets();
-//     else if(index < 0)
-//       valid_targets = getFriendsTargets();
-//   }
-//   else if(action_scope == ActionScope::ONE_ALLY ||
-//           action_scope == ActionScope::TWO_ALLIES ||
-//           action_scope == ActionScope::ALL_ALLIES)
-//   {
-//     if(index > 0)
-//       valid_targets = getFriendsTargets();
-//     else if(index < 0)
-//       valid_targets = getFoesTargets();
-//   }
-//   else if(action_scope == ActionScope::ONE_ALLY_KO ||
-//           action_scope == ActionScope::ALL_ALLIES_KO)
-//   {
-//     if(index > 0)
-//       valid_targets = getFriendsTargets(true);
-//     else if(index < 0)
-//       valid_targets = getFoesTargets(true);
-//   }
-
-//   return valid_targets;
 // }

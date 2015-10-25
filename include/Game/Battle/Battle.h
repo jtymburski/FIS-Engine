@@ -50,23 +50,6 @@ enum class IgnoreState
 
 };
 
-enum class DamageState
-{
-  DAMAGE,
-  PERSON_DEATH_CHECK,
-  PARTY_DEATH_CHECK,
-  COMPLETE
-};
-
-enum class OutcomeType
-{
-  VICTORY,
-  DEFEAT,
-  ALLIES_RUN,
-  ENEMIES_RUN,
-  RETURN,
-  NONE
-};
 
 struct ActorUpkeep
 {
@@ -74,30 +57,6 @@ struct ActorUpkeep
   std::vector<Ailment*> upkeep_aiilments;
   UpkeepState upkeep_state;
 };
-
-// TODO - Throw this into the BattleEvent
-// struct BattleEvent
-// {
-//   ProcessingState processing_state;
-//   ActionType curr_action_type;
-
-//   Skill* curr_skill;
-//   Item*  curr_item;
-
-//   uint32_t curr_action_index;
-
-//   BattleActor* curr_actor;
-//   std::vector<BattleActor*> curr_targets;
-
-//   IgnoreState flags_ignore;
-
-//   Attribute prim_off;
-//   Attribute prim_def;
-//   Attribute secd_off;
-//   Attribute secd_def;
-//   Attribute user_attr;
-//   Attribute targ_attr;
-// };
 
 class Battle
 {
@@ -160,9 +119,9 @@ private:
   /* Elapsed turns of hte battle */
   uint16_t turns_elapsed;
 
-  /*=============================================================================
-   * CONSTANTS - Battle Operations
-   *============================================================================*/
+/*=============================================================================
+ * CONSTANTS - Battle Operations
+ *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
   static const uint16_t kMAXIMUM_DAMAGE;
@@ -227,9 +186,9 @@ private:
   static const int16_t kENEMY_RUN_EXP_PC;
   static const int16_t kRUN_PC_EXP_PENALTY;
 
-  /*=============================================================================
-   * CONSTANTS - Battle Display
-   *============================================================================*/
+/*=============================================================================
+ * CONSTANTS - Battle Display
+ *============================================================================*/
   const static uint16_t kACTION_BORDER;   /* Border width on action slideout */
   const static uint16_t kACTION_CENTER;   /* Center point to center triangle */
   const static uint16_t kACTION_COLOR_A;  /* Alpha for inner portion */
@@ -312,22 +271,24 @@ private:
   const static SDL_Color kQTDR_REGEN_COLOR;
   const static SDL_Color kHIBERNATION_REGEN_COLOR;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS - Battle Operations
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS - Battle Operations
+ *============================================================================*/
 private:
+  /* Constructs AI Modules for the Battle */
+  void aiBuild();
+
+  /* Deletes the AI modules at the end of a Battle */
+  void aiClear();
+
   /* Buffer the current selection of the menu to the action buffer */
   bool bufferMenuSelection();
 
   /* Buffer the module selection */
   bool bufferModuleSelection();
 
-  /* Constructs AI Modules for the Battle */ //TODO - put where
-  void buildAI();
-
   /* Construct the Battle actors from the given parties */
   void buildBattleActors(Party* allies, Party* enemies);
-
 
   /* Calculates an action selection for a given BattleActor // AIModule */
   bool calculateEnemySelection(BattleActor* next_actor, AIModule* curr_module);
@@ -374,9 +335,9 @@ private:
   /* Sets the next turn state of the Battle */
   void setNextTurnState();
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS - Battle Display
-  *============================================================================*/
+/*============================================================================
+ * PRIVATE FUNCTIONS - Battle Display
+ *============================================================================*/
 private:
   /* Creates action frames for a given BattleActor */
   void buildActionFrame(BattleActor* actor);
@@ -399,15 +360,20 @@ private:
   /* Renders the Battle bar on the screen */
   bool renderBattleBar();
 
+  /* Renders the ailments on a given actor */
   bool renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y, bool f);
 
+  /* Ally rendering functions */
   bool renderAllies();
   bool renderAlliesInfo();
   bool renderAllyInfo(BattleActor* ally, bool for_menu = false);
+
+  /* Enemy rendering functions */
   bool renderEnemies();
   bool renderEnemiesInfo();
   bool renderEnemyInfo(BattleActor* actor);
 
+  /* Basic setup for health drawing */
   bool setupHealthDraw(BattleActor* actor, float health_pc);
 
   /* Rendering updates */
@@ -422,9 +388,9 @@ private:
   /* Returns the Y-value for a given Person */
   int32_t getActorY(BattleActor* actor);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS - Battle Operations
-   *============================================================================*/
+/*============================================================================
+ * PUBLIC FUNCTIONS - Battle Operations
+ *============================================================================*/
 public:
   /* Processes a KeyDown event */
   bool keyDownEvent(SDL_KeyboardEvent event);
@@ -468,9 +434,9 @@ public:
   /* Set a RenderState flag */
   void setFlagRender(RenderState test_flag, const bool& set_value = true);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS - Battle Display
-   *============================================================================*/
+/*============================================================================
+ * PUBLIC FUNCTIONS - Battle Display
+ *============================================================================*/
 public:
   /* Renders the Battle */
   bool render();
