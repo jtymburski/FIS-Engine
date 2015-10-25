@@ -315,6 +315,7 @@ bool Battle::bufferModuleSelection()
 
   if(curr_actor && curr_module)
   {
+    std::cout << "Buffering module selection." << std::endl;
     auto action_type = curr_module->getActionType();
     auto targets = curr_module->getChosenTargets();
 
@@ -635,106 +636,80 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
 void Battle::updateEnemySelection()
 {
   auto module_actor = getCurrentModuleActor();
-  auto curr_module = getCurrentModule();
+  auto curr_module  = getCurrentModule();
 
   if(module_actor && curr_module)
   {
     if(curr_module->getFlag(AIState::SELECTION_COMPLETE))
-      bufferModuleSelection();
-
-    updateUserSelection();
+    {
+      assert(bufferModuleSelection());
+      updateSelectingState(module_actor, true);
+    }
   }
   else
   {
     auto next_actor = getNextModuleActor();
     auto next_module = getModuleOfActor(next_actor);
 
-    std::cout << "Next module actor: " << next_actor->getBasePerson()->getName()
-              << std::endl;
-
     if(next_actor && next_module)
     {
       next_module->resetForNewTurn(next_actor);
+      updateSelectingState(next_actor, false);
       calculateEnemySelection(next_actor, next_module);
     }
     else
+    {
       setFlagCombat(CombatState::PHASE_DONE);
+    }
   }
 }
 
-//   /* If the current module selection is complete, attempt to add it into
-//   the
-//    * buffer. bufferEnemyAction() will update the person index if needed */
-//   if(curr_module == nullptr)
-//   {
-//     if(!testPersonIndex(person_index))
-//       setNextPersonIndex();
-
-//     update_module = true;
-//   }
-//   else if(curr_module->getFlag(AIState::SELECTION_COMPLETE))
-//   {
-//     update_module = bufferEnemyAction();
-//   }
-
-//     auto items = friends->getInventory()->getBattleItems();
-//     curr_module->setItems(buildBattleItems(person_index, items));
-
-//     auto skills = curr_user->getUseableSkills();
-//     auto battle_skills = buildBattleSkills(person_index, skills);
-
-//     if(hasInfliction(Infliction::BUBBIFY, curr_user))
-//       battle_skills = buildBattleSkills(person_index, bubbified_skills);
-
-//     curr_module->setSkills(battle_skills);
-//     curr_module->calculateAction();
-//   }
-//   else
-//   {
-//     /* Mark the enemy selection phase as complete on the max index */
-//     setBattleFlag(CombatState::PHASE_DONE);
-//   }
-
-void Battle::updateUserSelection()
+void Battle::updateSelectingState(BattleActor* actor, bool set_selected)
 {
-  BattleActor* menu_actor = nullptr;
-
-  if(turn_state == TurnState::SELECT_ACTION_ALLY)
-    menu_actor = battle_menu->getActor();
-  else
-    menu_actor = getCurrentModuleActor();
-
-  /* If menu has a valid actor, update their selection */
-  if(menu_actor)
+  if(actor)
   {
-    auto state = menu_actor->getSelectionState();
+    auto state = actor->getSelectionState();
 
-    if(battle_menu->getFlag(BattleMenuState::SELECTION_COMPLETE))
+    if(set_selected)
     {
       if(state == SelectionState::SELECTING)
-        menu_actor->setSelectionState(SelectionState::SELECTED_ACTION);
+        actor->setSelectionState(SelectionState::SELECTED_ACTION);
       else if(state == SelectionState::SELECTING_2ND_ACTION)
-        menu_actor->setSelectionState(SelectionState::SELECTED_2ND_ACTION);
+        actor->setSelectionState(SelectionState::SELECTED_2ND_ACTION);
       else if(state == SelectionState::SELECTING_3RD_ACTION)
-        menu_actor->setSelectionState(SelectionState::SELECTED_3RD_ACTION);
-
-      /* Add the current menu selection to the buffer */
-      assert(bufferMenuSelection());
-
-      /* Clear the menu for a new turn */
-      battle_menu->clear();
+        actor->setSelectionState(SelectionState::SELECTED_3RD_ACTION);
     }
     else
     {
       if(state == SelectionState::SELECTED_ACTION)
-        menu_actor->setSelectionState(SelectionState::SELECTING_2ND_ACTION);
+        actor->setSelectionState(SelectionState::SELECTING_2ND_ACTION);
       else if(state == SelectionState::SELECTED_2ND_ACTION)
-        menu_actor->setSelectionState(SelectionState::SELECTING_3RD_ACTION);
+        actor->setSelectionState(SelectionState::SELECTING_3RD_ACTION);
       else
-        menu_actor->setSelectionState(SelectionState::SELECTING);
+        actor->setSelectionState(SelectionState::SELECTING);
     }
   }
+}
 
+void Battle::updateUserSelection()
+{
+  auto menu_actor = battle_menu->getActor();
+
+  /* If menu has a valid actor, update their selection */
+  if(menu_actor)
+  {
+    if(battle_menu->getFlag(BattleMenuState::SELECTION_COMPLETE))
+    {
+      /* Add the current menu selection to the buffer */
+      assert(bufferMenuSelection());
+
+      /* Update selecting state of user [SELECTED, 2ND_SELECTED, etc.] */
+      updateSelectingState(menu_actor, true);
+
+      /* Clear the menu for a new turn */
+      battle_menu->clear();
+    }
+  }
   /* If the menu does not have a valid actor, load their data in */
   else
   {
@@ -743,7 +718,10 @@ void Battle::updateUserSelection()
     auto next_actor = getNextMenuActor();
 
     if(next_actor)
+    {
       loadMenuForActor(next_actor);
+      updateSelectingState(next_actor, false);
+    }
     else
       setFlagCombat(CombatState::PHASE_DONE);
   }
@@ -2226,62 +2204,20 @@ int32_t Battle::getActorY(BattleActor* actor)
  * PUBLIC FUNCTIONS - Battle Operations
  *============================================================================*/
 
-// TODO
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     battle_menu->keyDownEvent(event);
+  else
+  {
+    if(event.keysym.sym == SDLK_DELETE && battle_buffer)
+      battle_buffer->print(false);
+    else if(event.keysym.sym == SDLK_INSERT && battle_buffer)
+      battle_buffer->print(true);
+  }
 
   return false;
 }
-// #ifdef UDEBUG
-//   if(!getBattleFlag(CombatState::OUTCOME_PROCESSED))
-//   {
-//     // Helpers::flushConsole();
-
-//     if(event.keysym.sym == SDLK_PAUSE)
-//       printPartyState();
-//     else if(event.keysym.sym == SDLK_PRINTSCREEN)
-//       printProcessingState(false);
-//     else if(event.keysym.sym == SDLK_INSERT)
-//       printProcessingState(true);
-//     else if(event.keysym.sym == SDLK_HOME)
-//       action_buffer->print(false);
-//     else if(event.keysym.sym == SDLK_END)
-//       printAll(true, false);
-//     // else if (event.keysym.sym == SDLK_PAGEUP)
-//     else if(event.keysym.sym == SDLK_DELETE)
-//     {
-//       if(turn_state == TurnState::PROCESS_ACTIONS ||
-//          turn_state == TurnState::UPKEEP)
-//       {
-//         // event_buffer->setRenderIndex();
-//         // event_buffer->setRendered(event_buffer->getIndex());
-
-//         // while (event_buffer->setNextIndex())
-//         //  event_buffer->setRendered(event_buffer->getIndex());
-
-//         // setBattleFlag(CombatState::READY_TO_RENDER, true);
-//         // setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-
-//         event_buffer->print(false);
-//       }
-//     }
-//     else if(event.keysym.sym == SDLK_PAGEDOWN)
-//       printInventory(foes);
-//   }
-//   else
-//     std::cout << "The battle is complete!" << std::endl;
-// #endif
-
-//   if(turn_state == TurnState::SELECT_ACTION_ALLY &&
-//      menu->getWindowStatus() == WindowStatus::ON)
-//   {
-//     return menu->keyDownEvent(event);
-//   }
-
-//   return false;
-//
 
 bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 {
@@ -2291,10 +2227,11 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
   assert(friends);
   assert(foes);
 
-  buildAI();
-
   /* Construct the Battle actor objects based on the persons in the parties */
   buildBattleActors(friends, foes);
+
+  /* Build AI Modules */
+  buildAI();
 
   /* Build ally and enemy info frames, action frames */
   for(auto& actor : actors)
@@ -6564,7 +6501,6 @@ void Battle::setNextTurnState()
 bool Battle::update(int32_t cycle_time)
 {
   time_elapsed += cycle_time;
-  turns_elapsed++;
 
   updateRendering(cycle_time);
 

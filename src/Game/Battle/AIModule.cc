@@ -512,6 +512,7 @@ bool AIModule::selectRandomAction()
 
     chosen_battle_skill = valid_skills.at(rand_value - 1);
     chosen_skill = valid_skills.at(rand_value - 1)->skill;
+    action_scope = chosen_skill->getScope();
     chosen_action_index = rand_value;
     action_index_selected = true;
   }
@@ -565,9 +566,8 @@ bool AIModule::selectRandomTargets()
      action_scope == ActionScope::NOT_USER)
   {
     target_ptr = addRandomTarget(targets);
+    successful = true;
   }
-
-  successful |= (target_ptr != nullptr);
 
   if(!successful)
   {
@@ -589,9 +589,9 @@ bool AIModule::selectRandomTargets()
         if(targets.size())
           target_ptr = addRandomTarget(targets);
       }
-    }
 
-    successful |= (target_ptr != nullptr);
+      successful = true;
+    }
   }
 
   if(!successful && action_scope != ActionScope::ONE_PARTY &&

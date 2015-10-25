@@ -347,6 +347,9 @@ private:
   /* Update the selection of the enemies */
   void updateEnemySelection();
 
+  /* Update the selecting state enum for a given BattleActor */
+  void updateSelectingState(BattleActor* actor, bool set_selected);
+
   /* Updates the selection of the user */
   void updateUserSelection();
 
