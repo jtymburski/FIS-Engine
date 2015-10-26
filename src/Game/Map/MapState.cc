@@ -23,9 +23,13 @@
  */
 MapState::MapState(EventHandler* event_handler)
 {
+  enter_event = EventSet::createBlankEvent();
   this->event_handler = NULL;
+  exit_event = EventSet::createBlankEvent();
   interaction = NOINTERACTION;
   sprite_set = new SpriteMatrix();
+  use_event = EventSet::createBlankEvent();
+  walkover_event = EventSet::createBlankEvent();
 
   /* Set the relevant data */
   setEventHandler(event_handler);
@@ -105,8 +109,8 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   {
     if(event_handler != NULL)
     {
-      Event event = event_handler->updateEvent(getEnterEvent(), data, 
-                                               file_index + 1, section_index);
+      Event event = EventSet::updateEvent(getEnterEvent(), data, 
+                                          file_index + 1, section_index);
       success &= setEnterEvent(event, false);
     }
     else
@@ -119,8 +123,8 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   {
     if(event_handler != NULL)
     {
-      Event event = event_handler->updateEvent(getExitEvent(), data, 
-                                               file_index + 1, section_index);
+      Event event = EventSet::updateEvent(getExitEvent(), data,
+                                          file_index + 1, section_index);
       success &= setExitEvent(event, false);
     }
     else
@@ -133,8 +137,8 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   {
     if(event_handler != NULL)
     {
-      Event event = event_handler->updateEvent(getUseEvent(), data, 
-                                               file_index + 1, section_index);
+      Event event = EventSet::updateEvent(getUseEvent(), data, 
+                                          file_index + 1, section_index);
       success &= setUseEvent(event, false);
     }
     else
@@ -147,8 +151,8 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   {
     if(event_handler != NULL)
     {
-      Event event = event_handler->updateEvent(getWalkoverEvent(), data, 
-                                               file_index + 1, section_index);
+      Event event = EventSet::updateEvent(getWalkoverEvent(), data, 
+                                          file_index + 1, section_index);
       success &= setWalkoverEvent(event, false);
     }
     else
@@ -183,17 +187,11 @@ void MapState::clear()
  */
 bool MapState::clearEvents()
 {
-  if(event_handler != NULL)
-  {
-    enter_event = event_handler->deleteEvent(enter_event);
-    exit_event = event_handler->deleteEvent(exit_event);
-    use_event = event_handler->deleteEvent(use_event);
-    walkover_event = event_handler->deleteEvent(walkover_event);
-
-    return true;
-  }
-  
-  return false;
+  enter_event = EventSet::deleteEvent(enter_event);
+  exit_event = EventSet::deleteEvent(exit_event);
+  use_event = EventSet::deleteEvent(use_event);
+  walkover_event = EventSet::deleteEvent(walkover_event);
+  return true;
 }
 
 /*
@@ -369,16 +367,10 @@ bool MapState::isWalkoverEventSet()
  */
 bool MapState::setEnterEvent(Event enter_event, bool delete_event)
 {
-  if(event_handler != NULL)
-  {
-    /* Delete the existing event and set the new event */
-    if(delete_event)
-      this->enter_event = event_handler->deleteEvent(this->enter_event);
-    this->enter_event = enter_event;
-    return true;
-  }
-
-  return false;
+  if(delete_event)
+    this->enter_event = EventSet::deleteEvent(this->enter_event);
+  this->enter_event = enter_event;
+  return true;
 }
 
 /*
@@ -391,19 +383,7 @@ bool MapState::setEnterEvent(Event enter_event, bool delete_event)
  */
 void MapState::setEventHandler(EventHandler* event_handler)
 {
-  /* Clean up the existing event handler */
-  clearEvents();
-
-  /* Clear out the conversation data */
-  enter_event.convo = NULL;
-  exit_event.convo = NULL;
-  use_event.convo = NULL;
-  walkover_event.convo = NULL;
-
-  /* Set the new event handler and clean up the interact event */
   this->event_handler = event_handler;
-  if(event_handler != NULL)
-    clearEvents();
 }
 
 /*
@@ -416,16 +396,10 @@ void MapState::setEventHandler(EventHandler* event_handler)
  */
 bool MapState::setExitEvent(Event exit_event, bool delete_event)
 {
-  if(event_handler != NULL)
-  {
-    /* Delet the existing event and set the new event */
-    if(delete_event)
-      this->exit_event = event_handler->deleteEvent(this->exit_event);
-    this->exit_event = exit_event;
-    return true;
-  }
-
-  return false;
+  if(delete_event)
+    this->exit_event = EventSet::deleteEvent(this->exit_event);
+  this->exit_event = exit_event;
+  return true;
 }
 
 /*
@@ -511,16 +485,10 @@ bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y,
  */
 bool MapState::setUseEvent(Event use_event, bool delete_event)
 {
-  if(event_handler != NULL)
-  {
-    /* Delete the existing event and set the new event */
-    if(delete_event)
-      this->use_event = event_handler->deleteEvent(this->use_event);
-    this->use_event = use_event;
-    return true;
-  }
-
-  return false;
+  if(delete_event)
+    this->use_event = EventSet::deleteEvent(this->use_event);
+  this->use_event = use_event;
+  return true;
 }
 
 /*
@@ -533,16 +501,10 @@ bool MapState::setUseEvent(Event use_event, bool delete_event)
  */
 bool MapState::setWalkoverEvent(Event walkover_event, bool delete_event)
 {
-  if(event_handler != NULL)
-  {
-    /* Delete the existing event and set the new event */
-    if(delete_event)
-      this->walkover_event = event_handler->deleteEvent(this->walkover_event);
-    this->walkover_event = walkover_event;
-    return true;
-  }
-
-  return false;
+  if(delete_event)
+    this->walkover_event = EventSet::deleteEvent(this->walkover_event);
+  this->walkover_event = walkover_event;
+  return true;
 }
 
 /*

@@ -66,7 +66,8 @@ protected:
 
   /* The event handler information and corresponding interact event */
   EventHandler* event_handler;
-  Event interact_event;
+  EventSet event_set;
+  //Event interact_event;
 
   /* Game ID */
   int game_id;
@@ -226,7 +227,7 @@ public:
   int getID() const;
 
   /* Gets the interaction event for the thing */
-  Event getInteraction() const;
+  Event getInteraction();
 
   /* Returns the map section of the tile where this is painted */
   uint16_t getMapSection();
@@ -336,7 +337,7 @@ public:
   void setIDPlayer();
 
   /* Sets the interaction event for the thing */
-  bool setInteraction(Event interact_event);
+  //bool setInteraction(Event interact_event);
 
   /* Sets if the movement is paused */
   void setMovementPaused(bool paused);

@@ -1144,7 +1144,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   /* Test: full conversation */
   else if(event.keysym.sym == SDLK_0)
   {
-    Event blank_event = event_handler->createBlankEvent();
+    Event blank_event = EventSet::createBlankEvent();
 
     Conversation* convo = new Conversation;
     convo->category = DialogCategory::TEXT;
@@ -1178,7 +1178,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     test2.thing_id = 2;
     test2.next.push_back(test1);
     test3.category = DialogCategory::TEXT;
-    test3.action_event = event_handler->createStartBattleEvent();
+    test3.action_event = EventSet::createEventStartBattle();
     test3.text = "Back to finish off with a clean case with a couple of lines.";
     test3.text += " So this requires me to write a bunch of BS to try and fill";
     test3.text += " these lines.";

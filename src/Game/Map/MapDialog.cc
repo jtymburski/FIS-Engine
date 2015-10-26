@@ -357,7 +357,7 @@ void MapDialog::setConversation(Conversation* new_convo)
   conversation_info.thing_id = -1;
   conversation_info.category = DialogCategory::TEXT;
   if(event_handler != NULL)
-    conversation_info.action_event = event_handler->createBlankEvent();
+    conversation_info.action_event = EventSet::createBlankEvent();
 
   /* Insert new conversation */
   if(new_convo != NULL)

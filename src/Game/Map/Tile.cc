@@ -3,10 +3,10 @@
  * Date Created: December 2, 2012
  * Inheritance: none
  * Description: This class handles the basic tile that is set up on the map.
- *              It is the overall structure. The tile class creates a base, 
+ *              It is the overall structure. The tile class creates a base,
  *              enhancer, lower, upper, item, person, and thing to define
  *              all the possibilities on the tile. This also handles printing
- *              its own tile data and ensuring that movement isn't entered 
+ *              its own tile data and ensuring that movement isn't entered
  *              through the tile. For additional information, read the comments
  *              below for each function.
  ******************************************************************************/
@@ -21,8 +21,8 @@ const uint8_t Tile::kUPPER_COUNT_MAX = 5;
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* 
- * Description: Constructor for this class. Set up the tile class to an empty 
+/*
+ * Description: Constructor for this class. Set up the tile class to an empty
  *              null state. In this state, you will have to manually set
  *              the width, height, x, and y coordinates of the tile and then
  *              enable the tile using setStatus()
@@ -31,14 +31,16 @@ const uint8_t Tile::kUPPER_COUNT_MAX = 5;
  */
 Tile::Tile()
 {
+  enter_event = EventSet::createBlankEvent();
   event_handler = NULL;
+  exit_event = EventSet::createBlankEvent();
   clear();
 }
 
-/* 
- * Description: Constructor for this class. Takes information on the tile 
+/*
+ * Description: Constructor for this class. Takes information on the tile
  *              such as size, location and the parent and sets up the given
- *              tile. This will be framed by an upper class that handles 
+ *              tile. This will be framed by an upper class that handles
  *              overall control (Map).
  *
  * Inputs: EventHandler* event_handler - the handler for all events
@@ -47,8 +49,8 @@ Tile::Tile()
  *         uint16_t x - the x location respective to the parent (in tile count)
  *         uint16_t y - the y location respective to the parent (in tile count)
  */
-Tile::Tile(EventHandler* event_handler, uint16_t width, uint16_t height, 
-                                        uint16_t x, uint16_t y) 
+Tile::Tile(EventHandler* event_handler, uint16_t width, uint16_t height,
+                                        uint16_t x, uint16_t y)
     : Tile()
 {
   /* Reset the parameters based on this alternate constructor */
@@ -60,7 +62,7 @@ Tile::Tile(EventHandler* event_handler, uint16_t width, uint16_t height,
   setY(y);
 }
 
-/* 
+/*
  * Description: Destructor function
  */
 Tile::~Tile()
@@ -149,7 +151,7 @@ bool Tile::growThingStack(uint8_t render_level)
  *===========================================================================*/
 
 /*
- * Description: Adds an item to the tile. It will only render the top one 
+ * Description: Adds an item to the tile. It will only render the top one
  *              but can hold up to kMAX_ITEMS count. This allows for walkovers
  *              as well as pickups.
  *
@@ -167,18 +169,18 @@ bool Tile::addItem(MapItem* item)
   return false;
 }
 
-/* 
+/*
  * Description: Adds a passability to the given tile based on data from a file
  *              that is read in. The data is a comma delimited directional
  *              list, the classifier is if it's base or lower and the index
  *              corresponds to which lower layer (if applicable).
- * 
+ *
  * Inputs: std::string data - the passability data, as mentioned above.
  *         std::string classifier - the layer classifier (base, lower)
  *         std::string index - the lower layer index
  * Output: bool - status if the set was successful
  */
-bool Tile::addPassability(std::string data, std::string classifier, 
+bool Tile::addPassability(std::string data, std::string classifier,
                                             std::string index)
 {
   bool success = true;
@@ -208,12 +210,12 @@ bool Tile::addPassability(std::string data, std::string classifier,
   return success;
 }
 
-/* 
+/*
  * Description: Adds in sprite data for the applicable frames. Based on a
  *              classifier, which indicates which layer and an index (which
- *              is only applicable for stackable layers, such as lower and 
+ *              is only applicable for stackable layers, such as lower and
  *              upper).
- * 
+ *
  * Inputs: Sprite* frames - the sprite data to add in (pointer only).
  *         std::string classifier - the layer classifier (base, lower, etc.)
  *         std::string index - the layering index (for lower and upper)
@@ -234,7 +236,7 @@ bool Tile::addSprite(Sprite* frames, std::string classifier, std::string index)
 }
 
 /*
- * Description: Animates all sprite layer sets on the tile. This allows for 
+ * Description: Animates all sprite layer sets on the tile. This allows for
  *              the fine control over when the timer hits and how it's updated.
  *
  * Inputs: none
@@ -293,12 +295,12 @@ void Tile::clear(bool just_sprites)
     setX(0);
     setY(0);
   }
-  
+
   clearEvents();
 }
 
 /*
- * Description: Clears all events stored within the class. Call only works if 
+ * Description: Clears all events stored within the class. Call only works if
  *              the event handler has already been set up and is available.
  *              Note that if there is no event handler, no events fire.
  *
@@ -307,17 +309,12 @@ void Tile::clear(bool just_sprites)
  */
 bool Tile::clearEvents()
 {
-  if(event_handler != NULL)
-  {
-    enter_event = event_handler->deleteEvent(enter_event);
-    exit_event = event_handler->deleteEvent(exit_event);
-    return true;
-  }
-  
-  return false;
+  enter_event = EventSet::deleteEvent(enter_event);
+  exit_event = EventSet::deleteEvent(exit_event);
+  return true;
 }
 
-/* 
+/*
  * Description: Gets the base sprite sequence and returns it, if set.
  *
  * Inputs: none
@@ -328,8 +325,8 @@ Sprite* Tile::getBase() const
   return base;
 }
 
-/* 
- * Description: Gets the passability for the base portion of the tile. This 
+/*
+ * Description: Gets the passability for the base portion of the tile. This
  *              only responds true passability for set sprites. Otherwise,
  *              it returns true.
  *
@@ -347,7 +344,7 @@ bool Tile::getBasePassability(Direction dir) const
   return false;
 }
 
-/* 
+/*
  * Description: Gets the enhancer sprite sequence and returns it, if set.
  *
  * Inputs: none
@@ -358,7 +355,7 @@ Sprite* Tile::getEnhancer() const
   return enhancer;
 }
 
-/* 
+/*
  * Description: Gets the height stored within the tile (and all the layers).
  *
  * Inputs: none
@@ -371,9 +368,9 @@ uint16_t Tile::getHeight() const
 
 /*
  * Description: Returns the IO stored on this tile at the indicated render
- *              level. 
- * 
- * Inputs: uint8_t render_level - integer of the render level on tile 
+ *              level.
+ *
+ * Inputs: uint8_t render_level - integer of the render level on tile
  * Output: MapInteractiveObject* - IO reference stored. NULL if not set
  */
 MapInteractiveObject* Tile::getIO(uint8_t render_level) const
@@ -423,7 +420,7 @@ std::vector<MapItem*> Tile::getItems() const
   return items;
 }
 
-/* 
+/*
  * Description: Gets the lower sprite(s) and returns it(them), if set.
  *
  * Inputs: none
@@ -434,9 +431,9 @@ std::vector<Sprite*> Tile::getLower() const
   return lower;
 }
 
-/* 
+/*
  * Description: Gets the passability for the entire lower portion of the tile.
- *              Only returns for set lower sprites. Otherwise, it returns 
+ *              Only returns for set lower sprites. Otherwise, it returns
  *              true.
  *
  * Inputs: Direction dir - the direction to get
@@ -459,7 +456,7 @@ bool Tile::getLowerPassability(Direction dir) const
   return passability;
 }
 
-/* 
+/*
  * Description: Gets the passability for the lower specific index of the stack.
  *              Only returns an actual value for set sprites. If it's
  *              not set or if it's out of range, it returns true.
@@ -480,7 +477,7 @@ bool Tile::getLowerPassability(uint8_t index, Direction dir) const
 }
 
 /*
- * Description: Returns the max render level indicator. This allows for 
+ * Description: Returns the max render level indicator. This allows for
  *              simplifying the render calculations.
  *
  * Inputs: none
@@ -507,11 +504,11 @@ uint16_t Tile::getMaxRenderLevel() const
   return depth;
 }
 
-/* 
+/*
  * Description: Gets if the tile is passable entering from the given direction.
- *              This does not take into account the status of the thing(s) and 
+ *              This does not take into account the status of the thing(s) and
  *              if it's passable.
- * 
+ *
  * Inputs: Direction dir - the direction enumerated for passability
  * Output: bool - status if the tile passability is possible.
  */
@@ -549,7 +546,7 @@ bool Tile::getPassabilityExiting(Direction dir) const
 
 /*
  * Description: Returns the person stored on this tile at the indicated render
- *              level as a main or previous (first non-null one). 
+ *              level as a main or previous (first non-null one).
  *
  * Inputs: uint8_t render_level - integer of the render level on tile
  * Output: MapPerson* - person pointer on tile. NULL if none set
@@ -564,7 +561,7 @@ MapPerson* Tile::getPerson(uint8_t render_level) const
 
 /*
  * Description: Returns the person stored on this tile at the indicated render
- *              level as a main (moving to or not moving). 
+ *              level as a main (moving to or not moving).
  *
  * Inputs: uint8_t render_level - integer of the render level on tile
  * Output: MapPerson* - person pointer on tile. NULL if none set
@@ -581,7 +578,7 @@ MapPerson* Tile::getPersonMain(uint8_t render_level) const
 
 /*
  * Description: Returns the person stored on this tile at the indicated render
- *              level as a previous (moving from). 
+ *              level as a previous (moving from).
  *
  * Inputs: uint8_t render_level - integer of the render level on tile
  * Output: MapPerson* - person pointer on tile. NULL if none set
@@ -598,8 +595,8 @@ MapPerson* Tile::getPersonPrev(uint8_t render_level) const
 
 /*
  * Description: Returns all persons stored on the tile. This is ordered based
- *              on render level (moving to or not moving). I.e., index 4 will 
- *              correspond to render level 4. If the render level is not set in 
+ *              on render level (moving to or not moving). I.e., index 4 will
+ *              correspond to render level 4. If the render level is not set in
  *              the vector, it is NULL and not used.
  *
  * Inputs: none
@@ -612,8 +609,8 @@ std::vector<MapPerson*> Tile::getPersonsMain() const
 
 /*
  * Description: Returns all persons stored on the tile. This is ordered based
- *              on render level (moving from). I.e., index 4 will correspond to 
- *              render level 4. If the render level is not set in the vector, 
+ *              on render level (moving from). I.e., index 4 will correspond to
+ *              render level 4. If the render level is not set in the vector,
  *              it is NULL and not used.
  *
  * Inputs: none
@@ -624,10 +621,10 @@ std::vector<MapPerson*> Tile::getPersonsPrev() const
   return persons_prev;
 }
 
-/* 
+/*
  * Description: Returns the X coordinates of the top left of the tile, in
  *              pixels.
- * 
+ *
  * Inputs: none
  * Output: int - the X coordinate, in pixels
  */
@@ -636,10 +633,10 @@ uint32_t Tile::getPixelX() const
   return (x * width);
 }
 
-/* 
+/*
  * Description: Returns the Y coordinates of the top left of the tile, in
  *              pixels.
- * 
+ *
  * Inputs: none
  * Output: int - the Y coordinate, in pixels
  */
@@ -649,10 +646,10 @@ uint32_t Tile::getPixelY() const
 }
 
 /*
- * Description: Gets the render things based on the render level. This will 
- *              return a pointer for item, person, and thing, if applicable. 
+ * Description: Gets the render things based on the render level. This will
+ *              return a pointer for item, person, and thing, if applicable.
  *              Pointers that are NULL have nothing set to render on that
- *              level. 
+ *              level.
  *
  * Inputs: uint8_t render_level - the render depth indicator
  *         MapPerson*& person - ref of person pointer to place render object
@@ -660,7 +657,7 @@ uint32_t Tile::getPixelY() const
  *         MapInteractiveObject*& io - ref of IO pointer to place render obj
  * Output: status if the objects are valid for rendering
  */
-bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person, 
+bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person,
                            MapThing*& thing, MapInteractiveObject*& io) const
 {
   bool valid_pointer = false;
@@ -700,7 +697,7 @@ bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person,
 
   return valid_pointer;
 }
-  
+
 /*
  * Description: Returns the sound ID of the first valid sprite with valid sound
  *              ID on the tile. If none, will return -1. The order is:
@@ -727,7 +724,7 @@ int32_t Tile::getSoundID()
   return found_id;
 }
 
-/* 
+/*
  * Description: Returns the status the tile is currently classified in. Uses
  *              the enum from Layer. See the corresponding setStatus()
  *
@@ -741,9 +738,9 @@ Tile::TileStatus Tile::getStatus() const
 
 /*
  * Description: Returns the thing stored on this tile at the indicated render
- *              level. 
- * 
- * Inputs: uint8_t render_level - integer of the render level on tile 
+ *              level.
+ *
+ * Inputs: uint8_t render_level - integer of the render level on tile
  * Output: MapThing* - thing reference stored. NULL if not set
  */
 MapThing* Tile::getThing(uint8_t render_level) const
@@ -771,7 +768,7 @@ std::vector<MapThing*> Tile::getThings() const
   return things;
 }
 
-/* 
+/*
  * Description: Gets the upper sprite(s) and returns it(them), if set.
  *
  * Inputs: none
@@ -782,7 +779,7 @@ std::vector<Sprite*> Tile::getUpper() const
   return upper;
 }
 
-/* 
+/*
  * Description: Gets the width stored within the tile (and all the layers).
  *
  * Inputs: none
@@ -793,7 +790,7 @@ uint16_t Tile::getWidth() const
   return width;
 }
 
-/* 
+/*
  * Description: Gets the X coordinate stored within the tile. This is free of
  *              width and height changes and only is a reference.
  *
@@ -805,7 +802,7 @@ uint16_t Tile::getX() const
   return x;
 }
 
-/* 
+/*
  * Description: Gets the Y coordinate stored within the tile. This is free of
  *              width and height changes and only is a reference.
  *
@@ -817,7 +814,7 @@ uint16_t Tile::getY() const
   return y;
 }
 
-/* 
+/*
  * Description: Inserts the new Sprite frame data onto the created lower
  *              portion for this tile.
  *
@@ -851,9 +848,9 @@ bool Tile::insertLower(Sprite* lower, uint8_t index)
   return false;
 }
 
-/* 
+/*
  * Description: Inserts the new Sprite frame data onto the created upper
- *              portion for this tile. 
+ *              portion for this tile.
  *
  * Inputs: Sprite* upper - the upper tile data, as a Sprite set
  *         uint8_t index - the index to where the upper sprite is inserted
@@ -878,8 +875,8 @@ bool Tile::insertUpper(Sprite* upper, uint8_t index)
   return false;
 }
 
-/* 
- * Description: Returns if the Base Sprite is set 
+/*
+ * Description: Returns if the Base Sprite is set
  *
  * Inputs: none
  * Output: bool - status if the base sprite is set
@@ -889,8 +886,8 @@ bool Tile::isBaseSet() const
   return (base != NULL);
 }
 
-/* 
- * Description: Returns if the Enhancer Sprite is set 
+/*
+ * Description: Returns if the Enhancer Sprite is set
  *
  * Inputs: none
  * Output: bool - status if the enhancer sprite is set
@@ -902,8 +899,8 @@ bool Tile::isEnhancerSet() const
 
 /*
  * Description: Returns if there is a IO on the indicated render level.
- * 
- * Inputs: uint8_t render_level - the level of rendering on tile. 
+ *
+ * Inputs: uint8_t render_level - the level of rendering on tile.
  * Output: bool - true if the IO is set on that render level
  */
 bool Tile::isIOSet(uint8_t render_level) const
@@ -936,8 +933,8 @@ bool Tile::isItemsSet() const
   return (items.size() > 0);
 }
 
-/* 
- * Description: Returns if the Lower Sprite(s) is(are) set 
+/*
+ * Description: Returns if the Lower Sprite(s) is(are) set
  *
  * Inputs: none
  * Output: bool - status if there is at least one lower sprite
@@ -949,34 +946,34 @@ bool Tile::isLowerSet() const
 
 /*
  * Description: Returns if the person at the indicated render level is set for
- *              the main (moving to or on the tile). 
+ *              the main (moving to or on the tile).
  *
  * Inputs: uint8_t render_level - the rendering level, based on the person frame
  * Output: bool - is this person main frame set?
  */
 bool Tile::isPersonMain(uint8_t render_level) const
 {
-  return (persons_main.size() > render_level && 
+  return (persons_main.size() > render_level &&
           persons_main[render_level] != NULL);
 }
 
 /*
  * Description: Returns if the person at the indicated render level is set for
- *              the previous (moving from the tile). 
+ *              the previous (moving from the tile).
  *
  * Inputs: uint8_t render_level - the rendering level, based on the person frame
  * Output: bool - is this person previous frame set?
  */
 bool Tile::isPersonPrevious(uint8_t render_level) const
 {
-  return (persons_prev.size() > render_level && 
+  return (persons_prev.size() > render_level &&
           persons_prev[render_level] != NULL);
 }
 
 /*
  * Description: Returns if there is a person on the indicated render level.
- * 
- * Inputs: uint8_t render_level - the level of rendering on tile. 
+ *
+ * Inputs: uint8_t render_level - the level of rendering on tile.
  * Output: bool - true if the person is set on that render level
  */
 bool Tile::isPersonSet(uint8_t render_level) const
@@ -1000,8 +997,8 @@ bool Tile::isPersonsSet() const
 
 /*
  * Description: Returns if there is a thing on the indicated render level.
- * 
- * Inputs: uint8_t render_level - the level of rendering on tile. 
+ *
+ * Inputs: uint8_t render_level - the level of rendering on tile.
  * Output: bool - true if the thing is set on that render level
  */
 bool Tile::isThingSet(uint8_t render_level) const
@@ -1023,8 +1020,8 @@ bool Tile::isThingsSet() const
   return false;
 }
 
-/* 
- * Description: Returns if the Upper Sprite(s) is(are) set 
+/*
+ * Description: Returns if the Upper Sprite(s) is(are) set
  *
  * Inputs: none
  * Output: bool - status if there is at least one upper sprite
@@ -1044,7 +1041,7 @@ bool Tile::isUpperSet() const
  *         bool reverse_last - reverse last person move start command
  * Output: bool - status if move finish was successful
  */
-bool Tile::personMoveFinish(uint8_t render_level, bool no_events, 
+bool Tile::personMoveFinish(uint8_t render_level, bool no_events,
                             bool reverse_last)
 {
   if(persons_prev.size() > render_level && persons_prev[render_level] != NULL)
@@ -1060,7 +1057,7 @@ bool Tile::personMoveFinish(uint8_t render_level, bool no_events,
       if(render_level == 0 && !no_events)
       {
         /* Execute exit event, if applicable */
-        if(event_handler != NULL && 
+        if(event_handler != NULL &&
            exit_event.classification != EventClassifier::NOEVENT)
           event_handler->executeEvent(exit_event, persons_prev[render_level]);
       }
@@ -1074,7 +1071,7 @@ bool Tile::personMoveFinish(uint8_t render_level, bool no_events,
 
 /*
  * Description: Initiates the move process for the person. This triggers the
- *              previous pointer being set to the main and the main back to 
+ *              previous pointer being set to the main and the main back to
  *              NULL, which effectively means the person is leaving.
  *
  * Inputs: uint8_t render_level - the rendering level of the thing
@@ -1082,7 +1079,7 @@ bool Tile::personMoveFinish(uint8_t render_level, bool no_events,
  */
 bool Tile::personMoveStart(uint8_t render_level)
 {
-  if(persons_main.size() > render_level && persons_main[render_level] != NULL 
+  if(persons_main.size() > render_level && persons_main[render_level] != NULL
                                         && persons_prev[render_level] == NULL)
   {
     persons_prev[render_level] = persons_main[render_level];
@@ -1092,8 +1089,8 @@ bool Tile::personMoveStart(uint8_t render_level)
   return false;
 }
 
-/* 
- * Description: Renders the lower sprites in the tile using SDL calls. The 
+/*
+ * Description: Renders the lower sprites in the tile using SDL calls. The
  *              sprite initialization must have occurred before any rendering.
  *
  * Inputs: SDL_Renderer* renderer - the sdl graphical rendering context
@@ -1106,7 +1103,7 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
   bool success = true;
   int pixel_x = getPixelX() - offset_x;
   int pixel_y = getPixelY() - offset_y;
-  
+
   /* Only proceed if the status isn't off */
   if(status != OFF)
   {
@@ -1115,7 +1112,7 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
       /* Paint the base first */
       if(base != NULL)
         success &= base->render(renderer, pixel_x, pixel_y, width, height);
-      
+
       /* Then the enhancer sprite */
       if(enhancer != NULL)
         success &= enhancer->render(renderer, pixel_x, pixel_y, width, height);
@@ -1123,52 +1120,52 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
       /* Then Paint the set of lower layers */
       for(uint8_t i = 0; i < lower.size(); i++)
         if(lower[i] != NULL)
-          success &= lower[i]->render(renderer, pixel_x, pixel_y, 
+          success &= lower[i]->render(renderer, pixel_x, pixel_y,
                                                 width, height);
     }
     else if(status == BLANKED)
     {
       SDL_Rect tile_rect = {pixel_x, pixel_y, width, height};
-      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);		
+      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
       SDL_RenderFillRect(renderer, &tile_rect);
     }
   }
-  
+
   return success;
 }
 
-/* 
- * Description: Renders the upper sprites in the tile using SDL calls. The 
+/*
+ * Description: Renders the upper sprites in the tile using SDL calls. The
  *              sprite initialization must have occurred before any rendering.
  *
  * Inputs: SDL_Renderer* renderer - the sdl graphical rendering context
  *         int offset_x - the offset in X off of base coordinates
  *         int offset_y - the offset in Y off of base coordinates
- * Output: bool - status if the sprite(s) were painted. If failed, make sure 
+ * Output: bool - status if the sprite(s) were painted. If failed, make sure
  *         there is an image in the sprite.
  */
 bool Tile::renderUpper(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
   bool success = true;
-  
+
   /* Only paint if the status is enabled */
   if(status == ACTIVE)
   {
     int pixel_x = getPixelX() - offset_x;
     int pixel_y = getPixelY() - offset_y;
-  
+
     /* Paint the upper set, if set */
     for(uint8_t i = 0; i < upper.size(); i++)
       if(upper[i] != NULL)
-        success &= upper[i]->render(renderer, pixel_x, pixel_y, 
+        success &= upper[i]->render(renderer, pixel_x, pixel_y,
                                               width, height);
   }
   return success;
 }
-  
-/* 
- * Description: Sets the base sprite stored within the tile. Only sets it 
- *              if the pointer is valid and the number of frames is greater 
+
+/*
+ * Description: Sets the base sprite stored within the tile. Only sets it
+ *              if the pointer is valid and the number of frames is greater
  *              than 0. The old base is set if the new pointer is valid.
  *
  * Inputs: Sprite* base - the new base sprite to attempt to set
@@ -1190,8 +1187,8 @@ bool Tile::setBase(Sprite* base)
   return false;
 }
 
-/* 
- * Description: Sets the base passability using a given direction and the 
+/*
+ * Description: Sets the base passability using a given direction and the
  *              set boolean value. Only fails if the base internal to the
  *              tile is not set.
  *
@@ -1207,7 +1204,7 @@ bool Tile::setBasePassability(Direction dir, bool set_value)
     if(dir == Direction::DIRECTIONLESS && set_value)
       base_passability = static_cast<uint8_t>(Direction::DIRECTIONLESS);
     else
-      (set_value) ? (base_passability |= static_cast<uint8_t>(dir)) 
+      (set_value) ? (base_passability |= static_cast<uint8_t>(dir))
                   : (base_passability &= ~static_cast<uint8_t>(dir));
 
     return true;
@@ -1215,9 +1212,9 @@ bool Tile::setBasePassability(Direction dir, bool set_value)
   return false;
 }
 
-/* 
- * Description: Sets the enhancer sprite stored within the tile. Only sets it 
- *              if the pointer is valid and the number of frames is greater 
+/*
+ * Description: Sets the enhancer sprite stored within the tile. Only sets it
+ *              if the pointer is valid and the number of frames is greater
  *              than 0. The old enhancer is set if the new pointer is valid.
  *
  * Inputs: Sprite* enhancer - the new enhancer sprite to attempt to set
@@ -1244,20 +1241,14 @@ bool Tile::setEnhancer(Sprite* enhancer)
  */
 bool Tile::setEnterEvent(Event enter_event)
 {
-  if(event_handler != NULL)
-  {
-    /* Delete the existing event and set new event */
-    this->enter_event = event_handler->deleteEvent(this->enter_event);
-    this->enter_event = enter_event;
-    return true;
-  }
-
-  return false;
+  this->enter_event = EventSet::deleteEvent(this->enter_event);
+  this->enter_event = enter_event;
+  return true;
 }
 
 /*
  * Description: Sets the event handler to create and manage all existing events
- *              that get fired throughout interaction with the class. This is 
+ *              that get fired throughout interaction with the class. This is
  *              necessary to ensure that any events work.
  *
  * Inputs: EventHandler* event_handler - the new handler pointer (must not be 0)
@@ -1265,16 +1256,7 @@ bool Tile::setEnterEvent(Event enter_event)
  */
 void Tile::setEventHandler(EventHandler* event_handler)
 {
-  /* Clean up the existing event handler */
-  clearEvents();
-
-  /* Set the new event handler and clean up the interact event */
   this->event_handler = event_handler;
-  if(event_handler != NULL)
-  {
-    enter_event = event_handler->createBlankEvent();
-    exit_event = event_handler->createBlankEvent();
-  }
 }
 
 /*
@@ -1286,17 +1268,11 @@ void Tile::setEventHandler(EventHandler* event_handler)
  */
 bool Tile::setExitEvent(Event exit_event)
 {
-  if(event_handler != NULL)
-  {
-    /* Delet the existing event and set the new event */
-    this->exit_event = event_handler->deleteEvent(this->exit_event);
-    this->exit_event = exit_event;
-    return true;
-  }
-
-  return false;
+  this->exit_event = EventSet::deleteEvent(this->exit_event);
+  this->exit_event = exit_event;
+  return true;
 }
-  
+
 /*
  * Description: Sets the height of the tile.
  *
@@ -1311,7 +1287,7 @@ void Tile::setHeight(uint16_t height)
 /*
  * Description: Sets an IO on the tile with the designated render level.
  *              This does not take into account if the tile is passable and
- *              will set regardless. No events boolean allows for events to 
+ *              will set regardless. No events boolean allows for events to
  *              be used (or not). This will unset the IO if one already
  *              exists in the same place.
  *
@@ -1337,9 +1313,9 @@ bool Tile::setIO(MapInteractiveObject* io, uint8_t render_level)
   return false;
 }
 
-/* 
- * Description: Sets the lower sprite stored within the tile. Only sets it if 
- *              the pointer is valid and the number of frames is greater than 
+/*
+ * Description: Sets the lower sprite stored within the tile. Only sets it if
+ *              the pointer is valid and the number of frames is greater than
  *              0. Since lower is a stack, it unsets the stack if the sprite
  *              is valid and puts this new lower at the front of the list.
  *
@@ -1363,8 +1339,8 @@ bool Tile::setLower(Sprite* lower)
 }
 
 /*
- * Description: Sets the lower passability for a sprite based on an index, 
- *              a direction enumerator, and the value it should be. Only 
+ * Description: Sets the lower passability for a sprite based on an index,
+ *              a direction enumerator, and the value it should be. Only
  *              fails if the index is out of range of the allowable bounds
  *              or the lower isn't set at that index.
  *
@@ -1381,7 +1357,7 @@ bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
     if(dir == Direction::DIRECTIONLESS && set_value)
       lower_passability[index] = static_cast<uint8_t>(Direction::DIRECTIONLESS);
     else
-      (set_value) ? (lower_passability[index] |= static_cast<uint8_t>(dir)) 
+      (set_value) ? (lower_passability[index] |= static_cast<uint8_t>(dir))
                   : (lower_passability[index] &= ~static_cast<uint8_t>(dir));
 
     return true;
@@ -1392,7 +1368,7 @@ bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
 /*
  * Description: Sets a person on the tile with the designated render level.
  *              This does not take into account if the tile is passable and
- *              will set regardless. No events boolean allows for events to 
+ *              will set regardless. No events boolean allows for events to
  *              be used (or not). This will unset the person if one already
  *              exists in the same place.
  *
@@ -1420,7 +1396,7 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
         for(uint16_t i = 0; i < items.size(); i++)
           if(items[i] != NULL)
             event_handler->executePickup(items[i], true);
-      
+
         /* Execute the enter event, if applicable */
         if(enter_event.classification != EventClassifier::NOEVENT)
           event_handler->executeEvent(enter_event, person);
@@ -1433,11 +1409,11 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
   return false;
 }
 
-/* 
- * Description: Sets the tile status. This allows of 3 possible states that 
+/*
+ * Description: Sets the tile status. This allows of 3 possible states that
  *              the tile can be in. This affects the visibility and painting \
  *              of the tile.
- * 
+ *
  * Inputs: TileStatus status - the new status to update the tile to
  * Output: none
  */
@@ -1449,7 +1425,7 @@ void Tile::setStatus(TileStatus status)
 /*
  * Description: Sets a thing on the tile with the designated render level.
  *              This does not take into account if the tile is passable and
- *              will set regardless. No events boolean allows for events to 
+ *              will set regardless. No events boolean allows for events to
  *              be used (or not). This will unset the thing if one already
  *              exists in the same place.
  *
@@ -1472,12 +1448,12 @@ bool Tile::setThing(MapThing* thing, uint8_t render_level)
     }
   }
 
-  return false; 
+  return false;
 }
 
-/* 
- * Description: Sets the upper sprite stored within the tile. Only sets it if 
- *              the pointer is valid and the number of frames is greater than 
+/*
+ * Description: Sets the upper sprite stored within the tile. Only sets it if
+ *              the pointer is valid and the number of frames is greater than
  *              0. Since upper is a stack, it unsets the stack if the sprite
  *              is valid and puts this new upper at the front of the list.
  *
@@ -1508,7 +1484,7 @@ void Tile::setWidth(uint16_t width)
 }
 
 /*
- * Description: Sets the X coordinate of the tile. 
+ * Description: Sets the X coordinate of the tile.
  *
  * Inputs: uint16_t x - the tile x coordinate, in tile count
  * Output: none
@@ -1538,19 +1514,12 @@ void Tile::setY(uint16_t y)
  *         int section_index - the relevant map section index
  * Output: bool - returns if the call was successful
  */
-bool Tile::updateEnterEvent(XmlData data, int file_index, 
+bool Tile::updateEnterEvent(XmlData data, int file_index,
                                           uint16_t section_index)
 {
-  /* Ensure that the event handler is relevant */
-  if(event_handler != NULL)
-  {
-    /* Update the enter event */
-    enter_event = event_handler->updateEvent(enter_event, data, 
-                                             file_index, section_index);
-    return true;
-  }
-  
-  return false;
+  enter_event = EventSet::updateEvent(enter_event, data,
+                                      file_index, section_index);
+  return true;
 }
 
 /*
@@ -1564,20 +1533,12 @@ bool Tile::updateEnterEvent(XmlData data, int file_index,
  */
 bool Tile::updateExitEvent(XmlData data, int file_index, uint16_t section_index)
 {
-  /* Ensure that the event handler is relevant */
-  if(event_handler != NULL)
-  {
-    /* Update the exit event */
-    exit_event = event_handler->updateEvent(exit_event, data, 
-                                            file_index, section_index);
-    
-    return true;
-  }
-  
-  return false;
+  exit_event = EventSet::updateEvent(exit_event, data,
+                                     file_index, section_index);
+  return true;
 }
 
-/* 
+/*
  * Description: Unsets the base sprite in the tile.
  * Note: this class does NOT delete the pointer, only releases it.
  *
@@ -1590,7 +1551,7 @@ void Tile::unsetBase()
   base_passability = static_cast<uint8_t>(Direction::DIRECTIONLESS);
 }
 
-/* 
+/*
  * Description: Unsets the enhancer sprite in the tile.
  * Note: this class does NOT delete the pointer, only releases it.
  *
@@ -1689,8 +1650,8 @@ void Tile::unsetItems()
   items.clear();
 }
 
-/* 
- * Description: Unsets the lower sprite(s) in the tile. 
+/*
+ * Description: Unsets the lower sprite(s) in the tile.
  * Note: this class does NOT delete the pointer, only releases it.
  *
  * Inputs: none
@@ -1710,7 +1671,7 @@ void Tile::unsetLower()
   lower_passability.clear();
 }
 
-/* 
+/*
  * Description: Unsets the lower sprite in the tile based on the index, only
  *              if it exists.
  * Note: this class does NOT delete the pointer, only releases it.
@@ -1744,7 +1705,7 @@ bool Tile::unsetPerson(MapPerson* person, bool no_events)
       return unsetPerson(i, no_events);
   return false;
 }
- 
+
 /*
  * Description: Removes the person at the indicated render level. This allows
  *              for choosing if events will trigger upon removal.
@@ -1758,14 +1719,14 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
   if(persons_main.size() > render_level)
   {
     /* Finish the move, if applicable */
-    if(!personMoveFinish(render_level, no_events) && 
+    if(!personMoveFinish(render_level, no_events) &&
        persons_main[render_level] != NULL)
     {
       /* Event is only applicable if it's a render level 0 on person */
       if(render_level == 0 && !no_events)
       {
         /* Execute exit event, if applicable */
-        if(event_handler != NULL && 
+        if(event_handler != NULL &&
             exit_event.classification != EventClassifier::NOEVENT)
           event_handler->executeEvent(exit_event, persons_main[render_level]);
       }
@@ -1778,9 +1739,9 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
 
   return false;
 }
- 
+
 /*
- * Description: Unsets all persons from the tile. Allows for disabling or 
+ * Description: Unsets all persons from the tile. Allows for disabling or
  *              enabling events upon removal.
  *
  * Inputs: bool no_events - if events should be triggered upon removal
@@ -1852,8 +1813,8 @@ void Tile::unsetThings()
   things.clear();
 }
 
-/* 
- * Description: Unsets the upper sprite(s) in the tile. 
+/*
+ * Description: Unsets the upper sprite(s) in the tile.
  * Note: this class does NOT delete the pointer, only releases it.
  *
  * Inputs: none
@@ -1869,7 +1830,7 @@ void Tile::unsetUpper()
   upper.clear();
 }
 
-/* 
+/*
  * Description: Unsets the upper sprite in the tile based on the index, only
  *              if it exists.
  * Note: this class does NOT delete the pointer, only releases it.

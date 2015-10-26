@@ -36,6 +36,7 @@ MapThing::MapThing()
   base_category = ThingBase::ISBASE;
   base_control = NULL;
   event_handler = NULL;
+  //interact_event = EventSet::createBlankEvent();
   sound_id = kUNSET_ID;
   sprite_set = NULL;
 
@@ -774,11 +775,9 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   /*--------------------- EVENT -----------------*/
   else if(identifier == "event")
   {
-    if(event_handler != NULL)
-      interact_event = event_handler->
-              updateEvent(interact_event, data, file_index + 1, section_index);
-    else
-      success = false;
+    event_set.loadData(data, file_index, section_index);
+    //interact_event = EventSet::updateEvent(interact_event, data, 
+    //                                       file_index + 1, section_index);
   }
   /*------------------- GAME ID -----------------*/
   else if(identifier == "game_id" && elements.size() == 1)
@@ -890,6 +889,7 @@ void MapThing::clear()
   MapThing::clearAllMovement();
   setDescription("");
   setEventHandler(NULL);
+  event_set.clear();
   setGameID(kUNSET_ID);
   setID(kUNSET_ID);
   setMovementPaused(false);
@@ -1195,13 +1195,23 @@ int MapThing::getID() const
  * Inputs: none
  * Output: Event - the event fired
  */
-Event MapThing::getInteraction() const
+Event MapThing::getInteraction()
 {
-  if(interact_event.classification != EventClassifier::NOEVENT)
-    return interact_event;
-  else if(base != NULL)
+  if(!event_set.isEmpty())
+  {
+    return event_set.getEvent();
+  }
+  else if(base != nullptr)
+  {
     return base->getInteraction();
-  return interact_event;
+  }
+  return event_set.getEvent();
+
+//  if(interact_event.classification != EventClassifier::NOEVENT)
+//    return interact_event;
+//  else if(base != NULL)
+//    return base->getInteraction();
+//  return interact_event;
 }
 
 /*
@@ -1862,14 +1872,7 @@ bool MapThing::setDialogImage(std::string path, SDL_Renderer* renderer)
  */
 void MapThing::setEventHandler(EventHandler* event_handler)
 {
-  /* Clean up the existing event handler */
-  if(this->event_handler != NULL)
-    interact_event = this->event_handler->deleteEvent(interact_event);
-
-  /* Set the new event handler and clean up the interact event */
   this->event_handler = event_handler;
-  if(event_handler != NULL)
-    interact_event = event_handler->createBlankEvent();
 }
 
 /*
@@ -1989,18 +1992,13 @@ void MapThing::setIDPlayer()
  * Inputs: Event interact_event - the event to set in the class
  * Output: bool - if the event could be set
  */
-bool MapThing::setInteraction(Event interact_event)
-{
-  if(event_handler != NULL)
-  {
-    /* Delete the existing event and set the new event */
-    this->interact_event = event_handler->deleteEvent(this->interact_event);
-    this->interact_event = interact_event;
-    return true;
-  }
-
-  return false;
-}
+//bool MapThing::setInteraction(Event interact_event)
+//{
+//  std::cout << "SET INTERACTION TEST" << std::endl;
+  //this->interact_event = EventSet::deleteEvent(this->interact_event);
+  //this->interact_event = interact_event;
+//  return true;
+//}
 
 /*
  * Description: Sets if the class should be paused. When it's paused, it will

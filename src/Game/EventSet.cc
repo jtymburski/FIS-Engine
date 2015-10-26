@@ -40,7 +40,7 @@ EventSet::EventSet()
 
   get_index = -1;
   locked_status = createBlankLocked();
-  unlocked_state = UnlockedState::NONE;
+  unlocked_state = UnlockedState::ORDERED;
 }
   
 /*
@@ -105,7 +105,7 @@ Event* EventSet::getUnlockedRef(int index, bool create)
     /* Create if doesn't exist */
     if(create)
     {
-      while(events_unlocked.size() < (uint32_t)index)
+      while(events_unlocked.size() <= (uint32_t)index)
         events_unlocked.push_back(createBlankEvent());
     }
 
@@ -142,7 +142,7 @@ void EventSet::addEventUnlocked(Event new_event)
 void EventSet::clear()
 {
   get_index = -1;
-  unlocked_state = UnlockedState::NONE;
+  unlocked_state = UnlockedState::ORDERED;
 
   unsetEventLocked();
   unsetEventUnlocked();
@@ -307,6 +307,21 @@ UnlockedState EventSet::getUnlockedState()
 {
   return unlocked_state;
 }
+  
+/*
+ * Description: Returns if the event set has any events or data set. If true,
+ *              there are no events. It will always return true after a clear()
+ *              call.
+ *
+ * Inputs: none
+ * Output: bool - true if the event configuration is empty
+ */
+bool EventSet::isEmpty()
+{
+  return (event_locked.classification == EventClassifier::NOEVENT &&
+          events_unlocked.size() == 0 &&
+          locked_status.state == LockedState::NONE);
+}
 
 /*
  * Description: Returns if the current state of the set is locked. If true, 
@@ -318,7 +333,8 @@ UnlockedState EventSet::getUnlockedState()
  */
 bool EventSet::isLocked()
 {
-  return locked_status.is_locked;
+  return (locked_status.state != LockedState::NONE && 
+          locked_status.is_locked);
 }
 
 /*
@@ -877,6 +893,93 @@ Locked EventSet::createLockTriggered(bool permanent)
   new_locked.permanent = permanent;
 
   return new_locked;
+}
+  
+/*
+ * Description: Extracts data from the passed in event if its a give item event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& item_id - the give item ID reference 
+ *         int& count - the give item count reference
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventGiveItem(Event event, int& item_id, int& count)
+{
+  if(event.classification == EventClassifier::GIVEITEM &&
+     event.ints.size() > kGIVE_ITEM_COUNT)
+  {
+    item_id = event.ints[kGIVE_ITEM_ID];
+    count = event.ints[kGIVE_ITEM_COUNT];
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Extracts data from the passed in event if its a notification 
+ *              event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         std::string& notification - the notification string reference
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventNotification(Event event, std::string& notification)
+{
+  if(event.classification == EventClassifier::NOTIFICATION &&
+     event.strings.size() > 0)
+  {
+    notification = event.strings.front();
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Extracts data from the passed in event if its a start map event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& map_id - the start map ID reference
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventStartMap(Event event, int& map_id)
+{
+  if(event.classification == EventClassifier::RUNMAP &&
+     event.ints.size() > kMAP_ID)
+  {
+    map_id = event.ints[kMAP_ID];
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Extracts data from the passed in event if its a teleport thing 
+ *              event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& thing_id - the teleport thing ID reference
+ *         int& x - the teleport thing tile X reference
+ *         int& y - the teleport thing tile Y reference
+ *         int& section_id - the teleport thing map sub ID reference
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventTeleport(Event event, int& thing_id, int& x, int& y,
+                                int& section_id)
+{
+  if(event.classification == EventClassifier::TELEPORTTHING &&
+     event.ints.size() > kTELEPORT_SECTION)
+  {
+    thing_id = event.ints[kTELEPORT_ID];
+    x = event.ints[kTELEPORT_X];
+    y = event.ints[kTELEPORT_Y];
+    section_id = event.ints[kTELEPORT_SECTION];
+    return true;
+  }
+  return false;
 }
 
 /*

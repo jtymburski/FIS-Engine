@@ -105,7 +105,7 @@ class EventSet
 public:
   /* Constructor function */
   EventSet();
-  
+
   /* Copy constructor */
   EventSet(const EventSet& source);
 
@@ -175,6 +175,9 @@ public:
 
   /* Returns the unlocked state enum */
   UnlockedState getUnlockedState();
+
+  /* Returns if the class is empty (default state after a clear() call) */
+  bool isEmpty();
 
   /* Returns if the class is currently locked */
   bool isLocked();
@@ -253,6 +256,13 @@ public:
 
   /* Created a trigger based lock */
   static Locked createLockTriggered(bool permanent = true);
+
+  /* Extract data from events */
+  static bool dataEventGiveItem(Event event, int& item_id, int& count);
+  static bool dataEventNotification(Event event, std::string& notification);
+  static bool dataEventStartMap(Event event, int& map_id);
+  static bool dataEventTeleport(Event event, int& thing_id, int& x, int& y,
+                                int& section_id);
 
   /* Deletes the given event. Just clears the relevant memory */
   static Event deleteEvent(Event event);
