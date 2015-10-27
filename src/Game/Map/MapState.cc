@@ -15,7 +15,7 @@
  *===========================================================================*/
 
 /*
- * Description: The only constructor for the state. Defualts the handler to 
+ * Description: The only constructor for the state. Defualts the handler to
  *              NULL as the blank state. Sets up all the initial variables to
  *              blank states.
  *
@@ -23,13 +23,9 @@
  */
 MapState::MapState(EventHandler* event_handler)
 {
-  enter_event = EventSet::createBlankEvent();
   this->event_handler = NULL;
-  exit_event = EventSet::createBlankEvent();
   interaction = NOINTERACTION;
   sprite_set = new SpriteMatrix();
-  use_event = EventSet::createBlankEvent();
-  walkover_event = EventSet::createBlankEvent();
 
   /* Set the relevant data */
   setEventHandler(event_handler);
@@ -73,7 +69,7 @@ MapState::InteractionState MapState::getInteraction(std::string interaction)
 /*
  * Description: Add the file data information, based on the xml data pointer
  *              retrieved from the file handler during an XML read. The internal
- *              elements get offset based on the given index. 
+ *              elements get offset based on the given index.
  *
  * Inputs: XmlData data - the xml data storage class
  *         int file_index - the element offset index to the sprite data
@@ -82,8 +78,8 @@ MapState::InteractionState MapState::getInteraction(std::string interaction)
  *         std::string base_path - the base path for resources
  * Output: bool - true if the add was successful
  */
-bool MapState::addFileInformation(XmlData data, int file_index, 
-                                  int section_index, SDL_Renderer* renderer, 
+bool MapState::addFileInformation(XmlData data, int file_index,
+                                  int section_index, SDL_Renderer* renderer,
                                   std::string base_path)
 {
   bool success = true;
@@ -96,7 +92,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     if(sprite_set == NULL)
       sprite_set = new SpriteMatrix();
 
-    success &= sprite_set->addFileInformation(data, file_index + 1, 
+    success &= sprite_set->addFileInformation(data, file_index + 1,
                                               renderer, base_path);
   }
   /*--------------------- INTERACTION -----------------*/
@@ -107,65 +103,29 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   /*------------------ ENTER EVENT -----------------*/
   else if(identifier == "enterevent")
   {
-    if(event_handler != NULL)
-    {
-      Event event = EventSet::updateEvent(getEnterEvent(), data, 
-                                          file_index + 1, section_index);
-      success &= setEnterEvent(event, false);
-    }
-    else
-    {
-      success = false;
-    }
+    event_enter.loadData(data, file_index, section_index);
   }
   /*------------------ EXIT EVENT -----------------*/
   else if(identifier == "exitevent")
   {
-    if(event_handler != NULL)
-    {
-      Event event = EventSet::updateEvent(getExitEvent(), data,
-                                          file_index + 1, section_index);
-      success &= setExitEvent(event, false);
-    }
-    else
-    {
-      success = false;
-    }
+    event_exit.loadData(data, file_index, section_index);
   }
   /*------------------ USE EVENT -----------------*/
   else if(identifier == "useevent")
   {
-    if(event_handler != NULL)
-    {
-      Event event = EventSet::updateEvent(getUseEvent(), data, 
-                                          file_index + 1, section_index);
-      success &= setUseEvent(event, false);
-    }
-    else
-    {
-      success = false;
-    }
+    event_use.loadData(data, file_index, section_index);
   }
   /*---------------- WALKOVER EVENT -----------------*/
   else if(identifier == "walkoverevent")
   {
-    if(event_handler != NULL)
-    {
-      Event event = EventSet::updateEvent(getWalkoverEvent(), data, 
-                                          file_index + 1, section_index);
-      success &= setWalkoverEvent(event, false);
-    }
-    else
-    {
-      success = false;
-    }
+    event_walkover.loadData(data, file_index, section_index);
   }
 
   return success;
 }
 
 /*
- * Description: Clears all variables in the state class definition and unsets 
+ * Description: Clears all variables in the state class definition and unsets
  *              the sprite data.
  *
  * Inputs: none
@@ -178,7 +138,7 @@ void MapState::clear()
 }
 
 /*
- * Description: Clears all events stored within the class. Call only works if 
+ * Description: Clears all events stored within the class. Call only works if
  *              the event handler has already been set up and is available.
  *              Note that if there is no event handler, no events fire.
  *
@@ -187,35 +147,35 @@ void MapState::clear()
  */
 bool MapState::clearEvents()
 {
-  enter_event = EventSet::deleteEvent(enter_event);
-  exit_event = EventSet::deleteEvent(exit_event);
-  use_event = EventSet::deleteEvent(use_event);
-  walkover_event = EventSet::deleteEvent(walkover_event);
+  event_enter.clear();
+  event_exit.clear();
+  event_use.clear();
+  event_walkover.clear();
   return true;
 }
 
 /*
- * Description: Returns the enter event (when this state becomes prime) set 
+ * Description: Returns the enter event (when this state becomes prime) set
  *              for the class.
  *
  * Inputs: none
- * Output: Event - event reference, corresponding to the enter event
+ * Output: EventSet* - event reference, corresponding to the enter event
  */
-Event MapState::getEnterEvent()
+EventSet* MapState::getEnterEvent()
 {
-  return enter_event;
+  return &event_enter;
 }
-  
+
 /*
- * Description: Returns the exit event (when this state stops becoming prime) 
+ * Description: Returns the exit event (when this state stops becoming prime)
  *              set for the class.
  *
  * Inputs: none
- * Output: Event - event reference, corresponding to the exit event
+ * Output: EventSet* - event reference, corresponding to the exit event
  */
-Event MapState::getExitEvent()
+EventSet* MapState::getExitEvent()
 {
-  return exit_event;
+  return &event_exit;
 }
 
 /*
@@ -257,27 +217,27 @@ TileSprite* MapState::getSprite(uint16_t x, uint16_t y)
 }
 
 /*
- * Description: Returns the use event (when is prime and thing triggers it) 
+ * Description: Returns the use event (when is prime and thing triggers it)
  *              set for the class.
  *
  * Inputs: none
- * Output: Event - event reference, corresponding to the use event
+ * Output: EventSet* - event reference, corresponding to the use event
  */
-Event MapState::getUseEvent()
+EventSet* MapState::getUseEvent()
 {
-  return use_event;
+  return &event_use;
 }
 
 /*
- * Description: Returns the walkover event (when is prime and thing walks on it) 
+ * Description: Returns the walkover event (when is prime and thing walks on it)
  *              set for the class.
  *
  * Inputs: none
- * Output: Event - event reference, corresponding to the walkover event
+ * Output: EventSet* - event reference, corresponding to the walkover event
  */
-Event MapState::getWalkoverEvent()
+EventSet* MapState::getWalkoverEvent()
 {
-  return walkover_event;
+  return &event_walkover;
 }
 
 /*
@@ -288,14 +248,9 @@ Event MapState::getWalkoverEvent()
  */
 bool MapState::isEnterEventSet()
 {
-  if(event_handler != NULL && 
-     enter_event.classification != EventClassifier::NOEVENT)
-  {
-    return true;
-  }
-  return false;
+  return !event_enter.isEmpty();
 }
- 
+
 /*
  * Description: Returns if the exit event for the state is set.
  *
@@ -304,12 +259,7 @@ bool MapState::isEnterEventSet()
  */
 bool MapState::isExitEventSet()
 {
-  if(event_handler != NULL && 
-     exit_event.classification != EventClassifier::NOEVENT)
-  {
-    return true;
-  }
-  return false;
+  return !event_exit.isEmpty();
 }
 
 /*
@@ -320,12 +270,7 @@ bool MapState::isExitEventSet()
  */
 bool MapState::isUseEventSet()
 {
-  if(event_handler != NULL && 
-     use_event.classification != EventClassifier::NOEVENT)
-  {
-    return true;
-  }
-  return false;
+  return !event_use.isEmpty();
 }
 
 /*
@@ -349,33 +294,12 @@ bool MapState::isWalkInteraction()
  */
 bool MapState::isWalkoverEventSet()
 {
-  if(event_handler != NULL && 
-     walkover_event.classification != EventClassifier::NOEVENT)
-  {
-    return true;
-  }
-  return false;
-}
-
-/*
- * Description: Sets the enter event. This goes off when the interactive object
- *              operation enters onto this state.
- *
- * Inputs: Event enter_event - the event to be executed
- *         bool delete_event - delete the old event. Default to true
- * Output: bool - if the setting was able to occur
- */
-bool MapState::setEnterEvent(Event enter_event, bool delete_event)
-{
-  if(delete_event)
-    this->enter_event = EventSet::deleteEvent(this->enter_event);
-  this->enter_event = enter_event;
-  return true;
+  return !event_walkover.isEmpty();
 }
 
 /*
  * Description: Sets the event handler to create and manage all existing events
- *              that get fired throughout interaction with the class. This is 
+ *              that get fired throughout interaction with the class. This is
  *              necessary to ensure that any events work.
  *
  * Inputs: EventHandler* event_handler - the new handler pointer (must not be 0)
@@ -387,23 +311,7 @@ void MapState::setEventHandler(EventHandler* event_handler)
 }
 
 /*
- * Description: Sets the exit event. This goes off when the interactive object
- *              operation exits this state.
- *
- * Inputs: Event exit_event - the event to be executed
- *         bool delete_event - delete the old event. Default to true
- * Output: bool - status if the event could be set
- */
-bool MapState::setExitEvent(Event exit_event, bool delete_event)
-{
-  if(delete_event)
-    this->exit_event = EventSet::deleteEvent(this->exit_event);
-  this->exit_event = exit_event;
-  return true;
-}
-
-/*
- * Description: Sets the interaction trigger for the state (what shifts the 
+ * Description: Sets the interaction trigger for the state (what shifts the
  *              states).
  *
  * Inputs: InteractionState interaction - the interaction corresponding enum
@@ -416,7 +324,7 @@ bool MapState::setInteraction(InteractionState interaction)
 }
 
 /*
- * Description: Sets the interaction trigger for the state (what shifts the 
+ * Description: Sets the interaction trigger for the state (what shifts the
  *              states) but based on a string from a file.
  *
  * Inputs: std::string interaction - the interaction corresponding string
@@ -462,7 +370,7 @@ bool MapState::setMatrix(SpriteMatrix* matrix)
  *         bool delete_old - delete old frame in its place?
  * Output: bool - true if sprite is set
  */
-bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y, 
+bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y,
                          bool delete_old)
 {
   /* Make the matrix, if it doesn't exist */
@@ -471,40 +379,6 @@ bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y,
 
   /* Add the frame */
   return sprite_set->setSprite(frames, x, y, delete_old);
-}
-
-/*
- * Description: Sets the use event. This goes off when the interactive 
- *              object is interacted with on this state. This will only work
- *              if this state is the last one in the sequence and doesn't 
- *              have a corresponding next state/transition frames.
- *
- * Inputs: Event use_event - the event to be executed
- *         bool delete_event - delete the old event. Default to true
- * Output: bool - if the setting was able to occur
- */
-bool MapState::setUseEvent(Event use_event, bool delete_event)
-{
-  if(delete_event)
-    this->use_event = EventSet::deleteEvent(this->use_event);
-  this->use_event = use_event;
-  return true;
-}
-
-/*
- * Description: Sets the walkover event. This goes off when the interactive 
- *              object is on this state and the person walks on it.
- *
- * Inputs: Event walkover_event - the event to be executed
- *         bool delete_event - delete the old event. Default to true
- * Output: bool - if the setting was able to occur
- */
-bool MapState::setWalkoverEvent(Event walkover_event, bool delete_event)
-{
-  if(delete_event)
-    this->walkover_event = EventSet::deleteEvent(this->walkover_event);
-  this->walkover_event = walkover_event;
-  return true;
 }
 
 /*
@@ -517,10 +391,9 @@ bool MapState::setWalkoverEvent(Event walkover_event, bool delete_event)
 bool MapState::triggerEnterEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL &&
-     enter_event.classification != EventClassifier::NOEVENT)
+  if(event_handler != NULL && !event_enter.isEmpty())
   {
-    event_handler->executeEvent(enter_event, initiator, source);
+    event_handler->executeEvent(event_enter.getEvent(), initiator, source);
     return true;
   }
 
@@ -537,10 +410,9 @@ bool MapState::triggerEnterEvent(MapPerson* initiator, MapThing* source)
 bool MapState::triggerExitEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL && 
-     exit_event.classification != EventClassifier::NOEVENT)
+  if(event_handler != NULL && !event_exit.isEmpty())
   {
-    event_handler->executeEvent(exit_event, initiator, source);
+    event_handler->executeEvent(event_exit.getEvent(), initiator, source);
     return true;
   }
 
@@ -557,10 +429,9 @@ bool MapState::triggerExitEvent(MapPerson* initiator, MapThing* source)
 bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL && 
-     use_event.classification != EventClassifier::NOEVENT)
+  if(event_handler != NULL && !event_use.isEmpty())
   {
-    event_handler->executeEvent(use_event, initiator, source);
+    event_handler->executeEvent(event_use.getEvent(), initiator, source);
     return true;
   }
 
@@ -568,7 +439,7 @@ bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
 }
 
 /*
- * Description: Triggers walk over event for the state by initiating person 
+ * Description: Triggers walk over event for the state by initiating person
  *              pointer.
  *
  * Inputs: MapPerson* initiator - the initiating person for the event
@@ -578,10 +449,9 @@ bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
 bool MapState::triggerWalkoverEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL && 
-     walkover_event.classification != EventClassifier::NOEVENT)
+  if(event_handler != NULL && !event_walkover.isEmpty())
   {
-    event_handler->executeEvent(walkover_event, initiator, source);
+    event_handler->executeEvent(event_walkover.getEvent(), initiator, source);
     return true;
   }
 
@@ -589,7 +459,7 @@ bool MapState::triggerWalkoverEvent(MapPerson* initiator, MapThing* source)
 }
 
 /*
- * Description: Unsets the sprite matrix corresponding to the state. 
+ * Description: Unsets the sprite matrix corresponding to the state.
  *
  * Inputs: none
  * Output: none

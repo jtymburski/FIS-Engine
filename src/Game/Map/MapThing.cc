@@ -36,7 +36,6 @@ MapThing::MapThing()
   base_category = ThingBase::ISBASE;
   base_control = NULL;
   event_handler = NULL;
-  //interact_event = EventSet::createBlankEvent();
   sound_id = kUNSET_ID;
   sprite_set = NULL;
 
@@ -776,8 +775,6 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   else if(identifier == "event")
   {
     event_set.loadData(data, file_index, section_index);
-    //interact_event = EventSet::updateEvent(interact_event, data, 
-    //                                       file_index + 1, section_index);
   }
   /*------------------- GAME ID -----------------*/
   else if(identifier == "game_id" && elements.size() == 1)
@@ -1052,6 +1049,18 @@ Frame* MapThing::getDialogImage()
 }
 
 /*
+ * Description: Returns a reference of the event set being stored within the
+ *              map thing object.
+ *
+ * Inputs: none
+ * Output: EventSet* - the event object reference pointer
+ */
+EventSet* MapThing::getEventSet()
+{
+  return &event_set;
+}
+
+/*
  * Description: Gets the frame data for the thing at a particular coordinate.
  *              Coordinates are with respect to the top left of the sprite.
  *              If out of range or the frame isn't set, it will return NULL.
@@ -1206,12 +1215,6 @@ Event MapThing::getInteraction()
     return base->getInteraction();
   }
   return event_set.getEvent();
-
-//  if(interact_event.classification != EventClassifier::NOEVENT)
-//    return interact_event;
-//  else if(base != NULL)
-//    return base->getInteraction();
-//  return interact_event;
 }
 
 /*
@@ -1981,24 +1984,6 @@ void MapThing::setIDPlayer()
 {
   id = kPLAYER_ID;
 }
-
-/*
- * Description: Sets the interaction event that gets fired when the interact()
- *              function is called. This requires a relevant event handler
- *              to work and needs to be set first. Once an event is set, the
- *              class it is set in handles deletion of conversation pointers,
- *              if relevant.
- *
- * Inputs: Event interact_event - the event to set in the class
- * Output: bool - if the event could be set
- */
-//bool MapThing::setInteraction(Event interact_event)
-//{
-//  std::cout << "SET INTERACTION TEST" << std::endl;
-  //this->interact_event = EventSet::deleteEvent(this->interact_event);
-  //this->interact_event = interact_event;
-//  return true;
-//}
 
 /*
  * Description: Sets if the class should be paused. When it's paused, it will

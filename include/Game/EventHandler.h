@@ -34,6 +34,8 @@ class MapThing;
 struct EventExecution
 {
   Event event;
+  EventSet* event_set;
+
   MapItem* item;
   MapPerson* initiator;
   MapThing* source;
@@ -79,6 +81,10 @@ public:
   /* Execute the given event */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
 
+  /* Execute the given event set */
+  void executeEventSet(EventSet* set, MapPerson* initiator, 
+                       MapThing* source = nullptr);
+
   /* Executes a pickup item event */
   void executePickup(MapItem* item, bool walkover = false);
 
@@ -103,6 +109,13 @@ public:
 
   /* Returns the current event type, to be polled by the management class */
   EventClassifier pollEventType();
+
+  /* Polls to see if the current event is locked and can be unlocked (such as
+   * with a have item call */
+  bool pollLock();
+
+  /* Polls the lock item for the related properties associated */
+  bool pollLockItem(int& id, int& count, bool& consume);
 
   /* Poll a notification event */
   bool pollNotification(std::string* notification);

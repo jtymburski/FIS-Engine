@@ -3,10 +3,10 @@
  * Date Created: October 28, 2012
  * Inheritance: none
  * Description: This class handles the basic tile that is set up on the map.
- *              It is the overall structure. The tile class creates a base, 
+ *              It is the overall structure. The tile class creates a base,
  *              enhancer, lower, upper, passable, and impassable to define
  *              all the possibilities on the tile. This also handles printing
- *              its own tile data and ensuring that movement isn't entered 
+ *              its own tile data and ensuring that movement isn't entered
  *              through the tile. For additional information, read the comments
  *              below for each function.
  *****************************************************************************/
@@ -31,12 +31,12 @@ class Tile
 public:
   /* Constructor functions */
   Tile();
-  Tile(EventHandler* event_handler, uint16_t width, uint16_t height, 
+  Tile(EventHandler* event_handler, uint16_t width, uint16_t height,
        uint16_t x = 0, uint16_t y = 0);
 
   /* Destructor function */
   ~Tile();
-  
+
   /* OFF - Not rendered at all
    * BLANKED - Blacked out
    * ACTIVE - Rendered */
@@ -58,10 +58,10 @@ private:
   Sprite* enhancer;
 
   /* Events for entering and exiting the tile and the handler */
+  EventSet event_enter;
+  EventSet event_exit;
   EventHandler* event_handler;
-  Event enter_event;
-  Event exit_event;
-  
+
   /* The lower information */
   std::vector<Sprite*> lower;
   std::vector<uint8_t> lower_passability;
@@ -99,7 +99,7 @@ public:
   bool addItem(MapItem* item);
 
   /* Call to add data, as extracted from file data */
-  bool addPassability(std::string data, std::string classifier, 
+  bool addPassability(std::string data, std::string classifier,
                                         std::string index);
   bool addSprite(Sprite* frames, std::string classifier, std::string index);
 
@@ -109,7 +109,7 @@ public:
   /* Clears out data from the class */
   void clear(bool just_sprites = false);
   bool clearEvents();
-  
+
   /* Gets the base layer and passability */
   Sprite* getBase() const;
   bool getBasePassability(Direction dir) const;
@@ -117,9 +117,13 @@ public:
   /* Gets the enhancer layer */
   Sprite* getEnhancer() const;
 
+  /* Returns event pointers */
+  EventSet* getEventEnter();
+  EventSet* getEventExit();
+
   /* Returns the stored height of the tile */
   uint16_t getHeight() const;
- 
+
   /* Returns the map IO pointer for the interactive object */
   MapInteractiveObject* getIO(uint8_t render_level) const;
   std::vector<MapInteractiveObject*> getIOs() const;
@@ -139,7 +143,7 @@ public:
   /* Returns the passability of the tile based on direction */
   bool getPassabilityEntering(Direction dir) const;
   bool getPassabilityExiting(Direction dir) const;
-  
+
   /* Returns the person pointer in the tile (main or previous) */
   MapPerson* getPerson(uint8_t render_level) const;
   MapPerson* getPersonMain(uint8_t render_level) const;
@@ -152,7 +156,7 @@ public:
   uint32_t getPixelY() const;
 
   /* Returns the render stack for applicable things based on level */
-  bool getRenderThings(uint8_t render_level, MapPerson*& person, 
+  bool getRenderThings(uint8_t render_level, MapPerson*& person,
                        MapThing*& thing, MapInteractiveObject*& io) const;
 
   /* Returns the top most sound ID that could be stepped on */
@@ -185,14 +189,14 @@ public:
 
   /* Returns if the Enhancer Layer is set */
   bool isEnhancerSet() const;
- 
+
   /* Returns if the map interactive object is set */
   bool isIOSet(uint8_t render_level) const;
   bool isIOsSet() const;
 
   /* Returns if an item thing is set */
   bool isItemsSet() const;
-  
+
   /* Returns if the Lower Layer is set */
   bool isLowerSet() const;
 
@@ -208,16 +212,16 @@ public:
 
   /* Returns if the Upper Layer is set (ie. at least one) */
   bool isUpperSet() const;
- 
+
   /* Starts and finishes the person move (shifts the pointer to previous) */
-  bool personMoveFinish(uint8_t render_level, bool no_events = false, 
+  bool personMoveFinish(uint8_t render_level, bool no_events = false,
                         bool reverse_last = false);
   bool personMoveStart(uint8_t render_level);
 
   /* Paints the active sprites in this tile using GL direct calls */
   bool renderLower(SDL_Renderer* renderer, int offset_x = 0, int offset_y = 0);
   bool renderUpper(SDL_Renderer* renderer, int offset_x = 0, int offset_y = 0);
-  
+
   /* Sets the base portion of the layer and the passability */
   bool setBase(Sprite* base);
   bool setBasePassability(Direction dir, bool set_value);
@@ -225,15 +229,9 @@ public:
   /* Set the enhancer portion of the layer */
   bool setEnhancer(Sprite* enhancer);
 
-  /* Set the enter event, for the tile */
-  bool setEnterEvent(Event enter_event);
-  
   /* Sets the event handler - this call also clears out all existing events */
   void setEventHandler(EventHandler* event_handler);
-  
-  /* Set the exit event, for the tile */
-  bool setExitEvent(Event exit_event);
-  
+
   /* Sets the new height for the tile (must be >= 0) */
   void setHeight(uint16_t height);
 
@@ -245,7 +243,7 @@ public:
   bool setLowerPassability(uint8_t index, Direction dir, bool set_value);
 
   /* Sets the stored MapPerson sprite pointer */
-  bool setPerson(MapPerson* person, uint8_t render_level, 
+  bool setPerson(MapPerson* person, uint8_t render_level,
                  bool no_events = false);
 
   /* Sets a new status for the tile */
@@ -253,7 +251,7 @@ public:
 
   /* Sets the thing sprite pointer, stored within the class */
   bool setThing(MapThing* thing, uint8_t render_level);
-  
+
   /* Sets the upper portion of the layer */
   bool setUpper(Sprite* upper);
 
@@ -263,11 +261,11 @@ public:
   /* Sets the coordinate location of the tile (and all corresponding layers) */
   void setX(uint16_t x);
   void setY(uint16_t y);
-  
+
   /* Updates the relevent enter and exit events, from file data */
-  bool updateEnterEvent(XmlData data, int file_index, uint16_t section_index);
-  bool updateExitEvent(XmlData data, int file_index, uint16_t section_index);
-  
+  bool updateEventEnter(XmlData data, int file_index, uint16_t section_index);
+  bool updateEventExit(XmlData data, int file_index, uint16_t section_index);
+
   /* Unsets the base layer(s) */
   void unsetBase();
 

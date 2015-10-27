@@ -58,6 +58,27 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
     /* Create the executed event queue entry */
     EventExecution executed_event;
     executed_event.event = event;
+    executed_event.event_set = nullptr;
+    executed_event.item = nullptr;
+    executed_event.initiator = initiator;
+    executed_event.source = source;
+
+    /* Push the event to the back of the queue */
+    event_queue.push_back(executed_event);
+  }
+}
+  
+/* Execute the given event set */
+void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator, 
+                                   MapThing* source)
+{
+  if(set != nullptr && !set->isEmpty())
+  {
+    /* Create the executed event queue entry */
+    EventExecution executed_event;
+    executed_event.event = EventSet::createBlankEvent();
+    executed_event.event_set = set;
+    executed_event.item = nullptr;
     executed_event.initiator = initiator;
     executed_event.source = source;
 
@@ -148,6 +169,39 @@ EventClassifier EventHandler::pollEventType()
   if(queue_index < event_queue.size())
     return event_queue[queue_index].event.classification;
   return EventClassifier::NOEVENT;
+}
+  
+/* Polls to see if the current event is locked and can be unlocked (such as
+ * with a have item call */
+bool EventHandler::pollLock()
+{
+  if(queue_index < event_queue.size() && 
+     event_queue[queue_index].event_set != nullptr)
+  {
+    EventSet* set = event_queue[queue_index].event_set;
+
+    /* Determine if the current set is locked and if its a locked state that
+     * needs to be reviewed at call time */
+    return (set->isLocked() && 
+            (set->getLockedState().state == LockedState::ITEM));
+  }
+  return false;
+}
+  
+/* Polls the lock item for the related properties associated */
+bool EventHandler::pollLockItem(int& id, int& count, bool& consume)
+{
+  if(queue_index < event_queue.size() &&
+     event_queue[queue_index].event_set != nullptr)
+  {
+    EventSet* set = event_queue[queue_index].event_set;
+    if(set->isLocked() && set->getLockedState().state == LockedState::ITEM)
+    {
+      EventSet::dataLockedItem(set->getLockedState(), id, count, consume);
+      return true;
+    }
+  }
+  return false;
 }
 
 /* Poll a notification event */

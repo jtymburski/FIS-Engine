@@ -67,7 +67,6 @@ protected:
   /* The event handler information and corresponding interact event */
   EventHandler* event_handler;
   EventSet event_set;
-  //Event interact_event;
 
   /* Game ID */
   int game_id;
@@ -211,6 +210,9 @@ public:
   /* Returns the dialog image data, so that it may be painted */
   Frame* getDialogImage();
 
+  /* Returns the event set being used by the thing */
+  EventSet* getEventSet();
+
   /* Returns the map frames that's defined */
   TileSprite* getFrame(uint32_t x, uint32_t y);
   TileSprite* getFrameMain(Tile* tile);
@@ -335,9 +337,6 @@ public:
   /* Sets the things ID */
   bool setID(int new_id);
   void setIDPlayer();
-
-  /* Sets the interaction event for the thing */
-  //bool setInteraction(Event interact_event);
 
   /* Sets if the movement is paused */
   void setMovementPaused(bool paused);

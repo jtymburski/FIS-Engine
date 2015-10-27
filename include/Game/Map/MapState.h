@@ -34,11 +34,11 @@ private:
   InteractionState interaction;
 
   /* Events necessary for the state */
+  EventSet event_enter;
+  EventSet event_exit;
   EventHandler* event_handler;
-  Event enter_event;
-  Event exit_event;
-  Event use_event;
-  Event walkover_event;
+  EventSet event_use;
+  EventSet event_walkover;
 
   /* -------------------------- Constants ------------------------- */
   //const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
@@ -64,8 +64,8 @@ public:
   bool clearEvents();
 
   /* Returns the enter and exit events */
-  Event getEnterEvent();
-  Event getExitEvent();
+  EventSet* getEnterEvent();
+  EventSet* getExitEvent();
   
   /* Returns what interaction would initiate this */
   InteractionState getInteraction();
@@ -77,8 +77,8 @@ public:
   TileSprite* getSprite(uint16_t x, uint16_t y);
 
   /* Returns the use and walkover events */
-  Event getUseEvent();
-  Event getWalkoverEvent();
+  EventSet* getUseEvent();
+  EventSet* getWalkoverEvent();
  
   /* Check if events or interactions are set */
   bool isEnterEventSet();
@@ -87,14 +87,8 @@ public:
   bool isWalkInteraction();
   bool isWalkoverEventSet();
 
-  /* Sets the enter event */
-  bool setEnterEvent(Event enter_event, bool delete_event = true);
-
   /* Sets the event handler - this call clears out all existing events */
   void setEventHandler(EventHandler* event_handler);
-
-  /* Sets the exit event */
-  bool setExitEvent(Event exit_event, bool delete_event = true);
 
   /* Sets how this state gets interacted with */
   bool setInteraction(InteractionState interaction);
@@ -106,12 +100,6 @@ public:
   /* Sets the sprite internally to the state */
   bool setSprite(TileSprite* frames, uint16_t x, uint16_t y, 
                  bool delete_old = true);
-
-  /* Sets the use event */
-  bool setUseEvent(Event use_event, bool delete_event = true);
-
-  /* Sets the walkover event */
-  bool setWalkoverEvent(Event walkover_event, bool delete_event = true);
 
   /* The event triggers. Fire to start the event */
   bool triggerEnterEvent(MapPerson* initiator, MapThing* source = NULL);

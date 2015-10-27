@@ -225,10 +225,10 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
             /* Classify between enter and exit events */
             if(data.getKeyValue(kFILE_CLASSIFIER) == "enter")
               success &= sub_map[section_index].tiles[r][c]->
-                    updateEnterEvent(data, kFILE_CLASSIFIER + 3, section_index);
+                    updateEventEnter(data, kFILE_CLASSIFIER + 3, section_index);
             else if(data.getKeyValue(kFILE_CLASSIFIER) == "exit")
               success &= sub_map[section_index].tiles[r][c]->
-                     updateExitEvent(data, kFILE_CLASSIFIER + 3, section_index);
+                     updateEventExit(data, kFILE_CLASSIFIER + 3, section_index);
           }
         }
       }

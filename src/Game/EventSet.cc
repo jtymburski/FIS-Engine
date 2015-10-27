@@ -386,7 +386,8 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
   /* -- COMBATIBILITY: For old system -- */
   else if(category == "event" || category == "tileevent" ||
           category == "useevent" || category == "enterevent" ||
-          category == "exitevent" || category == "walkoverevent")
+          category == "exitevent" || category == "walkoverevent" ||
+          category == "x" || category == "y")
   {
     int index = 0; /* First event always acts as old system reference */
     Event* found = getUnlockedRef(index);
@@ -983,6 +984,30 @@ bool EventSet::dataEventTeleport(Event event, int& thing_id, int& x, int& y,
 }
 
 /*
+ * Description: Extracts data from the locked struct regarding the have item
+ *              unlock trigger.
+ *
+ * Inputs: Locked lock - the locked data struct
+ *         int& id - the item ID reference
+ *         int& count - the item count reference
+ *         bool& consume - if the item is consumed bool reference
+ * Output: bool - true if the data from the retrieval is valid
+ */
+bool EventSet::dataLockedItem(Locked lock, int& id, int& count, bool& consume)
+{
+  if(lock.state == LockedState::ITEM && lock.is_locked && 
+     lock.ints.size() > kHAVE_ITEM_COUNT && 
+     lock.bools.size() > kHAVE_ITEM_CONSUME)
+  {
+    id = lock.ints[kHAVE_ITEM_ID];
+    count = lock.ints[kHAVE_ITEM_COUNT];
+    consume = lock.bools[kHAVE_ITEM_CONSUME];
+    return true;
+  }
+  return false;
+}
+
+/*
  * Description: Public static. Deletes the passed in event of all dynamic 
  *              memory. Returns a blank event, as replacement.
  *
@@ -1323,4 +1348,3 @@ Locked EventSet::updateLocked(Locked locked_curr, XmlData data, int file_index)
 
   return locked_curr;
 }
-

@@ -31,9 +31,7 @@ const uint8_t Tile::kUPPER_COUNT_MAX = 5;
  */
 Tile::Tile()
 {
-  enter_event = EventSet::createBlankEvent();
   event_handler = NULL;
-  exit_event = EventSet::createBlankEvent();
   clear();
 }
 
@@ -309,8 +307,8 @@ void Tile::clear(bool just_sprites)
  */
 bool Tile::clearEvents()
 {
-  enter_event = EventSet::deleteEvent(enter_event);
-  exit_event = EventSet::deleteEvent(exit_event);
+  event_enter.clear();
+  event_exit.clear();
   return true;
 }
 
@@ -353,6 +351,28 @@ bool Tile::getBasePassability(Direction dir) const
 Sprite* Tile::getEnhancer() const
 {
   return enhancer;
+}
+  
+/*
+ * Description: Returns the tile enter event set reference
+ *
+ * Inputs: none
+ * Output: EventSet* - the enter event set
+ */
+EventSet* Tile::getEventEnter()
+{
+  return &event_enter;
+}
+
+/*
+ * Description: Returns the tile exit event set reference
+ *
+ * Inputs: none
+ * Output: EventSet* - the exit event set
+ */
+EventSet* Tile::getEventExit()
+{
+  return &event_exit;
 }
 
 /*
@@ -1057,9 +1077,9 @@ bool Tile::personMoveFinish(uint8_t render_level, bool no_events,
       if(render_level == 0 && !no_events)
       {
         /* Execute exit event, if applicable */
-        if(event_handler != NULL &&
-           exit_event.classification != EventClassifier::NOEVENT)
-          event_handler->executeEvent(exit_event, persons_prev[render_level]);
+        if(event_handler != NULL && !event_exit.isEmpty())
+          event_handler->executeEvent(event_exit.getEvent(), 
+                                      persons_prev[render_level]);
       }
     }
 
@@ -1233,20 +1253,6 @@ bool Tile::setEnhancer(Sprite* enhancer)
 }
 
 /*
- * Description: Sets the enter event. This goes off when an impassable object
- *              gets set onto the tile.
- *
- * Inputs: Event enter_event - the event to be executed
- * Output: bool - if the setting was able to occur
- */
-bool Tile::setEnterEvent(Event enter_event)
-{
-  this->enter_event = EventSet::deleteEvent(this->enter_event);
-  this->enter_event = enter_event;
-  return true;
-}
-
-/*
  * Description: Sets the event handler to create and manage all existing events
  *              that get fired throughout interaction with the class. This is
  *              necessary to ensure that any events work.
@@ -1257,20 +1263,6 @@ bool Tile::setEnterEvent(Event enter_event)
 void Tile::setEventHandler(EventHandler* event_handler)
 {
   this->event_handler = event_handler;
-}
-
-/*
- * Description: Sets the exit event. This goes off when an impassable object
- *              gets cleared off of a tile.
- *
- * Inputs: Event exit_event - the event to be executed
- * Output: bool - status if the event could be set
- */
-bool Tile::setExitEvent(Event exit_event)
-{
-  this->exit_event = EventSet::deleteEvent(this->exit_event);
-  this->exit_event = exit_event;
-  return true;
 }
 
 /*
@@ -1398,8 +1390,8 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
             event_handler->executePickup(items[i], true);
 
         /* Execute the enter event, if applicable */
-        if(enter_event.classification != EventClassifier::NOEVENT)
-          event_handler->executeEvent(enter_event, person);
+        if(!event_enter.isEmpty())
+          event_handler->executeEvent(event_enter.getEvent(), person);
       }
 
       return true;
@@ -1504,7 +1496,7 @@ void Tile::setY(uint16_t y)
 {
   this->y = y;
 }
-
+  
 /*
  * Description: Updates the enter event, from the relevant file data. This then
  *              passes the call to the event handler which parses the file data.
@@ -1514,11 +1506,10 @@ void Tile::setY(uint16_t y)
  *         int section_index - the relevant map section index
  * Output: bool - returns if the call was successful
  */
-bool Tile::updateEnterEvent(XmlData data, int file_index,
+bool Tile::updateEventEnter(XmlData data, int file_index,
                                           uint16_t section_index)
 {
-  enter_event = EventSet::updateEvent(enter_event, data,
-                                      file_index, section_index);
+  event_enter.loadData(data, file_index - 1, section_index);
   return true;
 }
 
@@ -1531,10 +1522,9 @@ bool Tile::updateEnterEvent(XmlData data, int file_index,
  *         int section_index - the relevant map section index
  * Output: bool - returns if the call was successful
  */
-bool Tile::updateExitEvent(XmlData data, int file_index, uint16_t section_index)
+bool Tile::updateEventExit(XmlData data, int file_index, uint16_t section_index)
 {
-  exit_event = EventSet::updateEvent(exit_event, data,
-                                     file_index, section_index);
+  event_exit.loadData(data, file_index - 1, section_index);
   return true;
 }
 
@@ -1726,9 +1716,9 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
       if(render_level == 0 && !no_events)
       {
         /* Execute exit event, if applicable */
-        if(event_handler != NULL &&
-            exit_event.classification != EventClassifier::NOEVENT)
-          event_handler->executeEvent(exit_event, persons_main[render_level]);
+        if(event_handler != nullptr && !event_exit.isEmpty())
+          event_handler->executeEvent(event_exit.getEvent(), 
+                                      persons_main[render_level]);
       }
     }
 

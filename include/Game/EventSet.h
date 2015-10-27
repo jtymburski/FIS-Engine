@@ -257,12 +257,13 @@ public:
   /* Created a trigger based lock */
   static Locked createLockTriggered(bool permanent = true);
 
-  /* Extract data from events */
+  /* Extract data from events or locks */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
   static bool dataEventNotification(Event event, std::string& notification);
   static bool dataEventStartMap(Event event, int& map_id);
   static bool dataEventTeleport(Event event, int& thing_id, int& x, int& y,
                                 int& section_id);
+  static bool dataLockedItem(Locked lock, int& id, int& count, bool& consume);
 
   /* Deletes the given event. Just clears the relevant memory */
   static Event deleteEvent(Event event);
