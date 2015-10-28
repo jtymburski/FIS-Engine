@@ -71,8 +71,11 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Returns the event in the queue: either from the set or event pointer */
+  bool getEvent(Event& event, bool trigger = false);
+
   /* Trigger queue sound */
-  void triggerQueueSound();
+  void triggerQueueSound(Event event);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -82,7 +85,7 @@ public:
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
 
   /* Execute the given event set */
-  void executeEventSet(EventSet* set, MapPerson* initiator, 
+  void executeEventSet(EventSet* set, MapPerson* initiator,
                        MapThing* source = nullptr);
 
   /* Executes a pickup item event */
@@ -111,10 +114,10 @@ public:
   EventClassifier pollEventType();
 
   /* Polls to see if the current event is locked and can be unlocked (such as
-   * with a have item call */
+   * with a have item call) */
   bool pollLock();
 
-  /* Polls the lock item for the related properties associated */
+  /* Accesses lock properties */
   bool pollLockItem(int& id, int& count, bool& consume);
 
   /* Poll a notification event */
@@ -133,7 +136,10 @@ public:
   bool pollStartMap(int* id);
 
   /* Poll a teleport thing event */
-  bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id); // NEW
+  bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id);
+
+  /* Unlock triggers, based on if the event set has a lock struct */
+  bool pollUnlockItem(int id, int count);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);

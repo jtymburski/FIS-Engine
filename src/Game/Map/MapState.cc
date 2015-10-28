@@ -393,7 +393,7 @@ bool MapState::triggerEnterEvent(MapPerson* initiator, MapThing* source)
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL && !event_enter.isEmpty())
   {
-    event_handler->executeEvent(event_enter.getEvent(), initiator, source);
+    event_handler->executeEventSet(getEnterEvent(), initiator, source);
     return true;
   }
 
@@ -412,7 +412,7 @@ bool MapState::triggerExitEvent(MapPerson* initiator, MapThing* source)
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL && !event_exit.isEmpty())
   {
-    event_handler->executeEvent(event_exit.getEvent(), initiator, source);
+    event_handler->executeEventSet(getExitEvent(), initiator, source);
     return true;
   }
 
@@ -431,7 +431,7 @@ bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL && !event_use.isEmpty())
   {
-    event_handler->executeEvent(event_use.getEvent(), initiator, source);
+    event_handler->executeEventSet(getUseEvent(), initiator, source);
     return true;
   }
 
@@ -451,7 +451,7 @@ bool MapState::triggerWalkoverEvent(MapPerson* initiator, MapThing* source)
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL && !event_walkover.isEmpty())
   {
-    event_handler->executeEvent(event_walkover.getEvent(), initiator, source);
+    event_handler->executeEventSet(getWalkoverEvent(), initiator, source);
     return true;
   }
 

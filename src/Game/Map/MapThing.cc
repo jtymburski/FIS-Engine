@@ -1052,12 +1052,30 @@ Frame* MapThing::getDialogImage()
  * Description: Returns a reference of the event set being stored within the
  *              map thing object.
  *
- * Inputs: none
+ * Inputs: bool direct - true to access the class directly (no base reference).
+ *                       Otherwise, gets active (instance or base). Def. false
  * Output: EventSet* - the event object reference pointer
  */
-EventSet* MapThing::getEventSet()
+EventSet* MapThing::getEventSet(bool direct)
 {
-  return &event_set;
+  /* Direct - ignores base or any related */
+  if(direct)
+  {
+    return &event_set;
+  }
+  /* Not direct - takes base and instance into account */
+  else
+  {
+    if(!event_set.isEmpty())
+    {
+      return &event_set;
+    }
+    else if(base != nullptr)
+    {
+      return base->getEventSet(false);
+    }
+    return &event_set;
+  }
 }
 
 /*
@@ -1208,13 +1226,13 @@ Event MapThing::getInteraction()
 {
   if(!event_set.isEmpty())
   {
-    return event_set.getEvent();
+    return event_set.getEvent(false);
   }
   else if(base != nullptr)
   {
     return base->getInteraction();
   }
-  return event_set.getEvent();
+  return event_set.getEvent(false);
 }
 
 /*
@@ -1603,7 +1621,7 @@ bool MapThing::interact(MapPerson* initiator)
 {
   if(event_handler != NULL)
   {
-    event_handler->executeEvent(getInteraction(), initiator, this);
+    event_handler->executeEventSet(getEventSet(), initiator, this);
     return true;
   }
 

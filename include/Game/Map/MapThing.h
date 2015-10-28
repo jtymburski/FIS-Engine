@@ -211,7 +211,7 @@ public:
   Frame* getDialogImage();
 
   /* Returns the event set being used by the thing */
-  EventSet* getEventSet();
+  EventSet* getEventSet(bool direct = false);
 
   /* Returns the map frames that's defined */
   TileSprite* getFrame(uint32_t x, uint32_t y);

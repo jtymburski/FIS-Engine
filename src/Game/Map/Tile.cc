@@ -1078,8 +1078,8 @@ bool Tile::personMoveFinish(uint8_t render_level, bool no_events,
       {
         /* Execute exit event, if applicable */
         if(event_handler != NULL && !event_exit.isEmpty())
-          event_handler->executeEvent(event_exit.getEvent(), 
-                                      persons_prev[render_level]);
+          event_handler->executeEventSet(getEventExit(),
+                                         persons_prev[render_level]);
       }
     }
 
@@ -1391,7 +1391,7 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
 
         /* Execute the enter event, if applicable */
         if(!event_enter.isEmpty())
-          event_handler->executeEvent(event_enter.getEvent(), person);
+          event_handler->executeEventSet(getEventEnter(), person);
       }
 
       return true;
@@ -1717,8 +1717,8 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
       {
         /* Execute exit event, if applicable */
         if(event_handler != nullptr && !event_exit.isEmpty())
-          event_handler->executeEvent(event_exit.getEvent(), 
-                                      persons_main[render_level]);
+          event_handler->executeEventSet(getEventExit(), 
+                                         persons_main[render_level]);
       }
     }
 

@@ -36,13 +36,30 @@ EventHandler::~EventHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+  
+/* Returns the event in the queue: either from the set or event pointer */
+bool EventHandler::getEvent(Event& event, bool trigger)
+{
+  if(queue_index < event_queue.size())
+  {
+    if(event_queue[queue_index].event_set != nullptr)
+    {
+      event = event_queue[queue_index].event_set->getEvent(trigger);
+    }
+    else
+    {
+      event = event_queue[queue_index].event;
+    }
+    return true;
+  }
+  return false;
+}
 
 /* Trigger queue sound */
-void EventHandler::triggerQueueSound()
+void EventHandler::triggerQueueSound(Event event)
 {
-  if(event_queue[queue_index].event.sound_id >= 0)
-    triggerSound(event_queue[queue_index].event.sound_id,
-                 SoundChannels::TRIGGERS);
+  if(event.sound_id >= 0)
+    triggerSound(event.sound_id, SoundChannels::TRIGGERS);
 }
 
 /*============================================================================
@@ -67,9 +84,9 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
     event_queue.push_back(executed_event);
   }
 }
-  
+
 /* Execute the given event set */
-void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator, 
+void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator,
                                    MapThing* source)
 {
   if(set != nullptr && !set->isEmpty())
@@ -100,7 +117,7 @@ void EventHandler::executePickup(MapItem* item, bool walkover)
   event_queue.back().item = item;
 }
 
-//TODO: Conventions [04-10-15]
+/* Returns a reference to the key handler */
 KeyHandler& EventHandler::getKeyHandler()
 {
   return key_handler;
@@ -125,11 +142,14 @@ bool EventHandler::pollConversation(Conversation** convo, MapThing** source)
   if(pollEventType() == EventClassifier::STARTCONVO && convo != NULL &&
      source != NULL)
   {
-    *convo = event_queue[queue_index].event.convo;
-    *source = event_queue[queue_index].source;
-    triggerQueueSound();
-
-    return true;
+    Event event;
+    if(getEvent(event, true))
+    {
+      *convo = event.convo;
+      *source = event_queue[queue_index].source;
+      triggerQueueSound(event);
+      return true;
+    }
   }
 
   return false;
@@ -138,11 +158,13 @@ bool EventHandler::pollConversation(Conversation** convo, MapThing** source)
 /* Poll a give item event */
 bool EventHandler::pollGiveItem(int* id, int* count)
 {
-  if(id != nullptr && count != nullptr && queue_index < event_queue.size())
+  if(id != nullptr && count != nullptr)
   {
-    if(EventSet::dataEventGiveItem(event_queue[queue_index].event, *id, *count))
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventGiveItem(event, *id, *count))
     {
-      triggerQueueSound();
+      triggerQueueSound(event);
       return true;
     }
   }
@@ -166,28 +188,31 @@ bool EventHandler::pollEvent()
 /* Returns the current event type, to be polled by the management class */
 EventClassifier EventHandler::pollEventType()
 {
-  if(queue_index < event_queue.size())
-    return event_queue[queue_index].event.classification;
+  Event event;
+  if(getEvent(event, false))
+  {
+    return event.classification;
+  }
   return EventClassifier::NOEVENT;
 }
-  
+
 /* Polls to see if the current event is locked and can be unlocked (such as
  * with a have item call */
 bool EventHandler::pollLock()
 {
-  if(queue_index < event_queue.size() && 
+  if(queue_index < event_queue.size() &&
      event_queue[queue_index].event_set != nullptr)
   {
     EventSet* set = event_queue[queue_index].event_set;
 
     /* Determine if the current set is locked and if its a locked state that
      * needs to be reviewed at call time */
-    return (set->isLocked() && 
+    return (set->isLocked() &&
             (set->getLockedState().state == LockedState::ITEM));
   }
   return false;
 }
-  
+
 /* Polls the lock item for the related properties associated */
 bool EventHandler::pollLockItem(int& id, int& count, bool& consume)
 {
@@ -207,12 +232,14 @@ bool EventHandler::pollLockItem(int& id, int& count, bool& consume)
 /* Poll a notification event */
 bool EventHandler::pollNotification(std::string* notification)
 {
-  if(notification != nullptr && queue_index < event_queue.size())
+  if(notification != nullptr)
   {
-    if(EventSet::dataEventNotification(
-                     event_queue[queue_index].event, *notification))
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventNotification(event, *notification))
     {
-      triggerQueueSound();
+
+      triggerQueueSound(event);
       return true;
     }
   }
@@ -237,9 +264,11 @@ bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 /* Poll a sound event */
 bool EventHandler::pollSound()
 {
-  if(pollEventType() == EventClassifier::JUSTSOUND)
+  Event event;
+  if(pollEventType() == EventClassifier::JUSTSOUND &&
+     getEvent(event, true))
   {
-    triggerQueueSound();
+    triggerQueueSound(event);
     return true;
   }
   return false;
@@ -251,11 +280,14 @@ bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source)
   if(pollEventType() == EventClassifier::RUNBATTLE &&
      person != NULL && source != NULL)
   {
-    *person = event_queue[queue_index].initiator;
-    *source = event_queue[queue_index].source;
-    triggerQueueSound();
-
-    return true;
+    Event event;
+    if(getEvent(event, true))
+    {
+      *person = event_queue[queue_index].initiator;
+      *source = event_queue[queue_index].source;
+      triggerQueueSound(event);
+      return true;
+    }
   }
   return false;
 }
@@ -263,11 +295,13 @@ bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source)
 /* Poll a start map event */
 bool EventHandler::pollStartMap(int* id)
 {
-  if(id != nullptr && queue_index < event_queue.size())
+  if(id != nullptr)
   {
-    if(EventSet::dataEventStartMap(event_queue[queue_index].event, *id))
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventStartMap(event, *id))
     {
-      triggerQueueSound();
+      triggerQueueSound(event);
       return true;
     }
   }
@@ -278,17 +312,35 @@ bool EventHandler::pollStartMap(int* id)
 bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
                                                     int* section_id)
 {
-  if(thing_id != nullptr && x != nullptr && y != nullptr && 
-     section_id != nullptr && queue_index < event_queue.size())
+  if(thing_id != nullptr && x != nullptr && y != nullptr &&
+     section_id != nullptr)
   {
-    if(EventSet::dataEventTeleport(event_queue[queue_index].event, *thing_id, 
-                                   *x, *y, *section_id))
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventTeleport(event, *thing_id, *x, *y, *section_id))
     {
-      triggerQueueSound();
+      triggerQueueSound(event);
       return true;
     }
   }
   return false;
+}
+  
+/* Unlock triggers, based on if the event set has a lock struct */
+bool EventHandler::pollUnlockItem(int id, int count)
+{
+  int id_curr, count_curr;
+  bool consume = false;
+
+  /* Check to make sure the current is a lock item polled event */
+  if(pollLockItem(id_curr, count_curr, consume))
+  {
+    Locked locked_state = event_queue[queue_index].event_set->getLockedState();
+    consume = EventSet::unlockItem(locked_state, id, count);
+    event_queue[queue_index].event_set->setLocked(locked_state);
+  }
+
+  return consume;
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */
