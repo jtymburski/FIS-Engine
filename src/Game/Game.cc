@@ -670,70 +670,98 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
 // TODO: Comment
 void Game::pollEvents()
 {
-  do
+  /* Only proceed if an event is available */
+  if(event_handler.pollEventAvailable())
   {
-    EventClassifier classification = event_handler.pollEventType();
-
-    /* Poll classification */
-    if(classification == EventClassifier::GIVEITEM)
+    do
     {
-      int id;
-      int count;
-      event_handler.pollGiveItem(&id, &count);
-      eventGiveItem(id, count);
-    }
-    else if(classification == EventClassifier::JUSTSOUND)
-    {
-      event_handler.pollSound();
-    }
-    else if(classification == EventClassifier::NOTIFICATION)
-    {
-      std::string notification;
-      event_handler.pollNotification(&notification);
-      eventInitNotification(notification);
-    }
-    else if(classification == EventClassifier::PICKUPITEM)
-    {
-      MapItem* item;
-      bool walkover;
-      event_handler.pollPickupItem(&item, &walkover);
-      eventPickupItem(item, walkover);
-    }
-    else if(classification == EventClassifier::RUNBATTLE)
-    {
-      /* Get the reference objects and check if valid */
-      MapPerson* person;
-      MapThing* source;
-      if(event_handler.pollStartBattle(&person, &source))
+      /* First check if the class is locked and could be unlocked (ITEM, etc) */
+      LockedState state;
+      if(event_handler.pollLock(state))
       {
-        /* Try and find parties and start battle */
-        if(person != nullptr && source != nullptr)
+        /* Parse state type and handle */
+        if(state == LockedState::ITEM && player_main != nullptr && 
+           player_main->getBearacks() != nullptr && 
+           player_main->getBearacks()->getInventory() != nullptr)
         {
-          eventStartBattle(Party::kID_SLEUTH, source->getGameID());
+          /* Poll data for lock */
+          int id,count;
+          bool consume;
+          if(event_handler.pollLockItem(id, count, consume))
+          {
+            Inventory* inv = player_main->getBearacks()->getInventory();
+
+            /* Check inventory */
+
+            /* If exists in inventory, unlock */
+
+            /* Consume, if relevant */
+          }
         }
       }
-    }
-    else if(classification == EventClassifier::RUNMAP)
-    {
-      int id;
-      event_handler.pollStartMap(&id);
-      eventSwitchMap(id);
-    }
-    else if(classification == EventClassifier::STARTCONVO)
-    {
-      Conversation* convo;
-      MapThing* source;
-      event_handler.pollConversation(&convo, &source);
-      eventInitConversation(convo, source);
-    }
-    else if(classification == EventClassifier::TELEPORTTHING)
-    {
-      int thing_id, x, y, section_id;
-      event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
-      eventTeleportThing(thing_id, x, y, section_id);
-    }
 
-  } while(event_handler.pollEvent());
+      /* Poll classification */
+      EventClassifier classification = event_handler.pollEventType();
+      if(classification == EventClassifier::GIVEITEM)
+      {
+        int id;
+        int count;
+        event_handler.pollGiveItem(&id, &count);
+        eventGiveItem(id, count);
+      }
+      else if(classification == EventClassifier::JUSTSOUND)
+      {
+        event_handler.pollSound();
+      }
+      else if(classification == EventClassifier::NOTIFICATION)
+      {
+        std::string notification;
+        event_handler.pollNotification(&notification);
+        eventInitNotification(notification);
+      }
+      else if(classification == EventClassifier::PICKUPITEM)
+      {
+        MapItem* item;
+        bool walkover;
+        event_handler.pollPickupItem(&item, &walkover);
+        eventPickupItem(item, walkover);
+      }
+      else if(classification == EventClassifier::RUNBATTLE)
+      {
+        /* Get the reference objects and check if valid */
+        MapPerson* person;
+        MapThing* source;
+        if(event_handler.pollStartBattle(&person, &source))
+        {
+          /* Try and find parties and start battle */
+          if(person != nullptr && source != nullptr)
+          {
+            eventStartBattle(Party::kID_SLEUTH, source->getGameID());
+          }
+        }
+      }
+      else if(classification == EventClassifier::RUNMAP)
+      {
+        int id;
+        event_handler.pollStartMap(&id);
+        eventSwitchMap(id);
+      }
+      else if(classification == EventClassifier::STARTCONVO)
+      {
+        Conversation* convo;
+        MapThing* source;
+        event_handler.pollConversation(&convo, &source);
+        eventInitConversation(convo, source);
+      }
+      else if(classification == EventClassifier::TELEPORTTHING)
+      {
+        int thing_id, x, y, section_id;
+        event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
+        eventTeleportThing(thing_id, x, y, section_id);
+      }
+
+    } while(event_handler.pollEvent());
+  }
 
   event_handler.pollClear();
 }

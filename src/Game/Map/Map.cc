@@ -223,12 +223,18 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
           else
           {
             /* Classify between enter and exit events */
-            if(data.getKeyValue(kFILE_CLASSIFIER) == "enter")
+            if(data.getKeyValue(kFILE_CLASSIFIER) == "enter" ||
+               data.getKeyValue(kFILE_CLASSIFIER) == "enterset")
+            {
               success &= sub_map[section_index].tiles[r][c]->
-                    updateEventEnter(data, kFILE_CLASSIFIER + 3, section_index);
-            else if(data.getKeyValue(kFILE_CLASSIFIER) == "exit")
+                    updateEventEnter(data, kFILE_CLASSIFIER, section_index);
+            }
+            else if(data.getKeyValue(kFILE_CLASSIFIER) == "exit" ||
+                    data.getKeyValue(kFILE_CLASSIFIER) == "exitset")
+            {
               success &= sub_map[section_index].tiles[r][c]->
-                     updateEventExit(data, kFILE_CLASSIFIER + 3, section_index);
+                     updateEventExit(data, kFILE_CLASSIFIER, section_index);
+            }
           }
         }
       }
@@ -448,8 +454,6 @@ void Map::audioUpdate(bool sub_change)
 {
   if(event_handler != nullptr && map_index < sub_map.size())
   {
-    std::cout << "  > Map Audio Update Sub ID: " << map_index << std::endl;
-
     /* Find music index */
     bool music_base = true;
     int music_index = -1;

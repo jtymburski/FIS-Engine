@@ -105,20 +105,40 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   {
     event_enter.loadData(data, file_index, section_index);
   }
+  /*----------------- ENTER EVENT SET ----------------*/
+  else if(identifier == "enter_set")
+  {
+    event_enter.loadData(data, file_index + 1, section_index);
+  }
   /*------------------ EXIT EVENT -----------------*/
   else if(identifier == "exitevent")
   {
     event_exit.loadData(data, file_index, section_index);
+  }
+  /*----------------- EXIT EVENT SET ----------------*/
+  else if(identifier == "exit_set")
+  {
+    event_exit.loadData(data, file_index + 1, section_index);
   }
   /*------------------ USE EVENT -----------------*/
   else if(identifier == "useevent")
   {
     event_use.loadData(data, file_index, section_index);
   }
+  /*----------------- USE EVENT SET -----------------*/
+  else if(identifier == "use_set")
+  {
+    event_use.loadData(data, file_index + 1, section_index);
+  }
   /*---------------- WALKOVER EVENT -----------------*/
   else if(identifier == "walkoverevent")
   {
     event_walkover.loadData(data, file_index, section_index);
+  }
+  /*-------------- WALKOVER EVENT SET -----------------*/
+  else if(identifier == "walkover_set")
+  {
+    event_walkover.loadData(data, file_index + 1, section_index);
   }
 
   return success;

@@ -184,6 +184,12 @@ bool EventHandler::pollEvent()
     return false;
   return true;
 }
+  
+/* Checks if there is any valid event available - usually called first */
+bool EventHandler::pollEventAvailable()
+{
+  return (queue_index < event_queue.size());
+}
 
 /* Returns the current event type, to be polled by the management class */
 EventClassifier EventHandler::pollEventType()
@@ -198,7 +204,7 @@ EventClassifier EventHandler::pollEventType()
 
 /* Polls to see if the current event is locked and can be unlocked (such as
  * with a have item call */
-bool EventHandler::pollLock()
+bool EventHandler::pollLock(LockedState& state)
 {
   if(queue_index < event_queue.size() &&
      event_queue[queue_index].event_set != nullptr)
@@ -207,8 +213,12 @@ bool EventHandler::pollLock()
 
     /* Determine if the current set is locked and if its a locked state that
      * needs to be reviewed at call time */
-    return (set->isLocked() &&
-            (set->getLockedState().state == LockedState::ITEM));
+    if(set->isLocked() &&
+       (set->getLockedState().state == LockedState::ITEM))
+    {
+      state = set->getLockedState().state;
+      return true;
+    }
   }
   return false;
 }

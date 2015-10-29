@@ -1509,8 +1509,15 @@ void Tile::setY(uint16_t y)
 bool Tile::updateEventEnter(XmlData data, int file_index,
                                           uint16_t section_index)
 {
-  event_enter.loadData(data, file_index - 1, section_index);
-  return true;
+  /* Parse depending on the key value */
+  if(data.getElement(file_index) == "tileevent")
+  {
+    if(data.getKeyValue(file_index) == "enter")
+      return event_enter.loadData(data, file_index + 2, section_index);
+    else if(data.getKeyValue(file_index) == "enterset")
+      return event_enter.loadData(data, file_index + 3, section_index);
+  }
+  return false;
 }
 
 /*
@@ -1524,8 +1531,15 @@ bool Tile::updateEventEnter(XmlData data, int file_index,
  */
 bool Tile::updateEventExit(XmlData data, int file_index, uint16_t section_index)
 {
-  event_exit.loadData(data, file_index - 1, section_index);
-  return true;
+    /* Parse depending on the key value */
+  if(data.getElement(file_index) == "tileevent")
+  {
+    if(data.getKeyValue(file_index) == "exit")
+      return event_exit.loadData(data, file_index + 2, section_index);
+    else if(data.getKeyValue(file_index) == "exitset")
+      return event_exit.loadData(data, file_index + 3, section_index);
+  }
+  return false;
 }
 
 /*

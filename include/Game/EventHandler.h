@@ -110,12 +110,15 @@ public:
    * one */
   bool pollEvent();
 
+  /* Checks if there is any valid event available - usually called first */
+  bool pollEventAvailable();
+
   /* Returns the current event type, to be polled by the management class */
   EventClassifier pollEventType();
 
   /* Polls to see if the current event is locked and can be unlocked (such as
    * with a have item call) */
-  bool pollLock();
+  bool pollLock(LockedState& state);
 
   /* Accesses lock properties */
   bool pollLockItem(int& id, int& count, bool& consume);

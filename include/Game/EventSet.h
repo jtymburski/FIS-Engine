@@ -229,7 +229,7 @@ public:
                                        int sound_id = kUNSET_ID);
 
   /* Creates a give item event, with the appropriate parameters */
-  static Event createEventGiveItem(int id = 0, int count = 0,
+  static Event createEventGiveItem(int id = kUNSET_ID, int count = 0,
                                    int sound_id = kUNSET_ID);
 
   /* Creates a notification event, that can fire and result in visible text */
@@ -246,12 +246,12 @@ public:
   static Event createEventStartMap(int id = 0, int sound_id = kUNSET_ID);
 
   /* Creates a teleport event */
-  static Event createEventTeleport(int thing_id = 0, uint16_t tile_x = 0,
-                                   uint16_t tile_y = 0, uint16_t section_id = 0,
-                                   int sound_id = kUNSET_ID);
+  static Event createEventTeleport(int thing_id = 0, uint16_t tile_x = 0, 
+                                uint16_t tile_y = 0, int section_id = kUNSET_ID,
+                                int sound_id = kUNSET_ID);
 
   /* Creates a have item check based lock */
-  static Locked createLockHaveItem(int id = -1, int count = 1,
+  static Locked createLockHaveItem(int id = kUNSET_ID, int count = 1,
                                    bool consume = true, bool permanent = true);
 
   /* Created a trigger based lock */

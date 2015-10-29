@@ -776,6 +776,11 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     event_set.loadData(data, file_index, section_index);
   }
+  /*--------------------EVENT SET------------------*/
+  else if(identifier == "event_set")
+  {
+    event_set.loadData(data, file_index + 1, section_index);
+  }
   /*------------------- GAME ID -----------------*/
   else if(identifier == "game_id" && elements.size() == 1)
   {

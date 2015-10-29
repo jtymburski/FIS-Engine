@@ -825,11 +825,12 @@ Event EventSet::createEventStartMap(int id, int sound_id)
  * Inputs: int thing_id - the thing instance ID to teleport
  *         uint16_t tile_x - the X tile location (horizontal)
  *         uint16_t tile_y - the Y tile location (vertical)
+ *         int section_id - the section ID to teleport within the map
  *         uint16_t sound_id - the sound reference ID. Default to invalid
  * Output: Event - the teleport thing event to utilize
  */
 Event EventSet::createEventTeleport(int thing_id, uint16_t tile_x,
-                                    uint16_t tile_y, uint16_t section_id,
+                                    uint16_t tile_y, int section_id,
                                     int sound_id)
 {
   /* Create the event and identify */
