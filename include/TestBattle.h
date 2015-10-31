@@ -157,10 +157,6 @@ private:
   Party* party_foes;
   Party* party_friends;
 
-  /* Inventories */
-  Inventory* pouch_foes;
-  Inventory* pouch_friends;
-
   /* Races */
   Category* race_arcadius;
   Category* race_robot;

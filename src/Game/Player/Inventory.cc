@@ -1410,7 +1410,7 @@ uint32_t Inventory::getItemEachLimit()
 
 /*
  * Description: Returns the total number of item stacks within the inventory.
- *              This is associated with item_limit total. 
+ *              This is associated with item_limit total.
  *
  * Inputs: bool count_keys - include key item stack count in total
  * Output: uint32_t - the total item stack count

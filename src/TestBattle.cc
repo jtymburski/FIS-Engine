@@ -54,7 +54,17 @@ TestBattle::TestBattle(Options* running_config)
       plep_maul{nullptr},
       plep_multi_strike{nullptr},
       plep_ensnare{nullptr},
-      plep_enrich{nullptr}
+      plep_enrich{nullptr},
+      plep_upgrade{nullptr},
+      sprite_defend_start{nullptr},
+      sprite_defend_break{nullptr},
+      sprite_defend_persist{nullptr},
+      font_normal{nullptr},
+      inventory_allies{nullptr},
+      inventory_foes{nullptr},
+      party_foes{nullptr},
+      party_friends{nullptr}
+
 {
   display_data = new BattleDisplayData();
   base_path = "";
@@ -483,10 +493,6 @@ void TestBattle::create()
   // Rock
   // Rotten Fish
   // Nanite Spray
-
-  /* Inventories */
-  pouch_foes = new Inventory(1000, "Der Pouch");
-  pouch_friends = new Inventory(1001, "Teh Pouch");
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1103,6 +1109,8 @@ void TestBattle::createInventories()
   inventory_foes   = new Inventory(1338);
 
   /* Allied Items */
+
+  /* Foes Items */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1332,12 +1340,10 @@ void TestBattle::destroy()
   /* Delete battle and information */
   destroyBattle();
 
-  /* Inventories */
-  delete pouch_foes;
-  delete pouch_friends;
 
   /* Delete skill information */
   deleteClasses();
+  deleteInventories();
   deleteRaces();
   deleteSkillSets();
   deleteSkills();
