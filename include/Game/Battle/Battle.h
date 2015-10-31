@@ -44,11 +44,6 @@ enum class RenderState
 
 };
 
-ENUM_FLAGS(IgnoreState)
-enum class IgnoreState
-{
-
-};
 
 
 struct ActorUpkeep
@@ -302,14 +297,26 @@ private:
   /* General upkeep phase */
   void generalUpkeep();
 
+  /* Loads the action buffer current element into a BattleEvent */
+  void loadBattleEvent();
+
   /* Loads the menu for a given battle actor */
   bool loadMenuForActor(BattleActor* actor);
+
+  /* Updates the procesing delay for the Battle */
+  void updateDelay(int32_t decrement_delay);
+
+  /* Updates the processing on the current battle buffer element */
+  void updateElement();
 
   /* Update the selection of the enemies */
   void updateEnemySelection();
 
   /* Update the selecting state enum for a given BattleActor */
   void updateSelectingState(BattleActor* actor, bool set_selected);
+
+  /* Updates the processing state of the Battle */
+  void updateProcessing();
 
   /* Updates the selection of the user */
   void updateUserSelection();

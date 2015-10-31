@@ -13,7 +13,7 @@
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-Buffer::Buffer() : index{0}, action_buffer{}
+Buffer::Buffer() : index{0}, sorted{false}, action_buffer{}
 {
 }
 
@@ -131,6 +131,8 @@ void Buffer::clear()
 
 void Buffer::clearForTurn(uint32_t turn_number)
 {
+  //TODO: This should remove all elements which have been performed?
+
   /* Erase remove for all elem's with initial turn matching the given turn # */
   action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
                                      [&](const BufferAction a) -> bool
@@ -141,6 +143,7 @@ void Buffer::clearForTurn(uint32_t turn_number)
 
   /* Resets the action buffer index to zero */
   index = 0;
+  sorted = false;
 }
 
 bool Buffer::hasCoolingSkill(BattleActor* check_person)
@@ -151,6 +154,27 @@ bool Buffer::hasCoolingSkill(BattleActor* check_person)
       return true;
 
   return false;
+}
+
+bool Buffer::isIndexProcessed()
+{
+  if(index < action_buffer.size())
+    return getIndex(index).processed;
+
+  return false;
+}
+
+bool Buffer::isIndexStarted()
+{
+  if(index < action_buffer.size())
+    return getIndex(index).started;
+
+  return false;
+}
+
+bool Buffer::isSorted()
+{
+  return sorted;
 }
 
 void Buffer::print(bool simple)
@@ -299,6 +323,18 @@ bool Buffer::setNext()
   return false;
 }
 
+void Buffer::setProcessed()
+{
+  if(index < action_buffer.size())
+    getIndex(index).processed = true;
+}
+
+void Buffer::setStarted()
+{
+  if(index < action_buffer.size())
+    getIndex(index).started = true;
+}
+
 void Buffer::reorder()
 {
   /* Precedence of Action Types (each action type sorted by momentum)
@@ -311,4 +347,6 @@ void Buffer::reorder()
               return (static_cast<uint16_t>(a.type) <
                       static_cast<uint16_t>(b.type));
             });
+
+  sorted = true;
 }

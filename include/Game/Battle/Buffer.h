@@ -35,6 +35,8 @@ struct BufferAction
   BufferAction()
       : cooldown{0},
         initial_turn{0},
+        started{false},
+        processed{false},
         user{nullptr},
         used_skill{nullptr},
         used_item{nullptr},
@@ -48,6 +50,12 @@ struct BufferAction
 
   /* The turn # the buffer element was added */
   uint32_t initial_turn;
+
+  /* Has this element started processing */
+  bool started;
+
+  /* Bool will be set once an element is processed */
+  bool processed;
 
   /* Pointer to the user of the action */
   BattleActor* user;
@@ -72,6 +80,9 @@ public:
 private:
   /* The current index of the buffer */
   uint32_t index;
+
+  /* Has the buffer been sorted? */
+  bool sorted;
 
   /* The buffer of actions to take place */
   std::vector<BufferAction> action_buffer;
@@ -124,6 +135,15 @@ public:
   /* Checks if an element containing a Skill cooldown for given person exists */
   bool hasCoolingSkill(BattleActor* check_person);
 
+  /* Is the current element processed? */
+  bool isIndexProcessed();
+
+  /* Has the index started processing */
+  bool isIndexStarted();
+
+  /* Has the buffer been sorted this turn? */
+  bool isSorted();
+
   /* Prints out the information of the Buffer */
   void print(bool simple = false);
 
@@ -156,6 +176,12 @@ public:
 
   /* Sets the next index of the Buffer if available, returns true if done */
   bool setNext();
+
+  /* Set the currrent index as processed */
+  void setProcessed();
+
+  /* Set the current index as started */
+  void setStarted();
 
   /* Reorders the Buffer based off given primary and secondary sorts */
   void reorder();

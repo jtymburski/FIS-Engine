@@ -13,38 +13,52 @@
 * ----
 *****************************************************************************/
 
-// TODO - Throw this into the BattleEvent
-// struct BattleEvent
-// {
-//   ProcessingState processing_state;
-//   ActionType curr_action_type;
-
-//   Skill* curr_skill;
-//   Item*  curr_item;
-
-//   uint32_t curr_action_index;
-
-//   BattleActor* curr_actor;
-//   std::vector<BattleActor*> curr_targets;
-
-//   IgnoreState flags_ignore;
-
-//   Attribute prim_off;
-//   Attribute prim_def;
-//   Attribute secd_off;
-//   Attribute secd_def;
-//   Attribute user_attr;
-//   Attribute targ_attr;
-// };
-
 #ifndef BATTLE_EVENT_H
 #define BATTLE_EVENT_H
+
+/* IgnoreState flags - flags for various action ignore flags */
+ENUM_FLAGS(IgnoreState)
+enum class IgnoreState
+{
+
+};
 
 class BattleEvent
 {
 public:
+  BattleEvent();
 
-private:
+  /* Index for processing actions */
+  uint32_t action_index;
+
+  /* The action type of this event */
+  ActionType action_type;
+
+  /* Actor describing the event */
+  BattleActor* actor;
+
+  /* Targets for the event */
+  std::vector<Actor*> actor_targets;
+
+  /* Skill of this event, if it's a skill event */
+  Skill* event_skill;
+
+  /* Ignore flags for
+  IgnoreState flags_ignore;
+
+  /* The item of this event, if it's an item event */
+  Item* event_item;
+
+  /* The state of processing for this event */
+  ProcessingState processing_state;
+
+  /* Stored attribute types for the Battle Event */
+  Attribute attr_prio;
+  Attribute attr_prid;
+  Attribute attr_seco;
+  Attribute attr_secd;
+  Attribute attr_user;
+  Attribute attr_targ;
 
   /* ------------ Constants --------------- */
 

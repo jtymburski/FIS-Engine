@@ -278,7 +278,7 @@ Battle::~Battle()
  * PRIVATE FUNCTIONS - Battle Operations
  *============================================================================*/
 
-//ALPHA
+// ALPHA
 // Constructs AI
 void Battle::aiBuild()
 {
@@ -296,7 +296,7 @@ void Battle::aiBuild()
   }
 }
 
-//ALPHA
+// ALPHA
 // Clears AI.
 void Battle::aiClear()
 {
@@ -453,6 +453,12 @@ void Battle::generalUpkeep()
   setFlagCombat(CombatState::PHASE_DONE);
 }
 
+void Battle::loadBattleEvent()
+{
+
+}
+
+
 bool Battle::loadMenuForActor(BattleActor* actor)
 {
   bool success = (actor != nullptr);
@@ -500,10 +506,25 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
   return success;
 }
 
+void Battle::updateDelay(int32_t decrement_delay)
+{
+  if(delay > static_cast<uint32_t>(decrement_delay))
+    delay -= decrement_delay;
+  else
+    delay = 0;
+}
+
+void Battle::updateElement()
+{
+  // if(battle_buffer->getActionType() == ActionType::SKILL)
+
+
+}
+
 void Battle::updateEnemySelection()
 {
   auto module_actor = getCurrentModuleActor();
-  auto curr_module  = getCurrentModule();
+  auto curr_module = getCurrentModule();
 
   if(module_actor && curr_module)
   {
@@ -527,6 +548,35 @@ void Battle::updateEnemySelection()
     else
     {
       setFlagCombat(CombatState::PHASE_DONE);
+    }
+  }
+}
+
+void Battle::updateProcessing()
+{
+  assert(battle_buffer);
+
+ /* Sort the buffer, if it hasn't been for the turn */
+  if(!battle_buffer->isSorted())
+    battle_buffer->reorder();
+
+  if(delay == 0)
+  {
+    if(battle_buffer->isIndexProcessed())
+    {
+      auto done = battle_buffer->setNext();
+
+      if(done)
+        setFlagCombat(CombatState::PHASE_DONE);
+    }
+    else
+    {
+      if(battle_buffer->isIndexStarted())
+        updateElement();
+      else
+      {
+        //load the buffer element data into a BattleElement?
+      }
     }
   }
 }
@@ -3481,7 +3531,6 @@ bool Battle::setBackground(Sprite* background)
 //   return run_happens;
 // }
 
-
 // void Battle::loadBattleStateFlags()
 // {
 //   setBattleFlag(CombatState::PHASE_DONE, false);
@@ -3915,7 +3964,6 @@ bool Battle::setBackground(Sprite* background)
 
 //   setBattleFlag(CombatState::READY_TO_RENDER, true);
 // }
-
 
 // void Battle::processBuffer()
 // {
@@ -4675,7 +4723,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-
 // bool Battle::canRelieve(Infliction test_infliction)
 // {
 //   auto person_ailments = getPersonAilments(curr_target);
@@ -5144,6 +5191,7 @@ bool Battle::update(int32_t cycle_time)
 {
   time_elapsed += cycle_time;
 
+  updateDelay(cycle_time);
   updateRendering(cycle_time);
 
   // std::cout << "Current Battle State:: " <<
@@ -5157,25 +5205,30 @@ bool Battle::update(int32_t cycle_time)
   if(getFlagCombat(CombatState::PHASE_DONE))
     setNextTurnState();
 
-  /* ----------------------- SELECT ACTION ALLY -----------------------------
-   */
+  /* ------------------------ GENERAL UPKEEP -------------------------------- */
+
+
+
+  /* ---------------------------- UPKEEP  ----------------------------------- */
+
+
+  /* ----------------------- SELECT ACTION ALLY ----------------------------- */
+
+
+  /* ----------------------- SELECT ACTION ALLY ----------------------------- */
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     updateUserSelection();
 
-  /* ----------------------- SELECT ACTION ENEMY ----------------------------
-   */
+  /* ----------------------- SELECT ACTION ENEMY ---------------------------- */
 
   else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
     updateEnemySelection();
 
-  /* ----------------------- PROCESS ACTIONS ---------------------------- */
+  /* ----------------------- PROCESS ACTIONS -------------------------------- */
 
-  //   if(getBattleFlag(CombatState::PHASE_DONE) &&
-  //      !getBattleFlag(CombatState::OUTCOME_PROCESSED))
-  //   {
-  //     setNextTurnState();
-  //   }
+  else if(turn_state == TurnState::PROCESS_ACTIONS)
+    updateProcessing();
 
   return false;
 }
