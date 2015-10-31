@@ -1389,7 +1389,7 @@ std::vector<Item*> Inventory::getUniqueItems()
  */
 uint32_t Inventory::getItemCount(const uint32_t &game_id)
 {
-  for (auto item : items)
+  for (auto& item : items)
     if (item.first != nullptr)
       if (item.first->getGameID() == static_cast<int32_t>(game_id))
         return item.second;

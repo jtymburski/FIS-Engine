@@ -472,6 +472,7 @@ void TestBattle::create()
   /* Actions */
   createActions();
   createSkills();
+  createInventories();
   createSkillSets();
   createClasses();
   createRaces();
@@ -1092,6 +1093,18 @@ void TestBattle::createSkills()
   skills.push_back(enrich);
 }
 
+void TestBattle::createInventories()
+{
+  /* Clears the inventories */
+  deleteInventories();
+
+  /* Allied Inventory */
+  inventory_allies = new Inventory(1337);
+  inventory_foes   = new Inventory(1338);
+
+  /* Allied Items */
+}
+
 /* ------------------------------------------------------------------------- */
 /* Create Skill Sets */
 /* ------------------------------------------------------------------------- */
@@ -1241,6 +1254,17 @@ void TestBattle::deleteClasses()
 
   delete class_reverdling;
   class_reverdling = NULL;
+}
+
+void TestBattle::deleteInventories()
+{
+  if(inventory_allies)
+    delete inventory_allies;
+  if(inventory_foes)
+    delete inventory_foes;
+
+  inventory_allies = nullptr;
+  inventory_foes = nullptr;
 }
 
 /* ------------------------------------------------------------------------- */

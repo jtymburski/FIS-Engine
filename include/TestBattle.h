@@ -137,6 +137,10 @@ private:
   /* The configuration for the display of the game */
   Options* game_config;
 
+  /* Inventories for the dudes */
+  Inventory* inventory_allies;
+  Inventory* inventory_foes;
+
   /* Levels */
   uint8_t lvl_foe;
   uint8_t lvl_friend;
@@ -228,6 +232,7 @@ private:
   /* Create sub calls */
   void createActions();
   void createClasses();
+  void createInventories();
   void createMenu();
   Person* createPerson(int id, TestPerson type, SDL_Renderer* renderer,
                        uint8_t level = 1, bool include_ai = true);
@@ -238,6 +243,7 @@ private:
   /* Delete sub calls */
   void deleteActions();
   void deleteClasses();
+  void deleteInventories();
   void deleteMenu();
   void deleteRaces();
   void deleteSkills();
