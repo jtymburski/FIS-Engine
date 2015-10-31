@@ -221,14 +221,22 @@ Event EventSet::getEvent(bool trigger)
         }
 
         /* Take the start index and save it to the get index */
-        if(found)
+        if(found && trigger)
           get_index = ref_index;
       }
       /* -- Random Selection -- */
       else if(unlocked_state == UnlockedState::RANDOM)
       {
         int index = Helpers::randInt(valid.size() - 1);
+        if(get_index < 0)
+          index = 0;
+
+        /* Get found event */
         found_event = valid[index];
+
+        /* If this is first call, set get_index */
+        if(get_index < 0 && trigger)
+          get_index = 0;
       }
     }
 
@@ -868,6 +876,7 @@ Locked EventSet::createLockHaveItem(int id, int count, bool consume,
   Locked new_locked = createBlankLocked();
   new_locked.state = LockedState::ITEM;
   new_locked.permanent = permanent;
+  new_locked.is_locked = true;
 
   /* Fill in the locked state specific information */
   new_locked.bools.push_back(consume);
@@ -893,6 +902,7 @@ Locked EventSet::createLockTriggered(bool permanent)
   Locked new_locked = createBlankLocked();
   new_locked.state = LockedState::TRIGGER;
   new_locked.permanent = permanent;
+  new_locked.is_locked = true;
 
   return new_locked;
 }
@@ -1079,7 +1089,7 @@ bool EventSet::unlockItem(Locked& locked_state, int id, int count)
      locked_state.is_locked)
   {
     if(locked_state.ints[kHAVE_ITEM_ID] == id &&
-       locked_state.ints[kHAVE_ITEM_COUNT] == count)
+       locked_state.ints[kHAVE_ITEM_COUNT] <= count)
     {
       locked_state.is_locked = false;
       consume = locked_state.bools[kHAVE_ITEM_CONSUME];

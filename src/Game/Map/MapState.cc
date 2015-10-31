@@ -106,7 +106,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     event_enter.loadData(data, file_index, section_index);
   }
   /*----------------- ENTER EVENT SET ----------------*/
-  else if(identifier == "enter_set")
+  else if(identifier == "enterset")
   {
     event_enter.loadData(data, file_index + 1, section_index);
   }
@@ -116,7 +116,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     event_exit.loadData(data, file_index, section_index);
   }
   /*----------------- EXIT EVENT SET ----------------*/
-  else if(identifier == "exit_set")
+  else if(identifier == "exitset")
   {
     event_exit.loadData(data, file_index + 1, section_index);
   }
@@ -126,7 +126,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     event_use.loadData(data, file_index, section_index);
   }
   /*----------------- USE EVENT SET -----------------*/
-  else if(identifier == "use_set")
+  else if(identifier == "useset")
   {
     event_use.loadData(data, file_index + 1, section_index);
   }
@@ -136,7 +136,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     event_walkover.loadData(data, file_index, section_index);
   }
   /*-------------- WALKOVER EVENT SET -----------------*/
-  else if(identifier == "walkover_set")
+  else if(identifier == "walkoverset")
   {
     event_walkover.loadData(data, file_index + 1, section_index);
   }

@@ -52,7 +52,7 @@ enum class ItemFlags
   HEALING_ITEM   = 1 << 8,
   RELIEVING_ITEM = 1 << 9,
   MONEY          = 1 << 10
-};
+}; /* TODO: A non-stackable flag? Maybe. Future. */
 
 /* Material flags describing the composition of an Item */
 ENUM_FLAGS(Material)

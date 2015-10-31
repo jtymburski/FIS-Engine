@@ -36,7 +36,7 @@ EventHandler::~EventHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-  
+
 /* Returns the event in the queue: either from the set or event pointer */
 bool EventHandler::getEvent(Event& event, bool trigger)
 {
@@ -184,7 +184,7 @@ bool EventHandler::pollEvent()
     return false;
   return true;
 }
-  
+
 /* Checks if there is any valid event available - usually called first */
 bool EventHandler::pollEventAvailable()
 {
@@ -335,7 +335,7 @@ bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
   }
   return false;
 }
-  
+
 /* Unlock triggers, based on if the event set has a lock struct */
 bool EventHandler::pollUnlockItem(int id, int count)
 {

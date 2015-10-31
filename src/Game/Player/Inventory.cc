@@ -601,16 +601,15 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 
   if (need_check)
   {
+    /* Base calculations vs. stack totals */
+    n = std::min(item_limit - getItemStackCount(), n);
+    n = std::min(item_each_limit - getItemCount(item->getGameID()), n);
+
+    /* Mass calculation in addition, if greater than 0 */
     if(getMass() > 0)
     {
-      n = std::min(item_limit - getItemTotalCount(), n);
-      n = std::min(item_each_limit - getItemCount(item->getGameID()), n);
       auto lim = std::floor((mass_limit - getMass()) / item->getMass());
       n = std::min(static_cast<uint32_t>(lim), n);
-    }
-    else
-    {
-      n = kMAX_ITEM;
     }
   }
 
@@ -1407,6 +1406,25 @@ uint32_t Inventory::getItemCount(const uint32_t &game_id)
 uint32_t Inventory::getItemEachLimit()
 {
   return item_each_limit;
+}
+
+/*
+ * Description: Returns the total number of item stacks within the inventory.
+ *              This is associated with item_limit total. 
+ *
+ * Inputs: bool count_keys - include key item stack count in total
+ * Output: uint32_t - the total item stack count
+ */
+uint32_t Inventory::getItemStackCount(const bool &count_keys)
+{
+  uint32_t total = 0;
+
+  for(auto item : items)
+    if(item.first != nullptr)
+      if(!item.first->getFlag(ItemFlags::KEY_ITEM) || count_keys)
+        total++;
+
+  return total;
 }
 
 /*

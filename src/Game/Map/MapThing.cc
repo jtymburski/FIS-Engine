@@ -777,7 +777,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
     event_set.loadData(data, file_index, section_index);
   }
   /*--------------------EVENT SET------------------*/
-  else if(identifier == "event_set")
+  else if(identifier == "eventset")
   {
     event_set.loadData(data, file_index + 1, section_index);
   }

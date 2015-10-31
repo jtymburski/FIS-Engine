@@ -681,21 +681,24 @@ void Game::pollEvents()
       {
         /* Parse state type and handle */
         if(state == LockedState::ITEM && player_main != nullptr && 
-           player_main->getBearacks() != nullptr && 
-           player_main->getBearacks()->getInventory() != nullptr)
+           player_main->getSleuth() != nullptr && 
+           player_main->getSleuth()->getInventory() != nullptr)
         {
           /* Poll data for lock */
           int id,count;
           bool consume;
           if(event_handler.pollLockItem(id, count, consume))
           {
-            Inventory* inv = player_main->getBearacks()->getInventory();
+            /* Get count */
+            Inventory* inv = player_main->getSleuth()->getInventory();
+            int count_avail = inv->getItemCount(id);
 
-            /* Check inventory */
-
-            /* If exists in inventory, unlock */
-
-            /* Consume, if relevant */
+            /* Attempt unlock */
+            if(event_handler.pollUnlockItem(id, count_avail))
+            {
+              /* If unlock is true, trigger consume */
+              inv->removeID(id, count);
+            }
           }
         }
       }

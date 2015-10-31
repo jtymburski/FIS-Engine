@@ -221,6 +221,7 @@ public:
   uint32_t getItemEachLimit();
 
   /* Returns the total # of items in the Inventory */
+  uint32_t getItemStackCount(const bool &count_keys = false);
   uint32_t getItemTotalCount(const bool &count_keys = false);
 
   /* Returns a vector of all Bubbies */
