@@ -142,6 +142,9 @@ protected:
   /* Sets the new direction that the class is moving in */
   bool setDirection(Direction new_direction);
 
+  /* Sets the event base */
+  void setEventBase();
+
   /* Sets the matrix in the class - this is used by children to utilize the
    * printing of the thing */
   bool setMatrix(SpriteMatrix* matrix);
@@ -211,7 +214,7 @@ public:
   Frame* getDialogImage();
 
   /* Returns the event set being used by the thing */
-  EventSet* getEventSet(bool direct = false);
+  EventSet* getEventSet();
 
   /* Returns the map frames that's defined */
   TileSprite* getFrame(uint32_t x, uint32_t y);

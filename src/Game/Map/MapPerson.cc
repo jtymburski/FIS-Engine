@@ -884,6 +884,9 @@ bool MapPerson::setBase(MapThing* base)
       base_category = ThingBase::ISBASE;
       success = true;
     }
+
+    /* Update the event set */
+    setEventBase();
   }
 
   return success;

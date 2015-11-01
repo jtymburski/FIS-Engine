@@ -35,6 +35,7 @@ const int32_t EventSet::kUNSET_ID = -1;
  */
 EventSet::EventSet()
 {
+  base = nullptr;
   event_locked = createBlankEvent();
   events_unlocked.clear();
 
@@ -78,11 +79,41 @@ void EventSet::copySelf(const EventSet& source)
   clear();
 
   /* Copy data in */
+  base = source.base;
   event_locked = copyEvent(source.event_locked);
   for(uint32_t i = 0; i < source.events_unlocked.size(); i++)
     events_unlocked.push_back(copyEvent(source.events_unlocked[i]));
   locked_status = source.locked_status;
   unlocked_state = source.unlocked_state;
+}
+  
+/*
+ * Description: Returns the pair association of the base and instance event set
+ *              in a pair vector. If no base is set, the pointer pair is 
+ *              identical. Used within the getEvent() main call.
+ *
+ * Inputs: none
+ * Output: std::vector<std::pair<Event*,Event*>> - the returned set of pairs
+ */
+std::vector<std::pair<Event*,Event*>> EventSet::getUnlockedPair()
+{
+  std::vector<std::pair<Event*,Event*>> pair_set;
+
+  /* Get the events */
+  std::vector<Event*> base_set = getEventUnlockedRef();
+  std::vector<Event*> instance_set = getEventUnlockedRef(true);
+
+  /* Combine */
+  if(base_set.size() == instance_set.size())
+  {
+    for(uint32_t i = 0; i < base_set.size(); i++)
+    {
+      pair_set.push_back(
+                   std::pair<Event*,Event*>(base_set[i], instance_set[i]));
+    }
+  }
+
+  return pair_set;
 }
 
 /*
@@ -116,6 +147,30 @@ Event* EventSet::getUnlockedRef(int index, bool create)
 
   return found_event;
 }
+  
+/*
+ * Description: Sets up the required data ffor the base. Called when a base is
+ *              set and not equal to null
+ *
+ * Inputs: none
+ * Output: none
+ */
+void EventSet::setupForBase()
+{
+  /* Locked State - just copies base data */
+  locked_status = base->getLockedState();
+
+  /* Locked Event - ensures empty event */
+  event_locked = createBlankEvent();
+
+  /* Unlocked Event - ensures empty event with the correct stack count */
+  int event_count = base->getEventUnlocked().size();
+  for(int i = 0; i < event_count; i++)
+    events_unlocked.push_back(createBlankEvent());
+
+  /* Reset get index */
+  get_index = -1;
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -125,11 +180,16 @@ Event* EventSet::getUnlockedRef(int index, bool create)
  * Description: Adds an event to the unlocked stack of events that can be used.
  *
  * Inputs: Event new_event - the new event to add to the unlocked stack
- * Output: none
+ * Output: bool - true if event was added
  */
-void EventSet::addEventUnlocked(Event new_event)
+bool EventSet::addEventUnlocked(Event new_event)
 {
-  events_unlocked.push_back(new_event);
+  if(!isBaseSet())
+  {
+    events_unlocked.push_back(new_event);
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -141,12 +201,25 @@ void EventSet::addEventUnlocked(Event new_event)
  */
 void EventSet::clear()
 {
+  base = nullptr;
   get_index = -1;
   unlocked_state = UnlockedState::ORDERED;
 
   unsetEventLocked();
   unsetEventUnlocked();
   unsetLocked();
+}
+  
+/*
+ * Description: Returns the base set reference. If null, there is no base event
+ *              set.
+ *
+ * Inputs: none
+ * Output: EventSet* - the base reference
+ */
+EventSet* EventSet::getBase()
+{
+  return base;
 }
 
 /*
@@ -161,36 +234,44 @@ void EventSet::clear()
  */
 Event EventSet::getEvent(bool trigger)
 {
-  Event* found_event = nullptr;
+  Event* found_base = nullptr;
+  Event* found_inst = nullptr;
 
-  /* If locked, use locked event */
+  /* -- If locked, use locked event -- */
   if(isLocked())
   {
-    if(!event_locked.one_shot ||
-       (event_locked.one_shot && !event_locked.has_exec))
+    Event* lock_base = getEventLockedRef();
+    Event* lock_inst = getEventLockedRef(true);
+
+    if(!lock_base->one_shot ||
+       (lock_base->one_shot && !lock_inst->has_exec))
     {
-      found_event = &event_locked;
+      found_base = lock_base;
+      found_inst = lock_inst;
     }
   }
-  /* Otherwise, unlocked */
-  else if(unlocked_state != UnlockedState::NONE && events_unlocked.size() > 0)
+  /* -- Otherwise, unlocked -- */
+  else if(getUnlockedState() != UnlockedState::NONE && 
+          events_unlocked.size() > 0)
   {
+    std::vector<std::pair<Event*,Event*>> unlock_set = getUnlockedPair();
+
     /* Determine valid events */
-    std::vector<Event*> valid;
-    for(uint32_t i = 0; i < events_unlocked.size(); i++)
+    std::vector<std::pair<Event*,Event*>> valid_set;
+    for(uint32_t i = 0; i < unlock_set.size(); i++)
     {
-      if(!events_unlocked[i].one_shot ||
-         (events_unlocked[i].one_shot && !events_unlocked[i].has_exec))
+      if(!unlock_set[i].first->one_shot ||
+         (unlock_set[i].first->one_shot && !unlock_set[i].second->has_exec))
       {
-        valid.push_back(&events_unlocked[i]);
+        valid_set.push_back(unlock_set[i]);
       }
     }
 
     /* Determine event */
-    if(valid.size() > 0)
+    if(valid_set.size() > 0)
     {
       /* -- Ordered Selection -- */
-      if(unlocked_state == UnlockedState::ORDERED)
+      if(getUnlockedState() == UnlockedState::ORDERED)
       {
         bool found = false;
 
@@ -199,24 +280,25 @@ Event EventSet::getEvent(bool trigger)
         uint32_t start_index = 0;
         if(get_index >= 0)
           start_index = get_index + 1;
-        if(start_index >= events_unlocked.size())
+        if(start_index >= unlock_set.size())
           start_index = 0;
 
         /* Loop through all available and try to find an event */
-        for(uint32_t i = 0; !found && i < events_unlocked.size(); i++)
+        for(uint32_t i = 0; !found && i < unlock_set.size(); i++)
         {
           /* Reference index */
           ref_index = start_index + i;
-          if(ref_index >= events_unlocked.size())
-            ref_index -= events_unlocked.size();
+          if(ref_index >= unlock_set.size())
+            ref_index -= unlock_set.size();
 
           /* Check event */
-          if(!events_unlocked[ref_index].one_shot ||
-             (events_unlocked[ref_index].one_shot &&
-              !events_unlocked[ref_index].has_exec))
+          if(!unlock_set[ref_index].first->one_shot ||
+             (unlock_set[ref_index].first->one_shot &&
+              !unlock_set[ref_index].second->has_exec))
           {
             found = true;
-            found_event = &events_unlocked[ref_index];
+            found_base = unlock_set[ref_index].first;
+            found_inst = unlock_set[ref_index].second;
           }
         }
 
@@ -225,14 +307,15 @@ Event EventSet::getEvent(bool trigger)
           get_index = ref_index;
       }
       /* -- Random Selection -- */
-      else if(unlocked_state == UnlockedState::RANDOM)
+      else if(getUnlockedState() == UnlockedState::RANDOM)
       {
-        int index = Helpers::randInt(valid.size() - 1);
+        int index = Helpers::randInt(valid_set.size() - 1);
         if(get_index < 0)
           index = 0;
 
         /* Get found event */
-        found_event = valid[index];
+        found_base = valid_set[index].first;
+        found_inst = valid_set[index].second;
 
         /* If this is first call, set get_index */
         if(get_index < 0 && trigger)
@@ -241,16 +324,16 @@ Event EventSet::getEvent(bool trigger)
     }
 
     /* If valid event found and unlocked, re-lock if lock is not permanent */
-    if(found_event != nullptr && trigger)
+    if(found_base != nullptr && found_inst != nullptr && trigger)
       unlockUsed(locked_status);
   }
 
   /* Trigger and return */
-  if(found_event != nullptr)
+  if(found_base != nullptr && found_inst != nullptr)
   {
     if(trigger)
-      found_event->has_exec = true;
-    return *found_event;
+      found_inst->has_exec = true;
+    return *found_base;
   }
   return createBlankEvent();
 }
@@ -263,7 +346,36 @@ Event EventSet::getEvent(bool trigger)
  */
 Event EventSet::getEventLocked()
 {
-  return event_locked;
+  /* Has Base */
+  if(base != nullptr)
+  {
+    return base->getEventLocked();
+  }
+  /* Is a Base */
+  else
+  {
+    return event_locked;
+  }
+}
+
+/*
+ * Description: Returns the event if the set is locked, but the ptr reference.
+ *
+ * Inputs: bool force_instance - choose instance even if base set
+ * Output: Event* - the locked event reference pointer
+ */
+Event* EventSet::getEventLockedRef(bool force_instance)
+{
+  /* Has Base */
+  if(base != nullptr && !force_instance)
+  {
+    return base->getEventLockedRef();
+  }
+  /* Is a Base */
+  else
+  {
+    return &event_locked;
+  }
 }
 
 /*
@@ -274,7 +386,16 @@ Event EventSet::getEventLocked()
  */
 std::vector<Event> EventSet::getEventUnlocked()
 {
-  return events_unlocked;
+  /* Has Base */
+  if(base != nullptr)
+  {
+    return base->getEventUnlocked();
+  }
+  /* Is a Base */
+  else
+  {
+    return events_unlocked;
+  }
 }
 
 /*
@@ -286,9 +407,44 @@ std::vector<Event> EventSet::getEventUnlocked()
  */
 Event EventSet::getEventUnlocked(int index)
 {
-  if(index >= 0 && (uint32_t)index < events_unlocked.size())
-    return events_unlocked[index];
-  return createBlankEvent();
+  /* Has Base */
+  if(base != nullptr)
+  {
+    return base->getEventUnlocked(index);
+  }
+  /* Is a Base */
+  else
+  {
+    if(index >= 0 && (uint32_t)index < events_unlocked.size())
+      return events_unlocked[index];
+    return createBlankEvent();
+  }
+}
+
+/*
+ * Description: Returns the stack of events if the set is unlocked, but the 
+ *              reference pointers.
+ *
+ * Inputs: bool force_instance - choose instance even if base set
+ * Output: std::vector<Event*> - the event(s) associated with the unlocked
+ */
+std::vector<Event*> EventSet::getEventUnlockedRef(bool force_instance)
+{
+  std::vector<Event*> set;
+
+  /* Has Base */
+  if(base != nullptr && !force_instance)
+  {
+    return base->getEventUnlockedRef();
+  }
+  /* Is a Base */
+  else
+  {
+    for(uint32_t i = 0; i < events_unlocked.size(); i++)
+      set.push_back(&events_unlocked[i]);
+  }
+
+  return set;
 }
 
 /*
@@ -313,9 +469,23 @@ Locked EventSet::getLockedState()
  */
 UnlockedState EventSet::getUnlockedState()
 {
+  if(base != nullptr)
+    return base->getUnlockedState();
   return unlocked_state;
 }
-  
+
+/*
+ * Description: Returns if there is a base event set that this event set is
+ *              using.
+ *
+ * Inputs: none
+ * Output: bool - true if this event set has a base reference set
+ */
+bool EventSet::isBaseSet()
+{
+  return (base != nullptr);
+}
+
 /*
  * Description: Returns if the event set has any events or data set. If true,
  *              there are no events. It will always return true after a clear()
@@ -326,6 +496,8 @@ UnlockedState EventSet::getUnlockedState()
  */
 bool EventSet::isEmpty()
 {
+  if(base != nullptr)
+    return base->isEmpty();
   return (event_locked.classification == EventClassifier::NOEVENT &&
           events_unlocked.size() == 0 &&
           locked_status.state == LockedState::NONE);
@@ -356,6 +528,10 @@ bool EventSet::isLocked()
 bool EventSet::loadData(XmlData data, int file_index, int section_index)
 {
   std::string category = data.getElement(file_index);
+
+  /* If base is set, unset */
+  if(isBaseSet())
+    setBase(nullptr);
 
   /* Parse */
   /* -- Lock Information -- */
@@ -407,18 +583,45 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
 
   return true;
 }
+  
+/*
+ * Description: Sets the base set reference. Any change here clears out all
+ *              properties stored within the class. If set to null, this set
+ *              becomes a base event set
+ *
+ * Inputs: EventSet* new_base - the new base event set reference
+ * Output: none
+ */
+void EventSet::setBase(EventSet* new_base)
+{
+  if(base != new_base)
+  {
+    /* Clear data: also unsets base within clear call */
+    clear();
+
+    /* Set the base */
+    base = new_base;
+    if(base != nullptr)
+      setupForBase();
+  }
+}
 
 /*
  * Description: Sets the event to be used while the set is locked. Once set,
  *              the class takes control of any memory management.
  *
  * Inputs: Event new_event - the new event to use in a locked condition
- * Output: none
+ * Output: bool - true if the locked event was set
  */
-void EventSet::setEventLocked(Event new_event)
+bool EventSet::setEventLocked(Event new_event)
 {
-  unsetEventLocked();
-  event_locked = new_event;
+  if(!isBaseSet())
+  {
+    unsetEventLocked();
+    event_locked = new_event;
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -439,7 +642,7 @@ bool EventSet::setEventUnlocked(int index, Event new_event, bool replace)
 {
   bool success = false;
 
-  if(index >= 0)
+  if(!isBaseSet() && index >= 0)
   {
     uint32_t uindex = (uint32_t)index;
 
@@ -487,11 +690,16 @@ bool EventSet::setEventUnlocked(int index, Event new_event, bool replace)
  *              operation).
  *
  * Inputs: Locked new_locked - the new locked struct with lock information
- * Output: none
+ * Output: bool - true if the locked struct was set
  */
-void EventSet::setLocked(Locked new_locked)
+bool EventSet::setLocked(Locked new_locked)
 {
+//  if(!isBaseSet())
+//  {
   locked_status = new_locked;
+  return true;
+//  }
+//  return false;
 }
 
 /*
@@ -499,22 +707,32 @@ void EventSet::setLocked(Locked new_locked)
  *              and utilizes the unlocked stack of events.
  *
  * Inputs: UnlockedState state - the state enumerator to use
- * Output: none
+ * Output: bool - true if the unlocked state was set
  */
-void EventSet::setUnlockedState(UnlockedState state)
+bool EventSet::setUnlockedState(UnlockedState state)
 {
-  unlocked_state = state;
+  if(!isBaseSet())
+  {
+    unlocked_state = state;
+    return true;
+  }
+  return false;
 }
 
 /*
  * Description: Unsets the locked event and replaces it with a blank one.
  *
  * Inputs: none
- * Output: none
+ * Output: bool - true if the locked event was unset. Only fails if base set
  */
-void EventSet::unsetEventLocked()
+bool EventSet::unsetEventLocked()
 {
-  event_locked = deleteEvent(event_locked);
+  if(!isBaseSet())
+  {
+    event_locked = deleteEvent(event_locked);
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -523,16 +741,19 @@ void EventSet::unsetEventLocked()
  *
  * Inputs: int index - the index in the unlocked stack to remove. If out of
  *                     range, nothing occurs
- * Output: none
+ * Output: bool - true if the unlocked event was unset. Fails if out of range or
+ *                base is set
  */
-void EventSet::unsetEventUnlocked(int index)
+bool EventSet::unsetEventUnlocked(int index)
 {
-  if(index >= 0 && (uint32_t)index < events_unlocked.size())
+  if(!isBaseSet() && index >= 0 && (uint32_t)index < events_unlocked.size())
   {
     Event delete_event = events_unlocked[index];
     events_unlocked.erase(events_unlocked.begin() + index);
     deleteEvent(delete_event);
+    return true;
   }
+  return false;
 }
 
 /*
@@ -540,13 +761,18 @@ void EventSet::unsetEventUnlocked(int index)
  *              stack.
  *
  * Inputs: none
- * Output: none
+ * Output: bool - true if the unlocked events were unset. Only fails if base set 
  */
-void EventSet::unsetEventUnlocked()
+bool EventSet::unsetEventUnlocked()
 {
-  for(uint16_t i = 0; i < events_unlocked.size(); i++)
-    deleteEvent(events_unlocked[i]);
-  events_unlocked.clear();
+  if(!isBaseSet())
+  {
+    for(uint16_t i = 0; i < events_unlocked.size(); i++)
+      deleteEvent(events_unlocked[i]);
+    events_unlocked.clear();
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -554,11 +780,16 @@ void EventSet::unsetEventUnlocked()
  *              blank permanently unlocked version.
  *
  * Inputs: none
- * Output: none
+ * Output: bool - true if the locked struct was unset. Only fails if base set
  */
-void EventSet::unsetLocked()
+bool EventSet::unsetLocked()
 {
-  locked_status = createBlankLocked();
+  if(!isBaseSet())
+  {
+    locked_status = createBlankLocked();
+    return true;
+  }
+  return false;
 }
 
 /*============================================================================

@@ -447,6 +447,20 @@ bool MapThing::setDirection(Direction new_direction)
 
   return changed;
 }
+  
+/*
+ * Description: Sets the base event within the set. Called from setBase() call
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapThing::setEventBase()
+{
+  if(base != nullptr)
+    event_set.setBase(&base->event_set);
+  else
+    event_set.setBase(nullptr);
+}
 
 /*
  * Description: Sets the sprite matrix in the base thing class. Warning, this
@@ -1057,30 +1071,12 @@ Frame* MapThing::getDialogImage()
  * Description: Returns a reference of the event set being stored within the
  *              map thing object.
  *
- * Inputs: bool direct - true to access the class directly (no base reference).
- *                       Otherwise, gets active (instance or base). Def. false
+ * Inputs: none
  * Output: EventSet* - the event object reference pointer
  */
-EventSet* MapThing::getEventSet(bool direct)
+EventSet* MapThing::getEventSet()
 {
-  /* Direct - ignores base or any related */
-  if(direct)
-  {
-    return &event_set;
-  }
-  /* Not direct - takes base and instance into account */
-  else
-  {
-    if(!event_set.isEmpty())
-    {
-      return &event_set;
-    }
-    else if(base != nullptr)
-    {
-      return base->getEventSet(false);
-    }
-    return &event_set;
-  }
+  return &event_set;
 }
 
 /*
@@ -1858,6 +1854,9 @@ bool MapThing::setBase(MapThing* base)
       base_category = ThingBase::ISBASE;
       success = true;
     }
+
+    /* Update the event set */
+    setEventBase();
   }
 
   return success;

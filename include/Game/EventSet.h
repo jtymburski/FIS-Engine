@@ -128,6 +128,9 @@ public:
   const static int32_t kUNSET_ID; /* The unset ID - for all IDs */
 
 private:
+  /* Base event set */
+  EventSet* base;
+
   /* Event sets */
   Event event_locked;
   std::vector<Event> events_unlocked;
@@ -148,33 +151,50 @@ private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const EventSet& source);
 
+  /* Returns the pair association of the instance and base of event set. If no
+   * base, the pointer pair is identical */
+  std::vector<std::pair<Event*,Event*>> getUnlockedPair();
+
   /* Gets an event reference from the unlocked status. Will create if not
    * there, if the variable has been set */
   Event* getUnlockedRef(int index, bool create = true);
+
+  /* Set-up for base connection */
+  void setupForBase();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
   /* Add calls, for lists */
-  void addEventUnlocked(Event new_event);
+  bool addEventUnlocked(Event new_event);
 
   /* Clears all event data within the class */
   void clear();
 
+  /* Returns the base set reference */
+  EventSet* getBase();
+
   /* Returns the event when accessed - depending on locked unlocked status */
   Event getEvent(bool trigger = true);
 
-  /* Individual getters for events */
+  /* Access getters for locked event */
   Event getEventLocked();
+  Event* getEventLockedRef(bool force_instance = false);
+
+  /* Access getters for unlocked event(s) */
   std::vector<Event> getEventUnlocked();
   Event getEventUnlocked(int index);
+  std::vector<Event*> getEventUnlockedRef(bool force_instance = false);
 
   /* Returns the locked state struct */
   Locked getLockedState();
 
   /* Returns the unlocked state enum */
   UnlockedState getUnlockedState();
+
+  /* Returns if the base event set is set */
+  bool isBaseSet();
 
   /* Returns if the class is empty (default state after a clear() call) */
   bool isEmpty();
@@ -185,21 +205,24 @@ public:
   /* Load data from file */
   bool loadData(XmlData data, int file_index, int section_index);
 
+  /* Sets the base set reference */
+  void setBase(EventSet* new_base);
+
   /* Individual setters for events */
-  void setEventLocked(Event new_event);
+  bool setEventLocked(Event new_event);
   bool setEventUnlocked(int index, Event new_event, bool replace = false);
 
   /* Sets the locked status */
-  void setLocked(Locked new_locked);
+  bool setLocked(Locked new_locked);
 
   /* Sets the unlocked state */
-  void setUnlockedState(UnlockedState state);
+  bool setUnlockedState(UnlockedState state);
 
   /* Unset calls */
-  void unsetEventLocked();
-  void unsetEventUnlocked(int index);
-  void unsetEventUnlocked();
-  void unsetLocked();
+  bool unsetEventLocked();
+  bool unsetEventUnlocked(int index);
+  bool unsetEventUnlocked();
+  bool unsetLocked();
 
 /*============================================================================
  * OPERATOR FUNCTIONS
