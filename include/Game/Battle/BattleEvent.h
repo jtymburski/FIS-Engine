@@ -28,14 +28,16 @@ enum class IgnoreState
   IGNORE_SECD_ATK = 1 << 4,
   IGNORE_SECD_DEF = 1 << 5,
   IGNORE_LUCK_ATK = 1 << 6,
-  IGNORE_LUCK_DEF = 1 << 7
+  IGNORE_LUCK_DEF = 1 << 7,
 };
 
 class BattleEvent
 {
 public:
+  /* Default BattleEvent */
   BattleEvent();
 
+  /* Normal BattleEvent construction */
   BattleEvent(ActionType type, BattleActor* actor,
               std::vector<BattleActor*> targets);
 
@@ -101,9 +103,9 @@ public:
   static const float kUSER_POW_MODIFIER;
   static const float kTARG_DEF_MODIFIER;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
 private:
   void calcActionVariables();
 
@@ -111,15 +113,33 @@ private:
 
   void calcIgnoreState();
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /* Calculation sub-functiosn for damage calculations */
+  int32_t calcValPhysPow(BattleStats target_stats);
+  int32_t calcValPhysDef(BattleStats target_stats);
+  int32_t calcValPrimAtk(Skill* curr_skill);
+  int32_t calcValPrimDef(Skill* curr_skill);
+  int32_t calcValSecdAtk(Skill* curr_skill);
+  int32_t calcValSecdDef(Skill* curr_skill);
+  int32_t calcValLuckAtk();
+  int32_t calcValLuckDef();
+
+  bool doesPrimMatch(Skill* skill);
+  bool doesSecdMatch(Skill* skill);
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
+  /* Calculate the base damage against a given target */
+  int32_t calcDamage(BattleActor* curr_target, float crit_factor);
+
   /* Method for updating the stats for computing a new action outcome */
   void updateStats();
 
+  /* Gets the current action (skills's or item skill's [action_index]) */
   Action* getCurrAction();
 
+  /* Gets the current skill () */
   Skill* getCurrSkill();
 
   /* Evaluates a given IgnoreState flag */
@@ -127,6 +147,9 @@ public:
 
   /* Assigns a given ignore state flag */
   void setFlagIgnore(IgnoreState flag, const bool& set_value = true);
+
+  /* Updates the action index, returns true if one exists */
+  bool setNextAction();
 };
 
 #endif // BATTLE_EVENT_H
