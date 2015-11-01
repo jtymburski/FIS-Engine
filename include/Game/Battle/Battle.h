@@ -20,9 +20,8 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
-//#include "Game/Battle/BattleDisplayData.h"
-//#include "Game/Battle/BattleEvent.h"
-#include "Game/Battle/BattleActor.h"
+#include "Game/Battle/BattleEvent.h"
+// #include "Game/Battle/BattleActor.h"
 #include "Game/Battle/Buffer.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/RenderElement.h"
@@ -43,8 +42,6 @@ enum class RenderState
 {
 
 };
-
-
 
 struct ActorUpkeep
 {
@@ -86,6 +83,9 @@ private:
 
   /* Delay for all processing */
   uint32_t delay;
+
+  /* The current battle event */
+  BattleEvent* event;
 
   /* Flags related to the combat state */
   CombatState flags_combat;
@@ -291,6 +291,9 @@ private:
   /* Clear function for the battle actors */
   void clearBattleActors();
 
+  /* Clears the Battle event if built */
+  void clearEvent();
+
   /* Returns true if the given actor needs to select a menu option */
   bool doesActorNeedToSelect(BattleActor* actor);
 
@@ -302,6 +305,9 @@ private:
 
   /* Loads the menu for a given battle actor */
   bool loadMenuForActor(BattleActor* actor);
+
+  /* Set the next elemenet in the buffer, check for phase done */
+  void updateBufferNext();
 
   /* Updates the procesing delay for the Battle */
   void updateDelay(int32_t decrement_delay);

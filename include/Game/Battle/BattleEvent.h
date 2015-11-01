@@ -12,9 +12,10 @@
 * TODO
 * ----
 *****************************************************************************/
-
 #ifndef BATTLE_EVENT_H
 #define BATTLE_EVENT_H
+
+#include "Game/Battle/BattleActor.h"
 
 /* IgnoreState flags - flags for various action ignore flags */
 ENUM_FLAGS(IgnoreState)
@@ -28,6 +29,9 @@ class BattleEvent
 public:
   BattleEvent();
 
+  BattleEvent(ActionType type, BattleActor* actor,
+              std::vector<BattleActor*> targets);
+
   /* Index for processing actions */
   uint32_t action_index;
 
@@ -38,19 +42,19 @@ public:
   BattleActor* actor;
 
   /* Targets for the event */
-  std::vector<Actor*> actor_targets;
+  std::vector<BattleActor*> actor_targets;
 
   /* Skill of this event, if it's a skill event */
   Skill* event_skill;
 
-  /* Ignore flags for
+  /* IgnoreState flags */
   IgnoreState flags_ignore;
 
   /* The item of this event, if it's an item event */
   Item* event_item;
 
-  /* The state of processing for this event */
-  ProcessingState processing_state;
+  //  The state of processing for this event
+  // ProcessingState processing_state;
 
   /* Stored attribute types for the Battle Event */
   Attribute attr_prio;
@@ -62,23 +66,18 @@ public:
 
   /* ------------ Constants --------------- */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
-
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC STATIC FUNCTIONS
+   *============================================================================*/
 public:
-
-
 };
 
-#endif //BATTLE_EVENT_H
+#endif // BATTLE_EVENT_H

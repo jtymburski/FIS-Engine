@@ -804,3 +804,57 @@ BattleActor::getTargetsFromScope(BattleActor* user, ActionScope scope,
 
   return valid_targets;
 }
+
+// int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
+// {
+//   auto regen_amt = 0;
+//   auto can_process = (target != nullptr);
+//   can_process &= (attr == Attribute::VITA || attr == Attribute::QTDR);
+
+//   if(can_process)
+//   {
+//     /* Default QTDR, and find one pc value and the factor to apply */
+//     auto one_pc = static_cast<float>(target->getTemp().getStat(attr)) /
+//     100.0;
+//     auto alt_factor = getRegenFactor(target->getQDRegenRate());
+
+//     /* Override QTDR if the Attribute to find is VITA */
+//     if(attr == Attribute::VITA)
+//       alt_factor = getRegenFactor(target->getVitaRegenRate());
+
+//     /* The regen amt is the alt_factor * 1 % of the given attribute, but
+//      * the value cannot exceed the maximum value of the stat for attribute
+//      */
+//     regen_amt = one_pc * static_cast<float>(alt_factor);
+//     auto max_amt =
+//         target->getTemp().getStat(attr) - target->getCurr().getStat(attr);
+
+//     regen_amt = (regen_amt >= max_amt) ? max_amt : regen_amt;
+//   }
+//   else
+//   {
+//     std::cerr << "[Error] Bad turn regeneration calculation" << std::endl;
+//   }
+
+//   return regen_amt;
+// }
+
+// /*
+//  * Description: Determines the regeneration factor corresponding to an
+//  *              enumerated regeneration rate.
+//  *
+//  * Inputs: RegenRate - the enumerated rate of regeneration
+//  * Output: int16_t - the corresponding factor of regeneration
+//  */
+// int16_t Battle::getRegenFactor(const RegenRate& regen_rate)
+// {
+//   if(regen_rate == RegenRate::WEAK)
+//     return kREGEN_RATE_WEAK_PC;
+//   else if(regen_rate == RegenRate::NORMAL)
+//     return kREGEN_RATE_NORMAL_PC;
+//   else if(regen_rate == RegenRate::STRONG)
+//     return kREGEN_RATE_STRONG_PC;
+//   else if(regen_rate == RegenRate::GRAND)
+//     return kREGEN_RATE_GRAND_PC;
+//   return kREGEN_RATE_ZERO_PC;
+// }
