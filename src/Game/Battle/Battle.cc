@@ -76,30 +76,6 @@ const size_t Battle::kMAX_EACH_AILMENTS = 5;
 const uint16_t Battle::kMINIMUM_DAMAGE = 1;
 const uint16_t Battle::kMAXIMUM_DAMAGE = 29999;
 
-const float Battle::kOFF_PHYS_MODIFIER = 1.00;
-const float Battle::kDEF_PHYS_MODIFIER = 1.10;
-const float Battle::kOFF_PRIM_ELM_MATCH_MODIFIER = 1.03;
-const float Battle::kDEF_PRIM_ELM_MATCH_MODIFIER = 1.03;
-const float Battle::kOFF_SECD_ELM_MATCH_MODIFIER = 1.02;
-const float Battle::kDEF_SECD_ELM_MATCH_MODIFIER = 1.01;
-
-const float Battle::kOFF_PRIM_ELM_MODIFIER = 1.00;
-const float Battle::kDEF_PRIM_ELM_MODIFIER = 1.00;
-const float Battle::kOFF_SECD_ELM_MODIFIER = 1.00;
-const float Battle::kDEF_SECD_ELM_MODIFIER = 1.00;
-
-const float Battle::kPRIM_ELM_ADV_MODIFIER = 1.10;
-const float Battle::kPRIM_ELM_DIS_MODIFIER = 0.90;
-const float Battle::kSECD_ELM_ADV_MODIFIER = 1.07;
-const float Battle::kSECD_ELM_DIS_MODIFIER = 0.95;
-const float Battle::kDOUBLE_ELM_ADV_MODIFIER = 1.20;
-const float Battle::kDOUBLE_ELM_DIS_MODIFIER = 0.80;
-
-const float Battle::kMANNA_POW_MODIFIER = 1.20;
-const float Battle::kMANNA_DEF_MODIFIER = 1.20;
-const float Battle::kUSER_POW_MODIFIER = 1.70;
-const float Battle::kTARG_DEF_MODIFIER = 2.90;
-
 const float Battle::kBASE_CRIT_CHANCE = 0.10;
 const float Battle::kOFF_CRIT_FACTOR = 1.45;
 const float Battle::kCRIT_MODIFIER = 0.0008;
@@ -2705,7 +2681,6 @@ bool Battle::setBackground(Sprite* background)
 //   setNextTurnState();
 // }
 
-
 // int32_t Battle::calcBaseDamage(const float& crit_factor)
 // {
 //   auto targ_attrs = temp_target_stats.at(pro_index);
@@ -2974,7 +2949,6 @@ bool Battle::setBackground(Sprite* background)
 //   return damage_round;
 // }
 
-
 // int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
 // {
 //   if(curr_user)
@@ -2991,7 +2965,6 @@ bool Battle::setBackground(Sprite* background)
 
 //   return 0;
 // }
-
 
 // bool Battle::checkPartyDeath(Party* const check_party, Person* target)
 // {
@@ -3815,7 +3788,6 @@ bool Battle::setBackground(Sprite* background)
 
 //   setBattleFlag(CombatState::READY_TO_RENDER, true);
 // }
-
 
 // /*
 //  * Description: Checks to see whether a good guard pair can be made between

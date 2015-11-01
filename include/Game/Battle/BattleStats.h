@@ -66,8 +66,7 @@ public:
   /* Construct the BattleStats with values given by an AttributeSet */
   BattleStats(AttributeSet attr_set);
 
-  /* A 'default' BattleStats element cannot be created */
-  BattleStats() = delete;
+  BattleStats() = default;
 
 private:
   /* The base values for the BattleStats */

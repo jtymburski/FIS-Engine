@@ -114,38 +114,13 @@ private:
   /* Elapsed turns of hte battle */
   uint16_t turns_elapsed;
 
-/*=============================================================================
- * CONSTANTS - Battle Operations
- *============================================================================*/
+  /*=============================================================================
+   * CONSTANTS - Battle Operations
+   *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
   static const uint16_t kMAXIMUM_DAMAGE;
   static const uint16_t kMINIMUM_DAMAGE;
-
-  static const float kOFF_PHYS_MODIFIER;
-  static const float kDEF_PHYS_MODIFIER;
-  static const float kOFF_PRIM_ELM_MATCH_MODIFIER;
-  static const float kDEF_PRIM_ELM_MATCH_MODIFIER;
-  static const float kOFF_SECD_ELM_MATCH_MODIFIER;
-  static const float kDEF_SECD_ELM_MATCH_MODIFIER;
-
-  static const float kOFF_PRIM_ELM_MODIFIER;
-  static const float kDEF_PRIM_ELM_MODIFIER;
-  static const float kOFF_SECD_ELM_MODIFIER;
-  static const float kDEF_SECD_ELM_MODIFIER;
-
-  static const float kPRIM_ELM_ADV_MODIFIER;
-  static const float kPRIM_ELM_DIS_MODIFIER;
-  static const float kSECD_ELM_ADV_MODIFIER;
-  static const float kSECD_ELM_DIS_MODIFIER;
-
-  static const float kDOUBLE_ELM_ADV_MODIFIER;
-  static const float kDOUBLE_ELM_DIS_MODIFIER;
-
-  static const float kMANNA_POW_MODIFIER;
-  static const float kMANNA_DEF_MODIFIER;
-  static const float kUSER_POW_MODIFIER;
-  static const float kTARG_DEF_MODIFIER;
 
   static const float kOFF_CRIT_FACTOR;
   static const float kBASE_CRIT_CHANCE;
@@ -181,9 +156,9 @@ private:
   static const int16_t kENEMY_RUN_EXP_PC;
   static const int16_t kRUN_PC_EXP_PENALTY;
 
-/*=============================================================================
- * CONSTANTS - Battle Display
- *============================================================================*/
+  /*=============================================================================
+   * CONSTANTS - Battle Display
+   *============================================================================*/
   const static uint16_t kACTION_BORDER;   /* Border width on action slideout */
   const static uint16_t kACTION_CENTER;   /* Center point to center triangle */
   const static uint16_t kACTION_COLOR_A;  /* Alpha for inner portion */
@@ -266,9 +241,9 @@ private:
   const static SDL_Color kQTDR_REGEN_COLOR;
   const static SDL_Color kHIBERNATION_REGEN_COLOR;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS - Battle Operations
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS - Battle Operations
+   *============================================================================*/
 private:
   /* Constructs AI Modules for the Battle */
   void aiBuild();
@@ -348,9 +323,9 @@ private:
   /* Sets the next turn state of the Battle */
   void setNextTurnState();
 
-/*============================================================================
- * PRIVATE FUNCTIONS - Battle Display
- *============================================================================*/
+  /*============================================================================
+   * PRIVATE FUNCTIONS - Battle Display
+   *============================================================================*/
 private:
   /* Creates action frames for a given BattleActor */
   void buildActionFrame(BattleActor* actor);
@@ -401,9 +376,9 @@ private:
   /* Returns the Y-value for a given Person */
   int32_t getActorY(BattleActor* actor);
 
-/*============================================================================
- * PUBLIC FUNCTIONS - Battle Operations
- *============================================================================*/
+  /*============================================================================
+   * PUBLIC FUNCTIONS - Battle Operations
+   *============================================================================*/
 public:
   /* Processes a KeyDown event */
   bool keyDownEvent(SDL_KeyboardEvent event);
@@ -447,9 +422,9 @@ public:
   /* Set a RenderState flag */
   void setFlagRender(RenderState test_flag, const bool& set_value = true);
 
-/*============================================================================
- * PUBLIC FUNCTIONS - Battle Display
- *============================================================================*/
+  /*============================================================================
+   * PUBLIC FUNCTIONS - Battle Display
+   *============================================================================*/
 public:
   /* Renders the Battle */
   bool render();
