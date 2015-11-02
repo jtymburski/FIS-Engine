@@ -26,8 +26,10 @@ struct Notification
 {
   std::string text;
   Frame* thing_image;
-  uint32_t thing_count;
+  int32_t thing_count;
   uint16_t time_visible;
+
+  SDL_Color text_color;
 };
 
 class MapDialog
@@ -134,6 +136,8 @@ private:
   const static uint8_t kBUBBLES_COUNT; /* The number of shifting bubbles */
   const static uint8_t kBUBBLES_OFFSET; /* The offset from the bottom */
   const static uint8_t kBUBBLES_SPACING; /* The spacing between bubbles */
+  const static SDL_Color kCOLOR_ADD; /* Add color for text - items */
+  const static SDL_Color kCOLOR_REM; /* Remove color for text - items */
   const static uint16_t kCURSOR_ANIMATE; /* The cursor animation time */
   const static uint8_t kCURSOR_HEIGHT; /* The cursor height on animation */
   const static uint8_t kHIGHLIGHT_MARGIN; /* Highlighted option margin pixels */

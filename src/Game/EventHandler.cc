@@ -318,6 +318,22 @@ bool EventHandler::pollStartMap(int* id)
   return false;
 }
 
+/* Poll a take item event */
+bool EventHandler::pollTakeItem(int* id, int* count)
+{
+  if(id != nullptr && count != nullptr)
+  {
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventTakeItem(event, *id, *count))
+    {
+      triggerQueueSound(event);
+      return true;
+    }
+  }
+  return false;
+}
+
 /* Poll a teleport thing event */
 bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
                                                     int* section_id)

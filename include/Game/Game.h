@@ -130,7 +130,7 @@ private:
   bool changeMode(GameMode mode);
 
   /* A give item event, based on an ID and count (triggered from stored event */
-  bool eventGiveItem(int id, int count);
+  int eventGiveItem(int id, int count);
 
   /* Initiates a conversation event */
   void eventInitConversation(Conversation* convo, MapThing* source);
@@ -146,7 +146,10 @@ private:
 
   /* Switch maps event. - utilizing a map ID */
   void eventSwitchMap(int map_id);
-
+  
+  /* A take item event, based on an ID and count (triggered from event) */
+  int eventTakeItem(int id, int count);
+  
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
 

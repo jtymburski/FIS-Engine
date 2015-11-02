@@ -12,6 +12,8 @@
 const uint8_t EventSet::kGIVE_ITEM_COUNT = 1;
 const uint8_t EventSet::kGIVE_ITEM_ID = 0;
 const uint8_t EventSet::kMAP_ID = 0;
+const uint8_t EventSet::kTAKE_ITEM_COUNT = 1;
+const uint8_t EventSet::kTAKE_ITEM_ID = 0;
 const uint8_t EventSet::kTELEPORT_ID = 0;
 const uint8_t EventSet::kTELEPORT_SECTION = 3;
 const uint8_t EventSet::kTELEPORT_X = 1;
@@ -1056,6 +1058,30 @@ Event EventSet::createEventStartMap(int id, int sound_id)
 }
 
 /*
+ * Description: Public static. Creates the take item event with the item ID and
+ *              itemc count, with an optional connected sound ID.
+ *
+ * Inputs: int id - the item ID
+ *         int count - the item count
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the take item event to utilize
+ */
+Event EventSet::createEventTakeItem(int id, int count, int sound_id)
+{
+  /* Create the event and identify */
+  Event new_event = createBlankEvent();
+  new_event.classification = EventClassifier::TAKEITEM;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(id);
+  new_event.ints.push_back(count);
+
+  return new_event;
+}
+  
+/*
  * Description: Public static. Creates a new teleport thing event with the 
  *              connected thing ID to teleport, the tile X and Y within the map
  *              as well as the sub-map ID to teleport, and an optional connected
@@ -1193,6 +1219,27 @@ bool EventSet::dataEventStartMap(Event event, int& map_id)
      event.ints.size() > kMAP_ID)
   {
     map_id = event.ints[kMAP_ID];
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Extracts data from the passed in event if its a take item event
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& item_id - the take item ID reference 
+ *         int& count - the take item count reference
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventTakeItem(Event event, int& item_id, int& count)
+{
+  if(event.classification == EventClassifier::TAKEITEM &&
+     event.ints.size() > kTAKE_ITEM_COUNT)
+  {
+    item_id = event.ints[kTAKE_ITEM_ID];
+    count = event.ints[kTAKE_ITEM_COUNT];
     return true;
   }
   return false;
@@ -1417,6 +1464,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     category = EventClassifier::RUNBATTLE;
   else if(category_str == "startmap")
     category = EventClassifier::RUNMAP;
+  else if(category_str == "takeitem")
+    category = EventClassifier::TAKEITEM;
   else if(category_str == "teleportthing")
     category = EventClassifier::TELEPORTTHING;
 
@@ -1437,6 +1486,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event = createEventStartMap();
     else if(category == EventClassifier::STARTCONVO)
       event = createEventConversation();
+    else if(category == EventClassifier::TAKEITEM)
+      event = createEventTakeItem();
     else if(category == EventClassifier::TELEPORTTHING)
       event = createEventTeleport();
   }
@@ -1503,6 +1554,15 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       Conversation* edited_convo = getConversation(event.convo, index_list);
       updateConversation(edited_convo, data, file_index + 1, section_index);
     }
+  }
+  /* -- TAKE ITEM -- */
+  else if(category == EventClassifier::TAKEITEM)
+  {
+    std::string take_item_element = data.getElement(file_index + 1);
+    if(take_item_element == "id")
+      event.ints.at(kTAKE_ITEM_ID) = data.getDataInteger();
+    else if(take_item_element == "count")
+      event.ints.at(kTAKE_ITEM_COUNT) = data.getDataInteger();
   }
   /* -- TELEPORT THING -- */
   else if(category == EventClassifier::TELEPORTTHING)

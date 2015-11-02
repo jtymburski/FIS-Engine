@@ -248,7 +248,7 @@ public:
   void loadDataFinish(SDL_Renderer* renderer);
 
   /* Picks up the total number of the item */
-  bool pickupItem(MapItem* item);
+  bool pickupItem(MapItem* item, int count = -1);
 
   /* Renders the map */
   bool render(SDL_Renderer* renderer);

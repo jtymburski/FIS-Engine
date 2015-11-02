@@ -1533,13 +1533,17 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   }
 }
 
-/* Proceeds to pickup the total number of this marked item */
-bool Map::pickupItem(MapItem* item)
+/* Proceeds to pickup the total number of this marked item 
+ * Default is invalid parameter which picks up all */
+bool Map::pickupItem(MapItem* item, int count)
 {
-  if(item != NULL)
+  if(item != NULL && item->getCount() > 0 && count != 0)
   {
-    /* Set the on map count to 0 */
-    item->setCount(0);
+    /* Set the map count */
+    if(count < 0 || count >= (int)item->getCount())
+      item->setCount(0);
+    else
+      item->setCount(item->getCount() - count);
 
     /* Trigger sound */
     if(event_handler != nullptr)

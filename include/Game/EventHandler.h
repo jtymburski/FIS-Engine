@@ -137,7 +137,10 @@ public:
 
   /* Poll a start map event */
   bool pollStartMap(int* id);
-
+  
+  /* Poll a take item event */
+  bool pollTakeItem(int* id, int* count);
+  
   /* Poll a teleport thing event */
   bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id);
 

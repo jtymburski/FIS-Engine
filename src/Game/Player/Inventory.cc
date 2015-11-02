@@ -96,7 +96,8 @@ void Inventory::calcMass()
 
   for (auto item : items)
     if (item.first != nullptr)
-      temp_mass += (item.first->getMass() * item.second);
+      if(!item.first->getFlag(ItemFlags::KEY_ITEM))
+        temp_mass += (item.first->getMass() * item.second);
 
   curr_mass = temp_mass;
 }
@@ -392,7 +393,9 @@ AddStatus Inventory::add(Item* new_item, const uint32_t &amount,
 
   if (amount > 0 && new_item != nullptr && (spaces >= amount || bypass))
   {
-    if (new_item->isBaseItem())
+    // TODO: Replace with stackable flag. Base ID should never be used within
+    //       inventory; it will not work. Post beta T#355
+    if (new_item->isBaseItem()) // TODO: Replace with stackable flag
     {
       for (uint32_t i = 0; i < amount; i++)
         items.push_back(std::make_pair(new_item, 1));
@@ -587,29 +590,44 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 {
   bool need_check = true;
 
-  if (item == nullptr)
+  if(item == nullptr)
   {
     need_check = false;
     n = 0;
   }
 
-  if (getFlag(InvState::SHOP_STORAGE) || item->getFlag(ItemFlags::KEY_ITEM))
+  if(getFlag(InvState::SHOP_STORAGE))
   {
     need_check = false;
-    n = kMAX_ITEM;
+    //n = kMAX_ITEM;
   }
 
-  if (need_check)
+  if(need_check)
   {
-    /* Base calculations vs. stack totals */
-    n = std::min(item_limit - getItemStackCount(), n);
-    n = std::min(item_each_limit - getItemCount(item->getGameID()), n);
+    uint32_t curr_count = getItemCount(item->getGameID());
+    bool key_item = item->getFlag(ItemFlags::KEY_ITEM);
 
-    /* Mass calculation in addition, if greater than 0 */
-    if(getMass() > 0)
+    /* Check stack total first, if relevant - if no space, set max to 0*/
+    if(!key_item && curr_count == 0 && getItemStackCount() >= item_limit)
     {
-      auto lim = std::floor((mass_limit - getMass()) / item->getMass());
-      n = std::min(static_cast<uint32_t>(lim), n);
+      n = 0;
+    }
+   
+    /* Check individual stack limit */
+    if(key_item)
+    {
+      n = std::min(kMAX_EACH_ITEM - curr_count, n);
+    }
+    else
+    {
+      n = std::min(item_each_limit - curr_count, n);
+
+      /* Mass calculation in addition, if greater than 0 */
+      if(getMass() > 0)
+      {
+        auto lim = std::floor((mass_limit - getMass()) / item->getMass());
+        n = std::min(static_cast<uint32_t>(lim), n);
+      }
     }
   }
 
@@ -628,9 +646,15 @@ void Inventory::print(bool simple)
   std::cout << "ID: " << id << " M: " << getMass() << " / " << mass_limit;
   std::cout << "\n# Unique Items: " << items.size() << "\n";
   std::cout << "# Unique Bubbies: " << bubbies.size()  << "\n";
-  std::cout << "# Unique Bubbies: " << getBubbyTotalCount() << "/" << bubby_limit<< "\n";
-  std::cout << "# Unique Equips:  " << equipments.size()    << "/" << equip_limit<< "\n";
-  std::cout << "Items:   " << getItemTotalCount()  << "/" << item_limit << "\n";
+  std::cout << "# Unique Bubbies: " << getBubbyTotalCount() << "/" 
+            << bubby_limit << "\n";
+  std::cout << "# Unique Equips:  " << equipments.size()    << "/" 
+            << equip_limit << "\n";
+  std::cout << "Item Stacks: " << getItemStackCount()  << "/" << item_limit 
+            << "\n";
+  std::cout << "Item Stacks (+ keys): " << getItemStackCount(true) << std::endl;
+  std::cout << "Items: " << getItemTotalCount() << std::endl;
+  std::cout << "Items (+ keys): " << getItemTotalCount(true) << std::endl;
 
   if (!simple)
   {
@@ -662,8 +686,10 @@ void Inventory::print(bool simple)
     {
       if (item.first != nullptr)
       {
-        std::cout << item.first->getName() << " "
-                  << static_cast<int>(item.second) << "\n";
+        if(item.first->getFlag(ItemFlags::KEY_ITEM))
+          std::cout << "[K] ";
+        std::cout << item.first->getGameID() << ": " << item.first->getName() 
+                  << " " << static_cast<int>(item.second) << "\n";
       }
     }
   }
@@ -684,14 +710,14 @@ bool Inventory::removeID(const uint32_t &game_id, const uint16_t &amount)
 {
   bool removed = false;
 
-  removed &= removeBubbyID(game_id, amount);
+  removed |= removeBubbyID(game_id, amount);
 
-  if (!removed)
-    removed &= removeEquipID(game_id, amount);
-
-  if (!removed)
-    removed &= removeItemID(game_id, amount);
-
+  if(!removed)
+    removed |= removeEquipID(game_id, amount);
+  
+  if(!removed)
+    removed |= removeItemID(game_id, amount);
+  
   return removed;
 }
 
@@ -897,7 +923,7 @@ bool Inventory::removeItemIndex(const uint32_t &index,
     if (items.at(index).first != nullptr)
     {
       auto count = items[index].second;
-
+      
       if (count > 1 && count > amount)
       {
         decreaseCount(items.at(index).first->getGameID(), amount);
@@ -906,8 +932,8 @@ bool Inventory::removeItemIndex(const uint32_t &index,
       {
         if (!getFlag(InvState::SHOP_STORAGE))
         {
-          std::cout << "//TODO: Do not delete the pointer here??" << std::endl;
-          //delete items[index].first;
+          if(!items[index].first->isBaseItem())
+            delete items[index].first;
         }
 
         items[index].first = nullptr;
@@ -934,6 +960,8 @@ bool Inventory::removeItemIndex(const uint32_t &index,
  *         amount - the amount of Items of the game ID to be removed
  * Output: bool - true if the removal was successful
  */
+// TODO: Loop through and remove Item game ID; could be multiple instances
+// Post beta T#355
 bool Inventory::removeItemID(const uint32_t &game_id, const uint16_t &amount)
 {
   auto item_index = getItemIndex(game_id);

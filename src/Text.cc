@@ -315,7 +315,7 @@ TTF_Font* Text::createFont(std::string font_path, int font_size,
   return new_font;
 }
 
-std::string Text::formatNum(uint32_t number)
+std::string Text::formatNum(int32_t number)
 {
   std::string str_num;
   int index = 0;
@@ -323,7 +323,16 @@ std::string Text::formatNum(uint32_t number)
   /* Handle 0 case */
   if(number == 0)
     return "0";
-  
+ 
+  /* If negative, remove negative sign and note */
+  std::string prefix = "";
+  if(number < 0)
+  {
+    prefix = "-";
+    number *= -1;
+  }
+
+  /* Loop through number */
   while(number > 0)
   {
     /* Add comma to front if another sequence is about to be parsed */
@@ -336,6 +345,9 @@ std::string Text::formatNum(uint32_t number)
     index++;
   }
   
+  /* If was negative, add to final string */
+  str_num = prefix + str_num;
+
   return str_num;
 }
 

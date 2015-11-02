@@ -27,6 +27,8 @@ const float MapDialog::kBUBBLES_ANIMATE = 277.67;
 const uint8_t MapDialog::kBUBBLES_COUNT = 3;
 const uint8_t MapDialog::kBUBBLES_OFFSET = 16;
 const uint8_t MapDialog::kBUBBLES_SPACING = 7;
+const SDL_Color MapDialog::kCOLOR_ADD = {0, 210, 13, 255};
+const SDL_Color MapDialog::kCOLOR_REM = {232, 0, 13, 255};
 const uint16_t MapDialog::kCURSOR_ANIMATE = 300;
 const uint8_t MapDialog::kCURSOR_HEIGHT = 8;
 const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
@@ -611,10 +613,15 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
   int render_width = img_pick_t.getWidth() * 2 + frame_width
                                                + kPICKUP_TEXT_MARGIN;
 
+  /* Add or remove determination */
+  std::string chg_sep = "+";
+  if(pickup.thing_count < 0)
+    chg_sep = "";
+
   /* Set up the text information */
   Text pickup_txt(font_normal);
-  pickup_txt.setText(renderer, "x " + Text::formatNum(pickup.thing_count),
-                     {255, 255, 255, kOPACITY_MAX});
+  pickup_txt.setText(renderer, chg_sep + Text::formatNum(pickup.thing_count),
+                     pickup.text_color);
   render_width += pickup_txt.getWidth();
 
   /* Create rendering texture */
@@ -916,7 +923,7 @@ bool MapDialog::initNotification(std::string notification, bool single_line,
 bool MapDialog::initPickup(Frame* thing_image, int thing_count,
                                                int time_visible)
 {
-  if(thing_image != NULL && thing_image->isTextureSet() && thing_count > 0
+  if(thing_image != NULL && thing_image->isTextureSet() && thing_count != 0
                          && isImagesSet(false, true))
   {
     uint16_t notification_index = 0;
@@ -925,7 +932,9 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
     /* First check to see if a pickup already exists */
     for(uint16_t i = 0; i < pickup_queue.size(); i++)
     {
-      if(!notification_found && pickup_queue[i].thing_image == thing_image)
+      if(!notification_found && pickup_queue[i].thing_image == thing_image &&
+         ((pickup_queue[i].thing_count < 0 && thing_count < 0) || 
+          (pickup_queue[i].thing_count > 0 && thing_count > 0)))
       {
         notification_index = i;
         notification_found = true;
@@ -956,6 +965,10 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
       pickup.text = "";
       pickup.thing_image = thing_image;
       pickup.thing_count = thing_count;
+      if(thing_count > 0)
+        pickup.text_color = kCOLOR_ADD;
+      else
+        pickup.text_color = kCOLOR_REM;
 
       /* Determine time visible, if given time is invalid */
       if(time_visible <= 0)

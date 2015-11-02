@@ -277,62 +277,63 @@ bool Game::changeMode(GameMode mode)
 }
 
 /* A give item event, based on an ID and count (triggered from stored event */
-bool Game::eventGiveItem(int id, int count)
+int Game::eventGiveItem(int id, int count)
 {
-  /* Attempt to find the item */
-  Item* found_item = nullptr;
-  for(auto it = list_item.begin(); it != list_item.end(); it++)
-    if((*it)->getGameID() == id)
-      found_item = (*it);
+  int insert_count = 0;
 
-  /* If the item was inserted, display pickup notification */
+  /* Attempt to find the item and insert */
+  Item* found_item = getItem(id);
   if(found_item != nullptr && count > 0)
   {
     /* Try and insert into sleuth inventory */
-    bool inserted = false;
     if(player_main != nullptr)
     {
       /* If ID matches item ID, add credits */
       if(id == (int)Item::kID_MONEY)
       {
-        inserted = player_main->addCredits(count);
+        if(player_main->addCredits(count))
+          insert_count = count;
       }
       /* Otherwise, just general item */
       else if(player_main->getSleuth() != nullptr &&
               player_main->getSleuth()->getInventory() != nullptr)
       {
+        Inventory* inv = player_main->getSleuth()->getInventory();
+
+        /* Create item and check room */
         Item* new_item = new Item(found_item);
+        int room = inv->hasRoom(new_item, count);
+
+        /* Attempt add */
         AddStatus status =
-            player_main->getSleuth()->getInventory()->add(new_item, count);
+            player_main->getSleuth()->getInventory()->add(new_item, room);
         if(status == AddStatus::GOOD_DELETE)
         {
           delete new_item;
-          inserted = true;
+          insert_count = room;
         }
         else if(status == AddStatus::GOOD_KEEP)
         {
-          inserted = true;
+          insert_count = room;
         }
       }
     }
 
     /* If inserted, notify that the pickup was a success */
-    if(inserted)
+    if(insert_count > 0)
     {
-      map_ctrl.initNotification(found_item->getThumb(), count);
-      return true;
+      map_ctrl.initNotification(found_item->getThumb(), insert_count);
     }
-    /* Otherwise, notify that item could not be received */
-    else
+    /* Notify that item could not be received */
+    if(count > insert_count)
     {
       map_ctrl.initNotification("Insufficient room in inventory to fit " +
-                                std::to_string(count) + " " +
+                                std::to_string(count - insert_count) + " " +
                                 found_item->getName());
     }
-
-    return inserted;
   }
-  return false;
+
+  return insert_count;
 }
 
 /* Initiates a conversation event */
@@ -352,11 +353,11 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 {
   if(item != nullptr && item->isWalkover() == walkover)
   {
-    bool was_inserted = eventGiveItem(item->getGameID(), item->getCount());
+    int insert_count = eventGiveItem(item->getGameID(), item->getCount());
 
     /* If the insert was successful, pickup the item */
-    if(was_inserted)
-      map_ctrl.pickupItem(item);
+    if(insert_count > 0)
+      map_ctrl.pickupItem(item, insert_count);
   }
 }
 
@@ -381,6 +382,42 @@ void Game::eventSwitchMap(int map_id)
     map_lvl = map_id;
     load(game_path, active_renderer, "", false, false);
   }
+}
+
+/* A take item event, based on an ID and count (triggered from event) */
+int Game::eventTakeItem(int id, int count)
+{
+  int remove_count = 0;
+
+  if(player_main != nullptr && player_main->getSleuth() != nullptr &&
+     player_main->getSleuth()->getInventory() != nullptr)
+  {
+    Inventory* inv = player_main->getSleuth()->getInventory();
+    int item_count = inv->getItemCount(id);
+    if(item_count > 0)
+    {
+      /* Update if requested count is greater than range */
+      if(item_count < count)
+        remove_count = item_count;
+      else
+        remove_count = count;
+
+      /* Remove items */
+      if(inv->removeID(id, remove_count))
+      {
+        /* Notify about removal */
+        Item* found_item = getItem(id);
+        if(found_item != nullptr)
+           map_ctrl.initNotification(found_item->getThumb(), -remove_count);
+      }
+      else
+      {
+        remove_count = 0;
+      }
+    }
+  }
+
+  return remove_count;
 }
 
 /* Teleport thing event, based on ID and coordinates */
@@ -680,8 +717,8 @@ void Game::pollEvents()
       if(event_handler.pollLock(state))
       {
         /* Parse state type and handle */
-        if(state == LockedState::ITEM && player_main != nullptr && 
-           player_main->getSleuth() != nullptr && 
+        if(state == LockedState::ITEM && player_main != nullptr &&
+           player_main->getSleuth() != nullptr &&
            player_main->getSleuth()->getInventory() != nullptr)
         {
           /* Poll data for lock */
@@ -696,8 +733,18 @@ void Game::pollEvents()
             /* Attempt unlock */
             if(event_handler.pollUnlockItem(id, count_avail))
             {
-              /* If unlock is true, trigger consume */
-              inv->removeID(id, count);
+              eventTakeItem(id, count);
+
+              /* If unlock is true, trigger consume - TODO: Remove */
+              //if(inv->removeID(id, count))
+              //{
+              //  Item* found_item = getItem(id);
+              //  if(found_item != nullptr)
+              //  {
+              //    map_ctrl.initNotification(found_item->getThumb(),
+              //                              -count);
+              //  }
+              //}
             }
           }
         }
@@ -755,6 +802,13 @@ void Game::pollEvents()
         MapThing* source;
         event_handler.pollConversation(&convo, &source);
         eventInitConversation(convo, source);
+      }
+      else if(classification == EventClassifier::TAKEITEM)
+      {
+        int id;
+        int count;
+        event_handler.pollTakeItem(&id, &count);
+        eventTakeItem(id, count);
       }
       else if(classification == EventClassifier::TELEPORTTHING)
       {
@@ -1125,23 +1179,32 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   }
   /* TESTING section - probably remove at end */
   /* Load game */
-  else if(event.keysym.sym == SDLK_F5)
+//  else if(event.keysym.sym == SDLK_F5)
+//  {
+//    /* Preliminary handling */
+//    if(game_path != "maps/design_map.ugv")
+//    {
+//      game_path = "maps/design_map.ugv";
+//      map_lvl = 0;
+//    }
+//    else
+//    {
+//      map_lvl++;
+//      if(map_lvl > 2)
+//        map_lvl = 0;
+//    }
+//
+//    /* Load map */
+//    load(active_renderer);
+//  }
+  /* Inventory Testing */
+  else if(event.keysym.sym == SDLK_3)
   {
-    /* Preliminary handling */
-    if(game_path != "maps/design_map.ugv")
+    if(player_main != nullptr && player_main->getSleuth() != nullptr &&
+       player_main->getSleuth()->getInventory() != nullptr)
     {
-      game_path = "maps/design_map.ugv";
-      map_lvl = 0;
+      player_main->getSleuth()->getInventory()->print(false);
     }
-    else
-    {
-      map_lvl++;
-      if(map_lvl > 2)
-        map_lvl = 0;
-    }
-
-    /* Load map */
-    load(active_renderer);
   }
   /* Show item store dialog in map */
   else if(event.keysym.sym == SDLK_4)

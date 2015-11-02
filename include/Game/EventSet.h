@@ -32,8 +32,9 @@ enum class EventClassifier
   RUNMAP         = 4,
   TELEPORTTHING  = 5,
   JUSTSOUND      = 6,
-  STARTCONVO     = 7, /* Needs to be the last before the non-editor points */
-  PICKUPITEM     = 8  /* All categories here and lower are not from Editor. */
+  TAKEITEM       = 7,
+  STARTCONVO     = 8, /* Needs to be the last before the non-editor points */
+  PICKUPITEM     = 9  /* All categories here and lower are not from Editor. */
 };
 
 /*
@@ -113,9 +114,11 @@ public:
   ~EventSet();
 
   /* -------------------------- Constants ------------------------- */
-  const static uint8_t kGIVE_ITEM_COUNT; /* give item count index */
+  const static uint8_t kGIVE_ITEM_COUNT; /* Give item count index */
   const static uint8_t kGIVE_ITEM_ID; /* Give item ID index */
   const static uint8_t kMAP_ID; /* The map ID location for the run event */
+  const static uint8_t kTAKE_ITEM_COUNT; /* Take item count index */
+  const static uint8_t kTAKE_ITEM_ID; /* Take item ID index */
   const static uint8_t kTELEPORT_ID; /* Teleport thing ID index */
   const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
   const static uint8_t kTELEPORT_X; /* Teleport thing X index */
@@ -268,6 +271,10 @@ public:
   /* Create a start map event */
   static Event createEventStartMap(int id = 0, int sound_id = kUNSET_ID);
 
+  /* Creates a take item event */
+  static Event createEventTakeItem(int id = kUNSET_ID, int count = 0,
+                                   int sound_id = kUNSET_ID);
+
   /* Creates a teleport event */
   static Event createEventTeleport(int thing_id = 0, uint16_t tile_x = 0, 
                                 uint16_t tile_y = 0, int section_id = kUNSET_ID,
@@ -284,6 +291,7 @@ public:
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
   static bool dataEventNotification(Event event, std::string& notification);
   static bool dataEventStartMap(Event event, int& map_id);
+  static bool dataEventTakeItem(Event event, int& item_id, int& count);
   static bool dataEventTeleport(Event event, int& thing_id, int& x, int& y,
                                 int& section_id);
   static bool dataLockedItem(Locked lock, int& id, int& count, bool& consume);
