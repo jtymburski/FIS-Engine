@@ -103,6 +103,15 @@ void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator,
     event_queue.push_back(executed_event);
   }
 }
+  
+/* Executes an MIO trigger event */
+void EventHandler::executeIOTrigger(MapInteractiveObject* io, 
+                                    int interaction_state, 
+                                    MapPerson* initiator)
+{
+  MapThing* mt = (MapThing*)io;
+  std::cout << "TODO: IO Trigger " << interaction_state << std::endl;
+}
 
 /* Executes a pickup item event */
 void EventHandler::executePickup(MapItem* item, bool walkover)

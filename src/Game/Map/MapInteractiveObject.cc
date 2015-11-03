@@ -9,8 +9,7 @@
  *              typical interactive objects such as doors, chests, etc.
  *
  * TODO:
- * 1. Locked status of MIO??
- * 2. Possibly optimize the walkon/walkoff in update. Seems inefficient to
+ * 1. Possibly optimize the walkon/walkoff in update. Seems inefficient to
  *    constantly check when it could be triggered by a walk on/walk off event
  *    (Possibly built into the thing itself?)
  ******************************************************************************/
@@ -32,6 +31,7 @@ const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
 MapInteractiveObject::MapInteractiveObject() : MapThing()
 {
   action_initiator = NULL;
+  locked_status = EventSet::createBlankLocked();
   node_current = NULL;
   node_head = NULL;
   nodes_delete = true;
@@ -215,6 +215,23 @@ StateNode* MapInteractiveObject::getTailNode()
 }
 
 /*
+ * Description: Handler interact to shift the states
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapInteractiveObject::handlerInteract()
+{
+  if(!isLocked())
+  {
+    if(shift())
+    {
+      EventSet::unlockUsed(locked_status);
+    }
+  }
+}
+
+/*
  * Description: Handles the connection to the parent class (thing matrix) and
  *              connecting it to the correct state, based on the current ptr.
  *              It will also set the animation back to the main frames.
@@ -296,6 +313,30 @@ bool MapInteractiveObject::shift()
   }
 
   return status;
+}
+
+/*
+ * Description: Determines if a shift call is available (assuming it is
+ *              unlocked). Merely checks if there is a next state available
+ *
+ * Inputs: none
+ * Output: bool - true if the shift call will succeed
+ */
+bool MapInteractiveObject::shiftAvailable()
+{
+  bool can_shift = false;
+
+  /* Determine direction */
+  if(shifting_forward)
+  {
+    can_shift = (node_current != nullptr && node_current->next != nullptr);
+  }
+  else
+  {
+    can_shift = (node_current != nullptr && node_current->previous != nullptr);
+  }
+
+  return can_shift;
 }
 
 /*
@@ -710,6 +751,7 @@ void MapInteractiveObject::clear()
 {
   /* Clears action initiator pointer */
   action_initiator = NULL;
+  locked_status = EventSet::createBlankLocked();
   person_on = NULL;
   shifting_forward = true;
   time_elapsed = 0;
@@ -737,6 +779,18 @@ int MapInteractiveObject::getInactiveTime() const
 }
 
 /*
+ * Desciption: Returns the locked state struct. This defines the locked
+ *             properties of the MIO states.
+ *
+ * Inputs: none
+ * Output: Locked - the locked state struct. Structure defined in EventSet
+ */
+Locked MapInteractiveObject::getLockedState()
+{
+  return locked_status;
+}
+
+/*
  * Description: Returns the current state node.
  *
  * Inputs: none
@@ -756,6 +810,47 @@ StateNode* MapInteractiveObject::getStateCurrent()
 StateNode* MapInteractiveObject::getStateHead()
 {
   return node_head;
+}
+  
+/*
+ * Description: Handles the MIO trigger call from the event handler. Required
+ *              due to the locked struct within the map interactive object.
+ *
+ * Inputs: int interaction_state - integer representation of InteractionState
+ *         MapPerson* initiator - the initiating map person
+ */
+bool MapInteractiveObject::handlerTrigger(int interaction_state, 
+                                          MapPerson* initiator)
+{
+  bool success = false;
+  (void)initiator;
+
+  if(node_current != NULL && node_current->state != NULL)
+  {
+    /* Determine state - Walk On Trigger */
+    if(interaction_state == (int)MapState::WALKON &&
+       node_current->state->getInteraction() == MapState::WALKON)
+    {
+      handlerInteract();
+      success = true;
+    }
+    /* Walk Off Trigger */
+    else if(interaction_state == (int)MapState::WALKOFF &&
+            node_current->state->getInteraction() == MapState::WALKOFF)
+    {
+      handlerInteract();
+      success = true;
+    }
+    /* Use Trigger */
+    else if(interaction_state == (int)MapState::USE &&
+            node_current->state->getInteraction() == MapState::USE)
+    {
+      handlerInteract();
+      success = true;
+    }
+  }
+
+  return success;
 }
 
 /*
@@ -780,9 +875,11 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
     status |= node_current->state->triggerUseEvent(initiator, this);
 
     /* Proceed to execute a use event, if it exists */
-    if(node_current->state->getInteraction() == MapState::USE)
+    if(node_current->state->getInteraction() == MapState::USE &&
+       shiftAvailable() && event_handler != nullptr)
     {
-      status |= shift();
+      event_handler->executeIOTrigger(this, (int)MapState::USE, initiator);
+      status = true;
     }
 
     /* Reset the time elapsed */
@@ -790,6 +887,20 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
   }
 
   return status;
+}
+  
+/*
+ * Description: Returns if the current state of the MIO is locked. If true, 
+ *              during an interact, no state change will occur. Otherwise, 
+ *              a state change is permitted to occur.
+ *
+ * Inputs: none
+ * Output: bool - true if the MIO state change is currently locked.
+ */
+bool MapInteractiveObject::isLocked()
+{
+  return (locked_status.state != LockedState::NONE && 
+          locked_status.is_locked);
 }
 
 /*
@@ -820,8 +931,11 @@ bool MapInteractiveObject::setBase(MapThing* base)
   {
     if(base != NULL && base->classDescriptor() == "MapInteractiveObject")
     {
+      /* Status */
       this->base = base;
       base_category = ThingBase::INTERACTIVE;
+
+      /* States */
       if(node_head == NULL)
       {
         node_head = static_cast<MapInteractiveObject*>(base)->node_head;
@@ -829,12 +943,17 @@ bool MapInteractiveObject::setBase(MapThing* base)
         nodes_delete = false;
       }
       setParentFrames();
+
+      /* Locked struct */
+      locked_status = ((MapInteractiveObject*)base)->locked_status;
+
       success = true;
     }
     else if(base == NULL)
     {
       this->base = NULL;
       base_category = ThingBase::ISBASE;
+      locked_status = EventSet::createBlankLocked();
       success = true;
     }
 
@@ -860,6 +979,21 @@ void MapInteractiveObject::setInactiveTime(int time)
     time_return = time;
 
   time_elapsed = 0;
+}
+
+/*
+ * Description: Defines the locked information to use within the MIO. This
+ *              replaces any existing locked information with no saving of the
+ *              current running conditions (if set while the class is in
+ *              operation).
+ *
+ * Inputs: Locked new_locked - the new locked struct with lock information
+ * Output: bool - true if the locked struct was set
+ */
+bool MapInteractiveObject::setLocked(Locked new_locked)
+{
+  locked_status = new_locked;
+  return true;
 }
 
 /*
@@ -947,7 +1081,10 @@ void MapInteractiveObject::triggerWalkOff(MapPerson* trigger)
     /* Trigger walk off interaction */
     if(node_current != NULL && node_current->state != NULL &&
        node_current->state->getInteraction() == MapState::WALKOFF)
-      shift();
+    {
+      if(event_handler != nullptr)
+        event_handler->executeIOTrigger(this, (int)MapState::WALKOFF, trigger);
+    }
 
     person_on = NULL;
   }
@@ -973,7 +1110,10 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
 
       /* Trigger walk on interaction */
       if(node_current->state->getInteraction() == MapState::WALKON)
-        shift();
+      {
+        if(event_handler != nullptr)
+          event_handler->executeIOTrigger(this, (int)MapState::WALKON, trigger);
+      }
     }
   }
 }

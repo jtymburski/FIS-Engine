@@ -12,6 +12,7 @@
 #define EVENTHANDLER_H
 
 //struct Conversation;
+class MapInteractiveObject;
 class MapItem;
 class MapPerson;
 class MapThing;
@@ -87,6 +88,10 @@ public:
   /* Execute the given event set */
   void executeEventSet(EventSet* set, MapPerson* initiator,
                        MapThing* source = nullptr);
+
+  /* Executes an MIO trigger event */
+  void executeIOTrigger(MapInteractiveObject* io, int interaction_state,
+                        MapPerson* initiator);
 
   /* Executes a pickup item event */
   void executePickup(MapItem* item, bool walkover = false);
