@@ -103,14 +103,30 @@ void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator,
     event_queue.push_back(executed_event);
   }
 }
-  
+
 /* Executes an MIO trigger event */
-void EventHandler::executeIOTrigger(MapInteractiveObject* io, 
-                                    int interaction_state, 
+void EventHandler::executeIOTrigger(MapInteractiveObject* io,
+                                    int interaction_state,
                                     MapPerson* initiator)
 {
-  MapThing* mt = (MapThing*)io;
-  std::cout << "TODO: IO Trigger " << interaction_state << std::endl;
+  /* Create the executed event queue entry */
+  if(io != nullptr && interaction_state >= 0)
+  {
+    /* Create the executed event queue entry */
+    EventExecution executed_event;
+    executed_event.event = EventSet::createBlankEvent();
+    executed_event.event_set = nullptr;
+    executed_event.item = nullptr;
+    executed_event.initiator = initiator;
+    executed_event.source = (MapThing*)io;
+
+    /* Specific event properties */
+    executed_event.event.classification = EventClassifier::TRIGGERIO;
+    executed_event.event.ints.push_back(interaction_state);
+
+    /* Push the event to the back of the queue */
+    event_queue.push_back(executed_event);
+  }
 }
 
 /* Executes a pickup item event */
@@ -215,6 +231,17 @@ EventClassifier EventHandler::pollEventType()
  * with a have item call */
 bool EventHandler::pollLock(LockedState& state)
 {
+  if(pollLockAvail())
+  {
+    state = event_queue[queue_index].event_set->getLockedState().state;
+    return true;
+  }
+  return false;
+}
+
+/* Is a lock avaiable? */
+bool EventHandler::pollLockAvail()
+{
   if(queue_index < event_queue.size() &&
      event_queue[queue_index].event_set != nullptr)
   {
@@ -225,9 +252,30 @@ bool EventHandler::pollLock(LockedState& state)
     if(set->isLocked() &&
        (set->getLockedState().state == LockedState::ITEM))
     {
-      state = set->getLockedState().state;
       return true;
     }
+  }
+  return false;
+}
+
+/* Get the locked struct, only if data is available */
+bool EventHandler::pollLockGetData(Locked& lock)
+{
+  if(pollLockAvail())
+  {
+    lock = event_queue[queue_index].event_set->getLockedState();
+    return true;
+  }
+  return false;
+}
+
+/* Sets the locked struct, only if data is available */
+bool EventHandler::pollLockSetData(Locked lock)
+{
+  if(pollLockAvail())
+  {
+    event_queue[queue_index].event_set->setLocked(lock);
+    return true;
   }
   return false;
 }
@@ -357,6 +405,23 @@ bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
       triggerQueueSound(event);
       return true;
     }
+  }
+  return false;
+}
+
+/* Poll a trigger IO event */
+bool EventHandler::pollTriggerIO(MapInteractiveObject** io, int* state,
+                                 MapPerson** initiator)
+{
+  if(pollEventType() == EventClassifier::TRIGGERIO && io != nullptr &&
+     state != nullptr && initiator != nullptr &&
+     event_queue[queue_index].event.ints.size() == 1)
+  {
+    *io = (MapInteractiveObject*)event_queue[queue_index].source;
+    *state = event_queue[queue_index].event.ints.front();
+    *initiator = event_queue[queue_index].initiator;
+
+    return true;
   }
   return false;
 }

@@ -426,6 +426,22 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
   map_ctrl.teleportThing(thing_id, x, y, section_id);
 }
 
+/* Trigger IO event, based on the IO object and interaction state */
+void Game::eventTriggerIO(MapInteractiveObject* io, int interaction_state, 
+                          MapPerson* initiator)
+{
+  if(io != nullptr)
+  {
+    /* Handle lock struct */
+    Locked lock_struct = io->getLock();
+    if(parseLock(lock_struct))
+      io->setLock(lock_struct);
+
+    /* Handle trigger */
+    io->handlerTrigger(interaction_state, initiator);
+  }
+}
+
 /* Load game */
 // TODO: Comment
 // Notes: Revise that when inst file is blank, it uses default starting map.
@@ -703,6 +719,39 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
 
   return success;
 }
+  
+/* Parse lock and attempt unlock */
+bool Game::parseLock(Locked& lock_struct)
+{
+  /* Determine if struct is locked */
+  if(EventSet::isLocked(lock_struct))
+  {
+    /* Parse state - ITEM locked event */
+    if(lock_struct.state == LockedState::ITEM && player_main != nullptr &&
+       player_main->getSleuth() != nullptr &&
+       player_main->getSleuth()->getInventory() != nullptr)
+    {
+      /* Poll data */
+      int id, count;
+      bool consume;
+      if(EventSet::dataLockedItem(lock_struct, id, count, consume))
+      {
+        /* Get count */
+        Inventory* inv = player_main->getSleuth()->getInventory();
+        int count_avail = inv->getItemCount(id);
+
+        /* Attempt unlock */
+        if(count_avail >= count)
+        {
+          if(EventSet::unlockItem(lock_struct, id, count_avail))
+            eventTakeItem(id, count);
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
 
 // TODO: Comment
 void Game::pollEvents()
@@ -713,41 +762,11 @@ void Game::pollEvents()
     do
     {
       /* First check if the class is locked and could be unlocked (ITEM, etc) */
-      LockedState state;
-      if(event_handler.pollLock(state))
+      Locked lock_struct;
+      if(event_handler.pollLockGetData(lock_struct))
       {
-        /* Parse state type and handle */
-        if(state == LockedState::ITEM && player_main != nullptr &&
-           player_main->getSleuth() != nullptr &&
-           player_main->getSleuth()->getInventory() != nullptr)
-        {
-          /* Poll data for lock */
-          int id,count;
-          bool consume;
-          if(event_handler.pollLockItem(id, count, consume))
-          {
-            /* Get count */
-            Inventory* inv = player_main->getSleuth()->getInventory();
-            int count_avail = inv->getItemCount(id);
-
-            /* Attempt unlock */
-            if(event_handler.pollUnlockItem(id, count_avail))
-            {
-              eventTakeItem(id, count);
-
-              /* If unlock is true, trigger consume - TODO: Remove */
-              //if(inv->removeID(id, count))
-              //{
-              //  Item* found_item = getItem(id);
-              //  if(found_item != nullptr)
-              //  {
-              //    map_ctrl.initNotification(found_item->getThumb(),
-              //                              -count);
-              //  }
-              //}
-            }
-          }
-        }
+        if(parseLock(lock_struct))
+          event_handler.pollLockSetData(lock_struct);
       }
 
       /* Poll classification */
@@ -815,6 +834,14 @@ void Game::pollEvents()
         int thing_id, x, y, section_id;
         event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
         eventTeleportThing(thing_id, x, y, section_id);
+      }
+      else if(classification == EventClassifier::TRIGGERIO)
+      {
+        MapPerson* initiator;
+        int interaction_state;
+        MapInteractiveObject* source;
+        event_handler.pollTriggerIO(&source, &interaction_state, &initiator);
+        eventTriggerIO(source, interaction_state, initiator);
       }
 
     } while(event_handler.pollEvent());

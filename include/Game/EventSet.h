@@ -34,7 +34,8 @@ enum class EventClassifier
   JUSTSOUND      = 6,
   TAKEITEM       = 7,
   STARTCONVO     = 8, /* Needs to be the last before the non-editor points */
-  PICKUPITEM     = 9  /* All categories here and lower are not from Editor. */
+  PICKUPITEM     = 9, /* All categories here and lower are not from Editor. */
+  TRIGGERIO      = 10
 };
 
 /*
@@ -302,6 +303,9 @@ public:
   /* Returns the conversation at the given index */
   static Conversation* getConversation(Conversation* reference,
                                        std::vector<std::string> index_list);
+
+  /* Determines if the locked struct is locked */
+  static bool isLocked(Locked lock_struct);
 
   /* Unlocks the locked state, if the conditions are met */
   static bool unlockItem(Locked& locked_state, int id, int count);

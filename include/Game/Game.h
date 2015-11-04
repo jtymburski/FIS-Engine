@@ -153,6 +153,10 @@ private:
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
 
+  /* Trigger IO event, based on the IO object and interaction state */
+  void eventTriggerIO(MapInteractiveObject* io, int interaction_state, 
+                      MapPerson* initiator);
+
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
             std::string inst_file = "", bool encryption = false,
@@ -160,6 +164,9 @@ private:
 
   /* Load game data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer);
+
+  /* Parse lock and attempt unlock */
+  bool parseLock(Locked& lock_struct);
 
   /* Polls events running from the event handler. Triggered from other places
    * in the game */

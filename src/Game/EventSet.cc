@@ -515,8 +515,7 @@ bool EventSet::isEmpty()
  */
 bool EventSet::isLocked()
 {
-  return (locked_status.state != LockedState::NONE && 
-          locked_status.is_locked);
+  return isLocked(locked_status);
 }
 
 /*
@@ -1343,6 +1342,19 @@ Conversation* EventSet::getConversation(Conversation* reference,
   }
 
   return convo;
+}
+  
+/*
+ * Description: Determines if the locked struct is locked and with a valid
+ *              unlock mode possibility.
+ *
+ * Inputs: Locked lock_struct - the lock struct data
+ * Output: bool - true if the struct is locked
+ */
+bool EventSet::isLocked(Locked lock_struct)
+{
+  return (lock_struct.state != LockedState::NONE &&
+          lock_struct.is_locked);
 }
 
 /*

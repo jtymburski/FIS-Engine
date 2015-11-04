@@ -124,9 +124,12 @@ public:
   /* Polls to see if the current event is locked and can be unlocked (such as
    * with a have item call) */
   bool pollLock(LockedState& state);
+  bool pollLockAvail();
+  bool pollLockGetData(Locked& lock);
+  bool pollLockSetData(Locked lock);
 
   /* Accesses lock properties */
-  bool pollLockItem(int& id, int& count, bool& consume);
+  bool pollLockItem(int& id, int& count, bool& consume); // TODO: REMOVE?
 
   /* Poll a notification event */
   bool pollNotification(std::string* notification);
@@ -149,8 +152,12 @@ public:
   /* Poll a teleport thing event */
   bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id);
 
+  /* Poll a trigger IO event */
+  bool pollTriggerIO(MapInteractiveObject** io, int* state, 
+                     MapPerson** initiator);
+
   /* Unlock triggers, based on if the event set has a lock struct */
-  bool pollUnlockItem(int id, int count);
+  bool pollUnlockItem(int id, int count); // TODO: REMOVE?
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);

@@ -31,7 +31,7 @@ private:
   MapPerson* action_initiator;
 
   /* Locked interaction status */
-  Locked locked_status;
+  Locked lock_struct;
 
   /* The nodes that indicate the available states and transitions */
   StateNode* node_current;
@@ -132,7 +132,7 @@ public:
   int getInactiveTime() const;
 
   /* Returns the locked state struct */
-  Locked getLockedState();
+  Locked getLock();
 
   /* Returns the state, corresponding to the parameters listed */
   StateNode* getStateCurrent();
@@ -157,7 +157,7 @@ public:
   void setInactiveTime(int time);
 
   /* Sets the locked status */
-  bool setLocked(Locked new_locked);
+  bool setLock(Locked new_locked);
 
   /* Sets the states, to be painted and used */
   bool setState(MapState* state);
