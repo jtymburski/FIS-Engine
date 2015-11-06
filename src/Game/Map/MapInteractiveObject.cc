@@ -940,7 +940,38 @@ bool MapInteractiveObject::setBase(MapThing* base)
       /* States */
       if(node_head == NULL)
       {
-        node_head = static_cast<MapInteractiveObject*>(base)->node_head;
+        /* Starting data */
+        MapInteractiveObject* io_ref = static_cast<MapInteractiveObject*>(base);
+        StateNode* ref_head = io_ref->node_head;
+        StateNode* ref_curr = ref_head;
+
+        /* Loop through all state nodes and create copied version */
+        while(ref_curr != nullptr)
+        {
+          /* Assign node to tail */
+          StateNode* node = new StateNode;
+          node->state = nullptr;
+          node->transition = nullptr;
+          node->previous = nullptr;
+          node->next = nullptr;
+          appendNode(node);
+
+          /* Fill node with relevant info */
+          if(ref_curr->state != nullptr)
+          {
+            node->state = new MapState(event_handler);
+            node->state->setBase(ref_curr->state);
+          }
+          else if(ref_curr->transition != nullptr)
+          {
+            node->transition = ref_curr->transition;
+          }
+
+          /* Next node */
+          ref_curr = ref_curr->next;
+        }
+
+        //node_head = static_cast<MapInteractiveObject*>(base)->node_head;
         node_current = node_head;
         nodes_delete = false;
       }
@@ -1010,11 +1041,7 @@ bool MapInteractiveObject::setState(MapState* state)
   {
     /* Check to make sure the base nodes aren't being used */
     if(!nodes_delete)
-    {
-      node_current = NULL;
-      node_head = NULL;
-      nodes_delete = true;
-    }
+      unsetFrames(true);
 
     StateNode* node = new StateNode;
 
@@ -1046,11 +1073,7 @@ bool MapInteractiveObject::setState(SpriteMatrix* transition)
   {
     /* Check to make sure the base nodes aren't being used */
     if(!nodes_delete)
-    {
-      node_current = NULL;
-      node_head = NULL;
-      nodes_delete = true;
-    }
+      unsetFrames(true);
 
     StateNode* node = new StateNode;
 
@@ -1236,11 +1259,11 @@ void MapInteractiveObject::unsetFrames(bool delete_frames)
     node = node->next;
 
     /* Proceed to delete all relevant data */
-    if(delete_frames && nodes_delete)
+    if(delete_frames)
     {
       if(temp_node->state != NULL)
         delete temp_node->state;
-      else if(temp_node->transition != NULL)
+      else if(temp_node->transition != NULL && nodes_delete)
         delete temp_node->transition;
       delete temp_node;
     }
@@ -1249,4 +1272,5 @@ void MapInteractiveObject::unsetFrames(bool delete_frames)
   /* Clear the class data */
   node_current = NULL;
   node_head = NULL;
+  nodes_delete = true;
 }

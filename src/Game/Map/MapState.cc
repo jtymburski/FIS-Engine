@@ -23,6 +23,7 @@
  */
 MapState::MapState(EventHandler* event_handler)
 {
+  base = nullptr;
   this->event_handler = NULL;
   interaction = NOINTERACTION;
   sprite_set = new SpriteMatrix();
@@ -87,7 +88,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   std::string identifier = data.getElement(file_index);
 
   /*--------------------- SPRITE INFO -----------------*/
-  if(identifier == "sprites")
+  if(identifier == "sprites" && base == nullptr)
   {
     if(sprite_set == NULL)
       sprite_set = new SpriteMatrix();
@@ -96,7 +97,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
                                               renderer, base_path);
   }
   /*--------------------- INTERACTION -----------------*/
-  else if(identifier == "interaction")
+  else if(identifier == "interaction" && base == nullptr)
   {
     success &= setInteraction(data.getDataString(&success));
   }
@@ -153,6 +154,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
  */
 void MapState::clear()
 {
+  setBase(nullptr);
   clearEvents();
   unsetMatrix();
 }
@@ -172,6 +174,17 @@ bool MapState::clearEvents()
   event_use.clear();
   event_walkover.clear();
   return true;
+}
+  
+/*
+ * Description: Returns the base state reference. If null, this class is a base
+ *
+ * Inputs: none
+ * Output: MapState* - base state reference
+ */
+MapState* MapState::getBase()
+{
+  return base;
 }
 
 /*
@@ -206,6 +219,8 @@ EventSet* MapState::getExitEvent()
  */
 MapState::InteractionState MapState::getInteraction()
 {
+  if(base != nullptr)
+    return base->getInteraction();
   return interaction;
 }
 
@@ -217,6 +232,8 @@ MapState::InteractionState MapState::getInteraction()
  */
 SpriteMatrix* MapState::getMatrix()
 {
+  if(base != nullptr)
+    return base->getMatrix();
   return sprite_set;
 }
 
@@ -229,10 +246,19 @@ SpriteMatrix* MapState::getMatrix()
  */
 TileSprite* MapState::getSprite(uint16_t x, uint16_t y)
 {
-  TileSprite* null_sprite = NULL;
+  TileSprite* null_sprite = nullptr;
 
-  if(sprite_set != NULL)
-    return sprite_set->at(x, y);
+  /* Base */
+  if(base != nullptr)
+  {
+    return base->getSprite(x, y);
+  }
+  /* This is base */
+  else
+  {
+    if(sprite_set != nullptr)
+      return sprite_set->at(x, y);
+  }
   return null_sprite;
 }
 
@@ -301,6 +327,7 @@ bool MapState::isUseEventSet()
  */
 bool MapState::isWalkInteraction()
 {
+  InteractionState interaction = getInteraction();
   if(interaction == WALKON || interaction == WALKOFF || isWalkoverEventSet())
     return true;
   return false;
@@ -315,6 +342,38 @@ bool MapState::isWalkInteraction()
 bool MapState::isWalkoverEventSet()
 {
   return !event_walkover.isEmpty();
+}
+  
+/*
+ * Description: Sets the base state reference. Any change here clears out all
+ *              properties stored within the class. If set to null, this set
+ *              becomes a base state
+ *
+ * Inputs: MapState* new_base - the new base state reference
+ * Output: none
+ */
+void MapState::setBase(MapState* new_base)
+{
+  if(base != new_base)
+  {
+    /* Clear existing data */
+    clearEvents();
+    unsetMatrix();
+
+    /* Set the base */
+    base = new_base;
+    if(base != nullptr)
+    {
+      event_enter.setBase(base->getEnterEvent());
+      event_exit.setBase(base->getExitEvent());
+      event_use.setBase(base->getUseEvent());
+      event_walkover.setBase(base->getWalkoverEvent());
+    }
+    else
+    {
+      sprite_set = new SpriteMatrix();
+    }
+  }
 }
 
 /*
@@ -339,8 +398,12 @@ void MapState::setEventHandler(EventHandler* event_handler)
  */
 bool MapState::setInteraction(InteractionState interaction)
 {
-  this->interaction = interaction;
-  return true;
+  if(base == nullptr)
+  {
+    this->interaction = interaction;
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -352,11 +415,14 @@ bool MapState::setInteraction(InteractionState interaction)
  */
 bool MapState::setInteraction(std::string interaction)
 {
-  InteractionState new_interaction = getInteraction(interaction);
-  if(!interaction.empty())
+  if(base == nullptr)
   {
-    this->interaction = new_interaction;
-    return true;
+    InteractionState new_interaction = getInteraction(interaction);
+    if(!interaction.empty())
+    {
+      this->interaction = new_interaction;
+      return true;
+    }
   }
 
   return false;
@@ -371,7 +437,7 @@ bool MapState::setInteraction(std::string interaction)
  */
 bool MapState::setMatrix(SpriteMatrix* matrix)
 {
-  if(matrix != NULL)
+  if(base == nullptr && matrix != NULL)
   {
     unsetMatrix();
     sprite_set = matrix;
@@ -393,12 +459,16 @@ bool MapState::setMatrix(SpriteMatrix* matrix)
 bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y,
                          bool delete_old)
 {
-  /* Make the matrix, if it doesn't exist */
-  if(sprite_set == NULL)
-    sprite_set = new SpriteMatrix();
+  if(base == nullptr)
+  {
+    /* Make the matrix, if it doesn't exist */
+    if(sprite_set == NULL)
+      sprite_set = new SpriteMatrix();
 
-  /* Add the frame */
-  return sprite_set->setSprite(frames, x, y, delete_old);
+    /* Add the frame */
+    return sprite_set->setSprite(frames, x, y, delete_old);
+  }
+  return false;
 }
 
 /*

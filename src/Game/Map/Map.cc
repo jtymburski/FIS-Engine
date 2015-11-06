@@ -352,6 +352,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     if(modified_thing == NULL)
     {
       modified_thing = new MapInteractiveObject();
+      modified_thing->setEventHandler(event_handler);
       new_thing = true;
       ios.push_back(static_cast<MapInteractiveObject*>(modified_thing));
     }
