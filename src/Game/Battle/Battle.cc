@@ -18,43 +18,10 @@
  * CONSTANTS - Battle Operations
  *============================================================================*/
 
-/* ------------ Battle Damage Calculation Modifiers ---------------
- * Maximum Ailments (Total)
+/* Maximum Ailments (Total)
  * Maximum Each Ailments (Per Person)
  * Minimum Damage (Possible)
  * Maximum Damage (Possible)
- *
- * Offensive Physical Modifier
- * Defensive Physical Modifier
- * Offensive Primary Elemental Match Modifier
- * Defensive Primary Elemental Match Modifier
- * Offensive Secondary Elemental Match Modifier
- * Defensive Secondary Elemental Match Modifier
- *
- * Offensive Primary Element Modifier
- * Defensive Primary Element Modifier
- * Offensive Secondary Element Modifier
- * Defensive Secondary Element Modifier
- *
- * Primary Elemental Advantage Modifier
- * Primary Elemental Disadvantage Modifier
- * Secondary Elemental Advantage Modifier
- * Secondary Elemental Disadvantage Modifier
- * Double Elemental Advantage Modifier
- * Double Elemental Disadvantage Modifier
- *
- * Manna Power Modifier
- * Manna Defense Modifier
- * User Power Modifier
- * Target Defense Modifier
- *
- * Base Critical Hit Chance
- * Offensive Critical Factor
- * Critical Modifier (Base)
- * Critical Lvl Modifier (Per Level)
- * Critical Defending Modifier (While User Defending)
- * Crtical Guarded Modifier (While User Being Guarded)
- * Critical Shielded Modifier (While User Being Shielded)
  *
  * Base Run Chance (in %)
  * User Run Modifier (Modify user value per point of momentum)
@@ -62,13 +29,9 @@
  * Enemy Run Modifier (Modify user value per point of momentum)
  * Run PC Per Poitn (% to alter run chance by per point of momentum)
  *
- * Dodge Chance [Limbertude] Modifier
- * Dodge Chance [Limbertude] Per Level Modifier
- *
  * Defend Modifier (Base Damage Mod While Defending)
  * Guard Modifier (Base Damage Mod While Being Guarded)
  */
-
 const uint16_t Battle::kBIGBAR_CHOOSE{100};
 
 const size_t Battle::kMAX_AILMENTS = 50;
@@ -76,26 +39,11 @@ const size_t Battle::kMAX_EACH_AILMENTS = 5;
 const uint16_t Battle::kMINIMUM_DAMAGE = 1;
 const uint16_t Battle::kMAXIMUM_DAMAGE = 29999;
 
-const float Battle::kBASE_CRIT_CHANCE = 0.10;
-const float Battle::kOFF_CRIT_FACTOR = 1.45;
-const float Battle::kCRIT_MODIFIER = 0.0008;
-const float Battle::kCRIT_LVL_MODIFIER = 0.012;
-const float Battle::kCRIT_DEFENDING_MODIFIER = 0.70;
-const float Battle::kCRIT_GUARDED_MODIFIER = 0.65;
-
 const float Battle::kBASE_RUN_CHANCE = 0.25;
 const float Battle::kUSER_RUN_MODIFIER = 2.00;
 const float Battle::kALLY_RUN_MODIFIER = 1.00;
 const float Battle::kENEMY_RUN_MODIFIER = 1.00;
 const float Battle::kRUN_PC_PER_POINT = 0.003;
-
-const float Battle::kDODGE_MODIFIER = 0.10;
-const float Battle::kDODGE_HIGHEST_RATE_PC = 50.0;
-const float Battle::kDODGE_PER_LEVEL_MODIFIER = 2.50;
-
-const float Battle::kDEFEND_MODIFIER = 0.45;
-const float Battle::kGUARD_MODIFIER = 1.10;
-const float Battle::kSHIELDED_MODIFIER = 0.00;
 
 const int16_t Battle::kREGEN_RATE_ZERO_PC = 0;
 const int16_t Battle::kREGEN_RATE_WEAK_PC = 3;

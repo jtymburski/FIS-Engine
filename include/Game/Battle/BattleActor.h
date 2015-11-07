@@ -292,6 +292,9 @@ public:
   /* Returns the active sprites' y */
   int32_t getDialogY();
 
+  /* Returns the guarding state of the Battle Actor */
+  GuardingState getGuardingState();
+
   /* Gets the next selection state */
   SelectionState getSelectionState();
 
@@ -318,6 +321,9 @@ public:
 
   /* Assigns a given ActorState flag to a given value */
   void setFlag(ActorState set_flags, const bool& set_value = true);
+
+  /* Assigns the enumerated guarding state value */
+  void setGuardingState(GuardingState state_guarding);
 
   /* Assigns a new info frame to the Battle Actor */
   void setInfoFrame(Frame* info_frame);

@@ -31,6 +31,13 @@ enum class IgnoreState
   IGNORE_LUCK_DEF = 1 << 7,
 };
 
+enum class SkillHitStatus
+{
+  HIT,
+  MISS,
+  DREAMSNARED
+};
+
 class BattleEvent
 {
 public:
@@ -103,6 +110,21 @@ public:
   static const float kUSER_POW_MODIFIER;
   static const float kTARG_DEF_MODIFIER;
 
+  static const float kDEFEND_MODIFIER;
+  static const float kGUARD_MODIFIER;
+  static const float kSHIELDED_MODIFIER;
+
+  static const float kOFF_CRIT_FACTOR;
+  static const float kBASE_CRIT_CHANCE;
+  static const float kCRIT_MODIFIER;
+  static const float kCRIT_LVL_MODIFIER;
+  static const float kCRIT_DEFENDING_MODIFIER;
+  static const float kCRIT_GUARDED_MODIFIER;
+
+  static const float kDODGE_MODIFIER;
+  static const float kDODGE_HIGHEST_RATE_PC;
+  static const float kDODGE_PER_LEVEL_MODIFIER;
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -123,6 +145,9 @@ private:
   int32_t calcValLuckAtk();
   int32_t calcValLuckDef();
 
+  bool doesActionCrit(BattleActor* curr_target);
+  bool doesActionHit();
+  SkillHitStatus doesSkillHit(std::vector<BattleActor*> targets);
   bool doesPrimMatch(Skill* skill);
   bool doesSecdMatch(Skill* skill);
 

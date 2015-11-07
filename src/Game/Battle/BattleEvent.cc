@@ -18,6 +18,47 @@
  * CONSTANTS
  *============================================================================*/
 
+/* ------------ Battle Damage Calculation Modifiers ---------------
+ * Offensive Physical Modifier
+ * Defensive Physical Modifier
+ * Offensive Primary Elemental Match Modifier
+ * Defensive Primary Elemental Match Modifier
+ * Offensive Secondary Elemental Match Modifier
+ * Defensive Secondary Elemental Match Modifier
+ *
+ * Offensive Primary Element Modifier
+ * Defensive Primary Element Modifier
+ * Offensive Secondary Element Modifier
+ * Defensive Secondary Element Modifier
+ *
+ * Primary Elemental Advantage Modifier
+ * Primary Elemental Disadvantage Modifier
+ * Secondary Elemental Advantage Modifier
+ * Secondary Elemental Disadvantage Modifier
+ * Double Elemental Advantage Modifier
+ * Double Elemental Disadvantage Modifier
+ *
+ * Manna Power Modifier
+ * Manna Defense Modifier
+ * User Power Modifier
+ * Target Defense Modifier
+ *
+ * Base Critical Hit Chance
+ * Offensive Critical Factor
+ * Critical Modifier (Base)
+ * Critical Lvl Modifier (Per Level)
+ * Critical Defending Modifier (While User Defending)
+ * Crtical Guarded Modifier (While User Being Guarded)
+ * Critical Shielded Modifier (While User Being Shielded)
+ *
+ * Defending Modifier
+ * Guarded Modifier
+ * Shielded Modifier
+ *
+ * Dodge Chance [Limbertude] Modifier
+ * Dodge Chance [Limbertude] Per Level Modifier
+ */
+
 const float BattleEvent::kOFF_PHYS_MODIFIER = 1.00;
 const float BattleEvent::kDEF_PHYS_MODIFIER = 1.10;
 const float BattleEvent::kOFF_PRIM_ELM_MATCH_MODIFIER = 1.03;
@@ -41,6 +82,21 @@ const float BattleEvent::kMANNA_POW_MODIFIER = 1.20;
 const float BattleEvent::kMANNA_DEF_MODIFIER = 1.20;
 const float BattleEvent::kUSER_POW_MODIFIER = 1.70;
 const float BattleEvent::kTARG_DEF_MODIFIER = 2.90;
+
+const float BattleEvent::kDEFEND_MODIFIER = 0.45;
+const float BattleEvent::kGUARD_MODIFIER = 1.10;
+const float BattleEvent::kSHIELDED_MODIFIER = 0.00;
+
+const float BattleEvent::kBASE_CRIT_CHANCE = 0.10;
+const float BattleEvent::kOFF_CRIT_FACTOR = 1.45;
+const float BattleEvent::kCRIT_MODIFIER = 0.0008;
+const float BattleEvent::kCRIT_LVL_MODIFIER = 0.012;
+const float BattleEvent::kCRIT_DEFENDING_MODIFIER = 0.70;
+const float BattleEvent::kCRIT_GUARDED_MODIFIER = 0.65;
+
+const float BattleEvent::kDODGE_MODIFIER = 0.10;
+const float BattleEvent::kDODGE_HIGHEST_RATE_PC = 50.0;
+const float BattleEvent::kDODGE_PER_LEVEL_MODIFIER = 2.50;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTOR
@@ -362,133 +418,80 @@ bool BattleEvent::setNextAction()
   return false;
 }
 
-// bool Battle::doesActionCrit()
+bool BattleEvent::doesActionCrit(BattleActor* curr_target)
+{
+  auto curr_action = getCurrAction();
+
+  if(actor && curr_target && curr_action)
+  {
+    auto crit_mod = temp_user_stats.getValue(Attribute::UNBR) * kCRIT_MODIFIER;
+    auto crit_chance = crit_mod + kBASE_CRIT_CHANCE;
+
+    if(curr_target->getGuardingState() == GuardingState::DEFENDING)
+      crit_chance *= kCRIT_DEFENDING_MODIFIER;
+    else if(curr_target->getGuardingState() == GuardingState::GUARDED)
+      crit_chance *= kCRIT_GUARDED_MODIFIER;
+    else if(curr_target->getGuardingState() == GuardingState::GUARDED_DEFENDING)
+      crit_chance *= kCRIT_DEFENDING_MODIFIER * kCRIT_GUARDED_MODIFIER;
+
+    if(crit_chance > 0)
+    {
+      uint32_t crit_pc_1000 = floor(crit_chance * 1000);
+
+      if(Helpers::chanceHappens(crit_pc_1000, 1000))
+        return true;
+    }
+  }
+
+  return false;
+}
+
+SkillHitStatus BattleEvent::doesSkillHit(std::vector<BattleActor*> targets)
+{
+  (void)targets; // TODO
+  auto curr_skill = getCurrSkill();
+
+  // TODO: [11-03-15]: BattleSkills Silence flag
+  if(actor && curr_skill)
+  {
+    SkillHitStatus status = SkillHitStatus::HIT;
+
+    // TODO - is the Skill silenced?
+    // TODO - is the current person going to miss their next target?
+    // TODO - is the currenet person dreamsnared?
+
+    if(status == SkillHitStatus::HIT)
+    {
+      auto hit_rate = curr_skill->getChance();
+
+      // TODO - Determine other factors - dodge per lvl etc.
+      bool hits = Helpers::chanceHappens(static_cast<uint32_t>(hit_rate), 100);
+
+      if(hits)
+        return status;
+    }
+  }
+
+  return SkillHitStatus::MISS;
+}
+
+bool BattleEvent::doesActionHit()
+{
+  auto curr_action = getCurrAction();
+
+  if(curr_action)
+  {
+    return Helpers::chanceHappens(
+        static_cast<uint32_t>(curr_action->getChance()), 100);
+  }
+
+  return false;
+}
+
+// int32_t BattleEvent::calcImplodeDamage()
 // {
-//   if(curr_user == nullptr || curr_target == nullptr)
-//     return false;
-
-//   auto crit_possible = true;
-//   auto crit_happens = false;
-
-//   crit_possible &= curr_user->getBFlag(BState::CAN_CRIT);
-//   crit_possible &= curr_target->getBFlag(BState::CAN_BE_CRIT);
-
-//   if(crit_possible)
-//   {
-//     auto crit_chance = kBASE_CRIT_CHANCE;
-//     auto crit_mod = temp_user_stats.getStat(Attribute::UNBR) *
-//     kCRIT_MODIFIER;
-//     auto crit_lvl_mod =
-//         calcLevelDifference(action_buffer->getTargets()) *
-//         kCRIT_LVL_MODIFIER;
-
-//     crit_chance += crit_mod + crit_lvl_mod;
-
-//     if(curr_target->getBFlag(BState::DEFENDING))
-//       crit_chance *= kCRIT_DEFENDING_MODIFIER;
-//     if(curr_target->getBFlag(BState::GUARDED))
-//       crit_chance *= kCRIT_GUARDED_MODIFIER;
-
-//     if(crit_chance > 0)
-//     {
-//       uint32_t crit_pc_1000 = floor(crit_chance * 1000);
-//       if(Helpers::chanceHappens(crit_pc_1000, 1000))
-//         crit_happens = true;
-//     }
-//   }
-
-//   return crit_happens;
+//   return 0;
 // }
-
-// bool Battle::doesSkillHit(std::vector<Person*> targets)
-// {
-//   auto can_process = true;
-//   auto hits = true;
-
-//   can_process &= curr_skill != nullptr;
-//   can_process &= curr_user != nullptr;
-
-//   if(can_process)
-//   {
-//     auto can_hit = true;
-
-//     can_hit &= curr_skill->isValid();
-//     can_hit &= curr_user->getBFlag(BState::SKL_ENABLED);
-//     can_hit &= !curr_user->getAilFlag(PersonAilState::MISS_NEXT_TARGET);
-
-//     if(curr_user->getAilFlag(PersonAilState::MISS_NEXT_TARGET))
-//     {
-//       event_buffer->createMissEvent(EventType::BLIND_MISS, curr_user,
-//       targets);
-//       // std::cout << "{BLIND} - Blind miss" << std::endl;
-//     }
-
-//     if(can_hit)
-//     {
-//       if(curr_user->getAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT))
-//       {
-//         event_buffer->createMissEvent(EventType::DREAMSNARE_MISS,
-//         curr_user,
-//                                       targets);
-//         // std::cout << "{DREAMSNARE} - No effect" << std::endl;
-//       }
-
-//       /* Obtain the base hit rate (in XX.X%) */
-//       auto hit_rate = curr_skill->getChance();
-
-//       /* Obtain the average level difference in #lvls, a positive value
-//       denoting
-//        * the user's level is higher -> modify it -> add to base hit chance
-//        */
-//       auto level_diff = calcLevelDifference(targets);
-
-//       /* Hit rate is not altered for user's who have higher levels */
-//       if(level_diff < 0)
-//       {
-//         /* Add the (negative) mod value to the hit rate */
-//         auto mod = static_cast<float>(level_diff *
-//         kDODGE_PER_LEVEL_MODIFIER);
-//         auto new_hit_rate = hit_rate + mod;
-//         auto lowest_hit_rate = hit_rate * (kDODGE_HIGHEST_RATE_PC / 100);
-
-//         /* Assert that the hit rate is above the minimum hit rate */
-//         hit_rate = Helpers::setInRange(new_hit_rate, lowest_hit_rate,
-//         hit_rate);
-//       }
-
-//       hits = Helpers::chanceHappens(static_cast<uint32_t>(hit_rate), 100);
-//     }
-//   }
-
-//   return hits;
-// }
-
-// bool Battle::doesActionHit()
-// {
-//   auto can_process = true;
-//   auto hit = true;
-
-//   can_process &= curr_user != nullptr;
-//   can_process &= curr_target != nullptr;
-//   can_process &= curr_action != nullptr;
-
-//   if(can_process)
-//   {
-//     /* Run probabilities of the action occuring */
-//     hit = Helpers::chanceHappens(
-//         static_cast<uint32_t>(curr_action->getChance()), 100);
-//   }
-//   else
-//   {
-//     std::cerr << "[Warning] Cannot process action missing chances" <<
-//     std::endl;
-//   }
-
-//   return hit;
-// }
-
-// int32_t Battle::calcImplodeDamage()
-// {
 //   auto party_death = false;
 //   (void)party_death; // TODO check for party death
 
@@ -698,11 +701,11 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
   std::cout << "Base Damage: " << base_damage << std::endl;
 #endif
 
-  /* If the user is defending, shielded or guarded --->  decrease dmg */
-  // if(curr_target->getBFlag(BState::DEFENDING))
-  //   base_damage *= kDEFEND_MODIFIER;
-  // if(curr_target->getBFlag(BState::SHIELDED))
-  //   base_damage *= kSHIELDED_MODIFIER;
+  // TODO[11-03-15] Other guarding state factors
+  if(curr_target->getGuardingState() == GuardingState::DEFENDING)
+    base_damage *= kDEFEND_MODIFIER;
+  else if(curr_target->getGuardingState() == GuardingState::GUARDED)
+    base_damage *= kGUARD_MODIFIER;
 
   base_damage *= crit_factor;
 

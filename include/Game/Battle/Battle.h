@@ -122,26 +122,11 @@ private:
   static const uint16_t kMAXIMUM_DAMAGE;
   static const uint16_t kMINIMUM_DAMAGE;
 
-  static const float kOFF_CRIT_FACTOR;
-  static const float kBASE_CRIT_CHANCE;
-  static const float kCRIT_MODIFIER;
-  static const float kCRIT_LVL_MODIFIER;
-  static const float kCRIT_DEFENDING_MODIFIER;
-  static const float kCRIT_GUARDED_MODIFIER;
-
-  static const float kDODGE_MODIFIER;
-  static const float kDODGE_HIGHEST_RATE_PC;
-  static const float kDODGE_PER_LEVEL_MODIFIER;
-
   static const float kBASE_RUN_CHANCE;
   static const float kUSER_RUN_MODIFIER;
   static const float kALLY_RUN_MODIFIER;
   static const float kENEMY_RUN_MODIFIER;
   static const float kRUN_PC_PER_POINT;
-
-  static const float kDEFEND_MODIFIER;
-  static const float kGUARD_MODIFIER;
-  static const float kSHIELDED_MODIFIER;
 
   static const int16_t kREGEN_RATE_ZERO_PC;
   static const int16_t kREGEN_RATE_WEAK_PC;

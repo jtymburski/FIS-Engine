@@ -590,6 +590,11 @@ int32_t BattleActor::getDialogY()
   return dialog_y;
 }
 
+GuardingState BattleActor::getGuardingState()
+{
+  return state_guarding;
+}
+
 SelectionState BattleActor::getSelectionState()
 {
   return state_selection;
@@ -655,6 +660,11 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
 void BattleActor::setFlag(ActorState set_flags, const bool& set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
+}
+
+void  BattleActor::setGuardingState(GuardingState state_guarding)
+{
+  this->state_guarding = state_guarding;
 }
 
 void BattleActor::setInfoFrame(Frame* frame_info)
