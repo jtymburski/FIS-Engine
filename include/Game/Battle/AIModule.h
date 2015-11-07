@@ -77,6 +77,7 @@ private:
   int32_t chosen_action_index;
   int32_t qd_cost_paid;
 
+  BattleItem* chosen_battle_item;
   BattleSkill* chosen_battle_skill;
   Skill* chosen_skill;
   Item*  chosen_item;
@@ -257,6 +258,7 @@ public:
   uint16_t getActionsElapsedTotal();
 
   /* Chosen selected skills and items */
+  BattleItem* getSelectedBattleItem();
   BattleSkill* getSelectedBattleSkill();
   Skill* getSelectedSkill();
   Item* getSelectedItem();

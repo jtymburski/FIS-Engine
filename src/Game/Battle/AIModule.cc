@@ -493,13 +493,6 @@ bool AIModule::clearInvalid()
   return true;
 }
 
-// /*
-//  * Description: Selects an action for a Random level AI based on the already
-//  *              chosen type of action.
-//  *
-//  * Inputs: none
-//  * Output: bool - true if an action was able to take place
-//  */
 bool AIModule::selectRandomAction()
 {
   auto action_index_selected = false;
@@ -521,6 +514,7 @@ bool AIModule::selectRandomAction()
     auto items_size = valid_items.size();
     auto rand_value = Helpers::randU(1, items_size);
 
+    chosen_battle_item = valid_items[rand_value - 1];
     chosen_item = valid_items[rand_value - 1]->item;
     chosen_action_index = rand_value;
     action_index_selected = true;
@@ -553,7 +547,7 @@ bool AIModule::selectRandomTargets()
   if(chosen_action_type == ActionType::SKILL && chosen_skill)
     targets = chosen_battle_skill->targets;
   else if(chosen_action_type == ActionType::ITEM && chosen_item)
-    targets = chosen_battle_skill->targets;
+    targets = chosen_battle_item->targets;
 
   auto successful = false;
   BattleActor* target_ptr = nullptr;
@@ -704,6 +698,7 @@ void AIModule::loadDefaults()
 
   chosen_action_index = -1;
   chosen_battle_skill = nullptr;
+  chosen_battle_item = nullptr;
   chosen_skill = nullptr;
   chosen_item = nullptr;
 
@@ -962,6 +957,11 @@ AIPersonality AIModule::getSecdPersonality()
 BattleSkill* AIModule::getSelectedBattleSkill()
 {
   return chosen_battle_skill;
+}
+
+BattleItem* AIModule::getSelectedBattleItem()
+{
+  return chosen_battle_item;
 }
 
 /*

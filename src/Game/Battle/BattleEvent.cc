@@ -387,9 +387,9 @@ Action* BattleEvent::getCurrAction()
 Skill* BattleEvent::getCurrSkill()
 {
   if(action_type == ActionType::SKILL && event_skill)
-    return event_skill;
-  if(action_type == ActionType::ITEM && event_item && event_item->getUseSkill())
-    return event_item->getUseSkill();
+    return event_skill->skill;
+  if(action_type == ActionType::ITEM && event_item && event_item->item)
+    return event_item->item->getUseSkill();
 
   return nullptr;
 }
@@ -418,6 +418,8 @@ bool BattleEvent::setNextAction()
   return false;
 }
 
+// Does the action crit the given BattleActor?
+// TODO: Crit level modifier
 bool BattleEvent::doesActionCrit(BattleActor* curr_target)
 {
   auto curr_action = getCurrAction();
@@ -446,33 +448,33 @@ bool BattleEvent::doesActionCrit(BattleActor* curr_target)
   return false;
 }
 
-SkillHitStatus BattleEvent::doesSkillHit(std::vector<BattleActor*> targets)
+// Does the skill hit the given target vectors or entirely miss?
+SkillHitStatus BattleEvent::doesSkillHit()
 {
-  (void)targets; // TODO
   auto curr_skill = getCurrSkill();
+  SkillHitStatus status = SkillHitStatus::HIT;
 
-  // TODO: [11-03-15]: BattleSkills Silence flag
-  if(actor && curr_skill)
+  if(actor && curr_skill && event_skill)
   {
-    SkillHitStatus status = SkillHitStatus::HIT;
-
-    // TODO - is the Skill silenced?
-    // TODO - is the current person going to miss their next target?
-    // TODO - is the currenet person dreamsnared?
+    if(actor->getFlag(ActorState::MISS_NEXT_TARGET))
+      status = SkillHitStatus::DREAMSNARED;
 
     if(status == SkillHitStatus::HIT)
     {
+      auto level_difference = calcLevelDifference();
+      (void)level_difference; // TODO
+
       auto hit_rate = curr_skill->getChance();
 
       // TODO - Determine other factors - dodge per lvl etc.
       bool hits = Helpers::chanceHappens(static_cast<uint32_t>(hit_rate), 100);
 
-      if(hits)
-        return status;
+      if(!hits)
+        status = SkillHitStatus::MISS;
     }
   }
 
-  return SkillHitStatus::MISS;
+  return status;
 }
 
 bool BattleEvent::doesActionHit()
@@ -543,6 +545,27 @@ bool BattleEvent::doesActionHit()
 
 //   return damage_round;
 // }
+
+// TODO: Test function. Need floats?
+int32_t BattleEvent::calcLevelDifference()
+{
+  int32_t total = 0;
+
+  if(actor)
+  {
+    for(const auto& target : actor_targets)
+      if(target)
+        total += target->getBasePerson()->getLevel() * 100;
+
+    if(actor_targets.size() != 0)
+    {
+      total = actor->getBasePerson()->getLevel() -
+              (total / (actor_targets.size() * 100));
+    }
+  }
+
+  return total;
+}
 
 int32_t BattleEvent::calcValPhysPow(BattleStats target_stats)
 {

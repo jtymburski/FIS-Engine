@@ -273,7 +273,9 @@ private:
   void updateDelay(int32_t decrement_delay);
 
   /* Updates the processing on the current battle buffer element */
-  void updateElement();
+  void updateEvent();
+  void processEvent();
+  void processEventSkill();
 
   /* Update the selection of the enemies */
   void updateEnemySelection();

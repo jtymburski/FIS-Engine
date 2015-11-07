@@ -61,13 +61,13 @@ public:
   std::vector<BattleActor*> actor_targets;
 
   /* Skill of this event, if it's a skill event */
-  Skill* event_skill;
+  BattleSkill* event_skill;
 
   /* IgnoreState flags */
   IgnoreState flags_ignore;
 
   /* The item of this event, if it's an item event */
-  Item* event_item;
+  BattleItem* event_item;
 
   //  The state of processing for this event
   // ProcessingState processing_state;
@@ -135,6 +135,9 @@ private:
 
   void calcIgnoreState();
 
+    /* Calculates the average diff. in level between a given actor and foes */
+  int32_t calcLevelDifference();
+
   /* Calculation sub-functiosn for damage calculations */
   int32_t calcValPhysPow(BattleStats target_stats);
   int32_t calcValPhysDef(BattleStats target_stats);
@@ -145,9 +148,6 @@ private:
   int32_t calcValLuckAtk();
   int32_t calcValLuckDef();
 
-  bool doesActionCrit(BattleActor* curr_target);
-  bool doesActionHit();
-  SkillHitStatus doesSkillHit(std::vector<BattleActor*> targets);
   bool doesPrimMatch(Skill* skill);
   bool doesSecdMatch(Skill* skill);
 
@@ -157,6 +157,10 @@ private:
 public:
   /* Calculate the base damage against a given target */
   int32_t calcDamage(BattleActor* curr_target, float crit_factor);
+
+  bool doesActionCrit(BattleActor* curr_target);
+  bool doesActionHit();
+  SkillHitStatus doesSkillHit();
 
   /* Method for updating the stats for computing a new action outcome */
   void updateStats();

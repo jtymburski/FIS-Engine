@@ -78,7 +78,7 @@ void Buffer::addImplode(BattleActor* user)
 }
 
 /* Adds an Item element to the buffer */
-void Buffer::addItem(BattleActor* user, Item* used_item,
+void Buffer::addItem(BattleActor* user, BattleItem* used_item,
                      std::vector<BattleActor*> targets)
 {
   BufferAction item_action;
@@ -110,7 +110,7 @@ void Buffer::addRun(BattleActor* user)
 }
 
 /* Adds a skill use to the buffer */
-void Buffer::addSkill(BattleActor* user, Skill* used_skill,
+void Buffer::addSkill(BattleActor* user, BattleSkill* used_skill,
                       std::vector<BattleActor*> targets, uint32_t cooldown,
                       uint32_t initial_turn)
 {
@@ -192,23 +192,23 @@ void Buffer::print(bool simple)
 
       if(element.type == ActionType::SKILL && element.used_skill)
       {
-        std::cout << "Skill: " << element.used_skill->getName() << "\n";
+        std::cout << "Skill: " << element.used_skill->skill->getName() << "\n";
         std::cout << "Scope: " << Helpers::actionScopeToStr(
-                                      element.used_skill->getScope()) << "\n";
+                                      element.used_skill->skill->getScope()) << "\n";
         std::cout << "Cooldown: " << element.cooldown << "\n";
         std::cout << "Initial Turn: " << element.initial_turn << "\n";
       }
       else if(element.type == ActionType::ITEM && element.used_item)
       {
-        std::cout << "Item: " << element.used_item->getName() << "\n";
+        std::cout << "Item: " << element.used_item->item->getName() << "\n";
 
-        if(element.used_item->getUseSkill())
+        if(element.used_item->item->getUseSkill())
         {
           std::cout << "Item Skill: "
-                    << element.used_item->getUseSkill()->getName() << "\n";
+                    << element.used_item->item->getUseSkill()->getName() << "\n";
           std::cout << "Scope: "
                     << Helpers::actionScopeToStr(
-                           element.used_item->getUseSkill()->getScope())
+                           element.used_item->item->getUseSkill()->getScope())
                     << "\n";
         }
       }
@@ -277,7 +277,7 @@ BattleActor* Buffer::getUser()
   return nullptr;
 }
 
-Skill* Buffer::getSkill()
+BattleSkill* Buffer::getSkill()
 {
   if(index < action_buffer.size())
     return getIndex(index).used_skill;
@@ -285,7 +285,7 @@ Skill* Buffer::getSkill()
   return nullptr;
 }
 
-Item* Buffer::getItem()
+BattleItem* Buffer::getItem()
 {
   if(index < action_buffer.size())
     return getIndex(index).used_item;

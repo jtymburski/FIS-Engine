@@ -250,14 +250,11 @@ bool Battle::bufferMenuSelection()
 
   if(success && action_type == ActionType::SKILL)
   {
-    auto battle_skill = battle_menu->getSelectedBattleSkill();
+    auto skill = battle_menu->getSelectedBattleSkill();
 
-    success &= (battle_skill && battle_skill->skill);
-
-    if(success)
+    if(skill && skill->skill)
     {
-      auto skill = battle_skill->skill;
-      auto cooldown = skill->getCooldown();
+      auto cooldown = skill->skill->getCooldown();
 
       battle_buffer->addSkill(actor, skill, targets, cooldown, turns_elapsed);
     }
@@ -284,13 +281,13 @@ bool Battle::bufferModuleSelection()
     }
     else if(action_type == ActionType::ITEM && curr_module->getSelectedItem())
     {
-      auto item = curr_module->getSelectedItem();
+      auto item = curr_module->getSelectedBattleItem();
       battle_buffer->addItem(curr_actor, item, targets);
     }
     else if(action_type == ActionType::SKILL && curr_module->getSelectedSkill())
     {
-      auto skill = curr_module->getSelectedSkill();
-      auto cooldown = skill->getCooldown();
+      auto skill = curr_module->getSelectedBattleSkill();
+      auto cooldown = skill->skill->getCooldown();
       battle_buffer->addSkill(curr_actor, skill, targets, cooldown,
                               turns_elapsed);
 
@@ -401,16 +398,13 @@ void Battle::loadBattleEvent()
 
   if(to_build)
   {
-    BattleEvent* event = new BattleEvent(action_type, user, targets);
+    clearEvent();
+    event = new BattleEvent(action_type, user, targets);
 
     if(action_type == ActionType::SKILL)
-    {
       event->event_skill = battle_buffer->getSkill();
-    }
     else if(action_type == ActionType::ITEM)
-    {
       event->event_item = battle_buffer->getItem();
-    }
   }
 }
 
@@ -477,9 +471,48 @@ void Battle::updateDelay(int32_t decrement_delay)
     delay = 0;
 }
 
-void Battle::updateElement()
+/* Update the current Buffer element */
+void Battle::updateEvent()
 {
-  // if(battle_buffer->getActionType() == ActionType::SKILL)
+  assert(battle_buffer && event);
+
+  auto to_process = true;
+
+  if(battle_buffer->isIndexStarted())
+    to_process &= event->setNextAction();
+
+  if(to_process)
+    processEvent();
+  else
+    battle_buffer->setProcessed();
+}
+
+void Battle::processEvent()
+{
+  auto event_started = battle_buffer->isIndexStarted();
+
+  if(event->action_type == ActionType::SKILL)
+  {
+    if(event_started)
+    {
+      processEventSkill();
+    }
+    else
+    {
+      auto skill_status = event->doesSkillHit();
+
+      if(skill_status == SkillHitStatus::HIT)
+        processEventSkill();
+    }
+  }
+}
+
+void Battle::processEventSkill()
+{
+  if(event->doesActionHit())
+  {
+
+  }
 }
 
 void Battle::updateEnemySelection()
@@ -525,10 +558,13 @@ void Battle::updateProcessing()
   {
     if(battle_buffer->isIndexProcessed())
       updateBufferNext();
-    else if(battle_buffer->isIndexStarted())
-      updateElement();
+    else if(battle_buffer->isIndexStarted() && event)
+      updateEvent();
     else if(battle_buffer->getCooldown() == 0)
+    {
       loadBattleEvent();
+      updateEvent();
+    }
     else
       updateBufferNext();
   }
@@ -2666,22 +2702,6 @@ bool Battle::setBackground(Sprite* background)
 //   return static_cast<int32_t>(exp * ally->getExpMod());
 // }
 
-// int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
-// {
-//   if(curr_user)
-//   {
-//     auto total_lvl = 0;
-
-//     for(const auto& target : targets)
-//       if(target)
-//         total_lvl += target->getLevel();
-
-//     if(total_lvl != 0)
-//       return curr_user->getLevel() - (total_lvl / targets.size());
-//   }
-
-//   return 0;
-// }
 
 // bool Battle::checkPartyDeath(Party* const check_party, Person* target)
 // {

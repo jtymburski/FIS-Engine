@@ -47,7 +47,7 @@ enum class ActorState
   ALIVE             = 1 << 2, /* Is the person alive? (not imploded) */
   ITM_ENABLED       = 1 << 5, /* Can the person use item in battle? */
   DEF_ENABLED       = 1 << 6, /* Can the person use 'Defend'? */
-  GRD_ENABLED       = 1 << 7, /* Can the person use 'Guard?' */
+  GRD_ENABLED       = 1 << 7, /* Can theisin person use 'Guard?' */
   IMP_ENABLED       = 1 << 8, /* Can the person use 'Implode'? */
   INS_ENABLED       = 1 << 9, /* Can the person use 'Inspect' ? */
   RUN_ENABLED       = 1 << 10, /* Can the person use 'Run'? */
@@ -57,7 +57,8 @@ enum class ActorState
   ALLY              = 1 << 14, /* Is this actor an ally */
   SELECTION_RANDOM  = 1 << 15,
   SELECTION_SKIP    = 1 << 16,
-  MENU_HOVERED      = 1 << 17
+  MENU_HOVERED      = 1 << 17,
+  MISS_NEXT_TARGET  = 1 << 18
   // clang-format on
 };
 

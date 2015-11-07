@@ -61,8 +61,8 @@ struct BufferAction
   BattleActor* user;
 
   /* The Skill OR Item which the action will perform - only oe will be set */
-  Skill* used_skill;
-  Item* used_item;
+  BattleSkill* used_skill;
+  BattleItem* used_item;
 
   /* The vector of targets the action will target */
   std::vector<BattleActor*> targets;
@@ -112,7 +112,7 @@ public:
   void addImplode(BattleActor* user);
 
   /* Adds an Item element to the buffer */
-  void addItem(BattleActor* user, Item* used_item,
+  void addItem(BattleActor* user, BattleItem* used_item,
                std::vector<BattleActor*> targets);
 
   /* Adds a Pass event to the Battle */
@@ -122,7 +122,7 @@ public:
   void addRun(BattleActor* user);
 
   /* Adds a skill use to the buffer */
-  void addSkill(BattleActor* user, Skill* used_skill,
+  void addSkill(BattleActor* user, BattleSkill* used_skill,
                 std::vector<BattleActor*> targets, uint32_t cooldown = 0,
                 uint32_t initial_turn = 0);
 
@@ -163,10 +163,10 @@ public:
   BattleActor* getUser();
 
   /* Obtains the Skill ptr for the current element index */
-  Skill* getSkill();
+  BattleSkill* getSkill();
 
   /* Obtains the Item ptr for the current element index */
-  Item* getItem();
+  BattleItem* getItem();
 
   /* Returns the initial turn assigned to the current element index */
   int32_t getInitialTurn();
