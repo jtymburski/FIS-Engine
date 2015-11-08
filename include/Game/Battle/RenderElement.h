@@ -1,11 +1,9 @@
 /*******************************************************************************
 * Class Name: RenderElement
 * Date Created: June 22, 2015
+* Date Redesigned: November 8, 2015
 * Inheritance: None
-* Description: RenderElement is an abstraction of a object in the battle
-*              which requires updating/rendering. This file holds data
-*              to aid in choosing where to render these elements. (ex. velocity,
-*              acceleration, fading in/out etc.)
+* Description:
 *
 * Notes
 * -----
@@ -14,251 +12,126 @@
 *
 * TODO
 * ----
-*****************************************************************************/
-#ifndef RENDERELEMENT_H
-#define RENDERELEMENT_H
+*******************************************************************************/
+#ifndef RENDER_ELEMENT_H
+#define RENDER_ELEMENT_H
 
-#include "Text.h"
 #include "Sprite.h"
-#include "Helpers.h"
-#include "Game/Player/Person.h"
+#include "Text.h"
 
-enum class RenderType : std::uint8_t
+/* Forward declare for Battle constants */
+class Battle;
+
+/* Coordinate with ints */
+struct Coordinate
 {
-  NONE             =  0, 
-  ACTION_TEXT      =  1,
-  ACTION_FRAME     =  2,
-  CYCLING_FADE     =  3,
-  DAMAGE_VALUE     =  4,
-  RGB_OVERLAY      =  5,
-  RGB_SPRITE_FLASH =  6,
-  RGB_SPRITE_DEATH =  7,
-  PLEP             =  8
+  Coordinate() : x{0}, y{0} {};
+
+  int32_t x;
+  int32_t y;
 };
 
-enum class RenderStatus : std::uint32_t
+/* Box with an integer coordinate and a size width by height */
+struct Box
 {
-  CONSTRUCTING = 1,
-  FADING_IN    = 2,
-  DISPLAYING   = 3,
-  FADING_OUT   = 4,
-  BOBBING      = 5,
-  CYCLING      = 6,
-  TIMED_OUT    = 7
+  Box() : point{Coordinate()}, width{0}, height{0} {};
+
+  Coordinate point;
+  int32_t width;
+  int32_t height;
+};
+
+/* Coodinate with floats */
+struct Floatinate
+{
+  Floatinate() : x{0}, y{0} {};
+
+  float x;
+  float y;
 };
 
 class RenderElement
 {
 public:
-  /* Constructors for RenderElements */
   RenderElement();
-  RenderElement(RenderType type, int32_t remaining_time = 0, 
-      int32_t fade_in_time = 0, int32_t fade_out_time = 0);
+  RenderElement(SDL_Renderer* renderer, TTF_Font* element_font);
+  RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite);
 
-  /* Create a Plep */
-  RenderElement(Sprite* plep, int32_t x, int32_t y, int32_t num_loops);
-
-  /* Create a continuously fading object */
-  RenderElement(Sprite* plep, int32_t x, int32_t y, int32_t alpha_low, 
-      int32_t alpha_high, float fade_rate);
-
-  /* Annihilates a render element */
   ~RenderElement();
 
-private: 
-  /* Pointer to a Frame */
-  Frame* action_frame;
-  
-  /* Pointer to a Sprite (plep) (or the sprite to be mixed with Color) */
-  Sprite* render_sprite;
+  bool has_shadow;
 
-  /* Person to flash sprite for */
-  Person* flasher;
+  Box location;
+  Coordinate end;
+  Coordinate shadow_offset;
 
-  /* Enumerated status of the Render Element */
-  RenderStatus status;
+  Floatinate velocity;
+  Floatinate acceleration;
+  Floatinate delta;
 
-  /* Type of the Render */
-  RenderType type;
+  uint32_t time_fade_in;
+  uint32_t time_fade_out;
+  uint32_t time_begin;
+  uint32_t time_left;
 
-  /* Color of the element (+ shadow color, if needed) */
+  uint8_t alpha;
+
+  Sprite* element_sprite;
+
+  Text element_text;
+  TTF_Font* element_font;
+
   SDL_Color color;
   SDL_Color shadow_color;
 
-  /* The font and string text */
-  TTF_Font* font;
-  std::string text;
+  SDL_Renderer* renderer;
 
-  /* Whether to show shadow or not */
-  bool shadow;
-
-  /* Alpha low and high values */
-  uint8_t alpha_low;
-  uint8_t alpha_high;
-
-  /* Remaining time and elapsed time of rendering */
-  int32_t remaining_time;
-  int32_t elapsed_time;
-  int32_t num_loops;
-
-  /* Acceleration of text parameters */
-  int32_t acceleration_x;
-  int32_t acceleration_y;
-
-  /* Change in X/Y which has not been rendered yet */
-  float delta_x;
-  float delta_y;
-
-  /* The rate of fading for a continuously fading object */
-  float fade_rate;
-
-  /* Coordinates for rendering */
-  int32_t x;
-  int32_t y;
-  int32_t shadow_x;
-  int32_t shadow_y;
-  int32_t size_x;
-  int32_t size_y;
-  int32_t velocity_x;
-  int32_t velocity_y;
-  int32_t fade_in_time;
-  int32_t fade_out_time;
-
-  /* Current alpha value calculations */
-  uint8_t alpha;
-  uint8_t shadow_alpha;
-
-  /* ------------ Constants --------------- */
-
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
 private:
+  /* ---- Color Constants ---- */
+  const static SDL_Color kSTRD_DMG_COLOR;
+  const static SDL_Color kCRIT_DMG_COLOR;
+  const static SDL_Color kPOIS_DMG_COLOR;
+  const static SDL_Color kBURN_DMG_COLOR;
+  const static SDL_Color kHEAL_DMG_COLOR;
+  const static SDL_Color kVITA_REGEN_COLOR;
+  const static SDL_Color kQTDR_REGEN_COLOR;
+  const static SDL_Color kHIBERNATION_REGEN_COLOR;
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *========================================f====================================*/
+  const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
+  const static uint16_t kACTION_SHADOW; /* Shadow offset of middle text */
+  const static uint16_t kDAMAGE_SHADOW;
+  const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
+  const static uint16_t kACTION_CENTER;
+
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
+private:
+  bool buildSprite(Sprite* sprite);
+
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
-  /* Calculates current colour levels for sprite-overlay flashing */
-  uint8_t calcColorRed();
-  uint8_t calcColorGreen();
-  uint8_t calcColorBlue();
+  /* Creates the render element as an action text*/
+  void createAsActionText(std::string text);
 
-  /* Returns whether the element has a shadow */
-  bool hasShadow();
+  /* Creates the render element as a damge text*/
+  void createAsDamageText(int32_t amount, DamageType type, int32_t sc_height,
+                          int32_t x, int32_t y);
 
-  /* Returns true if the element has timed out (needs to be cleared ) */
-  bool isTimedOut();
+  /* Sets the render element to have a shadow */
+  void setShadow(SDL_Color shadow_color, int32_t offset_x, int32_t offset_y);
 
-  /* Updates the position and info of the render element */
-  bool update(int32_t cycle_time);
+  /* Assigns the time values (life time, fade in) for the elment */
+  bool setTimes(uint32_t time_begin, uint32_t time_fade_in = 0,
+                uint32_t time_fade_out = 0);
 
-  /* Returns the pointer to the action frame */
-  Frame* getActionFrame();
-
-  /* Returns the alphs values for text and shadow text */
-  uint8_t getAlpha();
-  uint8_t getShadowAlpha();
-
-  /* Methods to return the colors */
-  SDL_Color getColor();
-  SDL_Color getShadowColor();
-
-  int32_t getElapsedTime();
-
-  int32_t getFadeInTime();
-
-  int32_t getFadeOutTime();
-
-  /* Returns a pointer to the font of the render element */
-  TTF_Font* getFont();
-
-  /* Obtains pointer to the person to be flashed */
-  Person* getFlasher();
-
-  int32_t getNumLoops();
-
-  int32_t getRemainingTime();
-
-  /* Returns a pointer to the Sprite Plep */
-  Sprite* getSprite();
-
-  /* Return the enumerated status for the render element */
-  RenderStatus getStatus();
-
-  /* Returns the assigned string for the render element */
-  std::string getText();
-
-  /* Returns the type of the render element */
-  RenderType getType();
-
-  /* (X/Y) coordinates for the text */
-  int32_t getX();
-  int32_t getY();
-  int32_t getShadowX();
-  int32_t getShadowY();
-  int32_t getSizeX();
-  int32_t getSizeY();
-
-  void setActionFrame(Frame* action_frame);
-
-  void setAlpha(uint8_t new_alpha);
-
-  /* Assigns new acceleration values */
-  void setAcceleration(int32_t new_acceleration_x, int32_t new_acceleration_y);
-
-  /* Assigns coordinates for the text and shadow text */
-  void setCoordinates(int32_t new_x, int32_t new_y);
-  void setShadowCoordinates(int32_t new_shadow_x, int32_t new_shadow_y);
-
-  /* Assigns a new color for the text and shadow text */
-  void setColor(SDL_Color new_color);
-  void setShadowColor(SDL_Color new_shadow_color);
-
-  /* Sets the font of the text */
-  void setFont(TTF_Font* new_font);
-
-  /* Assign a person to the render element */
-  void setFlasher(Person* new_flasher);
-
-  /* Assigns a new plep for the Element */
-  void setSprite(Sprite* new_render_sprite);
-
-  /* Method to set the text to have a shadow */
-  void setShadow(bool to_show = true);
-
-  /* Assign both 'x' and 'y' sizes for the RenderElement */
-  void setSizes(int32_t new_size_x, int32_t new_size_y);
-
-  /* Assigns the time values for the RenderElement */
-  bool setTimes(int32_t new_remaining_time, int32_t fade_in = 0, 
-      int32_t fade_out = 0);
-
-  /* Assigns the string value for the text */
-  void setText(std::string new_text);
-
-  void setTimedOut();
-
-  /* Assigns new velocity values */
-  void setVelocity(int32_t new_velocity_x, int32_t new_velocity_y);
-
-  /* Regular rendering coordinates */
-  void setX(int32_t new_x);
-  void setY(int32_t new_y);
-
-  /* Shadow (for text renders) offset X,Y values */
-  void setShadowX(int32_t new_shadow_x);
-  void setShadowY(int32_t new_shadow_y);
-
-  /* Assign a new value for the sign of the Element (only some objects) */
-  void setSizeX(int32_t new_size_x);
-  void setSizeY(int32_t new_size_y);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-public:
-
+  /*=============================================================================
+   * PRIVATE STATIC FUNCTIONS
+   *============================================================================*/
+private:
+  static SDL_Color colorFromDamageType(DamageType type);
 };
 
-#endif //CLASSNAME_H
+#endif // RENDER_ELEMENT_H

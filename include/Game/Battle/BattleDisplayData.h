@@ -66,7 +66,7 @@ private:
   std::map<Infliction, Sprite*> pleps_ailments;
 
   /* Pleps for events */
-  std::map<EventType, Sprite*> pleps_events;
+  // std::map<EventType, Sprite*> pleps_events;
 
   /* The SDL Renderer */
   SDL_Renderer* renderer;
@@ -108,8 +108,8 @@ private:
   /* Assigns an ailment plep */
   void setPlepAilment(Infliction type, Sprite* plep);
 
-  /* Assigns a plep event */
-  void setPlepEvent(EventType event, Sprite* plep);
+  // /* Assigns a plep event */
+  // void setPlepEvent(EventType event, Sprite* plep);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
@@ -146,7 +146,7 @@ public:
   Sprite* getPlepAilment(Infliction ailment);
 
   /* Returns a pointer to a Plep event sprite */
-  Sprite* getPlepEvent(EventType event_type);
+  // Sprite* getPlepEvent(EventType event_type);
 
   /* Assign a configuration */
   void setConfig(Options* config);

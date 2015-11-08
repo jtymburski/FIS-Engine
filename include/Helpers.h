@@ -122,8 +122,8 @@ public:
   static uint16_t elementToInt(Element element);
   static std::string elementToString(const Element &element);
 
-  /* Converts a given EventType to a string equivalent */
-  static std::string eventToStr(EventType event_type);
+  //  Converts a given EventType to a string equivalent
+  // static std::string eventToStr(EventType event_type);
 
   /* Flush the console with [blank] input */
   static void flushConsole(const char &c = ' ');

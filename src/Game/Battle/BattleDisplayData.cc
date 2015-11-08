@@ -372,9 +372,9 @@ void BattleDisplayData::buildPlepsEvents()
   // sprite_implode = new Sprite(config->getBasePath() +
   // "sprites/Battle/Pleps/detonateplep_AA_A", 6, ".png", renderer);
 
-  setPlepEvent(EventType::BEGIN_DEFEND, sprite_defend_start);
-  setPlepEvent(EventType::BREAK_DEFEND, sprite_defend_break);
-  setPlepEvent(EventType::PERSIST_DEFEND, sprite_defend_persist);
+  // setPlepEvent(EventType::BEGIN_DEFEND, sprite_defend_start);
+  // setPlepEvent(EventType::BREAK_DEFEND, sprite_defend_break);
+  // setPlepEvent(EventType::PERSIST_DEFEND, sprite_defend_persist);
 }
 
 void BattleDisplayData::setFrameAilment(Infliction type, std::string path)
@@ -401,11 +401,11 @@ void BattleDisplayData::setPlepAilment(Infliction type, Sprite* plep)
     pleps_ailments.emplace(type, plep);
 }
 
-void BattleDisplayData::setPlepEvent(EventType event, Sprite* plep)
-{
-  if(renderer)
-    pleps_events.emplace(event, plep);
-}
+// void BattleDisplayData::setPlepEvent(EventType event, Sprite* plep)
+// {
+//   if(renderer)
+//     pleps_events.emplace(event, plep);
+// }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -508,18 +508,18 @@ Sprite* BattleDisplayData::getPlepAilment(Infliction ailment)
   return nullptr;
 }
 
-Sprite* BattleDisplayData::getPlepEvent(EventType event_type)
-{
-  if(event_type != EventType::NONE)
-  {
-    auto found = pleps_events.find(event_type);
+// Sprite* BattleDisplayData::getPlepEvent(EventType event_type)
+// {
+//   if(event_type != EventType::NONE)
+//   {
+//     auto found = pleps_events.find(event_type);
 
-    if(found != end(pleps_events))
-      return found->second;
-  }
+//     if(found != end(pleps_events))
+//       return found->second;
+//   }
 
-  return nullptr;
-}
+//   return nullptr;
+// }
 
 void BattleDisplayData::setConfig(Options* config)
 {

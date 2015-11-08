@@ -13,6 +13,7 @@
 * See .h file for TODOs
 ******************************************************************************/
 #include "Game/Battle/Battle.h"
+#include "Game/Battle/RenderElement.h"
 
 /*=============================================================================
  * CONSTANTS - Battle Operations
@@ -20,8 +21,6 @@
 
 /* Maximum Ailments (Total)
  * Maximum Each Ailments (Per Person)
- * Minimum Damage (Possible)
- * Maximum Damage (Possible)
  *
  * Base Run Chance (in %)
  * User Run Modifier (Modify user value per point of momentum)
@@ -36,8 +35,6 @@ const uint16_t Battle::kBIGBAR_CHOOSE{100};
 
 const size_t Battle::kMAX_AILMENTS = 50;
 const size_t Battle::kMAX_EACH_AILMENTS = 5;
-const uint16_t Battle::kMINIMUM_DAMAGE = 1;
-const uint16_t Battle::kMAXIMUM_DAMAGE = 29999;
 
 const float Battle::kBASE_RUN_CHANCE = 0.25;
 const float Battle::kUSER_RUN_MODIFIER = 2.00;
@@ -54,6 +51,7 @@ const int16_t Battle::kREGEN_RATE_GRAND_PC = 6;
 /* ------------ Battle Outcome Modifiers ---------------
  * kENEMY_RUN_EXP_PC - %EXP to maintain on pyrric victory (enemies run)
  * kRUN_PC_EXP_PENALTY - %EXP (MAX) penalty when the Allies run from Battle.
+
  * kALLY_KO_EXP_PC - %EXP which KO member get for winning a Battle.
  */
 const int16_t Battle::kALLY_KO_EXP_PC = 50;
@@ -65,15 +63,11 @@ const int16_t Battle::kRUN_PC_EXP_PENALTY = 5;
  *============================================================================*/
 
 const uint16_t Battle::kACTION_BORDER = 10;
-const uint16_t Battle::kACTION_CENTER = 381;
 const uint16_t Battle::kACTION_COLOR_A = 175;
 const uint16_t Battle::kACTION_COLOR_G = 201;
-const uint16_t Battle::kACTION_COLOR_R = 175;
 const uint16_t Battle::kACTION_CORNER_X = 18;
 const uint16_t Battle::kACTION_CORNER_Y = 4;
 const uint16_t Battle::kACTION_H = 408;
-const uint16_t Battle::kACTION_TEXT_SHADOW = 3;
-const uint16_t Battle::kACTION_TEXT_X = 800;
 const uint16_t Battle::kACTION_W = 359;
 const uint16_t Battle::kACTION_Y = 291;
 
@@ -131,23 +125,14 @@ const uint16_t Battle::kALLIES_OFFSET = 328;
 
 const uint8_t Battle::kMAX_CHARS = 5;
 const uint8_t Battle::kMAX_LAYERS = 10;
-
 const uint16_t Battle::kPERSON_SPREAD = 200;
-const uint16_t Battle::kPERSON_WIDTH = 256;
 const uint8_t Battle::kPERSON_KO_ALPHA = 50;
+
+const uint16_t Battle::kPERSON_WIDTH = 256;
 
 // const uint8_t Battle::kTYPE_MARGIN = 7;
 // const uint8_t Battle::kTYPE_MAX = 5;
 // const uint8_t Battle::kTYPE_SELECT = 3;
-
-/* ---- Color Constants ---- */
-const SDL_Color Battle::kSTRD_DMG_COLOR = {225, 225, 225, 255};
-const SDL_Color Battle::kCRIT_DMG_COLOR = {255, 255, 0, 255};
-const SDL_Color Battle::kPOIS_DMG_COLOR = {138, 43, 226, 255};
-const SDL_Color Battle::kBURN_DMG_COLOR = {172, 0, 0, 255};
-const SDL_Color Battle::kVITA_REGEN_COLOR = {50, 205, 50, 255};
-const SDL_Color Battle::kQTDR_REGEN_COLOR = {0, 128, 255, 255};
-const SDL_Color Battle::kHIBERNATION_REGEN_COLOR = {75, 205, 50, 255};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -487,6 +472,14 @@ void Battle::updateEvent()
     battle_buffer->setProcessed();
 }
 
+void Battle::updateEventReady()
+{
+  assert(event);
+
+  if(event->event_type == BattleEventType::DAMAGE)
+    processEventDamage();
+}
+
 void Battle::processEvent()
 {
   auto event_started = battle_buffer->isIndexStarted();
@@ -507,11 +500,35 @@ void Battle::processEvent()
   }
 }
 
+void Battle::processEventDamage()
+{
+  auto new_element =
+      new RenderElement(renderer, config->getFontTTF(FontName::BATTLE_DAMAGE));
+
+  /* Create as damage value */
+
+  /* Add to render elements */
+}
+
 void Battle::processEventSkill()
 {
-  if(event->doesActionHit())
-  {
+  auto curr_action = event->getCurrAction();
 
+  if(curr_action)
+  {
+    if(curr_action->actionFlag(ActionFlags::DAMAGE))
+    {
+      std::vector<int32_t> damage_values;
+
+      for(auto& target : event->actor_targets)
+      {
+        assert(target);
+        damage_values.push_back(event->calcDamage(target, 1.00));
+      }
+
+      /* This damage action is now complete */
+      setFlagCombat(CombatState::EVENT_READY, true);
+    }
   }
 }
 
@@ -2665,44 +2682,6 @@ bool Battle::setBackground(Sprite* background)
 //   setNextTurnState();
 // }
 
-// float Battle::calcCritFactor()
-// {
-//   /* Base crit factor */
-//   auto crit_factor = kOFF_CRIT_FACTOR;
-
-//   /* Unbearability modifier */
-//   auto unbr = curr_user->getTemp().getStat(Attribute::UNBR);
-
-//   crit_factor += unbr * kCRIT_MODIFIER;
-
-//   /* Level difference modifier */
-//   std::vector<Person*> target_vec = {curr_target};
-//   crit_factor += calcLevelDifference(target_vec) * kCRIT_LVL_MODIFIER;
-
-//   if(curr_target->getBFlag(BState::DEFENDING))
-//     crit_factor *= kCRIT_DEFENDING_MODIFIER;
-//   if(curr_target->getBFlag(BState::GUARDED))
-//     crit_factor *= kCRIT_GUARDED_MODIFIER;
-
-//   /* Crits should be between 100 and 1000% always */
-//   crit_factor = Helpers::setInRange(crit_factor, 1, 10);
-
-//   return crit_factor;
-// }
-
-// int32_t Battle::calcExperience(Person* ally)
-// {
-//   int32_t exp = 0;
-
-//   auto foes_members = foes->getMembers();
-
-//   for(auto& foe : foes_members)
-//     exp += foe->getExpDrop();
-
-//   return static_cast<int32_t>(exp * ally->getExpMod());
-// }
-
-
 // bool Battle::checkPartyDeath(Party* const check_party, Person* target)
 // {
 //   auto party_death = false;
@@ -4518,7 +4497,12 @@ bool Battle::update(int32_t cycle_time)
   /* ----------------------- PROCESS ACTIONS -------------------------------- */
 
   else if(turn_state == TurnState::PROCESS_ACTIONS)
-    updateProcessing();
+  {
+    if(getFlagCombat(CombatState::EVENT_READY))
+      updateEventReady();
+    else
+      updateProcessing();
+  }
 
   return false;
 }

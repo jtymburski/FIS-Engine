@@ -18,70 +18,6 @@
 // uncomment to disable assert()
 // #define NDEBUG
 
-//TODO - BattleEvent classifications?
-enum class EventType : std::uint8_t
-{
-  ITEM_USE = 1,
-  SKILL_USE = 2,
-  SKILL_USE_FIZZLE = 3,
-  SKILL_COOLDOWN = 4,
-  //TODO: Implode -- break down to damage/character removal?
-  IMPLODE = 5,
-  //TODO: Inspect -- ???
-  INSPECT = 6,
-  ATTEMPT_RUN = 7,
-  SUCCEED_RUN = 8,
-  FAIL_RUN = 9,
-  MISS_TURN = 10,
-  PASS = 11,
-  SKILL_MISS = 12,
-  ACTION_MISS = 13,
-  BLIND_MISS = 14,
-  DREAMSNARE_MISS = 15,
-  FIZZLE = 16,
-  STANDARD_DAMAGE = 17,
-  CRITICAL_DAMAGE = 18,
-  POISON_DAMAGE = 19,
-  BURN_DAMAGE = 20,
-  HITBACK_DAMAGE = 21,
-  METABOLIC_KILL = 22,
-  METABOLIC_DAMAGE = 23,
-  DEATH_COUNTDOWN = 24,
-  BOND = 25,
-  BONDING = 26,
-  BEGIN_DEFEND = 27,
-  PERSIST_DEFEND = 28,
-  BREAK_DEFEND = 29,
-  BEGIN_GUARD = 30,
-  PERSIST_GUARD = 31,
-  BREAK_GUARD = 32,
-  FAIL_GUARD = 33,
-  DEATH = 34,
-  INFLICTION = 35,
-  CURE_INFLICTION = 36,
-  ALTERATION = 37,
-  ASSIGNMENT = 38,
-  REVIVAL = 39,
-  HEAL_HEALTH = 40,
-  REGEN_VITA = 41,
-  HEAL_QD = 42,
-  REGEN_QTDR = 43,
-  ACTION_BEGIN = 44,
-  PARTY_DEATH = 45,
-  INFLICTION_FIZZLE = 46,
-  DEATHTIMER_DEATH = 47,
-  EXP_GAIN = 48,
-  EXP_LOSS = 49,
-  LEVEL_UP = 50,
-  EQUIP_EXP_GAIN = 51,
-  BUBBY_LEVEL_UP = 52,
-  GAIN_ITEM = 52,
-  GAIN_MONEY = 53,
-  ACTION_END = 54,
-  HIBERNATION = 55,
-  NONE = 56
-};
-
 /*==============================================================================
  * GLOBAL ENUMS
  *============================================================================*/
@@ -189,8 +125,8 @@ enum class AddStatus : std::uint8_t
  */
 enum class AIDifficulty
 {
-  RANDOM,      /* Randomly chooses action types, indexes, targets */
-  PRIORITY,    /* Chooses actions based on arbitrary priority values */
+  RANDOM, /* Randomly chooses action types, indexes, targets */
+  PRIORITY, /* Chooses actions based on arbitrary priority values */
 };
 
 /*
@@ -199,16 +135,16 @@ enum class AIDifficulty
  */
 enum class AIPersonality
 {
-  MODERATOR,   /* Generic personality type */
-  AGGRESSOR,   /* Focuses on actions damage the opposing team */
-  DEFENDER,    /* Focuses actions on increasing one-self */
-  PROTECTOR,   /* Focuses on actions protecting teammates (including self) */
-  RETALIATOR,  /* Changes priority targeting if hit by a certain enemy */
+  MODERATOR, /* Generic personality type */
+  AGGRESSOR, /* Focuses on actions damage the opposing team */
+  DEFENDER, /* Focuses actions on increasing one-self */
+  PROTECTOR, /* Focuses on actions protecting teammates (including self) */
+  RETALIATOR, /* Changes priority targeting if hit by a certain enemy */
   MASOCHISTIC, /* Performs self-destructive behaviour */
   ANNIHILATOR, /* Attempts to perform the most damage possible, at any cost */
-  RUNNER,      /* Focuses on running or becoming able to run */
-  PASSER,      /* Focuses on doing nothing */
-  NONE         /* No personality type - error */
+  RUNNER, /* Focuses on running or becoming able to run */
+  PASSER, /* Focuses on doing nothing */
+  NONE /* No personality type - error */
 };
 
 /*:
@@ -335,12 +271,17 @@ enum class DamageType
 {
   BASE,
   ALTER,
+  CRITICAL,
   GUARD,
   ITEM,
   POISON,
   BURN,
   HITBACK,
-  DEATHTIMER
+  DEATHTIMER,
+  HEALING,
+  VITA_REGEN,
+  QTDR_REGEN,
+  HIBERNATION_REGEN
 };
 
 /*
@@ -624,13 +565,13 @@ enum class ThingBase : std::uint8_t
 /* Enumerated values for turn state */
 enum class TurnState
 {
-  BEGIN,               /* Setup of the battle */
-  GENERAL_UPKEEP,      /* General upkeep phase - weather etc. */
-  UPKEEP,              /* Personal upkeep - ailments etc. */
-  SELECT_ACTION_ALLY,  /* User choice of action/skill etc. */
+  BEGIN, /* Setup of the battle */
+  GENERAL_UPKEEP, /* General upkeep phase - weather etc. */
+  UPKEEP, /* Personal upkeep - ailments etc. */
+  SELECT_ACTION_ALLY, /* User choice of action/skill etc. */
   SELECT_ACTION_ENEMY, /* Enemy choice of skill -> AI */
-  PROCESS_ACTIONS,     /* Determines outcomes of skills */
-  CLEAN_UP,            /* Cleanup after turn, turn incr. etc. */
+  PROCESS_ACTIONS, /* Determines outcomes of skills */
+  CLEAN_UP, /* Cleanup after turn, turn incr. etc. */
   OUTCOME,
   FINISHED,
   STOPPED /* Battle should be stopped */

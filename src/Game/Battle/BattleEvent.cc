@@ -57,6 +57,9 @@
  *
  * Dodge Chance [Limbertude] Modifier
  * Dodge Chance [Limbertude] Per Level Modifier
+ *
+ * Minimum Damage (Possible)
+ * Maximum Damage (Possible)
  */
 
 const float BattleEvent::kOFF_PHYS_MODIFIER = 1.00;
@@ -98,6 +101,9 @@ const float BattleEvent::kDODGE_MODIFIER = 0.10;
 const float BattleEvent::kDODGE_HIGHEST_RATE_PC = 50.0;
 const float BattleEvent::kDODGE_PER_LEVEL_MODIFIER = 2.50;
 
+const uint32_t BattleEvent::kMINIMUM_DAMAGE = 1;
+const uint32_t BattleEvent::kMAXIMUM_DAMAGE = 29999;
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTOR
  *============================================================================*/
@@ -107,9 +113,11 @@ BattleEvent::BattleEvent()
       action_type{ActionType::NONE},
       actor{nullptr},
       actor_targets{},
-      event_skill{nullptr},
-      flags_ignore{static_cast<IgnoreState>(0)},
+      damage_amounts{},
       event_item{nullptr},
+      event_skill{nullptr},
+      event_type{BattleEventType::NONE},
+      flags_ignore{static_cast<IgnoreState>(0)},
       attr_prio{Attribute::NONE},
       attr_prid{Attribute::NONE},
       attr_seco{Attribute::NONE},
@@ -411,6 +419,7 @@ bool BattleEvent::setNextAction()
   if(curr_skill && action_index + 1 < curr_skill->getEffects().size())
   {
     action_index++;
+    event_type = BattleEventType::NONE;
 
     return true;
   }
@@ -477,12 +486,16 @@ SkillHitStatus BattleEvent::doesSkillHit()
   return status;
 }
 
-bool BattleEvent::doesActionHit()
+bool BattleEvent::doesActionHit(BattleActor* curr_target)
 {
   auto curr_action = getCurrAction();
 
-  if(curr_action)
+  if(curr_action && curr_target)
   {
+    if(curr_action->actionFlag(ActionFlags::DAMAGE))
+      if(!curr_target->getFlag(ActorState::ALIVE))
+        return false;
+
     return Helpers::chanceHappens(
         static_cast<uint32_t>(curr_action->getChance()), 100);
   }
@@ -655,6 +668,43 @@ bool BattleEvent::doesSecdMatch(Skill* skill)
   return false;
 }
 
+// float Battle::calcCritFactor()
+// {
+//   /* Base crit factor */
+//   auto crit_factor = kOFF_CRIT_FACTOR;
+
+//   /* Unbearability modifier */
+//   auto unbr = curr_user->getTemp().getStat(Attribute::UNBR);
+
+//   crit_factor += unbr * kCRIT_MODIFIER;
+
+//   /* Level difference modifier */
+//   std::vector<Person*> target_vec = {curr_target};
+//   crit_factor += calcLevelDifference(target_vec) * kCRIT_LVL_MODIFIER;
+
+//   if(curr_target->getBFlag(BState::DEFENDING))
+//     crit_factor *= kCRIT_DEFENDING_MODIFIER;
+//   if(curr_target->getBFlag(BState::GUARDED))
+//     crit_factor *= kCRIT_GUARDED_MODIFIER;
+
+//   /* Crits should be between 100 and 1000% always */
+//   crit_factor = Helpers::setInRange(crit_factor, 1, 10);
+
+//   return crit_factor;
+// }
+
+// int32_t Battle::calcExperience(Person* ally)
+// {
+//   int32_t exp = 0;
+
+//   auto foes_members = foes->getMembers();
+
+//   for(auto& foe : foes_members)
+//     exp += foe->getExpDrop();
+
+//   return static_cast<int32_t>(exp * ally->getExpMod());
+// }
+
 // TODO: Guarding damage factor [11-01-15]
 // TODO: Guarding for users who are guarding this actor [11-01-15]
 int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
@@ -730,7 +780,5 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
   else if(curr_target->getGuardingState() == GuardingState::GUARDED)
     base_damage *= kGUARD_MODIFIER;
 
-  base_damage *= crit_factor;
-
-  return base_damage;
+  return base_damage * crit_factor;
 }

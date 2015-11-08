@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: RenderElement
+* Class Name: Battle
 * Date Created: June 22, 2015
 * Date Redesigned: September 5, 2015
 * Inheritance: None
@@ -27,6 +27,8 @@
 #include "Game/Battle/RenderElement.h"
 #include "Game/Player/Party.h"
 
+class RenderElement;
+
 using std::begin;
 using std::end;
 
@@ -34,7 +36,8 @@ using std::end;
 ENUM_FLAGS(CombatState)
 enum class CombatState
 {
-  PHASE_DONE = 1 << 0
+  PHASE_DONE = 1 << 0,
+  EVENT_READY = 1 << 1
 };
 
 ENUM_FLAGS(RenderState)
@@ -119,8 +122,7 @@ private:
    *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
-  static const uint16_t kMAXIMUM_DAMAGE;
-  static const uint16_t kMINIMUM_DAMAGE;
+
 
   static const float kBASE_RUN_CHANCE;
   static const float kUSER_RUN_MODIFIER;
@@ -145,15 +147,13 @@ private:
    * CONSTANTS - Battle Display
    *============================================================================*/
   const static uint16_t kACTION_BORDER;   /* Border width on action slideout */
-  const static uint16_t kACTION_CENTER;   /* Center point to center triangle */
   const static uint16_t kACTION_COLOR_A;  /* Alpha for inner portion */
   const static uint16_t kACTION_COLOR_G;  /* Grey color on middle border */
   const static uint16_t kACTION_COLOR_R;  /* Red color for middle text */
   const static uint16_t kACTION_CORNER_X; /* Corner offset on inner triangle */
   const static uint16_t kACTION_CORNER_Y; /* Corner offset on inner triangle */
   const static uint16_t kACTION_H;        /* Height of action frame */
-  const static uint16_t kACTION_TEXT_SHADOW; /* Shadow offset of middle text */
-  const static uint16_t kACTION_TEXT_X;      /* Right edge of middle text */
+
   const static uint16_t kACTION_W;           /* Width of action frame */
   const static uint16_t kACTION_Y; /* Y location of peak of triangle */
 
@@ -213,18 +213,10 @@ private:
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
 
   const static uint16_t kPERSON_SPREAD;  /* Rendering overlay of persons */
-  const static uint16_t kPERSON_WIDTH;   /* Width of persons on battle */
   const static uint8_t kPERSON_KO_ALPHA; /* Opacity of a person at death */
 
-  /* ---- Color Constants ---- */
-  const static SDL_Color kSTRD_DMG_COLOR;
-  const static SDL_Color kCRIT_DMG_COLOR;
-  const static SDL_Color kPOIS_DMG_COLOR;
-  const static SDL_Color kHEAL_DMG_COLOR;
-  const static SDL_Color kBURN_DMG_COLOR;
-  const static SDL_Color kVITA_REGEN_COLOR;
-  const static SDL_Color kQTDR_REGEN_COLOR;
-  const static SDL_Color kHIBERNATION_REGEN_COLOR;
+public:
+  const static uint16_t kPERSON_WIDTH;   /* Width of persons on battle */
 
   /*=============================================================================
    * PRIVATE FUNCTIONS - Battle Operations
@@ -274,7 +266,10 @@ private:
 
   /* Updates the processing on the current battle buffer element */
   void updateEvent();
+  void updateEventReady();
+
   void processEvent();
+  void processEventDamage();
   void processEventSkill();
 
   /* Update the selection of the enemies */

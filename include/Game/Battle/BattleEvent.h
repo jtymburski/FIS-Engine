@@ -17,6 +17,12 @@
 
 #include "Game/Battle/BattleActor.h"
 
+enum class BattleEventType
+{
+  NONE,
+  DAMAGE
+};
+
 /* IgnoreState flags - flags for various action ignore flags */
 ENUM_FLAGS(IgnoreState)
 enum class IgnoreState
@@ -60,17 +66,20 @@ public:
   /* Targets for the event */
   std::vector<BattleActor*> actor_targets;
 
-  /* Skill of this event, if it's a skill event */
-  BattleSkill* event_skill;
-
-  /* IgnoreState flags */
-  IgnoreState flags_ignore;
+  /* The amount of damage the event has currently calculated */
+  std::vector<int32_t> damage_amounts;
 
   /* The item of this event, if it's an item event */
   BattleItem* event_item;
 
-  //  The state of processing for this event
-  // ProcessingState processing_state;
+  /* Skill of this event, if it's a skill event */
+  BattleSkill* event_skill;
+
+  /* The type of this event */
+  BattleEventType event_type;
+
+  /* IgnoreState flags */
+  IgnoreState flags_ignore;
 
   /* Stored attribute types for the Battle Event */
   Attribute attr_prio;
@@ -125,6 +134,9 @@ public:
   static const float kDODGE_HIGHEST_RATE_PC;
   static const float kDODGE_PER_LEVEL_MODIFIER;
 
+  static const uint32_t kMAXIMUM_DAMAGE;
+  static const uint32_t kMINIMUM_DAMAGE;
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -159,7 +171,7 @@ public:
   int32_t calcDamage(BattleActor* curr_target, float crit_factor);
 
   bool doesActionCrit(BattleActor* curr_target);
-  bool doesActionHit();
+  bool doesActionHit(BattleActor* curr_target);
   SkillHitStatus doesSkillHit();
 
   /* Method for updating the stats for computing a new action outcome */
