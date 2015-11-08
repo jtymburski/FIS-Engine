@@ -274,7 +274,8 @@ bool EventHandler::pollLockSetData(Locked lock)
 {
   if(pollLockAvail())
   {
-    event_queue[queue_index].event_set->setLocked(lock);
+    EventSet* set = event_queue[queue_index].event_set;
+    set->setLocked(lock);
     return true;
   }
   return false;
@@ -292,6 +293,18 @@ bool EventHandler::pollLockItem(int& id, int& count, bool& consume)
       EventSet::dataLockedItem(set->getLockedState(), id, count, consume);
       return true;
     }
+  }
+  return false;
+}
+  
+/* Poll the empty event */
+bool EventHandler::pollNone()
+{
+  if(pollEventType() == EventClassifier::NOEVENT)
+  {
+    Event event;
+    getEvent(event, true);
+    return true;
   }
   return false;
 }

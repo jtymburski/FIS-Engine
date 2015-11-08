@@ -131,6 +131,9 @@ public:
   /* Accesses lock properties */
   bool pollLockItem(int& id, int& count, bool& consume); // TODO: REMOVE?
 
+  /* Poll the empty event */
+  bool pollNone();
+
   /* Poll a notification event */
   bool pollNotification(std::string* notification);
 

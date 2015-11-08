@@ -750,14 +750,14 @@ void Map::initiateThingInteraction(MapPerson* initiator)
         for(uint16_t j = 0; !finished && j < thing_tiles[i].size(); j++)
         {
           /* If thing is not NULL, this is rendering depth 0 tile to check */
-          if(thing_tiles[i][j] != NULL && (starting_x + i) >= 0
-                                       && (starting_y + j) >= 0)
+          if(thing_tiles[i][j] != NULL)
           {
             /* Get the x and y of tile to check and confirm validity */
             uint16_t x = starting_x + i;
             uint16_t y = starting_y + j;
 
-            if(x < sub_map[map_index].tiles.size() &&
+            if((starting_x + i) >= 0 && (starting_y + j) >= 0 && 
+               x < sub_map[map_index].tiles.size() &&
                y < sub_map[map_index].tiles[x].size())
             {
               /* Check for person */
@@ -777,11 +777,11 @@ void Map::initiateThingInteraction(MapPerson* initiator)
               /* Check for IO */
               if(!finished && io_found == NULL)
                 io_found = sub_map[map_index].tiles[x][y]->getIO(0);
-
-              /* Check for item(s) */
-              if(!finished && items_found.size() == 0)
-                items_found = thing_tiles[i][j]->getItems();
             }
+              
+            /* Check for item(s) */
+            if(!finished && items_found.size() == 0)
+              items_found = thing_tiles[i][j]->getItems();
           }
         }
       }

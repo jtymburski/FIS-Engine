@@ -324,10 +324,13 @@ Event EventSet::getEvent(bool trigger)
           get_index = 0;
       }
     }
+  }
 
-    /* If valid event found and unlocked, re-lock if lock is not permanent */
-    if(found_base != nullptr && found_inst != nullptr && trigger)
-      unlockUsed(locked_status);
+  /* Execution complete - trigger unlock used (which locks if unlocked and
+   * the lock is not set to permanent) */
+  if(trigger)
+  {
+    unlockUsed(locked_status);
   }
 
   /* Trigger and return */

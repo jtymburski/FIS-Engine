@@ -33,9 +33,56 @@ enum class EventClassifier
   TELEPORTTHING  = 5,
   JUSTSOUND      = 6,
   TAKEITEM       = 7,
-  STARTCONVO     = 8, /* Needs to be the last before the non-editor points */
-  PICKUPITEM     = 9, /* All categories here and lower are not from Editor. */
-  TRIGGERIO      = 10
+  UNLOCKTHING    = 8,
+  UNLOCKTILE     = 9,
+  UNLOCKIO       = 10,
+  STARTCONVO     = 11, /* Needs to be the last before the non-editor points */
+  PICKUPITEM     = 12, /* All categories here and lower are not from Editor. */
+  TRIGGERIO      = 13
+};
+
+/*
+ * Description: Which event within the state to unlock. Set up to use bit OR
+ *              combinations if required
+ */
+enum class UnlockIOEvent
+{
+  NONE     = 0, /* No event within the states */
+  ENTER    = 1, /* Enter event within the states */
+  EXIT     = 2, /* Exit event within the states */
+  USE      = 4, /* Use event within the states */
+  WALKOVER = 8  /* Walkover event within the states */
+};
+
+/*
+ * Description: Which IO mode to attempt to unlock - main lock or events
+ */
+enum class UnlockIOMode
+{
+  NONE   = 0, /* No lock within the IO */
+  LOCK   = 1, /* The main interact lock to attempt unlock */
+  EVENTS = 2  /* The events within states to attempt to unlock */
+};
+
+/*
+ * Description: Defines the unlock view mode of the object
+ */
+enum class UnlockView
+{
+  NONE = 0,
+  GOTO = 1,
+  SCROLL = 3
+};
+
+/*
+ * Description: Which event within the tile to unlock. Set up to use bit OR
+ *              combinations if required
+ */
+enum class UnlockTileMode
+{
+  NONE  = 0, /* No event within the tile */
+  ENTER = 1, /* Enter event on tile */
+  EXIT  = 2  /* Exit event on tile */
 };
 
 /*
@@ -280,6 +327,17 @@ public:
   static Event createEventTeleport(int thing_id = 0, uint16_t tile_x = 0, 
                                 uint16_t tile_y = 0, int section_id = kUNSET_ID,
                                 int sound_id = kUNSET_ID);
+
+  /* Create unlock events (thing, tile, or IO) */ // TODO: HERE
+  static Event createEventUnlockIO(int io_id = 0, 
+                UnlockIOMode mode = UnlockIOMode::NONE, int state_num = -1, 
+                UnlockIOEvent events = UnlockIOEvent::NONE, 
+                UnlockView view_mode = UnlockView::NONE, int view_time = -1);
+  static Event createEventUnlockThing(int thing_id = 0, 
+                UnlockView view_mode = UnlockView::NONE, int view_time = -1);
+  static Event createEventUnlockTile(int section_id = 0, uint16_t tile_x = 0, 
+                uint16_t tile_y = 0, UnlockTileMode mode = UnlockTileMode::NONE,
+                UnlockView view_mode = UnlockView::NONE, int view_time = -1);
 
   /* Creates a have item check based lock */
   static Locked createLockHaveItem(int id = kUNSET_ID, int count = 1,

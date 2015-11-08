@@ -843,6 +843,10 @@ void Game::pollEvents()
         event_handler.pollTriggerIO(&source, &interaction_state, &initiator);
         eventTriggerIO(source, interaction_state, initiator);
       }
+      else if(classification == EventClassifier::NOEVENT)
+      {
+        event_handler.pollNone();
+      }
 
     } while(event_handler.pollEvent());
   }

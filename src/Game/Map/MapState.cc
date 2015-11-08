@@ -524,7 +524,6 @@ bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
     event_handler->executeEventSet(getUseEvent(), initiator, source);
     return true;
   }
-
   return false;
 }
 
