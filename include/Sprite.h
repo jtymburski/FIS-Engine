@@ -297,6 +297,9 @@ public:
      unique sprites */
   void setNonUnique(bool non_unique, int32_t new_size);
 
+  /* Sets the number of loops */
+  void setNumLoops(int32_t loops);
+
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(float angle);
   void setRotation(int angle);

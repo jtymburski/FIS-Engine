@@ -601,13 +601,23 @@ SelectionState BattleActor::getSelectionState()
 }
 
 // TODO: Bubbification cost
-// TODO: Halfcost infsliction cost
+// TODO: Halfcost infliction cost
 uint32_t BattleActor::getSkillCost(Skill* test_skill)
 {
   if(test_skill)
     return test_skill->getCost();
 
   return AttributeSet::getMaxValue();
+}
+
+SpriteState BattleActor::getStateActiveSprite()
+{
+  return state_active_sprite;
+}
+
+FadeState BattleActor::getStateActionFrame()
+{
+  return state_action_frame;
 }
 
 BattleStats& BattleActor::getStats()

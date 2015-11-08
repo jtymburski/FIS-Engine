@@ -502,12 +502,27 @@ void Battle::processEvent()
 
 void Battle::processEventDamage()
 {
-  auto new_element =
-      new RenderElement(renderer, config->getFontTTF(FontName::BATTLE_DAMAGE));
+  assert(config && event);
+  assert(event->actor_targets.size() == event->damage_amounts.size());
 
-  /* Create as damage value */
+  auto font_damage = config->getFontTTF(FontName::BATTLE_DAMAGE);
 
-  /* Add to render elements */
+  for(size_t i = 0; i < event->actor_targets.size(); ++i)
+  {
+    if(event->actor_targets.at(i))
+    {
+      // TODO: Damage types for BattleEvent?
+      auto element = new RenderElement(renderer, font_damage);
+      auto amount = event->damage_amounts.at(i);
+      auto x = getActorX(event->actor_targets.at(i));
+      auto y = getActorY(event->actor_targets.at(i));
+
+      element->createAsDamageValue(amount, DamageType::BASE,
+                                   config->getScreenHeight(), x, y);
+
+      render_elements.push_back(element);
+    }
+  }
 }
 
 void Battle::processEventSkill()
@@ -2306,7 +2321,6 @@ bool Battle::setBackground(Sprite* background)
  * TO REFACTOR
  *============================================================================*/
 
-// // TODO COMMENTS
 // bool Battle::updateEvent()
 // {
 //   if(curr_event->type == EventType::SKILL_USE)
@@ -2583,11 +2597,6 @@ bool Battle::setBackground(Sprite* background)
 
 // void Battle::battleLost()
 // {
-// #ifdef UDEBUG
-//   printPartyState();
-//   std::cout << "Battle lost! :-(\n";
-// #endif
-
 //   setBattleFlag(CombatState::OUTCOME_PROCESSED);
 //   setNextTurnState();
 
@@ -2602,25 +2611,13 @@ bool Battle::setBackground(Sprite* background)
 //      * experience to the next level */
 //     for(uint32_t i = 0; i < friends->getSize(); i++)
 //     {
-// #ifdef UDEBUG
-//       std::cout << friends->getMember(i)->getName() << " has lost "
-//                 << kRUN_PC_EXP_PENALTY << "% EXP towards next level.\n";
-// #endif
-
 //       friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
 //       // TODO [11-06-14] Update personal record run from battle count
 //     }
-
-// #ifdef UDEBUG
-//     std::cout << "\n{ALLIES RUN} The allied team has ran from Battle!
-//     :-/\n";
-// #endif
 //   }
 //   else if(outcome == OutcomeType::ENEMIES_RUN)
 //   {
-// #ifdef UDEBUG
-//     std::cout << "{ENEMIES RUN} The foes team has ran from Battle! :-/\n";
-// #endif
+
 //   }
 
 //   setBattleFlag(CombatState::OUTCOME_PROCESSED);
@@ -2629,14 +2626,6 @@ bool Battle::setBackground(Sprite* background)
 
 // void Battle::battleWon()
 // {
-// #ifdef UDEBUG
-//   printPartyState();
-//   std::cout << std::endl;
-//   std::cout << "----------------------------" << std::endl;
-//   std::cout << "===== BATTLE VICTORIOUS ====" << std::endl;
-//   std::cout << "----------------------------" << std::endl;
-// #endif
-
 //   /* Cleanup the current Battle state -- This includes unapplying ailments
 //   */
 //   for(auto ailment : ailments)

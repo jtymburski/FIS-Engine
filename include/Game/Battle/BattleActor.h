@@ -200,9 +200,9 @@ private:
 
   /* ------------ Constants --------------- */
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
 private:
   /* Prepare the BattleActor for a Battle */
   void battleSetup(bool is_ally, bool can_run);
@@ -229,9 +229,9 @@ private:
   /* Updates the opacity for the active sprite */
   void updateOpacity(int32_t cycle_time);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Constructs BattleItem objects of the BattleActor */
   bool buildBattleItems(std::vector<BattleActor*> all_targets);
@@ -301,6 +301,10 @@ public:
 
   /* Obtains the real cost value of the Skill */
   uint32_t getSkillCost(Skill* test_skill);
+
+  /* Obtains the state of sprites -- for the active sprite & the action frame */
+  SpriteState getStateActiveSprite();
+  FadeState getStateActionFrame();
 
   /* Returns the stats actual object */
   BattleStats& getStats();

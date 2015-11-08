@@ -43,7 +43,9 @@ RenderElement::RenderElement()
       element_font{nullptr},
       color{0, 0, 0, 0},
       shadow_color{0, 0, 0, 0},
-      renderer{nullptr}
+      renderer{nullptr},
+      target{nullptr},
+      render_type{RenderType::NONE}
 {
 }
 
@@ -54,11 +56,17 @@ RenderElement::RenderElement(SDL_Renderer* renderer, TTF_Font* element_font)
   this->renderer = renderer;
 }
 
-RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite)
+RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite,
+                             int32_t num_loops)
     : RenderElement()
 {
   this->renderer = renderer;
   buildSprite(plep_sprite);
+
+  if(element_sprite)
+    element_sprite->setNumLoops(num_loops);
+  updateStatus();
+  render_type = RenderType::PLEP;
 }
 
 RenderElement::~RenderElement()
@@ -100,6 +108,7 @@ void RenderElement::createAsActionText(std::string action_name)
   color = {0, 0, 0, 255};
   setShadow({kACTION_COLOR_R, 0, 0, 255}, kACTION_SHADOW, kACTION_SHADOW);
   setTimes(900, 100, 100);
+  render_type = RenderType::ACTION_TEXT;
 
   if(element_font && renderer)
   {
@@ -111,23 +120,54 @@ void RenderElement::createAsActionText(std::string action_name)
   }
 }
 
-void RenderElement::createAsDamageText(int32_t amount, DamageType type,
-                                       int32_t sc_height, int32_t x,
-                                       int32_t y)
+void RenderElement::createAsDamageText(std::string text, DamageType type,
+                                       int32_t sc_height, int32_t x, int32_t y)
 {
   color = {0, 0, 0, 255};
   setShadow(colorFromDamageType(type), kDAMAGE_SHADOW, kDAMAGE_SHADOW - 1);
   setTimes(475, 65, 100);
+  render_type = RenderType::DAMAGE_TEXT;
 
   if(element_font && renderer)
   {
     element_text = Text(element_font);
-    element_text.setText(renderer, std::to_string(amount), color);
+    element_text.setText(renderer, text, color);
 
     auto half_w = element_text.getWidth() / 2;
     location.point.x = x + (Battle::kPERSON_WIDTH / 2) - half_w;
     location.point.y = y + half_w + (sc_height / 13);
   }
+}
+
+void RenderElement::createAsDamageValue(int32_t amount, DamageType type,
+                                        int32_t sc_height, int32_t x, int32_t y)
+{
+  createAsDamageText(std::to_string(amount), type, sc_height, x, y);
+  setTimes(550, 115, 155);
+  setAcceleration(0.040, 0.000);
+  setVelocity(0.020, -0.450);
+  render_type = RenderType::DAMAGE_VALUE;
+}
+
+void RenderElement::createAsRegenValue(int32_t amount, DamageType type,
+                                       int32_t sc_height, int32_t x, int32_t y)
+{
+  createAsDamageText(std::to_string(amount), type, sc_height, x, y);
+  setTimes(650, 150, 150);
+  setAcceleration(0.000, 0.005);
+  setVelocity(0.000, -0.250);
+  render_type = RenderType::DAMAGE_VALUE;
+}
+
+void RenderElement::createAsSpriteFlash(BattleActor* target, SDL_Color color,
+                                        int32_t flash_time)
+{
+  auto fade_time = std::floor(flash_time * 3.00 / 7.00);
+  setTimes(flash_time, fade_time, fade_time);
+  updateStatus();
+  this->color = color;
+  this->target = target;
+  render_type = RenderType::RGB_SPRITE_FLASH;
 }
 
 void RenderElement::setShadow(SDL_Color shadow_color, int32_t offset_x,
@@ -137,12 +177,13 @@ void RenderElement::setShadow(SDL_Color shadow_color, int32_t offset_x,
   this->has_shadow = true;
   shadow_offset.x = offset_x;
   shadow_offset.y = offset_y;
+  render_type = RenderType::DAMAGE_VALUE;
 }
 
 bool RenderElement::setTimes(uint32_t time_begin, uint32_t time_fade_in,
                              uint32_t time_fade_out)
 {
-  bool valid = time_begin >= 0;
+  auto valid = false;
 
   if(time_fade_in > 0 && time_fade_out == 0)
     valid &= time_fade_in <= time_begin;
@@ -157,6 +198,45 @@ bool RenderElement::setTimes(uint32_t time_begin, uint32_t time_fade_in,
   this->time_fade_out = time_fade_out;
 
   return valid;
+}
+
+void RenderElement::setVelocity(float velocity_x, float velocity_y)
+{
+  velocity.x = velocity_x;
+  velocity.y = velocity_y;
+}
+
+void RenderElement::setAcceleration(float acceleration_x, float acceleration_y)
+{
+  acceleration.x = acceleration_x;
+  acceleration.y = acceleration_y;
+}
+
+bool RenderElement::update(int32_t cycle_time)
+{
+  (void)cycle_time;
+  updateStatus();
+  return false;
+}
+
+bool RenderElement::updateStatus()
+{
+  if(render_type == RenderType::PLEP)
+    updateStatusPlep();
+  else
+    updateStatusFade();
+
+  return false;
+}
+
+void RenderElement::updateStatusPlep()
+{
+
+}
+
+void RenderElement::updateStatusFade()
+{
+
 }
 
 /*=============================================================================

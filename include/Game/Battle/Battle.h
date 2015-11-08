@@ -13,9 +13,7 @@
 * TODO
 * ----
 * [09-07-15]: Overlays and Midlays. Make class?
-* ? - Are temp user attributes needed?
 * ? - Bubbified skills
-* ? - Curr event system [build an event struct] ?
 *****************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H

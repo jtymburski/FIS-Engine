@@ -44,6 +44,20 @@ enum class SkillHitStatus
   DREAMSNARED
 };
 
+enum class ActionState
+{
+  BEGIN,
+  SLIDE_IN,
+  FADE_IN_TEXT,
+  SLIDE_OUT,
+  SWITCH_SPRITE,
+  PLEP,
+  SPRITE_FLASH,
+  DAMAGE_VALUE,
+  OUTCOME,
+  DONE
+};
+
 class BattleEvent
 {
 public:
@@ -56,6 +70,9 @@ public:
 
   /* Index for processing actions */
   uint32_t action_index;
+
+  /* The enumerated ActionState */
+  ActionState action_state;
 
   /* The action type of this event */
   ActionType action_type;
@@ -141,10 +158,13 @@ public:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Calculates the action variables for given skill */
   void calcActionVariables();
 
+  /* Calculates the elemental modification vals for curr action */
   void calcElementalMods(BattleActor* curr_target);
 
+  /* Calculates the ignore state for the given action against targets */
   void calcIgnoreState();
 
     /* Calculates the average diff. in level between a given actor and foes */
@@ -160,6 +180,7 @@ private:
   int32_t calcValLuckAtk();
   int32_t calcValLuckDef();
 
+  /* Methods for matching primary and secondary skills to their users */
   bool doesPrimMatch(Skill* skill);
   bool doesSecdMatch(Skill* skill);
 

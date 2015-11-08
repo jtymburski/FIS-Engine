@@ -1104,6 +1104,7 @@ bool Sprite::setDirectionReverse()
   return true;
 }
 
+//TODO: comments
 void Sprite::setHead(Frame *head)
 {
   this->head = head;
@@ -1123,13 +1124,21 @@ void Sprite::setId(uint16_t id)
   this->id = id;
 }
 
+// TODO: comments
 void Sprite::setFlashing(bool flashing) { this->flashing = flashing; }
 
 
+//TODO: comments
 void Sprite::setNonUnique(bool new_value, int32_t new_size)
 {
   size = new_size;
   non_unique = new_value;
+}
+
+//TODO: comments
+void Sprite::setNumLoops(int32_t loops)
+{
+  this->loops = loops;
 }
 
 /*

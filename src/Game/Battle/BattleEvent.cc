@@ -110,6 +110,7 @@ const uint32_t BattleEvent::kMAXIMUM_DAMAGE = 29999;
 
 BattleEvent::BattleEvent()
     : action_index{0},
+      action_state{ActionState::BEGIN},
       action_type{ActionType::NONE},
       actor{nullptr},
       actor_targets{},

@@ -16,6 +16,7 @@
 #ifndef RENDER_ELEMENT_H
 #define RENDER_ELEMENT_H
 
+#include "Game/Battle/BattleActor.h"
 #include "Sprite.h"
 #include "Text.h"
 
@@ -50,41 +51,87 @@ struct Floatinate
   float y;
 };
 
+enum class RenderType
+{
+  PLEP,
+  ACTION_TEXT,
+  DAMAGE_TEXT,
+  DAMAGE_VALUE,
+  RGB_SPRITE_FLASH,
+  NONE
+};
+
+enum class RenderStatus
+{
+  FADING_IN,
+  DISPLAY,
+  FADING_OUT,
+  TIMED_OUT
+};
+
 class RenderElement
 {
 public:
+  /* Default constructor */
   RenderElement();
-  RenderElement(SDL_Renderer* renderer, TTF_Font* element_font);
-  RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite);
 
+  /* Textual element constructor */
+  RenderElement(SDL_Renderer* renderer, TTF_Font* element_font);
+
+  /* Spriteish element constructor */
+  RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite, int32_t num_loops);
+
+  /* Elemental annihilator */
   ~RenderElement();
 
+  /* Does the render element have a shadow? */
   bool has_shadow;
 
+  /* The boxed location */
   Box location;
-  Coordinate end;
+
+  /* Coordinate for the element to reach an end point */
+  //Coordinate end;
+
+  /* Shadow's offset, if the element has a shadow */
   Coordinate shadow_offset;
 
+  /* Floate coordinate for velocity/accel and acquired delta */
   Floatinate velocity;
   Floatinate acceleration;
   Floatinate delta;
 
+  /* Timing variables */
   uint32_t time_fade_in;
   uint32_t time_fade_out;
   uint32_t time_begin;
   uint32_t time_left;
 
+  /* Alpha to display the element at (depending on fade state, perhaps) */
   uint8_t alpha;
 
+  /* Pointer to an element sprite */
   Sprite* element_sprite;
 
+  /* Textual class members */
   Text element_text;
   TTF_Font* element_font;
 
+  /* SDL colors to display the element */
   SDL_Color color;
   SDL_Color shadow_color;
 
+  /* Pointer to the renderer */
   SDL_Renderer* renderer;
+
+  /* RenderStatus */
+  RenderStatus status;
+
+  /* Actor target pointer */
+  BattleActor* target;
+
+  /* Type of the render */
+  RenderType render_type;
 
 private:
   /* ---- Color Constants ---- */
@@ -116,9 +163,21 @@ public:
   /* Creates the render element as an action text*/
   void createAsActionText(std::string text);
 
-  /* Creates the render element as a damge text*/
-  void createAsDamageText(int32_t amount, DamageType type, int32_t sc_height,
+  /* Creates the render element as a damage text*/
+  void createAsDamageText(std::string text, DamageType type, int32_t sc_height,
                           int32_t x, int32_t y);
+
+  void createAsDamageValue(int32_t amount, DamageType type, int32_t sc_height,
+                           int32_t x, int32_t y);
+
+  void createAsRegenValue(int32_t amount, DamageType type, int32_t sc_height,
+                          int32_t x, int32_t y);
+
+  void createAsSpriteFlash(BattleActor* target, SDL_Color color,
+                           int32_t flash_time);
+
+  /* Assigns floatinate acceleration coordinate point */
+  void setAcceleration(float acceleration_x, float acceleration_y);
 
   /* Sets the render element to have a shadow */
   void setShadow(SDL_Color shadow_color, int32_t offset_x, int32_t offset_y);
@@ -126,6 +185,16 @@ public:
   /* Assigns the time values (life time, fade in) for the elment */
   bool setTimes(uint32_t time_begin, uint32_t time_fade_in = 0,
                 uint32_t time_fade_out = 0);
+
+  /* Assigns velocity floatinate coordinate point */
+  void setVelocity(float velocity_x, float velocity_y);
+
+  /* Updates the state of the render element */
+  bool update(int32_t cycle_time);
+
+  bool updateStatus();
+  void updateStatusPlep();
+  void updateStatusFade();
 
   /*=============================================================================
    * PRIVATE STATIC FUNCTIONS
