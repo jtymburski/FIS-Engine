@@ -42,6 +42,26 @@ enum class EventClassifier
 };
 
 /*
+ * Description: The locked state - properties in how to unlock
+ */
+enum class LockedState
+{
+  NONE = 0,
+  TRIGGER = 1,
+  ITEM = 2
+};
+
+/*
+ * Description: The state of the set of unlocked events.
+ */
+enum class UnlockedState
+{
+  NONE = 0,
+  ORDERED = 1,
+  RANDOM = 2
+};
+
+/*
  * Description: Which event within the state to unlock. Set up to use bit OR
  *              combinations if required
  */
@@ -65,16 +85,6 @@ enum class UnlockIOMode
 };
 
 /*
- * Description: Defines the unlock view mode of the object
- */
-enum class UnlockView
-{
-  NONE = 0,
-  GOTO = 1,
-  SCROLL = 3
-};
-
-/*
  * Description: Which event within the tile to unlock. Set up to use bit OR
  *              combinations if required
  */
@@ -86,23 +96,13 @@ enum class UnlockTileMode
 };
 
 /*
- * Description: The locked state - properties in how to unlock
+ * Description: Defines the unlock view mode of the object
  */
-enum class LockedState
+enum class UnlockView
 {
-  NONE = 0,
-  TRIGGER = 1,
-  ITEM = 2
-};
-
-/*
- * Description: The state of the set of unlocked events.
- */
-enum class UnlockedState
-{
-  NONE = 0,
-  ORDERED = 1,
-  RANDOM = 2
+  NONE = 0, /* No view scroll */
+  GOTO = 1, /* Should the view goto the unlock location */
+  SCROLL = 2 /* Should it scroll there if in the same map */
 };
 
 /*
@@ -171,11 +171,27 @@ public:
   const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
   const static uint8_t kTELEPORT_X; /* Teleport thing X index */
   const static uint8_t kTELEPORT_Y; /* Teleport thing Y index */
+  const static uint8_t kUNIO_ID; /* Unlock IO: ID */
+  const static uint8_t kUNIO_MODE; /* Unlock IO: Mode */
+  const static uint8_t kUNIO_MODE_EVENT; /* Unlock IO: Which events in state */
+  const static uint8_t kUNIO_STATE; /* Unlock IO: Which state within stack */
+  const static uint8_t kUNIO_VIEW_MODE; /* Unlock IO: View unlock mode */
+  const static uint8_t kUNIO_VIEW_TIME; /* Unlock IO: View unlock time */
+  const static uint8_t kUNTHING_ID; /* Unlock Thing: ID */
+  const static uint8_t kUNTHING_VIEW_MODE; /* Unlock Thing: View unlock mode */
+  const static uint8_t kUNTHING_VIEW_TIME; /* Unlock Thing: View unlock time */
+  const static uint8_t kUNTILE_MODE; /* Unlock Tile: Mode (enter/exit) */
+  const static uint8_t kUNTILE_SECTION; /* Unlock Tile: section ID */
+  const static uint8_t kUNTILE_X; /* Unlock Tile: X coord */
+  const static uint8_t kUNTILE_Y; /* Unlock Tile: Y coord */
+  const static uint8_t kUNTILE_VIEW_MODE; /* Unlock Tile: View unlock mode */
+  const static uint8_t kUNTILE_VIEW_TIME; /* Unlock Tile: View unlock time */
   /* ---- */
   const static uint8_t kHAVE_ITEM_CONSUME; /* Have item consume index */
   const static uint8_t kHAVE_ITEM_COUNT; /* Have item count index */
   const static uint8_t kHAVE_ITEM_ID; /* Have item ID index */
   /* ---- */
+  const static int32_t kVIEW_TIME; /* The default view time - for unlocks */
   const static int32_t kUNSET_ID; /* The unset ID - for all IDs */
 
 private:
@@ -298,6 +314,13 @@ public:
   /* Creates a blank locked struct */
   static Locked createBlankLocked();
 
+  /* Creates enums with given data */
+  static UnlockIOEvent createEnumIOEvent(bool enter = false, bool exit = false,
+                                      bool use = false, bool walkover = false);
+  static UnlockTileMode createEnumTileEvent(bool enter = false,
+                                            bool exit = false);
+  static UnlockView createEnumView(bool view = false, bool scroll = false);
+
   /* Creates the conversation initiation event */
   static Event createEventConversation(Conversation* new_conversation = nullptr,
                                        int sound_id = kUNSET_ID);
@@ -324,20 +347,24 @@ public:
                                    int sound_id = kUNSET_ID);
 
   /* Creates a teleport event */
-  static Event createEventTeleport(int thing_id = 0, uint16_t tile_x = 0, 
+  static Event createEventTeleport(int thing_id = 0, uint16_t tile_x = 0,
                                 uint16_t tile_y = 0, int section_id = kUNSET_ID,
                                 int sound_id = kUNSET_ID);
 
-  /* Create unlock events (thing, tile, or IO) */ // TODO: HERE
-  static Event createEventUnlockIO(int io_id = 0, 
-                UnlockIOMode mode = UnlockIOMode::NONE, int state_num = -1, 
-                UnlockIOEvent events = UnlockIOEvent::NONE, 
-                UnlockView view_mode = UnlockView::NONE, int view_time = -1);
-  static Event createEventUnlockThing(int thing_id = 0, 
-                UnlockView view_mode = UnlockView::NONE, int view_time = -1);
-  static Event createEventUnlockTile(int section_id = 0, uint16_t tile_x = 0, 
-                uint16_t tile_y = 0, UnlockTileMode mode = UnlockTileMode::NONE,
-                UnlockView view_mode = UnlockView::NONE, int view_time = -1);
+  /* Create unlock events (thing, tile, or IO) */
+  static Event createEventUnlockIO(int io_id = 0,
+                UnlockIOMode mode = UnlockIOMode::NONE, int state_num = -1,
+                UnlockIOEvent events = UnlockIOEvent::NONE,
+                UnlockView view_mode = UnlockView::NONE,
+                int view_time = kVIEW_TIME, int sound_id = kUNSET_ID);
+  static Event createEventUnlockThing(int thing_id = 0,
+                UnlockView view_mode = UnlockView::NONE,
+                int view_time = kVIEW_TIME, int sound_id = kUNSET_ID);
+  static Event createEventUnlockTile(int section_id = kUNSET_ID,
+                uint16_t tile_x = 0, uint16_t tile_y = 0,
+                UnlockTileMode mode = UnlockTileMode::NONE,
+                UnlockView view_mode = UnlockView::NONE,
+                int view_time = kVIEW_TIME, int sound_id = kUNSET_ID);
 
   /* Creates a have item check based lock */
   static Locked createLockHaveItem(int id = kUNSET_ID, int count = 1,
@@ -346,13 +373,30 @@ public:
   /* Created a trigger based lock */
   static Locked createLockTriggered(bool permanent = true);
 
-  /* Extract data from events or locks */
+  /* Extract data from enum(s) */
+  static void dataEnumIOEvent(UnlockIOEvent io_enum, bool& enter, bool& exit,
+                              bool& use, bool& walkover);
+  static void dataEnumTileEvent(UnlockTileMode tile_enum,
+                                bool& enter, bool& exit);
+  static void dataEnumView(UnlockView view_enum, bool& view, bool& scroll);
+
+  /* Extract data from event(s) */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
   static bool dataEventNotification(Event event, std::string& notification);
   static bool dataEventStartMap(Event event, int& map_id);
   static bool dataEventTakeItem(Event event, int& item_id, int& count);
   static bool dataEventTeleport(Event event, int& thing_id, int& x, int& y,
                                 int& section_id);
+  static bool dataEventUnlockIO(Event event, int& io_id, UnlockIOMode& mode,
+                                int& state_num, UnlockIOEvent& mode_events,
+                                UnlockView& mode_view, int& view_time);
+  static bool dataEventUnlockThing(Event event, int& thing_id,
+                                   UnlockView& mode_view, int& view_time);
+  static bool dataEventUnlockTile(Event event, int& section_id, int& tile_x,
+                                  int& tile_y, UnlockTileMode& mode,
+                                  UnlockView& mode_view, int& view_time);
+
+  /* Extract data from lock(s) */
   static bool dataLockedItem(Locked lock, int& id, int& count, bool& consume);
 
   /* Deletes the given event. Just clears the relevant memory */

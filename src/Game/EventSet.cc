@@ -18,11 +18,27 @@ const uint8_t EventSet::kTELEPORT_ID = 0;
 const uint8_t EventSet::kTELEPORT_SECTION = 3;
 const uint8_t EventSet::kTELEPORT_X = 1;
 const uint8_t EventSet::kTELEPORT_Y = 2;
+const uint8_t EventSet::kUNIO_ID = 0;
+const uint8_t EventSet::kUNIO_MODE = 1;
+const uint8_t EventSet::kUNIO_MODE_EVENT = 3;
+const uint8_t EventSet::kUNIO_STATE = 2;
+const uint8_t EventSet::kUNIO_VIEW_MODE = 4;
+const uint8_t EventSet::kUNIO_VIEW_TIME = 5;
+const uint8_t EventSet::kUNTHING_ID = 0;
+const uint8_t EventSet::kUNTHING_VIEW_MODE = 1;
+const uint8_t EventSet::kUNTHING_VIEW_TIME = 2;
+const uint8_t EventSet::kUNTILE_MODE = 3;
+const uint8_t EventSet::kUNTILE_SECTION = 0;
+const uint8_t EventSet::kUNTILE_X = 1;
+const uint8_t EventSet::kUNTILE_Y = 2;
+const uint8_t EventSet::kUNTILE_VIEW_MODE = 4;
+const uint8_t EventSet::kUNTILE_VIEW_TIME = 5;
 /* ---- */
 const uint8_t EventSet::kHAVE_ITEM_CONSUME = 0;
 const uint8_t EventSet::kHAVE_ITEM_COUNT = 1;
 const uint8_t EventSet::kHAVE_ITEM_ID = 0;
 /* ---- */
+const int32_t EventSet::kVIEW_TIME = 1000;
 const int32_t EventSet::kUNSET_ID = -1;
 
 /*============================================================================
@@ -45,7 +61,7 @@ EventSet::EventSet()
   locked_status = createBlankLocked();
   unlocked_state = UnlockedState::ORDERED;
 }
-  
+
 /*
  * Description: Copy constructor. Copies data from EventSet source
  *
@@ -67,7 +83,7 @@ EventSet::~EventSet()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-  
+
 /* Copy function, to be called by a copy or equal operator constructor */
 /*
  * Description: Copies all data from source event set to this event set.
@@ -88,10 +104,10 @@ void EventSet::copySelf(const EventSet& source)
   locked_status = source.locked_status;
   unlocked_state = source.unlocked_state;
 }
-  
+
 /*
  * Description: Returns the pair association of the base and instance event set
- *              in a pair vector. If no base is set, the pointer pair is 
+ *              in a pair vector. If no base is set, the pointer pair is
  *              identical. Used within the getEvent() main call.
  *
  * Inputs: none
@@ -149,7 +165,7 @@ Event* EventSet::getUnlockedRef(int index, bool create)
 
   return found_event;
 }
-  
+
 /*
  * Description: Sets up the required data ffor the base. Called when a base is
  *              set and not equal to null
@@ -211,7 +227,7 @@ void EventSet::clear()
   unsetEventUnlocked();
   unsetLocked();
 }
-  
+
 /*
  * Description: Returns the base set reference. If null, there is no base event
  *              set.
@@ -253,7 +269,7 @@ Event EventSet::getEvent(bool trigger)
     }
   }
   /* -- Otherwise, unlocked -- */
-  else if(getUnlockedState() != UnlockedState::NONE && 
+  else if(getUnlockedState() != UnlockedState::NONE &&
           events_unlocked.size() > 0)
   {
     std::vector<std::pair<Event*,Event*>> unlock_set = getUnlockedPair();
@@ -427,7 +443,7 @@ Event EventSet::getEventUnlocked(int index)
 }
 
 /*
- * Description: Returns the stack of events if the set is unlocked, but the 
+ * Description: Returns the stack of events if the set is unlocked, but the
  *              reference pointers.
  *
  * Inputs: bool force_instance - choose instance even if base set
@@ -465,7 +481,7 @@ Locked EventSet::getLockedState()
 }
 
 /*
- * Description: Returns the unlocked state of the set. This defines how the 
+ * Description: Returns the unlocked state of the set. This defines how the
  *              unlocked stack of events is accessed and handled during a get
  *              call.
  *
@@ -509,8 +525,8 @@ bool EventSet::isEmpty()
 }
 
 /*
- * Description: Returns if the current state of the set is locked. If true, 
- *              during a get, the locked event will be returned. Otherwise, 
+ * Description: Returns if the current state of the set is locked. If true,
+ *              during a get, the locked event will be returned. Otherwise,
  *              the unlocked stack will be accessed.
  *
  * Inputs: none
@@ -587,7 +603,7 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
 
   return true;
 }
-  
+
 /*
  * Description: Sets the base set reference. Any change here clears out all
  *              properties stored within the class. If set to null, this set
@@ -638,7 +654,7 @@ bool EventSet::setEventLocked(Event new_event)
  *
  * Inputs: int index - the index in the unlocked stack to set the event
  *         Event new_event - the new event to insert or set
- *         bool replace - true to replace at index. false to insert. Default 
+ *         bool replace - true to replace at index. false to insert. Default
  *                        false
  * Output: bool - true if the insert or set was successful
  */
@@ -765,7 +781,7 @@ bool EventSet::unsetEventUnlocked(int index)
  *              stack.
  *
  * Inputs: none
- * Output: bool - true if the unlocked events were unset. Only fails if base set 
+ * Output: bool - true if the unlocked events were unset. Only fails if base set
  */
 bool EventSet::unsetEventUnlocked()
 {
@@ -780,7 +796,7 @@ bool EventSet::unsetEventUnlocked()
 }
 
 /*
- * Description: Unsets the locked struct information and replaces it with a 
+ * Description: Unsets the locked struct information and replaces it with a
  *              blank permanently unlocked version.
  *
  * Inputs: none
@@ -826,8 +842,8 @@ EventSet& EventSet::operator=(const EventSet& source)
  *============================================================================*/
 
 /*
- * Description: Public static. Copies a past in event and returns the copied 
- *              version as source. Function that calls it is in charge of 
+ * Description: Public static. Copies a past in event and returns the copied
+ *              version as source. Function that calls it is in charge of
  *              deleting conversation, if that's been generated.
  *
  * Inputs: Event source - the event struct to copy
@@ -919,6 +935,79 @@ Locked EventSet::createBlankLocked()
 }
 
 /*
+ * Description: Public static. Creates the UnlockIOEvent enum using the 4
+ *              boolean options.
+ *
+ * Inputs: bool enter - true if the enter event should be unlocked
+ *         bool exit - true if the exit event should be unlocked
+ *         bool use - true if the use event should be unlocked
+ *         bool walkover - true if the walkover event should be unlocked
+ * Output: UnlockIOEvent - the enum, as per the inputs
+ */
+UnlockIOEvent EventSet::createEnumIOEvent(bool enter, bool exit,
+                                          bool use, bool walkover)
+{
+  int io_event_enum = 0;
+
+  /* Parse bools */
+  if(enter)
+    io_event_enum |= static_cast<int>(UnlockIOEvent::ENTER);
+  if(exit)
+    io_event_enum |= static_cast<int>(UnlockIOEvent::EXIT);
+  if(use)
+    io_event_enum |= static_cast<int>(UnlockIOEvent::USE);
+  if(walkover)
+    io_event_enum |= static_cast<int>(UnlockIOEvent::WALKOVER);
+
+  /* Return the created enum */
+  return static_cast<UnlockIOEvent>(io_event_enum);
+}
+
+/*
+ * Description: Public static. Creates the UnlockTileMode enum using the 2
+ *              boolean options.
+ *
+ * Inputs: bool enter - true if the enter event should be unlocked
+ *         bool exit - true if the exit event should be unlocked
+ * Output: UnlockTileMode - the enum, as per the inputs
+ */
+UnlockTileMode EventSet::createEnumTileEvent(bool enter, bool exit)
+{
+  int tile_event_enum = 0;
+
+  /* Parse bools */
+  if(enter)
+    tile_event_enum |= static_cast<int>(UnlockTileMode::ENTER);
+  if(exit)
+    tile_event_enum |= static_cast<int>(UnlockTileMode::EXIT);
+
+  /* Return the created enum */
+  return static_cast<UnlockTileMode>(tile_event_enum);
+}
+
+/*
+ * Description: Public static. Creates the UnlockView enum using the 2 boolean
+ *              options.
+ *
+ * Inputs: bool view - true if the unlock point should be viewed
+ *         bool scroll - true if the view should scroll to the location
+ * Output: UnlockView - the enum, as per the inputs
+ */
+UnlockView EventSet::createEnumView(bool view, bool scroll)
+{
+  int view_enum = 0;
+
+  /* Parse bools */
+  if(view)
+    view_enum |= static_cast<int>(UnlockView::GOTO);
+  if(scroll)
+    view_enum |= static_cast<int>(UnlockView::SCROLL);
+
+  /* Return the created enum */
+  return static_cast<UnlockView>(view_enum);
+}
+
+/*
  * Description: Public static. Creates a new conversation event with the passed
  *              in conversation starting pointer (if null, one is created). The
  *              control of memory management for conversation is handled by the
@@ -955,7 +1044,7 @@ Event EventSet::createEventConversation(Conversation* new_conversation,
 }
 
 /*
- * Description: Public static. Creates a new give item event with the passed 
+ * Description: Public static. Creates a new give item event with the passed
  *              ID and item count, with an optional connected sound ID.
  *
  * Inputs: int id - the give item reference ID
@@ -1002,7 +1091,7 @@ Event EventSet::createEventNotification(std::string notification,
 }
 
 /*
- * Description: Public static. Creates a new sound only event with the passed 
+ * Description: Public static. Creates a new sound only event with the passed
  *              sound ID.
  *
  * Inputs: int sound_id - the sound reference ID
@@ -1082,9 +1171,9 @@ Event EventSet::createEventTakeItem(int id, int count, int sound_id)
 
   return new_event;
 }
-  
+
 /*
- * Description: Public static. Creates a new teleport thing event with the 
+ * Description: Public static. Creates a new teleport thing event with the
  *              connected thing ID to teleport, the tile X and Y within the map
  *              as well as the sub-map ID to teleport, and an optional connected
  *              sound ID.
@@ -1111,6 +1200,104 @@ Event EventSet::createEventTeleport(int thing_id, uint16_t tile_x,
   new_event.ints.push_back(tile_x);
   new_event.ints.push_back(tile_y);
   new_event.ints.push_back(section_id);
+
+  return new_event;
+}
+
+/*
+ * Description: Public static. Creates a new unlock IO event with the connected
+ *              IO ID to modify and various properties (as defined by inputs)
+ *              and an optional sound ID.
+ *
+ * Inputs: int io_id - the IO instance ID to unlock
+ *         UnlockIOMode mode - what part of the IO to unlock, events or main
+ *         int state_num - the state within the IO to modify (events mode only)
+ *         UnlockIOEvent events - what events to attempt unlock in the state
+ *         UnlockView view_mode - the view mode for the unlocked location
+ *         int view_time - the ms to view the tile for (depends on mode)
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the unlock IO event to utilize
+ */
+Event EventSet::createEventUnlockIO(int io_id, UnlockIOMode mode, int state_num,
+                                    UnlockIOEvent events, UnlockView view_mode,
+                                    int view_time, int sound_id)
+{
+  /* Create the event and identify */
+  Event new_event = createBlankEvent();
+  new_event.classification = EventClassifier::UNLOCKIO;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(io_id);
+  new_event.ints.push_back(static_cast<int>(mode));
+  new_event.ints.push_back(state_num);
+  new_event.ints.push_back(static_cast<int>(events));
+  new_event.ints.push_back(static_cast<int>(view_mode));
+  new_event.ints.push_back(view_time);
+
+  return new_event;
+}
+
+/*
+ * Description: Public static. Creates a new unlock thing event with the
+ *              connected thing ID, view mode, and an optional sound ID.
+ *
+ * Inputs: int thing_id - the thing instance ID to unlock
+ *         UnlockView view_mode - the view mode for the unlocked location
+ *         int view_time - the ms to view the tile for (depends on mode)
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the unlock thing event to utilize
+ */
+Event EventSet::createEventUnlockThing(int thing_id, UnlockView view_mode,
+                                       int view_time, int sound_id)
+{
+  /* Create the event and identify */
+  Event new_event = createBlankEvent();
+  new_event.classification = EventClassifier::UNLOCKTHING;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(thing_id);
+  new_event.ints.push_back(static_cast<int>(view_mode));
+  new_event.ints.push_back(view_time);
+
+  return new_event;
+}
+
+/*
+ * Description: Public static. Creates a new unlock tile event with the
+ *              connected tile location, mode, view mode and an optional
+ *              sound ID.
+ *
+ * Inputs: int section_id - the map sub-section ID
+ *         uint16_t tile_x - the x tile location
+ *         uint16_t tile_y - the y tile location
+ *         UnlockTileMode mode - which events within the tile to unlock
+ *         UnlockView view_mode - the view mode for the unlocked location
+ *         int view_time - the ms to view the tile for (depends on mode)
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the unlock tile event to utilize
+ */
+Event EventSet::createEventUnlockTile(int section_id, uint16_t tile_x,
+                                      uint16_t tile_y, UnlockTileMode mode,
+                                      UnlockView view_mode, int view_time,
+                                      int sound_id)
+{
+  /* Create the event and identify */
+  Event new_event = createBlankEvent();
+  new_event.classification = EventClassifier::UNLOCKTILE;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(section_id);
+  new_event.ints.push_back(tile_x);
+  new_event.ints.push_back(tile_y);
+  new_event.ints.push_back(static_cast<int>(mode));
+  new_event.ints.push_back(static_cast<int>(view_mode));
+  new_event.ints.push_back(view_time);
 
   return new_event;
 }
@@ -1152,7 +1339,7 @@ Locked EventSet::createLockHaveItem(int id, int count, bool consume,
  *              call, it re-locks.
  *
  * Inputs: bool permanent - true if the unlock is permanent. Default true
- * Output: Locked - structure with the lock properties. To be used in lock 
+ * Output: Locked - structure with the lock properties. To be used in lock
  *                  situations, such as EventSet
  */
 Locked EventSet::createLockTriggered(bool permanent)
@@ -1165,12 +1352,72 @@ Locked EventSet::createLockTriggered(bool permanent)
 
   return new_locked;
 }
-  
+
+/*
+ * Description: Extracts data from the UnlockIOEvent enum, as defined by the
+ *              inputs.
+ *
+ * Inputs: UnlockIOEvent io_enum - the enum to extract bitwise data from
+ *         bool enter - the enter IO event should be modified
+ *         bool exit - the exit IO event should be modified
+ *         bool use - the use IO event should be modified
+ *         bool walkover - the walkover IO event should be modified
+ * Output: none
+ */
+void EventSet::dataEnumIOEvent(UnlockIOEvent io_enum, bool& enter, bool& exit,
+                               bool& use, bool& walkover)
+{
+  int enum_int = static_cast<int>(io_enum);
+
+  /* Extract data */
+  enter = ((enum_int & static_cast<int>(UnlockIOEvent::ENTER)) > 0);
+  exit = ((enum_int & static_cast<int>(UnlockIOEvent::EXIT)) > 0);
+  use = ((enum_int & static_cast<int>(UnlockIOEvent::USE)) > 0);
+  walkover = ((enum_int & static_cast<int>(UnlockIOEvent::WALKOVER)) > 0);
+}
+
+/*
+ * Description: Extracts data from the UnlockTileMode enum, as defined by the
+ *              inputs.
+ *
+ * Inputs: UnlockTileMode tile_enum - the enum to extract bitwise data from
+ *         bool enter - the enter tile event should be modified
+ *         bool exit - the exit tile event should be modified
+ * Output: none
+ */
+void EventSet::dataEnumTileEvent(UnlockTileMode tile_enum,
+                                 bool& enter, bool& exit)
+{
+  int enum_int = static_cast<int>(tile_enum);
+
+  /* Extract data */
+  enter = ((enum_int & static_cast<int>(UnlockTileMode::ENTER)) > 0);
+  exit = ((enum_int & static_cast<int>(UnlockTileMode::EXIT)) > 0);
+}
+
+/*
+ * Description: Extracts data from the UnlockView enum, as defined by the
+ *              inputs.
+ *
+ * Inputs: UnlockView view_enum - the enum to extract bitwise data from
+ *         bool view - if the unlocked location should be viewed
+ *         bool scroll - if the unlocked location should be scrolled to
+ * Output: none
+ */
+void EventSet::dataEnumView(UnlockView view_enum, bool& view, bool& scroll)
+{
+  int enum_int = static_cast<int>(view_enum);
+
+  /* Extract data */
+  view = ((enum_int & static_cast<int>(UnlockView::GOTO)) > 0);
+  scroll = ((enum_int & static_cast<int>(UnlockView::SCROLL)) > 0);
+}
+
 /*
  * Description: Extracts data from the passed in event if its a give item event.
  *
  * Inputs: Event event - the event to extract the data from
- *         int& item_id - the give item ID reference 
+ *         int& item_id - the give item ID reference
  *         int& count - the give item count reference
  * Output: bool - true if the data was extracted. Fails if the event is the
  *                wrong category
@@ -1188,7 +1435,7 @@ bool EventSet::dataEventGiveItem(Event event, int& item_id, int& count)
 }
 
 /*
- * Description: Extracts data from the passed in event if its a notification 
+ * Description: Extracts data from the passed in event if its a notification
  *              event.
  *
  * Inputs: Event event - the event to extract the data from
@@ -1230,7 +1477,7 @@ bool EventSet::dataEventStartMap(Event event, int& map_id)
  * Description: Extracts data from the passed in event if its a take item event
  *
  * Inputs: Event event - the event to extract the data from
- *         int& item_id - the take item ID reference 
+ *         int& item_id - the take item ID reference
  *         int& count - the take item count reference
  * Output: bool - true if the data was extracted. Fails if the event is the
  *                wrong category
@@ -1248,7 +1495,7 @@ bool EventSet::dataEventTakeItem(Event event, int& item_id, int& count)
 }
 
 /*
- * Description: Extracts data from the passed in event if its a teleport thing 
+ * Description: Extracts data from the passed in event if its a teleport thing
  *              event.
  *
  * Inputs: Event event - the event to extract the data from
@@ -1275,6 +1522,95 @@ bool EventSet::dataEventTeleport(Event event, int& thing_id, int& x, int& y,
 }
 
 /*
+ * Description: Extracts data from the passed in event if its an unlock IO
+ *              event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& io_id - the IO id to unlock
+ *         UnlockIOMode& mode - the mode enum for how the IO is unlocked
+ *         int& state_num - the state to parse for unlock attempts
+ *         UnlockIOEvent& mode_events - the type of events to unlock in state
+ *         UnlockView& mode_view - how the unlocked IO is viewed
+ *         int& view_time - the length of time the unlocked is viewed
+ * Output: bool - true if the data was extracted. Fails if event is the wrong
+ *                category
+ */
+bool EventSet::dataEventUnlockIO(Event event, int& io_id, UnlockIOMode& mode,
+                                 int& state_num, UnlockIOEvent& mode_events,
+                                 UnlockView& mode_view, int& view_time)
+{
+  if(event.classification == EventClassifier::UNLOCKIO &&
+     event.ints.size() > kUNIO_VIEW_TIME)
+  {
+    io_id = event.ints[kUNIO_ID];
+    mode = static_cast<UnlockIOMode>(event.ints[kUNIO_MODE]);
+    state_num = event.ints[kUNIO_STATE];
+    mode_events = static_cast<UnlockIOEvent>(event.ints[kUNIO_MODE_EVENT]);
+    mode_view = static_cast<UnlockView>(event.ints[kUNIO_VIEW_MODE]);
+    view_time = event.ints[kUNIO_VIEW_TIME];
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Extracts data from the passed in event if its an unlock thing
+ *              event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& thing_id - the thing ID to unlock
+ *         UnlockView& mode_view - how the unlocked is viewed
+ *         int& view_time - the length of time the unlocked is viewed
+ * Output: bool - true if the data was extracted. Fails if event is the wrong
+ *                category
+ */
+bool EventSet::dataEventUnlockThing(Event event, int& thing_id,
+                                    UnlockView& mode_view, int& view_time)
+{
+  if(event.classification == EventClassifier::UNLOCKTHING &&
+     event.ints.size() > kUNTHING_VIEW_TIME)
+  {
+    thing_id = event.ints[kUNTHING_ID];
+    mode_view = static_cast<UnlockView>(event.ints[kUNTHING_VIEW_MODE]);
+    view_time = event.ints[kUNTHING_VIEW_TIME];
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Extracts data from the passed in event if its an unlock tile
+ *              event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& section_id - the sub-map section ID to access the tile
+ *         int& tile_x - the tile X location within the sub-map
+ *         int& tile_y - the tile Y location within the sub-map
+ *         UnlockTileMode& mode - the events within the tile to access
+ *         UnlockView& mode_view - how the unlocked is viewed
+ *         int& view_time - the length of time the unlocked is viewed
+ * Output: bool - true if the data was extracted. Fails if event is the wrong
+ *                category
+ */
+bool EventSet::dataEventUnlockTile(Event event, int& section_id, int& tile_x,
+                                   int& tile_y, UnlockTileMode& mode,
+                                   UnlockView& mode_view, int& view_time)
+{
+  if(event.classification == EventClassifier::UNLOCKTILE &&
+     event.ints.size() > kUNTILE_VIEW_TIME)
+  {
+    section_id = event.ints[kUNTILE_SECTION];
+    tile_x = event.ints[kUNTILE_X];
+    tile_y = event.ints[kUNTILE_Y];
+    mode = static_cast<UnlockTileMode>(event.ints[kUNTILE_MODE]);
+    mode_view = static_cast<UnlockView>(event.ints[kUNTILE_VIEW_MODE]);
+    view_time = event.ints[kUNTILE_VIEW_TIME];
+    return true;
+  }
+  return false;
+}
+
+/*
  * Description: Extracts data from the locked struct regarding the have item
  *              unlock trigger.
  *
@@ -1286,8 +1622,8 @@ bool EventSet::dataEventTeleport(Event event, int& thing_id, int& x, int& y,
  */
 bool EventSet::dataLockedItem(Locked lock, int& id, int& count, bool& consume)
 {
-  if(lock.state == LockedState::ITEM && lock.is_locked && 
-     lock.ints.size() > kHAVE_ITEM_COUNT && 
+  if(lock.state == LockedState::ITEM && lock.is_locked &&
+     lock.ints.size() > kHAVE_ITEM_COUNT &&
      lock.bools.size() > kHAVE_ITEM_CONSUME)
   {
     id = lock.ints[kHAVE_ITEM_ID];
@@ -1299,7 +1635,7 @@ bool EventSet::dataLockedItem(Locked lock, int& id, int& count, bool& consume)
 }
 
 /*
- * Description: Public static. Deletes the passed in event of all dynamic 
+ * Description: Public static. Deletes the passed in event of all dynamic
  *              memory. Returns a blank event, as replacement.
  *
  * Inputs: Event event - the event struct to delete all dynamic memory
@@ -1316,9 +1652,9 @@ Event EventSet::deleteEvent(Event event)
 }
 
 /*
- * Description: Public static. Takes the base conversation pointer with a list 
- *              of indexes, such as 1,2,3,1,1,1 to indicate depth. It then 
- *              returns a reference based on the depth path above. If the depth 
+ * Description: Public static. Takes the base conversation pointer with a list
+ *              of indexes, such as 1,2,3,1,1,1 to indicate depth. It then
+ *              returns a reference based on the depth path above. If the depth
  *              path doesn't exist, its created with blank conversation events.
  *
  * Inputs: Conversation* reference - the reference conversation to manipulate
@@ -1346,7 +1682,7 @@ Conversation* EventSet::getConversation(Conversation* reference,
 
   return convo;
 }
-  
+
 /*
  * Description: Determines if the locked struct is locked and with a valid
  *              unlock mode possibility.
@@ -1361,9 +1697,9 @@ bool EventSet::isLocked(Locked lock_struct)
 }
 
 /*
- * Description: Public static. Attempts an unlock on the locked state (pass by 
- *              ref) with the given item ID and count total from the calling 
- *              parent. If valid, it updates the locked state and returns if the 
+ * Description: Public static. Attempts an unlock on the locked state (pass by
+ *              ref) with the given item ID and count total from the calling
+ *              parent. If valid, it updates the locked state and returns if the
  *              items are consumed or not.
  *
  * Inputs: Locked& locked_state - the locked state to manipulate
@@ -1393,7 +1729,7 @@ bool EventSet::unlockItem(Locked& locked_state, int id, int count)
 }
 
 /*
- * Description: Public static. Attempts an unlock on the locked state (pass by 
+ * Description: Public static. Attempts an unlock on the locked state (pass by
  *              ref) with a trigger event.
  *
  * Inputs: Locked& locked_state - the locked state to manipulate
@@ -1483,6 +1819,12 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     category = EventClassifier::TAKEITEM;
   else if(category_str == "teleportthing")
     category = EventClassifier::TELEPORTTHING;
+  else if(category_str == "unlockio")
+    category = EventClassifier::UNLOCKIO;
+  else if(category_str == "unlockthing")
+    category = EventClassifier::UNLOCKTHING;
+  else if(category_str == "unlocktile")
+    category = EventClassifier::UNLOCKTILE;
 
   /* If the category doesn't match, create a new event */
   if(category != event.classification)
@@ -1505,6 +1847,12 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event = createEventTakeItem();
     else if(category == EventClassifier::TELEPORTTHING)
       event = createEventTeleport();
+    else if(category == EventClassifier::UNLOCKIO)
+      event = createEventUnlockIO();
+    else if(category == EventClassifier::UNLOCKTHING)
+      event = createEventUnlockThing();
+    else if(category == EventClassifier::UNLOCKTILE)
+      event = createEventUnlockTile();
   }
 
   /* Proceed to set up the event with the marked changes */
@@ -1591,6 +1939,188 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event.ints.at(kTELEPORT_Y) = data.getDataInteger();
     else if(teleport_element == "section")
       event.ints.at(kTELEPORT_SECTION) = data.getDataInteger();
+  }
+  /* -- UNLOCK IO -- */
+  else if(category == EventClassifier::UNLOCKIO)
+  {
+    /* Get existing data */
+    int io_id, state_num, view_time;
+    UnlockIOMode mode;
+    UnlockIOEvent mode_events;
+    UnlockView mode_view;
+    if(dataEventUnlockIO(event, io_id, mode, state_num, mode_events,
+                         mode_view, view_time))
+    {
+      /* Parse new data */
+      std::string element = data.getElement(file_index + 1);
+      if(element == "evententer" || element == "eventexit" ||
+         element == "eventuse" || element == "eventwalkover" ||
+         element == "eventall")
+      {
+        /* Get existing enum data */
+        bool enter,exit,use,walkover;
+        dataEnumIOEvent(mode_events, enter, exit, use, walkover);
+
+        /* Parse new enum data */
+        if(element == "evententer" || element == "eventall")
+          enter = data.getDataBool();
+        if(element == "eventexit" || element == "eventall")
+          exit = data.getDataBool();
+        if(element == "eventuse" || element == "eventall")
+          use = data.getDataBool();
+        if(element == "eventwalkover" || element == "eventall")
+          walkover = data.getDataBool();
+
+        /* Set new enum data */
+        mode_events = createEnumIOEvent(enter, exit, use, walkover);
+      }
+      else if(element == "id")
+      {
+        io_id = data.getDataInteger();
+      }
+      else if(element == "mode")
+      {
+        std::string mode_str = data.getDataString();
+        if(mode_str == "lock")
+          mode = UnlockIOMode::LOCK;
+        else if(mode_str == "events")
+          mode = UnlockIOMode::EVENTS;
+        else
+          mode = UnlockIOMode::NONE;
+      }
+      else if(element == "state")
+      {
+        state_num = data.getDataInteger();
+      }
+      else if(element == "view" || element == "viewscroll")
+      {
+        /* Get existing enum data */
+        bool view, scroll;
+        dataEnumView(mode_view, view, scroll);
+
+        /* Parse new enum data */
+        if(element == "view")
+          view = data.getDataBool();
+        else if(element == "viewscroll")
+          scroll = data.getDataBool();
+
+        /* Set new enum data */
+        mode_view = createEnumView(view, scroll);
+      }
+      else if(element == "viewtime")
+      {
+        view_time = data.getDataInteger();
+      }
+
+      /* Update event with new data */
+      event = createEventUnlockIO(io_id, mode, state_num, mode_events,
+                                  mode_view, view_time, event.sound_id);
+    }
+  }
+  /* -- UNLOCK THING -- */
+  else if(category == EventClassifier::UNLOCKTHING)
+  {
+    /* Get existing data */
+    int thing_id, view_time;
+    UnlockView mode_view;
+    if(dataEventUnlockThing(event, thing_id, mode_view, view_time))
+    {
+      /* Parse new data */
+      std::string element = data.getElement(file_index + 1);
+      if(element == "id")
+      {
+        thing_id = data.getDataInteger();
+      }
+      else if(element == "view" || element == "viewscroll")
+      {
+        /* Get existing enum data */
+        bool view, scroll;
+        dataEnumView(mode_view, view, scroll);
+
+        /* Parse new enum data */
+        if(element == "view")
+          view = data.getDataBool();
+        else if(element == "viewscroll")
+          scroll = data.getDataBool();
+
+        /* Set new enum data */
+        mode_view = createEnumView(view, scroll);
+      }
+      else if(element == "viewtime")
+      {
+        view_time = data.getDataInteger();
+      }
+
+      /* Update event with new data */
+      event = createEventUnlockThing(thing_id, mode_view, view_time,
+                                     event.sound_id);
+    }
+  }
+  /* -- UNLOCK TILE -- */
+  else if(category == EventClassifier::UNLOCKTILE)
+  {
+    /* Get existing data */
+    int section_id, tile_x, tile_y, view_time;
+    UnlockTileMode mode;
+    UnlockView mode_view;
+    if(dataEventUnlockTile(event, section_id, tile_x, tile_y, mode,
+                           mode_view, view_time))
+    {
+      /* Parse new data */
+      std::string element = data.getElement(file_index + 1);
+      if(element == "evententer" || element == "eventexit" ||
+         element == "eventall")
+      {
+        /* Get existing enum data */
+        bool enter,exit;
+        dataEnumTileEvent(mode, enter, exit);
+
+        /* Parse new enum data */
+        if(element == "evententer" || element == "eventall")
+          enter = data.getDataBool();
+        if(element == "eventexit" || element == "eventall")
+          exit = data.getDataBool();
+
+        /* Set new enum data */
+        mode = createEnumTileEvent(enter, exit);
+      }
+      else if(element == "sectionid")
+      {
+        section_id = data.getDataInteger();
+      }
+      else if(element == "view" || element == "viewscroll")
+      {
+        /* Get existing enum data */
+        bool view, scroll;
+        dataEnumView(mode_view, view, scroll);
+
+        /* Parse new enum data */
+        if(element == "view")
+          view = data.getDataBool();
+        else if(element == "viewscroll")
+          scroll = data.getDataBool();
+
+        /* Set new enum data */
+        mode_view = createEnumView(view, scroll);
+      }
+      else if(element == "viewtime")
+      {
+        view_time = data.getDataInteger();
+      }
+      else if(element == "x")
+      {
+        tile_x = data.getDataInteger();
+      }
+      else if(element == "y")
+      {
+        tile_y = data.getDataInteger();
+      }
+
+      /* Update event with new data */
+      if(tile_x >= 0 && tile_y >= 0)
+        event = createEventUnlockTile(section_id, tile_x, tile_y, mode,
+                                      mode_view, view_time, event.sound_id);
+    }
   }
 
   return event;

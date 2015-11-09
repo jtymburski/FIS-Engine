@@ -441,6 +441,28 @@ void Game::eventTriggerIO(MapInteractiveObject* io, int interaction_state,
     io->handlerTrigger(interaction_state, initiator);
   }
 }
+  
+/* Unlock events, based on parameter information */
+void Game::eventUnlockIO(int io_id, UnlockIOMode mode, int state_num, 
+                         UnlockIOEvent mode_events, UnlockView mode_view, 
+                         int view_time)
+{
+  map_ctrl.unlockIO(io_id, mode, state_num, mode_events, mode_view, view_time);
+}
+
+/* Unlock events, based on parameter information */
+void Game::eventUnlockThing(int thing_id, UnlockView mode_view, int view_time)
+{
+  map_ctrl.unlockThing(thing_id, mode_view, view_time);
+}
+
+/* Unlock events, based on parameter information */
+void Game::eventUnlockTile(int section_id, int tile_x, int tile_y, 
+                           UnlockTileMode mode, UnlockView mode_view, 
+                           int view_time)
+{
+  map_ctrl.unlockTile(section_id, tile_x, tile_y, mode, mode_view, view_time);
+}
 
 /* Load game */
 // TODO: Comment
@@ -843,6 +865,35 @@ void Game::pollEvents()
         event_handler.pollTriggerIO(&source, &interaction_state, &initiator);
         eventTriggerIO(source, interaction_state, initiator);
       }
+      else if(classification == EventClassifier::UNLOCKIO)
+      {
+        int io_id, state_num, view_time;
+        UnlockIOMode mode;
+        UnlockIOEvent mode_events;
+        UnlockView mode_view;
+        if(event_handler.pollUnlockIO(&io_id, &mode, &state_num, &mode_events,
+                                      &mode_view, &view_time))
+          eventUnlockIO(io_id, mode, state_num, mode_events, mode_view,
+                        view_time);
+      }
+      else if(classification == EventClassifier::UNLOCKTHING)
+      {
+        int thing_id, view_time;
+        UnlockView mode_view;
+        if(event_handler.pollUnlockThing(&thing_id, &mode_view, &view_time))
+          eventUnlockThing(thing_id, mode_view, view_time);
+      }
+      else if(classification == EventClassifier::UNLOCKTILE)
+      {
+        int section_id, tile_x, tile_y, view_time;
+        UnlockTileMode mode;
+        UnlockView mode_view;
+        if(event_handler.pollUnlockTile(&section_id, &tile_x, &tile_y, &mode,
+                                        &mode_view, &view_time))
+          eventUnlockTile(section_id, tile_x, tile_y, mode, mode_view,
+                          view_time);
+      }
+      /* Finally, check if no event */
       else if(classification == EventClassifier::NOEVENT)
       {
         event_handler.pollNone();

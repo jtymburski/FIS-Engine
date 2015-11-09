@@ -1903,6 +1903,35 @@ void Map::unloadMap()
   /* Clear the remaining and disable the loading */
   loaded = false;
 }
+  
+/* Unlock triggers, based on parameter information */
+void Map::unlockIO(int io_id, UnlockIOMode mode, int state_num,
+                   UnlockIOEvent mode_events, UnlockView mode_view, 
+                   int view_time)
+{
+  // TODO
+  std::cout << "Unlock IO: " << io_id << "," << (int)mode << "," << state_num
+            << "," << (int)mode_events << "," << (int)mode_view << "," 
+            << view_time << std::endl;
+}
+
+/* Unlock triggers, based on parameter information */
+void Map::unlockThing(int thing_id, UnlockView mode_view, int view_time)
+{
+  // TODO
+  std::cout << "Unlock Thing: " << thing_id << "," << (int)mode_view << ","
+            << view_time << std::endl;
+}
+
+/* Unlock triggers, based on parameter information */
+void Map::unlockTile(int section_id, int tile_x, int tile_y, 
+                     UnlockTileMode mode, UnlockView mode_view, int view_time)
+{
+  // TODO
+  std::cout << "Unlock Tile: " << section_id << "," << tile_x << "," << tile_y
+            << "," << (int)mode << "," << (int)mode_view << "," << view_time
+            << std::endl;
+}
 
 /* Updates the game state */
 bool Map::update(int cycle_time)

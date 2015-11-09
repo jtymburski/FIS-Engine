@@ -282,20 +282,20 @@ bool EventHandler::pollLockSetData(Locked lock)
 }
 
 /* Polls the lock item for the related properties associated */
-bool EventHandler::pollLockItem(int& id, int& count, bool& consume)
-{
-  if(queue_index < event_queue.size() &&
-     event_queue[queue_index].event_set != nullptr)
-  {
-    EventSet* set = event_queue[queue_index].event_set;
-    if(set->isLocked() && set->getLockedState().state == LockedState::ITEM)
-    {
-      EventSet::dataLockedItem(set->getLockedState(), id, count, consume);
-      return true;
-    }
-  }
-  return false;
-}
+//bool EventHandler::pollLockItem(int& id, int& count, bool& consume)
+//{
+//  if(queue_index < event_queue.size() &&
+//     event_queue[queue_index].event_set != nullptr)
+//  {
+//    EventSet* set = event_queue[queue_index].event_set;
+//    if(set->isLocked() && set->getLockedState().state == LockedState::ITEM)
+//    {
+//      EventSet::dataLockedItem(set->getLockedState(), id, count, consume);
+//      return true;
+//    }
+//  }
+//  return false;
+//}
   
 /* Poll the empty event */
 bool EventHandler::pollNone()
@@ -440,20 +440,77 @@ bool EventHandler::pollTriggerIO(MapInteractiveObject** io, int* state,
 }
 
 /* Unlock triggers, based on if the event set has a lock struct */
-bool EventHandler::pollUnlockItem(int id, int count)
+//bool EventHandler::pollUnlockItem(int id, int count)
+//{
+//  int id_curr, count_curr;
+//  bool consume = false;
+//
+//  /* Check to make sure the current is a lock item polled event */
+//  if(pollLockItem(id_curr, count_curr, consume))
+//  {
+//    Locked locked_state = event_queue[queue_index].event_set->getLockedState();
+//    consume = EventSet::unlockItem(locked_state, id, count);
+//    event_queue[queue_index].event_set->setLocked(locked_state);
+//  }
+//
+//  return consume;
+//}
+
+/* Poll the unlock event(s) */
+bool EventHandler::pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,
+                                UnlockIOEvent* mode_events,
+                                UnlockView* mode_view, int* view_time)
 {
-  int id_curr, count_curr;
-  bool consume = false;
-
-  /* Check to make sure the current is a lock item polled event */
-  if(pollLockItem(id_curr, count_curr, consume))
+  if(io_id != nullptr && mode != nullptr && state_num != nullptr && 
+     mode_events != nullptr && mode_view != nullptr && view_time != nullptr)
   {
-    Locked locked_state = event_queue[queue_index].event_set->getLockedState();
-    consume = EventSet::unlockItem(locked_state, id, count);
-    event_queue[queue_index].event_set->setLocked(locked_state);
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventUnlockIO(event, *io_id, *mode, *state_num, 
+                                   *mode_events, *mode_view, *view_time))
+    {
+      triggerQueueSound(event);
+      return true;
+    }
   }
+  return false;
+}
 
-  return consume;
+/* Poll the unlock event(s) */
+bool EventHandler::pollUnlockThing(int* thing_id, UnlockView* mode_view,
+                                   int* view_time)
+{
+  if(thing_id != nullptr && mode_view != nullptr && view_time != nullptr)
+  {
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventUnlockThing(event, *thing_id, *mode_view, *view_time))
+    {
+      triggerQueueSound(event);
+      return true;
+    }
+  }
+  return false;
+}
+
+/* Poll the unlock event(s) */
+bool EventHandler::pollUnlockTile(int* section_id, int* tile_x, int* tile_y,
+                                  UnlockTileMode* mode, UnlockView* mode_view,
+                                  int* view_time)
+{
+  if(section_id != nullptr && tile_x != nullptr && tile_y != nullptr && 
+     mode != nullptr && mode_view != nullptr && view_time != nullptr)
+  {
+    Event event;
+    if(getEvent(event, true) &&
+       EventSet::dataEventUnlockTile(event, *section_id, *tile_x, *tile_y,
+                                     *mode, *mode_view, *view_time))
+    {
+      triggerQueueSound(event);
+      return true;
+    }
+  }
+  return false;
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */

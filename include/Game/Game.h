@@ -157,6 +157,15 @@ private:
   void eventTriggerIO(MapInteractiveObject* io, int interaction_state, 
                       MapPerson* initiator);
 
+  /* Unlock events, based on parameter information */
+  void eventUnlockIO(int io_id, UnlockIOMode mode, int state_num, 
+                     UnlockIOEvent mode_events, UnlockView mode_view, 
+                     int view_time);
+  void eventUnlockThing(int thing_id, UnlockView mode_view, int view_time);
+  void eventUnlockTile(int section_id, int tile_x, int tile_y, 
+                       UnlockTileMode mode, UnlockView mode_view, 
+                       int view_time);
+
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
             std::string inst_file = "", bool encryption = false,

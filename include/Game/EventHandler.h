@@ -129,7 +129,7 @@ public:
   bool pollLockSetData(Locked lock);
 
   /* Accesses lock properties */
-  bool pollLockItem(int& id, int& count, bool& consume); // TODO: REMOVE?
+  //bool pollLockItem(int& id, int& count, bool& consume); // TODO: REMOVE
 
   /* Poll the empty event */
   bool pollNone();
@@ -148,19 +148,28 @@ public:
 
   /* Poll a start map event */
   bool pollStartMap(int* id);
-  
+
   /* Poll a take item event */
   bool pollTakeItem(int* id, int* count);
-  
+
   /* Poll a teleport thing event */
   bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id);
 
   /* Poll a trigger IO event */
-  bool pollTriggerIO(MapInteractiveObject** io, int* state, 
+  bool pollTriggerIO(MapInteractiveObject** io, int* state,
                      MapPerson** initiator);
 
   /* Unlock triggers, based on if the event set has a lock struct */
-  bool pollUnlockItem(int id, int count); // TODO: REMOVE?
+  //bool pollUnlockItem(int id, int count); // TODO: REMOVE
+
+  /* Poll the unlock event(s) */
+  bool pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,
+                    UnlockIOEvent* mode_events, UnlockView* mode_view,
+                    int* view_time);
+  bool pollUnlockThing(int* thing_id, UnlockView* mode_view, int* view_time);
+  bool pollUnlockTile(int* section_id, int* tile_x, int* tile_y,
+                      UnlockTileMode* mode, UnlockView* mode_view,
+                      int* view_time);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);
