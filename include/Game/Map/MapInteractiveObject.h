@@ -143,10 +143,10 @@ public:
 
   /* Interact with the thing (use key) */
   bool interact(MapPerson* initiator);
-  
+
   /* Returns if the MIO state change is currently locked */
   bool isLocked();
-  
+
   /* Reset back to head state */
   void reset();
 
@@ -166,6 +166,10 @@ public:
   /* Triggers walk on / walk off events on the thing */
   void triggerWalkOff(MapPerson* trigger);
   void triggerWalkOn(MapPerson* trigger);
+
+  /* Unlock trigger call */
+  bool unlockTrigger(UnlockIOMode mode, int state_num, 
+                     UnlockIOEvent mode_events);
 
   /* Updates the thing, based on the tick */
   virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);

@@ -54,7 +54,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   zoom_in = false;
   zoom_out = false;
   viewport.setTileSize(tile_width, tile_height);
-  
+
   /* Set options and event handler */
   setConfiguration(running_config);
   setEventHandler(event_handler);
@@ -692,7 +692,7 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
     /* Make sure it is of the correct height for each column */
     for(uint32_t i = 0; i < sub_map[section_index].tiles.size(); i++)
     {
-      while(sub_map[section_index].tiles[i].size() < 
+      while(sub_map[section_index].tiles[i].size() <
                                                  static_cast<uint32_t>(height))
       {
         int height = sub_map[section_index].tiles[i].size();
@@ -756,7 +756,7 @@ void Map::initiateThingInteraction(MapPerson* initiator)
             uint16_t x = starting_x + i;
             uint16_t y = starting_y + j;
 
-            if((starting_x + i) >= 0 && (starting_y + j) >= 0 && 
+            if((starting_x + i) >= 0 && (starting_y + j) >= 0 &&
                x < sub_map[map_index].tiles.size() &&
                y < sub_map[map_index].tiles[x].size())
             {
@@ -778,7 +778,7 @@ void Map::initiateThingInteraction(MapPerson* initiator)
               if(!finished && io_found == NULL)
                 io_found = sub_map[map_index].tiles[x][y]->getIO(0);
             }
-              
+
             /* Check for item(s) */
             if(!finished && items_found.size() == 0)
               items_found = thing_tiles[i][j]->getItems();
@@ -859,7 +859,7 @@ bool Map::setSectionIndex(uint16_t index)
 
     /* Update the index and viewport */
     map_index = index;
-    viewport.setMapSize(sub_map[index].tiles.size(), 
+    viewport.setMapSize(sub_map[index].tiles.size(),
                         sub_map[index].tiles[0].size());
 
     /* Update sound and dialog now that index is fresh */
@@ -1534,7 +1534,7 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   }
 }
 
-/* Proceeds to pickup the total number of this marked item 
+/* Proceeds to pickup the total number of this marked item
  * Default is invalid parameter which picks up all */
 bool Map::pickupItem(MapItem* item, int count)
 {
@@ -1555,7 +1555,7 @@ bool Map::pickupItem(MapItem* item, int count)
       {
         item_id = item->getSoundID();
       }
-      else if(item->getGameID() >= 0 && 
+      else if(item->getGameID() >= 0 &&
               (uint32_t)item->getGameID() == Item::kID_MONEY)
       {
         item_id = Sound::kID_SOUND_PICK_COIN;
@@ -1621,7 +1621,7 @@ bool Map::render(SDL_Renderer* renderer)
           render_thing->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                    x_offset, y_offset);
         /* Base map IO, if relevant */
-        MapInteractiveObject* render_io = 
+        MapInteractiveObject* render_io =
                                       sub_map[map_index].tiles[i][j]->getIO(0);
         if(render_io != NULL)
           render_io->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
@@ -1641,7 +1641,7 @@ bool Map::render(SDL_Renderer* renderer)
           MapThing* render_thing = NULL;
 
           /* Acquire render things and continue forward if some are not null */
-          if(sub_map[map_index].tiles[i][j]->getRenderThings(index, 
+          if(sub_map[map_index].tiles[i][j]->getRenderThings(index,
                                                              render_person,
                                                              render_thing,
                                                              render_io))
@@ -1656,7 +1656,7 @@ bool Map::render(SDL_Renderer* renderer)
                    render_person->getMovement() == Direction::SOUTH)
                 {
                   render_person->renderPrevious(renderer,
-                                                sub_map[map_index].tiles[i][j], 
+                                                sub_map[map_index].tiles[i][j],
                                                 index, x_offset, y_offset);
                 }
                 else
@@ -1688,7 +1688,7 @@ bool Map::render(SDL_Renderer* renderer)
               }
 
               if(render_thing != NULL)
-                render_thing->renderMain(renderer, 
+                render_thing->renderMain(renderer,
                                          sub_map[map_index].tiles[i][j],
                                          index, x_offset, y_offset);
 
@@ -1704,7 +1704,7 @@ bool Map::render(SDL_Renderer* renderer)
     /* Render the upper tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
-        sub_map[map_index].tiles[i][j]->renderUpper(renderer, 
+        sub_map[map_index].tiles[i][j]->renderUpper(renderer,
                                                     x_offset, y_offset);
 
     /* Render the map dialogs / pop-ups */
@@ -1736,7 +1736,7 @@ bool Map::setConfiguration(Options* running_config)
 
   return false;
 }
-  
+
 /* Sets the operational event handler */
 void Map::setEventHandler(EventHandler* event_handler)
 {
@@ -1804,7 +1804,7 @@ void Map::unloadMap()
   map_dialog.clearAll(true);
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
-  
+
   /* Reset music references */
   audioStop();
 
@@ -1903,34 +1903,97 @@ void Map::unloadMap()
   /* Clear the remaining and disable the loading */
   loaded = false;
 }
-  
+
 /* Unlock triggers, based on parameter information */
 void Map::unlockIO(int io_id, UnlockIOMode mode, int state_num,
-                   UnlockIOEvent mode_events, UnlockView mode_view, 
+                   UnlockIOEvent mode_events, UnlockView mode_view,
                    int view_time)
 {
-  // TODO
-  std::cout << "Unlock IO: " << io_id << "," << (int)mode << "," << state_num
-            << "," << (int)mode_events << "," << (int)mode_view << "," 
-            << view_time << std::endl;
+  /* Find io ptr */
+  MapInteractiveObject* found = getIO(io_id);
+
+  /* Parse and attempt unlock, if found */
+  if(found != nullptr && found->unlockTrigger(mode, state_num, mode_events))
+  {
+    /* Was unlocked: check if view is required */
+    // TODO: Possibly pull out into function (or in MapViewport)
+    bool view, scroll;
+    EventSet::dataEnumView(mode_view, view, scroll);
+    if(view && view_time > 0)
+    {
+      // TODO
+      std::cout << "TODO - View IO: " << io_id << ",Scroll: " << scroll
+                << ",Time: " << view_time << std::endl;
+    }
+  }
 }
 
 /* Unlock triggers, based on parameter information */
 void Map::unlockThing(int thing_id, UnlockView mode_view, int view_time)
 {
-  // TODO
-  std::cout << "Unlock Thing: " << thing_id << "," << (int)mode_view << ","
-            << view_time << std::endl;
+  /* Find thing (or person or npc) ptr */
+  MapThing* found = getThing(thing_id);
+  if(found == nullptr)
+    found = getPerson(thing_id);
+
+  /* Unlock, if found */
+  if(found != nullptr)
+  {
+    EventSet* set = found->getEventSet();
+    if(set != nullptr && set->unlockTrigger())
+    {
+      /* Was unlocked: check if view is required */
+      bool view, scroll;
+      EventSet::dataEnumView(mode_view, view, scroll);
+      if(view && view_time > 0)
+      {
+        // TODO
+        std::cout << "TODO - View thing: " << thing_id << ",Scroll: "
+                  << scroll << ",Time: " << view_time << std::endl;
+      }
+    }
+  }
 }
 
 /* Unlock triggers, based on parameter information */
-void Map::unlockTile(int section_id, int tile_x, int tile_y, 
+void Map::unlockTile(int section_id, int tile_x, int tile_y,
                      UnlockTileMode mode, UnlockView mode_view, int view_time)
 {
-  // TODO
-  std::cout << "Unlock Tile: " << section_id << "," << tile_x << "," << tile_y
-            << "," << (int)mode << "," << (int)mode_view << "," << view_time
-            << std::endl;
+  /* Find the tile */
+  if(section_id < 0)
+    section_id = map_index;
+  if(section_id >= 0 && section_id < (int)sub_map.size() && 
+     tile_x >= 0 && tile_x < (int)sub_map[section_id].tiles.size() &&
+     tile_y >= 0 && tile_y < (int)sub_map[section_id].tiles[tile_x].size())
+  {
+    Tile* found = sub_map[section_id].tiles[tile_x][tile_y];
+    if(found != nullptr)
+    {
+      bool enter, exit;
+      bool unlocked = false;
+      EventSet::dataEnumTileEvent(mode, enter, exit);
+
+      /* Attempt to unlock enter/exit events */
+      if(enter && found->getEventEnter() != nullptr)
+        unlocked |= found->getEventEnter()->unlockTrigger();
+      if(exit && found->getEventExit() != nullptr)
+        unlocked |= found->getEventExit()->unlockTrigger();
+
+      /* If unlocked, proceed to parse view and if required */
+      if(unlocked)
+      {
+        bool view, scroll;
+        EventSet::dataEnumView(mode_view, view, scroll);
+        if(view && view_time > 0)
+        {
+          // TODO
+          std::cout << "TODO - View tile: section: " << section_id << ",x: "
+                    << tile_x << ",y: " << tile_y << ",Scroll: " << scroll
+                    << ",Time: " << view_time << std::endl;
+        }
+      }
+    }
+  }
 }
 
 /* Updates the game state */

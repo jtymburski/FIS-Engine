@@ -115,7 +115,10 @@ public:
   bool triggerExitEvent(MapPerson* initiator, MapThing* source = NULL);
   bool triggerUseEvent(MapPerson* initiator, MapThing* source = NULL);
   bool triggerWalkoverEvent(MapPerson* initiator, MapThing* source = NULL);
-
+  
+  /* Unlock trigger call */
+  bool unlockTrigger(UnlockIOEvent mode_events);
+  
   /* Unsets the matrix internally from the state */
   void unsetMatrix();
 };

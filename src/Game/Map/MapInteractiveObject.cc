@@ -1142,6 +1142,60 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
     }
   }
 }
+  
+/*
+ * Description: Attempts an unlock on the MIO taking the mode, relevant state 
+ *              number (if mode is state based), and the events within the state
+ *              to address
+ *
+ * Inputs: UnlockIOMode mode - the mode(s) of the IO to try and unlock
+ *         int state_num - what states to modify (only for EVENTS mode)
+ *         UnlockIOEvent mode_events - which events to attempt to unlock
+ * Output: bool - true if at least one was locked and now unlocked
+ */
+bool MapInteractiveObject::unlockTrigger(UnlockIOMode mode, int state_num, 
+                                         UnlockIOEvent mode_events)
+{
+  bool unlocked = false;
+  bool lock, events;
+  EventSet::dataEnumIOMode(mode, lock, events);
+
+  /* If lock mode, parse and execute */
+  if(lock)
+  {
+    if(EventSet::isLocked(lock_struct))
+    {
+      EventSet::unlockTrigger(lock_struct);
+      unlocked |= !lock_struct.is_locked;
+    }
+  }
+
+  /* If events mode, parse and execute */
+  if(events)
+  {
+    /* All states modified */
+    if(state_num < 0)
+    {
+      StateNode* parser = node_head;
+
+      /* Parse all states */
+      while(parser != nullptr)
+      {
+        if(parser != nullptr && parser->state != nullptr)
+          unlocked |= parser->state->unlockTrigger(mode_events);
+      }
+    }
+    /* Only designated state is modified */
+    else
+    {
+      StateNode* node = getNode(state_num);
+      if(node != nullptr && node->state != nullptr)
+        unlocked |= node->state->unlockTrigger(mode_events);
+    }
+  }
+
+  return unlocked;
+}
 
 /*
  * Description: Updates the frames of the MIO. This can include animation

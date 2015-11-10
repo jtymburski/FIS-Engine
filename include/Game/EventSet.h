@@ -285,6 +285,9 @@ public:
   /* Sets the unlocked state */
   bool setUnlockedState(UnlockedState state);
 
+  /* Unlock trigger call */
+  bool unlockTrigger();
+
   /* Unset calls */
   bool unsetEventLocked();
   bool unsetEventUnlocked(int index);
@@ -317,6 +320,7 @@ public:
   /* Creates enums with given data */
   static UnlockIOEvent createEnumIOEvent(bool enter = false, bool exit = false,
                                       bool use = false, bool walkover = false);
+  static UnlockIOMode createEnumIOMode(bool lock = false, bool events = false);
   static UnlockTileMode createEnumTileEvent(bool enter = false,
                                             bool exit = false);
   static UnlockView createEnumView(bool view = false, bool scroll = false);
@@ -376,6 +380,7 @@ public:
   /* Extract data from enum(s) */
   static void dataEnumIOEvent(UnlockIOEvent io_enum, bool& enter, bool& exit,
                               bool& use, bool& walkover);
+  static void dataEnumIOMode(UnlockIOMode io_enum, bool& lock, bool& events);
   static void dataEnumTileEvent(UnlockTileMode tile_enum,
                                 bool& enter, bool& exit);
   static void dataEnumView(UnlockView view_enum, bool& view, bool& scroll);

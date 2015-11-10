@@ -738,6 +738,23 @@ bool EventSet::setUnlockedState(UnlockedState state)
   }
   return false;
 }
+  
+/*
+ * Description: Attempts an unlock on the locked state stored within the set 
+ *              with a trigger event.
+ *
+ * Inputs: none
+ * Output: bool - true if was locked and now unlocked
+ */
+bool EventSet::unlockTrigger()
+{
+  if(isLocked())
+  {
+    unlockTrigger(locked_status);
+    return !locked_status.is_locked;
+  }
+  return false;
+}
 
 /*
  * Description: Unsets the locked event and replaces it with a blank one.
@@ -961,6 +978,28 @@ UnlockIOEvent EventSet::createEnumIOEvent(bool enter, bool exit,
 
   /* Return the created enum */
   return static_cast<UnlockIOEvent>(io_event_enum);
+}
+
+/*
+ * Description: Public static. Creates the UnlockIOMode enum using the 2
+ *              boolean options.
+ *
+ * Inputs: bool lock - true if the main state lock should be unlocked in IO
+ *         bool events - true if the state related events should be unlocked
+ * Output: UnlockIOMode - the enum, as per the inputs
+ */
+UnlockIOMode EventSet::createEnumIOMode(bool lock, bool events)
+{
+  int io_mode_enum = 0;
+
+  /* Parse bools */
+  if(lock)
+    io_mode_enum |= static_cast<int>(UnlockIOMode::LOCK);
+  if(events)
+    io_mode_enum |= static_cast<int>(UnlockIOMode::EVENTS);
+
+  /* Return the created enum */
+  return static_cast<UnlockIOMode>(io_mode_enum);
 }
 
 /*
@@ -1374,6 +1413,24 @@ void EventSet::dataEnumIOEvent(UnlockIOEvent io_enum, bool& enter, bool& exit,
   exit = ((enum_int & static_cast<int>(UnlockIOEvent::EXIT)) > 0);
   use = ((enum_int & static_cast<int>(UnlockIOEvent::USE)) > 0);
   walkover = ((enum_int & static_cast<int>(UnlockIOEvent::WALKOVER)) > 0);
+}
+
+/*
+ * Description: Extracts data from the UnlockIOMode enum, as defined by the
+ *              inputs.
+ *
+ * Inputs: UnlockIOEvent io_enum - the enum to extract bitwise data from
+ *         bool lock - the main state IO lock should be modified
+ *         bool events - the events within the state IO should be modified
+ * Output: none
+ */
+void EventSet::dataEnumIOMode(UnlockIOMode io_enum, bool& lock, bool& events)
+{
+  int enum_int = static_cast<int>(io_enum);
+
+  /* Extract data */
+  lock = ((enum_int & static_cast<int>(UnlockIOMode::LOCK)) > 0);
+  events = ((enum_int & static_cast<int>(UnlockIOMode::EVENTS)) > 0);
 }
 
 /*
@@ -1978,15 +2035,20 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       {
         io_id = data.getDataInteger();
       }
-      else if(element == "mode")
+      else if(element == "modelock" || element == "modeevents")
       {
-        std::string mode_str = data.getDataString();
-        if(mode_str == "lock")
-          mode = UnlockIOMode::LOCK;
-        else if(mode_str == "events")
-          mode = UnlockIOMode::EVENTS;
-        else
-          mode = UnlockIOMode::NONE;
+        /* Get existing enum data */
+        bool lock, events;
+        dataEnumIOMode(mode, lock, events);
+
+        /* Parse new enum data */
+        if(element == "modelock")
+          lock = data.getDataBool();
+        else if(element == "modeevents")
+          events = data.getDataBool();
+
+        /* Set new enum data */
+        mode = createEnumIOMode(lock, events);
       }
       else if(element == "state")
       {

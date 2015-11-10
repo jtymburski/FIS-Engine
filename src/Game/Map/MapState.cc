@@ -546,6 +546,32 @@ bool MapState::triggerWalkoverEvent(MapPerson* initiator, MapThing* source)
 
   return false;
 }
+  
+/*
+ * Description: Attempts an unlock on the MIO state, take the mode events enum
+ *              to define what events to modify.
+ *
+ * Inputs: UnlockIOEvent mode_events - which events to attempt to unlock
+ * Output: bool - true if at least one was locked and now unlocked
+ */
+bool MapState::unlockTrigger(UnlockIOEvent mode_events)
+{
+  bool unlocked = false;
+  bool enter, exit, use, walkover;
+  EventSet::dataEnumIOEvent(mode_events, enter, exit, use, walkover);
+
+  /* Parse various events to see if they get modified */
+  if(enter)
+    unlocked |= event_enter.unlockTrigger();
+  if(exit)
+    unlocked |= event_exit.unlockTrigger();
+  if(use)
+    unlocked |= event_use.unlockTrigger();
+  if(walkover)
+    unlocked |= event_walkover.unlockTrigger();
+
+  return unlocked;
+}
 
 /*
  * Description: Unsets the sprite matrix corresponding to the state.
