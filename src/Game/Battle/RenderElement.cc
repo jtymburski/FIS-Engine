@@ -38,7 +38,9 @@ RenderElement::RenderElement()
       time_fade_out{0},
       time_left{0},
       alpha{0},
+      fade_rate{0},
       element_sprite{nullptr},
+      loops_to_do{0},
       element_text{Text()},
       element_font{nullptr},
       color{0, 0, 0, 0},
@@ -64,8 +66,11 @@ RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite,
   buildSprite(plep_sprite);
 
   if(element_sprite)
-    element_sprite->setNumLoops(num_loops);
-  updateStatus();
+    element_sprite->resetLoops();
+
+  loops_to_do = num_loops;
+
+  status = initialStatusFade();
   render_type = RenderType::PLEP;
 }
 
@@ -102,6 +107,40 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+uint8_t RenderElement::calcColorRed()
+{
+  auto pc_fade = 0;
+
+  if(color.a != 0)
+    pc_fade = (alpha * 100) / color.a;
+
+  float red_float = (pc_fade * color.r) / (float)100;
+
+  return std::round(red_float);
+}
+
+uint8_t RenderElement::calcColorBlue()
+{
+  auto pc_fade = 0;
+
+  if(color.a != 0)
+    pc_fade = (alpha * 100) / color.a;
+
+  float blue_float = (pc_fade * color.b) / (float)100;
+  return std::round(blue_float);
+}
+
+uint8_t RenderElement::calcColorGreen()
+{
+  auto pc_fade = 0;
+
+  if(color.a != 0)
+    pc_fade = (alpha * 100) / color.a;
+
+  float green_float = (pc_fade * color.g) / (float)100;
+  return std::round(green_float);
+}
 
 void RenderElement::createAsActionText(std::string action_name)
 {
@@ -164,7 +203,7 @@ void RenderElement::createAsSpriteFlash(BattleActor* target, SDL_Color color,
 {
   auto fade_time = std::floor(flash_time * 3.00 / 7.00);
   setTimes(flash_time, fade_time, fade_time);
-  updateStatus();
+  status = initialStatusFade();
   this->color = color;
   this->target = target;
   render_type = RenderType::RGB_SPRITE_FLASH;
@@ -197,6 +236,8 @@ bool RenderElement::setTimes(uint32_t time_begin, uint32_t time_fade_in,
   this->time_fade_in = time_fade_in;
   this->time_fade_out = time_fade_out;
 
+  status = initialStatusFade();
+
   return valid;
 }
 
@@ -214,29 +255,81 @@ void RenderElement::setAcceleration(float acceleration_x, float acceleration_y)
 
 bool RenderElement::update(int32_t cycle_time)
 {
-  (void)cycle_time;
-  updateStatus();
+  time_left -= cycle_time;
+
+  updateStatus(cycle_time);
+
   return false;
 }
 
-bool RenderElement::updateStatus()
+bool RenderElement::updateStatus(int32_t cycle_time)
 {
   if(render_type == RenderType::PLEP)
-    updateStatusPlep();
+    updateStatusPlep(cycle_time);
   else
-    updateStatusFade();
+    updateStatusFade(cycle_time);
 
   return false;
 }
 
-void RenderElement::updateStatusPlep()
+void RenderElement::updateStatusPlep(int32_t cycle_time)
 {
+  if(element_sprite)
+  {
+    element_sprite->update(cycle_time);
 
+    if(element_sprite->getLoops() >= loops_to_do)
+      status = RenderStatus::TIMED_OUT;
+  }
 }
 
-void RenderElement::updateStatusFade()
+void RenderElement::updateStatusFade(int32_t cycle_time)
 {
+  if(time_left <= 0)
+  {
+    status = RenderStatus::TIMED_OUT;
+  }
+  else
+  {
+    if((time_begin - time_left) >= time_fade_in)
+      status = RenderStatus::DISPLAYING;
+    if((time_left < time_fade_out))
+      status = RenderStatus::FADING_OUT;
 
+    velocity.x += (acceleration.x * cycle_time);
+    velocity.y += (acceleration.y * cycle_time);
+
+    delta.x += velocity.x * cycle_time;
+    delta.y += velocity.y * cycle_time;
+
+    if(std::abs(delta.x) >= 1.00)
+    {
+      auto neg_delta_x = std::floor(delta.x);
+
+      location.point.x += neg_delta_x;
+      delta.x -= neg_delta_x;
+    }
+
+    if(std::abs(delta.y) >= 1.00)
+    {
+      auto neg_delta_y = std::floor(delta.y);
+
+      location.point.y += neg_delta_y;
+      delta.y -= neg_delta_y;
+    }
+  }
+}
+
+RenderStatus RenderElement::initialStatusFade()
+{
+  if(time_fade_in > 0)
+    return RenderStatus::FADING_IN;
+  else if(time_fade_in <= 0 && time_fade_out == time_left)
+    return RenderStatus::FADING_OUT;
+  else if(time_begin > 0)
+    return RenderStatus::DISPLAYING;
+
+  return RenderStatus::TIMED_OUT;
 }
 
 /*=============================================================================

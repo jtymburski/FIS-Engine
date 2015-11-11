@@ -64,7 +64,7 @@ enum class RenderType
 enum class RenderStatus
 {
   FADING_IN,
-  DISPLAY,
+  DISPLAYING,
   FADING_OUT,
   TIMED_OUT
 };
@@ -102,16 +102,18 @@ public:
   Floatinate delta;
 
   /* Timing variables */
-  uint32_t time_fade_in;
-  uint32_t time_fade_out;
-  uint32_t time_begin;
-  uint32_t time_left;
+  int32_t time_fade_in;
+  int32_t time_fade_out;
+  int32_t time_begin;
+  int32_t time_left;
 
   /* Alpha to display the element at (depending on fade state, perhaps) */
   uint8_t alpha;
+  uint32_t fade_rate;
 
   /* Pointer to an element sprite */
   Sprite* element_sprite;
+  uint32_t loops_to_do;
 
   /* Textual class members */
   Text element_text;
@@ -160,6 +162,11 @@ private:
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
+  /* Color getting functions for various alpha states */
+  uint8_t calcColorRed();
+  uint8_t calcColorGreen();
+  uint8_t calcColorBlue();
+
   /* Creates the render element as an action text*/
   void createAsActionText(std::string text);
 
@@ -192,9 +199,11 @@ public:
   /* Updates the state of the render element */
   bool update(int32_t cycle_time);
 
-  bool updateStatus();
-  void updateStatusPlep();
-  void updateStatusFade();
+  bool updateStatus(int32_t cycle_time);
+  void updateStatusPlep(int32_t cycle_time);
+  void updateStatusFade(int32_t cycle_time);
+
+  RenderStatus initialStatusFade();
 
   /*=============================================================================
    * PRIVATE STATIC FUNCTIONS
