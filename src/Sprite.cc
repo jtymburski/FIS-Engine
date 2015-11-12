@@ -893,7 +893,7 @@ bool Sprite::render(SDL_Renderer *renderer, int x, int y, int w, int h)
         current->render(renderer);
 
       /* Render white mask, if relevant */
-      SDL_Texture *white_mask = Helpers::getWhiteMask();
+      SDL_Texture *white_mask = Helpers::getMaskWhite();
       if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
       {
         double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
@@ -1150,8 +1150,11 @@ void Sprite::setNumLoops(int32_t loops)
  */
 void Sprite::setOpacity(uint8_t opacity)
 {
-  this->opacity = opacity;
-  SDL_SetTextureAlphaMod(texture, opacity);
+  if(this->opacity != opacity)
+  {
+    this->opacity = opacity;
+    SDL_SetTextureAlphaMod(texture, opacity);
+  }
 }
 
 /*

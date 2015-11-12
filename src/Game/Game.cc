@@ -72,6 +72,8 @@ Game::Game(Options* running_config)
   loaded_sub = false;
   map_lvl = -1;
   mode = DISABLED;
+  mode_load = NOLOAD;
+  mode_next = NONE;
   player_main = nullptr;
 
   /* Set up map class */
@@ -248,28 +250,30 @@ bool Game::changeMode(GameMode mode)
   bool allow = true;
 
   /* If allowed, make change */
-  if(allow && this->mode != mode)
+  if(allow && this->mode != mode && mode_next != mode)
   {
     /* Changes to execute on the view closing */
     if(this->mode == MAP)
       map_ctrl.enableView(false);
 
-    this->mode = mode;
+    /* Set the next mode */
+    mode_next = mode;
+    updateMode(0);
 
     /* PRINT - TEMPORARY */
-    if(this->mode == DISABLED)
+    if(mode == DISABLED)
       std::cout << "GAME MODE: DISABLED" << std::endl;
-    else if(this->mode == MAP)
+    else if(mode == MAP)
       std::cout << "GAME MODE: MAP" << std::endl;
-    else if(this->mode == BATTLE)
+    else if(mode == BATTLE)
       std::cout << "GAME MODE: BATTLE" << std::endl;
-    else if(this->mode == VICTORY_SCREEN)
+    else if(mode == VICTORY_SCREEN)
       std::cout << "GAME MODE: VICTORY" << std::endl;
-    else if(this->mode == LOADING)
+    else if(mode == LOADING)
       std::cout << "GAME MODE: LOADING" << std::endl;
 
     /* Changes to execute on the view opening */
-    if(this->mode == MAP)
+    if(mode == MAP)
       map_ctrl.enableView(true);
   }
 
@@ -368,6 +372,7 @@ void Game::eventStartBattle(int person_id, int source_id)
   {
     if(battle_ctrl)
     {
+      battle_ctrl->setRenderer(active_renderer);
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
       changeMode(BATTLE);
     }
@@ -484,7 +489,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   unload(full_load);
 
   /* Loading trigger */
-  changeMode(LOADING);
+  //changeMode(LOADING); // TODO: Keep or Remove
 
   /* Initial set-up */
   if(full_load)
@@ -1008,6 +1013,29 @@ void Game::removeSkillSets()
     delete(*it);
   list_set.clear();
 }
+  
+/* Update mode */
+void Game::updateMode(int cycle_time)
+{
+  (void)cycle_time;
+
+  if(mode_next != NONE)
+  {
+    if(mode == MAP)
+    {
+      if(map_ctrl.isModeDisabled())
+      {
+        mode = mode_next;
+        mode_next = NONE;
+      }
+    }
+    else
+    {
+      mode = mode_next;
+      mode_next = NONE;
+    }
+  }
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -1016,10 +1044,15 @@ void Game::removeSkillSets()
 /* Enable view trigger */
 void Game::enableView(bool enable)
 {
-  if(enable && isLoadedCore() && isLoadedSub())
-    changeMode(MAP);
+  if(enable)
+    changeMode(LOADING);
   else
     changeMode(DISABLED);
+
+  //if(enable && isLoadedCore() && isLoadedSub())
+  //  changeMode(MAP);
+  //else
+  //  changeMode(DISABLED);
 }
 
 /* Returns a pointer to a given action by index or by ID */
@@ -1232,6 +1265,12 @@ SkillSet* Game::getSkillSet(const int32_t& index, const bool& by_id)
 
   return nullptr;
 }
+  
+/* Get the game mode */
+Game::GameMode Game::getMode()
+{
+  return mode;
+}
 
 /* Is the game loaded */
 //bool Game::isLoaded()
@@ -1251,36 +1290,26 @@ bool Game::isLoadedSub()
   return loaded_sub;
 }
 
+/* Mode checks - only returns true for ready if ready for control, reverse
+ * for disabled */
+bool Game::isModeDisabled()
+{
+  return (mode == DISABLED && mode_next == NONE);
+}
+
+/* Mode checks - only returns true for ready if ready for control, reverse
+ * for disabled */
+bool Game::isModeReady()
+{
+  return (mode != DISABLED && mode != NONE && mode_next == NONE);
+}
+
 /* The key down events to be handled by the class */
 bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
-  /* Exit the game, game has finished processing */
-  if(event.keysym.sym == SDLK_ESCAPE)
-  {
-    return true;
-  }
   /* TESTING section - probably remove at end */
-  /* Load game */
-//  else if(event.keysym.sym == SDLK_F5)
-//  {
-//    /* Preliminary handling */
-//    if(game_path != "maps/design_map.ugv")
-//    {
-//      game_path = "maps/design_map.ugv";
-//      map_lvl = 0;
-//    }
-//    else
-//    {
-//      map_lvl++;
-//      if(map_lvl > 2)
-//        map_lvl = 0;
-//    }
-//
-//    /* Load map */
-//    load(active_renderer);
-//  }
   /* Inventory Testing */
-  else if(event.keysym.sym == SDLK_3)
+  if(event.keysym.sym == SDLK_3)
   {
     if(player_main != nullptr && player_main->getSleuth() != nullptr &&
        player_main->getSleuth()->getInventory() != nullptr)
@@ -1313,10 +1342,23 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Otherwise, send keys to the active view */
   else
   {
+    /* -- MAP MODE -- */
     if(mode == MAP)
-      return map_ctrl.keyDownEvent(event);
+    {
+      if(map_ctrl.keyDownEvent(event))
+        changeMode(DISABLED);
+    }
+    /* -- TODO: TEMP - just for dev mode so you can escape battle -- */
+    else if(event.keysym.sym == SDLK_ESCAPE)
+    {
+      changeMode(DISABLED);
+    }
+    /* -- BATTLE MODE -- */
     else if(mode == BATTLE)
-      return battle_ctrl->keyDownEvent(event);
+    {
+      if(battle_ctrl->keyDownEvent(event))
+        changeMode(DISABLED);
+    }
   }
 
   return false;
@@ -1345,10 +1387,12 @@ bool Game::load(SDL_Renderer* renderer, bool full_load)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
+  /* -- MAP MODE -- */
   if(mode == MAP)
   {
     return map_ctrl.render(renderer);
   }
+  /* -- BATTLE MODE -- */
   else if(mode == BATTLE)
   {
     /* Assign the rendererer to Battle and data container class */
@@ -1364,6 +1408,15 @@ bool Game::render(SDL_Renderer* renderer)
       /* Render the battle */
       return battle_ctrl->render();
     }
+  }
+  /* -- LOADING MODE -- */
+  else if(mode == LOADING)
+  {
+    if(!isLoadedCore() || mode_load == FULLLOAD)
+      load(renderer, true);
+    else
+      load(renderer, false);
+    mode_load = NOLOAD;
   }
 
   return true;
@@ -1413,9 +1466,21 @@ bool Game::setPath(std::string path, int level, bool load)
       game_path = path;
       map_lvl = level;
 
-      /* If load enabled, load the new map */
-      if(load)
-        this->load(active_renderer, full_load);
+      /* Handle what condition for the game */
+      if(mode != DISABLED)
+      {
+        changeMode(LOADING);
+      }
+      else
+      {
+        unload(full_load);
+      }
+
+      /* Load mode */
+      if(full_load)
+        mode_load = FULLLOAD;
+      else
+        mode_load = SUBLOAD;
     }
 
     return true;
@@ -1439,7 +1504,7 @@ void Game::setSoundHandler(SoundHandler* new_handler)
 /* Unload the game - full unload = false will only unload map*/
 void Game::unload(bool full_unload)
 {
-  changeMode(DISABLED);
+  //changeMode(DISABLED);
 
   /* Unload map */
   unloadSub();
@@ -1474,6 +1539,9 @@ bool Game::update(int32_t cycle_time)
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
 
+  /* Mode next handling */
+  updateMode(cycle_time);
+
   /* MAP MODE */
   if(mode == MAP)
   {
@@ -1491,6 +1559,15 @@ bool Game::update(int32_t cycle_time)
     {
       return battle_ctrl->update(cycle_time);
     }
+  }
+  /* LOADING MODE */
+  else if(mode == LOADING)
+  {
+  }
+  /* If DISABLED - processing complete: exit */
+  else if(mode == DISABLED)
+  {
+    return true;
   }
 
   return false;

@@ -10,7 +10,7 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-const std::string Application::kLOGO_ICON = 
+const std::string Application::kLOGO_ICON =
                                        "sprites/General/univ-logo-small.png";
 const std::string Application::kPATH = "maps/Univursa.ugv";
 const bool Application::kPATH_ENCRYPTED = false;
@@ -61,6 +61,9 @@ Application::Application(std::string base_path, std::string app_path,
   title_screen.setSoundHandler(&sound_handler);
 
   /* Sets the current mode - paused mode */
+  //changeMode(PAUSED);
+  mode = NONE;
+  mode_next = NONE;
   changeMode(PAUSED);
 }
 
@@ -92,26 +95,21 @@ bool Application::changeMode(AppMode mode)
     else if(this->mode == PAUSED)
       Sound::resumeAllChannels();
 
-    this->mode = mode;
+    mode_next = mode;
+    //this->mode = mode;
 
     /* Changes to execute on the views opening */
-    if(this->mode == TITLESCREEN)
+    if(mode == TITLESCREEN)
       title_screen.enableView(true);
-    else if(this->mode == GAME)
+    else if(mode == GAME)
       game_handler.enableView(true);
-    else if(this->mode == PAUSED)
+    else if(mode == PAUSED)
       Sound::pauseAllChannels();
-    else if(this->mode == LOADING)
-      displayLoadingFrame();
+    //else if(mode == LOADING)
+    //  displayLoadingFrame();
 
-    /* Finally, load game if it isn't loaded and it's game mode */
-    if(this->mode == GAME)
-    {
-      if(!game_handler.isLoadedCore())
-        game_handler.load(renderer, true);
-      else if(!game_handler.isLoadedSub())
-        game_handler.load(renderer, false);
-    }
+    /* Update views */
+    updateViews(0);
   }
 
   return allow;
@@ -164,7 +162,7 @@ void Application::handleEvents()
       {
         //system_options->setAudioLevel(system_options->getAudioLevel() - 15);
         system_options->setMusicLevel(system_options->getMusicLevel() - 10);
-        std::cout << "Music Level: " << system_options->getMusicLevel() 
+        std::cout << "Music Level: " << system_options->getMusicLevel()
                   << std::endl;
       }
       /* -- Audio level increase -- */
@@ -172,7 +170,7 @@ void Application::handleEvents()
       {
         //system_options->setAudioLevel(system_options->getAudioLevel() + 15);
         system_options->setMusicLevel(system_options->getMusicLevel() + 10);
-        std::cout << "Music Level: " << system_options->getMusicLevel() 
+        std::cout << "Music Level: " << system_options->getMusicLevel()
                   << std::endl;
       }
       /* -- Refresh config: cycle maps -- */
@@ -229,9 +227,11 @@ void Application::handleEvents()
       }
       else if(mode == GAME)
       {
+        game_handler.keyDownEvent(press_event);
+
         /* If the key event returns true, exit the game view */
-        if(game_handler.keyDownEvent(press_event))
-          changeMode(TITLESCREEN);
+        //if(game_handler.keyDownEvent(press_event))
+        //  changeMode(TITLESCREEN);
       }
       else if(mode == TESTBATTLE)
       {
@@ -288,11 +288,14 @@ bool Application::load()
   /* If file open was successful, move forward */
   if(success)
   {
-    std::cout << "--" << std::endl << "Application Load: " << fh.getDate() 
+    std::cout << "--" << std::endl << "Application Load: " << fh.getDate()
               << std::endl << "--" << std::endl;
 
     /* Display loading frame */
-    changeMode(LOADING);
+    displayLoadingFrame();
+
+    /* First unload */
+    unload();
 
     do
     {
@@ -331,15 +334,31 @@ void Application::render(uint32_t cycle_time)
 {
   /* Handle the individual action items, depending on whats running */
   if(mode == TITLESCREEN)
+  {
     title_screen.render(renderer);
+  }
   else if(mode == GAME)
+  {
+    if(game_handler.getMode() == Game::LOADING)
+      displayLoadingFrame();
     game_handler.render(renderer);
+  }
+  else if(mode == LOADING)
+  {
+    displayLoadingFrame();
+  }
   else if(mode == TESTBATTLE)
+  {
     test_battle.render(renderer);
+  }
   else if(mode == OPTIONS)
+  {
     cycle_time = cycle_time; // TODO: DO OPTIONS EXECUTION
+  }
   else if (mode == PAUSED)
+  {
     cycle_time = cycle_time;
+  }
 }
 
 /* Revert to temporary mode */
@@ -354,8 +373,8 @@ bool Application::revertMode()
 void Application::unload()
 {
   /* Change mode back to title screen */
-  changeMode(TITLESCREEN);
-  
+  //changeMode(TITLESCREEN);
+
   /* Clean up game */
   game_handler.unload();
 
@@ -411,6 +430,24 @@ bool Application::updateViews(int cycle_time)
 {
   bool quit = false;
 
+  /* Mode next handling */
+  if(mode_next != NONE)
+  {
+    if(mode == GAME)
+    {
+      if(game_handler.isModeDisabled())
+      {
+        mode = mode_next;
+        mode_next = NONE;
+      }
+    }
+    else
+    {
+      mode = mode_next;
+      mode_next = NONE;
+    }
+  }
+
   /* Handle any appropriate actions of the individual views */
   if(mode == TITLESCREEN)
   {
@@ -438,7 +475,15 @@ bool Application::updateViews(int cycle_time)
   else if(mode == GAME)
   {
     if(game_handler.update(cycle_time))
-      changeMode(TITLESCREEN);
+    {
+      if(mode_next == NONE)
+        changeMode(TITLESCREEN);
+    }
+  }
+  /* Loading */
+  else if(mode == LOADING)
+  {
+    load();
   }
   /* If test battle, update and check if it's finished */
   else if(mode == TESTBATTLE)
@@ -577,11 +622,12 @@ bool Application::initialize()
       game_handler.setRenderer(renderer);
 
       /* Create helper graphical portions */
-      Helpers::createWhiteMask(renderer);
-      load_frame.setTexture(system_options->getBasePath() + 
+      Helpers::createMaskBlack(renderer);
+      Helpers::createMaskWhite(renderer);
+      load_frame.setTexture(system_options->getBasePath() +
                             "sprites/General/loading.png",
                             renderer);
-      
+
       /* Set render color */
       SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
     }
@@ -599,7 +645,7 @@ bool Application::initialize()
   /* If successful, attempt final load sequence */
   if(success)
   {
-    success &= load();
+    //success &= load();
 
     /* Set the title screen background - TODO: Encapsulate in load?? */
     title_screen.setBackground("sprites/Title/old_title.png", renderer);
@@ -607,7 +653,8 @@ bool Application::initialize()
     if(success)
     {
       initialized = true;
-      game_handler.setPath(app_path, app_map, false);
+      changeMode(LOADING);
+      //game_handler.setPath(app_path, app_map, false);
     }
   }
 
@@ -716,33 +763,34 @@ void Application::setPath(std::string path, int level, bool skip_title)
     if(app_path != path)
     {
       /* Unload internal resources */
-      unload();
+      //unload();
 
       /* Set new path */
       app_path = path;
       app_map = level;
+      changeMode(LOADING);
 
       /* Load */
-      load();
+      //load();
     }
     /* Otherwise, only level update */
     else if(app_map != level)
     {
       /* Unload game sub data */
-      game_handler.unloadSub();
+      //game_handler.unloadSub();
 
       /* Set the new level */
       app_map = level;
       game_handler.setPath(app_path, app_map, false);
 
       /* If mode is already in game, update the map accordingly */
-      if(mode == GAME)
-      {
-        if(!game_handler.isLoadedCore())
-          game_handler.load(renderer, true);
-        else if(!game_handler.isLoadedSub())
-          game_handler.load(renderer, false);
-      }
+      //if(mode == GAME)
+      //{
+      //  if(!game_handler.isLoadedCore())
+      //    game_handler.load(renderer, true);
+      //  else if(!game_handler.isLoadedSub())
+      //    game_handler.load(renderer, false);
+      //}
     }
 
     /* Go to game mode, if skip title is enabled */
@@ -762,7 +810,7 @@ void Application::uninitialize()
   // TODO: Game needs to be brought down prior to render destruction
   if(renderer != NULL)
   {
-    Helpers::deleteWhiteMask();
+    Helpers::deleteMasks();
     SDL_DestroyRenderer(renderer);
   }
   renderer = NULL;

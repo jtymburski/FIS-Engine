@@ -80,7 +80,8 @@ private:
   static const uint32_t seed_original;
   static std::mt19937 rand_eng;
   static std::mt19937_64 rand_64_eng;
-  static SDL_Texture* white_mask; /* Brightness manipulator */
+  static SDL_Texture* mask_black; /* Fading manipulator */
+  static SDL_Texture* mask_white; /* Brightness manipulator */
 
   /*------------------- Constants -----------------------*/
   const static uint8_t kMAX_RENDER_DEPTH; /* Max render depth */
@@ -238,14 +239,16 @@ public:
  * GRAPHICAL HELPER FUNCTIONS
  *============================================================================*/
 public:
-  /* Creates the white mask to use - needs to be called to init */
-  static void createWhiteMask(SDL_Renderer* renderer);
+  /* Creates the masks to use - needs to be called to init */
+  static void createMaskBlack(SDL_Renderer* renderer);
+  static void createMaskWhite(SDL_Renderer* renderer);
 
-  /* Deletes the white mask - when game shut down */
-  static void deleteWhiteMask();
+  /* Deletes the masks - when game shut down */
+  static void deleteMasks();
 
-  /* Returns the static white mask created. NULL if not initialized */
-  static SDL_Texture* getWhiteMask();
+  /* Returns the static masks created. NULL if not initialized */
+  static SDL_Texture* getMaskBlack();
+  static SDL_Texture* getMaskWhite();
 };
 
 #endif // HELPERS_H

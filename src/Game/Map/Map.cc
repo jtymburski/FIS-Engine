@@ -41,8 +41,12 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   /* Set initial variables */
   base_path = "";
   this->event_handler = NULL;
+  fade_alpha = 255;
+  fade_status = BLACK;
   loaded = false;
   map_index = 0;
+  mode_curr = DISABLED;
+  mode_next = NONE;
   music_id = -1;
   music_runtime = -1;
   player = NULL;
@@ -245,6 +249,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
   return false;
 }
 
+// TODO: Comment
 bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
 {
   std::string identifier = data.getElement(file_index);
@@ -315,6 +320,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
   return false;
 }
 
+// TODO: Comment
 bool Map::addThingData(XmlData data, uint16_t section_index,
                        SDL_Renderer* renderer)
 {
@@ -504,6 +510,41 @@ void Map::audioUpdate(bool sub_change)
         event_handler->triggerAudioStop(SoundChannels::WEATHER1);
     }
   }
+}
+  
+/* Change the mode that the game is running */
+bool Map::changeMode(MapMode mode)
+{
+  /* Run logic to determine if mode switch is allowed - currently always true */
+  bool allow = true;
+
+  /* If allowed, make change */
+  if(allow && mode_next != mode)// && mode_curr != mode)
+  {
+    /* Changes to execute on the old modes - if relevant */
+    //if(this->mode == MAP)
+    //  map_ctrl.enableView(false);
+
+    mode_next = mode;
+
+    /* PRINT - TEMPORARY */
+    if(mode_next == DISABLED)
+      std::cout << "-MAP MODE: DISABLED" << std::endl;
+    else if(mode_next == NORMAL)
+      std::cout << "-MAP MODE: NORMAL" << std::endl;
+    else if(mode_next == SWITCHSUB)
+      std::cout << "-MAP MODE: SWITCH SUB" << std::endl;
+    else if(mode_next == VIEW)
+      std::cout << "-MAP MODE: VIEW" << std::endl;
+    else if(mode_next == NONE)
+      std::cout << "-MAP MODE: NONE" << std::endl;
+
+    /* Changes to execute on the new modes - if relevant */
+    //if(this->mode == MAP)
+    //  map_ctrl.enableView(true);
+  }
+
+  return allow;
 }
 
 /* Returns the interactive object, based on the ID */
@@ -940,6 +981,128 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
 
   return id_stack;
 }
+ 
+/* Updates the map fade - lots TODO here */
+bool Map::updateFade(int cycle_time)
+{
+  bool end_status = false;
+
+  /* -- FADE BLACK -- */
+  if(fade_status == BLACK)
+  {
+    fade_alpha = 255;
+  }
+  /* -- FADE VISIBLE -- */
+  else if(fade_status == VISIBLE)
+  {
+    fade_alpha = 0;
+  }
+  /* -- FADING IN -- */
+  else if(fade_status == FADINGIN)
+  {
+    int diff = cycle_time / 3;
+    if(diff > 5)
+      diff = 5; /* Over-run protection */
+    if(diff < fade_alpha)
+    {
+      fade_alpha -= diff;
+    }
+    else
+    {
+      fade_alpha = 0;
+      fade_status = VISIBLE;
+      end_status = true;
+    }
+  }
+  /* -- FADING OUT -- */
+  else if(fade_status == FADINGOUT)
+  {
+    int diff = cycle_time / 3;
+    if(diff > 5)
+      diff = 5; /* Over-run protection */
+    if((diff + fade_alpha) < 255)
+    {
+      fade_alpha += diff;
+    }
+    else
+    {
+      fade_alpha = 255;
+      fade_status = BLACK;
+      end_status = true;
+    }
+  }
+  /* -- FADING INVALID -- */
+  else
+  {
+    fade_status = BLACK;
+  }
+
+  return end_status;
+}
+
+/* Updates the map mode - lots TODO here */
+void Map::updateMode(int cycle_time)
+{
+  /* First run parsing */
+  if(mode_curr == mode_next)
+  {
+    if(mode_next == DISABLED)
+    {
+      mode_curr = NORMAL;
+    }
+    else
+    {
+      mode_next = NONE;
+    }
+  }
+
+  /* -- CURRENT MODE DISABLED -- */
+  if(mode_curr == DISABLED)
+  {
+    /* -- NEXT MODE NORMAL -- */
+    if(mode_next != NONE)
+    {
+      /* Fade in */
+      fade_status = FADINGIN;
+      if(updateFade(cycle_time))
+      {
+        mode_curr = NORMAL;
+        if(mode_next == NORMAL)
+          mode_next = NONE;
+      }
+    }
+  }
+  /* -- CURRENT MODE NORMAL -- */
+  else if(mode_curr == NORMAL)
+  {
+    /* -- NEXT MODE DISABLED -- */
+    if(mode_next == DISABLED)
+    {
+      /* Fade out */
+      fade_status = FADINGOUT;
+      if(updateFade(cycle_time))
+      {
+        mode_curr = DISABLED;
+        mode_next = NONE;
+      }
+    }
+  }
+  /* -- CURRENT MODE SWITCH SUB MAP -- */
+  else if(mode_curr == SWITCHSUB)
+  {
+
+  }
+  /* -- CURRENT MODE VIEW -- */
+  else if(mode_curr == VIEW)
+  {
+
+  }
+  /* -- CURRENT MODE NONE or INVALID -- */
+  else
+  {
+    mode_curr = DISABLED;
+  }
+}
 
 /* Updates the height and width, based on zoom factors */
 void Map::updateTileSize()
@@ -1008,10 +1171,12 @@ void Map::enableView(bool enable)
 
   if(enable)
   {
+    changeMode(NORMAL);
     audioStart();
   }
   else
   {
+    changeMode(DISABLED);
     audioStop();
   }
 }
@@ -1095,191 +1260,210 @@ bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
   // return true;
 // }
 
+/* Returns if the map has been currently loaded with data */
 bool Map::isLoaded()
 {
   return loaded;
+}
+  
+/* Mode checks - only returns true if DISABLED current mode and fade status is
+ * BLACK */
+bool Map::isModeDisabled()
+{
+  return (mode_curr == DISABLED && fade_status == BLACK);
+}
+
+/* Mode checks - only returns true if NORMAL current mode and fade status is
+ * VISIBLE */
+bool Map::isModeNormal()
+{
+  return (mode_curr == NORMAL && fade_status == VISIBLE);
 }
 
 /* The key up and down events to be handled by the class */
 bool Map::keyDownEvent(SDL_KeyboardEvent event)
 {
-  /* Exit the map, map has finished processing */
-  if(event.keysym.sym == SDLK_ESCAPE)
+  /* Control is only permitted if the mode is normal */
+  if(isModeNormal())
   {
-    if(item_menu.isActive())
-      item_menu.close();
-    else
+    /* Exit the map, map has finished processing */
+    if(event.keysym.sym == SDLK_ESCAPE)
     {
-      unfocus();
-      return true;
+      if(item_menu.isActive())
+        item_menu.close();
+      else
+      {
+        unfocus();
+        return true;
+      }
     }
-  }
-  /* ---- START TEST CODE ---- */
-  /* Test: trigger grey scale */
-  else if(event.keysym.sym == SDLK_g)
-  {
-    bool enable = !tile_sprites[0]->isGreyScale();
-    for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
-      (*i)->useGreyScale(enable);
-  }
-  /* Test: Pause dialog */
-  else if(event.keysym.sym == SDLK_p)
-    map_dialog.setPaused(!map_dialog.isPaused());
-  /* Test: Reset player location */
-  else if(event.keysym.sym == SDLK_r)
-  {
-    player->resetPosition();
-	  setSectionIndex(player->getStartingSection());
-  }
-  /* Test: Dialog Reset */
-  else if(event.keysym.sym == SDLK_5)
-    map_dialog.clearAll(true);
-  /* Test: Pick up test. Time limit */
-  else if(event.keysym.sym == SDLK_6)
-    map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
-  /* Test: Pick up test. No time limit */
-  else if(event.keysym.sym == SDLK_7)
-    map_dialog.initPickup(items.front()->getDialogImage(), 5);
-  /* Test: single line chop off notification */
-  else if(event.keysym.sym == SDLK_8)
-    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", true, 0);
-  /* Test: multi line notification */
-  else if(event.keysym.sym == SDLK_9)
-    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.");
-  /* Test: full conversation */
-  else if(event.keysym.sym == SDLK_0)
-  {
-    Event blank_event = EventSet::createBlankEvent();
-
-    Conversation* convo = new Conversation;
-    convo->category = DialogCategory::TEXT;
-    convo->action_event = blank_event;
-    convo->text = "This is the initial conversation point that will start it. ";
-    convo->text += "How can this continue? It must pursue to complete ";
-    convo->text += "embodiment. Ok, maybe I'll just keep typing until I break ";
-    convo->text += "the entire compiler.";
-    convo->thing_id = 0;
-    Conversation convo2;
-    convo2.category = DialogCategory::TEXT;
-    convo2.action_event = blank_event;
-    convo2.text = "Pass the chips please.";
-    convo2.thing_id = 24;
-    Conversation test1, test2, test3, test4, test5;
-    test1.category = DialogCategory::TEXT;
-    test1.action_event = blank_event;
-    test1.text = "This is a test to see how data runs. The line will split ";
-    test1.text += "once unless it is an option based selection in which case ";
-    test1.text += "it will restrict.";
-    test1.thing_id = 3;
-    test2.category = DialogCategory::TEXT;
-    test2.action_event = blank_event;
-    test2.text = "This is a no man case. See what happens!! Ok, this is the ";
-    test2.text += "too long case where the lines never cease to exist and the ";
-    test2.text += "points aren't for real. I'm feeling a bit hungry though ";
-    test2.text += "so I don't know if I'll have the stamina to clean up this ";
-    test2.text += "case in all it's glory. Repeat: ";
-    test2.text += test2.text;
-    test2.text += test2.text;
-    test2.thing_id = 2;
-    test2.next.push_back(test1);
-    test3.category = DialogCategory::TEXT;
-    test3.action_event = EventSet::createEventStartBattle();
-    test3.text = "Back to finish off with a clean case with a couple of lines.";
-    test3.text += " So this requires me to write a bunch of BS to try and fill";
-    test3.text += " these lines.";
-    test3.text += test3.text;
-    test3.text += test3.text;
-    test3.thing_id = 1003;
-    test3.next.push_back(test2);
-    test4.category = DialogCategory::TEXT;
-    test4.action_event = blank_event;
-    test4.text = "Option 1 - This goes on and on and on and on and on and ";
-    test4.text += "lorem ipsum. This is way too long to be an option. Loser";
-    test4.thing_id = -1;
-    test4.next.push_back(test2);
-    test5.category = DialogCategory::TEXT;
-    test5.action_event = blank_event;
-    test5.text = "Option 2";
-    test5.thing_id = -1;
-    test5.next.push_back(test3);
-    test1.next.push_back(test4);
-    test1.next.push_back(test5);
-    test4.text = "Option 3";
-    test1.next.push_back(test4);
-    test5.text = "Option 4";
-    test1.next.push_back(test5);
-    test4.text = "Option 5";
-    test1.next.push_back(test4);
-    test5.text = "Option 6";
-    test1.next.push_back(test5);
-    convo2.next.push_back(test1);
-    convo->next.push_back(convo2);
-
-    /* Run the conversation and then delete */
-    if(map_dialog.initConversation(convo, player, NULL))
+    /* ---- START TEST CODE ---- */
+    /* Test: trigger grey scale */
+    else if(event.keysym.sym == SDLK_g)
     {
-      std::vector<int> list = map_dialog.getConversationIDs();
-      map_dialog.setConversationThings(getThingData(list));
+      bool enable = !tile_sprites[0]->isGreyScale();
+      for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
+        (*i)->useGreyScale(enable);
     }
-
-    delete convo;
-  }
-  /* Test: Zoom back out */
-  else if(event.keysym.sym == SDLK_z)
-    zoom_out = true;
-  /* Test: Zoom back in */
-  else if(event.keysym.sym == SDLK_x)
-    zoom_in = true;
-  /* Test: Get persons at index 1 to target player */
-  else if(event.keysym.sym == SDLK_t)
-  {
-    if(persons[1]->getTarget() == NULL)
-      persons[1]->setTarget(player);
-    else
-      persons[1]->clearTarget();
-  }
-  /* Test: Location of player */
-  else if(event.keysym.sym == SDLK_l)
-  {
-    if(player != NULL)
-	  {
-	    SDL_Rect bbox = player->getBoundingBox();
-	    SDL_Rect bpixel = player->getBoundingPixels();
-
-	    std::cout << "----" << std::endl;
-	    std::cout << "Location X: " << bbox.x << " - " << bpixel.x << std::endl;
-	    std::cout << "Location Y: " << bbox.y << " - " << bpixel.y << std::endl;
-	    std::cout << "Width: " << bbox.w << " - " << bpixel.w << std::endl;
-	    std::cout << "Height: " << bbox.h << " - " << bpixel.h << std::endl;
-	    std::cout << "----" << std::endl;
-	  }
-  }
-  /* ---- END TEST CODE ---- */
-  /* If item menu is active, send keys there */
-  else if(item_menu.isActive())
-    item_menu.keyDownEvent(event);
-  /* If conversation is active, send keys there */
-  else if(map_dialog.isConversationActive())
-    map_dialog.keyDownEvent(event);
-  /* Interact initiation from player */
-  else if(event.keysym.sym == SDLK_SPACE)
-    initiateThingInteraction(player);
-  /* Otherwise, send keys to player for control */
-  else if(player != NULL)
-  {
-    if(event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT)
-      player->setRunning(true);
-    else if(event.keysym.sym == SDLK_1)
+    /* Test: Pause dialog */
+    else if(event.keysym.sym == SDLK_p)
+      map_dialog.setPaused(!map_dialog.isPaused());
+    /* Test: Reset player location */
+    else if(event.keysym.sym == SDLK_r)
     {
-      viewport.lockOn(player);
+      player->resetPosition();
+  	  setSectionIndex(player->getStartingSection());
     }
-    else if(event.keysym.sym == SDLK_2)
+    /* Test: Dialog Reset */
+    else if(event.keysym.sym == SDLK_5)
+      map_dialog.clearAll(true);
+    /* Test: Pick up test. Time limit */
+    else if(event.keysym.sym == SDLK_6)
+      map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
+    /* Test: Pick up test. No time limit */
+    else if(event.keysym.sym == SDLK_7)
+      map_dialog.initPickup(items.front()->getDialogImage(), 5);
+    /* Test: single line chop off notification */
+    else if(event.keysym.sym == SDLK_8)
+      map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", true, 0);
+    /* Test: multi line notification */
+    else if(event.keysym.sym == SDLK_9)
+      map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.");
+    /* Test: full conversation */
+    else if(event.keysym.sym == SDLK_0)
     {
-      if(getPerson(10000) != nullptr)
-        viewport.lockOn(getPerson(10000));
+      Event blank_event = EventSet::createBlankEvent();
+  
+      Conversation* convo = new Conversation;
+      convo->category = DialogCategory::TEXT;
+      convo->action_event = blank_event;
+      convo->text = "This is the initial conversation point that will start ";
+      convo->text += "it. How can this continue? It must pursue to complete ";
+      convo->text += "embodiment. Ok, maybe I'll just keep typing until I ";
+      convo->text += "break the entire compiler.";
+      convo->thing_id = 0;
+      Conversation convo2;
+      convo2.category = DialogCategory::TEXT;
+      convo2.action_event = blank_event;
+      convo2.text = "Pass the chips please.";
+      convo2.thing_id = 24;
+      Conversation test1, test2, test3, test4, test5;
+      test1.category = DialogCategory::TEXT;
+      test1.action_event = blank_event;
+      test1.text = "This is a test to see how data runs. The line will split ";
+      test1.text += "once unless it is an option based selection in which ";
+      test1.text += "case it will restrict.";
+      test1.thing_id = 3;
+      test2.category = DialogCategory::TEXT;
+      test2.action_event = blank_event;
+      test2.text = "This is a no man case. See what happens!! Ok, this is the ";
+      test2.text += "too long case where the lines never cease to exist and ";
+      test2.text += "the points aren't for real. I'm feeling a bit hungry ";
+      test2.text += "though so I don't know if I'll have the stamina to clean ";
+      test2.text += "up this case in all it's glory. Repeat: ";
+      test2.text += test2.text;
+      test2.text += test2.text;
+      test2.thing_id = 2;
+      test2.next.push_back(test1);
+      test3.category = DialogCategory::TEXT;
+      test3.action_event = EventSet::createEventStartBattle();
+      test3.text = "Back to finish off with a clean case with a couple of ";
+      test3.text += "lines. So this requires me to write a bunch of BS to try ";
+      test3.text += "and fill these lines.";
+      test3.text += test3.text;
+      test3.text += test3.text;
+      test3.thing_id = 1003;
+      test3.next.push_back(test2);
+      test4.category = DialogCategory::TEXT;
+      test4.action_event = blank_event;
+      test4.text = "Option 1 - This goes on and on and on and on and on and ";
+      test4.text += "lorem ipsum. This is way too long to be an option. Loser";
+      test4.thing_id = -1;
+      test4.next.push_back(test2);
+      test5.category = DialogCategory::TEXT;
+      test5.action_event = blank_event;
+      test5.text = "Option 2";
+      test5.thing_id = -1;
+      test5.next.push_back(test3);
+      test1.next.push_back(test4);
+      test1.next.push_back(test5);
+      test4.text = "Option 3";
+      test1.next.push_back(test4);
+      test5.text = "Option 4";
+      test1.next.push_back(test5);
+      test4.text = "Option 5";
+      test1.next.push_back(test4);
+      test5.text = "Option 6";
+      test1.next.push_back(test5);
+      convo2.next.push_back(test1);
+      convo->next.push_back(convo2);
+
+      /* Run the conversation and then delete */
+      if(map_dialog.initConversation(convo, player, NULL))
+      {
+        std::vector<int> list = map_dialog.getConversationIDs();
+        map_dialog.setConversationThings(getThingData(list));
+      }
+
+      delete convo;
     }
-    else
-      player->keyDownEvent(event);
+    /* Test: Zoom back out */
+    else if(event.keysym.sym == SDLK_z)
+      zoom_out = true;
+    /* Test: Zoom back in */
+    else if(event.keysym.sym == SDLK_x)
+      zoom_in = true;
+    /* Test: Get persons at index 1 to target player */
+    else if(event.keysym.sym == SDLK_t)
+    {
+      if(persons[1]->getTarget() == NULL)
+        persons[1]->setTarget(player);
+      else
+        persons[1]->clearTarget();
+    }
+    /* Test: Location of player */
+    else if(event.keysym.sym == SDLK_l)
+    {
+      if(player != NULL)
+  	  {
+  	    SDL_Rect bbox = player->getBoundingBox();
+  	    SDL_Rect bpixel = player->getBoundingPixels();
+  
+  	    std::cout << "----" << std::endl;
+  	    std::cout << "Location X: " << bbox.x << " - " << bpixel.x << std::endl;
+  	    std::cout << "Location Y: " << bbox.y << " - " << bpixel.y << std::endl;
+  	    std::cout << "Width: " << bbox.w << " - " << bpixel.w << std::endl;
+  	    std::cout << "Height: " << bbox.h << " - " << bpixel.h << std::endl;
+  	    std::cout << "----" << std::endl;
+  	  }
+    }
+    /* ---- END TEST CODE ---- */
+    /* If item menu is active, send keys there */
+    else if(item_menu.isActive())
+      item_menu.keyDownEvent(event);
+    /* If conversation is active, send keys there */
+    else if(map_dialog.isConversationActive())
+      map_dialog.keyDownEvent(event);
+    /* Interact initiation from player */
+    else if(event.keysym.sym == SDLK_SPACE)
+      initiateThingInteraction(player);
+    /* Otherwise, send keys to player for control */
+    else if(player != NULL)
+    {
+      if(event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT)
+        player->setRunning(true);
+      else if(event.keysym.sym == SDLK_1)
+      {
+        viewport.lockOn(player);
+      }
+      else if(event.keysym.sym == SDLK_2)
+      {
+        if(getPerson(10000) != nullptr)
+          viewport.lockOn(getPerson(10000));
+      }
+      else
+        player->keyDownEvent(event);
+    }
   }
 
   return false;
@@ -1287,17 +1471,20 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 
 void Map::keyUpEvent(SDL_KeyboardEvent event)
 {
-  if(item_menu.isActive())
-    item_menu.keyUpEvent(event);
-  else if(map_dialog.isConversationActive())
-    map_dialog.keyUpEvent(event);
-  else if(player != NULL)
+  if(isModeNormal())
   {
-    if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) &&
-       system_options != NULL && !system_options->isAutoRun())
-      player->setRunning(false);
-    else
-      player->keyUpEvent(event);
+    if(item_menu.isActive())
+      item_menu.keyUpEvent(event);
+    else if(map_dialog.isConversationActive())
+      map_dialog.keyUpEvent(event);
+    else if(player != NULL)
+    {
+      if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) &&
+         system_options != NULL && !system_options->isAutoRun())
+        player->setRunning(false);
+      else
+        player->keyUpEvent(event);
+    }
   }
 }
 
@@ -1574,7 +1761,6 @@ bool Map::pickupItem(MapItem* item, int count)
 bool Map::render(SDL_Renderer* renderer)
 {
   bool success = true;
-
   if(sub_map.size() > map_index)
   {
     /* Grab the variables for viewport */
@@ -1583,11 +1769,7 @@ bool Map::render(SDL_Renderer* renderer)
     uint16_t tile_y_start = viewport.getYTileStart();
     uint16_t tile_y_end = viewport.getYTileEnd();
     float x_offset = viewport.getX();
-    //int x_start = viewport.getXStart(); // TODO: Possible remove?
-    //int x_end = viewport.getXEnd();
     float y_offset = viewport.getY();
-    //int y_start = viewport.getYStart();
-    //int y_end = viewport.getYEnd();
 
     /* Render the lower tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
@@ -1620,6 +1802,7 @@ bool Map::render(SDL_Renderer* renderer)
         if(render_thing != NULL)
           render_thing->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                    x_offset, y_offset);
+
         /* Base map IO, if relevant */
         MapInteractiveObject* render_io =
                                       sub_map[map_index].tiles[i][j]->getIO(0);
@@ -1703,13 +1886,26 @@ bool Map::render(SDL_Renderer* renderer)
 
     /* Render the upper tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+    {
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+      {
         sub_map[map_index].tiles[i][j]->renderUpper(renderer,
                                                     x_offset, y_offset);
+      }
+    }
 
     /* Render the map dialogs / pop-ups */
     item_menu.render(renderer);
     map_dialog.render(renderer);
+
+    /* Overlay (for fading */
+    if(fade_status != VISIBLE)
+    {
+      SDL_SetTextureAlphaMod(Helpers::getMaskBlack(), fade_alpha);
+      SDL_RenderCopy(renderer, Helpers::getMaskBlack(), NULL, NULL);
+    }
+
+    /* Map menu last to render - TODO */
   }
 
   return success;
@@ -2055,9 +2251,14 @@ bool Map::update(int cycle_time)
   for(uint16_t i = 0; i < ios.size(); i++)
     ios[i]->update(cycle_time, tile_set);
 
+  /* If conversation is active, confirm that player is not moving */
+  if(map_dialog.isConversationActive() || !isModeNormal())
+    player->keyFlush();
+
   /* Finally, update the viewport and dialogs */
   item_menu.update(cycle_time);
   map_dialog.update(cycle_time);
+  updateMode(cycle_time);
   updateTileSize();
   viewport.update();
 

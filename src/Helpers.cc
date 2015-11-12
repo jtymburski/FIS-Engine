@@ -20,7 +20,8 @@
 const uint8_t Helpers::kMAX_RENDER_DEPTH = 10;
 const uint16_t Helpers::kTILE_SIZE = 64;
 
-SDL_Texture* Helpers::white_mask = NULL;
+SDL_Texture* Helpers::mask_black = nullptr;
+SDL_Texture* Helpers::mask_white = nullptr;
 
 /*=============================================================================
  * RANDOM GENERATOR FUNCTIONS
@@ -1698,6 +1699,32 @@ std::string& Helpers::trim(std::string& s)
  *============================================================================*/
 
 /*
+ * Description: Creates the black mask (only needs to be called once for the
+ *              duration of the game) that allows the engine to manipulate
+ *              visibility.
+ *
+ * Inputs: SDL_Renderer* renderer - the graphical rendering engine
+ * Output: none
+ */
+void Helpers::createMaskBlack(SDL_Renderer* renderer)
+{
+  if(mask_black == nullptr)
+  {
+    mask_black =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, kTILE_SIZE, kTILE_SIZE);
+    SDL_SetRenderTarget(renderer, mask_black);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderDrawRect(renderer, nullptr);
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    /* Set the new texture as the black mask (with additive blending) */
+    SDL_SetTextureBlendMode(mask_black, SDL_BLENDMODE_BLEND);
+  }
+}
+
+/*
  * Description: Creates the white mask (only needs to be called once for the
  *              duration of the game) that allows the engine to manipulate
  *              brightness.
@@ -1705,21 +1732,21 @@ std::string& Helpers::trim(std::string& s)
  * Inputs: SDL_Renderer* renderer - the graphical rendering engine
  * Output: none
  */
-void Helpers::createWhiteMask(SDL_Renderer* renderer)
+void Helpers::createMaskWhite(SDL_Renderer* renderer)
 {
-  if(white_mask == NULL)
+  if(mask_white == nullptr)
   {
-    white_mask =
+    mask_white =
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                           SDL_TEXTUREACCESS_TARGET, kTILE_SIZE, kTILE_SIZE);
-    SDL_SetRenderTarget(renderer, white_mask);
+    SDL_SetRenderTarget(renderer, mask_white);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
-    SDL_RenderDrawRect(renderer, NULL);
-    SDL_SetRenderTarget(renderer, NULL);
+    SDL_RenderDrawRect(renderer, nullptr);
+    SDL_SetRenderTarget(renderer, nullptr);
 
     /* Set the new texture as the white mask (with additive blending) */
-    SDL_SetTextureBlendMode(white_mask, SDL_BLENDMODE_ADD);
+    SDL_SetTextureBlendMode(mask_white, SDL_BLENDMODE_ADD);
   }
 }
 
@@ -1730,11 +1757,27 @@ void Helpers::createWhiteMask(SDL_Renderer* renderer)
  * Inputs: none
  * Output: none
  */
-void Helpers::deleteWhiteMask()
+void Helpers::deleteMasks()
 {
-  if(white_mask != NULL)
-    SDL_DestroyTexture(white_mask);
-  white_mask = NULL;
+  if(mask_black != nullptr)
+    SDL_DestroyTexture(mask_black);
+  mask_black = nullptr;
+
+  if(mask_white != nullptr)
+    SDL_DestroyTexture(mask_white);
+  mask_white = NULL;
+}
+
+/*
+ * Description: Returns the black mask for rendering on screen. Do not delete
+ *              this pointer.
+ *
+ * Inputs: none
+ * Output: SDL_Texture* - the brightmap texture
+ */
+SDL_Texture* Helpers::getMaskBlack()
+{
+  return mask_black;
 }
 
 /*
@@ -1744,7 +1787,7 @@ void Helpers::deleteWhiteMask()
  * Inputs: none
  * Output: SDL_Texture* - the brightmap texture
  */
-SDL_Texture* Helpers::getWhiteMask()
+SDL_Texture* Helpers::getMaskWhite()
 {
-  return white_mask;
+  return mask_white;
 }

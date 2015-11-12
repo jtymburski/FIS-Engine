@@ -53,6 +53,25 @@ public:
   /* Destructor function */
   ~Map();
 
+  /* The map fade operator, for controlling how the screen appears */
+  enum MapFade
+  {
+    BLACK = 0,
+    VISIBLE = 1,
+    FADINGIN = 2,
+    FADINGOUT = 3
+  };
+
+  /* The map mode operator, for controlling the visible widget */
+  enum MapMode
+  {
+    DISABLED = 0,
+    NORMAL = 1,
+    SWITCHSUB = 2,
+    VIEW = 3,
+    NONE = 4
+  };
+
 private:
   /* Base things */
   std::vector<MapInteractiveObject*> base_ios;
@@ -65,6 +84,10 @@ private:
 
   /* A reference blank event for setting events in the game */
   EventHandler* event_handler;
+
+  /* Fade status */
+  uint8_t fade_alpha;
+  MapFade fade_status;
 
   /* The item store menu */
   ItemStore item_menu;
@@ -81,6 +104,10 @@ private:
 
   // /* The status bar on the map */
   // MapStatusBar map_status_bar; // TODO: Remove
+
+  /* Map parsing modes */
+  MapMode mode_curr;
+  MapMode mode_next;
 
   /* Music ID Stack */
   int music_id;
@@ -154,6 +181,9 @@ private:
   void audioStop();
   void audioUpdate(bool sub_change = false);
 
+  /* Change the mode that the game is running */
+  bool changeMode(MapMode mode);
+
   /* Returns the item, based on the ID */
   MapItem* getItem(uint16_t id);
   MapItem* getItemBase(uint16_t id);
@@ -200,6 +230,10 @@ private:
   std::vector< std::vector<int32_t> > splitIdString(std::string id,
                                                     bool matrix = false);
 
+  /* Updates the map mode - lots of logic here */
+  bool updateFade(int cycle_time);
+  void updateMode(int cycle_time);
+
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
 
@@ -237,6 +271,11 @@ public:
 
   /* Returns if the map has been currently loaded with data */
   bool isLoaded();
+
+  /* Mode checks - only returns true for normal if normal and visible, reverse
+   * for disabled */
+  bool isModeDisabled();
+  bool isModeNormal();
 
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);

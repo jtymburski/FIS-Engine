@@ -49,7 +49,8 @@ public:
     OPTIONS     = 3,
     PAUSED      = 4,
     LOADING     = 5,
-    EXIT        = 6
+    EXIT        = 6,
+    NONE        = 7
   };
 
 private:
@@ -72,6 +73,7 @@ private:
   /* The current application that is running, under the head application
    * management */
   AppMode mode;
+  AppMode mode_next;
   AppMode mode_temp;
 
   /* The renderer for handling all interactions with the window */

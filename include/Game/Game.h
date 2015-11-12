@@ -40,6 +40,13 @@ public:
   /* Destructor function */
   ~Game();
 
+  enum LoadMode
+  {
+    NOLOAD = 0,
+    SUBLOAD = 1,
+    FULLLOAD = 2
+  };
+
   /* The game mode operator, for controlling the visible widget */
   enum GameMode
   {
@@ -47,7 +54,8 @@ public:
     MAP            = 1,
     BATTLE         = 2,
     VICTORY_SCREEN = 3,
-    LOADING        = 4
+    LOADING        = 4,
+    NONE           = 5
   };
 
 private:
@@ -94,6 +102,8 @@ private:
 
   /* The mode that the game is currently running at */
   GameMode mode;
+  LoadMode mode_load;
+  GameMode mode_next;
 
   /* The player */
   Player* player_main;
@@ -146,24 +156,24 @@ private:
 
   /* Switch maps event. - utilizing a map ID */
   void eventSwitchMap(int map_id);
-  
+
   /* A take item event, based on an ID and count (triggered from event) */
   int eventTakeItem(int id, int count);
-  
+
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
 
   /* Trigger IO event, based on the IO object and interaction state */
-  void eventTriggerIO(MapInteractiveObject* io, int interaction_state, 
+  void eventTriggerIO(MapInteractiveObject* io, int interaction_state,
                       MapPerson* initiator);
 
   /* Unlock events, based on parameter information */
-  void eventUnlockIO(int io_id, UnlockIOMode mode, int state_num, 
-                     UnlockIOEvent mode_events, UnlockView mode_view, 
+  void eventUnlockIO(int io_id, UnlockIOMode mode, int state_num,
+                     UnlockIOEvent mode_events, UnlockView mode_view,
                      int view_time);
   void eventUnlockThing(int thing_id, UnlockView mode_view, int view_time);
-  void eventUnlockTile(int section_id, int tile_x, int tile_y, 
-                       UnlockTileMode mode, UnlockView mode_view, 
+  void eventUnlockTile(int section_id, int tile_x, int tile_y,
+                       UnlockTileMode mode, UnlockView mode_view,
                        int view_time);
 
   /* Load game */
@@ -194,6 +204,9 @@ private:
   void removeSkills();
   void removeSkillSets();
 
+  /* Update mode */
+  void updateMode(int cycle_time);
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -216,10 +229,18 @@ public:
   Skill* getSkill(const int32_t &index, const bool &by_id = true);
   SkillSet* getSkillSet(const int32_t &index, const bool &by_id = true);
 
+  /* Get the game mode */
+  GameMode getMode();
+
   /* Is the game loaded */
   //bool isLoaded();
   bool isLoadedCore();
   bool isLoadedSub();
+
+  /* Mode checks - only returns true for ready if ready for control, reverse
+   * for disabled */
+  bool isModeDisabled();
+  bool isModeReady();
 
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
