@@ -100,10 +100,10 @@ enum class SpriteState
 
 enum class GuardingState
 {
-  NONE,      /* This person is not guarding nor being guarded or shielded */
+  NONE, /* This person is not guarding nor being guarded or shielded */
   DEFENDING, /* This person is defending */
-  GUARDING,  /* This person is guarding another person presently */
-  GUARDED,   /* This person is being guarded by another person */
+  GUARDING, /* This person is guarding another person presently */
+  GUARDED, /* This person is being guarded by another person */
   GUARDED_DEFENDING /* This person is defending & being guarded */
 };
 
@@ -115,6 +115,19 @@ enum class UpkeepState
   UPKEEP_AILMENT_BEGIN,
   UPKEEP_AILMENT_FINISH,
   COMPLETE
+};
+
+struct ActionElement
+{
+  ActionElement()
+      : element_state{SpriteState::HIDDEN},
+        frame_action{nullptr} {};
+
+  Coordinate position_cur;
+  Coordinate position_end;
+
+  SpriteState element_state;
+  Frame* frame_action;
 };
 
 class BattleActor
@@ -131,6 +144,9 @@ public:
   ~BattleActor();
 
 private:
+  /* The action element */
+  ActionElement action_element;
+
   /* The enumerated active sprite for the person */
   ActiveSprite active_sprite;
 
@@ -149,9 +165,6 @@ private:
   /* Flags for the actor */
   ActorState flags;
 
-  /* The action frame of the BattleActor */
-  Frame* frame_action;
-
   /* The info frame for the Battle Actor */
   Frame* frame_info;
 
@@ -163,9 +176,6 @@ private:
   Sprite* sprite_third_person;
   Sprite* sprite_action;
   Sprite* sprite_dialog;
-
-  /* The state of the action frame for the BattleActor (whether to show) */
-  FadeState state_action_frame;
 
   /* The enumerated SpriteState for the active sprite */
   SpriteState state_active_sprite;
@@ -200,9 +210,9 @@ private:
 
   /* ------------ Constants --------------- */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
   /* Prepare the BattleActor for a Battle */
   void battleSetup(bool is_ally, bool can_run);
@@ -223,15 +233,18 @@ private:
   /* Reset the action related flags */
   bool resetActionTypes();
 
+  /* Updates the action element [sliding in/out] */
+  void updateActionElement(int32_t cycle_time);
+
   /* Update the brightness for the active sprite */
   void updateBrightness(int32_t cycle_time);
 
   /* Updates the opacity for the active sprite */
   void updateOpacity(int32_t cycle_time);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Constructs BattleItem objects of the BattleActor */
   bool buildBattleItems(std::vector<BattleActor*> all_targets);
@@ -304,7 +317,7 @@ public:
 
   /* Obtains the state of sprites -- for the active sprite & the action frame */
   SpriteState getStateActiveSprite();
-  FadeState getStateActionFrame();
+  SpriteState getStateActionFrame();
 
   /* Returns the stats actual object */
   BattleStats& getStats();
@@ -320,6 +333,9 @@ public:
 
   /* Sets the battle actor's action frame */
   void setActionFrame(Frame* action_frame);
+
+  /* Assigns a new enumerated SpriteState value to the action frame */
+  void setStateActionFrame(SpriteState new_state);
 
   /* Assigns a new active sprite for the BattleActor */
   void setActiveSprite(ActiveSprite new_active_sprite);

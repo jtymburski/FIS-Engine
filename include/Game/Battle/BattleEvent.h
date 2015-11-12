@@ -184,6 +184,9 @@ private:
   bool doesPrimMatch(Skill* skill);
   bool doesSecdMatch(Skill* skill);
 
+  /* Obtains the stats of a given target */
+  BattleStats getStatsOfTarget(BattleActor* curr_target);
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/

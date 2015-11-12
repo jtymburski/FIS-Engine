@@ -194,10 +194,10 @@ void BattleEvent::calcElementalMods(BattleActor* curr_target)
 {
   auto curr_skill = getCurrSkill();
 
-  assert(curr_skill && action_index < temp_targ_stats.size());
+  assert(curr_skill);
 
   /* Grab the temp attribute set for the curent processing target index */
-  auto targ_attrs = temp_targ_stats.at(action_index);
+  auto targ_attrs = getStatsOfTarget(curr_target);
 
   /* Determine the correct stats to apply the modifier to */
   auto prim_user_stat = Attribute::NONE;
@@ -667,6 +667,21 @@ bool BattleEvent::doesSecdMatch(Skill* skill)
   }
 
   return false;
+}
+
+BattleStats BattleEvent::getStatsOfTarget(BattleActor* curr_target)
+{
+  int32_t index = 0;
+
+  for(const auto& target : actor_targets)
+  {
+    if(target == curr_target && temp_targ_stats.size() > (uint32_t)index)
+      return temp_targ_stats.at(index);
+
+    index++;
+  }
+
+  return BattleStats();
 }
 
 // float Battle::calcCritFactor()

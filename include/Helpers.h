@@ -35,6 +35,35 @@
 
 #include "EnumDb.h"
 
+/* Coordinate with ints */
+struct Coordinate
+{
+  Coordinate() : x{0}, y{0} {};
+
+  int32_t x;
+  int32_t y;
+};
+
+/* Coodinate with floats */
+struct Floatinate
+{
+  Floatinate() : x{0}, y{0} {};
+
+  float x;
+  float y;
+};
+
+/* Box with an integer coordinate and a size width by height */
+struct Box
+{
+  Box() : point{Coordinate()}, width{0}, height{0} {};
+
+  Coordinate point;
+  int32_t width;
+  int32_t height;
+};
+
+
 class Helpers
 {
 public:

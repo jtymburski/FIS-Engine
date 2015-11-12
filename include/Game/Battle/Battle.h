@@ -121,7 +121,6 @@ private:
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
 
-
   static const float kBASE_RUN_CHANCE;
   static const float kUSER_RUN_MODIFIER;
   static const float kALLY_RUN_MODIFIER;

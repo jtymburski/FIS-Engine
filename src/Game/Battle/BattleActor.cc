@@ -31,17 +31,16 @@
  */
 BattleActor::BattleActor(Person* person_base, int32_t battle_index,
                          bool is_ally, bool can_run, SDL_Renderer* renderer)
-    : active_sprite{ActiveSprite::NONE},
+    : action_element{ActionElement()},
+      active_sprite{ActiveSprite::NONE},
       battle_index{battle_index},
       flags{static_cast<ActorState>(0)},
-      frame_action{nullptr},
       frame_info{nullptr},
       person_base{person_base},
       sprite_first_person{nullptr},
       sprite_third_person{nullptr},
       sprite_action{nullptr},
       sprite_dialog{nullptr},
-      state_action_frame{FadeState::NOT_SHOWN},
       state_active_sprite{SpriteState::HIDDEN},
       state_death_fade{FadeState::NOT_SHOWN},
       state_elapsed_time{0},
@@ -162,9 +161,9 @@ void BattleActor::clearBattleSkills()
 
 void BattleActor::clearActionFrame()
 {
-  if(frame_action)
-    delete frame_action;
-  frame_action = nullptr;
+  if(action_element.frame_action)
+    delete action_element.frame_action;
+  action_element.frame_action = nullptr;
 }
 
 void BattleActor::clearInfoFrame()
@@ -256,6 +255,11 @@ bool BattleActor::resetActionTypes()
   }
 
   return false;
+}
+
+void BattleActor::updateActionElement(int32_t cycle_time)
+{
+  (void)cycle_time;//TODO
 }
 
 void BattleActor::updateBrightness(int32_t cycle_time)
@@ -509,7 +513,7 @@ bool BattleActor::update(int32_t cycle_time)
 
 Frame* BattleActor::getActionFrame()
 {
-  return frame_action;
+  return action_element.frame_action;
 }
 
 Sprite* BattleActor::getActiveSprite()
@@ -615,9 +619,9 @@ SpriteState BattleActor::getStateActiveSprite()
   return state_active_sprite;
 }
 
-FadeState BattleActor::getStateActionFrame()
+SpriteState BattleActor::getStateActionFrame()
 {
-  return state_action_frame;
+  return action_element.element_state;
 }
 
 BattleStats& BattleActor::getStats()
@@ -659,7 +663,13 @@ uint32_t BattleActor::getPCQtdr()
 void BattleActor::setActionFrame(Frame* frame_action)
 {
   clearActionFrame();
-  this->frame_action = frame_action;
+
+  action_element.frame_action = frame_action;
+}
+
+void BattleActor::setStateActionFrame(SpriteState new_state)
+{
+  action_element.element_state = new_state;
 }
 
 void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)

@@ -1221,7 +1221,7 @@ bool Battle::render()
   //     {
   //       auto action_frame = element->getActionFrame();
 
-  //       if(action_frame != nullptr)
+  //       if(action_frame)
   //         action_frame->render(renderer, element->getX(), element->getY());
   //     }
   //   }
