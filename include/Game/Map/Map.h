@@ -101,6 +101,7 @@ private:
 
   /* Map reference index for current sub-map */
   uint16_t map_index;
+  int map_index_next;
 
   // /* The status bar on the map */
   // MapStatusBar map_status_bar; // TODO: Remove
@@ -151,6 +152,10 @@ private:
   bool zoom_out;
 
   /*------------------- Constants -----------------------*/
+  const static uint8_t kFADE_BLACK; /* The fully faded out screen alpha */
+  const static uint8_t kFADE_FACTOR; /* 1/x fade factor for ms cycle time */
+  const static uint8_t kFADE_MAX; /* The max differential to fade delta */
+  const static uint8_t kFADE_VIS; /* The fully visible faded in screen alpha */
   const static uint8_t kFILE_CLASSIFIER; /* The file tile classification text */
   const static uint8_t kFILE_GAME_TYPE; /* The game type classifier */
   const static uint8_t kFILE_SECTION_ID; /* The section identifier, for file */
@@ -225,6 +230,7 @@ private:
 
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);
+  bool setSectionIndexMode();
 
   /* Splits the ID into a vector of IDs */
   std::vector< std::vector<int32_t> > splitIdString(std::string id,

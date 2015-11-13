@@ -2,8 +2,8 @@
 * Class Name: MapViewport
 * Date Created: April 24, 2013
 * Inheritance: none
-* Description: This class handles the viewport that sits on top of the map 
-*              class to allow for proper viewing. This will be the front 
+* Description: This class handles the viewport that sits on top of the map
+*              class to allow for proper viewing. This will be the front
 *              interface with the outside classes for allowing viewing to the
 *              map itself.
 * TODO: 1. Add in the feature so that when the lock on is changed, an
@@ -14,6 +14,7 @@
 /* Constant Implementation - see header file for descriptions */
 const int MapViewport::kMIN_HEIGHT = 1;
 const int MapViewport::kMIN_WIDTH = 1;
+const int MapViewport::kTRAVEL_DIFF = 20;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -24,11 +25,10 @@ MapViewport::MapViewport()
   clear();
 }
 
-MapViewport::MapViewport(uint16_t width, uint16_t height, 
+MapViewport::MapViewport(uint16_t width, uint16_t height,
                          uint16_t tile_width, uint16_t tile_height)
+           : MapViewport()
 {
-  clear();
-
   /* Set the new parameters */
   setSize(width, height);
   setTileSize(tile_width, tile_height);
@@ -45,6 +45,8 @@ MapViewport::~MapViewport()
 
 void MapViewport::clear()
 {
+  travel = false;
+
   /* Reset the map and viewport coordinates */
   setMapSize(0, 0);
   setSize(kMIN_WIDTH, kMIN_HEIGHT);
@@ -52,6 +54,13 @@ void MapViewport::clear()
 
   /* Reset the lock on status */
   lockOn(0.0, 0.0);
+}
+  
+/* Clears out the information in the class and sets it to default */
+void MapViewport::clearLocation()
+{
+  x = 0.0;
+  y = 0.0;
 }
 
 uint16_t MapViewport::getHeight()
@@ -108,7 +117,7 @@ int MapViewport::getXEnd()
 int MapViewport::getXStart()
 {
   int start_x = (((int)x / tile_width) * tile_width) - tile_width;
-  
+
   /* Check to see if the start_x is in the valid range */
   if(start_x < 0)
     start_x = 0;
@@ -139,7 +148,7 @@ int MapViewport::getYEnd()
   int end_y = (((int)y + height) / tile_height) * tile_height + tile_height;
   if((int)y % tile_height != 0)
     end_y += tile_height;
-  
+
   /* Check to see if the end_x is in the valid range */
   if(end_y > map_height)
     end_y = map_height;
@@ -167,11 +176,17 @@ uint16_t MapViewport::getYTileStart()
 {
   return (getYStart() / tile_height);
 }
-
-bool MapViewport::lockOn(float x, float y)
+  
+/* Returns if travelling */
+bool MapViewport::isTravelling()
 {
-  if((static_cast<int>(x) == 0 && static_cast<int>(y) == 0) || 
-     (x >= 0 && y >= 0 && 
+  return travel;
+}
+
+bool MapViewport::lockOn(float x, float y, bool travel)
+{
+  if((static_cast<int>(x) == 0 && static_cast<int>(y) == 0) ||
+     (x >= 0 && y >= 0 &&
       x < map_width && y < map_height)
     )
   {
@@ -180,13 +195,14 @@ bool MapViewport::lockOn(float x, float y)
     lock_on_x = x;
     lock_on_y = y;
     lock_on = PIXEL;
+    this->travel = travel;
     return true;
   }
 
   return false;
 }
 
-bool MapViewport::lockOn(MapThing* thing)
+bool MapViewport::lockOn(MapThing* thing, bool travel)
 {
   if(thing != NULL)
   {
@@ -195,13 +211,14 @@ bool MapViewport::lockOn(MapThing* thing)
     lock_on_x = 0.0;
     lock_on_y = 0.0;
     lock_on = THING;
+    this->travel = travel;
     return true;
   }
 
   return false;
 }
 
-bool MapViewport::lockOn(Tile* map_tile)
+bool MapViewport::lockOn(Tile* map_tile, bool travel)
 {
   if(map_tile != NULL)
   {
@@ -210,13 +227,15 @@ bool MapViewport::lockOn(Tile* map_tile)
     lock_on_x = 0.0;
     lock_on_y = 0.0;
     lock_on = TILE;
+    this->travel = travel;
     return true;
   }
 
   return false;
 }
 
-void MapViewport::setMapSize(uint16_t tile_width, uint16_t tile_height)
+void MapViewport::setMapSize(uint16_t tile_width, uint16_t tile_height,
+                             int map_index)
 {
   /* Set the new width */
   if(tile_width > 0)
@@ -231,6 +250,11 @@ void MapViewport::setMapSize(uint16_t tile_width, uint16_t tile_height)
   else
     map_height_tiles = 0;
   map_height = map_height_tiles * this->tile_height;
+
+  /* Set the map index */
+  this->map_index = map_index;
+  //x = 0.0;
+  //y = 0.0;
 }
 
 void MapViewport::setSize(uint16_t pixel_width, uint16_t pixel_height)
@@ -264,6 +288,12 @@ void MapViewport::setTileSize(uint16_t pixel_width, uint16_t pixel_height)
     tile_height = kMIN_HEIGHT;
   map_height = map_height_tiles * tile_height;
 }
+  
+/* Sets if the movement should travel to the new location */
+void MapViewport::setToTravel(bool travel)
+{
+  this->travel = travel;
+}
 
 void MapViewport::update()
 {
@@ -271,55 +301,116 @@ void MapViewport::update()
   float center_y = 0.0;
   float delta_x = 0.0;
   float delta_y = 0.0;
+  bool modify = false;
 
   /* If the locked on information is a coordinate pair (x,y) */
   if(lock_on == PIXEL)
   {
     center_x = lock_on_x;
     center_y = lock_on_y;
+    modify = true;
   }
   /* Else if the locked on information is a map thing */
   else if(lock_on == THING)
   {
-    center_x = lock_on_thing->getCenterX();
-    center_y = lock_on_thing->getCenterY();
+    if(static_cast<int>(lock_on_thing->getMapSection()) == map_index)
+    {
+      center_x = lock_on_thing->getCenterX();
+      center_y = lock_on_thing->getCenterY();
+      modify = true;
+    }
   }
   /* Else if the locked on information is a tile */
   else if(lock_on == TILE)
   {
     center_x = lock_on_tile->getX() + (lock_on_tile->getWidth() / 2.0);
     center_y = lock_on_tile->getY() + (lock_on_tile->getHeight() / 2.0);
-  }
-  
-  /* Calculations for centering the width offset coordinate */
-  if(width > map_width)
-  {
-    delta_x = (map_width - width) / 2.0;
-  }
-  else
-  {
-    delta_x = center_x - (width / 2.0);
-    if((delta_x + width) > map_width)
-      delta_x = map_width - width;
-    if(delta_x < 0)
-      delta_x = 0.0;
+    modify = true;
   }
 
-  /* Calculations for centering the height offset coordinate */
-  if(height > map_height)
+  /* Only proceed if center x/y set */
+  if(modify)
   {
-    delta_y = (map_height - height) / 2.0;
+    /* Calculations for centering the width offset coordinate */
+    if(width > map_width)
+    {
+      delta_x = (map_width - width) / 2.0;
+    }
+    else
+    {
+      delta_x = center_x - (width / 2.0);
+      if((delta_x + width) > map_width)
+        delta_x = map_width - width;
+      if(delta_x < 0)
+        delta_x = 0.0;
+    }
+
+    /* Calculations for centering the height offset coordinate */
+    if(height > map_height)
+    {
+      delta_y = (map_height - height) / 2.0;
+    }
+    else
+    {
+      delta_y = center_y - (height / 2.0);
+      if((delta_y + height) > map_height)
+        delta_y = map_height - height;
+      if(delta_y < 0)
+        delta_y = 0.0;
+    }
+
+    /* Base differential */
+    float diff_x = delta_x - this->x;
+    float diff_y = delta_y - this->y;
+
+    /* Travel: slowly go to point */
+    if(travel)
+    {
+      /* Calculate diff x abs */
+      float diff_x_abs = diff_x;
+      if(diff_x < 0)
+        diff_x_abs = -diff_x;
+
+      /* Calculate diff y abs */
+      float diff_y_abs = diff_y;
+      if(diff_y < 0)
+        diff_y_abs = -diff_y;
+      
+      /* Determine if out of range */
+      if(diff_x_abs > kTRAVEL_DIFF || diff_y_abs > kTRAVEL_DIFF)
+      {
+        /* Determine scale - X dominant */
+        if(diff_x_abs >= diff_y_abs)
+        {
+          diff_y_abs = (diff_y_abs / diff_x_abs) * kTRAVEL_DIFF;
+          diff_x_abs = kTRAVEL_DIFF;
+        }
+        /* Y dominant */
+        else
+        {
+          diff_x_abs = (diff_x_abs / diff_y_abs) * kTRAVEL_DIFF;
+          diff_y_abs = kTRAVEL_DIFF;
+        }
+
+        /* Final calculation */
+        if(diff_x < 0)
+          diff_x = -diff_x_abs;
+        else
+          diff_x = diff_x_abs;
+        if(diff_y < 0)
+          diff_y = -diff_y_abs;
+        else
+          diff_y = diff_y_abs;
+      }
+      /* If in range, end travel */
+      else
+      {
+        travel = false;
+      }
+    }
+    
+    /* Add differential */
+    this->x += diff_x;
+    this->y += diff_y;
   }
-  else
-  {
-    delta_y = center_y - (height / 2.0);
-    if((delta_y + height) > map_height)
-      delta_y = map_height - height;
-    if(delta_y < 0)
-      delta_y = 0.0;
-  }
-  
-  /* Set the internal X and Y to the newly calculated values */
-  this->x = delta_x;
-  this->y = delta_y;
 }

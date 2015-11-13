@@ -1387,6 +1387,16 @@ bool Game::load(SDL_Renderer* renderer, bool full_load)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
+  /* -- LOADING MODE -- */
+  if(mode == LOADING)
+  {
+    if(!isLoadedCore() || mode_load == FULLLOAD)
+      load(renderer, true);
+    else
+      load(renderer, false);
+    mode_load = NOLOAD;
+  }
+
   /* -- MAP MODE -- */
   if(mode == MAP)
   {
@@ -1408,15 +1418,6 @@ bool Game::render(SDL_Renderer* renderer)
       /* Render the battle */
       return battle_ctrl->render();
     }
-  }
-  /* -- LOADING MODE -- */
-  else if(mode == LOADING)
-  {
-    if(!isLoadedCore() || mode_load == FULLLOAD)
-      load(renderer, true);
-    else
-      load(renderer, false);
-    mode_load = NOLOAD;
   }
 
   return true;
@@ -1467,7 +1468,7 @@ bool Game::setPath(std::string path, int level, bool load)
       map_lvl = level;
 
       /* Handle what condition for the game */
-      if(mode != DISABLED)
+      if(mode != DISABLED || load)
       {
         changeMode(LOADING);
       }

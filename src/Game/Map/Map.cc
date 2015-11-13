@@ -22,6 +22,10 @@
 #include "Game/Map/Map.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint8_t Map::kFADE_BLACK = 255;
+const uint8_t Map::kFADE_FACTOR = 3;
+const uint8_t Map::kFADE_MAX = 5;
+const uint8_t Map::kFADE_VIS = 0;
 const uint8_t Map::kFILE_CLASSIFIER = 3;
 const uint8_t Map::kFILE_GAME_TYPE = 1;
 const uint8_t Map::kFILE_SECTION_ID = 2;
@@ -45,6 +49,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   fade_status = BLACK;
   loaded = false;
   map_index = 0;
+  map_index_next = -1;
   mode_curr = DISABLED;
   mode_next = NONE;
   music_id = -1;
@@ -511,7 +516,7 @@ void Map::audioUpdate(bool sub_change)
     }
   }
 }
-  
+
 /* Change the mode that the game is running */
 bool Map::changeMode(MapMode mode)
 {
@@ -893,25 +898,47 @@ bool Map::setSectionIndex(uint16_t index)
 {
   if(index < sub_map.size() && sub_map[index].tiles.size() > 0)
   {
-    /* Sound trigger on sub change */
-    bool trigger_update = false;
-    if(map_index != index)
-      trigger_update = true;
-
-    /* Update the index and viewport */
-    map_index = index;
-    viewport.setMapSize(sub_map[index].tiles.size(),
-                        sub_map[index].tiles[0].size());
-
-    /* Update sound and dialog now that index is fresh */
-    if(trigger_update)
-    {
-      audioUpdate(true);
-      map_dialog.clearAll();
-    }
-
+    map_index_next = index;
+    changeMode(SWITCHSUB);
     return true;
   }
+  return false;
+}
+
+/* Changes the map section index - what is displayed - called from mode */
+bool Map::setSectionIndexMode()
+{
+  if(map_index_next >= 0 && map_index_next < 256)
+  {
+    uint8_t index = static_cast<uint8_t>(map_index_next);
+
+    if(map_index != index && index < sub_map.size() &&
+       sub_map[index].tiles.size() > 0)
+    {
+      /* Sound trigger on sub change */
+      //bool trigger_update = false;
+      //if(map_index != index)
+      //  trigger_update = true;
+
+      /* Update the index and viewport */
+      map_index = index;
+      viewport.setMapSize(sub_map[index].tiles.size(),
+                          sub_map[index].tiles[0].size(),
+                          map_index);
+
+      /* Update sound and dialog now that index is fresh */
+      //if(trigger_update)
+      //{
+      audioUpdate(true);
+      map_dialog.clearAll();
+      //}
+
+      map_index_next = -1;
+      return true;
+    }
+  }
+
+  map_index_next = -1;
   return false;
 }
 
@@ -981,7 +1008,7 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
 
   return id_stack;
 }
- 
+
 /* Updates the map fade - lots TODO here */
 bool Map::updateFade(int cycle_time)
 {
@@ -990,26 +1017,26 @@ bool Map::updateFade(int cycle_time)
   /* -- FADE BLACK -- */
   if(fade_status == BLACK)
   {
-    fade_alpha = 255;
+    fade_alpha = kFADE_BLACK;
   }
   /* -- FADE VISIBLE -- */
   else if(fade_status == VISIBLE)
   {
-    fade_alpha = 0;
+    fade_alpha = kFADE_VIS;
   }
   /* -- FADING IN -- */
   else if(fade_status == FADINGIN)
   {
-    int diff = cycle_time / 3;
-    if(diff > 5)
-      diff = 5; /* Over-run protection */
+    int diff = cycle_time / kFADE_FACTOR;
+    if(diff > kFADE_MAX)
+      diff = kFADE_MAX; /* Over-run protection */
     if(diff < fade_alpha)
     {
       fade_alpha -= diff;
     }
     else
     {
-      fade_alpha = 0;
+      fade_alpha = kFADE_VIS;
       fade_status = VISIBLE;
       end_status = true;
     }
@@ -1017,16 +1044,16 @@ bool Map::updateFade(int cycle_time)
   /* -- FADING OUT -- */
   else if(fade_status == FADINGOUT)
   {
-    int diff = cycle_time / 3;
-    if(diff > 5)
-      diff = 5; /* Over-run protection */
-    if((diff + fade_alpha) < 255)
+    int diff = cycle_time / kFADE_FACTOR;
+    if(diff > kFADE_MAX)
+      diff = kFADE_MAX; /* Over-run protection */
+    if((diff + fade_alpha) < kFADE_BLACK)
     {
       fade_alpha += diff;
     }
     else
     {
-      fade_alpha = 255;
+      fade_alpha = kFADE_BLACK;
       fade_status = BLACK;
       end_status = true;
     }
@@ -1075,14 +1102,13 @@ void Map::updateMode(int cycle_time)
   /* -- CURRENT MODE NORMAL -- */
   else if(mode_curr == NORMAL)
   {
-    /* -- NEXT MODE DISABLED -- */
-    if(mode_next == DISABLED)
+    /* -- NEXT MODE DISABLED or SWITCHSUB -- */
+    if(mode_next == DISABLED || mode_next == SWITCHSUB)
     {
-      /* Fade out */
       fade_status = FADINGOUT;
       if(updateFade(cycle_time))
       {
-        mode_curr = DISABLED;
+        mode_curr = mode_next;
         mode_next = NONE;
       }
     }
@@ -1090,7 +1116,13 @@ void Map::updateMode(int cycle_time)
   /* -- CURRENT MODE SWITCH SUB MAP -- */
   else if(mode_curr == SWITCHSUB)
   {
-
+    setSectionIndexMode();
+    fade_status = FADINGIN;
+    if(updateFade(cycle_time))
+    {
+      mode_curr = NORMAL;
+      mode_next = NONE;
+    }
   }
   /* -- CURRENT MODE VIEW -- */
   else if(mode_curr == VIEW)
@@ -1265,7 +1297,7 @@ bool Map::isLoaded()
 {
   return loaded;
 }
-  
+
 /* Mode checks - only returns true if DISABLED current mode and fade status is
  * BLACK */
 bool Map::isModeDisabled()
@@ -1277,7 +1309,8 @@ bool Map::isModeDisabled()
  * VISIBLE */
 bool Map::isModeNormal()
 {
-  return (mode_curr == NORMAL && fade_status == VISIBLE);
+  return (mode_curr == NORMAL && fade_status == VISIBLE && !
+          viewport.isTravelling());
 }
 
 /* The key up and down events to be handled by the class */
@@ -1333,7 +1366,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     else if(event.keysym.sym == SDLK_0)
     {
       Event blank_event = EventSet::createBlankEvent();
-  
+
       Conversation* convo = new Conversation;
       convo->category = DialogCategory::TEXT;
       convo->action_event = blank_event;
@@ -1428,7 +1461,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   	  {
   	    SDL_Rect bbox = player->getBoundingBox();
   	    SDL_Rect bpixel = player->getBoundingPixels();
-  
+
   	    std::cout << "----" << std::endl;
   	    std::cout << "Location X: " << bbox.x << " - " << bpixel.x << std::endl;
   	    std::cout << "Location Y: " << bbox.y << " - " << bpixel.y << std::endl;
@@ -1714,8 +1747,10 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
     map_index = player->getStartingSection();
   if(sub_map.size() > map_index && sub_map[map_index].tiles.size() > 0)
   {
+    viewport.clearLocation();
     viewport.setMapSize(sub_map[map_index].tiles.size(),
-                        sub_map[map_index].tiles.front().size());
+                        sub_map[map_index].tiles.front().size(),
+                        map_index);
     if(player != NULL)
       viewport.lockOn(player);
   }
@@ -1975,8 +2010,14 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
 
         if(found_thing->setStartingTiles(matrix, section))
         {
-          if(id == kPLAYER_ID && map_index != section)
-            setSectionIndex(section);
+          if(id == kPLAYER_ID)
+          {
+            if(map_index != section)
+              setSectionIndex(section);
+            else
+              viewport.setToTravel(true);
+            unfocus();
+          }
         }
       }
     }
@@ -2093,8 +2134,9 @@ void Map::unloadMap()
   sub_map.clear();
 
   /* Reset the viewport */
-  viewport.setMapSize(0, 0);
-  viewport.lockOn(0, 0);
+  int zero = 0;
+  viewport.setMapSize(zero, zero);
+  viewport.lockOn(zero, zero, false);
 
   /* Clear the remaining and disable the loading */
   loaded = false;
@@ -2158,7 +2200,7 @@ void Map::unlockTile(int section_id, int tile_x, int tile_y,
   /* Find the tile */
   if(section_id < 0)
     section_id = map_index;
-  if(section_id >= 0 && section_id < (int)sub_map.size() && 
+  if(section_id >= 0 && section_id < (int)sub_map.size() &&
      tile_x >= 0 && tile_x < (int)sub_map[section_id].tiles.size() &&
      tile_y >= 0 && tile_y < (int)sub_map[section_id].tiles[tile_x].size())
   {
@@ -2253,7 +2295,7 @@ bool Map::update(int cycle_time)
 
   /* If conversation is active, confirm that player is not moving */
   if(map_dialog.isConversationActive() || !isModeNormal())
-    player->keyFlush();
+    unfocus();
 
   /* Finally, update the viewport and dialogs */
   item_menu.update(cycle_time);

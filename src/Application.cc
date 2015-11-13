@@ -319,9 +319,9 @@ bool Application::load()
   /* Stop the file read */
   success &= fh.stop();
 
-  /* If success, load into game handler with default map */
+  /* If success, load into game handler with noted map */
   if(success)
-    game_handler.setPath(app_path, kPATH_MAP, false);
+    game_handler.setPath(app_path, app_map, false);
 
   /* Change mode back to title screen */
   changeMode(TITLESCREEN);
@@ -729,18 +729,17 @@ bool Application::run(bool skip_title)
       {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-      }
 
-      /* Render the application view */
-      render(cycle_time);
+        /* Render the application view */
+        render(cycle_time);
 
-      // Font testing - TODO: Remove
-      // text2.render(renderer, 48, 48);
-      // text1.render(renderer, 50, 50);
+        // Font testing - TODO: Remove
+        // text2.render(renderer, 48, 48);
+        // text1.render(renderer, 50, 50);
 
-      /* Update screen */
-      if (mode != PAUSED)
+        /* Update screen */
         SDL_RenderPresent(renderer);
+      }
 
       count++;
 
