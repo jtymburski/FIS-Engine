@@ -40,6 +40,12 @@ struct Coordinate
 {
   Coordinate() : x{0}, y{0} {};
 
+  Coordinate(int32_t x, int32_t y) : Coordinate()
+  {
+    this->x = x;
+    this->y = y;
+  }
+
   int32_t x;
   int32_t y;
 };
@@ -209,6 +215,9 @@ public:
   /* Splites the string into a grid based on the frame naming convention */
   static std::vector<std::vector<std::string>> frameSeparator(
       std::string path);
+
+  /* Returns the distance between two Coordinates */
+  static uint32_t getDistance(Coordinate a, Coordinate b);
 
   /* Get render tile size */
   static uint16_t getTileSize();

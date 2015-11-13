@@ -123,8 +123,7 @@ struct ActionElement
       : element_state{SpriteState::HIDDEN},
         frame_action{nullptr} {};
 
-  Coordinate position_cur;
-  Coordinate position_end;
+  Coordinate position_curr;
 
   SpriteState element_state;
   Frame* frame_action;
@@ -209,6 +208,9 @@ private:
   int32_t dialog_y;
 
   /* ------------ Constants --------------- */
+  static const Coordinate kPOINT_BEGIN;;
+  static const Coordinate kPOINT_END;;
+  static const int32_t kVELOCITY_X;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS

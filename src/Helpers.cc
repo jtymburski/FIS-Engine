@@ -1499,6 +1499,16 @@ uint8_t Helpers::getRenderDepth()
   return kMAX_RENDER_DEPTH;
 }
 
+uint32_t Helpers::getDistance(Coordinate a, Coordinate b)
+{
+  auto x = a.x - b.x;
+  auto y = a.y - b.y;
+
+  auto distance = std::sqrt(float(x * x) + float(y * y));
+
+  return std::round(distance);
+}
+
 /*
  * Description: Returns the tile size for rendering, as defined by the stored
  *              constants.

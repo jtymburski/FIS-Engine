@@ -20,6 +20,10 @@
  * CONSTANTS
  *============================================================================*/
 
+const Coordinate BattleActor::kPOINT_BEGIN{1316, 350};
+const Coordinate  BattleActor::kPOINT_END{816, 350};
+const int32_t BattleActor::kVELOCITY_X{-1};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -259,7 +263,35 @@ bool BattleActor::resetActionTypes()
 
 void BattleActor::updateActionElement(int32_t cycle_time)
 {
-  (void)cycle_time;//TODO
+  std::cout << "Old pos x: " << action_element.position_curr.x << std::endl;
+
+  auto delta_x = cycle_time * kVELOCITY_X;
+
+  /* Approach the end position */
+  if(action_element.element_state == SpriteState::SLIDING_IN)
+  {
+    if(action_element.position_curr.x + delta_x < kPOINT_END.x)
+    {
+      action_element.position_curr.x = kPOINT_END.x;
+      action_element.element_state = SpriteState::SLID_IN;
+    }
+    else
+      action_element.position_curr.x += delta_x;
+  }
+  /* Approach the begin position */
+  else if(action_element.element_state == SpriteState::SLIDING_OUT)
+  {
+    if(action_element.position_curr.x - delta_x > kPOINT_BEGIN.x)
+    {
+      action_element.position_curr.x = kPOINT_BEGIN.x;
+      action_element.element_state = SpriteState::SLID_OUT;
+    }
+    else
+      action_element.position_curr.x -= delta_x;
+  }
+
+
+  std::cout << "New pos x: " << action_element.position_curr.x << std::endl;
 }
 
 void BattleActor::updateBrightness(int32_t cycle_time)

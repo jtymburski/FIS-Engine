@@ -1119,127 +1119,15 @@ bool Battle::render()
     /* Render the allies in their present states */
     success &= renderAllies();
 
-    //   /* Render any death animations below the menu */
-    //   for(auto &element : render_elements)
-    //   {
-    //     if(element && element->getType() == RenderType::RGB_SPRITE_DEATH)
-    //     {
-    //       auto death_sprite = element->getSprite();
-    //       auto flasher      = element->getFlasher();
-
-    //       if(death_sprite && flasher)
-    //       {
-    //         if(element->getAlpha() >= kPERSON_KO_ALPHA)
-    //           death_sprite->setOpacity(element->getAlpha());
-    //         else
-    //           death_sprite->setOpacity(kPERSON_KO_ALPHA);
-
-    //         death_sprite->setColorBalance(element->calcColorRed(),
-    //                                       element->calcColorGreen(),
-    //                                       element->calcColorBlue());
-
-    //         death_sprite->render(renderer, element->getX(),
-    //         element->getY());
-    //       }
-    //     }
-    //   }
-
     /* Render battle bar (on bottom) */
     success &= renderBattleBar();
 
-    /* --------------- RENDER BATTLE MENU -------------- */
+    /* Render the menu (if needed) */
+    success &= renderMenu();
 
-    /* Determine whether the menu should be rendered */
-    auto to_render_menu = (turn_state == TurnState::SELECT_ACTION_ALLY);
-    auto curr_layer = battle_menu->getMenuLayer();
-    to_render_menu &= !getFlagCombat(CombatState::PHASE_DONE);
-    to_render_menu &= !(curr_layer == BattleMenuLayer::TARGET_SELECTION);
-    // to_render_menu &=
-    //     !(battle_menu->getFlag(BattleMenuState::SELECTION_COMPLETE));
-
-    if(to_render_menu)
-    {
-      if(battle_menu->getFlag(BattleMenuState::READY) &&
-         !battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
-      {
-        battle_menu->createSkillFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
-      }
-
-      /* Render the selecting person info */
-      if(battle_menu->getActor())
-        success &= renderAllyInfo(battle_menu->getActor(), true);
-
-      /* Render the menu */
-      success &= battle_menu->render();
-    }
-    else
-    {
-      success &= renderAlliesInfo();
-    }
+    /* Render the render elements (damage text values) etc. */
+    success &= renderElements();
   }
-
-  //   for(const auto &element : render_elements)
-  //   {
-  //     // auto alpha = 255;
-
-  //     if(element->getType() == RenderType::ACTION_TEXT ||
-  //        element->getType() == RenderType::DAMAGE_VALUE)
-  //     {
-  //       auto element_font = element->getFont();
-
-  //       if(element_font != nullptr)
-  //       {
-  //         Text t(element->getFont());
-  //         t.setText(renderer, element->getText(), element->getColor());
-  //         t.setAlpha(element->getAlpha());
-  //         t.render(renderer, element->getX(), element->getY());
-
-  //         if(element->hasShadow())
-  //         {
-  //           t.setText(renderer, element->getText(),
-  //           element->getShadowColor());
-  //           t.setAlpha(element->getAlpha());
-  //           t.render(renderer, element->getShadowX(),
-  //           element->getShadowY());
-  //         }
-  //       }
-  //     }
-  //     else if(element->getType() == RenderType::RGB_OVERLAY)
-  //     {
-  //       SDL_Color color = element->getColor();
-  //       SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b,
-  //                              element->getAlpha());
-
-  //       SDL_Rect rgb_overlay_rect;
-  //       rgb_overlay_rect.x = element->getX();
-  //       rgb_overlay_rect.y = element->getY();
-  //       rgb_overlay_rect.w = element->getSizeX();
-  //       rgb_overlay_rect.h = element->getSizeY();
-  //       SDL_RenderFillRect(renderer, &rgb_overlay_rect);
-  //     }
-  //     else if(element->getType() == RenderType::ACTION_FRAME)
-  //     {
-  //       auto action_frame = element->getActionFrame();
-
-  //       if(action_frame)
-  //         action_frame->render(renderer, element->getX(), element->getY());
-  //     }
-  //   }
-
-  //   for(auto &element : render_elements)
-  //   {
-  //     if(element->getType() == RenderType::PLEP)
-  //     {
-  //       if(element->getSprite() != nullptr)
-  //       {
-  //         element->getSprite()->render(renderer, element->getX(),
-  //                                      element->getY());
-  //       }
-  //     }
-  //   }
-
-  //   return success;
-  // }
 
   return success;
 }
@@ -1350,6 +1238,115 @@ bool Battle::renderAllies()
   return success;
 }
 
+bool Battle::renderElements()
+{
+  for(auto& element : render_elements)
+  {
+    assert(element);
+
+    //auto alpha = 255;
+
+    if(element->render_type == RenderType::ACTION_TEXT ||
+       element->render_type == RenderType::DAMAGE_VALUE)
+    {
+      renderElementText(element);
+    }
+    else if(element->render_type == RenderType::RGB_OVERLAY)
+    {
+      renderElementRGBOverlay(element);
+    }
+    else if(element->render_type == RenderType::PLEP)
+    {
+      renderElementPlep(element);
+    }
+  }
+
+  // TODO - How to render deathimations?
+  //   /* Render any death animations below the menu */
+  //   for(auto &element : render_elements)
+  //   {
+  //     if(element && element->getType() == RenderType::RGB_SPRITE_DEATH)
+  //     {
+  //       auto death_sprite = element->getSprite();
+  //       auto flasher      = element->getFlasher();
+
+  //       if(death_sprite && flasher)
+  //       {
+  //         if(element->getAlpha() >= kPERSON_KO_ALPHA)
+  //           death_sprite->setOpacity(element->getAlpha());
+  //         else
+  //           death_sprite->setOpacity(kPERSON_KO_ALPHA);
+
+  //         death_sprite->setColorBalance(element->calcColorRed(),
+  //                                       element->calcColorGreen(),
+  //                                       element->calcColorBlue());
+
+  //         death_sprite->render(renderer, element->getX(),
+  //         element->getY());
+  //       }
+  //     }
+  //   }
+  // }
+
+  return false;
+}
+
+void Battle::renderElementPlep(RenderElement* element)
+{
+  (void)element;
+  //   for(auto &element : render_elements)
+  //   {
+  //     if(element->getType() == RenderType::PLEP)
+  //     {
+  //       if(element->getSprite() != nullptr)
+  //       {
+  //         element->getSprite()->render(renderer, element->getX(),
+  //                                      element->getY());
+  //       }
+  //     }
+  //   }
+
+  //   return success;
+}
+
+void Battle::renderElementRGBOverlay(RenderElement* element)
+{
+  (void)element;
+  //       SDL_Color color = element->getColor();
+  //       SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b,
+  //                              element->getAlpha());
+
+  //       SDL_Rect rgb_overlay_rect;
+  //       rgb_overlay_rect.x = element->getX();
+  //       rgb_overlay_rect.y = element->getY();
+  //       rgb_overlay_rect.w = element->getSizeX();
+  //       rgb_overlay_rect.h = element->getSizeY();
+  //       SDL_RenderFillRect(renderer, &rgb_overlay_rect);
+}
+
+void Battle::renderElementText(RenderElement* element)
+{
+  (void)element;
+  //       auto element_font = element->getFont();
+
+  //       if(element_font != nullptr)
+  //       {
+  //         Text t(element->getFont());
+  //         t.setText(renderer, element->getText(), element->getColor());
+  //         t.setAlpha(element->getAlpha());
+  //         t.render(renderer, element->getX(), element->getY());
+
+  //         if(element->hasShadow())
+  //         {
+  //           t.setText(renderer, element->getText(),
+  //           element->getShadowColor());
+  //           t.setAlpha(element->getAlpha());
+  //           t.render(renderer, element->getShadowX(),
+  //           element->getShadowY());
+  //         }
+  //       }
+}
+
 // TODO
 bool Battle::renderEnemies()
 {
@@ -1425,6 +1422,40 @@ bool Battle::renderEnemyInfo(BattleActor* actor)
   (void)actor;
 
   return true;
+}
+
+bool Battle::renderMenu()
+{
+  auto width = config->getScreenWidth();
+  auto success = true;
+
+  /* Determine whether the menu should be rendered */
+  auto to_render_menu = (turn_state == TurnState::SELECT_ACTION_ALLY);
+  auto curr_layer = battle_menu->getMenuLayer();
+  to_render_menu &= !getFlagCombat(CombatState::PHASE_DONE);
+  to_render_menu &= !(curr_layer == BattleMenuLayer::TARGET_SELECTION);
+
+  if(to_render_menu)
+  {
+    if(battle_menu->getFlag(BattleMenuState::READY) &&
+       !battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
+    {
+      battle_menu->createSkillFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
+    }
+
+    /* Render the selecting person info */
+    if(battle_menu->getActor())
+      success &= renderAllyInfo(battle_menu->getActor(), true);
+
+    /* Render the menu */
+    success &= battle_menu->render();
+  }
+  else
+  {
+    success &= renderAlliesInfo();
+  }
+
+  return success;
 }
 
 // TODO: Comment

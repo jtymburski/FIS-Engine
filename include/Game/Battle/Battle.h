@@ -143,34 +143,34 @@ private:
   /*=============================================================================
    * CONSTANTS - Battle Display
    *============================================================================*/
-  const static uint16_t kACTION_BORDER;   /* Border width on action slideout */
-  const static uint16_t kACTION_COLOR_A;  /* Alpha for inner portion */
-  const static uint16_t kACTION_COLOR_G;  /* Grey color on middle border */
-  const static uint16_t kACTION_COLOR_R;  /* Red color for middle text */
+  const static uint16_t kACTION_BORDER; /* Border width on action slideout */
+  const static uint16_t kACTION_COLOR_A; /* Alpha for inner portion */
+  const static uint16_t kACTION_COLOR_G; /* Grey color on middle border */
+  const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
   const static uint16_t kACTION_CORNER_X; /* Corner offset on inner triangle */
   const static uint16_t kACTION_CORNER_Y; /* Corner offset on inner triangle */
-  const static uint16_t kACTION_H;        /* Height of action frame */
+  const static uint16_t kACTION_H; /* Height of action frame */
 
-  const static uint16_t kACTION_W;           /* Width of action frame */
+  const static uint16_t kACTION_W; /* Width of action frame */
   const static uint16_t kACTION_Y; /* Y location of peak of triangle */
 
   const static uint8_t kAILMENT_BORDER; /* Ailment border width */
-  const static uint8_t kAILMENT_GAP;    /* Ailment gap between edges of space */
+  const static uint8_t kAILMENT_GAP; /* Ailment gap between edges of space */
   const static uint8_t kAILMENT_OPACITY; /* Ailment background opacity */
 
-  const static uint8_t kALLY_HEALTH_H;        /* Ally health bar height */
+  const static uint8_t kALLY_HEALTH_H; /* Ally health bar height */
   const static uint8_t kALLY_HEALTH_TRIANGLE; /* Ally health triangle width */
-  const static uint8_t kALLY_HEALTH_W;        /* Ally health bar width */
-  const static uint16_t kALLY_HEIGHT;         /* Ally display section height */
-  const static uint8_t kALLY_QD_H;            /* Ally qd bar height */
-  const static uint8_t kALLY_QD_OFFSET;   /* Ally qd bar offset off health */
+  const static uint8_t kALLY_HEALTH_W; /* Ally health bar width */
+  const static uint16_t kALLY_HEIGHT; /* Ally display section height */
+  const static uint8_t kALLY_QD_H; /* Ally qd bar height */
+  const static uint8_t kALLY_QD_OFFSET; /* Ally qd bar offset off health */
   const static uint8_t kALLY_QD_TRIANGLE; /* Ally qd triangle width */
-  const static uint8_t kALLY_QD_W;        /* Ally qd bar width */
+  const static uint8_t kALLY_QD_W; /* Ally qd bar width */
 
   const static uint16_t kANIMATION_PROCESS; /* Time to process actions */
-  const static uint16_t kBIGBAR_OFFSET;     /* Offset of bar off bottom */
+  const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
   // const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
-  const static float kBIGBAR_L;  /* The percentage of the left section */
+  const static float kBIGBAR_L; /* The percentage of the left section */
   const static float kBIGBAR_M1; /* The percentage of the middle section */
   const static float kBIGBAR_M2; /* The percentage of the second middle */
 
@@ -178,42 +178,42 @@ private:
   const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
 
   const static uint16_t kBOB_AMOUNT; /* Amount of PX to 'bob the sprites */
-  const static float kBOB_RATE;      /* Rate at which to bob the sprites */
-  const static uint32_t kBOB_TIME;   /* Time to bob the sprites for */
+  const static float kBOB_RATE; /* Rate at which to bob the sprites */
+  const static uint32_t kBOB_TIME; /* Time to bob the sprites for */
 
   const static uint16_t kRUN_AMOUNT;
   const static float kRUN_RATE;
   const static uint32_t kRUN_TIME;
 
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
-  const static float kCYCLE_RATE;   /* Rate of cycling for selecting persons */
+  const static float kCYCLE_RATE; /* Rate of cycling for selecting persons */
 
   const static uint16_t kDELAY_DAMAGE; /* Standard damage delay (ms) */
-  const static uint16_t kDELAY_SKILL;  /* Standard skill delay (ms) */
+  const static uint16_t kDELAY_SKILL; /* Standard skill delay (ms) */
 
-  const static uint8_t kINFO_BORDER;   /* Border width on enemy info bar */
-  const static uint8_t kINFO_GREY;     /* Grey value for border bar */
-  const static uint16_t kINFO_H;       /* Height of enemy info bar */
-  const static uint8_t kINFO_OPACITY;  /* Opacity of black background in info */
+  const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
+  const static uint8_t kINFO_GREY; /* Grey value for border bar */
+  const static uint16_t kINFO_H; /* Height of enemy info bar */
+  const static uint8_t kINFO_OPACITY; /* Opacity of black background in info */
   const static uint8_t kINFO_TRIANGLE; /* Height of triangle in info corner */
-  const static uint16_t kINFO_W;       /* Width of enemy info bar */
+  const static uint16_t kINFO_W; /* Width of enemy info bar */
 
-  const static uint8_t kENEMY_BAR_H;      /* Height of health bar for foes */
+  const static uint8_t kENEMY_BAR_H; /* Height of health bar for foes */
   const static uint8_t kENEMY_BAR_OFFSET; /* Offset of foe health off center */
   const static uint8_t kENEMY_BAR_TRIANGLE; /* Width of foe health triangle */
-  const static uint16_t kENEMY_BAR_W;     /* Width of rect in foe health bar */
+  const static uint16_t kENEMY_BAR_W; /* Width of rect in foe health bar */
   const static uint16_t kENEMIES_BAR_GAP; /* Offset of bar above foes */
-  const static uint16_t kENEMIES_OFFSET;  /* Offset of foes from top */
-  const static uint16_t kALLIES_OFFSET;   /* Offset of friends from bottom */
+  const static uint16_t kENEMIES_OFFSET; /* Offset of foes from top */
+  const static uint16_t kALLIES_OFFSET; /* Offset of friends from bottom */
 
-  const static uint8_t kMAX_CHARS;  /* Max number of foes in battle */
+  const static uint8_t kMAX_CHARS; /* Max number of foes in battle */
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
 
-  const static uint16_t kPERSON_SPREAD;  /* Rendering overlay of persons */
+  const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint8_t kPERSON_KO_ALPHA; /* Opacity of a person at death */
 
 public:
-  const static uint16_t kPERSON_WIDTH;   /* Width of persons on battle */
+  const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
 
   /*=============================================================================
    * PRIVATE FUNCTIONS - Battle Operations
@@ -335,10 +335,17 @@ private:
   bool renderAlliesInfo();
   bool renderAllyInfo(BattleActor* ally, bool for_menu = false);
 
+  bool renderElements();
+  void renderElementPlep(RenderElement* element);
+  void renderElementRGBOverlay(RenderElement* element);
+  void renderElementText(RenderElement* element);
+
   /* Enemy rendering functions */
   bool renderEnemies();
   bool renderEnemiesInfo();
   bool renderEnemyInfo(BattleActor* actor);
+
+  bool renderMenu();
 
   /* Basic setup for health drawing */
   bool setupHealthDraw(BattleActor* actor, float health_pc);

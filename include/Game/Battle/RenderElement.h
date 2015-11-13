@@ -30,6 +30,7 @@ enum class RenderType
   ACTION_TEXT,
   DAMAGE_TEXT,
   DAMAGE_VALUE,
+  RGB_OVERLAY,
   RGB_SPRITE_FLASH,
   NONE
 };
