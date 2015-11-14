@@ -190,13 +190,17 @@ bool MapViewport::lockOn(float x, float y, bool travel)
       x < map_width && y < map_height)
     )
   {
-    lock_on_thing = NULL;
-    lock_on_tile = NULL;
-    lock_on_x = x;
-    lock_on_y = y;
-    lock_on = PIXEL;
-    this->travel = travel;
-    return true;
+    /* Ensure no repeat call */
+    if(x != lock_on_x || y != lock_on_y)
+    {
+      lock_on_thing = NULL;
+      lock_on_tile = NULL;
+      lock_on_x = x;
+      lock_on_y = y;
+      lock_on = PIXEL;
+      this->travel = travel;
+      return true;
+    }
   }
 
   return false;
@@ -204,7 +208,7 @@ bool MapViewport::lockOn(float x, float y, bool travel)
 
 bool MapViewport::lockOn(MapThing* thing, bool travel)
 {
-  if(thing != NULL)
+  if(thing != NULL && thing != lock_on_thing)
   {
     lock_on_thing = thing;
     lock_on_tile = NULL;
@@ -220,7 +224,7 @@ bool MapViewport::lockOn(MapThing* thing, bool travel)
 
 bool MapViewport::lockOn(Tile* map_tile, bool travel)
 {
-  if(map_tile != NULL)
+  if(map_tile != NULL && map_tile != lock_on_tile)
   {
     lock_on_thing = NULL;
     lock_on_tile = map_tile;

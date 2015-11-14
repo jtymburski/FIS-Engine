@@ -140,6 +140,15 @@ private:
   // /* The time that has elapsed for each draw cycle */
   // int time_elapsed;
 
+  /* View mode data */
+  int view_acc;
+  uint16_t view_section;
+  bool view_start;
+  MapThing* view_thing;
+  Tile* view_tile;
+  int view_time;
+  bool view_travel;
+
   /* The viewport for the map, controls positioning */
   MapViewport viewport;
 
@@ -222,6 +231,10 @@ private:
   /* Initiates a thing action, based on the action key being hit */
   void initiateThingInteraction(MapPerson* initiator);
 
+  /* Mode view updates */
+  bool modeViewStart(int cycle_time, bool travel);
+  bool modeViewStop(int cycle_time, bool travel);
+
   /* Parse coordinate info from file to give the designated tile coordinates
    * to update */
   bool parseCoordinateInfo(std::string row, std::string col, uint16_t index,
@@ -230,11 +243,17 @@ private:
 
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);
-  bool setSectionIndexMode();
+  bool setSectionIndexMode(int index_next = -1);
 
   /* Splits the ID into a vector of IDs */
   std::vector< std::vector<int32_t> > splitIdString(std::string id,
                                                     bool matrix = false);
+
+  /* Triggers a view of the passed in data */
+  bool triggerViewThing(MapThing* view_thing, UnlockView view_mode,
+                        int view_time);
+  bool triggerViewTile(Tile* view_tile, uint16_t view_section,
+                       UnlockView view_mode, int view_time);
 
   /* Updates the map mode - lots of logic here */
   bool updateFade(int cycle_time);

@@ -56,6 +56,13 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   music_runtime = -1;
   player = NULL;
   system_options = NULL;
+  view_acc = 0;
+  view_section = 0;
+  view_start = false;
+  view_thing = nullptr;
+  view_tile = nullptr;
+  view_time = 0;
+  view_travel = false;
 
   /* Configure the width / height of tiles and sets default zooming */
   tile_height = Helpers::getTileSize();
@@ -861,6 +868,54 @@ void Map::initiateThingInteraction(MapPerson* initiator)
     }
   }
 }
+  
+/* Mode view update */
+bool Map::modeViewStart(int cycle_time, bool travel)
+{
+  bool proceed = travel;
+
+  /* If travel, complete fade */
+  if(!proceed)
+  {
+    fade_status = FADINGOUT;
+    proceed = updateFade(cycle_time);
+  }
+
+  /* If finished, update viewport and proceed */
+  if(proceed)
+  {
+    if(view_thing != nullptr)
+      viewport.lockOn(view_thing, travel);
+    else
+      viewport.lockOn(view_tile, travel);
+    view_start = false;
+  }
+
+  return proceed;
+}
+
+/* Mode view update */
+bool Map::modeViewStop(int cycle_time, bool travel)
+{
+  bool proceed = travel;
+
+  /* If travel, complete fade */
+  if(!proceed)
+  {
+    fade_status = FADINGOUT;
+    proceed = updateFade(cycle_time);
+  }
+
+  /* If finished, update viewport and proceed */
+  if(proceed)
+  {
+    viewport.lockOn(player, travel);
+    mode_curr = NORMAL;
+    mode_next = NONE;
+  }
+
+  return proceed;
+}
 
 /* Parse coordinate info from file to give the designated tile coordinates
  * to update */
@@ -906,20 +961,17 @@ bool Map::setSectionIndex(uint16_t index)
 }
 
 /* Changes the map section index - what is displayed - called from mode */
-bool Map::setSectionIndexMode()
+bool Map::setSectionIndexMode(int index_next)
 {
-  if(map_index_next >= 0 && map_index_next < 256)
+  if(index_next < 0)
+    index_next = map_index_next;
+  if(index_next >= 0 && index_next < 256)
   {
-    uint8_t index = static_cast<uint8_t>(map_index_next);
+    uint8_t index = static_cast<uint8_t>(index_next);
 
     if(map_index != index && index < sub_map.size() &&
        sub_map[index].tiles.size() > 0)
     {
-      /* Sound trigger on sub change */
-      //bool trigger_update = false;
-      //if(map_index != index)
-      //  trigger_update = true;
-
       /* Update the index and viewport */
       map_index = index;
       viewport.setMapSize(sub_map[index].tiles.size(),
@@ -927,11 +979,11 @@ bool Map::setSectionIndexMode()
                           map_index);
 
       /* Update sound and dialog now that index is fresh */
-      //if(trigger_update)
-      //{
-      audioUpdate(true);
-      map_dialog.clearAll();
-      //}
+      if(index_next < 0)
+      {
+        audioUpdate(true);
+        map_dialog.clearAll();
+      }
 
       map_index_next = -1;
       return true;
@@ -1009,7 +1061,57 @@ std::vector< std::vector<int32_t> > Map::splitIdString(std::string id,
   return id_stack;
 }
 
-/* Updates the map fade - lots TODO here */
+/* Triggers a view of the passed in data */
+bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
+                           int view_time)
+{
+  /* Parse and check view data */
+  bool view, scroll;
+  EventSet::dataEnumView(view_mode, view, scroll);
+  if(view && view_time > 0)
+  {
+    /* Set data */
+    this->view_acc = 0;
+    this->view_section = view_thing->getMapSection();
+    this->view_thing = view_thing;
+    this->view_tile = nullptr;
+    this->view_time = view_time;
+    this->view_travel = scroll;
+
+    /* Trigger mode change */
+    changeMode(VIEW);
+    view_start = true;
+    return true;
+  }
+  return false;
+}
+
+/* Triggers a view of the passed in data */
+bool Map::triggerViewTile(Tile* view_tile, uint16_t view_section,
+                          UnlockView view_mode, int view_time)
+{
+  /* Parse and check view data */
+  bool view, scroll;
+  EventSet::dataEnumView(view_mode, view, scroll);
+  if(view && view_time > 0)
+  {
+    /* Set data */
+    this->view_acc = 0;
+    this->view_section = view_section;
+    this->view_thing = nullptr;
+    this->view_tile = view_tile;
+    this->view_time = view_time;
+    this->view_travel = scroll;
+
+    /* Trigger mode change */
+    changeMode(VIEW);
+    view_start = true;
+    return true;
+  }
+  return false;
+}
+
+/* Updates the map fade */
 bool Map::updateFade(int cycle_time)
 {
   bool end_status = false;
@@ -1067,20 +1169,16 @@ bool Map::updateFade(int cycle_time)
   return end_status;
 }
 
-/* Updates the map mode - lots TODO here */
+/* Updates the map mode */
 void Map::updateMode(int cycle_time)
 {
   /* First run parsing */
   if(mode_curr == mode_next)
   {
     if(mode_next == DISABLED)
-    {
       mode_curr = NORMAL;
-    }
     else
-    {
       mode_next = NONE;
-    }
   }
 
   /* -- CURRENT MODE DISABLED -- */
@@ -1112,6 +1210,19 @@ void Map::updateMode(int cycle_time)
         mode_next = NONE;
       }
     }
+    /* -- NEXT MODE VIEW -- */
+    else if(mode_next == VIEW)
+    {
+      mode_curr = mode_next;
+      mode_next = NONE;
+    }
+    /* NEXT MODE NONE -- */
+    else if(mode_next == NONE)
+    {
+      if(fade_status != VISIBLE)
+        fade_status = FADINGIN;
+      updateFade(cycle_time);
+    }
   }
   /* -- CURRENT MODE SWITCH SUB MAP -- */
   else if(mode_curr == SWITCHSUB)
@@ -1127,7 +1238,59 @@ void Map::updateMode(int cycle_time)
   /* -- CURRENT MODE VIEW -- */
   else if(mode_curr == VIEW)
   {
-
+    /* First half - going to view point */
+    if(view_start)
+    {
+      /* Same sub-section */
+      if(view_section == map_index)
+      {
+        modeViewStart(cycle_time, view_travel);
+      }
+      /* Different sub-section */
+      else
+      {
+        if(modeViewStart(cycle_time, false))
+          setSectionIndexMode(view_section);
+      }
+    }
+    /* Second half - viewing and returning */
+    else
+    {
+      /* No time accumulated */
+      if(view_acc == 0)
+      {
+        fade_status = FADINGIN;
+        if(updateFade(cycle_time))
+          view_acc++;
+      }
+      /* Time accumulated or finished */
+      else
+      {
+        if(!viewport.isTravelling())
+        {
+          /* Still timing */
+          if(view_acc < view_time)
+          {
+            view_acc += cycle_time;
+          }
+          /* Finished, begin return process */
+          else
+          {
+            /* Same sub-section */
+            if(player->getMapSection() == map_index)
+            {
+              modeViewStop(cycle_time, view_travel);
+            }
+            /* Different sub-section */
+            else
+            {
+              if(modeViewStop(cycle_time, false))
+                setSectionIndexMode(player->getMapSection());
+            }
+          }
+        }
+      }
+    }
   }
   /* -- CURRENT MODE NONE or INVALID -- */
   else
@@ -1931,7 +2094,7 @@ bool Map::render(SDL_Renderer* renderer)
 
     /* Render the map dialogs / pop-ups */
     item_menu.render(renderer);
-    map_dialog.render(renderer);
+    //map_dialog.render(renderer);
 
     /* Overlay (for fading */
     if(fade_status != VISIBLE)
@@ -1939,6 +2102,9 @@ bool Map::render(SDL_Renderer* renderer)
       SDL_SetTextureAlphaMod(Helpers::getMaskBlack(), fade_alpha);
       SDL_RenderCopy(renderer, Helpers::getMaskBlack(), NULL, NULL);
     }
+
+    /* Map dialog finally */
+    map_dialog.render(renderer);
 
     /* Map menu last to render - TODO */
   }
@@ -2154,15 +2320,17 @@ void Map::unlockIO(int io_id, UnlockIOMode mode, int state_num,
   if(found != nullptr && found->unlockTrigger(mode, state_num, mode_events))
   {
     /* Was unlocked: check if view is required */
+    triggerViewThing(found, mode_view, view_time);
+
     // TODO: Possibly pull out into function (or in MapViewport)
-    bool view, scroll;
-    EventSet::dataEnumView(mode_view, view, scroll);
-    if(view && view_time > 0)
-    {
+    //bool view, scroll;
+    //EventSet::dataEnumView(mode_view, view, scroll);
+    //if(view && view_time > 0)
+    //{
       // TODO
-      std::cout << "TODO - View IO: " << io_id << ",Scroll: " << scroll
-                << ",Time: " << view_time << std::endl;
-    }
+      //std::cout << "TODO - View IO: " << io_id << ",Scroll: " << scroll
+      //          << ",Time: " << view_time << std::endl;
+    //}
   }
 }
 
@@ -2181,14 +2349,17 @@ void Map::unlockThing(int thing_id, UnlockView mode_view, int view_time)
     if(set != nullptr && set->unlockTrigger())
     {
       /* Was unlocked: check if view is required */
-      bool view, scroll;
-      EventSet::dataEnumView(mode_view, view, scroll);
-      if(view && view_time > 0)
-      {
+      triggerViewThing(found, mode_view, view_time);
+
+      /* Was unlocked: check if view is required */
+      //bool view, scroll;
+      //EventSet::dataEnumView(mode_view, view, scroll);
+      //if(view && view_time > 0)
+      //{
         // TODO
-        std::cout << "TODO - View thing: " << thing_id << ",Scroll: "
-                  << scroll << ",Time: " << view_time << std::endl;
-      }
+        //std::cout << "TODO - View thing: " << thing_id << ",Scroll: "
+        //          << scroll << ",Time: " << view_time << std::endl;
+      //}
     }
   }
 }
@@ -2220,15 +2391,17 @@ void Map::unlockTile(int section_id, int tile_x, int tile_y,
       /* If unlocked, proceed to parse view and if required */
       if(unlocked)
       {
-        bool view, scroll;
-        EventSet::dataEnumView(mode_view, view, scroll);
-        if(view && view_time > 0)
-        {
+        triggerViewTile(found, section_id, mode_view, view_time);
+
+        //bool view, scroll;
+        //EventSet::dataEnumView(mode_view, view, scroll);
+        //if(view && view_time > 0)
+        //{
           // TODO
-          std::cout << "TODO - View tile: section: " << section_id << ",x: "
-                    << tile_x << ",y: " << tile_y << ",Scroll: " << scroll
-                    << ",Time: " << view_time << std::endl;
-        }
+          //std::cout << "TODO - View tile: section: " << section_id << ",x: "
+          //          << tile_x << ",y: " << tile_y << ",Scroll: " << scroll
+          //          << ",Time: " << view_time << std::endl;
+        //}
       }
     }
   }
