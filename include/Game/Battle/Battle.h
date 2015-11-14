@@ -324,6 +324,7 @@ private:
 
   /* Clears the elements out */
   void clearElements();
+  void clearElementsTimedOut();
 
   /* Renders the action frame if needed */
   bool renderActionFrame();

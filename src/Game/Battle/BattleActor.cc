@@ -20,7 +20,7 @@
  * CONSTANTS
  *============================================================================*/
 
-const float BattleActor::kVELOCITY_X{-0.500};
+const float BattleActor::kVELOCITY_X{-1.250};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

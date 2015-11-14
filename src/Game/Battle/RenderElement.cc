@@ -151,8 +151,12 @@ void RenderElement::createAsActionText(std::string action_name)
 
   if(element_font && renderer)
   {
+    // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    // SDL_RenderClear(renderer);
+
     element_text = Text(element_font);
     element_text.setText(renderer, action_name, color);
+
 
     location.point.x = kACTION_TEXT_X - element_text.getWidth();
     location.point.y = kACTION_CENTER - element_text.getHeight() / 2 - 8;
@@ -238,6 +242,9 @@ bool RenderElement::setTimes(uint32_t time_begin, uint32_t time_fade_in,
 
   status = initialStatusFade();
 
+  if(status == RenderStatus::FADING_IN)
+    std::cout << "Fading in bro" << std::endl;
+
   return valid;
 }
 
@@ -257,13 +264,6 @@ bool RenderElement::update(int32_t cycle_time)
 {
   time_left -= cycle_time;
 
-  updateStatus(cycle_time);
-
-  return false;
-}
-
-bool RenderElement::updateStatus(int32_t cycle_time)
-{
   if(render_type == RenderType::PLEP)
     updateStatusPlep(cycle_time);
   else
@@ -287,6 +287,7 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
 {
   if(time_left <= 0)
   {
+    std::cout << "Setting timed out!" << std::endl;
     status = RenderStatus::TIMED_OUT;
   }
   else
@@ -317,7 +318,33 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
       location.point.y += neg_delta_y;
       delta.y -= neg_delta_y;
     }
+
+    if(status == RenderStatus::FADING_IN)
+    {
+      float delta_a = color.a * 1.0 / time_fade_in * cycle_time;
+      delta_a = std::max(1.0, (double)delta_a);
+
+      if(alpha + delta_a > color.a)
+        alpha = color.a;
+      else
+        alpha += delta_a;
+    }
+    else if(status == RenderStatus::DISPLAYING)
+    {
+      alpha = color.a;
+    }
+    else if(status == RenderStatus::FADING_OUT)
+    {
+      float delta_a = color.a * 1.0 / time_fade_out * cycle_time;
+      delta_a = std::max(1.0, (double)delta_a);
+
+      if(delta_a > alpha)
+        alpha = 0;
+      else if(alpha - delta_a >= 0)
+        alpha = alpha - delta_a;
+    }
   }
+
 }
 
 RenderStatus RenderElement::initialStatusFade()

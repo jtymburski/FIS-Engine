@@ -383,6 +383,14 @@ void BattleEvent::updateStats()
   calcIgnoreState();
 }
 
+std::string BattleEvent::getActionName()
+{
+  if(action_type == ActionType::SKILL && event_skill)
+    return event_skill->skill->getName();
+
+  return "";
+}
+
 Action* BattleEvent::getCurrAction()
 {
   auto curr_skill = getCurrSkill();

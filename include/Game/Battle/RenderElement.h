@@ -172,8 +172,6 @@ public:
 
   /* Updates the state of the render element */
   bool update(int32_t cycle_time);
-
-  bool updateStatus(int32_t cycle_time);
   void updateStatusPlep(int32_t cycle_time);
   void updateStatusFade(int32_t cycle_time);
 

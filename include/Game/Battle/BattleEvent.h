@@ -201,6 +201,9 @@ public:
   /* Method for updating the stats for computing a new action outcome */
   void updateStats();
 
+  /* Determines and returns the action name */
+  std::string getActionName();
+
   /* Gets the current action (skills's or item skill's [action_index]) */
   Action* getCurrAction();
 

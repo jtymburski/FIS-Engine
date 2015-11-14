@@ -16,7 +16,7 @@ const uint8_t Text::kDEFAULT_ALPHA = 255;
  *============================================================================*/
 
 /*
- * Description: Sets up the text class but with blank parameters. Font is 
+ * Description: Sets up the text class but with blank parameters. Font is
  *              required to be set first before the text can be sent and then
  *              rendering is viable.
  *
@@ -46,7 +46,7 @@ Text::Text(TTF_Font* font) : Text()
 
 /*
  * Description: Sets up the text class with parameters to create the font as
- *              well. This will allow the texture to be created right away, 
+ *              well. This will allow the texture to be created right away,
  *              unless the font creation failed.
  *
  * Inputs: std::string font_path - the path to the font
@@ -82,7 +82,7 @@ uint8_t Text::getAlpha()
 {
   return alpha;
 }
- 
+
 /*
  * Description: Returns the stored font. NULL if unset.
  *
@@ -116,7 +116,7 @@ SDL_Texture* Text::getTexture()
 {
   return texture;
 }
-  
+
 /*
  * Description: Returns the width of the rendered text that has been created.
  *              0 if the texture is unset.
@@ -150,10 +150,10 @@ bool Text::render(SDL_Renderer* renderer, int x, int y)
     rect.y = y;
     rect.h = height;
     rect.w = width;
-    
+
     return (SDL_RenderCopy(renderer, texture, NULL, &rect) == 0);
   }
-  
+
   return false;
 }
 
@@ -171,7 +171,7 @@ void Text::setAlpha(uint8_t alpha)
 }
 
 /*
- * Description: Sets the font to use for creating the text texture that will 
+ * Description: Sets the font to use for creating the text texture that will
  *              inevitably used for rendering. Fails if the font_path isn't
  *              relevant. The font created from this path will be deleted by
  *              this class when it's destroyed or when unsetFont() is called.
@@ -186,12 +186,12 @@ bool Text::setFont(std::string font_path, int font_size, int font_style)
 {
   TTF_Font* new_font = createFont(font_path, font_size, font_style);
   bool success = setFont(new_font);
-  
+
   /* If setting the font is successful, tell the class to delete the font when
    * done */
   if(success)
     delete_font = true;
-  
+
   return success;
 }
 
@@ -213,10 +213,10 @@ bool Text::setFont(TTF_Font* font)
     delete_font = false;
     return true;
   }
-  
+
   return false;
 }
-  
+
 /*
  * Description: Sets the text that is stored in the class and will be used for
  *              rendering. It is necessary that first the font is set up before
@@ -227,20 +227,20 @@ bool Text::setFont(TTF_Font* font)
  *         SDL_Color text_color - the color of the text
  * Output: bool - returns if the text is created
  */
-bool Text::setText(SDL_Renderer* renderer, std::string text, 
+bool Text::setText(SDL_Renderer* renderer, std::string text,
                                            SDL_Color text_color)
 {
   bool success = false;
-  
+
   if(renderer != NULL && render_font != NULL)
   {
     /* Create the text surface */
-    SDL_Surface* text_surface = 
+    SDL_Surface* text_surface =
                  TTF_RenderText_Blended(render_font, text.c_str(), text_color );
     if(text_surface != NULL)
     {
       /* Create the texture */
-      SDL_Texture* text_texture = 
+      SDL_Texture* text_texture =
                           SDL_CreateTextureFromSurface(renderer, text_surface );
       if(text_texture != NULL)
       {
@@ -253,12 +253,12 @@ bool Text::setText(SDL_Renderer* renderer, std::string text,
         setAlpha(alpha);
         success = true;
       }
-      
+
       /* Free the surface */
       SDL_FreeSurface(text_surface);
     }
   }
-  
+
   return success;
 }
 
@@ -294,8 +294,8 @@ void Text::unsetTexture()
 
 /*
  * Description: Creates a font given a font path string and size. Will add
- *              styles as well if they are passed in by the user (OR multiple 
- *              styles if you want). The font styles are part of the 
+ *              styles as well if they are passed in by the user (OR multiple
+ *              styles if you want). The font styles are part of the
  *              TTF_STYLE_* enumerators.
  *
  * Inputs: std::string font_path - the path to the font to open
@@ -307,7 +307,7 @@ TTF_Font* Text::createFont(std::string font_path, int font_size,
                                                   int font_style)
 {
   TTF_Font* new_font = TTF_OpenFont(font_path.c_str(), font_size);
-  
+
   /* If the font creation is successful, set the style */
   if(new_font != NULL)
     TTF_SetFontStyle(new_font, font_style);
@@ -319,11 +319,11 @@ std::string Text::formatNum(int32_t number)
 {
   std::string str_num;
   int index = 0;
-  
+
   /* Handle 0 case */
   if(number == 0)
     return "0";
- 
+
   /* If negative, remove negative sign and note */
   std::string prefix = "";
   if(number < 0)
@@ -338,13 +338,13 @@ std::string Text::formatNum(int32_t number)
     /* Add comma to front if another sequence is about to be parsed */
     if(index != 0 && index % 3 == 0)
       str_num = "," + str_num;
-      
+
     int digit = number % 10;
     str_num = std::to_string(digit) + str_num;
     number /= 10;
     index++;
   }
-  
+
   /* If was negative, add to final string */
   str_num = prefix + str_num;
 
@@ -353,7 +353,7 @@ std::string Text::formatNum(int32_t number)
 
 /*
  * Description: Splits a line into the appropriate widths, based on the
- *              rendering font. This will seg fault if the font is NULL or 
+ *              rendering font. This will seg fault if the font is NULL or
  *              unset. For non-elided split, if the width is less than a single
  *              word size, it will still include the one word. For elided,
  *              if the width is too short, it will just be "...". The returned
@@ -363,11 +363,11 @@ std::string Text::formatNum(int32_t number)
  * Inputs: TTF_Font* font - the rendering font (must be non-NULL)
  *         std::string text - the sequence of characters to split
  *         int line_width - the limited length of line to delimit to
- *         bool elided - if the line should be cut off at a single line. If 
+ *         bool elided - if the line should be cut off at a single line. If
  *                       cut shorter then text, add ...
  * Output: std::vector<std::string> - stack of lines, as per line_width
  */
-std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text, 
+std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
                                          int line_width, bool elided)
 {
   int dot_width = 0;
@@ -377,7 +377,7 @@ std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
   int width = 0;
   std::vector<std::string> words = Helpers::split(text, ' ');
   std::vector<int> word_widths;
-  
+
   /* Get the widths of all words */
   for(uint16_t i = 0; i < words.size(); i++)
   {
@@ -394,21 +394,21 @@ std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
     uint16_t index = 0;
     std::string line = "";
     width = 0;
-    
+
     /* If elided, it sets the line to the under line length. If it's greater,
      * it adds ... after the last word */
     if(elided)
     {
       /* Modify the line width to expect the final 3 dots */
       line_width -= (dot_width * 3);
-      
+
       while(index < words.size() && !done)
       {
         /* Calculate the check width, to compare against line width */
         int check_width = width + word_widths[index];
         if(index != 0)
           check_width += space_width;
-        
+
         /* Run the check, if greater, end line fill sequence */
         if(check_width > line_width)
           done = true;
@@ -425,7 +425,7 @@ std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
           index++;
         }
       }
-      
+
       /* Add the final ... and push word to vector */
       if(done)
         line += "...";
@@ -436,7 +436,7 @@ std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
     else
     {
       bool first_word = true;
-      
+
       /* Loop through all the words */
       while(index < words.size())
       {
@@ -448,7 +448,7 @@ std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
           first_word = false;
           index++;
         }
-        /* Otherwise, check if the new word will make the line too long 
+        /* Otherwise, check if the new word will make the line too long
          * If so, push the previous line and clear to make way for the new
          * word */
         else if((width + space_width + word_widths[index]) > line_width)
@@ -466,7 +466,7 @@ std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
           index++;
         }
       }
-      
+
       /* Append the final line if not null */
       if(!line.empty())
         line_stack.push_back(line);

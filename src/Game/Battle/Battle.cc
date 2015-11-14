@@ -224,8 +224,6 @@ void Battle::aiClear()
 
 bool Battle::bufferMenuSelection()
 {
-  std::cout << "Buffering menu selection!" << std::endl;
-
   auto success = true;
   auto actor = battle_menu->getActor();
   auto action_type = battle_menu->getSelectedType();
@@ -256,7 +254,6 @@ bool Battle::bufferModuleSelection()
 
   if(curr_actor && curr_module)
   {
-    std::cout << "Buffering module selection." << std::endl;
     auto action_type = curr_module->getActionType();
     auto targets = curr_module->getChosenTargets();
 
@@ -495,26 +492,40 @@ void Battle::processEvent()
     // else
     // {
 
-      if(event->action_state == ActionState::BEGIN)
+    if(event->action_state == ActionState::BEGIN)
+    {
+      event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
+      event->action_state = ActionState::SLIDE_IN;
+      delay = 250;
+    }
+    else if(event->action_state == ActionState::SLIDE_IN)
+    {
+      /* Create the fading-in action text */
+      auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
+      auto element = new RenderElement(renderer, action_font);
+
+      element->createAsActionText(event->getActionName());
+      render_elements.push_back(element);
+      event->action_state = ActionState::FADE_IN_TEXT;
+    }
+    else if(event->action_state == ActionState::FADE_IN_TEXT)
+    {
+      if(event->actor->getStateActionFrame() == SpriteState::SLID_IN)
       {
-        event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
-        event->action_state = ActionState::SLIDE_IN;
-        delay = 1000;
-      }
-      else if(event->action_state == ActionState::SLIDE_IN)
-      {
-        std::cout << "So far so true!" << std::endl;
-        if(event->actor->getStateActionFrame() == SpriteState::SLID_IN)
-        {
-          std::cout << "Well were slid in" << std::endl;
-          event->actor->setStateActionFrame(SpriteState::SLIDING_OUT);
-        }
+        event->actor->setStateActionFrame(SpriteState::SLIDING_OUT);
+        event->action_state = ActionState::SLIDE_OUT;
       }
 
-      // auto skill_status = event->doesSkillHit();
+      delay = 750;
+    }
+    else if(event->action_state == ActionState::SLIDE_OUT)
+    {
+    }
 
-      // if(skill_status == SkillHitStatus::HIT)
-      //   processEventSkill();
+    // auto skill_status = event->doesSkillHit();
+
+    // if(skill_status == SkillHitStatus::HIT)
+    //   processEventSkill();
     // }
   }
 }
@@ -1105,10 +1116,26 @@ void Battle::clearElements()
   {
     if(element)
       delete element;
+
     element = nullptr;
   }
 
   render_elements.clear();
+}
+
+void Battle::clearElementsTimedOut()
+{
+  render_elements.erase(
+      std::remove_if(begin(render_elements), end(render_elements),
+                     [&](RenderElement* element) -> bool
+                     {
+                       if(element)
+                       {
+                         return (element->status == RenderStatus::TIMED_OUT);
+                       }
+                       return true;
+                     }),
+      end(render_elements));
 }
 
 // NOTE: On menu rendering, render the friend info of the selected ally
@@ -1172,7 +1199,7 @@ bool Battle::renderActionFrame()
   {
     if(renderer && actor &&
        actor->getStateActionFrame() != SpriteState::HIDDEN &&
-        actor->getStateActionFrame() != SpriteState::SLID_OUT)
+       actor->getStateActionFrame() != SpriteState::SLID_OUT)
     {
       auto frame = actor->getActionFrame();
       auto x = actor->getActionFrameX();
@@ -1380,25 +1407,23 @@ void Battle::renderElementRGBOverlay(RenderElement* element)
 
 void Battle::renderElementText(RenderElement* element)
 {
-  (void)element;
-  //       auto element_font = element->getFont();
+  if(element->element_font && event)
+  {
+    Text t(element->element_font);
+    auto point = element->location.point;
+    auto shadow = element->shadow_offset;
 
-  //       if(element_font != nullptr)
-  //       {
-  //         Text t(element->getFont());
-  //         t.setText(renderer, element->getText(), element->getColor());
-  //         t.setAlpha(element->getAlpha());
-  //         t.render(renderer, element->getX(), element->getY());
+    t.setText(renderer, event->getActionName(), element->color);
+    t.setAlpha(element->alpha);
+    t.render(renderer, point.x, point.y);
 
-  //         if(element->hasShadow())
-  //         {
-  //           t.setText(renderer, element->getText(),
-  //           element->getShadowColor());
-  //           t.setAlpha(element->getAlpha());
-  //           t.render(renderer, element->getShadowX(),
-  //           element->getShadowY());
-  //         }
-  //       }
+    std::cout << "Render text with alpha: " << (int)element->alpha << std::endl;
+    if(element->has_shadow)
+    {
+      t.setText(renderer, event->getActionName(), element->shadow_color);
+      t.render(renderer, point.x + shadow.x, point.y + shadow.y);
+    }
+  }
 }
 
 // TODO
@@ -1932,6 +1957,11 @@ void Battle::updateBarOffset()
 
 void Battle::updateRendering(int32_t cycle_time)
 {
+  /* Update render elements */
+  for(auto& element : render_elements)
+    if(element)
+      element->update(cycle_time);
+
   updateRenderSprites(cycle_time);
   updateBarOffset();
 }
@@ -4692,6 +4722,8 @@ bool Battle::update(int32_t cycle_time)
     else
       updateProcessing();
   }
+
+  clearElementsTimedOut();
 
   return false;
 }
