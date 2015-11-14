@@ -144,6 +144,7 @@ private:
    * CONSTANTS - Battle Display
    *============================================================================*/
   const static uint16_t kACTION_BORDER; /* Border width on action slideout */
+
   const static uint16_t kACTION_COLOR_A; /* Alpha for inner portion */
   const static uint16_t kACTION_COLOR_G; /* Grey color on middle border */
   const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
@@ -323,6 +324,9 @@ private:
 
   /* Clears the elements out */
   void clearElements();
+
+  /* Renders the action frame if needed */
+  bool renderActionFrame();
 
   /* Renders the Battle bar on the screen */
   bool renderBattleBar();

@@ -390,6 +390,8 @@ void Battle::loadBattleEvent()
       event->event_skill = battle_buffer->getSkill();
     else if(action_type == ActionType::ITEM)
       event->event_item = battle_buffer->getItem();
+
+    battle_buffer->setStarted();
   }
 }
 
@@ -463,8 +465,8 @@ void Battle::updateEvent()
 
   auto to_process = true;
 
-  if(battle_buffer->isIndexStarted())
-    to_process &= event->setNextAction();
+  // if(battle_buffer->isIndexStarted())
+  //   to_process &= event->setNextAction();
 
   if(to_process)
     processEvent();
@@ -486,17 +488,34 @@ void Battle::processEvent()
 
   if(event->action_type == ActionType::SKILL)
   {
-    if(event_started)
-    {
-      processEventSkill();
-    }
-    else
-    {
-      auto skill_status = event->doesSkillHit();
+    // if(event_started)
+    // {
+    //   processEventSkill();
+    // }
+    // else
+    // {
 
-      if(skill_status == SkillHitStatus::HIT)
-        processEventSkill();
-    }
+      if(event->action_state == ActionState::BEGIN)
+      {
+        event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
+        event->action_state = ActionState::SLIDE_IN;
+        delay = 1000;
+      }
+      else if(event->action_state == ActionState::SLIDE_IN)
+      {
+        std::cout << "So far so true!" << std::endl;
+        if(event->actor->getStateActionFrame() == SpriteState::SLID_IN)
+        {
+          std::cout << "Well were slid in" << std::endl;
+          event->actor->setStateActionFrame(SpriteState::SLIDING_OUT);
+        }
+      }
+
+      // auto skill_status = event->doesSkillHit();
+
+      // if(skill_status == SkillHitStatus::HIT)
+      //   processEventSkill();
+    // }
   }
 }
 
@@ -595,7 +614,7 @@ void Battle::updateProcessing()
     else if(battle_buffer->getCooldown() == 0)
     {
       loadBattleEvent();
-      updateEvent();
+      // updateEvent();
     }
     else
       updateBufferNext();
@@ -790,6 +809,10 @@ void Battle::buildActionFrame(BattleActor* actor)
                           action_frames->getCurrent()->getWidth(),
                           action_frames->getCurrent()->getHeight());
   }
+  else
+  {
+    std::cout << "Bad dialog sprite!" << std::endl;
+  }
 
   /* Try and chop out the base of the person */
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -809,6 +832,11 @@ void Battle::buildActionFrame(BattleActor* actor)
   SDL_SetRenderTarget(renderer, nullptr);
 
   actor->setActionFrame(rendered_frame);
+
+  auto end_x = config->getScreenWidth() - rendered_frame->getWidth();
+  auto end_y = 381 - 291; // TODO : Proportional?
+  actor->setActionFrameEnd(end_x, end_y);
+  actor->setActionFrameStart(config->getScreenWidth(), end_y);
 }
 
 void Battle::buildEnemyBackdrop()
@@ -1119,6 +1147,10 @@ bool Battle::render()
     /* Render the allies in their present states */
     success &= renderAllies();
 
+    /* Render the action frame */
+    if(turn_state == TurnState::PROCESS_ACTIONS)
+      success &= renderActionFrame();
+
     /* Render battle bar (on bottom) */
     success &= renderBattleBar();
 
@@ -1127,6 +1159,28 @@ bool Battle::render()
 
     /* Render the render elements (damage text values) etc. */
     success &= renderElements();
+  }
+
+  return success;
+}
+
+bool Battle::renderActionFrame()
+{
+  auto success = true;
+
+  for(const auto& actor : actors)
+  {
+    if(renderer && actor &&
+       actor->getStateActionFrame() != SpriteState::HIDDEN &&
+        actor->getStateActionFrame() != SpriteState::SLID_OUT)
+    {
+      auto frame = actor->getActionFrame();
+      auto x = actor->getActionFrameX();
+      auto y = actor->getActionFrameY();
+
+      if(frame)
+        success &= frame->render(renderer, x, y);
+    }
   }
 
   return success;
@@ -1244,7 +1298,7 @@ bool Battle::renderElements()
   {
     assert(element);
 
-    //auto alpha = 255;
+    // auto alpha = 255;
 
     if(element->render_type == RenderType::ACTION_TEXT ||
        element->render_type == RenderType::DAMAGE_VALUE)
@@ -1884,13 +1938,14 @@ void Battle::updateRendering(int32_t cycle_time)
 
 void Battle::updateRenderSprites(int32_t cycle_time)
 {
-  (void)cycle_time;
   auto brightness = 1.0;
 
   for(auto& actor : actors)
   {
     if(actor && actor->getActiveSprite())
     {
+      actor->update(cycle_time);
+
       if(turn_state == TurnState::SELECT_ACTION_ALLY)
       {
         brightness = 0.25;
@@ -1917,6 +1972,120 @@ void Battle::updateRenderSprites(int32_t cycle_time)
     }
   }
 }
+
+// auto layer_index = battle->getBattleMenu()->getLayerIndex();
+// auto person_index = battle->getIndexOfPerson(test_person);
+// auto person_state = getState(test_person);
+// auto brightness = 1.0;
+
+// if(rendering_state == TurnState::SELECT_ACTION_ALLY)
+// {
+//   if(layer_index == 1 || layer_index == 2)
+//   {
+//     brightness = 0.25;
+
+//     if(test_person->getBFlag(BState::IS_SELECTING))
+//     {
+
+//     }
+//   }
+//   else if(layer_index == 3 || layer_index == 4)
+//   {
+//     auto hover_targets = battle->getBattleMenu()->getHoverTargets();
+//     auto h_it =
+//         std::find(begin(hover_targets), end(hover_targets), person_index);
+//     bool is_hovered = (h_it != end(hover_targets));
+
+//     auto selected = battle->getBattleMenu()->getActionTargets();
+//     auto s_it = std::find(begin(selected), end(selected), person_index);
+//     bool is_selected = (s_it != end(selected));
+
+//     if(is_hovered || is_selected)
+//       brightness = 1.0;
+//     else
+//       brightness = 0.25;
+
+//     if(layer_index == 4)
+//     {
+//       if(!is_selected)
+//         brightness = 0.25;
+//       else
+//         brightness = 1.0;
+//     }
+//   }
+// }
+// else
+// {
+//   brightness = 1.0;
+// }
+
+// return brightness;
+// uint8_t opacity = 0;
+// auto state = getState(test_person);
+
+// if(test_person && state)
+// {
+//   if(!test_person->getBFlag(BState::ALIVE))
+//   {
+//     if(state)
+//       state->dying = false;
+
+//     opacity = kPERSON_KO_ALPHA;
+//   }
+//   else if(state && state->dying)
+//   {
+//     auto alpha = getPersonSprite(test_person)->getOpacity();
+//     float alpha_diff = alpha * 1.0 / 1000 * cycle_time;
+
+//     alpha_diff = std::max(1.0, (double)alpha_diff);
+
+//     if(alpha_diff > alpha)
+//       opacity = 50;
+//     else if(alpha - alpha_diff >= 50)
+//       opacity = alpha - alpha_diff;
+//   }
+//   else
+//   {
+//     opacity = 255;
+//   }
+
+//   if(test_person->getBFlag(BState::IS_SELECTING))
+//   {
+//     auto sprite = getPersonSprite(test_person);
+
+//     if(sprite)
+//     {
+//        If the person is selecting and not set cycling, set cycling
+//       if(!state->cycling)
+//       {
+//         state->temp_alpha = sprite->getOpacity();
+//         state->cycling = true;
+//       }
+//       /* Else, if they are already cycling -> update opacity of sprite */
+//       else
+//       {
+//         state->elapsed_time += cycle_time;
+
+//         uint8_t new_alpha =
+//             abs(100 * sin((float)state->elapsed_time * kCYCLE_RATE));
+//         opacity = new_alpha + 155;
+//       }
+//     }
+//   }
+//   else
+//   {
+//     /* If the person is not selecting and their state is set to cycling,
+//      * reload the original alpha into their sprite and unset cycling */
+//     if(state->cycling)
+//     {
+//       opacity = state->temp_alpha;
+//       state->cycling = false;
+//       state->elapsed_time = 0;
+//     }
+//   }
+// }
+
+// return opacity;
 
 void Battle::updateRenderElements(int32_t cycle_time)
 {

@@ -124,6 +124,8 @@ struct ActionElement
         frame_action{nullptr} {};
 
   Coordinate position_curr;
+  Coordinate position_end;
+  Coordinate position_start;
 
   SpriteState element_state;
   Frame* frame_action;
@@ -208,9 +210,7 @@ private:
   int32_t dialog_y;
 
   /* ------------ Constants --------------- */
-  static const Coordinate kPOINT_BEGIN;;
-  static const Coordinate kPOINT_END;;
-  static const int32_t kVELOCITY_X;
+  static const float kVELOCITY_X;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -237,12 +237,6 @@ private:
 
   /* Updates the action element [sliding in/out] */
   void updateActionElement(int32_t cycle_time);
-
-  /* Update the brightness for the active sprite */
-  void updateBrightness(int32_t cycle_time);
-
-  /* Updates the opacity for the active sprite */
-  void updateOpacity(int32_t cycle_time);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
@@ -271,6 +265,8 @@ public:
 
   /* Returns pointer to the constructed action frame */
   Frame* getActionFrame();
+  int32_t getActionFrameX();
+  int32_t getActionFrameY();
 
   /* Returns a pointer to the active sprite based on the ActiveSprite enum */
   Sprite* getActiveSprite();
@@ -335,6 +331,8 @@ public:
 
   /* Sets the battle actor's action frame */
   void setActionFrame(Frame* action_frame);
+  void setActionFrameEnd(int32_t new_x, int32_t new_y);
+  void setActionFrameStart(int32_t new_x, int32_t new_y);
 
   /* Assigns a new enumerated SpriteState value to the action frame */
   void setStateActionFrame(SpriteState new_state);

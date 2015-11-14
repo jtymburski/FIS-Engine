@@ -20,9 +20,7 @@
  * CONSTANTS
  *============================================================================*/
 
-const Coordinate BattleActor::kPOINT_BEGIN{1316, 350};
-const Coordinate  BattleActor::kPOINT_END{816, 350};
-const int32_t BattleActor::kVELOCITY_X{-1};
+const float BattleActor::kVELOCITY_X{-0.500};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -233,6 +231,21 @@ void BattleActor::createSprites(SDL_Renderer* renderer)
         sprite_third_person->createTexture(renderer);
       }
     }
+
+    if(person_base->getDialogSprite())
+    {
+      dialog_x = person_base->getActionX();
+      dialog_y = person_base->getActionY();
+
+      sprite_dialog = new Sprite(*(person_base->getDialogSprite()));
+
+      if(sprite_dialog)
+      {
+        sprite_dialog->setNonUnique(true,
+                                    person_base->getDialogSprite()->getSize());
+        sprite_dialog->createTexture(renderer);
+      }
+    }
   }
 }
 
@@ -263,159 +276,34 @@ bool BattleActor::resetActionTypes()
 
 void BattleActor::updateActionElement(int32_t cycle_time)
 {
-  std::cout << "Old pos x: " << action_element.position_curr.x << std::endl;
-
-  auto delta_x = cycle_time * kVELOCITY_X;
+  auto delta_x = std::floor(cycle_time * kVELOCITY_X);
 
   /* Approach the end position */
+  auto& end = action_element.position_end;
+  auto& start = action_element.position_start;
+  auto& curr = action_element.position_curr;
+
   if(action_element.element_state == SpriteState::SLIDING_IN)
   {
-    if(action_element.position_curr.x + delta_x < kPOINT_END.x)
+    curr.x += delta_x;
+
+    if(curr.x < end.x)
     {
-      action_element.position_curr.x = kPOINT_END.x;
+      curr.x = end.x;
       action_element.element_state = SpriteState::SLID_IN;
     }
-    else
-      action_element.position_curr.x += delta_x;
   }
   /* Approach the begin position */
   else if(action_element.element_state == SpriteState::SLIDING_OUT)
   {
-    if(action_element.position_curr.x - delta_x > kPOINT_BEGIN.x)
+    curr.x -= delta_x;
+
+    if(curr.x > start.x)
     {
-      action_element.position_curr.x = kPOINT_BEGIN.x;
+      curr.x = start.x;
       action_element.element_state = SpriteState::SLID_OUT;
     }
-    else
-      action_element.position_curr.x -= delta_x;
   }
-
-
-  std::cout << "New pos x: " << action_element.position_curr.x << std::endl;
-}
-
-void BattleActor::updateBrightness(int32_t cycle_time)
-{
-  (void)cycle_time;
-
-  // auto layer_index = battle->getBattleMenu()->getLayerIndex();
-  // auto person_index = battle->getIndexOfPerson(test_person);
-  // auto person_state = getState(test_person);
-  // auto brightness = 1.0;
-
-  // if(rendering_state == TurnState::SELECT_ACTION_ALLY)
-  // {
-  //   if(layer_index == 1 || layer_index == 2)
-  //   {
-  //     brightness = 0.25;
-
-  //     if(test_person->getBFlag(BState::IS_SELECTING))
-  //     {
-
-  //     }
-  //   }
-  //   else if(layer_index == 3 || layer_index == 4)
-  //   {
-  //     auto hover_targets = battle->getBattleMenu()->getHoverTargets();
-  //     auto h_it =
-  //         std::find(begin(hover_targets), end(hover_targets), person_index);
-  //     bool is_hovered = (h_it != end(hover_targets));
-
-  //     auto selected = battle->getBattleMenu()->getActionTargets();
-  //     auto s_it = std::find(begin(selected), end(selected), person_index);
-  //     bool is_selected = (s_it != end(selected));
-
-  //     if(is_hovered || is_selected)
-  //       brightness = 1.0;
-  //     else
-  //       brightness = 0.25;
-
-  //     if(layer_index == 4)
-  //     {
-  //       if(!is_selected)
-  //         brightness = 0.25;
-  //       else
-  //         brightness = 1.0;
-  //     }
-  //   }
-  // }
-  // else
-  // {
-  //   brightness = 1.0;
-  // }
-
-  // return brightness;
-}
-
-void BattleActor::updateOpacity(int32_t cycle_time)
-{
-  (void)cycle_time;
-  // uint8_t opacity = 0;
-  // auto state = getState(test_person);
-
-  // if(test_person && state)
-  // {
-  //   if(!test_person->getBFlag(BState::ALIVE))
-  //   {
-  //     if(state)
-  //       state->dying = false;
-
-  //     opacity = kPERSON_KO_ALPHA;
-  //   }
-  //   else if(state && state->dying)
-  //   {
-  //     auto alpha = getPersonSprite(test_person)->getOpacity();
-  //     float alpha_diff = alpha * 1.0 / 1000 * cycle_time;
-
-  //     alpha_diff = std::max(1.0, (double)alpha_diff);
-
-  //     if(alpha_diff > alpha)
-  //       opacity = 50;
-  //     else if(alpha - alpha_diff >= 50)
-  //       opacity = alpha - alpha_diff;
-  //   }
-  //   else
-  //   {
-  //     opacity = 255;
-  //   }
-
-  //   if(test_person->getBFlag(BState::IS_SELECTING))
-  //   {
-  //     auto sprite = getPersonSprite(test_person);
-
-  //     if(sprite)
-  //     {
-  //        If the person is selecting and not set cycling, set cycling
-  //       if(!state->cycling)
-  //       {
-  //         state->temp_alpha = sprite->getOpacity();
-  //         state->cycling = true;
-  //       }
-  //       /* Else, if they are already cycling -> update opacity of sprite */
-  //       else
-  //       {
-  //         state->elapsed_time += cycle_time;
-
-  //         uint8_t new_alpha =
-  //             abs(100 * sin((float)state->elapsed_time * kCYCLE_RATE));
-  //         opacity = new_alpha + 155;
-  //       }
-  //     }
-  //   }
-  //   else
-  //   {
-  //     /* If the person is not selecting and their state is set to cycling,
-  //      * reload the original alpha into their sprite and unset cycling */
-  //     if(state->cycling)
-  //     {
-  //       opacity = state->temp_alpha;
-  //       state->cycling = false;
-  //       state->elapsed_time = 0;
-  //     }
-  //   }
-  // }
-
-  // return opacity;
 }
 
 /*=============================================================================
@@ -538,14 +426,24 @@ void BattleActor::turnSetup()
 
 bool BattleActor::update(int32_t cycle_time)
 {
-  (void)cycle_time;
-  // TODO: [09-06-15] Update code
+  updateActionElement(cycle_time);
+
   return true;
 }
 
 Frame* BattleActor::getActionFrame()
 {
   return action_element.frame_action;
+}
+
+int32_t BattleActor::getActionFrameX()
+{
+  return action_element.position_curr.x;
+}
+
+int32_t BattleActor::getActionFrameY()
+{
+  return action_element.position_curr.y;
 }
 
 Sprite* BattleActor::getActiveSprite()
@@ -699,6 +597,20 @@ void BattleActor::setActionFrame(Frame* frame_action)
   action_element.frame_action = frame_action;
 }
 
+void BattleActor::setActionFrameEnd(int32_t new_x, int32_t new_y)
+{
+  action_element.position_end.x = new_x;
+  action_element.position_end.y = new_y;
+}
+
+void BattleActor::setActionFrameStart(int32_t new_x, int32_t new_y)
+{
+  action_element.position_start.x = new_x;
+  action_element.position_start.y = new_y;
+  action_element.position_curr.x = new_x;
+  action_element.position_curr.y = new_y;
+}
+
 void BattleActor::setStateActionFrame(SpriteState new_state)
 {
   action_element.element_state = new_state;
@@ -714,7 +626,7 @@ void BattleActor::setFlag(ActorState set_flags, const bool& set_value)
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
 }
 
-void  BattleActor::setGuardingState(GuardingState state_guarding)
+void BattleActor::setGuardingState(GuardingState state_guarding)
 {
   this->state_guarding = state_guarding;
 }
