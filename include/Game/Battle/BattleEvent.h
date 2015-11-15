@@ -44,6 +44,7 @@ enum class SkillHitStatus
   DREAMSNARED
 };
 
+
 enum class ActionState
 {
   BEGIN,
@@ -51,11 +52,22 @@ enum class ActionState
   FADE_IN_TEXT,
   SLIDE_OUT,
   SWITCH_SPRITE,
+  SKILL_MISS,
+  ACTION_START,
+  ACTION_MISS,
   PLEP,
   SPRITE_FLASH,
   DAMAGE_VALUE,
+  ACTION_END,
   OUTCOME,
   DONE
+};
+
+struct ActorOutcome
+{
+  ActionState actor_outcome_state;
+  BattleActor* actor;
+  int32_t damage;
 };
 
 class BattleEvent
@@ -84,7 +96,7 @@ public:
   std::vector<BattleActor*> actor_targets;
 
   /* The amount of damage the event has currently calculated */
-  std::vector<int32_t> damage_amounts;
+  std::vector<ActorOutcome> actor_outcomes;
 
   /* The item of this event, if it's an item event */
   BattleItem* event_item;

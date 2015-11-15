@@ -114,7 +114,7 @@ BattleEvent::BattleEvent()
       action_type{ActionType::NONE},
       actor{nullptr},
       actor_targets{},
-      damage_amounts{},
+      actor_outcomes{},
       event_item{nullptr},
       event_skill{nullptr},
       event_type{BattleEventType::NONE},

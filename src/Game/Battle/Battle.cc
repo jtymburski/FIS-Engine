@@ -388,6 +388,7 @@ void Battle::loadBattleEvent()
     else if(action_type == ActionType::ITEM)
       event->event_item = battle_buffer->getItem();
 
+    std::cout << "Setting started!" << std::endl;
     battle_buffer->setStarted();
   }
 }
@@ -458,40 +459,12 @@ void Battle::updateDelay(int32_t decrement_delay)
 /* Update the current Buffer element */
 void Battle::updateEvent()
 {
-  assert(battle_buffer && event);
+  std::cout << "Updating event!" << std::endl;
 
-  auto to_process = true;
-
-  // if(battle_buffer->isIndexStarted())
-  //   to_process &= event->setNextAction();
-
-  if(to_process)
-    processEvent();
-  else
-    battle_buffer->setProcessed();
-}
-
-void Battle::updateEventReady()
-{
-  assert(event);
-
-  if(event->event_type == BattleEventType::DAMAGE)
-    processEventDamage();
-}
-
-void Battle::processEvent()
-{
-  auto event_started = battle_buffer->isIndexStarted();
+  //auto event_started = battle_buffer->isIndexStarted();
 
   if(event->action_type == ActionType::SKILL)
   {
-    // if(event_started)
-    // {
-    //   processEventSkill();
-    // }
-    // else
-    // {
-
     if(event->action_state == ActionState::BEGIN)
     {
       event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
@@ -516,63 +489,169 @@ void Battle::processEvent()
         event->action_state = ActionState::SLIDE_OUT;
       }
 
-      delay = 750;
+      delay = 350;
     }
     else if(event->action_state == ActionState::SLIDE_OUT)
     {
+      if(event->actor->getFlag(ActorState::ALLY))
+        event->actor->setActiveSprite(ActiveSprite::ACTION);
+
+      event->action_state = ActionState::SWITCH_SPRITE;
+      delay = 250;
+    }
+    else if(event->action_state == ActionState::SWITCH_SPRITE)
+    {
+      auto skill_hit_status = event->doesSkillHit();
+      event->action_state = ActionState::ACTION_START;
+
+      if(skill_hit_status == SkillHitStatus::HIT)
+        processEventSkill();
+      else
+        event->action_state = ActionState::SKILL_MISS;
+
+      delay = 200;
+    }
+    else if(event->action_state == ActionState::SKILL_MISS)
+    {
+      /* Create the fading-in action text */
+      auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
+      auto element = new RenderElement(renderer, action_font);
+      auto action_text = event->actor->getBasePerson()->getName() + "Missed";
+      element->createAsActionText(action_text);
+      render_elements.push_back(element);
+      event->action_state = ActionState::DONE;
+    }
+    else if(event->action_state == ActionState::ACTION_START)
+    {
+      bool done = true;
+
+      for(auto& outcome : event->actor_outcomes)
+      {
+        if(outcome.actor_outcome_state == ActionState::ACTION_MISS)
+        {
+          auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+          auto element = new RenderElement(renderer, damage_font);
+
+          element->createAsDamageText(
+              "Miss", DamageType::BASE, config->getScreenHeight(),
+              getActorX(event->actor), getActorY(event->actor));
+          render_elements.push_back(element);
+          outcome.actor_outcome_state = ActionState::ACTION_END;
+
+          delay = 350;
+        }
+        else if(outcome.actor_outcome_state == ActionState::PLEP)
+        {
+          render_elements.push_back(new RenderElement(
+              renderer, event->event_skill->skill->getAnimation(), 1));
+          event->action_state = ActionState::SPRITE_FLASH;
+          delay = 150;
+        }
+        else if(outcome.actor_outcome_state == ActionState::DAMAGE_VALUE)
+        {
+          auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+          auto element = new RenderElement(renderer, damage_font);
+
+          element->createAsDamageValue(
+              outcome.damage, DamageType::BASE, config->getScreenHeight(),
+              getActorX(outcome.actor), getActorY(outcome.actor));
+
+          event->action_state = ActionState::DAMAGE_VALUE;
+
+          render_elements.push_back(element);
+        }
+        else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
+        {
+          // Flash them der spirtes bud.
+        }
+
+        done &= outcome.actor_outcome_state == ActionState::ACTION_END;
+
+        if(done)
+        {
+          if(event->setNextAction())
+            event->action_state = ActionState::ACTION_START;
+          else
+            event->action_state = ActionState::DONE;
+        }
+      }
     }
 
-    // auto skill_status = event->doesSkillHit();
-
-    // if(skill_status == SkillHitStatus::HIT)
-    //   processEventSkill();
-    // }
+    else if(event->action_state == ActionState::ACTION_END)
+    {
+    }
+    else if(event->action_state == ActionState::OUTCOME)
+    {
+    }
+    else if(event->action_state == ActionState::DONE)
+    {
+    }
   }
+}
+
+void Battle::updateEventReady()
+{
+  if(event->event_type == BattleEventType::DAMAGE)
+    processEventDamage();
+}
+
+void Battle::processEvent()
+{
 }
 
 void Battle::processEventDamage()
 {
   assert(config && event);
-  assert(event->actor_targets.size() == event->damage_amounts.size());
+  assert(event->actor_targets.size() == event->actor_outcomes.size());
 
-  auto font_damage = config->getFontTTF(FontName::BATTLE_DAMAGE);
+  // auto font_damage = config->getFontTTF(FontName::BATTLE_DAMAGE);
 
   for(size_t i = 0; i < event->actor_targets.size(); ++i)
   {
     if(event->actor_targets.at(i))
     {
       // TODO: Damage types for BattleEvent?
-      auto element = new RenderElement(renderer, font_damage);
-      auto amount = event->damage_amounts.at(i);
-      auto x = getActorX(event->actor_targets.at(i));
-      auto y = getActorY(event->actor_targets.at(i));
+      // auto element = new RenderElement(renderer, font_damage);
+      // auto amount = event->damage_amounts.at(i);
+      // auto x = getActorX(event->actor_targets.at(i));
+      // auto y = getActorY(event->actor_targets.at(i));
 
-      element->createAsDamageValue(amount, DamageType::BASE,
-                                   config->getScreenHeight(), x, y);
+      // element->createAsDamageValue(amount, DamageType::BASE,
+      //                              config->getScreenHeight(), x, y);
 
-      render_elements.push_back(element);
+      // render_elements.push_back(element);
     }
   }
 }
-
 void Battle::processEventSkill()
 {
   auto curr_action = event->getCurrAction();
+  event->actor_outcomes.clear();
 
   if(curr_action)
   {
     if(curr_action->actionFlag(ActionFlags::DAMAGE))
     {
-      std::vector<int32_t> damage_values;
-
       for(auto& target : event->actor_targets)
       {
         assert(target);
-        damage_values.push_back(event->calcDamage(target, 1.00));
-      }
+        ActorOutcome outcome;
+        outcome.actor = target;
 
-      /* This damage action is now complete */
-      setFlagCombat(CombatState::EVENT_READY, true);
+        if(event->doesActionHit(target))
+        {
+          // TODO crit factor
+          outcome.damage = event->calcDamage(target, 1.00);
+          outcome.actor_outcome_state = ActionState::PLEP;
+        }
+        else
+        {
+          outcome.damage = 0;
+          outcome.actor_outcome_state = ActionState::ACTION_MISS;
+        }
+
+        event->actor_outcomes.push_back(outcome);
+      }
     }
   }
 }
@@ -618,15 +697,14 @@ void Battle::updateProcessing()
 
   if(delay == 0)
   {
+    std::cout << "delay is zer0" << std::endl;
+
     if(battle_buffer->isIndexProcessed())
       updateBufferNext();
     else if(battle_buffer->isIndexStarted() && event)
       updateEvent();
     else if(battle_buffer->getCooldown() == 0)
-    {
       loadBattleEvent();
-      // updateEvent();
-    }
     else
       updateBufferNext();
   }
@@ -2147,184 +2225,7 @@ void Battle::updateRenderElements(int32_t cycle_time)
   //                                 element->calcColorGreen(),
   //                                 element->calcColorBlue());
   //       }
-  //     }
-
-  //     if(element->getStatus() == RenderStatus::FADING_IN)
-  //     {
-  //       if(element->getFadeInTime() != 0)
-  //       {
-  //         float alpha_diff = element->getColor().a * 1.0 /
-  //                            element->getFadeInTime() * cycle_time;
-
-  //         alpha_diff = std::max(1.0, (double)alpha_diff);
-
-  //         if(element->getAlpha() + alpha_diff > element->getColor().a)
-  //           element->setAlpha(element->getColor().a);
-  //         else
-  //           element->setAlpha(element->getAlpha() + alpha_diff);
-  //       }
-  //     }
-  //     else if(element->getStatus() == RenderStatus::DISPLAYING)
-  //     {
-  //       element->setAlpha(element->getColor().a);
-  //     }
-  //     else if(element->getStatus() == RenderStatus::FADING_OUT)
-  //     {
-  //       if(element->getFadeOutTime() != 0)
-  //       {
-  //         float alpha_diff = element->getColor().a * 1.0 /
-  //                            element->getFadeOutTime() * cycle_time;
-
-  //         alpha_diff = std::max(1.0, (double)alpha_diff);
-
-  //         if(alpha_diff > element->getAlpha())
-  //           element->setAlpha(0);
-  //         else if(element->getAlpha() - alpha_diff >= 0)
-  //           element->setAlpha(element->getAlpha() - alpha_diff);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // /* Clear render elements which have timed out */
-  // std::vector<RenderElement *> temp_elements;
-
-  // for(auto &element : render_elements)
-  // {
-  //   if(element != nullptr)
-  //   {
-  //     /* If the elements is not timed out, just add it to the temp array,
-  //      * else, delete the element after performing any needed cleanup */
-  //     if(!element->isTimedOut())
-  //     {
-  //       temp_elements.push_back(element);
-  //     }
-  //     else
-  //     {
-  //       /* If the element to be deleted is an RGB Sprite flash, the states'
-  //        * 'was flashing' flag must be set to change the sprite's color
-  //        * balance back on the next cycle */
-  //       if(element->getType() == RenderType::RGB_SPRITE_FLASH)
-  //       {
-  //         PersonState *state = getState(element->getFlasher());
-
-  //         /* Assigns the state's 'was flashing' bool to true -> revert */
-  //         if(state != nullptr)
-  //           state->was_flashing = true;
-  //       }
-
-  //       delete element;
-  //       element = nullptr;
-  //     }
-  //   }
-  // }
-
-  // /* Clear and swap to the temp elements (now containing only non-timed out
-  //  * values) */
-  // render_elements.clear();
-  // render_elements = temp_elements;
-
-  // return success;
 }
-
-// TODO: [09-06-15] - Update the enemy renderings
-//   for(auto &state : foes_state)
-// {
-//   if(state && state->tp && state->self)
-//   {
-//     if(state->was_flashing)
-//     {
-//       state->tp->revertColorBalance();
-//       state->tp->setFlashing(false);
-//       state->was_flashing = false;
-//     }
-
-//     state->tp->setOpacity(updatePersonOpacity(state->self, cycle_time));
-//     state->tp->setBrightness(calcPersonBrightness(state->self));
-
-// TODO: Action sprites for enemies? [07-11-15]
-// Update: Shake them instead of an action sprite.
-// if (state->self->getBFlag(BState::IS_ATTACKING))
-// {
-//   if (state->self->getActionSprite() != nullptr)
-//     state->tp = state->self->getActionSprite();
-// }
-// else
-// {
-//   state->tp = state->self->getThirdPerson();
-// }
-//   }
-// }
-
-// TODO: [09-06-15] : Update the allies renderings
-// for(auto& state : friends_state)
-// {
-//   if(state && state->fp && state->self)
-//   {
-//     if(state->was_flashing)
-//     {
-//       state->fp->revertColorBalance();
-//       state->fp->setFlashing(false);
-//       state->was_flashing = false;
-//     }
-
-//     state->fp->setOpacity(updatePersonOpacity(state->self, cycle_time));
-//     state->fp->setBrightness(calcPersonBrightness(state->self));
-
-//     /* Determine which sprite to use (Attacking/Normal) */
-//     if(state->self->getBFlag(BState::IS_ATTACKING))
-//     {
-//       if(state->self->getActionSprite())
-//       {
-//         state->active_sprite = state->as;
-//       }
-//     }
-//     else
-//     {
-//       state->active_sprite = state->fp;
-//     }
-
-//     /* Update position if bobbing */
-//     if(state->bobbing)
-//     {
-//       state->elapsed_time += cycle_time;
-
-//       if(state->elapsed_time >= kBOB_TIME)
-//       {
-//         state->elapsed_time = 0;
-//         state->bobbing = false;
-//         state->x = 0;
-//         state->y = 0;
-//       }
-//       else
-//       {
-//         state->x = getActorX(state->self) +
-//                    kBOB_AMOUNT * sin(state->elapsed_time * kBOB_RATE);
-//         state->y = getPersonY(state->self);
-//       }
-//     }
-//     else if(state->running)
-//     {
-//       state->elapsed_time += cycle_time;
-
-//       if(state->elapsed_time >= kRUN_TIME)
-//       {
-//         state->elapsed_time = 0;
-//         state->running = false;
-//         state->x = 0;
-//         state->y = 0;
-//       }
-//       else
-//       {
-//         state->x = getActorX(state->self) +
-//                    kRUN_AMOUNT * sin(state->elapsed_time * kRUN_RATE);
-//         state->y = getPersonY(state->self);
-//       }
-//     }
-//   }
-// }
-
-// return false;
 
 int32_t Battle::getActorX(BattleActor* actor)
 {
@@ -4662,8 +4563,8 @@ void Battle::setNextTurnState()
 // {
 //   if(outcome == OutcomeType::NONE)
 //   {
-//     outcome = new_outcome;
 
+//     outcome = new_outcome;
 //     return true;
 //   }
 
@@ -4686,9 +4587,6 @@ bool Battle::update(int32_t cycle_time)
   updateDelay(cycle_time);
   updateRendering(cycle_time);
 
-  // std::cout << "Current Battle State:: " <<
-  // Helpers::turnStateToStr(turn_state);
-
   // TODO: REMOVE THIS
   if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY &&
      turn_state != TurnState::SELECT_ACTION_ENEMY)
@@ -4697,31 +4595,18 @@ bool Battle::update(int32_t cycle_time)
   if(getFlagCombat(CombatState::PHASE_DONE))
     setNextTurnState();
 
-  /* ------------------------ GENERAL UPKEEP -------------------------------- */
+  /* ------------------------ GENERAL UPKEEP --------------------------------
+   */
 
-  /* ---------------------------- UPKEEP  ----------------------------------- */
-
-  /* ----------------------- SELECT ACTION ALLY ----------------------------- */
-
-  /* ----------------------- SELECT ACTION ALLY ----------------------------- */
+  /* ---------------------------- UPKEEP  -----------------------------------
+   */
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     updateUserSelection();
-
-  /* ----------------------- SELECT ACTION ENEMY ---------------------------- */
-
   else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
     updateEnemySelection();
-
-  /* ----------------------- PROCESS ACTIONS -------------------------------- */
-
   else if(turn_state == TurnState::PROCESS_ACTIONS)
-  {
-    if(getFlagCombat(CombatState::EVENT_READY))
-      updateEventReady();
-    else
-      updateProcessing();
-  }
+    updateProcessing();
 
   clearElementsTimedOut();
 
