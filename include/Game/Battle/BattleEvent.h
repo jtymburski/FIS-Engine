@@ -183,14 +183,14 @@ private:
   int32_t calcLevelDifference();
 
   /* Calculation sub-functiosn for damage calculations */
-  int32_t calcValPhysPow(BattleStats target_stats);
+  int32_t calcValPhysPow();
   int32_t calcValPhysDef(BattleStats target_stats);
   int32_t calcValPrimAtk(Skill* curr_skill);
   int32_t calcValPrimDef(Skill* curr_skill);
   int32_t calcValSecdAtk(Skill* curr_skill);
   int32_t calcValSecdDef(Skill* curr_skill);
   int32_t calcValLuckAtk();
-  int32_t calcValLuckDef();
+  int32_t calcValLuckDef(BattleStats target_stats);
 
   /* Methods for matching primary and secondary skills to their users */
   bool doesPrimMatch(Skill* skill);
@@ -205,6 +205,7 @@ private:
 public:
   /* Calculate the base damage against a given target */
   int32_t calcDamage(BattleActor* curr_target, float crit_factor);
+  int32_t calcDamageImplode(BattleActor* curr_target, float crit_factor);
 
   bool doesActionCrit(BattleActor* curr_target);
   bool doesActionHit(BattleActor* curr_target);

@@ -459,8 +459,6 @@ void Battle::updateDelay(int32_t decrement_delay)
 /* Update the current Buffer element */
 void Battle::updateEvent()
 {
-  std::cout << "Updating event!" << std::endl;
-
   //auto event_started = battle_buffer->isIndexStarted();
 
   if(event->action_type == ActionType::SKILL)
@@ -697,8 +695,6 @@ void Battle::updateProcessing()
 
   if(delay == 0)
   {
-    std::cout << "delay is zer0" << std::endl;
-
     if(battle_buffer->isIndexProcessed())
       updateBufferNext();
     else if(battle_buffer->isIndexStarted() && event)

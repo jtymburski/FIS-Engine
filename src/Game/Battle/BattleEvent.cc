@@ -512,12 +512,18 @@ bool BattleEvent::doesActionHit(BattleActor* curr_target)
   return false;
 }
 
-// int32_t BattleEvent::calcImplodeDamage()
-// {
-//   return 0;
-// }
-//   auto party_death = false;
-//   (void)party_death; // TODO check for party death
+int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target,
+                                       float crit_factor)
+{
+  auto targ_stats = getStatsOfTarget(curr_target);
+  (void)targ_stats;
+  (void)crit_factor;
+  //auto p_pow_val = targ_stats.getValue(Attribute::PHAG);
+  //auto p_def_val = targ_stats.getValue(Attribute::PHFD);
+  //auto base_user_pow = phys_pow_val;
+  //auto base_targ_def = phys_def_val;
+  return 0;
+}
 
 //   auto targ_attrs = temp_target_stats.at(pro_index);
 //   float base_damage = 0;
@@ -589,12 +595,12 @@ int32_t BattleEvent::calcLevelDifference()
   return total;
 }
 
-int32_t BattleEvent::calcValPhysPow(BattleStats target_stats)
+int32_t BattleEvent::calcValPhysPow()
 {
   if(getFlagIgnore(IgnoreState::IGNORE_PHYS_ATK))
     return 0;
 
-  return target_stats.getValue(Attribute::PHAG) * kOFF_PHYS_MODIFIER;
+  return temp_user_stats.getValue(Attribute::PHAG) * kOFF_PHYS_MODIFIER;
 }
 
 int32_t BattleEvent::calcValPhysDef(BattleStats target_stats)
@@ -645,12 +651,12 @@ int32_t BattleEvent::calcValLuckAtk()
   return temp_user_stats.getValue(Attribute::MANN) * kMANNA_POW_MODIFIER;
 }
 
-int32_t BattleEvent::calcValLuckDef()
+int32_t BattleEvent::calcValLuckDef(BattleStats target_stats)
 {
   if(getFlagIgnore(IgnoreState::IGNORE_LUCK_DEF))
     return 0;
 
-  return temp_user_stats.getValue(Attribute::MANN) * kMANNA_DEF_MODIFIER;
+  return target_stats.getValue(Attribute::MANN) * kMANNA_DEF_MODIFIER;
 }
 
 bool BattleEvent::doesPrimMatch(Skill* skill)
@@ -735,22 +741,16 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
 {
   calcIgnoreState();
   calcElementalMods(curr_target);
-
-  auto targ_stats = curr_target->getStats();
+  auto targ_stats = getStatsOfTarget(curr_target);
   auto curr_skill = getCurrSkill();
   auto curr_action = getCurrAction();
-  auto p_pow_val = calcValPhysPow(targ_stats);
-  auto p_def_val = calcValPhysDef(targ_stats);
-  auto elm1_pow_val = calcValPrimAtk(curr_skill);
-  auto elm1_def_val = calcValPrimDef(curr_skill);
-  auto elm2_pow_val = calcValSecdAtk(curr_skill);
-  auto elm2_def_val = calcValSecdDef(curr_skill);
-  auto luck_pow_val = calcValLuckAtk();
-  auto luck_def_val = calcValLuckDef();
 
   /* Summation of base power / defense */
-  auto base_user_pow = p_pow_val + elm1_pow_val + elm2_pow_val + luck_pow_val;
-  auto base_targ_def = p_def_val + elm1_def_val + elm2_def_val + luck_def_val;
+  auto base_user_pow = calcValPhysPow() + calcValPrimAtk(curr_skill) +
+                       calcValSecdAtk(curr_skill) + calcValLuckAtk();
+  auto base_targ_def = calcValPhysDef(targ_stats) + calcValPrimDef(curr_skill) +
+                       calcValSecdDef(curr_skill) + calcValLuckDef(targ_stats);
+
   base_user_pow *= kUSER_POW_MODIFIER;
   base_targ_def *= kTARG_DEF_MODIFIER;
 
