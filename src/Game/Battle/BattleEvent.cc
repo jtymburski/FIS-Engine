@@ -799,5 +799,5 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target)
   else if(curr_target->getGuardingState() == GuardingState::GUARDED)
     base_damage *= kGUARD_MODIFIER;
 
-  return base_damage * crit_factor;
+  return base_damage;// * crit_factor;
 }

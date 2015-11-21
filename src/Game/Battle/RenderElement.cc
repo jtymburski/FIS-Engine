@@ -117,7 +117,7 @@ void RenderElement::createAsActionText(std::string action_name)
   text_string = action_name;
   color = {0, 0, 0, 255};
   setShadow({kACTION_COLOR_R, 0, 0, 255}, kACTION_SHADOW, kACTION_SHADOW);
-  setTimes(900, 100, 100);
+  setTimes(700, 100, 100);
   render_type = RenderType::ACTION_TEXT;
 
   if(element_font && renderer)
@@ -137,6 +137,7 @@ void RenderElement::createAsDamageText(std::string text, DamageType type,
   color = {0, 0, 0, 255};
   setShadow(colorFromDamageType(type), kDAMAGE_SHADOW, kDAMAGE_SHADOW - 1);
   setTimes(475, 65, 100);
+  status = initialStatusFade();
   render_type = RenderType::DAMAGE_TEXT;
 
   setAcceleration(0.000, 0.000);
@@ -159,7 +160,8 @@ void RenderElement::createAsDamageValue(int32_t amount, DamageType type,
 {
   text_string = std::to_string(amount);
   createAsDamageText(text_string, type, sc_height, x, y);
-  setTimes(850, 115, 155);
+  setTimes(650, 115, 155);
+  status = initialStatusFade();
 
   render_type = RenderType::DAMAGE_VALUE;
 }
@@ -169,8 +171,8 @@ void RenderElement::createAsRegenValue(int32_t amount, DamageType type,
 {
   createAsDamageText(std::to_string(amount), type, sc_height, x, y);
   setTimes(650, 150, 150);
-  setAcceleration(0.000, 0.005);
-  setVelocity(0.000, -0.250);
+  setAcceleration(0.001, 0.005);
+  setVelocity(0.000, -0.350);
   render_type = RenderType::DAMAGE_VALUE;
 }
 

@@ -20,7 +20,7 @@
  * CONSTANTS
  *============================================================================*/
 
-const float BattleActor::kVELOCITY_X{-1.250};
+const float BattleActor::kVELOCITY_X{-1.550};
 const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{245, 10, 10, 155};
 const SDL_Color BattleActor::kFLASHING_POISON_COLOR{0, 255, 0, 155};
 
@@ -321,11 +321,29 @@ void BattleActor::updateSpriteFlashing(int32_t cycle_time)
       auto alpha = state_flashing.element->alpha;
 
       getActiveSprite()->setColorBalance(Helpers::calcColorRed(color, alpha),
-                              Helpers::calcColorGreen(color, alpha),
-                              Helpers::calcColorBlue(color, alpha));
+                                         Helpers::calcColorGreen(color, alpha),
+                                         Helpers::calcColorBlue(color, alpha));
     }
     else
       endFlashing();
+  }
+}
+
+void BattleActor::updateStats(int32_t cycle_time)
+{
+  (void)cycle_time;
+  auto render_vita = stats_rendered.getBaseValue(Attribute::VITA);
+  auto actual_vita = stats_actual.getBaseValue(Attribute::VITA);
+
+  if(render_vita > actual_vita)
+  {
+    std::cout << "Subtracting rendered stat" << std::endl;
+    stats_rendered.setBaseValue(Attribute::VITA, render_vita - 1);
+  }
+  else if(render_vita < actual_vita)
+  {
+    std::cout << "Adding rendered stat " << std::endl;
+    stats_rendered.setBaseValue(Attribute::VITA, render_vita + 1);
   }
 }
 
@@ -403,6 +421,29 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
   return success;
 }
 
+bool BattleActor::dealDamage(int32_t damage_amount)
+{
+  auto curr_vita = stats_actual.getValue(Attribute::VITA);
+  auto curr_base_vita = stats_actual.getBaseValue(Attribute::VITA);
+
+  if(curr_vita != curr_base_vita)
+  {
+    std::cout << "[WARNING] : Damage do base value with modified curr vita."
+              << std::endl;
+  }
+
+  if(damage_amount >= (int32_t)curr_vita)
+  {
+    stats_actual.setBaseValue(Attribute::VITA, 0);
+
+    return true;
+  }
+
+  stats_actual.setBaseValue(Attribute::VITA, curr_vita - damage_amount);
+
+  return false;
+}
+
 void BattleActor::endFlashing()
 {
   if(state_flashing.element)
@@ -453,7 +494,6 @@ bool BattleActor::removeAilment(Ailment* remove_ailment)
 /* Sets up start of flashingness */
 void BattleActor::startFlashing(FlashingType flashing_type, int32_t time_left)
 {
-  std::cout << "Starting flashing!" << std::endl;
   auto active_sprite = getActiveSprite();
   auto color = getFlashingColor(flashing_type);
 
@@ -489,6 +529,7 @@ void BattleActor::turnSetup()
 bool BattleActor::update(int32_t cycle_time)
 {
   updateActionElement(cycle_time);
+  updateStats(cycle_time);
 
   if(state_active_sprite == SpriteState::FLASHING)
     updateSpriteFlashing(cycle_time);
@@ -632,8 +673,8 @@ BattleStats& BattleActor::getStatsRendered()
 /* Returns the % of vitality the actor has available (rounded) */
 uint32_t BattleActor::getPCVita()
 {
-  auto vita = stats_actual.getValue(Attribute::VITA);
-  auto max_vita = stats_actual.getValue(Attribute::MVIT);
+  auto vita = stats_rendered.getValue(Attribute::VITA);
+  auto max_vita = stats_rendered.getValue(Attribute::MVIT);
   float proportion = 0.0;
 
   if(max_vita != 0)
@@ -645,8 +686,8 @@ uint32_t BattleActor::getPCVita()
 /* Returns the % of quantum drive the actor has available (rounded) */
 uint32_t BattleActor::getPCQtdr()
 {
-  auto qtdr = stats_actual.getValue(Attribute::QTDR);
-  auto max_qtdr = stats_actual.getValue(Attribute::MQTD);
+  auto qtdr = stats_rendered.getValue(Attribute::QTDR);
+  auto max_qtdr = stats_rendered.getValue(Attribute::MQTD);
   float proportion = 0.0;
 
   if(max_qtdr != 0)

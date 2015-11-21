@@ -478,6 +478,7 @@ void Battle::updateEvent()
       element->createAsActionText(event->getActionName());
       render_elements.push_back(element);
       event->action_state = ActionState::FADE_IN_TEXT;
+      delay = 350;
     }
     else if(event->action_state == ActionState::FADE_IN_TEXT)
     {
@@ -562,6 +563,8 @@ void Battle::updateEvent()
         }
         else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
         {
+          std::cout << "Dealing " << outcome.damage << "!" << std::endl;
+          outcome.actor->dealDamage(outcome.damage);
           outcome.actor->startFlashing(FlashingType::DAMAGE, 500);
           outcome.actor_outcome_state = ActionState::ACTION_END;
           delay = 1000;

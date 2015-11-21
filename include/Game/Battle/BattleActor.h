@@ -264,6 +264,7 @@ private:
   /* Updates the action element [sliding in/out] */
   void updateActionElement(int32_t cycle_time);
   void updateSpriteFlashing(int32_t cycle_time);
+  void updateStats(int32_t cycle_time);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
@@ -274,6 +275,9 @@ public:
 
   /* Constructs BattleSkill objects of the BattleActor */
   bool buildBattleSkills(std::vector<BattleActor*> all_targets);
+
+  /* Method to deal damage to this actor */
+  bool dealDamage(int32_t damage_amount);
 
   /* Ends the sprite's flashing */
   void endFlashing();
