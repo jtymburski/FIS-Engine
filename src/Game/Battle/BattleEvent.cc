@@ -512,12 +512,10 @@ bool BattleEvent::doesActionHit(BattleActor* curr_target)
   return false;
 }
 
-int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target,
-                                       float crit_factor)
+int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target)
 {
   auto targ_stats = getStatsOfTarget(curr_target);
   (void)targ_stats;
-  (void)crit_factor;
   //auto p_pow_val = targ_stats.getValue(Attribute::PHAG);
   //auto p_def_val = targ_stats.getValue(Attribute::PHFD);
   //auto base_user_pow = phys_pow_val;
@@ -698,49 +696,46 @@ BattleStats BattleEvent::getStatsOfTarget(BattleActor* curr_target)
   return BattleStats();
 }
 
-// float Battle::calcCritFactor()
-// {
-//   /* Base crit factor */
-//   auto crit_factor = kOFF_CRIT_FACTOR;
+float BattleEvent::calcCritFactor(BattleActor* curr_target)
+{
+  /* Add the base crit modifier to the user of the action's unbr stat */
+  auto unbearability = actor->getStats().getValue(Attribute::UNBR);
+  auto crit_factor = kCRIT_MODIFIER * unbearability;
+  crit_factor += kOFF_CRIT_FACTOR + calcLevelDifference() * kCRIT_LVL_MODIFIER;
 
-//   /* Unbearability modifier */
-//   auto unbr = curr_user->getTemp().getStat(Attribute::UNBR);
+  if(curr_target)
+  {
+    //TODO [11-20-15]: guarding/defended modifiers + others
+    if(curr_target->getGuardingState() == GuardingState::DEFENDING)
+      crit_factor *= kCRIT_DEFENDING_MODIFIER;
+    else if(curr_target->getGuardingState() == GuardingState::GUARDED)
+      crit_factor *= kCRIT_GUARDED_MODIFIER;
+  }
 
-//   crit_factor += unbr * kCRIT_MODIFIER;
+  return Helpers::setInRange(crit_factor, 1, 10);
+}
 
-//   /* Level difference modifier */
-//   std::vector<Person*> target_vec = {curr_target};
-//   crit_factor += calcLevelDifference(target_vec) * kCRIT_LVL_MODIFIER;
+int32_t BattleEvent::calcExperience()
+{
+  assert(actor && actor->getBasePerson());
+  auto experience = 0;
 
-//   if(curr_target->getBFlag(BState::DEFENDING))
-//     crit_factor *= kCRIT_DEFENDING_MODIFIER;
-//   if(curr_target->getBFlag(BState::GUARDED))
-//     crit_factor *= kCRIT_GUARDED_MODIFIER;
+  for(auto& enemy : actor_targets)
+  {
+    if(enemy && enemy->getBasePerson())
+      experience += enemy->getBasePerson()->getExpDrop();
+  }
 
-//   /* Crits should be between 100 and 1000% always */
-//   crit_factor = Helpers::setInRange(crit_factor, 1, 10);
-
-//   return crit_factor;
-// }
-
-// int32_t Battle::calcExperience(Person* ally)
-// {
-//   int32_t exp = 0;
-
-//   auto foes_members = foes->getMembers();
-
-//   for(auto& foe : foes_members)
-//     exp += foe->getExpDrop();
-
-//   return static_cast<int32_t>(exp * ally->getExpMod());
-// }
+  return static_cast<int32_t>(experience * actor->getBasePerson()->getExpMod());
+}
 
 // TODO: Guarding damage factor [11-01-15]
 // TODO: Guarding for users who are guarding this actor [11-01-15]
-int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
+int32_t BattleEvent::calcDamage(BattleActor* curr_target)
 {
   calcIgnoreState();
   calcElementalMods(curr_target);
+  auto crit_factor = calcCritFactor(curr_target);
   auto targ_stats = getStatsOfTarget(curr_target);
   auto curr_skill = getCurrSkill();
   auto curr_action = getCurrAction();

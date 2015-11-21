@@ -59,7 +59,7 @@ RenderElement::RenderElement(SDL_Renderer* renderer, TTF_Font* element_font)
 }
 
 RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite,
-                             int32_t num_loops)
+                             int32_t num_loops, int32_t x, int32_t y)
     : RenderElement()
 {
   this->renderer = renderer;
@@ -72,6 +72,9 @@ RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite,
 
   status = initialStatusFade();
   render_type = RenderType::PLEP;
+
+  location.point.x = x;
+  location.point.y = y;
 }
 
 RenderElement::~RenderElement()
@@ -94,11 +97,14 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
 
     if(element_sprite)
     {
+      std::cout << "Setting sprite as non unique" << std::endl;
       element_sprite->setNonUnique(true, build_sprite->getSize());
       element_sprite->createTexture(renderer);
 
       return true;
     }
+    else
+      std::cout << "falsification on that element sprite bud" << std::endl;
   }
 
   return false;
@@ -157,7 +163,6 @@ void RenderElement::createAsActionText(std::string action_name)
     element_text = Text(element_font);
     element_text.setText(renderer, action_name, color);
 
-
     location.point.x = kACTION_TEXT_X - element_text.getWidth();
     location.point.y = kACTION_CENTER - element_text.getHeight() / 2 - 8;
   }
@@ -186,9 +191,10 @@ void RenderElement::createAsDamageValue(int32_t amount, DamageType type,
                                         int32_t sc_height, int32_t x, int32_t y)
 {
   createAsDamageText(std::to_string(amount), type, sc_height, x, y);
-  setTimes(550, 115, 155);
-  setAcceleration(0.040, 0.000);
-  setVelocity(0.020, -0.450);
+  setTimes(850, 115, 155);
+  setAcceleration(0.000, 0.000);
+  setVelocity(0.020, -0.020);
+
   render_type = RenderType::DAMAGE_VALUE;
 }
 
@@ -344,7 +350,6 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
         alpha = alpha - delta_a;
     }
   }
-
 }
 
 RenderStatus RenderElement::initialStatusFade()

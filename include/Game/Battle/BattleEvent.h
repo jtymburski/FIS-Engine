@@ -173,8 +173,14 @@ private:
   /* Calculates the action variables for given skill */
   void calcActionVariables();
 
+  /* Returns the calculated critical hit factor */
+  float calcCritFactor(BattleActor* curr_target);
+
   /* Calculates the elemental modification vals for curr action */
   void calcElementalMods(BattleActor* curr_target);
+
+  /* Calculates the experience the the current act. would receive if foes fell*/
+  int32_t calcExperience();
 
   /* Calculates the ignore state for the given action against targets */
   void calcIgnoreState();
@@ -204,8 +210,8 @@ private:
  *============================================================================*/
 public:
   /* Calculate the base damage against a given target */
-  int32_t calcDamage(BattleActor* curr_target, float crit_factor);
-  int32_t calcDamageImplode(BattleActor* curr_target, float crit_factor);
+  int32_t calcDamage(BattleActor* curr_target);
+  int32_t calcDamageImplode(BattleActor* curr_target);
 
   bool doesActionCrit(BattleActor* curr_target);
   bool doesActionHit(BattleActor* curr_target);

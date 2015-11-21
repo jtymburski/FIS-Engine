@@ -23,7 +23,6 @@
 /* Forward declare for Battle constants */
 class Battle;
 
-
 enum class RenderType
 {
   PLEP,
@@ -53,7 +52,8 @@ public:
   RenderElement(SDL_Renderer* renderer, TTF_Font* element_font);
 
   /* Spriteish element constructor */
-  RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite, int32_t num_loops);
+  RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite, int32_t num_loops,
+                int32_t x, int32_t y);
 
   /* Elemental annihilator */
   ~RenderElement();
@@ -65,7 +65,7 @@ public:
   Box location;
 
   /* Coordinate for the element to reach an end point */
-  //Coordinate end;
+  // Coordinate end;
 
   /* Shadow's offset, if the element has a shadow */
   Coordinate shadow_offset;
@@ -121,7 +121,7 @@ private:
   const static SDL_Color kHIBERNATION_REGEN_COLOR;
 
   const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
-  const static uint16_t kACTION_SHADOW; /* Shadow offset of middle text */
+  const static uint16_t kACTION_SHADOW;  /* Shadow offset of middle text */
   const static uint16_t kDAMAGE_SHADOW;
   const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
   const static uint16_t kACTION_CENTER;

@@ -459,7 +459,7 @@ void Battle::updateDelay(int32_t decrement_delay)
 /* Update the current Buffer element */
 void Battle::updateEvent()
 {
-  //auto event_started = battle_buffer->isIndexStarted();
+  // auto event_started = battle_buffer->isIndexStarted();
 
   if(event->action_type == ActionType::SKILL)
   {
@@ -541,9 +541,11 @@ void Battle::updateEvent()
         else if(outcome.actor_outcome_state == ActionState::PLEP)
         {
           render_elements.push_back(new RenderElement(
-              renderer, event->event_skill->skill->getAnimation(), 1));
-          event->action_state = ActionState::SPRITE_FLASH;
+              renderer, event->event_skill->skill->getAnimation(), 1,
+              getActorX(outcome.actor), getActorY(outcome.actor)));
           delay = 150;
+
+          outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
         }
         else if(outcome.actor_outcome_state == ActionState::DAMAGE_VALUE)
         {
@@ -557,6 +559,8 @@ void Battle::updateEvent()
           event->action_state = ActionState::DAMAGE_VALUE;
 
           render_elements.push_back(element);
+
+          outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
         }
         else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
         {
@@ -639,7 +643,8 @@ void Battle::processEventSkill()
         if(event->doesActionHit(target))
         {
           // TODO crit factor
-          outcome.damage = event->calcDamage(target, 1.00);
+          std::cout << "Calculating a damage" << std::endl;
+          outcome.damage = event->calcDamage(target);
           outcome.actor_outcome_state = ActionState::PLEP;
         }
         else
@@ -1448,20 +1453,11 @@ bool Battle::renderElements()
 
 void Battle::renderElementPlep(RenderElement* element)
 {
-  (void)element;
-  //   for(auto &element : render_elements)
-  //   {
-  //     if(element->getType() == RenderType::PLEP)
-  //     {
-  //       if(element->getSprite() != nullptr)
-  //       {
-  //         element->getSprite()->render(renderer, element->getX(),
-  //                                      element->getY());
-  //       }
-  //     }
-  //   }
-
-  //   return success;
+  if(element->element_sprite)
+  {
+    auto point = element->location.point;
+    element->element_sprite->render(renderer, point.x, point.y);
+  }
 }
 
 void Battle::renderElementRGBOverlay(RenderElement* element)
@@ -1483,18 +1479,27 @@ void Battle::renderElementText(RenderElement* element)
 {
   if(element->element_font && event)
   {
+    std::cout << "Render the element text " << std::endl;
     Text t(element->element_font);
     auto point = element->location.point;
     auto shadow = element->shadow_offset;
 
-    t.setText(renderer, event->getActionName(), element->color);
+    if(element->render_type == RenderType::ACTION_TEXT)
+      t.setText(renderer, event->getActionName(), element->color);
+    else
+      t.setText(renderer, "42", element->color);
+
     t.setAlpha(element->alpha);
     t.render(renderer, point.x, point.y);
 
     std::cout << "Render text with alpha: " << (int)element->alpha << std::endl;
     if(element->has_shadow)
     {
-      t.setText(renderer, event->getActionName(), element->shadow_color);
+      if(element->render_type == RenderType::ACTION_TEXT)
+        t.setText(renderer, event->getActionName(), element->shadow_color);
+      else
+        t.setText(renderer, "42", element->shadow_color);
+
       t.render(renderer, point.x + shadow.x, point.y + shadow.y);
     }
   }
@@ -4480,9 +4485,6 @@ void Battle::setNextTurnState()
     else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
       turn_state = TurnState::PROCESS_ACTIONS;
   }
-
-  std::cout << "Setting turn state: " << Helpers::turnStateToStr(turn_state)
-            << std::endl;
 }
 
 //     /* If the Battle has been won, go to victory */
@@ -4585,7 +4587,8 @@ bool Battle::update(int32_t cycle_time)
 
   // TODO: REMOVE THIS
   if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY &&
-     turn_state != TurnState::SELECT_ACTION_ENEMY)
+     turn_state != TurnState::SELECT_ACTION_ENEMY &&
+     turn_state != TurnState::PROCESS_ACTIONS)
     setFlagCombat(CombatState::PHASE_DONE);
 
   if(getFlagCombat(CombatState::PHASE_DONE))
