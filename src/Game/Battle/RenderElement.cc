@@ -34,6 +34,7 @@ const uint16_t RenderElement::kACTION_CENTER = 381;
 
 RenderElement::RenderElement()
     : has_shadow{false},
+      text_string{""},
       time_fade_in{0},
       time_fade_out{0},
       time_left{0},
@@ -97,14 +98,11 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
 
     if(element_sprite)
     {
-      std::cout << "Setting sprite as non unique" << std::endl;
       element_sprite->setNonUnique(true, build_sprite->getSize());
       element_sprite->createTexture(renderer);
 
       return true;
     }
-    else
-      std::cout << "falsification on that element sprite bud" << std::endl;
   }
 
   return false;
@@ -114,42 +112,9 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-uint8_t RenderElement::calcColorRed()
-{
-  auto pc_fade = 0;
-
-  if(color.a != 0)
-    pc_fade = (alpha * 100) / color.a;
-
-  float red_float = (pc_fade * color.r) / (float)100;
-
-  return std::round(red_float);
-}
-
-uint8_t RenderElement::calcColorBlue()
-{
-  auto pc_fade = 0;
-
-  if(color.a != 0)
-    pc_fade = (alpha * 100) / color.a;
-
-  float blue_float = (pc_fade * color.b) / (float)100;
-  return std::round(blue_float);
-}
-
-uint8_t RenderElement::calcColorGreen()
-{
-  auto pc_fade = 0;
-
-  if(color.a != 0)
-    pc_fade = (alpha * 100) / color.a;
-
-  float green_float = (pc_fade * color.g) / (float)100;
-  return std::round(green_float);
-}
-
 void RenderElement::createAsActionText(std::string action_name)
 {
+  text_string = action_name;
   color = {0, 0, 0, 255};
   setShadow({kACTION_COLOR_R, 0, 0, 255}, kACTION_SHADOW, kACTION_SHADOW);
   setTimes(900, 100, 100);
@@ -157,9 +122,6 @@ void RenderElement::createAsActionText(std::string action_name)
 
   if(element_font && renderer)
   {
-    // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    // SDL_RenderClear(renderer);
-
     element_text = Text(element_font);
     element_text.setText(renderer, action_name, color);
 
@@ -171,10 +133,15 @@ void RenderElement::createAsActionText(std::string action_name)
 void RenderElement::createAsDamageText(std::string text, DamageType type,
                                        int32_t sc_height, int32_t x, int32_t y)
 {
+  text_string = text;
   color = {0, 0, 0, 255};
   setShadow(colorFromDamageType(type), kDAMAGE_SHADOW, kDAMAGE_SHADOW - 1);
   setTimes(475, 65, 100);
   render_type = RenderType::DAMAGE_TEXT;
+
+  setAcceleration(0.000, 0.000);
+  setVelocity(0.005, -0.020);
+
 
   if(element_font && renderer)
   {
@@ -190,10 +157,9 @@ void RenderElement::createAsDamageText(std::string text, DamageType type,
 void RenderElement::createAsDamageValue(int32_t amount, DamageType type,
                                         int32_t sc_height, int32_t x, int32_t y)
 {
-  createAsDamageText(std::to_string(amount), type, sc_height, x, y);
+  text_string = std::to_string(amount);
+  createAsDamageText(text_string, type, sc_height, x, y);
   setTimes(850, 115, 155);
-  setAcceleration(0.000, 0.000);
-  setVelocity(0.020, -0.020);
 
   render_type = RenderType::DAMAGE_VALUE;
 }
@@ -248,9 +214,6 @@ bool RenderElement::setTimes(uint32_t time_begin, uint32_t time_fade_in,
 
   status = initialStatusFade();
 
-  if(status == RenderStatus::FADING_IN)
-    std::cout << "Fading in bro" << std::endl;
-
   return valid;
 }
 
@@ -293,7 +256,6 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
 {
   if(time_left <= 0)
   {
-    std::cout << "Setting timed out!" << std::endl;
     status = RenderStatus::TIMED_OUT;
   }
   else

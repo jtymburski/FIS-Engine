@@ -47,7 +47,6 @@ Sprite::Sprite()
   temp_blue = kDEFAULT_COLOR;
   current = NULL;
   elapsed_time = 0;
-  flashing = false;
   grey_scale_alpha = kDEFAULT_OPACITY;
   grey_scale_update = false;
   head = NULL;
@@ -70,7 +69,7 @@ Sprite::Sprite()
  * Input: std::string image_path - image path to set as one sprite
  *        SDL_Renderer* renderer - the rendering engine for creating the image
  */
-Sprite::Sprite(std::string path, SDL_Renderer *renderer) : Sprite()
+Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
 {
   insertFirst(path, renderer);
 }
@@ -84,7 +83,7 @@ Sprite::Sprite(std::string path, SDL_Renderer *renderer) : Sprite()
  *         SDL_Renderer* renderer - the rendering engine for creating the images
  */
 Sprite::Sprite(std::string head_path, int num_frames, std::string tail_path,
-               SDL_Renderer *renderer)
+               SDL_Renderer* renderer)
     : Sprite()
 {
   insertSequence(head_path, num_frames, tail_path, renderer);
@@ -96,7 +95,7 @@ Sprite::Sprite(std::string head_path, int num_frames, std::string tail_path,
  *
  * Inputs: const Sprite &source - the source sprite data to copy over
  */
-Sprite::Sprite(const Sprite &source) : Sprite()
+Sprite::Sprite(const Sprite& source) : Sprite()
 {
   copySelf(source);
 }
@@ -192,7 +191,7 @@ void Sprite::clear()
  * Inputs: const Sprite &source - the reference sprite class
  * Output: none
  */
-void Sprite::copySelf(const Sprite &source)
+void Sprite::copySelf(const Sprite& source)
 {
   // size = source.size;
 
@@ -230,7 +229,7 @@ void Sprite::copySelf(const Sprite &source)
  *         bool no_warnings - should warnings not fire? default false.
  * Output: bool - true if the add was successful
  */
-bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer *renderer,
+bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
                                 std::string base_path, bool no_warnings)
 {
   std::string element = data.getElement(index);
@@ -262,7 +261,7 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer *renderer,
   else if(split_element.at(0) == "path")
   {
     uint16_t angle = parseAdjustments(split_element);
-    std::vector<Frame *> new_frames = insertFrames(
+    std::vector<Frame*> new_frames = insertFrames(
         base_path + data.getDataString(), renderer, angle, no_warnings);
 
     /* If there is element adjustments, do those changes */
@@ -282,7 +281,7 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer *renderer,
   return success;
 }
 
-void Sprite::createTexture(SDL_Renderer *renderer)
+void Sprite::createTexture(SDL_Renderer* renderer)
 {
   if(head->isTextureSet() && texture == nullptr)
   {
@@ -308,7 +307,7 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
   if(head != NULL)
   {
     bool success = true;
-    Frame *parsed_frame = head;
+    Frame* parsed_frame = head;
 
     do
     {
@@ -328,7 +327,10 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
  * Inputs: none
  * Output: short - the animation time in milliseconds
  */
-short Sprite::getAnimationTime() const { return animation_time; }
+short Sprite::getAnimationTime() const
+{
+  return animation_time;
+}
 
 /*
  * Description: Gets the brightness value that the sprite sequence is being
@@ -338,7 +340,10 @@ short Sprite::getAnimationTime() const { return animation_time; }
  * Output: double - the brightness indicator
  *                (<1: darker, 1: default, >1: lighter)
  */
-double Sprite::getBrightness() const { return brightness; }
+double Sprite::getBrightness() const
+{
+  return brightness;
+}
 
 /*
  * Description: Returns the color distribution evenness, according to the blue
@@ -347,7 +352,10 @@ double Sprite::getBrightness() const { return brightness; }
  * Inputs: none
  * Output: uint8_t - the rated blue RGB value
  */
-uint8_t Sprite::getColorBlue() const { return color_blue; }
+uint8_t Sprite::getColorBlue() const
+{
+  return color_blue;
+}
 
 /*
  * Description: Returns the color distribution evenness, according to the green
@@ -356,7 +364,10 @@ uint8_t Sprite::getColorBlue() const { return color_blue; }
  * Inputs: none
  * Output: uint8_t - the rated green RGB value
  */
-uint8_t Sprite::getColorGreen() const { return color_green; }
+uint8_t Sprite::getColorGreen() const
+{
+  return color_green;
+}
 
 /*
  * Description: Returns the color distribution evenness, according to the red
@@ -365,7 +376,10 @@ uint8_t Sprite::getColorGreen() const { return color_green; }
  * Inputs: none
  * Output: uint8_t - the rated red RGB value
  */
-uint8_t Sprite::getColorRed() const { return color_red; }
+uint8_t Sprite::getColorRed() const
+{
+  return color_red;
+}
 
 /*
  * Description: Gets the current frame that is active.
@@ -373,7 +387,10 @@ uint8_t Sprite::getColorRed() const { return color_red; }
  * Inputs: none
  * Output: Frame* - the current frame where the sprite is at
  */
-Frame *Sprite::getCurrent() { return current; }
+Frame* Sprite::getCurrent()
+{
+  return current;
+}
 
 /*
  * Description: Gets the current frame and then shifts to the next one
@@ -381,9 +398,9 @@ Frame *Sprite::getCurrent() { return current; }
  * Inputs: none
  * Output: Frame* - the frame before the shift occurred
  */
-Frame *Sprite::getCurrentAndShift()
+Frame* Sprite::getCurrentAndShift()
 {
-  Frame *previous = current;
+  Frame* previous = current;
   shiftNext();
 
   return previous;
@@ -396,7 +413,7 @@ Frame *Sprite::getCurrentAndShift()
  * Inputs: none
  * Output: Frame* - the frame pointer
  */
-Frame *Sprite::getFirstFrame() const
+Frame* Sprite::getFirstFrame() const
 {
   return head;
 }
@@ -407,7 +424,10 @@ Frame *Sprite::getFirstFrame() const
  * Inputs: none
  * Output: uin16_t - an integer from 0 - 65535 (16 bit unsigned integer)
  */
-uint16_t Sprite::getId() const { return id; }
+uint16_t Sprite::getId() const
+{
+  return id;
+}
 
 /*
  * Description: Returns the number of loops the sprite has completed
@@ -415,7 +435,10 @@ uint16_t Sprite::getId() const { return id; }
  * Inputs: none
  * Output: uint32_t - an integer from 0 - 2^32 - 1 (32 bit unsigned integer)
  */
-uint32_t Sprite::getLoops() { return loops; }
+uint32_t Sprite::getLoops()
+{
+  return loops;
+}
 
 /*
  * Description: Returns the opacity that the sprite is rendered at.
@@ -423,7 +446,10 @@ uint32_t Sprite::getLoops() { return loops; }
  * Inputs: none
  * Output: uint8_t - the opacity value, from 0-255. 255 full opaque
  */
-uint8_t Sprite::getOpacity() const { return opacity; }
+uint8_t Sprite::getOpacity() const
+{
+  return opacity;
+}
 
 /*
  * Description: Returns the position that the linked list is currently at
@@ -434,7 +460,7 @@ uint8_t Sprite::getOpacity() const { return opacity; }
 int Sprite::getPosition()
 {
   int location = 0;
-  Frame *shifted = head;
+  Frame* shifted = head;
 
   while(shifted != current)
   {
@@ -451,7 +477,10 @@ int Sprite::getPosition()
  * Inputs: none
  * Output: float - the angle, in degrees
  */
-float Sprite::getRotation() const { return rotation_angle; }
+float Sprite::getRotation() const
+{
+  return rotation_angle;
+}
 
 /*
  * Description: Returns the size of the sequence
@@ -459,7 +488,10 @@ float Sprite::getRotation() const { return rotation_angle; }
  * Inputs: none
  * Output: int - the size of the sprite list
  */
-int Sprite::getSize() const { return size; }
+int Sprite::getSize() const
+{
+  return size;
+}
 
 /*
  * Description: Returns the sound ID reference. If less than 0, invalid.
@@ -467,7 +499,10 @@ int Sprite::getSize() const { return size; }
  * Inputs: none
  * Output: int32_t - the ID of sound chunk
  */
-int32_t Sprite::getSoundID() const { return sound_id; }
+int32_t Sprite::getSoundID() const
+{
+  return sound_id;
+}
 
 /*
  * Description: Returns the color distribution evenness, according to the temp.
@@ -476,7 +511,10 @@ int32_t Sprite::getSoundID() const { return sound_id; }
  * Inputs: none
  * Output: uint8_t - the rated temp. RGB value
  */
-uint8_t Sprite::getTempColorRed() const { return temp_red; }
+uint8_t Sprite::getTempColorRed() const
+{
+  return temp_red;
+}
 
 /*
  * Description: Returns the color distribution evenness, according to the temp.
@@ -485,7 +523,10 @@ uint8_t Sprite::getTempColorRed() const { return temp_red; }
  * Inputs: none
  * Output: uint8_t - the rated temp. RGB value
  */
-uint8_t Sprite::getTempColorGreen() const { return temp_green; }
+uint8_t Sprite::getTempColorGreen() const
+{
+  return temp_green;
+}
 
 /*
  * Description: Returns the color distribution evenness, according to the temp.
@@ -494,7 +535,10 @@ uint8_t Sprite::getTempColorGreen() const { return temp_green; }
  * Inputs: none
  * Output: uint8_t - the rated temp RGB value
  */
-uint8_t Sprite::getTempColorBlue() const { return temp_blue; }
+uint8_t Sprite::getTempColorBlue() const
+{
+  return temp_blue;
+}
 
 /*
  * Description: Inserts the image into the sprite sequence at the given
@@ -507,12 +551,12 @@ uint8_t Sprite::getTempColorBlue() const { return temp_blue; }
  *         bool no_warnings - should warnings not fire? default false.
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame *Sprite::insert(std::string path, SDL_Renderer *renderer, int position,
+Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position,
                       uint16_t angle, bool no_warnings)
 {
-  Frame *next_frame;
-  Frame *new_frame;
-  Frame *previous_frame;
+  Frame* next_frame;
+  Frame* new_frame;
+  Frame* previous_frame;
 
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
@@ -565,7 +609,7 @@ Frame *Sprite::insert(std::string path, SDL_Renderer *renderer, int position,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame *Sprite::insertFirst(std::string path, SDL_Renderer *renderer,
+Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer,
                            uint16_t angle, bool no_warnings)
 {
   if(size == 0)
@@ -603,7 +647,7 @@ Frame *Sprite::insertFirst(std::string path, SDL_Renderer *renderer,
     head = NULL;
   }
 
-  Frame *null_frame = NULL;
+  Frame* null_frame = NULL;
   return null_frame;
 }
 
@@ -622,9 +666,9 @@ Frame *Sprite::insertFirst(std::string path, SDL_Renderer *renderer,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
-std::vector<Frame *> Sprite::insertFrames(std::string path,
-                                          SDL_Renderer *renderer,
-                                          uint16_t angle, bool no_warnings)
+std::vector<Frame*> Sprite::insertFrames(std::string path,
+                                         SDL_Renderer* renderer, uint16_t angle,
+                                         bool no_warnings)
 {
   /* Split the path and see if it split. If it did, insert sequence. Otherwise
    * insert the single frame at tail. */
@@ -634,8 +678,8 @@ std::vector<Frame *> Sprite::insertFrames(std::string path,
                           split_path[2], renderer, angle, no_warnings);
 
   /* Otherwise, put the frame on the tail (single frame) */
-  Frame *tail_frame = insertTail(path, renderer, angle, no_warnings);
-  std::vector<Frame *> stack;
+  Frame* tail_frame = insertTail(path, renderer, angle, no_warnings);
+  std::vector<Frame*> stack;
   if(tail_frame != NULL)
     stack.push_back(tail_frame);
   return stack;
@@ -658,12 +702,12 @@ std::vector<Frame *> Sprite::insertFrames(std::string path,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
-std::vector<Frame *> Sprite::insertSequence(std::string head_path, int count,
-                                            std::string tail_path,
-                                            SDL_Renderer *renderer,
-                                            uint16_t angle, bool no_warnings)
+std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count,
+                                           std::string tail_path,
+                                           SDL_Renderer* renderer,
+                                           uint16_t angle, bool no_warnings)
 {
-  std::vector<Frame *> stack;
+  std::vector<Frame*> stack;
   bool status = true;
 
   /* Test if there are sufficient frames */
@@ -708,7 +752,7 @@ std::vector<Frame *> Sprite::insertSequence(std::string head_path, int count,
  *         bool no_warnings - should warnings not fire? default false.
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame *Sprite::insertTail(std::string path, SDL_Renderer *renderer,
+Frame* Sprite::insertTail(std::string path, SDL_Renderer* renderer,
                           uint16_t angle, bool no_warnings)
 {
   return insert(path, renderer, size, angle, no_warnings);
@@ -747,11 +791,15 @@ bool Sprite::isAtEnd()
  * Inputs: none
  * Output: bool - status if the direction is forward. False if reverse.
  */
-bool Sprite::isDirectionForward() const { return (sequence == FORWARD); }
+bool Sprite::isDirectionForward() const
+{
+  return (sequence == FORWARD);
+}
 
-bool Sprite::isFlashing() const { return flashing; }
-
-bool Sprite::isFramesSet() const { return (head != NULL); }
+bool Sprite::isFramesSet() const
+{
+  return (head != NULL);
+}
 
 /*
  * Description: Checks if the sprite sequence is grey scale enabled. This
@@ -777,9 +825,9 @@ bool Sprite::isGreyScale()
  */
 bool Sprite::remove(int position)
 {
-  Frame *old_frame;
-  Frame *next_frame;
-  Frame *previous_frame;
+  Frame* old_frame;
+  Frame* next_frame;
+  Frame* previous_frame;
 
   /* Only remove if the position exists within the size boundaries */
   if(position < size && position >= 0)
@@ -849,7 +897,10 @@ bool Sprite::removeAll()
  * Inputs: none
  * Output: bool - status if tail removal was successful
  */
-bool Sprite::removeTail() { return remove(size - 1); }
+bool Sprite::removeTail()
+{
+  return remove(size - 1);
+}
 
 /*
  * Description: Resets the number of loops for the Sprite to zero.
@@ -857,7 +908,10 @@ bool Sprite::removeTail() { return remove(size - 1); }
  * Inputs: none
  * Output: none
  */
-void Sprite::resetLoops() { loops = 0; }
+void Sprite::resetLoops()
+{
+  loops = 0;
+}
 
 /* Render the texture to the given renderer with the given parameters */
 /*
@@ -872,14 +926,14 @@ void Sprite::resetLoops() { loops = 0; }
  *         int h - the height of the texture painted
  * Output: bool - status if the render was successful
  */
-bool Sprite::render(SDL_Renderer *renderer, int x, int y, int w, int h)
+bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
   if(current != NULL && renderer != NULL)
   {
     /* Proceed to update the running texture if it's changed */
     if(texture_update || grey_scale_update)
     {
-      SDL_Texture *previous_renderer = SDL_GetRenderTarget(renderer);
+      SDL_Texture* previous_renderer = SDL_GetRenderTarget(renderer);
 
       SDL_SetRenderTarget(renderer, texture);
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -893,7 +947,7 @@ bool Sprite::render(SDL_Renderer *renderer, int x, int y, int w, int h)
         current->render(renderer);
 
       /* Render white mask, if relevant */
-      SDL_Texture *white_mask = Helpers::getMaskWhite();
+      SDL_Texture* white_mask = Helpers::getMaskWhite();
       if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
       {
         double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
@@ -1104,8 +1158,8 @@ bool Sprite::setDirectionReverse()
   return true;
 }
 
-//TODO: comments
-void Sprite::setHead(Frame *head)
+// TODO: comments
+void Sprite::setHead(Frame* head)
 {
   this->head = head;
 
@@ -1125,17 +1179,13 @@ void Sprite::setId(uint16_t id)
 }
 
 // TODO: comments
-void Sprite::setFlashing(bool flashing) { this->flashing = flashing; }
-
-
-//TODO: comments
 void Sprite::setNonUnique(bool new_value, int32_t new_size)
 {
   size = new_size;
   non_unique = new_value;
 }
 
-//TODO: comments
+// TODO: comments
 void Sprite::setNumLoops(int32_t loops)
 {
   this->loops = loops;
@@ -1150,7 +1200,7 @@ void Sprite::setNumLoops(int32_t loops)
  */
 void Sprite::setOpacity(uint8_t opacity)
 {
-  //if(this->opacity != opacity)
+  // if(this->opacity != opacity)
   //{
   this->opacity = opacity;
   SDL_SetTextureAlphaMod(texture, opacity);
@@ -1164,7 +1214,10 @@ void Sprite::setOpacity(uint8_t opacity)
  * Inputs: float angle - angle in degrees and float to rotate the frames to
  * Output: none
  */
-void Sprite::setRotation(float angle) { rotation_angle = angle; }
+void Sprite::setRotation(float angle)
+{
+  rotation_angle = angle;
+}
 
 /*
  * Description: Sets the reference sound ID. If less than 0, unsets it.
@@ -1203,7 +1256,10 @@ void Sprite::setTempColorBalance(uint8_t temp_red, uint8_t temp_green,
  * Inputs: uint8_t temp_red - temporary red color 0-255 (255 full)
  * Output: none
  */
-void Sprite::setTempColorRed(uint8_t temp_red) { this->temp_red = temp_red; }
+void Sprite::setTempColorRed(uint8_t temp_red)
+{
+  this->temp_red = temp_red;
+}
 
 /*
  * Description: Store the given value as the temporary color mask for green
@@ -1234,7 +1290,10 @@ void Sprite::setTempColorBlue(uint8_t temp_blue)
  * Inputs: int angle - the angle in degrees to rotate the frames to
  * Output: none
  */
-void Sprite::setRotation(int angle) { rotation_angle = angle; }
+void Sprite::setRotation(int angle)
+{
+  rotation_angle = angle;
+}
 
 /*
  * Description: Shifts to the given position in the sequence
@@ -1244,12 +1303,12 @@ void Sprite::setRotation(int angle) { rotation_angle = angle; }
  */
 bool Sprite::shift(int position)
 {
-  Frame *old_current = current;
+  Frame* old_current = current;
 
   /* Only shift if the position is within the bounds of the sprite */
   if(position < size && position >= 0)
   {
-    Frame *new_current_frame = head;
+    Frame* new_current_frame = head;
 
     for(int i = 0; i < position; i++)
       new_current_frame = new_current_frame->getNext();
@@ -1277,7 +1336,7 @@ bool Sprite::shift(int position)
  */
 bool Sprite::shiftNext(bool skip_head)
 {
-  Frame *old_current = current;
+  Frame* old_current = current;
 
   if(size > 0)
   {
@@ -1406,7 +1465,7 @@ bool Sprite::useGreyScale(bool enable)
   if(head != NULL && head->isGreyScale() != enable)
   {
     bool success = true;
-    Frame *temp = head;
+    Frame* temp = head;
 
     do
     {
@@ -1439,7 +1498,7 @@ bool Sprite::useGreyScale(bool enable)
  * Inputs: const Sprite &source - the source class constructor
  * Output: Sprite& - pointer to the copied class
  */
-Sprite &Sprite::operator=(const Sprite &source)
+Sprite& Sprite::operator=(const Sprite& source)
 {
   /* Check for self assignment */
   if(this == &source)

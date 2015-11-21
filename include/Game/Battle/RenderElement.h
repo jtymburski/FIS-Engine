@@ -22,6 +22,7 @@
 
 /* Forward declare for Battle constants */
 class Battle;
+class BattleActor;
 
 enum class RenderType
 {
@@ -32,14 +33,6 @@ enum class RenderType
   RGB_OVERLAY,
   RGB_SPRITE_FLASH,
   NONE
-};
-
-enum class RenderStatus
-{
-  FADING_IN,
-  DISPLAYING,
-  FADING_OUT,
-  TIMED_OUT
 };
 
 class RenderElement
@@ -74,6 +67,8 @@ public:
   Floatinate velocity;
   Floatinate acceleration;
   Floatinate delta;
+
+  std::string text_string;
 
   /* Timing variables */
   int32_t time_fade_in;
@@ -136,11 +131,6 @@ private:
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
-  /* Color getting functions for various alpha states */
-  uint8_t calcColorRed();
-  uint8_t calcColorGreen();
-  uint8_t calcColorBlue();
-
   /* Creates the render element as an action text*/
   void createAsActionText(std::string text);
 

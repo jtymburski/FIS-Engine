@@ -60,7 +60,7 @@ bool Fonts::createFonts(Options* config)
                                    60, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::BATTLE_DAMAGE,
                   Text::createFont(config->getBasePath() + config->getFont(),
-                                   16, TTF_STYLE_BOLD));
+                                   30, TTF_STYLE_BOLD));
     fonts.emplace(FontName::BATTLE_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    16, TTF_STYLE_BOLD));

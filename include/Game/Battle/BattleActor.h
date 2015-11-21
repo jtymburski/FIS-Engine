@@ -27,7 +27,9 @@ class Ailment;
 class Person;
 class BattleSkill;
 class BattleItem;
+class RenderElement;
 
+#include "Game/Battle/RenderElement.h"
 #include "Game/Battle/BattleSkill.h"
 #include "Game/Battle/BattleItem.h"
 #include "Game/Battle/BattleStats.h"
@@ -53,12 +55,11 @@ enum class ActorState
   RUN_ENABLED       = 1 << 10, /* Can the person use 'Run'? */
   PAS_ENABLED       = 1 << 11, /* Can the person use 'Pass'? */
   REVIVABLE         = 1 << 12, /* Can this person be revived if they are KO? */
-  WAS_FLASHING      = 1 << 13, /* Was the actor just flashing? */
-  ALLY              = 1 << 14, /* Is this actor an ally */
-  SELECTION_RANDOM  = 1 << 15,
-  SELECTION_SKIP    = 1 << 16,
-  MENU_HOVERED      = 1 << 17,
-  MISS_NEXT_TARGET  = 1 << 18
+  ALLY              = 1 << 15, /* Is this actor an ally */
+  SELECTION_RANDOM  = 1 << 16,
+  SELECTION_SKIP    = 1 << 17,
+  MENU_HOVERED      = 1 << 18,
+  MISS_NEXT_TARGET  = 1 << 19
   // clang-format on
 };
 
@@ -72,7 +73,14 @@ enum class ActiveSprite
   NONE
 };
 
-enum class SelectionState
+enum class FlashingType
+{
+  NONE,
+  DAMAGE,
+  POISON
+};
+
+    enum class SelectionState
 {
   NOT_SELECTED,
   SELECTING,
@@ -96,14 +104,15 @@ enum class SpriteState
   CYCLING_FADE,
   RUNNING,
   BOBBING,
+  FLASHING
 };
 
 enum class GuardingState
 {
-  NONE, /* This person is not guarding nor being guarded or shielded */
+  NONE,      /* This person is not guarding nor being guarded or shielded */
   DEFENDING, /* This person is defending */
-  GUARDING, /* This person is guarding another person presently */
-  GUARDED, /* This person is being guarded by another person */
+  GUARDING,  /* This person is guarding another person presently */
+  GUARDED,   /* This person is being guarded by another person */
   GUARDED_DEFENDING /* This person is defending & being guarded */
 };
 
@@ -120,8 +129,7 @@ enum class UpkeepState
 struct ActionElement
 {
   ActionElement()
-      : element_state{SpriteState::HIDDEN},
-        frame_action{nullptr} {};
+      : element_state{SpriteState::HIDDEN}, frame_action{nullptr} {};
 
   Coordinate position_curr;
   Coordinate position_end;
@@ -129,6 +137,19 @@ struct ActionElement
 
   SpriteState element_state;
   Frame* frame_action;
+};
+
+struct FlashingState
+{
+  FlashingState()
+      : flashing_type{FlashingType::NONE},
+        is_flashing{false},
+        element{nullptr} {};
+
+  FlashingType flashing_type;
+  bool is_flashing;
+
+  RenderElement* element;
 };
 
 class BattleActor
@@ -187,6 +208,9 @@ private:
   /* The elapsed time for the current state */
   uint32_t state_elapsed_time;
 
+  /* The actor's flashing state */
+  FlashingState state_flashing;
+
   /* The guarding state for the BattleActor */
   GuardingState state_guarding;
 
@@ -211,6 +235,8 @@ private:
 
   /* ------------ Constants --------------- */
   static const float kVELOCITY_X;
+  static const SDL_Color kFLASHING_DAMAGE_COLOR;
+  static const SDL_Color kFLASHING_POISON_COLOR;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -237,6 +263,7 @@ private:
 
   /* Updates the action element [sliding in/out] */
   void updateActionElement(int32_t cycle_time);
+  void updateSpriteFlashing(int32_t cycle_time);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
@@ -248,6 +275,9 @@ public:
   /* Constructs BattleSkill objects of the BattleActor */
   bool buildBattleSkills(std::vector<BattleActor*> all_targets);
 
+  /* Ends the sprite's flashing */
+  void endFlashing();
+
   /* Checks whether the BattleActor would be immune to a given Infliction */
   bool isImmune(Infliction test_infliction);
 
@@ -256,6 +286,9 @@ public:
 
   /* Removes a given ailment from the vector of ailmnents, if it is found */
   bool removeAilment(Ailment* remove_ailment);
+
+  /* Assigns the actor's active sprite to start flashing */
+  void startFlashing(FlashingType type, int32_t time_left);
 
   /* Clear the state of the BattleActor for a new turn */
   void turnSetup();
@@ -359,6 +392,9 @@ public:
    * PUBLIC STATIC FUNCTIONS
    *============================================================================*/
 public:
+  /* Returns the flashing color corresponding to the flashing type */
+  static SDL_Color getFlashingColor(FlashingType flashing_type);
+
   /* Returns vector of allied targets based on input user/targets */
   static std::vector<BattleActor*>
   getAllyTargets(BattleActor* user, std::vector<BattleActor*> targets);

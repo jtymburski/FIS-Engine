@@ -3,7 +3,7 @@
 * Date Created: January 18th, 2014
 * Inheritance: None
 * Description: A Player contains the information of the Parties that are usable
-*              by the player and represents pertinent information to the 
+*              by the player and represents pertinent information to the
 *              progression of the game.
 *
 * Notes
@@ -28,7 +28,7 @@ public:
   Player(Party* sleuth = nullptr, Party* bearacks = nullptr);
 
 private:
-  /* The slueth and bearacks parties. The sleuth is the player's main party, 
+  /* The slueth and bearacks parties. The sleuth is the player's main party,
    * while the bearacks is the reserve party */
   Party* sleuth;
   Party* bearacks;
@@ -53,7 +53,7 @@ public:
 
   /* Returns the current credit value */
   uint32_t getCredits();
-  
+
   /* Returns the bearacks Party */
   Party* getBearacks();
 
@@ -62,7 +62,7 @@ public:
 
   /* Returns the gravity being experiencd by the player */
   uint32_t getGravity();
- 
+
  /* Gets the sleuth party */
   Party* getSleuth();
 

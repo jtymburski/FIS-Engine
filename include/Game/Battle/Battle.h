@@ -358,7 +358,6 @@ private:
   /* Rendering updates */
   void updateBarOffset();
   void updateRendering(int32_t cycle_time);
-  void updateRenderElements(int32_t cycle_time);
   void updateRenderSprites(int32_t cycle_time);
 
   /* Returns an X-value for a given Person */

@@ -514,7 +514,7 @@ void Battle::updateEvent()
       /* Create the fading-in action text */
       auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
       auto element = new RenderElement(renderer, action_font);
-      auto action_text = event->actor->getBasePerson()->getName() + "Missed";
+      auto action_text = event->actor->getBasePerson()->getName() + " Missed";
       element->createAsActionText(action_text);
       render_elements.push_back(element);
       event->action_state = ActionState::DONE;
@@ -556,15 +556,19 @@ void Battle::updateEvent()
               outcome.damage, DamageType::BASE, config->getScreenHeight(),
               getActorX(outcome.actor), getActorY(outcome.actor));
 
-          event->action_state = ActionState::DAMAGE_VALUE;
-
           render_elements.push_back(element);
-
           outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
+          delay = 300;
         }
         else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
         {
-          // Flash them der spirtes bud.
+          outcome.actor->startFlashing(FlashingType::DAMAGE, 500);
+          outcome.actor_outcome_state = ActionState::ACTION_END;
+          delay = 1000;
+        }
+        else if(outcome.actor_outcome_state == ActionState::ACTION_END)
+        {
+          outcome.actor->endFlashing();
         }
 
         done &= outcome.actor_outcome_state == ActionState::ACTION_END;
@@ -1479,27 +1483,17 @@ void Battle::renderElementText(RenderElement* element)
 {
   if(element->element_font && event)
   {
-    std::cout << "Render the element text " << std::endl;
     Text t(element->element_font);
     auto point = element->location.point;
     auto shadow = element->shadow_offset;
 
-    if(element->render_type == RenderType::ACTION_TEXT)
-      t.setText(renderer, event->getActionName(), element->color);
-    else
-      t.setText(renderer, "42", element->color);
-
+    t.setText(renderer, element->text_string, element->color);
     t.setAlpha(element->alpha);
     t.render(renderer, point.x, point.y);
 
-    std::cout << "Render text with alpha: " << (int)element->alpha << std::endl;
     if(element->has_shadow)
     {
-      if(element->render_type == RenderType::ACTION_TEXT)
-        t.setText(renderer, event->getActionName(), element->shadow_color);
-      else
-        t.setText(renderer, "42", element->shadow_color);
-
+      t.setText(renderer, element->text_string, element->shadow_color);
       t.render(renderer, point.x + shadow.x, point.y + shadow.y);
     }
   }
@@ -2195,38 +2189,6 @@ void Battle::updateRenderSprites(int32_t cycle_time)
 // }
 
 // return opacity;
-
-void Battle::updateRenderElements(int32_t cycle_time)
-{
-  (void)cycle_time;
-  // // TODO: [09-06-15] - Update the render elements
-  // bool success = true;
-
-  // for(auto &element : render_elements)
-  // {
-  //   if(element != nullptr)
-  //   {
-  //     success &= element->update(cycle_time);
-
-  //     if(element->getType() == RenderType::RGB_SPRITE_FLASH)
-  //     {
-  //       auto sprite = element->getSprite();
-
-  //       if(sprite != nullptr && !sprite->isFlashing())
-  //       {
-  //         sprite->setTempColorBalance(sprite->getColorRed(),
-  //                                     sprite->getColorGreen(),
-  //                                     sprite->getColorBlue());
-
-  //         sprite->setFlashing(true);
-  //       }
-  //       else if(sprite->isFlashing())
-  //       {
-  //         sprite->setColorBalance(element->calcColorRed(),
-  //                                 element->calcColorGreen(),
-  //                                 element->calcColorBlue());
-  //       }
-}
 
 int32_t Battle::getActorX(BattleActor* actor)
 {

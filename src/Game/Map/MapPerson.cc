@@ -110,7 +110,7 @@ void MapPerson::deleteStates()
 }
 
 /*
- * Description: Returns the top most sound trigger that should be executed. 
+ * Description: Returns the top most sound trigger that should be executed.
  *              Only called if the player, and whenever a move start trigger
  *              is initiated.
  *
@@ -278,7 +278,7 @@ float MapPerson::moveAmount(uint16_t cycle_time)
 {
   float move_amount = 0.0;
   if(running)
-    move_amount = (cycle_time * getSpeed() * 2) / kMOVE_FACTOR;
+    move_amount = (cycle_time * getSpeed() * 1.75) / kMOVE_FACTOR;
   else
     move_amount = (cycle_time * getSpeed()) / kMOVE_FACTOR;
 

@@ -21,6 +21,8 @@
  *============================================================================*/
 
 const float BattleActor::kVELOCITY_X{-1.250};
+const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{245, 10, 10, 155};
+const SDL_Color BattleActor::kFLASHING_POISON_COLOR{0, 255, 0, 155};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -46,6 +48,7 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
       state_active_sprite{SpriteState::HIDDEN},
       state_death_fade{FadeState::NOT_SHOWN},
       state_elapsed_time{0},
+      state_flashing{FlashingState()},
       state_guarding{GuardingState::NONE},
       state_selection{SelectionState::NOT_SELECTED},
       state_upkeep{UpkeepState::COMPLETE},
@@ -306,6 +309,26 @@ void BattleActor::updateActionElement(int32_t cycle_time)
   }
 }
 
+void BattleActor::updateSpriteFlashing(int32_t cycle_time)
+{
+  if(state_flashing.element && getActiveSprite())
+  {
+    state_flashing.element->update(cycle_time);
+
+    if(state_flashing.element->time_left > 0)
+    {
+      auto color = getFlashingColor(state_flashing.flashing_type);
+      auto alpha = state_flashing.element->alpha;
+
+      getActiveSprite()->setColorBalance(Helpers::calcColorRed(color, alpha),
+                              Helpers::calcColorGreen(color, alpha),
+                              Helpers::calcColorBlue(color, alpha));
+    }
+    else
+      endFlashing();
+  }
+}
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -380,6 +403,20 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
   return success;
 }
 
+void BattleActor::endFlashing()
+{
+  if(state_flashing.element)
+    delete state_flashing.element;
+
+  state_flashing.element = nullptr;
+
+  if(getActiveSprite())
+    getActiveSprite()->revertColorBalance();
+
+  state_active_sprite = SpriteState::SLID_IN;
+  state_flashing = FlashingState();
+}
+
 /* Checks whether the BattleActor would be immune to a given Infliction */
 bool BattleActor::isImmune(Infliction type)
 {
@@ -413,6 +450,31 @@ bool BattleActor::removeAilment(Ailment* remove_ailment)
   // TODO: [09-06-15] Removing ailments
 }
 
+/* Sets up start of flashingness */
+void BattleActor::startFlashing(FlashingType flashing_type, int32_t time_left)
+{
+  std::cout << "Starting flashing!" << std::endl;
+  auto active_sprite = getActiveSprite();
+  auto color = getFlashingColor(flashing_type);
+
+  if(active_sprite)
+  {
+    state_active_sprite = SpriteState::FLASHING;
+    active_sprite->setTempColorBalance(active_sprite->getColorRed(),
+                                       active_sprite->getColorGreen(),
+                                       active_sprite->getColorBlue());
+  }
+
+  state_flashing.flashing_type = flashing_type;
+  state_flashing.is_flashing = true;
+
+  if(time_left > 0 && !state_flashing.element)
+  {
+    state_flashing.element = new RenderElement();
+    state_flashing.element->createAsSpriteFlash(this, color, 1000);
+  }
+}
+
 void BattleActor::turnSetup()
 {
   state_selection = SelectionState::NOT_SELECTED;
@@ -427,6 +489,9 @@ void BattleActor::turnSetup()
 bool BattleActor::update(int32_t cycle_time)
 {
   updateActionElement(cycle_time);
+
+  if(state_active_sprite == SpriteState::FLASHING)
+    updateSpriteFlashing(cycle_time);
 
   return true;
 }
@@ -645,6 +710,14 @@ void BattleActor::setSelectionState(SelectionState state_selection)
 void BattleActor::setUpkeepState(UpkeepState state_upkeep)
 {
   this->state_upkeep = state_upkeep;
+}
+
+SDL_Color BattleActor::getFlashingColor(FlashingType flashing_type)
+{
+  if(flashing_type == FlashingType::DAMAGE)
+    return kFLASHING_DAMAGE_COLOR;
+
+  return kFLASHING_POISON_COLOR;
 }
 
 /* Grab all allied targets for given user */

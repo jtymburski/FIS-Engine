@@ -76,9 +76,6 @@ private:
   /* The sprite ID, useful when keeping track of a large number of sprites */
   uint16_t id;
 
-  /* Set the sprite to signify it is flashing (revert color balance) */
-  bool flashing;
-
   /* The number of loops the Sprite has gone through */
   uint32_t loops;
 
@@ -232,9 +229,6 @@ public:
   /* Returns if the direction parsing the frames is forward */
   bool isDirectionForward() const;
 
-  /* Whether the sprite is flashing */
-  bool isFlashing() const;
-
   /* Check if there are set frames in the sprite */
   bool isFramesSet() const;
 
@@ -286,9 +280,6 @@ public:
 
   /* Sets the numerical identifier */
   void setId(uint16_t id);
-
-  /* Set whether the sprite is flashing */
-  void setFlashing(bool flashing);
 
   /* Sets the opacity rating */
   void setOpacity(uint8_t opacity);

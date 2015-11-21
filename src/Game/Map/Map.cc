@@ -868,7 +868,7 @@ void Map::initiateThingInteraction(MapPerson* initiator)
     }
   }
 }
-  
+
 /* Mode view update */
 bool Map::modeViewStart(int cycle_time, bool travel)
 {

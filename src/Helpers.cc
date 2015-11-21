@@ -1708,6 +1708,40 @@ std::string& Helpers::trim(std::string& s)
  * GRAPHICAL HELPER FUNCTIONS
  *============================================================================*/
 
+uint8_t Helpers::calcColorRed(SDL_Color color, uint8_t alpha)
+{
+  auto pc_fade = 0;
+
+  if(color.a != 0)
+    pc_fade = (alpha * 100) / color.a;
+
+  float red_float = (pc_fade * color.r) / (float)100;
+
+  return std::round(red_float);
+}
+
+uint8_t Helpers::calcColorBlue(SDL_Color color, uint8_t alpha)
+{
+  auto pc_fade = 0;
+
+  if(color.a != 0)
+    pc_fade = (alpha * 100) / color.a;
+
+  float blue_float = (pc_fade * color.b) / (float)100;
+  return std::round(blue_float);
+}
+
+uint8_t Helpers::calcColorGreen(SDL_Color color, uint8_t alpha)
+{
+  auto pc_fade = 0;
+
+  if(color.a != 0)
+    pc_fade = (alpha * 100) / color.a;
+
+  float green_float = (pc_fade * color.g) / (float)100;
+  return std::round(green_float);
+}
+
 /*
  * Description: Creates the black mask (only needs to be called once for the
  *              duration of the game) that allows the engine to manipulate

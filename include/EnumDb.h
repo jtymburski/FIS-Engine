@@ -504,6 +504,14 @@ enum class Ranks : std::uint16_t
   NONE
 };
 
+enum class RenderStatus
+{
+  FADING_IN,
+  DISPLAYING,
+  FADING_OUT,
+  TIMED_OUT
+};
+
 enum class RegenRate : std::uint16_t
 {
   ZERO = 0,
