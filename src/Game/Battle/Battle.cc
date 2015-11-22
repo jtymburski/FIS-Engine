@@ -1497,6 +1497,7 @@ void Battle::renderElementText(RenderElement* element)
     if(element->has_shadow)
     {
       t.setText(renderer, element->text_string, element->shadow_color);
+      t.setAlpha(element->alpha);
       t.render(renderer, point.x + shadow.x, point.y + shadow.y);
     }
   }
@@ -4349,26 +4350,6 @@ bool Battle::setBackground(Sprite* background)
 //   return false;
 // }
 
-// void Battle::unsetActorsAttacking()
-// {
-//   for(auto& ally : friends->getMembers())
-//     if(ally)
-//       ally->setBFlag(BState::IS_ATTACKING, false);
-//   for(auto& foe : foes->getMembers())
-//     if(foe)
-//       foe->setBFlag(BState::IS_ATTACKING, false);
-// }
-
-// void Battle::unsetActorsSelecting()
-// {
-//   for(auto& ally : friends->getMembers())
-//     if(ally)
-//       ally->setBFlag(BState::IS_SELECTING, false);
-//   for(auto& foe : foes->getMembers())
-//     if(foe)
-//       foe->setBFlag(BState::IS_SELECTING, false);
-// }
-
 // bool Battle::updateTargetDefense()
 // {
 //   auto can_process = true;
@@ -4410,20 +4391,6 @@ bool Battle::setBackground(Sprite* background)
 //   return can_process;
 // }
 
-// /*
-//  * Description:
-//  *
-//  * Inputs:
-//  * Output:
-//  */
-// void Battle::setUserAttacking(Person* target)
-// {
-//   unsetActorsAttacking();
-
-//   if(target != nullptr)
-//     target->setBFlag(BState::IS_ATTACKING, true);
-// }
-
 void Battle::setNextTurnState()
 {
   /* Set the CURRENT_STATE to incomplete */
@@ -4452,97 +4419,6 @@ void Battle::setNextTurnState()
   }
 }
 
-//     /* If the Battle has been won, go to victory */
-//     if(outcome == OutcomeType::VICTORY)
-//     {
-//       setTurnState(TurnState::VICTORY);
-//       battleWon();
-//     }
-//     /* If the Battle has been lost, GAME OVER */
-//     if(outcome == OutcomeType::DEFEAT)
-//     {
-//       setTurnState(TurnState::LOSS);
-//       battleLost();
-//     }
-
-//     if(outcome == OutcomeType::ALLIES_RUN ||
-//        outcome == OutcomeType::ENEMIES_RUN)
-//     {
-//       setTurnState(TurnState::RUNNING);
-//       battleRun();
-//     }
-
-//     /* After the user selects actions, the enemy party may still need to
-//        select actions, or if not, order actions is called  */
-//     else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-//     {
-//       if(turn_mode == TurnMode::FRIENDS_FIRST)
-//       {
-//         setTurnState(TurnState::SELECT_ACTION_ENEMY);
-//         person_index = -1;
-
-//         if(anyUserSelection(false))
-//           selectEnemyActions();
-//         else
-//           setBattleFlag(CombatState::PHASE_DONE);
-//       }
-//     }
-
-//     /* After enemies select actions, the users may still need to select
-//     actios,
-//        or if not, order actions is called  */
-//     else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-//     {
-//       else if(turn_mode == TurnMode::ENEMIES_FIRST)
-//       {
-//         setTurnState(TurnState::SELECT_ACTION_ALLY);
-//         person_index = 1;
-
-//         if(anyUserSelection(true))
-//           selectUserActions();
-//         else
-//           setBattleFlag(CombatState::PHASE_DONE);
-//       }
-//     }
-
-//     /* After the actions are ordered, the actions are processed */
-//     /* After the actions are processed, Battle turn clean up occurs */
-//     else if(turn_state == TurnState::PROCESS_ACTIONS)
-//     {
-//       setTurnState(TurnState::CLEAN_UP);
-//       cleanUp();
-//     }
-
-//     /* After the end of the turn, loop restarts at general upkeep */
-//     else if(turn_state == TurnState::CLEAN_UP)
-//     {
-//       setTurnState(TurnState::GENERAL_UPKEEP);
-//     }
-//   }
-// }
-
-// // TODO [04-12-15] Conventions
-// bool Battle::setOutcome(OutcomeType new_outcome)
-// {
-//   if(outcome == OutcomeType::NONE)
-//   {
-
-//     outcome = new_outcome;
-//     return true;
-//   }
-
-//   return false;
-// }
-
-// /*
-//  * Description: General update-tick call for Battle. Sends the update call
-//  *              down to update ally selection, update enemy selection
-//  sections
-//  *              in those states of battle.
-//  *
-//  * Inputs: int32_t - the input cycle time of the battle.
-//  * Output: bool - false while not done
-//  */
 bool Battle::update(int32_t cycle_time)
 {
   time_elapsed += cycle_time;
@@ -4559,11 +4435,11 @@ bool Battle::update(int32_t cycle_time)
   if(getFlagCombat(CombatState::PHASE_DONE))
     setNextTurnState();
 
-  /* ------------------------ GENERAL UPKEEP --------------------------------
-   */
+  /* ----------------------------- BEGIN ------------------------------------ */
 
-  /* ---------------------------- UPKEEP  -----------------------------------
-   */
+  /* ------------------------ GENERAL UPKEEP -------------------------------- */
+
+  /* ---------------------------- UPKEEP  ----------------------------------- */
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     updateUserSelection();

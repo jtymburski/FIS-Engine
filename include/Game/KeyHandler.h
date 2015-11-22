@@ -30,7 +30,6 @@
 /* Key Map Structure */
 struct Key
 {
-public:
   /* Key constructor */
   Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled = true);
 
@@ -67,25 +66,26 @@ private:
   static const SDL_Keycode kMOVE_RIGHT_DEFAULT; /* Default moving right key */
   static const SDL_Keycode kMOVE_UP_DEFAULT;    /* Default moving up key */
   static const SDL_Keycode kMOVE_DOWN_DEFAULT;  /* Default moving down key */
-  static const SDL_Keycode kMENU_DEFAULT;      /* Default menu open key */
-  static const SDL_Keycode kACTION_DEFAULT;    /* Default action key */
-  static const SDL_Keycode kCANCEL_DEFAULT;    /* Default cancel/close key */
-  static const SDL_Keycode kRUN_DEFAULT;       /* Default run key */
-  static const SDL_Keycode kDEBUG_DEFAULT;     /* Default debug key */
+  static const SDL_Keycode kMENU_DEFAULT;       /* Default menu open key */
+  static const SDL_Keycode kACTION_DEFAULT;     /* Default action key */
+  static const SDL_Keycode kCANCEL_DEFAULT;     /* Default cancel/close key */
+  static const SDL_Keycode kRUN_DEFAULT;        /* Default run key */
+  static const SDL_Keycode kDEBUG_DEFAULT;      /* Default debug key */
+  static const SDL_Keycode kPAUSE_DEFAULT;      /* Default pause key */
 
   static const int32_t kMIN_HELD_TIME; /* Amount of time for key to be 'Held' */
-  static const bool    kMULTIPLE_MAPPINGS; /* Can GameKeys be multi-mapped? */
+  static const bool kMULTIPLE_MAPPINGS; /* Can GameKeys be multi-mapped? */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
   /* Prints out the information of of one Key */
   void printIndex(Key key);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Checks if a Certain Game key is in a 'held' state */
   bool isHeld(GameKey game_key);
@@ -122,12 +122,12 @@ public:
   void setEnabled(GameKey game_key, bool enabled = true);
   bool setEnabled(SDL_Keycode keycode, bool enabled = true);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC STATIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Method to return min-held time constant */
   static int32_t getMinHeldTime();
 };
 
-#endif //KEYHANDLER_H
+#endif // KEYHANDLER_H

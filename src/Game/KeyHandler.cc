@@ -30,29 +30,31 @@
  *         bool enabled - true if the Key is set to be useable by default
  */
 Key::Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled)
-    : game_key{new_key}
-    , keycode{new_keycode}
-    , depressed{false}
-    , enabled{enabled}
-    , time_depressed{0}
-{}
+    : game_key{new_key},
+      keycode{new_keycode},
+      depressed{false},
+      enabled{enabled},
+      time_depressed{0}
+{
+}
 
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
 
-const SDL_Keycode KeyHandler::kMOVE_LEFT_DEFAULT  = SDLK_LEFT;
+const SDL_Keycode KeyHandler::kMOVE_LEFT_DEFAULT = SDLK_LEFT;
 const SDL_Keycode KeyHandler::kMOVE_RIGHT_DEFAULT = SDLK_RIGHT;
-const SDL_Keycode KeyHandler::kMOVE_UP_DEFAULT    = SDLK_UP;
-const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT  = SDLK_DOWN;
-const SDL_Keycode KeyHandler::kMENU_DEFAULT      = SDLK_d;
-const SDL_Keycode KeyHandler::kACTION_DEFAULT    = SDLK_SPACE;
-const SDL_Keycode KeyHandler::kCANCEL_DEFAULT    = SDLK_ESCAPE;
-const SDL_Keycode KeyHandler::kRUN_DEFAULT       = SDLK_LSHIFT;
-const SDL_Keycode KeyHandler::kDEBUG_DEFAULT     = SDLK_f;
+const SDL_Keycode KeyHandler::kMOVE_UP_DEFAULT = SDLK_UP;
+const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT = SDLK_DOWN;
+const SDL_Keycode KeyHandler::kMENU_DEFAULT = SDLK_d;
+const SDL_Keycode KeyHandler::kACTION_DEFAULT = SDLK_SPACE;
+const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_ESCAPE;
+const SDL_Keycode KeyHandler::kRUN_DEFAULT = SDLK_LSHIFT;
+const SDL_Keycode KeyHandler::kDEBUG_DEFAULT = SDLK_f;
+const SDL_Keycode KeyHandler::kPAUSE_DEFAULT = SDLK_RCTRL;
 
-const bool    KeyHandler::kMULTIPLE_MAPPINGS = false;
-const int32_t KeyHandler::kMIN_HELD_TIME      = 1000;
+const bool KeyHandler::kMULTIPLE_MAPPINGS = false;
+const int32_t KeyHandler::kMIN_HELD_TIME = 1000;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -80,9 +82,10 @@ KeyHandler::KeyHandler()
  */
 void KeyHandler::printIndex(Key key)
 {
-  std::cout << "[Game: " << Helpers::gameKeyToStr(key.game_key) << "] [P.Key: "
-      << SDL_GetKeyName(key.keycode) << "] [Enabled? " << key.enabled
-      << "] [Time Depressed: " << key.time_depressed << "]" << std::endl;
+  std::cout << "[Game: " << Helpers::gameKeyToStr(key.game_key)
+            << "] [P.Key: " << SDL_GetKeyName(key.keycode) << "] [Enabled? "
+            << key.enabled << "] [Time Depressed: " << key.time_depressed << "]"
+            << std::endl;
 }
 
 /*=============================================================================
@@ -100,7 +103,7 @@ bool KeyHandler::isHeld(GameKey game_key)
 {
   auto& key = getKey(game_key);
 
-  if (key.time_depressed >= kMIN_HELD_TIME)
+  if(key.time_depressed >= kMIN_HELD_TIME)
     return true;
 
   return false;
@@ -118,7 +121,7 @@ bool KeyHandler::isHeld(SDL_Keycode keycode, bool* found)
 {
   auto& key = getKey(keycode, found);
 
-  if (*found && key.time_depressed >= kMIN_HELD_TIME)
+  if(*found && key.time_depressed >= kMIN_HELD_TIME)
     return true;
 
   return false;
@@ -150,7 +153,7 @@ bool KeyHandler::isDepressed(SDL_Keycode keycode, bool* found)
 {
   auto& key = getKey(keycode, found);
 
-  if (found)
+  if(found)
     return key.depressed;
 
   return false;
@@ -165,8 +168,8 @@ bool KeyHandler::isDepressed(SDL_Keycode keycode, bool* found)
  */
 bool KeyHandler::isEnabled(GameKey game_key)
 {
-  for (auto& element : keys)
-    if (element.game_key == game_key)
+  for(auto& element : keys)
+    if(element.game_key == game_key)
       return element.enabled;
 
   return false;
@@ -182,9 +185,9 @@ bool KeyHandler::isEnabled(GameKey game_key)
  */
 bool KeyHandler::isEnabled(SDL_Keycode keycode, bool* found)
 {
-  for (auto& element : keys)
+  for(auto& element : keys)
   {
-    if (element.keycode == keycode)
+    if(element.keycode == keycode)
     {
       *found = true;
 
@@ -203,8 +206,8 @@ bool KeyHandler::isEnabled(SDL_Keycode keycode, bool* found)
  */
 bool KeyHandler::isKeycodeMapped(SDL_Keycode keycode)
 {
-  for (auto& element : keys)
-    if (element.keycode == keycode)
+  for(auto& element : keys)
+    if(element.keycode == keycode)
       return true;
 
   return false;
@@ -221,15 +224,16 @@ void KeyHandler::loadDefaults()
 {
   keys.clear();
 
-  keys.push_back(Key(GameKey::MOVE_LEFT,   kMOVE_LEFT_DEFAULT));
-  keys.push_back(Key(GameKey::MOVE_RIGHT,  kMOVE_RIGHT_DEFAULT));
-  keys.push_back(Key(GameKey::MOVE_UP,     kMOVE_UP_DEFAULT));
-  keys.push_back(Key(GameKey::MOVE_DOWN,   kMOVE_DOWN_DEFAULT));
-  keys.push_back(Key(GameKey::MENU,   kMENU_DEFAULT));
+  keys.push_back(Key(GameKey::MOVE_LEFT, kMOVE_LEFT_DEFAULT));
+  keys.push_back(Key(GameKey::MOVE_RIGHT, kMOVE_RIGHT_DEFAULT));
+  keys.push_back(Key(GameKey::MOVE_UP, kMOVE_UP_DEFAULT));
+  keys.push_back(Key(GameKey::MOVE_DOWN, kMOVE_DOWN_DEFAULT));
+  keys.push_back(Key(GameKey::MENU, kMENU_DEFAULT));
   keys.push_back(Key(GameKey::ACTION, kACTION_DEFAULT));
   keys.push_back(Key(GameKey::CANCEL, kCANCEL_DEFAULT));
   keys.push_back(Key(GameKey::RUN, kRUN_DEFAULT));
-  keys.push_back(Key(GameKey::DEBUG,  kDEBUG_DEFAULT));
+  keys.push_back(Key(GameKey::DEBUG, kDEBUG_DEFAULT));
+  keys.push_back(Key(GameKey::PAUSE, kPAUSE_DEFAULT));
 }
 
 /*
@@ -245,26 +249,26 @@ void KeyHandler::print(bool only_depressed, bool only_held)
 {
   auto printed_once = false;
 
-  for (auto element : keys)
+  for(auto element : keys)
   {
-    if (only_depressed && element.depressed)
+    if(only_depressed && element.depressed)
     {
       printIndex(element);
       printed_once = true;
     }
-    else if (only_held && isHeld(element.game_key))
+    else if(only_held && isHeld(element.game_key))
     {
       printIndex(element);
       printed_once = true;
     }
-    else if (!only_depressed && !only_held)
+    else if(!only_depressed && !only_held)
     {
       printIndex(element);
       printed_once = true;
     }
   }
 
-  if (printed_once)
+  if(printed_once)
     std::cout << std::endl;
 }
 
@@ -281,15 +285,15 @@ bool KeyHandler::update(int32_t cycle_time)
   SDL_PumpEvents();
   auto state = SDL_GetKeyboardState(nullptr);
 
-  for (auto& element : keys)
+  for(auto& element : keys)
   {
-    if (state != nullptr)
+    if(state != nullptr)
     {
       /* Grab the SDL_Scancode matching the current element's Keycode */
       auto scan_code = SDL_GetScancodeFromKey(element.keycode);
 
       /* Determine if the state of the Keyboard if the scan code is depressed */
-      if (state[scan_code])
+      if(state[scan_code])
       {
         /* Assign the element to be a depressed state */
         element.depressed = true;
@@ -315,8 +319,8 @@ bool KeyHandler::update(int32_t cycle_time)
  */
 Key& KeyHandler::getKey(GameKey game_key)
 {
-  for (auto &element : keys)
-    if (element.game_key == game_key)
+  for(auto& element : keys)
+    if(element.game_key == game_key)
       return element;
 
   return keys.at(0);
@@ -332,9 +336,9 @@ Key& KeyHandler::getKey(GameKey game_key)
  */
 Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
 {
-  for (auto &element : keys)
+  for(auto& element : keys)
   {
-    if (element.keycode == keycode)
+    if(element.keycode == keycode)
     {
       *found = true;
       return element;
@@ -354,7 +358,7 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
  */
 bool KeyHandler::setKey(GameKey game_key, SDL_Keycode new_keycode)
 {
-  if (!isKeycodeMapped(new_keycode))
+  if(!isKeycodeMapped(new_keycode))
   {
     auto& key = getKey(game_key);
     key.keycode = new_keycode;
@@ -375,8 +379,8 @@ bool KeyHandler::setKey(GameKey game_key, SDL_Keycode new_keycode)
  */
 void KeyHandler::setEnabled(GameKey game_key, bool enabled)
 {
-  for (auto& element : keys)
-    if (element.game_key == game_key)
+  for(auto& element : keys)
+    if(element.game_key == game_key)
       element.enabled = enabled;
 }
 
@@ -390,9 +394,9 @@ void KeyHandler::setEnabled(GameKey game_key, bool enabled)
  */
 bool KeyHandler::setEnabled(SDL_Keycode keycode, bool enabled)
 {
-  for (auto& element : keys)
+  for(auto& element : keys)
   {
-    if (element.keycode == keycode)
+    if(element.keycode == keycode)
     {
       element.enabled = enabled;
 

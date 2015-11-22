@@ -376,6 +376,7 @@ enum class GameKey
   CANCEL,
   RUN,
   DEBUG,
+  PAUSE,
   NONE
 };
 

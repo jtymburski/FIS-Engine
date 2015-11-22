@@ -320,6 +320,7 @@ void BattleActor::updateSpriteFlashing(int32_t cycle_time)
       auto color = getFlashingColor(state_flashing.flashing_type);
       auto alpha = state_flashing.element->alpha;
 
+      //getActiveSprite()->setOpacity(alpha);
       getActiveSprite()->setColorBalance(Helpers::calcColorRed(color, alpha),
                                          Helpers::calcColorGreen(color, alpha),
                                          Helpers::calcColorBlue(color, alpha));

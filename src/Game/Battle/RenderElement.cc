@@ -37,6 +37,7 @@ RenderElement::RenderElement()
       text_string{""},
       time_fade_in{0},
       time_fade_out{0},
+      time_begin{0},
       time_left{0},
       alpha{0},
       fade_rate{0},
@@ -47,6 +48,7 @@ RenderElement::RenderElement()
       color{0, 0, 0, 0},
       shadow_color{0, 0, 0, 0},
       renderer{nullptr},
+      status{RenderStatus::DISPLAYING},
       target{nullptr},
       render_type{RenderType::NONE}
 {
@@ -117,8 +119,9 @@ void RenderElement::createAsActionText(std::string action_name)
   text_string = action_name;
   color = {0, 0, 0, 255};
   setShadow({kACTION_COLOR_R, 0, 0, 255}, kACTION_SHADOW, kACTION_SHADOW);
-  setTimes(700, 100, 100);
+  setTimes(1000, 250, 250);
   render_type = RenderType::ACTION_TEXT;
+  status = initialStatusFade();
 
   if(element_font && renderer)
   {
@@ -136,7 +139,7 @@ void RenderElement::createAsDamageText(std::string text, DamageType type,
   text_string = text;
   color = {0, 0, 0, 255};
   setShadow(colorFromDamageType(type), kDAMAGE_SHADOW, kDAMAGE_SHADOW - 1);
-  setTimes(475, 65, 100);
+  setTimes(650, 300, 300);
   status = initialStatusFade();
   render_type = RenderType::DAMAGE_TEXT;
 
@@ -160,7 +163,6 @@ void RenderElement::createAsDamageValue(int32_t amount, DamageType type,
 {
   text_string = std::to_string(amount);
   createAsDamageText(text_string, type, sc_height, x, y);
-  setTimes(650, 115, 155);
   status = initialStatusFade();
 
   render_type = RenderType::DAMAGE_VALUE;
@@ -170,7 +172,7 @@ void RenderElement::createAsRegenValue(int32_t amount, DamageType type,
                                        int32_t sc_height, int32_t x, int32_t y)
 {
   createAsDamageText(std::to_string(amount), type, sc_height, x, y);
-  setTimes(650, 150, 150);
+  setTimes(650, 300, 300);
   setAcceleration(0.001, 0.005);
   setVelocity(0.000, -0.350);
   render_type = RenderType::DAMAGE_VALUE;
@@ -197,9 +199,10 @@ void RenderElement::setShadow(SDL_Color shadow_color, int32_t offset_x,
   render_type = RenderType::DAMAGE_VALUE;
 }
 
-bool RenderElement::setTimes(uint32_t time_begin, uint32_t time_fade_in,
-                             uint32_t time_fade_out)
+bool RenderElement::setTimes(int32_t time_begin, int32_t time_fade_in,
+                             int32_t time_fade_out)
 {
+
   auto valid = false;
 
   if(time_fade_in > 0 && time_fade_out == 0)
@@ -264,7 +267,7 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
   {
     if((time_begin - time_left) >= time_fade_in)
       status = RenderStatus::DISPLAYING;
-    if((time_left < time_fade_out))
+    if(time_left < time_fade_out)
       status = RenderStatus::FADING_OUT;
 
     velocity.x += (acceleration.x * cycle_time);
@@ -303,7 +306,7 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
     {
       alpha = color.a;
     }
-    else if(status == RenderStatus::FADING_OUT)
+    else if(status == RenderStatus::FADING_OUT && time_fade_out != 0)
     {
       float delta_a = color.a * 1.0 / time_fade_out * cycle_time;
       delta_a = std::max(1.0, (double)delta_a);
@@ -311,7 +314,7 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
       if(delta_a > alpha)
         alpha = 0;
       else if(alpha - delta_a >= 0)
-        alpha = alpha - delta_a;
+        alpha -= delta_a;
     }
   }
 }

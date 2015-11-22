@@ -154,8 +154,8 @@ public:
   void setShadow(SDL_Color shadow_color, int32_t offset_x, int32_t offset_y);
 
   /* Assigns the time values (life time, fade in) for the elment */
-  bool setTimes(uint32_t time_begin, uint32_t time_fade_in = 0,
-                uint32_t time_fade_out = 0);
+  bool setTimes(int32_t time_begin, int32_t time_fade_in = 0,
+                int32_t time_fade_out = 0);
 
   /* Assigns velocity floatinate coordinate point */
   void setVelocity(float velocity_x, float velocity_y);

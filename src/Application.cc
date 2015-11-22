@@ -11,7 +11,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const std::string Application::kLOGO_ICON =
-                                       "sprites/General/univ-logo-small.png";
+    "sprites/General/univ-logo-small.png";
 const std::string Application::kPATH = "maps/Univursa.ugv";
 const bool Application::kPATH_ENCRYPTED = false;
 const int Application::kPATH_MAP = 0;
@@ -61,7 +61,7 @@ Application::Application(std::string base_path, std::string app_path,
   title_screen.setSoundHandler(&sound_handler);
 
   /* Sets the current mode - paused mode */
-  //changeMode(PAUSED);
+  // changeMode(PAUSED);
   mode = NONE;
   mode_next = NONE;
   changeMode(PAUSED);
@@ -96,7 +96,7 @@ bool Application::changeMode(AppMode mode)
       Sound::resumeAllChannels();
 
     mode_next = mode;
-    //this->mode = mode;
+    // this->mode = mode;
 
     /* Changes to execute on the views opening */
     if(mode == TITLESCREEN)
@@ -105,7 +105,7 @@ bool Application::changeMode(AppMode mode)
       game_handler.enableView(true);
     else if(mode == PAUSED)
       Sound::pauseAllChannels();
-    //else if(mode == LOADING)
+    // else if(mode == LOADING)
     //  displayLoadingFrame();
 
     /* Update views */
@@ -140,6 +140,7 @@ void Application::handleEvents()
     {
       changeMode(EXIT);
     }
+
     // PAUSE ON LOSS FOCUS (TOO WEIRD)
     // else if (event.type == SDL_WINDOWEVENT && event.window.event ==
     //     SDL_WINDOWEVENT_LEAVE)
@@ -158,17 +159,17 @@ void Application::handleEvents()
       SDL_KeyboardEvent press_event = event.key;
 
       /* -- Audio level decrease -- */
-      if (press_event.keysym.sym == SDLK_F3)
+      if(press_event.keysym.sym == SDLK_F3)
       {
-        //system_options->setAudioLevel(system_options->getAudioLevel() - 15);
+        // system_options->setAudioLevel(system_options->getAudioLevel() - 15);
         system_options->setMusicLevel(system_options->getMusicLevel() - 10);
         std::cout << "Music Level: " << system_options->getMusicLevel()
                   << std::endl;
       }
       /* -- Audio level increase -- */
-      else if (press_event.keysym.sym == SDLK_F4)
+      else if(press_event.keysym.sym == SDLK_F4)
       {
-        //system_options->setAudioLevel(system_options->getAudioLevel() + 15);
+        // system_options->setAudioLevel(system_options->getAudioLevel() + 15);
         system_options->setMusicLevel(system_options->getMusicLevel() + 10);
         std::cout << "Music Level: " << system_options->getMusicLevel()
                   << std::endl;
@@ -192,7 +193,7 @@ void Application::handleEvents()
       /* -- Pause toggle -- */
       else if(press_event.keysym.sym == SDLK_F9)
       {
-        if (mode == PAUSED)
+        if(mode == PAUSED)
         {
           revertMode();
         }
@@ -230,7 +231,7 @@ void Application::handleEvents()
         game_handler.keyDownEvent(press_event);
 
         /* If the key event returns true, exit the game view */
-        //if(game_handler.keyDownEvent(press_event))
+        // if(game_handler.keyDownEvent(press_event))
         //  changeMode(TITLESCREEN);
       }
       else if(mode == TESTBATTLE)
@@ -252,19 +253,16 @@ void Application::handleEvents()
       else if(mode == TESTBATTLE)
         test_battle.keyUpEvent(release_event);
     }
-    else if (event.type == SDL_WINDOWEVENT)
+    else if(event.type == SDL_WINDOWEVENT)
     {
-      if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+      if(event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
       {
-
       }
-      else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+      else if(event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
       {
-
       }
-      else if (event.window.event == SDL_WINDOWEVENT_MOVED)
+      else if(event.window.event == SDL_WINDOWEVENT_MOVED)
       {
-
       }
     }
   }
@@ -288,8 +286,9 @@ bool Application::load()
   /* If file open was successful, move forward */
   if(success)
   {
-    std::cout << "--" << std::endl << "Application Load: " << fh.getDate()
-              << std::endl << "--" << std::endl;
+    std::cout << "--" << std::endl
+              << "Application Load: " << fh.getDate() << std::endl
+              << "--" << std::endl;
 
     /* Display loading frame */
     displayLoadingFrame();
@@ -355,7 +354,7 @@ void Application::render(uint32_t cycle_time)
   {
     cycle_time = cycle_time; // TODO: DO OPTIONS EXECUTION
   }
-  else if (mode == PAUSED)
+  else if(mode == PAUSED)
   {
     cycle_time = cycle_time;
   }
@@ -373,7 +372,7 @@ bool Application::revertMode()
 void Application::unload()
 {
   /* Change mode back to title screen */
-  //changeMode(TITLESCREEN);
+  // changeMode(TITLESCREEN);
 
   /* Clean up game */
   game_handler.unload();
@@ -387,7 +386,7 @@ int Application::updateCycleTime(int cycle_time)
 {
   // uint8_t update_step = kUPDATE_RATE / 2;
   uint8_t update_time = 0;
-  //std::cout << "Cycle time: " << cycle_time << std::endl;
+  // std::cout << "Cycle time: " << cycle_time << std::endl;
 
   /* Parse the cycle time and find the category */
   if(cycle_time < 0)
@@ -400,26 +399,26 @@ int Application::updateCycleTime(int cycle_time)
   }
   else
   {
-    update_time = ((cycle_time + kUPDATE_RATE / 2) / kUPDATE_RATE)
-                                                   * kUPDATE_RATE;
+    update_time =
+        ((cycle_time + kUPDATE_RATE / 2) / kUPDATE_RATE) * kUPDATE_RATE;
   }
 
   // /* Check if the update time is different */
   // if(update_time == update_rate)
   // {
-    // if(update_sync > 0)
-      // update_sync--;
+  // if(update_sync > 0)
+  // update_sync--;
   // }
   // else
   // {
-    // update_sync++;
+  // update_sync++;
   // }
 
   // /* Determine if an update is required */
   // if(update_sync > kUPDATE_CHANGE_LIMIT)
   // {
-    // update_rate = update_time;
-    // update_sync = 0;
+  // update_rate = update_time;
+  // update_sync = 0;
   // }
 
   return update_time;
@@ -508,7 +507,7 @@ bool Application::updateViews(int cycle_time)
 /* Provides initialization of the SDL engine. Required for running. */
 bool Application::initialize()
 {
-	bool success = !isInitialized();
+  bool success = !isInitialized();
 
   /* Only proceed if successful */
   if(success)
@@ -520,8 +519,7 @@ bool Application::initialize()
     window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED,
                               system_options->getScreenWidth(),
-                              system_options->getScreenHeight(),
-                              flags);
+                              system_options->getScreenHeight(), flags);
 
     /* If failed, create error */
     if(window == NULL)
@@ -552,22 +550,21 @@ bool Application::initialize()
 #ifdef _WIN32_OPENGL
     /* Force OpenGL to be used as the rendering driver if there are more than
        one rendering drivers available */
-    if (SDL_GetNumRenderDrivers() > 1)
+    if(SDL_GetNumRenderDrivers() > 1)
     {
       std::string open_gl = "opengl";
 
       /* Loop through each driver, comparing its value to "opengl" */
-      for (int32_t i = 0;
-           i < SDL_GetNumRenderDrivers() && driver_index == -1;
-           i++)
+      for(int32_t i = 0; i < SDL_GetNumRenderDrivers() && driver_index == -1;
+          i++)
       {
         auto renderer_info = new SDL_RendererInfo;
         auto error_index = SDL_GetRenderDriverInfo(i, renderer_info);
 
-        if (error_index > -1 && renderer_info != nullptr)
+        if(error_index > -1 && renderer_info != nullptr)
         {
           std::cout << "Checking Driver: " << renderer_info->name << std::endl;
-          if (std::strcmp(open_gl.c_str(), renderer_info->name) == 0)
+          if(std::strcmp(open_gl.c_str(), renderer_info->name) == 0)
             driver_index = i;
         }
         else
@@ -583,20 +580,20 @@ bool Application::initialize()
       renderer = SDL_CreateRenderer(window, driver_index, flags);
 
       /* Print out the chosen rendering driver info */
-      if (renderer != nullptr)
+      if(renderer != nullptr)
       {
         auto renderer_info = new SDL_RendererInfo;
         SDL_GetRenderDriverInfo(0, renderer_info);
         auto error_index = SDL_GetRendererInfo(renderer, renderer_info);
 
-        if (error_index > -1 && renderer_info != nullptr)
+        if(error_index > -1 && renderer_info != nullptr)
           std::cout << "Rendering Driver: " << renderer_info->name << std::endl;
         else
-          std::cerr<<"[ERROR] Unable to get rendering driver info."<< std::endl;
+          std::cerr << "[ERROR] Unable to get rendering driver info."
+                    << std::endl;
 
         delete renderer_info;
       }
-
     }
     else
     {
@@ -625,7 +622,7 @@ bool Application::initialize()
       Helpers::createMaskBlack(renderer);
       Helpers::createMaskWhite(renderer);
       load_frame.setTexture(system_options->getBasePath() +
-                            "sprites/General/loading.png",
+                                "sprites/General/loading.png",
                             renderer);
 
       /* Set render color */
@@ -637,15 +634,14 @@ bool Application::initialize()
   if(!system_options->confirmFontSetup())
   {
     std::cerr << "[ERROR] Could not create font. This is either a library "
-              << "issue or the font files are missing or invalid."
-              << std::endl;
+              << "issue or the font files are missing or invalid." << std::endl;
     success = false;
   }
 
   /* If successful, attempt final load sequence */
   if(success)
   {
-    //success &= load();
+    // success &= load();
 
     /* Set the title screen background - TODO: Encapsulate in load?? */
     title_screen.setBackground("sprites/Title/old_title.png", renderer);
@@ -654,7 +650,7 @@ bool Application::initialize()
     {
       initialized = true;
       changeMode(LOADING);
-      //game_handler.setPath(app_path, app_map, false);
+      // game_handler.setPath(app_path, app_map, false);
     }
   }
 
@@ -662,7 +658,7 @@ bool Application::initialize()
   if(!isInitialized())
     uninitialize();
 
-	return success;
+  return success;
 }
 
 /* Returns the status if the application libraries have been initialized */
@@ -707,10 +703,10 @@ bool Application::run(bool skip_title)
         ticks = new_ticks;
       }
 
-      //std::cout << cycle_time << std::endl;
-      //cycle_time = new_ticks - ticks;
-      //ticks = new_ticks;
-      //if(system_options->isVsyncEnabled())
+      // std::cout << cycle_time << std::endl;
+      // cycle_time = new_ticks - ticks;
+      // ticks = new_ticks;
+      // if(system_options->isVsyncEnabled())
       //  cycle_time = updateCycleTime(cycle_time);
 
       /* Handle events - key press, window events, and such */
@@ -762,7 +758,7 @@ void Application::setPath(std::string path, int level, bool skip_title)
     if(app_path != path)
     {
       /* Unload internal resources */
-      //unload();
+      // unload();
 
       /* Set new path */
       app_path = path;
@@ -770,20 +766,20 @@ void Application::setPath(std::string path, int level, bool skip_title)
       changeMode(LOADING);
 
       /* Load */
-      //load();
+      // load();
     }
     /* Otherwise, only level update */
     else if(app_map != level)
     {
       /* Unload game sub data */
-      //game_handler.unloadSub();
+      // game_handler.unloadSub();
 
       /* Set the new level */
       app_map = level;
       game_handler.setPath(app_path, app_map, false);
 
       /* If mode is already in game, update the map accordingly */
-      //if(mode == GAME)
+      // if(mode == GAME)
       //{
       //  if(!game_handler.isLoadedCore())
       //    game_handler.load(renderer, true);

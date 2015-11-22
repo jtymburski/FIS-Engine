@@ -432,7 +432,7 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 }
 
 /* Trigger IO event, based on the IO object and interaction state */
-void Game::eventTriggerIO(MapInteractiveObject* io, int interaction_state, 
+void Game::eventTriggerIO(MapInteractiveObject* io, int interaction_state,
                           MapPerson* initiator)
 {
   if(io != nullptr)
@@ -446,10 +446,10 @@ void Game::eventTriggerIO(MapInteractiveObject* io, int interaction_state,
     io->handlerTrigger(interaction_state, initiator);
   }
 }
-  
+
 /* Unlock events, based on parameter information */
-void Game::eventUnlockIO(int io_id, UnlockIOMode mode, int state_num, 
-                         UnlockIOEvent mode_events, UnlockView mode_view, 
+void Game::eventUnlockIO(int io_id, UnlockIOMode mode, int state_num,
+                         UnlockIOEvent mode_events, UnlockView mode_view,
                          int view_time)
 {
   map_ctrl.unlockIO(io_id, mode, state_num, mode_events, mode_view, view_time);
@@ -462,8 +462,8 @@ void Game::eventUnlockThing(int thing_id, UnlockView mode_view, int view_time)
 }
 
 /* Unlock events, based on parameter information */
-void Game::eventUnlockTile(int section_id, int tile_x, int tile_y, 
-                           UnlockTileMode mode, UnlockView mode_view, 
+void Game::eventUnlockTile(int section_id, int tile_x, int tile_y,
+                           UnlockTileMode mode, UnlockView mode_view,
                            int view_time)
 {
   map_ctrl.unlockTile(section_id, tile_x, tile_y, mode, mode_view, view_time);
@@ -746,7 +746,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
 
   return success;
 }
-  
+
 /* Parse lock and attempt unlock */
 bool Game::parseLock(Locked& lock_struct)
 {
@@ -1013,7 +1013,7 @@ void Game::removeSkillSets()
     delete(*it);
   list_set.clear();
 }
-  
+
 /* Update mode */
 void Game::updateMode(int cycle_time)
 {
@@ -1265,7 +1265,12 @@ SkillSet* Game::getSkillSet(const int32_t& index, const bool& by_id)
 
   return nullptr;
 }
-  
+
+EventHandler& Game::getHandler()
+{
+  return event_handler;
+}
+
 /* Get the game mode */
 Game::GameMode Game::getMode()
 {
@@ -1540,6 +1545,8 @@ bool Game::update(int32_t cycle_time)
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
 
+  event_handler.getKeyHandler().print(true);
+
   /* Mode next handling */
   updateMode(cycle_time);
 
@@ -1556,7 +1563,7 @@ bool Game::update(int32_t cycle_time)
       battle_ctrl->stopBattle();
       changeMode(MAP);
     }
-    else
+    else if(!event_handler.getKeyHandler().isDepressed(GameKey::PAUSE))
     {
       return battle_ctrl->update(cycle_time);
     }

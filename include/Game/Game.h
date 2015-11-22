@@ -229,6 +229,9 @@ public:
   Skill* getSkill(const int32_t &index, const bool &by_id = true);
   SkillSet* getSkillSet(const int32_t &index, const bool &by_id = true);
 
+  /* Gets the handler */
+  EventHandler& getHandler();
+
   /* Get the game mode */
   GameMode getMode();
 
