@@ -189,6 +189,150 @@ Battle::~Battle()
  * PRIVATE FUNCTIONS - Battle Operations
  *============================================================================*/
 
+void Battle::actionStateBegin()
+{
+  event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
+  event->action_state = ActionState::SLIDE_IN;
+  delay = 250;
+}
+
+void Battle::actionStateSlideIn()
+{
+  /* Create the fading-in action text */
+  auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
+  auto element = new RenderElement(renderer, action_font);
+
+  element->createAsActionText(event->getActionName());
+  render_elements.push_back(element);
+  event->action_state = ActionState::FADE_IN_TEXT;
+  delay = 350;
+}
+
+void Battle::actionStateFadeInText()
+{
+  if(event->actor->getStateActionFrame() == SpriteState::SLID_IN)
+  {
+    event->actor->setStateActionFrame(SpriteState::SLIDING_OUT);
+    event->action_state = ActionState::SLIDE_OUT;
+  }
+
+  delay = 350;
+}
+
+void Battle::actionStateSlideOut()
+{
+  if(event->actor->getFlag(ActorState::ALLY))
+    event->actor->setActiveSprite(ActiveSprite::ACTION);
+
+  event->action_state = ActionState::SWITCH_SPRITE;
+  delay = 250;
+}
+
+void Battle::actionStateSwitchSprite()
+{
+  auto skill_hit_status = event->doesSkillHit();
+  event->action_state = ActionState::ACTION_START;
+
+  if(skill_hit_status == SkillHitStatus::HIT)
+    processEventSkill();
+  else
+    event->action_state = ActionState::SKILL_MISS;
+
+  delay = 200;
+}
+
+/* Create the fading-in action text */
+void Battle::actionStateSkillMiss()
+{
+  auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
+  auto element = new RenderElement(renderer, action_font);
+  auto action_text = event->actor->getBasePerson()->getName() + " Missed";
+  element->createAsActionText(action_text);
+  render_elements.push_back(element);
+  event->action_state = ActionState::DONE;
+}
+
+void Battle::actionStateActionStart()
+{
+  bool done = true;
+
+  for(auto& outcome : event->actor_outcomes)
+  {
+    if(outcome.actor_outcome_state == ActionState::ACTION_MISS)
+      outcomeStateActionMiss(outcome);
+    else if(outcome.actor_outcome_state == ActionState::PLEP)
+      outcomeStatePlep(outcome);
+    else if(outcome.actor_outcome_state == ActionState::DAMAGE_VALUE)
+      outcomeStateDamageValue(outcome);
+    else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
+      outcomeStateSpriteFlash(outcome);
+    else if(outcome.actor_outcome_state == ActionState::ACTION_END)
+      outcomeStateActionEnd(outcome);
+
+    done &= outcome.actor_outcome_state == ActionState::ACTION_END;
+
+    if(done)
+    {
+      if(event->setNextAction())
+        event->action_state = ActionState::ACTION_START;
+      else
+        event->action_state = ActionState::DONE;
+    }
+  }
+}
+
+void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
+{
+  auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+  auto element = new RenderElement(renderer, damage_font);
+
+  element->createAsDamageText("Miss", DamageType::BASE,
+                              config->getScreenHeight(),
+                              getActorX(event->actor), getActorY(event->actor));
+  render_elements.push_back(element);
+  delay = 300;
+  outcome.actor_outcome_state = ActionState::ACTION_END;
+}
+
+void Battle::outcomeStatePlep(ActorOutcome& outcome)
+{
+  auto animation = event->event_skill->skill->getAnimation();
+  auto actor_x = getActorX(outcome.actor);
+  auto actor_y = getActorY(outcome.actor);
+  auto element = new RenderElement(renderer, animation, 1, actor_x, actor_y);
+
+  render_elements.push_back(element);
+  delay = 150;
+  outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+}
+
+void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
+{
+  auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+  auto element = new RenderElement(renderer, damage_font);
+
+  element->createAsDamageValue(
+      outcome.damage, DamageType::BASE, config->getScreenHeight(),
+      getActorX(outcome.actor), getActorY(outcome.actor));
+
+  render_elements.push_back(element);
+  delay = 300;
+  outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
+}
+
+void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
+{
+  outcome.actor->dealDamage(outcome.damage);
+  outcome.actor->startFlashing(FlashingType::DAMAGE, 500);
+  delay = 1000;
+  outcome.actor_outcome_state = ActionState::ACTION_END;
+}
+
+void Battle::outcomeStateActionEnd(ActorOutcome& outcome)
+{
+  outcome.actor->endFlashing();
+}
+
 // ALPHA
 // Constructs AI
 void Battle::aiBuild()
@@ -464,128 +608,19 @@ void Battle::updateEvent()
   if(event->action_type == ActionType::SKILL)
   {
     if(event->action_state == ActionState::BEGIN)
-    {
-      event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
-      event->action_state = ActionState::SLIDE_IN;
-      delay = 250;
-    }
+      actionStateBegin();
     else if(event->action_state == ActionState::SLIDE_IN)
-    {
-      /* Create the fading-in action text */
-      auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
-      auto element = new RenderElement(renderer, action_font);
-
-      element->createAsActionText(event->getActionName());
-      render_elements.push_back(element);
-      event->action_state = ActionState::FADE_IN_TEXT;
-      delay = 350;
-    }
+      actionStateSlideIn();
     else if(event->action_state == ActionState::FADE_IN_TEXT)
-    {
-      if(event->actor->getStateActionFrame() == SpriteState::SLID_IN)
-      {
-        event->actor->setStateActionFrame(SpriteState::SLIDING_OUT);
-        event->action_state = ActionState::SLIDE_OUT;
-      }
-
-      delay = 350;
-    }
+      actionStateFadeInText();
     else if(event->action_state == ActionState::SLIDE_OUT)
-    {
-      if(event->actor->getFlag(ActorState::ALLY))
-        event->actor->setActiveSprite(ActiveSprite::ACTION);
-
-      event->action_state = ActionState::SWITCH_SPRITE;
-      delay = 250;
-    }
+      actionStateSlideOut();
     else if(event->action_state == ActionState::SWITCH_SPRITE)
-    {
-      auto skill_hit_status = event->doesSkillHit();
-      event->action_state = ActionState::ACTION_START;
-
-      if(skill_hit_status == SkillHitStatus::HIT)
-        processEventSkill();
-      else
-        event->action_state = ActionState::SKILL_MISS;
-
-      delay = 200;
-    }
+      actionStateSwitchSprite();
     else if(event->action_state == ActionState::SKILL_MISS)
-    {
-      /* Create the fading-in action text */
-      auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
-      auto element = new RenderElement(renderer, action_font);
-      auto action_text = event->actor->getBasePerson()->getName() + " Missed";
-      element->createAsActionText(action_text);
-      render_elements.push_back(element);
-      event->action_state = ActionState::DONE;
-    }
+      actionStateSkillMiss();
     else if(event->action_state == ActionState::ACTION_START)
-    {
-      bool done = true;
-
-      for(auto& outcome : event->actor_outcomes)
-      {
-        if(outcome.actor_outcome_state == ActionState::ACTION_MISS)
-        {
-          auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
-          auto element = new RenderElement(renderer, damage_font);
-
-          element->createAsDamageText(
-              "Miss", DamageType::BASE, config->getScreenHeight(),
-              getActorX(event->actor), getActorY(event->actor));
-          render_elements.push_back(element);
-          outcome.actor_outcome_state = ActionState::ACTION_END;
-
-          delay = 350;
-        }
-        else if(outcome.actor_outcome_state == ActionState::PLEP)
-        {
-          render_elements.push_back(new RenderElement(
-              renderer, event->event_skill->skill->getAnimation(), 1,
-              getActorX(outcome.actor), getActorY(outcome.actor)));
-          delay = 150;
-
-          outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
-        }
-        else if(outcome.actor_outcome_state == ActionState::DAMAGE_VALUE)
-        {
-          auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
-          auto element = new RenderElement(renderer, damage_font);
-
-          element->createAsDamageValue(
-              outcome.damage, DamageType::BASE, config->getScreenHeight(),
-              getActorX(outcome.actor), getActorY(outcome.actor));
-
-          render_elements.push_back(element);
-          outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
-          delay = 300;
-        }
-        else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
-        {
-          std::cout << "Dealing " << outcome.damage << "!" << std::endl;
-          outcome.actor->dealDamage(outcome.damage);
-          outcome.actor->startFlashing(FlashingType::DAMAGE, 500);
-          outcome.actor_outcome_state = ActionState::ACTION_END;
-          delay = 1000;
-        }
-        else if(outcome.actor_outcome_state == ActionState::ACTION_END)
-        {
-          outcome.actor->endFlashing();
-        }
-
-        done &= outcome.actor_outcome_state == ActionState::ACTION_END;
-
-        if(done)
-        {
-          if(event->setNextAction())
-            event->action_state = ActionState::ACTION_START;
-          else
-            event->action_state = ActionState::DONE;
-        }
-      }
-    }
-
+      actionStateActionStart();
     else if(event->action_state == ActionState::ACTION_END)
     {
     }
@@ -1410,50 +1445,15 @@ bool Battle::renderElements()
   for(auto& element : render_elements)
   {
     assert(element);
+    auto ty = element->render_type;
 
-    // auto alpha = 255;
-
-    if(element->render_type == RenderType::ACTION_TEXT ||
-       element->render_type == RenderType::DAMAGE_VALUE)
-    {
+    if(ty == RenderType::ACTION_TEXT || ty == RenderType::DAMAGE_VALUE)
       renderElementText(element);
-    }
-    else if(element->render_type == RenderType::RGB_OVERLAY)
-    {
+    else if(ty == RenderType::RGB_OVERLAY)
       renderElementRGBOverlay(element);
-    }
-    else if(element->render_type == RenderType::PLEP)
-    {
+    else if(ty == RenderType::PLEP)
       renderElementPlep(element);
-    }
   }
-
-  // TODO - How to render deathimations?
-  //   /* Render any death animations below the menu */
-  //   for(auto &element : render_elements)
-  //   {
-  //     if(element && element->getType() == RenderType::RGB_SPRITE_DEATH)
-  //     {
-  //       auto death_sprite = element->getSprite();
-  //       auto flasher      = element->getFlasher();
-
-  //       if(death_sprite && flasher)
-  //       {
-  //         if(element->getAlpha() >= kPERSON_KO_ALPHA)
-  //           death_sprite->setOpacity(element->getAlpha());
-  //         else
-  //           death_sprite->setOpacity(kPERSON_KO_ALPHA);
-
-  //         death_sprite->setColorBalance(element->calcColorRed(),
-  //                                       element->calcColorGreen(),
-  //                                       element->calcColorBlue());
-
-  //         death_sprite->render(renderer, element->getX(),
-  //         element->getY());
-  //       }
-  //     }
-  //   }
-  // }
 
   return false;
 }

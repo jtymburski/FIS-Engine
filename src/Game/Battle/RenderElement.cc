@@ -119,7 +119,7 @@ void RenderElement::createAsActionText(std::string action_name)
   text_string = action_name;
   color = {0, 0, 0, 255};
   setShadow({kACTION_COLOR_R, 0, 0, 255}, kACTION_SHADOW, kACTION_SHADOW);
-  setTimes(1000, 250, 250);
+  setTimes(1000, 150, 150);
   render_type = RenderType::ACTION_TEXT;
   status = initialStatusFade();
 

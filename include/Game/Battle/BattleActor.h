@@ -80,7 +80,7 @@ enum class FlashingType
   POISON
 };
 
-    enum class SelectionState
+enum class SelectionState
 {
   NOT_SELECTED,
   SELECTING,
@@ -104,15 +104,19 @@ enum class SpriteState
   CYCLING_FADE,
   RUNNING,
   BOBBING,
-  FLASHING
+  FLASHING,
+  KOING,
+  DYING,
+  KO_ED,
+  DEAD
 };
 
 enum class GuardingState
 {
-  NONE,      /* This person is not guarding nor being guarded or shielded */
+  NONE, /* This person is not guarding nor being guarded or shielded */
   DEFENDING, /* This person is defending */
-  GUARDING,  /* This person is guarding another person presently */
-  GUARDED,   /* This person is being guarded by another person */
+  GUARDING, /* This person is guarding another person presently */
+  GUARDED, /* This person is being guarded by another person */
   GUARDED_DEFENDING /* This person is defending & being guarded */
 };
 

@@ -220,6 +220,22 @@ public:
    * PRIVATE FUNCTIONS - Battle Operations
    *============================================================================*/
 private:
+  /* Organizational methods for ActionStates of the outer BattleEvent loop */
+  void actionStateBegin();
+  void actionStateSlideIn();
+  void actionStateFadeInText();
+  void actionStateSlideOut();
+  void actionStateSwitchSprite();
+  void actionStateSkillMiss();
+  void actionStateActionStart();
+
+  /* Organizational methods for ActionStates of the inner BE outcome loop */
+  void outcomeStateActionMiss(ActorOutcome& outcome);
+  void outcomeStatePlep(ActorOutcome& outcome);
+  void outcomeStateDamageValue(ActorOutcome& outcome);
+  void outcomeStateSpriteFlash(ActorOutcome& outcome);
+  void outcomeStateActionEnd(ActorOutcome& outcome);
+
   /* Constructs AI Modules for the Battle */
   void aiBuild();
 
