@@ -92,10 +92,11 @@ void Buffer::addItem(BattleActor* user, BattleItem* used_item,
 }
 
 /* Adds a Pass event to the Battle */
-void Buffer::addPass(BattleActor* user)
+void Buffer::addPass(BattleActor* user, int32_t initial_turn)
 {
   BufferAction pass_action;
   pass_action.user = user;
+  pass_action.initial_turn = initial_turn;
   pass_action.type = ActionType::PASS;
   action_buffer.push_back(pass_action);
 }
@@ -316,7 +317,7 @@ bool Buffer::setNext()
   {
     index++;
 
-    if(index < action_buffer.size() - 1)
+    if(index < action_buffer.size())
       return true;
   }
 

@@ -1052,7 +1052,6 @@ std::vector<BattleActor*> BattleMenu::getTargetsHovered()
   return hovered_targets;
 }
 
-
 void BattleMenu::unsetHoverTargets()
 {
   auto selectable_targets = getSelectableTargets();
@@ -1345,11 +1344,18 @@ void BattleMenu::keyDownSelect()
 {
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
   {
-    if(element_index < getMaxIndex())
+    if(element_index <= getMaxIndex())
       selected_action_type = valid_action_types.at(element_index);
 
-    menu_layer = BattleMenuLayer::ACTION_SELECTION;
-    element_index = validFirst();
+    if(selected_action_type == ActionType::PASS)
+    {
+      setFlag(BattleMenuState::SELECTION_COMPLETE);
+    }
+    else if(selected_action_type != ActionType::NONE)
+    {
+      menu_layer = BattleMenuLayer::ACTION_SELECTION;
+      element_index = validFirst();
+    }
   }
   else if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {

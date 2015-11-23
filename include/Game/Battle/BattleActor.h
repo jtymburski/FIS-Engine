@@ -77,7 +77,8 @@ enum class FlashingType
 {
   NONE,
   DAMAGE,
-  POISON
+  POISON,
+  KOING
 };
 
 enum class SelectionState
@@ -107,7 +108,7 @@ enum class SpriteState
   FLASHING,
   KOING,
   DYING,
-  KO_ED,
+  KOED,
   DEAD
 };
 
@@ -238,9 +239,11 @@ private:
   int32_t dialog_y;
 
   /* ------------ Constants --------------- */
+  static const uint8_t kACTOR_KO_ALPHA;
   static const float kVELOCITY_X;
   static const SDL_Color kFLASHING_DAMAGE_COLOR;
   static const SDL_Color kFLASHING_POISON_COLOR;
+  static const SDL_Color kFLASHING_KO_COLOR;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -267,7 +270,9 @@ private:
 
   /* Updates the action element [sliding in/out] */
   void updateActionElement(int32_t cycle_time);
+  void updateSpriteBobbing(int32_t cycle_time);
   void updateSpriteFlashing(int32_t cycle_time);
+  void updateSpriteKO(int32_t cycle_time);
   void updateStats(int32_t cycle_time);
 
   /*=============================================================================
@@ -296,7 +301,7 @@ public:
   bool removeAilment(Ailment* remove_ailment);
 
   /* Assigns the actor's active sprite to start flashing */
-  void startFlashing(FlashingType type, int32_t time_left);
+  void startFlashing(FlashingType type, int32_t time_left = 0);
 
   /* Clear the state of the BattleActor for a new turn */
   void turnSetup();

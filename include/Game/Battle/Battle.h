@@ -211,7 +211,6 @@ private:
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
 
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
-  const static uint8_t kPERSON_KO_ALPHA; /* Opacity of a person at death */
 
 public:
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
@@ -220,7 +219,7 @@ public:
    * PRIVATE FUNCTIONS - Battle Operations
    *============================================================================*/
 private:
-  /* Organizational methods for ActionStates of the outer BattleEvent loop */
+  /* Organized Skill methods for ActionStates of the outer BattleEvent loop */
   void actionStateBegin();
   void actionStateSlideIn();
   void actionStateFadeInText();
@@ -229,12 +228,9 @@ private:
   void actionStateSkillMiss();
   void actionStateActionStart();
 
-  /* Organizational methods for ActionStates of the inner BE outcome loop */
-  void outcomeStateActionMiss(ActorOutcome& outcome);
-  void outcomeStatePlep(ActorOutcome& outcome);
-  void outcomeStateDamageValue(ActorOutcome& outcome);
-  void outcomeStateSpriteFlash(ActorOutcome& outcome);
-  void outcomeStateActionEnd(ActorOutcome& outcome);
+  /* Pass methods for ActionState of outer BattleEvent loop */
+  void actionStatePassBob();
+  void actionStateEndBob();
 
   /* Constructs AI Modules for the Battle */
   void aiBuild();
@@ -266,11 +262,21 @@ private:
   /* General upkeep phase */
   void generalUpkeep();
 
+  /* Checks whether the current buffer element is valid for processing */
+  bool isBufferElementValid();
+
   /* Loads the action buffer current element into a BattleEvent */
   void loadBattleEvent();
 
   /* Loads the menu for a given battle actor */
   bool loadMenuForActor(BattleActor* actor);
+
+  /* Organizational methods for ActionStates of the inner BE outcome loop */
+  void outcomeStateActionMiss(ActorOutcome& outcome);
+  void outcomeStatePlep(ActorOutcome& outcome);
+  void outcomeStateDamageValue(ActorOutcome& outcome);
+  void outcomeStateSpriteFlash(ActorOutcome& outcome);
+  void outcomeStateActionOutcome(ActorOutcome& outcome);
 
   /* Set the next elemenet in the buffer, check for phase done */
   void updateBufferNext();

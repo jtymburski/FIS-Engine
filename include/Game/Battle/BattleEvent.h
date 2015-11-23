@@ -44,10 +44,10 @@ enum class SkillHitStatus
   DREAMSNARED
 };
 
-
 enum class ActionState
 {
   BEGIN,
+  END_BOB,
   SLIDE_IN,
   FADE_IN_TEXT,
   SLIDE_OUT,
@@ -65,9 +65,23 @@ enum class ActionState
 
 struct ActorOutcome
 {
+  ActorOutcome()
+      : actor_outcome_state{ActionState::BEGIN},
+        actor{nullptr},
+        damage{0},
+        causes_ko{false} {};
+
+  /* The enumerated action outcome state this actor outcome's currently proc. */
   ActionState actor_outcome_state;
+
+  /* Pointer to the Battle Actor for the outcome */
   BattleActor* actor;
+
+  /* The amount of damage that occured */
   int32_t damage;
+
+  /* Whether this outcome caused the actor to become KOed */
+  bool causes_ko;
 };
 
 class BattleEvent
@@ -79,6 +93,9 @@ public:
   /* Normal BattleEvent construction */
   BattleEvent(ActionType type, BattleActor* actor,
               std::vector<BattleActor*> targets);
+
+  /* BattleEvent construction with just an action type */
+  BattleEvent(ActionType type, BattleActor* actor);
 
   /* Index for processing actions */
   uint32_t action_index;
@@ -166,9 +183,9 @@ public:
   static const uint32_t kMAXIMUM_DAMAGE;
   static const uint32_t kMINIMUM_DAMAGE;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
   /* Calculates the action variables for given skill */
   void calcActionVariables();
@@ -185,7 +202,7 @@ private:
   /* Calculates the ignore state for the given action against targets */
   void calcIgnoreState();
 
-    /* Calculates the average diff. in level between a given actor and foes */
+  /* Calculates the average diff. in level between a given actor and foes */
   int32_t calcLevelDifference();
 
   /* Calculation sub-functiosn for damage calculations */
@@ -205,9 +222,9 @@ private:
   /* Obtains the stats of a given target */
   BattleStats getStatsOfTarget(BattleActor* curr_target);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Calculate the base damage against a given target */
   int32_t calcDamage(BattleActor* curr_target);

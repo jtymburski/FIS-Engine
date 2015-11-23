@@ -116,7 +116,7 @@ public:
                std::vector<BattleActor*> targets);
 
   /* Adds a Pass event to the Battle */
-  void addPass(BattleActor* user);
+  void addPass(BattleActor* user, int32_t initialturn);
 
   /* Adds a run element to the buffer */
   void addRun(BattleActor* user);

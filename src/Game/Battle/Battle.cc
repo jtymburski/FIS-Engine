@@ -126,8 +126,6 @@ const uint16_t Battle::kALLIES_OFFSET = 328;
 const uint8_t Battle::kMAX_CHARS = 5;
 const uint8_t Battle::kMAX_LAYERS = 10;
 const uint16_t Battle::kPERSON_SPREAD = 200;
-const uint8_t Battle::kPERSON_KO_ALPHA = 50;
-
 const uint16_t Battle::kPERSON_WIDTH = 256;
 
 // const uint8_t Battle::kTYPE_MARGIN = 7;
@@ -266,19 +264,39 @@ void Battle::actionStateActionStart()
       outcomeStateDamageValue(outcome);
     else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
       outcomeStateSpriteFlash(outcome);
-    else if(outcome.actor_outcome_state == ActionState::ACTION_END)
-      outcomeStateActionEnd(outcome);
+    else if(outcome.actor_outcome_state == ActionState::OUTCOME)
+      outcomeStateActionOutcome(outcome);
 
     done &= outcome.actor_outcome_state == ActionState::ACTION_END;
 
     if(done)
     {
       if(event->setNextAction())
-        event->action_state = ActionState::ACTION_START;
+      {
+        event->action_state = ActionState::SWITCH_SPRITE;
+      }
       else
+      {
+        std::cout << "No more actions -> setting action state to done "
+                  << std::endl;
         event->action_state = ActionState::DONE;
+      }
+
+      delay = 250;
     }
   }
+}
+
+void Battle::actionStatePassBob()
+{
+  std::cout << "Starting pass" << std::endl;
+  delay = 400;
+}
+
+void Battle::actionStateEndBob()
+{
+  std::cout << "Ending pass" << std::endl;
+  delay = 300;
 }
 
 void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
@@ -302,8 +320,9 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   auto element = new RenderElement(renderer, animation, 1, actor_x, actor_y);
 
   render_elements.push_back(element);
-  delay = 150;
   outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+
+  delay = 150;
 }
 
 void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
@@ -316,21 +335,36 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
       getActorX(outcome.actor), getActorY(outcome.actor));
 
   render_elements.push_back(element);
-  delay = 300;
   outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
+
+  delay = 300;
 }
 
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
 {
-  outcome.actor->dealDamage(outcome.damage);
-  outcome.actor->startFlashing(FlashingType::DAMAGE, 500);
-  delay = 1000;
-  outcome.actor_outcome_state = ActionState::ACTION_END;
+  if(outcome.actor->dealDamage(outcome.damage))
+  {
+    outcome.causes_ko = true;
+  }
+  else
+  {
+    outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
+
+    // delay = 750;
+  }
+
+  outcome.actor_outcome_state = ActionState::OUTCOME;
 }
 
-void Battle::outcomeStateActionEnd(ActorOutcome& outcome)
+void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 {
-  outcome.actor->endFlashing();
+  std::cout << "outcome state actor outcome " << std::endl;
+
+  /* If Person's VITA is 0 -> they are KOed) */
+  if(outcome.causes_ko)
+    outcome.actor->startFlashing(FlashingType::KOING);
+
+  outcome.actor_outcome_state = ActionState::ACTION_END;
 }
 
 // ALPHA
@@ -386,6 +420,10 @@ bool Battle::bufferMenuSelection()
       battle_buffer->addSkill(actor, skill, targets, cooldown, turns_elapsed);
     }
   }
+  else if(success && action_type == ActionType::PASS)
+  {
+    battle_buffer->addPass(actor, turns_elapsed);
+  }
 
   return success;
 }
@@ -425,7 +463,7 @@ bool Battle::bufferModuleSelection()
     }
     else if(action_type == ActionType::PASS)
     {
-      battle_buffer->addPass(curr_actor);
+      battle_buffer->addPass(curr_actor, turns_elapsed);
     }
     else if(action_type == ActionType::RUN)
     {
@@ -510,29 +548,54 @@ void Battle::generalUpkeep()
   setFlagCombat(CombatState::PHASE_DONE);
 }
 
+bool Battle::isBufferElementValid()
+{
+  auto actor = battle_buffer->getUser();
+
+  if(actor)
+  {
+    if(actor->getFlag(ActorState::KO))
+      return false;
+  }
+
+  return true;
+}
+
 void Battle::loadBattleEvent()
 {
   /* Clear the event if it's already been created */
+  std::cout << "Das ist fail here? " << std::endl;
   clearEvent();
+  std::cout << "Doth ist fail here? " << std::endl;
 
   auto action_type = battle_buffer->getActionType();
   auto user = battle_buffer->getUser();
   auto targets = battle_buffer->getTargets();
+
+  std::cout << "Action type? " << Helpers::actionTypeToStr(action_type) << std::endl;
+  std::cout << "User? " << battle_buffer->getUser()->getBasePerson()->getName() << std::endl;
 
   auto to_build = (action_type != ActionType::NONE);
   to_build &= (user != nullptr);
 
   if(to_build)
   {
-    clearEvent();
-    event = new BattleEvent(action_type, user, targets);
+    if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
+    {
+      std::cout << "Creating a skill or item event!" << std::endl;
+      event = new BattleEvent(action_type, user, targets);
+    }
+    else if(action_type == ActionType::PASS)
+    {
+      std::cout << "Creating pass event here! " << std::endl;
+      event = new BattleEvent(action_type, user);
+    }
 
     if(action_type == ActionType::SKILL)
       event->event_skill = battle_buffer->getSkill();
     else if(action_type == ActionType::ITEM)
       event->event_item = battle_buffer->getItem();
 
-    std::cout << "Setting started!" << std::endl;
     battle_buffer->setStarted();
   }
 }
@@ -586,10 +649,27 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
 
 void Battle::updateBufferNext()
 {
-  auto done = battle_buffer->setNext();
+  auto has_element = battle_buffer->setNext();
 
-  if(done)
-    setFlagCombat(CombatState::PHASE_DONE);
+  if(has_element && !isBufferElementValid())
+  {
+    bool found_good = false;
+    has_element = false;
+
+    while(!has_element && !found_good)
+    {
+      has_element = battle_buffer->setNext();
+
+      if(has_element)
+        found_good = isBufferElementValid();
+    }
+  }
+
+  if(!has_element)
+  {
+    std::cout << "Buffer depleted -> ending PROCESS ACTIONS." << std::endl;
+    setFlagCombat(CombatState::PHASE_DONE, true);
+  }
 }
 
 void Battle::updateDelay(int32_t decrement_delay)
@@ -603,8 +683,6 @@ void Battle::updateDelay(int32_t decrement_delay)
 /* Update the current Buffer element */
 void Battle::updateEvent()
 {
-  // auto event_started = battle_buffer->isIndexStarted();
-
   if(event->action_type == ActionType::SKILL)
   {
     if(event->action_state == ActionState::BEGIN)
@@ -621,14 +699,15 @@ void Battle::updateEvent()
       actionStateSkillMiss();
     else if(event->action_state == ActionState::ACTION_START)
       actionStateActionStart();
-    else if(event->action_state == ActionState::ACTION_END)
+  }
+  else if(event->action_type == ActionType::PASS)
+  {
+    if(event->action_state == ActionState::BEGIN)
+      actionStatePassBob();
+    else if(event->action_state == ActionState::END_BOB)
     {
-    }
-    else if(event->action_state == ActionState::OUTCOME)
-    {
-    }
-    else if(event->action_state == ActionState::DONE)
-    {
+      actionStateEndBob();
+      event->action_state = ActionState::DONE;
     }
   }
 }
@@ -734,15 +813,27 @@ void Battle::updateEnemySelection()
 
 void Battle::updateProcessing()
 {
-  assert(battle_buffer);
-
   /* Sort the buffer, if it hasn't been for the turn */
   if(!battle_buffer->isSorted())
+  {
     battle_buffer->reorder();
+    battle_buffer->print(false);
+  }
 
   if(delay == 0)
   {
-    if(battle_buffer->isIndexProcessed())
+    /* Check if the current event is finished processing */
+    if(event && event->action_state == ActionState::DONE)
+    {
+      std::cout << "Setting buffer processed " << std::endl;
+      battle_buffer->setProcessed();
+
+      if(event->actor && event->actor->getFlag(ActorState::ALLY))
+        event->actor->setActiveSprite(ActiveSprite::FIRST_PERSON);
+
+      clearEvent();
+    }
+    else if(battle_buffer->isIndexProcessed())
       updateBufferNext();
     else if(battle_buffer->isIndexStarted() && event)
       updateEvent();
@@ -761,6 +852,7 @@ void Battle::updateSelectingState(BattleActor* actor, bool set_selected)
 
     if(set_selected)
     {
+      std::cout << "Setting selected state " << std::endl;
       if(state == SelectionState::SELECTING)
         actor->setSelectionState(SelectionState::SELECTED_ACTION);
       else if(state == SelectionState::SELECTING_2ND_ACTION)
@@ -4416,6 +4508,8 @@ void Battle::setNextTurnState()
       turn_state = TurnState::SELECT_ACTION_ENEMY;
     else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
       turn_state = TurnState::PROCESS_ACTIONS;
+    else if(turn_state == TurnState::PROCESS_ACTIONS)
+      turn_state = TurnState::CLEAN_UP;
   }
 }
 

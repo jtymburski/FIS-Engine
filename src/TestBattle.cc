@@ -1179,7 +1179,7 @@ void TestBattle::createSkillSets()
 
   /* Human Race */
   SkillSet* set_human = new SkillSet(1000);
-  set_human->addSkill(getSkill(1000), 1);
+  // set_human->addSkill(getSkill(1000), 1);
   set_human->addSkill(getSkill(1001), 6);
   skillsets.push_back(set_human);
 

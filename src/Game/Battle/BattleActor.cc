@@ -21,8 +21,11 @@
  *============================================================================*/
 
 const float BattleActor::kVELOCITY_X{-1.550};
-const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{245, 10, 10, 155};
+const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{225, 10, 10, 85};
 const SDL_Color BattleActor::kFLASHING_POISON_COLOR{0, 255, 0, 155};
+const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 225};
+
+const uint8_t BattleActor::kACTOR_KO_ALPHA{50};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -309,6 +312,14 @@ void BattleActor::updateActionElement(int32_t cycle_time)
   }
 }
 
+void BattleActor::updateSpriteBobbing(int32_t cycle_time)
+{
+  // Change the getActorX in battle to be in the battle actor class.
+  // This will allow the getActorX to include the pass offset for
+  // battle to render.
+
+}
+
 void BattleActor::updateSpriteFlashing(int32_t cycle_time)
 {
   if(state_flashing.element && getActiveSprite())
@@ -320,7 +331,9 @@ void BattleActor::updateSpriteFlashing(int32_t cycle_time)
       auto color = getFlashingColor(state_flashing.flashing_type);
       auto alpha = state_flashing.element->alpha;
 
-      //getActiveSprite()->setOpacity(alpha);
+      if(state_flashing.element->render_type == RenderType::RGB_SPRITE_DEATH)
+        updateSpriteKO(cycle_time);
+
       getActiveSprite()->setColorBalance(Helpers::calcColorRed(color, alpha),
                                          Helpers::calcColorGreen(color, alpha),
                                          Helpers::calcColorBlue(color, alpha));
@@ -330,22 +343,30 @@ void BattleActor::updateSpriteFlashing(int32_t cycle_time)
   }
 }
 
+void BattleActor::updateSpriteKO(int32_t cycle_time)
+{
+  (void)cycle_time; // todo cycle rates ?
+
+  if(getActiveSprite())
+  {
+    auto curr_opacity = getActiveSprite()->getOpacity();
+
+    if(curr_opacity > kACTOR_KO_ALPHA && curr_opacity != 0)
+      getActiveSprite()->setOpacity(curr_opacity - 1);
+    else if(curr_opacity < kACTOR_KO_ALPHA && curr_opacity < 254)
+      getActiveSprite()->setOpacity(curr_opacity + 1);
+  }
+}
+
 void BattleActor::updateStats(int32_t cycle_time)
 {
-  (void)cycle_time;
-  auto render_vita = stats_rendered.getBaseValue(Attribute::VITA);
+  auto vita = stats_rendered.getBaseValue(Attribute::VITA);
   auto actual_vita = stats_actual.getBaseValue(Attribute::VITA);
 
-  if(render_vita > actual_vita)
-  {
-    std::cout << "Subtracting rendered stat" << std::endl;
-    stats_rendered.setBaseValue(Attribute::VITA, render_vita - 1);
-  }
-  else if(render_vita < actual_vita)
-  {
-    std::cout << "Adding rendered stat " << std::endl;
-    stats_rendered.setBaseValue(Attribute::VITA, render_vita + 1);
-  }
+  if(vita > actual_vita)
+    stats_rendered.setBaseValue(Attribute::VITA, vita - 1 * (cycle_time / 15));
+  else if(vita < actual_vita)
+    stats_rendered.setBaseValue(Attribute::VITA, vita + 1 * (cycle_time / 15));
 }
 
 /*=============================================================================
@@ -395,14 +416,9 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
           battle_skill->valid_status = ValidStatus::VALID;
 
           if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
-          {
             battle_skill->valid_status = ValidStatus::SILENCED;
-          }
-
           if(battle_skill->true_cost > stats_actual.getValue(Attribute::QTDR))
-          {
             battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
-          }
         }
         else
         {
@@ -433,9 +449,11 @@ bool BattleActor::dealDamage(int32_t damage_amount)
               << std::endl;
   }
 
+  std::cout << "Dealing " << damage_amount << " damage with " << curr_vita << " current vita." << std::endl;
   if(damage_amount >= (int32_t)curr_vita)
   {
     stats_actual.setBaseValue(Attribute::VITA, 0);
+    setFlag(ActorState::KO);
 
     return true;
   }
@@ -447,15 +465,23 @@ bool BattleActor::dealDamage(int32_t damage_amount)
 
 void BattleActor::endFlashing()
 {
+  auto koing = (state_flashing.flashing_type == FlashingType::KOING);
+
   if(state_flashing.element)
     delete state_flashing.element;
 
   state_flashing.element = nullptr;
 
-  if(getActiveSprite())
+  if(getActiveSprite() && !koing)
+  {
     getActiveSprite()->revertColorBalance();
+    state_active_sprite = SpriteState::SLID_IN;
+  }
+  else if(getActiveSprite() && koing)
+  {
+    state_active_sprite = SpriteState::KOED;
+  }
 
-  state_active_sprite = SpriteState::SLID_IN;
   state_flashing = FlashingState();
 }
 
@@ -495,6 +521,7 @@ bool BattleActor::removeAilment(Ailment* remove_ailment)
 /* Sets up start of flashingness */
 void BattleActor::startFlashing(FlashingType flashing_type, int32_t time_left)
 {
+  std::cout << "Starting the flashing process " << std::endl;
   auto active_sprite = getActiveSprite();
   auto color = getFlashingColor(flashing_type);
 
@@ -509,10 +536,14 @@ void BattleActor::startFlashing(FlashingType flashing_type, int32_t time_left)
   state_flashing.flashing_type = flashing_type;
   state_flashing.is_flashing = true;
 
-  if(time_left > 0 && !state_flashing.element)
+  if(!state_flashing.element)
   {
     state_flashing.element = new RenderElement();
-    state_flashing.element->createAsSpriteFlash(this, color, 1000);
+
+    if(flashing_type != FlashingType::KOING)
+      state_flashing.element->createAsSpriteFlash(this, color, time_left);
+    else if(flashing_type == FlashingType::KOING)
+      state_flashing.element->createAsSpriteDeath(this, color, 3000, 500, 2000);
   }
 }
 
@@ -534,6 +565,8 @@ bool BattleActor::update(int32_t cycle_time)
 
   if(state_active_sprite == SpriteState::FLASHING)
     updateSpriteFlashing(cycle_time);
+  else if(state_active_sprite == SpriteState::BOBBING)
+    updateSpriteBobbing(cycle_time);
 
   return true;
 }
@@ -758,6 +791,8 @@ SDL_Color BattleActor::getFlashingColor(FlashingType flashing_type)
 {
   if(flashing_type == FlashingType::DAMAGE)
     return kFLASHING_DAMAGE_COLOR;
+  else if(flashing_type == FlashingType::KOING)
+    return kFLASHING_KO_COLOR;
 
   return kFLASHING_POISON_COLOR;
 }

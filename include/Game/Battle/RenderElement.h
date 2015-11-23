@@ -32,6 +32,7 @@ enum class RenderType
   DAMAGE_VALUE,
   RGB_OVERLAY,
   RGB_SPRITE_FLASH,
+  RGB_SPRITE_DEATH,
   NONE
 };
 
@@ -138,14 +139,22 @@ public:
   void createAsDamageText(std::string text, DamageType type, int32_t sc_height,
                           int32_t x, int32_t y);
 
+  /* Creates the render element as a damage value */
   void createAsDamageValue(int32_t amount, DamageType type, int32_t sc_height,
                            int32_t x, int32_t y);
 
+  /* Creates the render element as a regen value */
   void createAsRegenValue(int32_t amount, DamageType type, int32_t sc_height,
                           int32_t x, int32_t y);
 
+  /* Creates the render element as a sprite flash */
   void createAsSpriteFlash(BattleActor* target, SDL_Color color,
                            int32_t flash_time);
+
+  /* Creates the render element as a sprite death */
+  void createAsSpriteDeath(BattleActor* target, SDL_Color color,
+                           int32_t death_time, int32_t fade_in_time,
+                           int32_t fade_out_time);
 
   /* Assigns floatinate acceleration coordinate point */
   void setAcceleration(float acceleration_x, float acceleration_y);

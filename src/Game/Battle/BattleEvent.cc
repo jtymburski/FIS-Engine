@@ -137,6 +137,12 @@ BattleEvent::BattleEvent(ActionType type, BattleActor* actor,
   actor_targets = targets;
 }
 
+BattleEvent::BattleEvent(ActionType type, BattleActor* actor) : BattleEvent()
+{
+  action_type = type;
+  this->actor = actor;
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -423,10 +429,12 @@ void BattleEvent::setFlagIgnore(IgnoreState flag, const bool& set_value)
 
 bool BattleEvent::setNextAction()
 {
+  std::cout << "Setting next action! " << std::endl;
   auto curr_skill = getCurrSkill();
 
   if(curr_skill && action_index + 1 < curr_skill->getEffects().size())
   {
+    std::cout << "Incrementing action index " << std::endl;
     action_index++;
     event_type = BattleEventType::NONE;
 
@@ -516,10 +524,10 @@ int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target)
 {
   auto targ_stats = getStatsOfTarget(curr_target);
   (void)targ_stats;
-  //auto p_pow_val = targ_stats.getValue(Attribute::PHAG);
-  //auto p_def_val = targ_stats.getValue(Attribute::PHFD);
-  //auto base_user_pow = phys_pow_val;
-  //auto base_targ_def = phys_def_val;
+  // auto p_pow_val = targ_stats.getValue(Attribute::PHAG);
+  // auto p_def_val = targ_stats.getValue(Attribute::PHFD);
+  // auto base_user_pow = phys_pow_val;
+  // auto base_targ_def = phys_def_val;
   return 0;
 }
 
@@ -705,7 +713,7 @@ float BattleEvent::calcCritFactor(BattleActor* curr_target)
 
   if(curr_target)
   {
-    //TODO [11-20-15]: guarding/defended modifiers + others
+    // TODO [11-20-15]: guarding/defended modifiers + others
     if(curr_target->getGuardingState() == GuardingState::DEFENDING)
       crit_factor *= kCRIT_DEFENDING_MODIFIER;
     else if(curr_target->getGuardingState() == GuardingState::GUARDED)
@@ -799,5 +807,5 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target)
   else if(curr_target->getGuardingState() == GuardingState::GUARDED)
     base_damage *= kGUARD_MODIFIER;
 
-  return base_damage;// * crit_factor;
+  return base_damage; // * crit_factor;
 }

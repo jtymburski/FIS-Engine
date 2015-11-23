@@ -146,7 +146,6 @@ void RenderElement::createAsDamageText(std::string text, DamageType type,
   setAcceleration(0.000, 0.000);
   setVelocity(0.005, -0.020);
 
-
   if(element_font && renderer)
   {
     element_text = Text(element_font);
@@ -181,12 +180,25 @@ void RenderElement::createAsRegenValue(int32_t amount, DamageType type,
 void RenderElement::createAsSpriteFlash(BattleActor* target, SDL_Color color,
                                         int32_t flash_time)
 {
-  auto fade_time = std::floor(flash_time * 3.00 / 7.00);
+  auto fade_time = std::floor(flash_time * 2.50 / 7.00);
   setTimes(flash_time, fade_time, fade_time);
   status = initialStatusFade();
   this->color = color;
   this->target = target;
   render_type = RenderType::RGB_SPRITE_FLASH;
+}
+
+void RenderElement::createAsSpriteDeath(BattleActor* target, SDL_Color color,
+                                        int32_t death_time,
+                                        int32_t fade_in_time,
+                                        int32_t fade_out_time)
+{
+  std::cout << "Creating as sprite death " << std::endl;
+  setTimes(death_time, fade_in_time, fade_out_time);
+  status = initialStatusFade();
+  this->color = color;
+  this->target = target;
+  render_type = RenderType::RGB_SPRITE_DEATH;
 }
 
 void RenderElement::setShadow(SDL_Color shadow_color, int32_t offset_x,
