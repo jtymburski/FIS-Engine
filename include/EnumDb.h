@@ -575,6 +575,8 @@ enum class ThingBase : std::uint8_t
 enum class TurnState
 {
   BEGIN, /* Setup of the battle */
+  ENTER_DIM,
+  FADE_IN_TEXT,
   GENERAL_UPKEEP, /* General upkeep phase - weather etc. */
   UPKEEP, /* Personal upkeep - ailments etc. */
   SELECT_ACTION_ALLY, /* User choice of action/skill etc. */

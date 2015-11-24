@@ -68,8 +68,8 @@ bool Fonts::createFonts(Options* config)
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    13, TTF_STYLE_BOLD));
     fonts.emplace(FontName::BATTLE_TURN,
-                  Text::createFont(config->getBasePath() + config->getFont(),
-                                   30, TTF_STYLE_BOLD));
+                  Text::createFont(config->getBasePath() + config->getFont(1),
+                                   80, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::REGULAR_FONT,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    18, TTF_STYLE_NORMAL));

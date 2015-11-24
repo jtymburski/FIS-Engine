@@ -278,22 +278,29 @@ private:
   void outcomeStateSpriteFlash(ActorOutcome& outcome);
   void outcomeStateActionOutcome(ActorOutcome& outcome);
 
+  void processEvent();
+  void processEventDamage();
+  void processEventSkill();
+
+  /* Update the begin step of the Battle */
+  void updateBegin();
+
   /* Set the next elemenet in the buffer, check for phase done */
   void updateBufferNext();
 
   /* Updates the procesing delay for the Battle */
   void updateDelay(int32_t decrement_delay);
 
+  void updateScreenDim();
+
   /* Updates the processing on the current battle buffer element */
   void updateEvent();
   void updateEventReady();
 
-  void processEvent();
-  void processEventDamage();
-  void processEventSkill();
-
   /* Update the selection of the enemies */
   void updateEnemySelection();
+
+  void updateFadeInText();
 
   /* Update the selecting state enum for a given BattleActor */
   void updateSelectingState(BattleActor* actor, bool set_selected);

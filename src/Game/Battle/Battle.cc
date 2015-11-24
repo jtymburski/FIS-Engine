@@ -301,74 +301,6 @@ void Battle::actionStateEndBob()
   delay = 300;
 }
 
-void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
-{
-  auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
-  auto element = new RenderElement(renderer, damage_font);
-
-  element->createAsDamageText("Miss", DamageType::BASE,
-                              config->getScreenHeight(),
-                              getActorX(event->actor), getActorY(event->actor));
-  render_elements.push_back(element);
-  delay = 300;
-  outcome.actor_outcome_state = ActionState::ACTION_END;
-}
-
-void Battle::outcomeStatePlep(ActorOutcome& outcome)
-{
-  auto animation = event->event_skill->skill->getAnimation();
-  auto actor_x = getActorX(outcome.actor);
-  auto actor_y = getActorY(outcome.actor);
-  auto element = new RenderElement(renderer, animation, 1, actor_x, actor_y);
-
-  render_elements.push_back(element);
-  outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
-
-  delay = 150;
-}
-
-void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
-{
-  auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
-  auto element = new RenderElement(renderer, damage_font);
-
-  element->createAsDamageValue(
-      outcome.damage, DamageType::BASE, config->getScreenHeight(),
-      getActorX(outcome.actor), getActorY(outcome.actor));
-
-  render_elements.push_back(element);
-  outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
-
-  delay = 300;
-}
-
-void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
-{
-  std::cout << "Sprite flashing!" << std::endl;
-  if(outcome.actor->dealDamage(outcome.damage))
-  {
-    outcome.causes_ko = true;
-  }
-  else
-  {
-    outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
-    // delay = 750;
-  }
-
-  outcome.actor_outcome_state = ActionState::OUTCOME;
-}
-
-void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
-{
-  std::cout << "outcome state actor outcome " << std::endl;
-
-  /* If Person's VITA is 0 -> they are KOed) */
-  if(outcome.causes_ko)
-    outcome.actor->startFlashing(FlashingType::KOING);
-
-  outcome.actor_outcome_state = ActionState::ACTION_END;
-}
-
 // ALPHA
 // Constructs AI
 void Battle::aiBuild()
@@ -630,6 +562,74 @@ bool Battle::loadMenuForActor(BattleActor* actor)
   return success;
 }
 
+void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
+{
+  auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+  auto element = new RenderElement(renderer, damage_font);
+
+  element->createAsDamageText("Miss", DamageType::BASE,
+                              config->getScreenHeight(),
+                              getActorX(event->actor), getActorY(event->actor));
+  render_elements.push_back(element);
+  delay = 300;
+  outcome.actor_outcome_state = ActionState::ACTION_END;
+}
+
+void Battle::outcomeStatePlep(ActorOutcome& outcome)
+{
+  auto animation = event->event_skill->skill->getAnimation();
+  auto actor_x = getActorX(outcome.actor);
+  auto actor_y = getActorY(outcome.actor);
+  auto element = new RenderElement(renderer, animation, 1, actor_x, actor_y);
+
+  render_elements.push_back(element);
+  outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+
+  delay = 150;
+}
+
+void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
+{
+  auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+  auto element = new RenderElement(renderer, damage_font);
+
+  element->createAsDamageValue(
+      outcome.damage, DamageType::BASE, config->getScreenHeight(),
+      getActorX(outcome.actor), getActorY(outcome.actor));
+
+  render_elements.push_back(element);
+  outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
+
+  delay = 300;
+}
+
+void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
+{
+  std::cout << "Sprite flashing!" << std::endl;
+  if(outcome.actor->dealDamage(outcome.damage))
+  {
+    outcome.causes_ko = true;
+  }
+  else
+  {
+    outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
+    // delay = 750;
+  }
+
+  outcome.actor_outcome_state = ActionState::OUTCOME;
+}
+
+void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
+{
+  std::cout << "outcome state actor outcome " << std::endl;
+
+  /* If Person's VITA is 0 -> they are KOed) */
+  if(outcome.causes_ko)
+    outcome.actor->startFlashing(FlashingType::KOING);
+
+  outcome.actor_outcome_state = ActionState::ACTION_END;
+}
+
 bool Battle::calculateEnemySelection(BattleActor* next_actor,
                                      AIModule* curr_module)
 {
@@ -652,6 +652,15 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
   return success;
 }
 
+void Battle::updateBegin()
+{
+  if(delay == 0)
+  {
+    std::cout << "Setting phase done flag" << std::endl;
+    setFlagCombat(CombatState::PHASE_DONE, true);
+  }
+}
+
 void Battle::updateBufferNext()
 {
   auto has_element = battle_buffer->setNext();
@@ -659,7 +668,8 @@ void Battle::updateBufferNext()
   if(has_element && !isBufferElementValid())
   {
     std::cout << "Has element? " << has_element << std::endl;
-    std::cout << "isBufferElementValid()" << isBufferElementValid() << std::endl;
+    std::cout << "isBufferElementValid()" << isBufferElementValid()
+              << std::endl;
     bool found_good = false;
     has_element = false;
 
@@ -818,6 +828,21 @@ void Battle::updateEnemySelection()
   }
 }
 
+void Battle::updateFadeInText()
+{
+  if(delay == 0)
+  {
+    auto font = config->getFontTTF(FontName::BATTLE_TURN);
+    auto element = new RenderElement(renderer, font);
+    element->createAsEnterText("Decide Your Fate", config->getScreenHeight(),
+                               config->getScreenWidth());
+    render_elements.push_back(element);
+    delay = 2000;
+
+    setFlagCombat(CombatState::PHASE_DONE, true);
+  }
+}
+
 void Battle::updateProcessing()
 {
   /* Sort the buffer, if it hasn't been for the turn */
@@ -857,6 +882,21 @@ void Battle::updateProcessing()
     }
     else
       updateBufferNext();
+  }
+}
+
+void Battle::updateScreenDim()
+{
+  if(delay == 0)
+  {
+    auto element = new RenderElement();
+    element->createAsRGBOverlay({0, 0, 0, 150}, 3000, 500, 1250,
+                                config->getScreenHeight(),
+                                config->getScreenWidth());
+    render_elements.push_back(element);
+    delay = 750;
+
+    setFlagCombat(CombatState::PHASE_DONE, true);
   }
 }
 
@@ -1563,6 +1603,10 @@ bool Battle::renderElements()
       renderElementPlep(element);
   }
 
+  for(auto& element : render_elements)
+    if(element->render_type == RenderType::ENTER_TEXT)
+      renderElementText(element);
+
   return false;
 }
 
@@ -1577,22 +1621,19 @@ void Battle::renderElementPlep(RenderElement* element)
 
 void Battle::renderElementRGBOverlay(RenderElement* element)
 {
-  (void)element;
-  //       SDL_Color color = element->getColor();
-  //       SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b,
-  //                              element->getAlpha());
-
-  //       SDL_Rect rgb_overlay_rect;
-  //       rgb_overlay_rect.x = element->getX();
-  //       rgb_overlay_rect.y = element->getY();
-  //       rgb_overlay_rect.w = element->getSizeX();
-  //       rgb_overlay_rect.h = element->getSizeY();
-  //       SDL_RenderFillRect(renderer, &rgb_overlay_rect);
+  auto color = element->color;
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, element->alpha);
+  SDL_Rect overlay_rect;
+  overlay_rect.x = element->location.point.x;
+  overlay_rect.y = element->location.point.y;
+  overlay_rect.w = element->location.width;
+  overlay_rect.h = element->location.height;
+  SDL_RenderFillRect(renderer, &overlay_rect);
 }
 
 void Battle::renderElementText(RenderElement* element)
 {
-  if(element->element_font && event)
+  if(element->element_font)
   {
     Text t(element->element_font);
     auto point = element->location.point;
@@ -1641,9 +1682,6 @@ bool Battle::renderEnemiesInfo()
   for(auto& enemy : getEnemies())
   {
     bool to_render = enemy && enemy->getInfoFrame() && enemy->getBasePerson();
-
-    if(turn_state == TurnState::PROCESS_ACTIONS && event)
-      to_render &= event->actor == enemy;
 
     if(to_render)
     {
@@ -1834,7 +1872,8 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
   //   uint16_t ailment_y = y + kALLY_HEIGHT + kAILMENT_GAP * 2 +
   //                        kAILMENT_BORDER * 2 +
   //                        ailments.front().getHeight();
-  //   success &= renderAilment(renderer, state->self, x + kINFO_W / 2,
+
+  //   success &= renderAilmentsActor(state->self, x + kINFO_W / 2,
   //   ailment_y,
   //                            false, true);
   // }
@@ -1879,28 +1918,6 @@ bool Battle::renderAlliesInfo()
   return success;
 }
 
-// if(background)
-//   background->update(cycle_time);
-
-// if(turn_state == TurnState::CLEAN_UP)
-// {
-//   // index_person = 0;
-//   bar_offset   = 0;
-//   render_flags = static_cast<RenderState>(0);
-// }
-
-//  /* Update event processing delays */
-//   if(processing_delay > 0)
-//   {
-//     processing_delay -= cycle_time;
-
-//     if(processing_delay > 0)
-//       delay = true;
-//   }
-
-//   /*-------------------------------------------------------------------------
-//    * BEGIN state
-//    *-----------------------------------------------------------------------*/
 //   if(rendering_state == TurnState::BEGIN)
 //   {
 //     bar_offset = 0;
@@ -1909,9 +1926,7 @@ bool Battle::renderAlliesInfo()
 
 //     rendering_state = battle_state;
 //   }
-//   /*-------------------------------------------------------------------------
-//    * GENERAL_UPKEEP state
-//    *-----------------------------------------------------------------------*/
+
 //   else if(rendering_state == TurnState::GENERAL_UPKEEP)
 //   {
 //     bar_offset = 0;
@@ -2000,9 +2015,7 @@ bool Battle::renderAlliesInfo()
 
 //     rendering_state = battle_state;
 //   }
-//   /*-------------------------------------------------------------------------
-//    * UPKEEP state
-//    *-----------------------------------------------------------------------*/
+
 //   else if(rendering_state == TurnState::UPKEEP)
 //   {
 //     bar_offset = 0;
@@ -2033,104 +2046,6 @@ bool Battle::renderAlliesInfo()
 
 //     rendering_state = battle_state;
 //   }
-//   /*-------------------------------------------------------------------------
-//    * SELECT_ACTION_ALLY state
-//    *-----------------------------------------------------------------------*/
-//   else if(rendering_state == TurnState::SELECT_ACTION_ALLY)
-//   {
-//     /* Resetting index */
-//     if((index_layer == 3 || index_layer == 4) && menu->getLayerIndex() ==
-//     1)
-//     {
-//       index_actions = 0;
-//       index_types = 0;
-//     }
-
-//     /* -- CHOOSING SKILLS -- */
-//     else if(menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2)
-//     {
-//       /* Modify the indexes */
-//       if(menu->getLayerIndex() == 1)
-//       {
-//         if(menu->getElementIndex() >= (index_types + kTYPE_MAX))
-//           index_types++;
-//         else if(menu->getElementIndex() < index_types)
-//           index_types--;
-//       }
-//       if(menu->getLayerIndex() == 2)
-//       {
-//         if(menu->getElementIndex() >= (index_actions + kTYPE_MAX))
-//           index_actions++;
-//         else if(menu->getElementIndex() < index_actions)
-//           index_actions--;
-//       }
-
-//       bar_offset = kBIGBAR_CHOOSE;
-//     }
-//     /* -- CHOOSING TARGETS -- */
-//     else if(menu->getLayerIndex() == 3)
-//     {
-//       bar_offset = 0;
-//     }
-//     /* -- CONFIRM CHOICE -- */
-//     else
-//     {
-//       bar_offset = 0;
-//     }
-
-//     rendering_state = battle_state;
-//     index_layer = menu->getLayerIndex();
-//   }
-//   /*-------------------------------------------------------------------------
-//    * SELECT_ACTION_ENEMY state
-//    *-----------------------------------------------------------------------*/
-//   else if(rendering_state == TurnState::SELECT_ACTION_ENEMY)
-//   {
-//     bar_offset = 0;
-//     rendering_state = battle_state;
-//   }
-//   /*-------------------------------------------------------------------------
-//    * PROCESS_ACTIONS state
-//    *-----------------------------------------------------------------------*/
-//   else if(rendering_state == TurnState::PROCESS_ACTIONS)
-//   {
-//     bar_offset = 0;
-//     rendering_state = battle_state;
-
-//     if(!getRenderFlag(RenderState::BEGIN_RENDERING))
-//     {
-//       setRenderFlag(RenderState::BEGIN_RENDERING, true);
-//       processing_delay = 500;
-//     }
-//     else if(!delay)
-//     {
-//       /* Render */
-//       if(buffer->setRenderIndex())
-//       {
-//         curr_event = buffer->getCurrentEvent();
-
-//         if(curr_event != nullptr)
-//         {
-//           updateEvent();
-//           buffer->setRendered(buffer->getIndex());
-//         }
-//       }
-//       else
-//       {
-//         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-//         setRenderFlag(RenderState::BEGIN_RENDERING, false);
-//       }
-//     }
-//   }
-
-//   /*-------------------------------------------------------------------------
-//    * DESTRUCT state
-//    *-----------------------------------------------------------------------*/
-//   else if(rendering_state == TurnState::DESTRUCT)
-//   {
-//     stopBattle();
-//   }
-// }
 
 void Battle::updateBarOffset()
 {
@@ -2193,11 +2108,6 @@ void Battle::updateRenderSprites(int32_t cycle_time)
   }
 }
 
-// auto layer_index = battle->getBattleMenu()->getLayerIndex();
-// auto person_index = battle->getIndexOfPerson(test_person);
-// auto person_state = getState(test_person);
-// auto brightness = 1.0;
-
 // if(rendering_state == TurnState::SELECT_ACTION_ALLY)
 // {
 //   if(layer_index == 1 || layer_index == 2)
@@ -2238,10 +2148,6 @@ void Battle::updateRenderSprites(int32_t cycle_time)
 // {
 //   brightness = 1.0;
 // }
-
-// return brightness;
-// uint8_t opacity = 0;
-// auto state = getState(test_person);
 
 // if(test_person && state)
 // {
@@ -2399,6 +2305,7 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
   buildEnemyBackdrop();
 
   turn_state = TurnState::BEGIN;
+  delay = 0;
 
   return true;
 }
@@ -2531,280 +2438,6 @@ bool Battle::setBackground(Sprite* background)
 /*=============================================================================
  * TO REFACTOR
  *============================================================================*/
-
-// bool Battle::updateEvent()
-// {
-//   if(curr_event->type == EventType::SKILL_USE)
-//   {
-//     if(curr_event->skill_use != nullptr)
-//     {
-//       createActionText(curr_event->skill_use->getName());
-//     }
-//     if(curr_event->user != nullptr)
-//     {
-//       auto state = getState(curr_event->user);
-
-//       if(state != nullptr)
-//       {
-//         RenderElement *action_frame =
-//             new RenderElement(RenderType::ACTION_FRAME, 2000, 700, 700);
-//         action_frame->setX(system_options->getScreenWidth() -
-//                            state->action->getWidth());
-//         action_frame->setY(kACTION_CENTER - kACTION_Y);
-//         action_frame->setActionFrame(state->action);
-
-//         render_elements.push_back(action_frame);
-//       }
-//     }
-
-//     processing_delay = kDELAY_SKILL;
-//   }
-//   else if(curr_event->type == EventType::HEAL_HEALTH)
-//   {
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0))
-//     {
-//       createRegenValue(curr_event->targets.at(0), curr_event->amount);
-//       processing_delay = 750;
-//     }
-//   }
-//   else if(curr_event->type == EventType::HIBERNATION)
-//   {
-//     // TODO Hibernation update plep.
-
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0))
-//     {
-//       createRegenValue(curr_event->targets.at(0), curr_event->amount);
-//       processing_delay = 750;
-//     }
-//   }
-//   else if(curr_event->type == EventType::PASS)
-//   {
-//     if(curr_event->user)
-//     {
-//       if(getState(curr_event->user))
-//       {
-//         getState(curr_event->user)->bobbing = true;
-//         getState(curr_event->user)->elapsed_time = 0;
-//         getState(curr_event->user)->x = getActorX(curr_event->user);
-//         getState(curr_event->user)->y = getPersonY(curr_event->user);
-//       }
-//     }
-
-//     processing_delay = kBOB_TIME;
-//   }
-//   else if(curr_event->type == EventType::ATTEMPT_RUN)
-//   {
-//     if(curr_event->user)
-//     {
-//       if(getState(curr_event->user))
-//       {
-//         getState(curr_event->user)->running = true;
-//         getState(curr_event->user)->elapsed_time = 0;
-//         getState(curr_event->user)->x = getActorX(curr_event->user);
-//         getState(curr_event->user)->y = getPersonY(curr_event->user);
-//       }
-//     }
-
-//     processing_delay = kRUN_TIME;
-//   }
-//   else if(curr_event->type == EventType::SUCCEED_RUN)
-//   {
-//   }
-//   else if(curr_event->type == EventType::ACTION_BEGIN)
-//   {
-//     curr_event->user->setBFlag(BState::IS_ATTACKING, true);
-
-//     if(battle->getCurrSkill() != nullptr &&
-//        battle->getCurrSkill()->getAnimation() != nullptr)
-//     {
-//       auto animation = battle->getCurrSkill()->getAnimation();
-//       createPlep(curr_event->targets.at(0), animation);
-
-//       processing_delay = animation->getAnimationTime();
-//     }
-//   }
-//   else if(curr_event->type == EventType::INFLICTION)
-//   {
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0) &&
-//        curr_event->action_use)
-//     {
-//       auto infliction = curr_event->action_use->getAilment();
-
-//       auto plep = getAilmentPlep(infliction);
-
-//       SDL_Color flash_color = {100, 100, 100, 235};
-
-//       if(plep)
-//         createPlep(curr_event->targets.at(0), plep);
-
-//       if(infliction == Infliction::POISON)
-//         flash_color = kPOIS_DMG_COLOR;
-//       else if(infliction == Infliction::HIBERNATION)
-//         flash_color = kHIBERNATION_REGEN_COLOR;
-//       else if(infliction == Infliction::CONFUSE)
-//         flash_color = {0, 75, 75, 235};
-//       else if(infliction == Infliction::PARALYSIS)
-//         flash_color = {0, 255, 255, 235};
-
-//       createSpriteFlash(curr_event->targets.at(0), flash_color, 450);
-//       processing_delay = 700;
-//     }
-//   }
-//   else if(curr_event->type == EventType::INFLICTION_FIZZLE)
-//   {
-//     createDamageText(curr_event->targets.at(0), "Fizzle");
-
-//     processing_delay = 400;
-//   }
-//   else if(curr_event->type == EventType::CURE_INFLICTION)
-//   {
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0))
-//     {
-//       createSpriteFlash(curr_event->targets.at(0), {255, 255, 255, 255},
-//       450);
-//       processing_delay = 400;
-//     }
-//   }
-//   else if(curr_event->type == EventType::ACTION_END)
-//   {
-//     processing_delay = 50;
-//   }
-//   else if(curr_event->type == EventType::SKILL_COOLDOWN)
-//   {
-//     if(curr_event->user != nullptr)
-//     {
-//       createDamageText(curr_event->user, "Cooldown");
-//       createSpriteFlash(curr_event->user, {0, 0, 255, 235}, 450);
-//     }
-
-//     processing_delay = 400;
-//   }
-//   else if(curr_event->type == EventType::BEGIN_DEFEND)
-//   {
-//     if(curr_event->user != nullptr)
-//     {
-//       auto animation = getEventPlep(EventType::BEGIN_DEFEND);
-
-//       if(animation)
-//         createPlep(curr_event->user, animation);
-
-//       // createDamageText(curr_event->user, "Defending");
-//       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
-//     }
-
-//     processing_delay = 400;
-//   }
-//   else if(curr_event->type == EventType::BREAK_DEFEND)
-//   {
-//     if(curr_event->user != nullptr)
-//     {
-//       auto animation = getEventPlep(EventType::BREAK_DEFEND);
-
-//       if(animation)
-//         createPlep(curr_event->user, animation);
-
-//       // createDamageText(curr_event->user, "Break Defend");
-//       createSpriteFlash(curr_event->user, {177, 177, 30, 190}, 450);
-//     }
-
-//     processing_delay = 300;
-//   }
-//   else if(curr_event->type == EventType::PERSIST_DEFEND)
-//   {
-//     if(curr_event->user != nullptr)
-//     {
-//       auto animation = getEventPlep(EventType::PERSIST_DEFEND);
-
-//       if(animation)
-//         createPlep(curr_event->user, animation);
-
-//       // createDamageText(curr_event->user, "Defend Persists");
-//       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
-//     }
-//   }
-//   else if(curr_event->type == EventType::IMPLODE)
-//   {
-//     if(curr_event->user && curr_event->targets.size() > 0 &&
-//        curr_event->targets.at(0))
-//     {
-//       auto animation = getEventPlep(EventType::IMPLODE);
-
-//       if(animation)
-//       {
-//         createPlep(curr_event->targets.at(0), animation);
-//         createPlep(curr_event->user, animation);
-//       }
-
-//       createDamageValue(curr_event->user, curr_event->amount);
-//       createSpriteFlash(curr_event->user, {255, 0, 0, 225}, 450);
-//       createSpriteFlash(curr_event->targets.at(0), {255, 0, 0, 225}, 450);
-//     }
-
-//     processing_delay = 1200;
-//   }
-
-//   else if(curr_event->type == EventType::STANDARD_DAMAGE ||
-//           curr_event->type == EventType::CRITICAL_DAMAGE ||
-//           curr_event->type == EventType::BURN_DAMAGE ||
-//           curr_event->type == EventType::HITBACK_DAMAGE ||
-//           curr_event->type == EventType::METABOLIC_DAMAGE)
-//   {
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0) !=
-//     nullptr)
-//     {
-//       createDamageValue(curr_event->targets.at(0), curr_event->amount);
-//       createSpriteFlash(curr_event->targets.at(0), {177, 10, 30, 190},
-//       450);
-//     }
-
-//     processing_delay = kDELAY_DAMAGE;
-//   }
-//   else if(curr_event->type == EventType::POISON_DAMAGE)
-//   {
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0) !=
-//     nullptr)
-//     {
-//       createDamageValue(curr_event->targets.at(0), curr_event->amount);
-//       createSpriteFlash(curr_event->targets.at(0), {10, 150, 150, 190},
-//       550);
-//     }
-
-//     processing_delay = kDELAY_DAMAGE;
-//   }
-//   else if(curr_event->type == EventType::SKILL_MISS ||
-//           curr_event->type == EventType::ACTION_MISS)
-//   {
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0) !=
-//     nullptr)
-//     {
-//       createDamageText(curr_event->targets.at(0), "Miss");
-//     }
-
-//     processing_delay = kDELAY_DAMAGE;
-//   }
-//   else if(curr_event->type == EventType::DEATH)
-//   {
-//     if(curr_event->targets.size() > 0 && curr_event->targets.at(0) !=
-//     nullptr)
-//       if(getState(curr_event->targets.at(0)) != nullptr)
-//         getState(curr_event->targets.at(0))->dying = true;
-
-//     createDeath(curr_event->targets.at(0));
-//     processing_delay = 1100;
-//   }
-//   else if(curr_event->type == EventType::REGEN_VITA ||
-//           curr_event->type == EventType::REGEN_QTDR)
-//   {
-//     if(curr_event->amount > 0 && curr_event->targets.size() > 0 &&
-//        curr_event->targets.at(0) != nullptr)
-//     {
-//       createRegenValue(curr_event->targets.at(0), curr_event->amount);
-//       processing_delay = 750;
-//     }
-//   }
-
-//   return false;
-// }
 
 // void Battle::battleLost()
 // {
@@ -3991,442 +3624,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// bool Battle::processDamageAction(BattleEvent* damage_event)
-// {
-//   auto party_death = false;
-//   auto actual_crit_factor = 1.00;
-//   bool crit_happens = doesActionCrit();
-
-//   if(crit_happens)
-//   {
-//     damage_event->type = EventType::CRITICAL_DAMAGE;
-//     actual_crit_factor = calcCritFactor();
-//   }
-//   else
-//     damage_event->type = EventType::STANDARD_DAMAGE;
-
-//   auto base_damage = calcBaseDamage(actual_crit_factor);
-//   auto damage_mod = curr_user->getDmgMod();
-//   auto damage = static_cast<int32_t>(base_damage * damage_mod);
-
-//   damage = Helpers::setInRange(damage, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
-//   damage_event->amount = damage;
-
-//   /* Send damage processing (death calculations to process damage amount
-//   fn)
-//   */
-//   party_death = processDamageAmount(damage);
-
-//   if(hasInfliction(Infliction::BERSERK, curr_user))
-//   {
-//     auto hitback = base_damage * Ailment::getBerserkHitbackPC();
-
-//     event_buffer->createDamageEvent(EventType::HITBACK_DAMAGE, curr_user,
-//                                     hitback);
-
-//     party_death = processDamageAmount(damage);
-//   }
-
-//   return party_death;
-// }
-
-// bool Battle::processDamageAmount(int32_t amount)
-// {
-//   // TODO: The comments really need to be updated here. [03-07-15]
-//   /* If doDmg returns true, the actor has died. Update guarding and other
-//    * corner cases and check for party death. Else, an actor has not died
-//    * but guard and defending flags, etc. may need to be recalcuted */
-//   auto party_death = false;
-//   auto ally_target = friends->isInParty(curr_target);
-
-//   /* The party of the target will be considered dead if they are the only
-//    * living member of the party presently and are going to die */
-//   if(amount >= curr_target->getCurr().getStat(Attribute::VITA))
-//   {
-//     event_buffer->createDeathEvent(EventType::DEATH, curr_target,
-//     ally_target);
-
-//     setBattleFlag(CombatState::CURR_TARG_DEAD, true);
-//     party_death = processPersonDeath(ally_target);
-//   }
-//   else
-//   {
-//     updateTargetDefense();
-//   }
-
-//   return party_death;
-// }
-
-// bool Battle::processPersonDeath(bool ally_target)
-// {
-//   std::vector<Person*> living_members;
-
-//   if(ally_target)
-//     living_members = friends->getLivingMemberPtrs();
-//   else
-//     living_members = foes->getLivingMemberPtrs();
-
-//   /* True: If the Event buffer contains all event deaths with a curr target
-//    * matching each living friend member, then a party death will occur. */
-//   auto party_death = true;
-
-//   for(const auto& member : living_members)
-//     party_death &= event_buffer->hasPersonDeathEvent(member);
-
-//   if(party_death)
-//   {
-//     event_buffer->createDeathEvent(EventType::PARTY_DEATH, curr_target,
-//                                    ally_target);
-//     party_death = true;
-//   }
-
-//   auto person_ailments = getPersonAilments(curr_target);
-
-//   for(auto ailment : person_ailments)
-//   {
-//     if(ailment->getFlag(AilState::CURE_ON_DEATH))
-//     {
-//       event_buffer->createAilmentEvent(EventType::CURE_INFLICTION,
-//       curr_user,
-//                                        curr_target, curr_action, ailment);
-//     }
-//   }
-
-//   return party_death;
-// }
-
-// bool Battle::processRelieveAction()
-// {
-//   /* If the ailment attempting to be relieved is inflicted upon the current
-//    * target, loop through all existing ailments until the ailment is found
-//    * and create a relieving event for that ailment */
-//   if(canRelieve(curr_action->getAilment()))
-//   {
-//     for(auto ill : ailments)
-//     {
-//       if(ill->getVictim() == curr_target)
-//       {
-//         event_buffer->createAilmentEvent(EventType::CURE_INFLICTION,
-//         curr_user,
-//                                          curr_target, curr_action, ill);
-//       }
-//     }
-
-//     return true;
-//   }
-//   /* If the target cannot be relieved of the given ailment, create an
-//    * infliction fizzle event on the buffer */
-//   else
-//   {
-//     std::vector<Person*> targets{curr_target};
-//     event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE,
-//     curr_user,
-//                                     targets);
-//   }
-
-//   return false;
-// }
-
-// bool Battle::processReviveAction(BattleEvent* revive_event)
-// {
-//   auto heal_value = 1;
-//   auto one_pc = curr_target->getTemp().getStat(Attribute::VITA);
-//   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
-//   auto vari_pc = curr_action->actionFlag(ActionFlags::VARI_PC);
-
-//   /* Calculate the amount of health to revive the person to based on
-//    * base/variance values of the revive action */
-//   int32_t base_val = 0;
-//   int32_t vari_val = 0;
-
-//   base_val =
-//       (base_pc) ? (one_pc * curr_action->getBase()) :
-//       (curr_action->getBase());
-//   vari_val = (vari_pc) ? (one_pc * curr_action->getVariance())
-//                        : (curr_action->getVariance());
-
-//   vari_val = Helpers::randU(-vari_val, +vari_val);
-
-//   /* Append the revival event on to the buffer */
-//   if((base_val + vari_val) > heal_value)
-//     heal_value = base_val + vari_val;
-
-//   revive_event->amount = heal_value;
-//   revive_event->happens = true;
-
-//   return false;
-// }
-
-// bool Battle::processInflictAction()
-// {
-//   if(canInflict(curr_action->getAilment()))
-//   {
-//     /* If a person is about to be bubbified, their current ailments must be
-//      * removed -- thus event buffer needs to be populated with remove
-//      events
-//      */
-//     if(curr_action->getAilment() == Infliction::BUBBIFY)
-//     {
-//       for(auto ill : ailments)
-//       {
-//         if(ill->getVictim() == curr_target)
-//         {
-//           event_buffer->createAilmentEvent(EventType::CURE_INFLICTION,
-//                                            curr_user, curr_target,
-//                                            curr_action,
-//                                            ill);
-//         }
-//       }
-//     }
-
-//     /* If or not if bubbified, create the infliction event */
-//     event_buffer->createAilmentEvent(EventType::INFLICTION, curr_user,
-//                                      curr_target, curr_action, nullptr);
-//   }
-//   else
-//   {
-//     /* If the person cannot be inflicted with the ailment, create an
-//     ailment
-//      * fizzling event */
-//     event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE,
-//     curr_user,
-//                                     curr_target);
-//   }
-
-//   return false;
-// }
-
-// bool Battle::canRelieve(Infliction test_infliction)
-// {
-//   auto person_ailments = getPersonAilments(curr_target);
-//   auto can_cure = false;
-
-//   for(auto person_ill : person_ailments)
-//     if(person_ill->getType() == test_infliction)
-//       can_cure |= person_ill->getFlag(AilState::CURABLE);
-
-//   return can_cure;
-// }
-
-// void Battle::processItem(std::vector<Person*> targets)
-// {
-//   // TODO [04-10-15]
-//   (void)targets;
-
-//   curr_item = action_buffer->getItem();
-//   curr_skill = curr_item->getUseSkill();
-
-//   if(!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
-//   {
-//     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
-
-//     auto event =
-//         event_buffer->createItemEvent(curr_item, curr_user, curr_target);
-
-//     // TODO [04-10-15]
-//     (void)event;
-
-//     // TODO [04-10-15]
-//     // - What situations of items on targets will fizzle?
-//     // - Abstract out processing of actions with skill for commong
-//     //   function(s) between skill and item?
-//     // - Can items miss?
-//     // - Should items deal a damage different than based on the regular
-//     //   damage formula? Standard damage except through armor?
-//   }
-// }
-
-// void Battle::processSkill(std::vector<Person*> targets)
-// {
-//   /* Grab the current skill from the action buffer */
-//   curr_skill = action_buffer->getSkill();
-
-// #ifdef UDEBUG
-//   std::cout << "{Skill} Processing: " << curr_skill->getName() <<
-//   std::endl;
-//   printPartyState();
-// #endif
-
-//   auto process_first_index = false;
-
-//   // TODO
-//   auto process_action = false;
-
-//   /* If processing the first action, append begin skill use event */
-//   if(!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
-//   {
-//     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
-
-//     auto event =
-//         event_buffer->createSkillEvent(curr_skill, curr_user, targets,
-//         false);
-
-//     auto to_process_skill = true;
-//     process_first_index = true;
-
-//     event->user = curr_user;
-//     event->targets = targets;
-
-//     if(to_process_skill)
-//     {
-//       auto skill_hits = doesSkillHit(targets);
-
-//       if(skill_hits)
-//       {
-//         // Add action variable setup code here? ////????
-//         event->happens = true;
-
-//         if(hasInfliction(Infliction::BERSERK, curr_user) &&
-//            !curr_skill->isBerserkSkill())
-//         {
-//           event_buffer->createFizzleEvent(EventType::SKILL_USE_FIZZLE,
-//                                           curr_user, targets);
-//         }
-//       }
-//       /* If there exists 0 current actions, then the next event will be
-//       miss
-//       */
-//       else if(event_buffer->getCurrentSize() < 1)
-//       {
-//         event_buffer->createMissEvent(EventType::SKILL_MISS, curr_user,
-//                                       targets);
-//       }
-
-//       /* If the skill misses, go to the next action processing after render
-//       */
-//       if(!skill_hits)
-//         setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-//     else
-//     {
-//       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-
-//     std::cout << "Setting current action index to zero" << std::endl;
-//     curr_action_index = 0;
-//   }
-//   else
-//   {
-//     process_action = true;
-//   }
-
-//   if(process_first_index || process_action)
-//   {
-//     /* Else, process action index and increment the action index */
-//     auto effects = curr_skill->getEffects();
-
-//     /* Build the variables for primary and secondary off/def attributes,
-//     etc.
-//     */
-//     buildActionVariables(ActionType::SKILL, targets);
-
-//     /* Assert the current action index is within effects range, then
-//      * compute the outcome for the effect for every target, and prepare
-//      * the outcomes for rendering */
-//     if(curr_action_index < effects.size())
-//     {
-//       curr_action = effects.at(curr_action_index);
-
-//       for(auto it = begin(targets); it != end(targets); ++it)
-//       {
-//         curr_target = *it;
-//         setBattleFlag(CombatState::CURR_TARG_DEAD, false);
-//         auto event = event_buffer->createActionEvent(
-//             EventType::ACTION_BEGIN, curr_action, curr_skill, curr_user,
-//             curr_target, true);
-
-//         processAction(event);
-
-//         event_buffer->createActionEvent(EventType::ACTION_END, curr_action,
-//                                         curr_skill, curr_user, curr_target,
-//                                         true);
-
-//         if(getBattleFlag(CombatState::CURR_TARG_DEAD))
-//         {
-//           // End the skill processing here?
-//           setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
-//         }
-//       }
-//     }
-//     else
-//     {
-//       // End the skill processing here?
-//       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-
-//     /* Increment the current action index [for multiple action skills] */
-//     curr_action_index++;
-//     std::cout << "Incrementing action index: " << curr_action_index - 1
-//               << " to " << curr_action_index << std::endl;
-
-//     if(effects.size() <= curr_action_index)
-//     {
-//       std::cout << "Setting action processing complete!" << std::endl;
-//       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-//   }
-// }
-
-// bool Battle::processImplode(std::vector<Person*> targets)
-// {
-//   /* */
-//   auto party_death = false;
-//   auto process = true;
-
-//   /* Assign the target, assert that the target is valid */
-//   assert(targets.size() > 0 && targets.at(0));
-//   curr_target = targets.at(0);
-
-//   buildActionVariables(ActionType::IMPLODE, targets);
-
-//   if(process)
-//   {
-//     /* Create the initial damage amount against user, killing 'dem ' */
-//     auto user_damage_amount =
-//     curr_user->getCurr().getStat(Attribute::VITA);
-//     auto targ_damage_amount = calcImplodeDamage();
-
-//     auto temp_curr_user = curr_user;
-//     auto temp_curr_targ = curr_target;
-
-//     curr_target = temp_curr_user;
-//     party_death &= processDamageAmount(user_damage_amount);
-
-//     /* Create the imploding damage event for the user of the imploding */
-//     curr_target = temp_curr_targ;
-//     auto implode_event =
-//         event_buffer->createImplodeEvent(curr_user, curr_target);
-//     implode_event->amount = user_damage_amount;
-
-//     /* Create the damage event on the target */
-//     event_buffer->createDamageEvent(EventType::STANDARD_DAMAGE,
-//     curr_target,
-//                                     targ_damage_amount);
-
-//     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
-//   }
-
-//   return party_death;
-// }
-
-// void Battle::reCalcAilments(Person* const target)
-// {
-//   auto temp_vita = target->getCurr().getStat(0);
-//   auto temp_qtdr = target->getCurr().getStat(1);
-//   auto base_max_stats = target->getCurrMax();
-
-//   target->setCurr(base_max_stats);
-//   target->getCurr().setStat(0, temp_vita);
-//   target->getCurr().setStat(1, temp_qtdr);
-//   target->setTemp(base_max_stats);
-
-//   auto ills = getPersonAilments(target);
-
-//   for(auto ill : ills)
-//     if(ill->getFlag(AilState::BUFF))
-//       ill->apply();
-// }
-
 // void Battle::upkeep()
 // {
 //   if(!(getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS)))
@@ -4520,6 +3717,10 @@ void Battle::setNextTurnState()
   if(turn_state != TurnState::FINISHED)
   {
     if(turn_state == TurnState::BEGIN)
+      turn_state = TurnState::ENTER_DIM;
+    else if(turn_state == TurnState::ENTER_DIM)
+      turn_state = TurnState::FADE_IN_TEXT;
+    else if(turn_state == TurnState::FADE_IN_TEXT)
       turn_state = TurnState::GENERAL_UPKEEP;
     else if(turn_state == TurnState::GENERAL_UPKEEP)
       turn_state = TurnState::UPKEEP;
@@ -4532,6 +3733,9 @@ void Battle::setNextTurnState()
     else if(turn_state == TurnState::PROCESS_ACTIONS)
       turn_state = TurnState::CLEAN_UP;
   }
+
+  std::cout << "[Turn State] " << Helpers::turnStateToStr(turn_state)
+            << std::endl;
 }
 
 bool Battle::update(int32_t cycle_time)
@@ -4541,16 +3745,19 @@ bool Battle::update(int32_t cycle_time)
   updateDelay(cycle_time);
   updateRendering(cycle_time);
 
-  // TODO: REMOVE THIS
-  if(turns_elapsed % 100 == 0 && turn_state != TurnState::SELECT_ACTION_ALLY &&
-     turn_state != TurnState::SELECT_ACTION_ENEMY &&
-     turn_state != TurnState::PROCESS_ACTIONS)
-    setFlagCombat(CombatState::PHASE_DONE);
-
   if(getFlagCombat(CombatState::PHASE_DONE))
     setNextTurnState();
 
   /* ----------------------------- BEGIN ------------------------------------ */
+  if(turn_state == TurnState::BEGIN)
+  {
+    std::cout << "Update beginning!" << std::endl;
+    updateBegin();
+  }
+  else if(turn_state == TurnState::ENTER_DIM)
+    updateScreenDim();
+  else if(turn_state == TurnState::FADE_IN_TEXT)
+    updateFadeInText();
 
   /* ------------------------ GENERAL UPKEEP -------------------------------- */
 

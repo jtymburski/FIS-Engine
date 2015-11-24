@@ -314,6 +314,7 @@ void BattleActor::updateActionElement(int32_t cycle_time)
 
 void BattleActor::updateSpriteBobbing(int32_t cycle_time)
 {
+  (void)cycle_time; //TODO: Warning
   // Change the getActorX in battle to be in the battle actor class.
   // This will allow the getActorX to include the pass offset for
   // battle to render.

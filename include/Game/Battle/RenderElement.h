@@ -29,6 +29,7 @@ enum class RenderType
   PLEP,
   ACTION_TEXT,
   DAMAGE_TEXT,
+  ENTER_TEXT,
   DAMAGE_VALUE,
   RGB_OVERLAY,
   RGB_SPRITE_FLASH,
@@ -117,7 +118,7 @@ private:
   const static SDL_Color kHIBERNATION_REGEN_COLOR;
 
   const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
-  const static uint16_t kACTION_SHADOW;  /* Shadow offset of middle text */
+  const static uint16_t kACTION_SHADOW; /* Shadow offset of middle text */
   const static uint16_t kDAMAGE_SHADOW;
   const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
   const static uint16_t kACTION_CENTER;
@@ -143,18 +144,26 @@ public:
   void createAsDamageValue(int32_t amount, DamageType type, int32_t sc_height,
                            int32_t x, int32_t y);
 
+  /* Creates the render element as a turn text */
+  void createAsEnterText(std::string text, int32_t sc_height, int32_t sc_width);
+
   /* Creates the render element as a regen value */
   void createAsRegenValue(int32_t amount, DamageType type, int32_t sc_height,
                           int32_t x, int32_t y);
 
-  /* Creates the render element as a sprite flash */
-  void createAsSpriteFlash(BattleActor* target, SDL_Color color,
-                           int32_t flash_time);
+  /* Creates the render element as an RGB Overlay */
+  void createAsRGBOverlay(SDL_Color color, int32_t overlay_time,
+                          int32_t fade_in_time, int32_t fade_out_time,
+                          int32_t sc_height, int32_t sc_width);
 
   /* Creates the render element as a sprite death */
   void createAsSpriteDeath(BattleActor* target, SDL_Color color,
                            int32_t death_time, int32_t fade_in_time,
                            int32_t fade_out_time);
+
+  /* Creates the render element as a sprite flash */
+  void createAsSpriteFlash(BattleActor* target, SDL_Color color,
+                           int32_t flash_time);
 
   /* Assigns floatinate acceleration coordinate point */
   void setAcceleration(float acceleration_x, float acceleration_y);

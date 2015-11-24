@@ -1143,6 +1143,10 @@ std::string Helpers::turnStateToStr(const TurnState& turn_state)
 {
   if(turn_state == TurnState::BEGIN)
     return "BEGIN";
+  else if(turn_state == TurnState::ENTER_DIM)
+    return "ENTER_DIM";
+  else if(turn_state == TurnState::FADE_IN_TEXT)
+    return "FADE_IN_TEXT";
   if(turn_state == TurnState::GENERAL_UPKEEP)
     return "GENERAL_UPKEEP";
   if(turn_state == TurnState::UPKEEP)
