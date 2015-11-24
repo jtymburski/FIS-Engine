@@ -315,7 +315,10 @@ bool Buffer::setNext()
 {
   if(index + 1 < action_buffer.size())
   {
+    std::cout << "Incrementing index!" << std::endl;
     index++;
+
+    std::cout << "Index new: " << index << " Buffer size: " << action_buffer.size() << std::endl;
 
     if(index < action_buffer.size())
       return true;

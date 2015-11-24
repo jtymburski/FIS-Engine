@@ -106,7 +106,7 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
 
   /* If the person's current VITA is >0, they are not KO'd */
   setFlag(ActorState::KO,
-          (person_base->getCurr().getStat(Attribute::VITA) > 0));
+          !(person_base->getCurr().getStat(Attribute::VITA) > 0));
   setFlag(ActorState::ALIVE, true);
   setFlag(ActorState::REVIVABLE, true);
   setFlag(ActorState::RUN_ENABLED, true);
@@ -345,16 +345,15 @@ void BattleActor::updateSpriteFlashing(int32_t cycle_time)
 
 void BattleActor::updateSpriteKO(int32_t cycle_time)
 {
-  (void)cycle_time; // todo cycle rates ?
-
   if(getActiveSprite())
   {
-    auto curr_opacity = getActiveSprite()->getOpacity();
+    auto c_opacity = getActiveSprite()->getOpacity();
+    auto d_opacity = std::round((float)cycle_time / 15.0);
 
-    if(curr_opacity > kACTOR_KO_ALPHA && curr_opacity != 0)
-      getActiveSprite()->setOpacity(curr_opacity - 1);
-    else if(curr_opacity < kACTOR_KO_ALPHA && curr_opacity < 254)
-      getActiveSprite()->setOpacity(curr_opacity + 1);
+    if(c_opacity > kACTOR_KO_ALPHA && c_opacity - d_opacity >= 0)
+      getActiveSprite()->setOpacity(c_opacity - d_opacity);
+    else if(c_opacity < kACTOR_KO_ALPHA && c_opacity + d_opacity <= 255)
+      getActiveSprite()->setOpacity(c_opacity + d_opacity);
   }
 }
 

@@ -254,6 +254,8 @@ void Battle::actionStateActionStart()
 {
   bool done = true;
 
+  std::cout << "Outcome size: " << event->actor_outcomes.size() << std::endl;
+
   for(auto& outcome : event->actor_outcomes)
   {
     if(outcome.actor_outcome_state == ActionState::ACTION_MISS)
@@ -268,22 +270,22 @@ void Battle::actionStateActionStart()
       outcomeStateActionOutcome(outcome);
 
     done &= outcome.actor_outcome_state == ActionState::ACTION_END;
+  }
 
-    if(done)
+  if(done)
+  {
+    if(event->setNextAction())
     {
-      if(event->setNextAction())
-      {
-        event->action_state = ActionState::SWITCH_SPRITE;
-      }
-      else
-      {
-        std::cout << "No more actions -> setting action state to done "
-                  << std::endl;
-        event->action_state = ActionState::DONE;
-      }
-
-      delay = 250;
+      event->action_state = ActionState::SWITCH_SPRITE;
     }
+    else
+    {
+      std::cout << "No more actions -> setting action state to done "
+                << std::endl;
+      event->action_state = ActionState::DONE;
+    }
+
+    delay = 250;
   }
 }
 
@@ -342,6 +344,7 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
 
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
 {
+  std::cout << "Sprite flashing!" << std::endl;
   if(outcome.actor->dealDamage(outcome.damage))
   {
     outcome.causes_ko = true;
@@ -349,7 +352,6 @@ void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
   else
   {
     outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
-
     // delay = 750;
   }
 
@@ -513,6 +515,7 @@ void Battle::clearBattleActors()
 
 void Battle::clearEvent()
 {
+  std::cout << "clearing battle event " << std::endl;
   if(event)
     delete event;
 
@@ -572,8 +575,10 @@ void Battle::loadBattleEvent()
   auto user = battle_buffer->getUser();
   auto targets = battle_buffer->getTargets();
 
-  std::cout << "Action type? " << Helpers::actionTypeToStr(action_type) << std::endl;
-  std::cout << "User? " << battle_buffer->getUser()->getBasePerson()->getName() << std::endl;
+  std::cout << "Action type? " << Helpers::actionTypeToStr(action_type)
+            << std::endl;
+  std::cout << "User? " << battle_buffer->getUser()->getBasePerson()->getName()
+            << std::endl;
 
   auto to_build = (action_type != ActionType::NONE);
   to_build &= (user != nullptr);
@@ -653,6 +658,8 @@ void Battle::updateBufferNext()
 
   if(has_element && !isBufferElementValid())
   {
+    std::cout << "Has element? " << has_element << std::endl;
+    std::cout << "isBufferElementValid()" << isBufferElementValid() << std::endl;
     bool found_good = false;
     has_element = false;
 
@@ -834,11 +841,20 @@ void Battle::updateProcessing()
       clearEvent();
     }
     else if(battle_buffer->isIndexProcessed())
+    {
+      std::cout << " Updating buffer next " << std::endl;
       updateBufferNext();
+    }
     else if(battle_buffer->isIndexStarted() && event)
+    {
+      std::cout << "Updating battle event" << std::endl;
       updateEvent();
+    }
     else if(battle_buffer->getCooldown() == 0)
+    {
+      std::cout << "Loading battle event" << std::endl;
       loadBattleEvent();
+    }
     else
       updateBufferNext();
   }
@@ -1624,7 +1640,12 @@ bool Battle::renderEnemiesInfo()
 
   for(auto& enemy : getEnemies())
   {
-    if(enemy && enemy->getInfoFrame() && enemy->getBasePerson())
+    bool to_render = enemy && enemy->getInfoFrame() && enemy->getBasePerson();
+
+    if(turn_state == TurnState::PROCESS_ACTIONS && event)
+      to_render &= event->actor == enemy;
+
+    if(to_render)
     {
       /* Calculate health bar amount and color */
       auto x = getActorX(enemy);
