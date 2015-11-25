@@ -363,6 +363,9 @@ public:
   SpriteState getStateActiveSprite();
   SpriteState getStateActionFrame();
 
+  /* Returns the enumerated upkeep state */
+  UpkeepState getStateUpkeep();
+
   /* Returns the stats actual object */
   BattleStats& getStats();
 

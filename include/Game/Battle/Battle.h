@@ -14,6 +14,11 @@
 * ----
 * [09-07-15]: Overlays and Midlays. Make class?
 * ? - Bubbified skills
+*
+* KNOWN BUGS
+* ----------
+* [Battle Menu] - getMostLeft() will return a dead person despite scope?
+* [Battle Processing] - Player Missed may still involve a hit? How?
 *****************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -42,13 +47,6 @@ ENUM_FLAGS(RenderState)
 enum class RenderState
 {
 
-};
-
-struct ActorUpkeep
-{
-  BattleActor* battle_actor;
-  std::vector<Ailment*> upkeep_aiilments;
-  UpkeepState upkeep_state;
 };
 
 class Battle
@@ -114,6 +112,9 @@ private:
 
   /* Elapsed turns of hte battle */
   uint16_t turns_elapsed;
+
+  /* Curent actor being upkept */
+  BattleActor* upkeep_actor;
 
   /*=============================================================================
    * CONSTANTS - Battle Operations
@@ -250,6 +251,18 @@ private:
   /* Calculates an action selection for a given BattleActor // AIModule */
   bool calculateEnemySelection(BattleActor* next_actor, AIModule* curr_module);
 
+  /* Checks if all of the allies are either KO or are dead */
+  bool checkAlliesDeath();
+
+  /* Checks if all of the enemies are either KO or are dead */
+  bool checkEnemiesDeath();
+
+  /* Checks the outcome state of the Battle */
+  void checkIfOutcome();
+
+  /* Cleans up data for the current turn */
+  void cleanUpTurn();
+
   /* Clear function for the battle actors */
   void clearBattleActors();
 
@@ -258,6 +271,9 @@ private:
 
   /* Returns true if the given actor needs to select a menu option */
   bool doesActorNeedToSelect(BattleActor* actor);
+
+  /* Returns whether an actor needs to be upkeeped or not */
+  bool doesActorNeedToUpkeep(BattleActor* actor);
 
   /* General upkeep phase */
   void generalUpkeep();
@@ -278,8 +294,11 @@ private:
   void outcomeStateSpriteFlash(ActorOutcome& outcome);
   void outcomeStateActionOutcome(ActorOutcome& outcome);
 
+  /* Prepare the actor upkeeps */
+  void prepareActorUpkeeps();
+
+  /* Process Event methods -> ex. DAMAGE actions for a Skill etc. */
   void processEvent();
-  void processEventDamage();
   void processEventSkill();
 
   /* Update the begin step of the Battle */
@@ -291,22 +310,32 @@ private:
   /* Updates the procesing delay for the Battle */
   void updateDelay(int32_t decrement_delay);
 
+  /* Updates general upkeep phase */
+  void updateGeneralUpkeep();
+
+  /* Update to the screen dimming state of the Battle */
   void updateScreenDim();
 
   /* Updates the processing on the current battle buffer element */
   void updateEvent();
-  void updateEventReady();
 
   /* Update the selection of the enemies */
   void updateEnemySelection();
 
+  /* Update to the fade in text state of the Battle */
   void updateFadeInText();
 
-  /* Update the selecting state enum for a given BattleActor */
-  void updateSelectingState(BattleActor* actor, bool set_selected);
+  /* Updates the outcome state of the battle */
+  void updateOutcome();
+
+  /* Updates the personal upkeep step */
+  void updatePersonalUpkeep();
 
   /* Updates the processing state of the Battle */
   void updateProcessing();
+
+  /* Update the selecting state enum for a given BattleActor */
+  void updateSelectingState(BattleActor* actor, bool set_selected);
 
   /* Updates the selection of the user */
   void updateUserSelection();
@@ -328,6 +357,9 @@ private:
 
   /* Returns a pointer to the next actor needing to select for the menu */
   BattleActor* getNextMenuActor();
+
+  /* Returns a pointer to the next actor needing to have an upkeep configured */
+  BattleActor* getNextUpkeepActor();
 
   /* Sets the next turn state of the Battle */
   void setNextTurnState();
@@ -377,8 +409,8 @@ private:
   /* Enemy rendering functions */
   bool renderEnemies();
   bool renderEnemiesInfo();
-  bool renderEnemyInfo(BattleActor* actor);
 
+  /* Renders the Battle Menu */
   bool renderMenu();
 
   /* Basic setup for health drawing */
@@ -423,7 +455,7 @@ public:
   /* Evaluates a given RenderState flag */
   bool getFlagRender(RenderState test_flag);
 
-  /* Return the enumerated outcom type */
+  /* Return the enumerated outcome type */
   OutcomeType getOutcomeType();
 
   /* Returns the turn state of the Battle */

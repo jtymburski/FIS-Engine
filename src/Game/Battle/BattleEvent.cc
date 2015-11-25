@@ -376,6 +376,15 @@ void BattleEvent::calcIgnoreState()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+bool BattleEvent::isActorAmongTargets(BattleActor* check_actor)
+{
+  for(const auto& actor : actor_targets)
+    if(actor && actor == check_actor)
+      return true;
+
+  return false;
+}
+
 void BattleEvent::updateStats()
 {
   /* Update the user of the events stats to their current values */

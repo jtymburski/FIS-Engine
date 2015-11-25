@@ -314,11 +314,10 @@ void BattleActor::updateActionElement(int32_t cycle_time)
 
 void BattleActor::updateSpriteBobbing(int32_t cycle_time)
 {
-  (void)cycle_time; //TODO: Warning
+  (void)cycle_time; // TODO: Warning
   // Change the getActorX in battle to be in the battle actor class.
   // This will allow the getActorX to include the pass offset for
   // battle to render.
-
 }
 
 void BattleActor::updateSpriteFlashing(int32_t cycle_time)
@@ -449,7 +448,8 @@ bool BattleActor::dealDamage(int32_t damage_amount)
               << std::endl;
   }
 
-  std::cout << "Dealing " << damage_amount << " damage with " << curr_vita << " current vita." << std::endl;
+  std::cout << "Dealing " << damage_amount << " damage with " << curr_vita
+            << " current vita." << std::endl;
   if(damage_amount >= (int32_t)curr_vita)
   {
     stats_actual.setBaseValue(Attribute::VITA, 0);
@@ -567,9 +567,24 @@ bool BattleActor::update(int32_t cycle_time)
     updateSpriteFlashing(cycle_time);
   else if(state_active_sprite == SpriteState::BOBBING)
     updateSpriteBobbing(cycle_time);
+  // else
+  //   updateSpriteGeneral(cycle_time);
 
   return true;
 }
+
+// void BattleActor::updateSpriteGeneral(int32_t cycle_time)
+// {
+//   if(getActiveSprite())
+//   {
+//     if(getFlag(ActorState::IS_CURR_TARGET))
+//       getActiveSprite()->setOpacity(80);
+//     else if(getFlag(ActorState::IS_CURR_USER))
+//       getActiveSprite()->setOpacity(120);
+//     else if(getFlag(ActorState::IS_OTHER))
+//       getActiveSprite()->setOpacity(255);
+//   }
+// }
 
 Frame* BattleActor::getActionFrame()
 {
@@ -692,6 +707,11 @@ SpriteState BattleActor::getStateActiveSprite()
 SpriteState BattleActor::getStateActionFrame()
 {
   return action_element.element_state;
+}
+
+UpkeepState BattleActor::getStateUpkeep()
+{
+  return state_upkeep;
 }
 
 BattleStats& BattleActor::getStats()

@@ -234,6 +234,9 @@ public:
   bool doesActionHit(BattleActor* curr_target);
   SkillHitStatus doesSkillHit();
 
+  /* Determines whether a given actor is among the targets */
+  bool isActorAmongTargets(BattleActor* check_actor);
+
   /* Method for updating the stats for computing a new action outcome */
   void updateStats();
 

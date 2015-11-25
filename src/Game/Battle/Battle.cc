@@ -157,7 +157,8 @@ Battle::Battle()
       renderer{nullptr},
       turn_state{TurnState::STOPPED},
       time_elapsed{0},
-      turns_elapsed{0}
+      turns_elapsed{0},
+      upkeep_actor{nullptr}
 {
   /* Create a new action buffer and a menu object */
   battle_buffer = new Buffer();
@@ -248,6 +249,7 @@ void Battle::actionStateSkillMiss()
   element->createAsActionText(action_text);
   render_elements.push_back(element);
   event->action_state = ActionState::DONE;
+  delay = 1000;
 }
 
 void Battle::actionStateActionStart()
@@ -433,6 +435,24 @@ void Battle::buildBattleActors(Party* allies, Party* enemies)
   }
 }
 
+void Battle::cleanUpTurn()
+{
+  prepareActorUpkeeps();
+
+  for(auto& actor : actors)
+    if(actor)
+      actor->setSelectionState(SelectionState::NOT_SELECTED);
+
+  // Reset each member.
+  // -- For each battle actor:
+  // ----- clear Defend/Guard/Guarding/Temp ailment efffects
+
+  battle_buffer->clearForTurn(turns_elapsed);
+
+  turns_elapsed++;
+  setFlagCombat(CombatState::PHASE_DONE, true);
+}
+
 void Battle::clearBattleActors()
 {
   for(auto& battle_actor : actors)
@@ -445,9 +465,52 @@ void Battle::clearBattleActors()
   actors.clear();
 }
 
+bool Battle::checkAlliesDeath()
+{
+  bool dead = true;
+
+  for(const auto& ally : getAllies())
+    if(ally)
+      dead &=
+          ally->getFlag(ActorState::KO) || !ally->getFlag(ActorState::ALIVE);
+
+  return dead;
+}
+
+bool Battle::checkEnemiesDeath()
+{
+  bool dead = true;
+
+  for(const auto& foe : getEnemies())
+    if(foe)
+      dead &= foe->getFlag(ActorState::KO) || !foe->getFlag(ActorState::ALIVE);
+
+  return dead;
+}
+
+void Battle::checkIfOutcome()
+{
+  if(delay == 0)
+  {
+    auto allies_dead = checkAlliesDeath();
+    auto enemies_dead = checkEnemiesDeath();
+
+    if(enemies_dead)
+      outcome = OutcomeType::VICTORY;
+    else if(allies_dead)
+      outcome = OutcomeType::DEFEAT;
+
+    if(outcome != OutcomeType::NONE)
+    {
+      setFlagCombat(CombatState::PHASE_DONE, false);
+      turn_state = TurnState::OUTCOME;
+    }
+  }
+}
+
 void Battle::clearEvent()
 {
-  std::cout << "clearing battle event " << std::endl;
+  std::cout << "[BattleEvent] Cleared" << std::endl;
   if(event)
     delete event;
 
@@ -462,6 +525,19 @@ bool Battle::doesActorNeedToSelect(BattleActor* actor)
     to_select &= (actor->getSelectionState() == SelectionState::NOT_SELECTED);
 
   return to_select;
+}
+
+bool Battle::doesActorNeedToUpkeep(BattleActor* actor)
+{
+  bool to_upkeep = (actor != nullptr);
+
+  if(to_upkeep)
+  {
+    to_upkeep &= actor->getFlag(ActorState::ALIVE);
+    to_upkeep &= actor->getStateUpkeep() == UpkeepState::UPKEEP_BEGIN;
+  }
+
+  return to_upkeep;
 }
 
 void Battle::generalUpkeep()
@@ -485,23 +561,45 @@ void Battle::generalUpkeep()
 
 bool Battle::isBufferElementValid()
 {
+  bool valid = true;
   auto actor = battle_buffer->getUser();
 
-  if(actor)
+  if(actor && actor->getFlag(ActorState::KO))
+    valid = false;
+
+  if(valid)
   {
-    if(actor->getFlag(ActorState::KO))
-      return false;
+    for(auto& target : battle_buffer->getTargets())
+    {
+      if(target && target->getFlag(ActorState::KO))
+      {
+        ActionScope buffer_scope = ActionScope::NO_SCOPE;
+        auto skill = battle_buffer->getSkill();
+        auto item = battle_buffer->getItem();
+
+        if(skill && skill->skill)
+          buffer_scope = skill->skill->getScope();
+        else if(item && item->item && item->item->getUseSkill())
+          buffer_scope = item->item->getUseSkill()->getScope();
+
+        if(buffer_scope != ActionScope::ALL_ALLIES_KO ||
+           buffer_scope != ActionScope::ONE_ALLY_KO)
+        {
+          valid = false;
+        }
+      }
+      else if(target && !target->getFlag(ActorState::ALIVE))
+        valid = false;
+    }
   }
 
-  return true;
+  return valid;
 }
 
 void Battle::loadBattleEvent()
 {
   /* Clear the event if it's already been created */
-  std::cout << "Das ist fail here? " << std::endl;
   clearEvent();
-  std::cout << "Doth ist fail here? " << std::endl;
 
   auto action_type = battle_buffer->getActionType();
   auto user = battle_buffer->getUser();
@@ -571,7 +669,7 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
                               config->getScreenHeight(),
                               getActorX(event->actor), getActorY(event->actor));
   render_elements.push_back(element);
-  delay = 300;
+  delay = 600;
   outcome.actor_outcome_state = ActionState::ACTION_END;
 }
 
@@ -630,6 +728,13 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
   outcome.actor_outcome_state = ActionState::ACTION_END;
 }
 
+void Battle::prepareActorUpkeeps()
+{
+  for(auto& actor : actors)
+    if(actor)
+      actor->setUpkeepState(UpkeepState::UPKEEP_BEGIN);
+}
+
 bool Battle::calculateEnemySelection(BattleActor* next_actor,
                                      AIModule* curr_module)
 {
@@ -671,14 +776,18 @@ void Battle::updateBufferNext()
     std::cout << "isBufferElementValid()" << isBufferElementValid()
               << std::endl;
     bool found_good = false;
-    has_element = false;
+    // has_element = false;
 
-    while(!has_element && !found_good)
+    while(has_element && !found_good)
     {
       has_element = battle_buffer->setNext();
 
+      std::cout << "Doth hath element? " << has_element << std::endl;
+
       if(has_element)
         found_good = isBufferElementValid();
+      else if(event)
+        event->action_state = ActionState::DONE;
     }
   }
 
@@ -729,40 +838,6 @@ void Battle::updateEvent()
   }
 }
 
-void Battle::updateEventReady()
-{
-  if(event->event_type == BattleEventType::DAMAGE)
-    processEventDamage();
-}
-
-void Battle::processEvent()
-{
-}
-
-void Battle::processEventDamage()
-{
-  assert(config && event);
-  assert(event->actor_targets.size() == event->actor_outcomes.size());
-
-  // auto font_damage = config->getFontTTF(FontName::BATTLE_DAMAGE);
-
-  for(size_t i = 0; i < event->actor_targets.size(); ++i)
-  {
-    if(event->actor_targets.at(i))
-    {
-      // TODO: Damage types for BattleEvent?
-      // auto element = new RenderElement(renderer, font_damage);
-      // auto amount = event->damage_amounts.at(i);
-      // auto x = getActorX(event->actor_targets.at(i));
-      // auto y = getActorY(event->actor_targets.at(i));
-
-      // element->createAsDamageValue(amount, DamageType::BASE,
-      //                              config->getScreenHeight(), x, y);
-
-      // render_elements.push_back(element);
-    }
-  }
-}
 void Battle::processEventSkill()
 {
   auto curr_action = event->getCurrAction();
@@ -843,6 +918,21 @@ void Battle::updateFadeInText()
   }
 }
 
+void Battle::updateOutcome()
+{
+  std::cout << "Updating to the outcome!" << std::endl;
+}
+
+void Battle::updatePersonalUpkeep()
+{
+  if(upkeep_actor)
+  {
+  }
+  else
+  {
+  }
+}
+
 void Battle::updateProcessing()
 {
   /* Sort the buffer, if it hasn't been for the turn */
@@ -896,8 +986,14 @@ void Battle::updateScreenDim()
     render_elements.push_back(element);
     delay = 750;
 
-    setFlagCombat(CombatState::PHASE_DONE, true);
+    setFlagCombat(CombatState::PHASE_DONE);
   }
+}
+
+void Battle::updateGeneralUpkeep()
+{
+
+  setFlagCombat(CombatState::PHASE_DONE);
 }
 
 void Battle::updateSelectingState(BattleActor* actor, bool set_selected)
@@ -1015,6 +1111,15 @@ BattleActor* Battle::getNextMenuActor()
   for(const auto& ally : getAllies())
     if(doesActorNeedToSelect(ally))
       return ally;
+
+  return nullptr;
+}
+
+BattleActor* Battle::getNextUpkeepActor()
+{
+  for(const auto& actor : actors)
+    if(doesActorNeedToUpkeep(actor))
+      return actor;
 
   return nullptr;
 }
@@ -1723,14 +1828,6 @@ bool Battle::renderEnemiesInfo()
   return success;
 }
 
-// TODO
-bool Battle::renderEnemyInfo(BattleActor* actor)
-{
-  (void)actor;
-
-  return true;
-}
-
 bool Battle::renderMenu()
 {
   auto width = config->getScreenWidth();
@@ -2102,6 +2199,26 @@ void Battle::updateRenderSprites(int32_t cycle_time)
             brightness = 1.0;
         }
       }
+      // else if(turn_state == TurnState::PROCESS_ACTIONS)
+      // {
+      //   auto opacity = 255;
+
+      //   if(event &&
+      //      (event->actor == actor || event->isActorAmongTargets(actor)) &&
+      //      isBufferElementValid())
+      //   {
+      //     opacity = 255;
+      //     brightness = 1.0;
+      //   }
+      //   else if(!actor->getFlag(ActorState::KO) &&
+      //           actor->getFlag(ActorState::ALIVE))
+      //   {
+      //     opacity = 255;
+      //     brightness = 0.3;
+      //   }
+
+      //   actor->getActiveSprite()->setOpacity(opacity);
+      // }
 
       actor->getActiveSprite()->setBrightness(brightness);
     }
@@ -2147,68 +2264,6 @@ void Battle::updateRenderSprites(int32_t cycle_time)
 // else
 // {
 //   brightness = 1.0;
-// }
-
-// if(test_person && state)
-// {
-//   if(!test_person->getBFlag(BState::ALIVE))
-//   {
-//     if(state)
-//       state->dying = false;
-
-//     opacity = kPERSON_KO_ALPHA;
-//   }
-//   else if(state && state->dying)
-//   {
-//     auto alpha = getPersonSprite(test_person)->getOpacity();
-//     float alpha_diff = alpha * 1.0 / 1000 * cycle_time;
-
-//     alpha_diff = std::max(1.0, (double)alpha_diff);
-
-//     if(alpha_diff > alpha)
-//       opacity = 50;
-//     else if(alpha - alpha_diff >= 50)
-//       opacity = alpha - alpha_diff;
-//   }
-//   else
-//   {
-//     opacity = 255;
-//   }
-
-//   if(test_person->getBFlag(BState::IS_SELECTING))
-//   {
-//     auto sprite = getPersonSprite(test_person);
-
-//     if(sprite)
-//     {
-//        If the person is selecting and not set cycling, set cycling
-//       if(!state->cycling)
-//       {
-//         state->temp_alpha = sprite->getOpacity();
-//         state->cycling = true;
-//       }
-//       /* Else, if they are already cycling -> update opacity of sprite */
-//       else
-//       {
-//         state->elapsed_time += cycle_time;
-
-//         uint8_t new_alpha =
-//             abs(100 * sin((float)state->elapsed_time * kCYCLE_RATE));
-//         opacity = new_alpha + 155;
-//       }
-//     }
-//   }
-//   else
-//   {
-//     /* If the person is not selecting and their state is set to cycling,
-//      * reload the original alpha into their sprite and unset cycling */
-//     if(state->cycling)
-//     {
-//       opacity = state->temp_alpha;
-//       state->cycling = false;
-//       state->elapsed_time = 0;
-//     }
-//   }
 // }
 
 // return opacity;
@@ -2316,10 +2371,18 @@ void Battle::stopBattle()
   aiClear();
   clearBattleActors();
   clearEvent();
+  clearElements();
 
+  background = nullptr;
+  // config = nullptr;
+  delay = 0;
+  frame_enemy_backdrop = nullptr;
+  outcome = OutcomeType::NONE;
+  // renderer = nullptr;
   turn_state = TurnState::STOPPED;
   time_elapsed = 0;
   turns_elapsed = 0;
+  upkeep_actor = nullptr;
 }
 
 std::vector<BattleActor*> Battle::getAllies()
@@ -2439,14 +2502,6 @@ bool Battle::setBackground(Sprite* background)
  * TO REFACTOR
  *============================================================================*/
 
-// void Battle::battleLost()
-// {
-//   setBattleFlag(CombatState::OUTCOME_PROCESSED);
-//   setNextTurnState();
-
-//   // TODO: [11-14-14] Return to title after battle lost.
-// }
-
 // void Battle::battleRun()
 // {
 //   if(outcome == OutcomeType::ALLIES_RUN)
@@ -2458,14 +2513,6 @@ bool Battle::setBackground(Sprite* background)
 //       friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
 //       // TODO [11-06-14] Update personal record run from battle count
 //     }
-//   }
-//   else if(outcome == OutcomeType::ENEMIES_RUN)
-//   {
-
-//   }
-
-//   setBattleFlag(CombatState::OUTCOME_PROCESSED);
-//   setNextTurnState();
 // }
 
 // void Battle::battleWon()
@@ -2474,26 +2521,15 @@ bool Battle::setBackground(Sprite* background)
 //   */
 //   for(auto ailment : ailments)
 //     removeAilment(ailment);
-
-//   // TODO - the following code is temporary [04-03-15]
 //   auto living_members = friends->getLivingMemberPtrs();
-
 //   for(auto& member : living_members)
 //   {
 //     auto exp_to_add = calcExperience(member);
 //     member->addExp(exp_to_add);
-
-// #ifdef UDEBUG
-//     std::cout << "{EXP GAIN} -- " << member->getName() << "has gained "
-//               << exp_to_add << "." << std::endl;
-// #endif
-//   }
-
 //   // TODO [04-03-15]
 //   // Update the personal record for each member, including battle counts
 //   // and what battles they have won
 //   // Future: Bestiary index
-
 //   // For each living member in friends
 //   // Add experience to the member (event loop processing?)
 //   // Find out if a level up occurs
@@ -2510,46 +2546,8 @@ bool Battle::setBackground(Sprite* background)
 //   // Refuse gain of items?
 //   // Findo out how much money will be received -> add to inventory
 
-//   setBattleFlag(CombatState::OUTCOME_PROCESSED);
-//   setBattleFlag(CombatState::OUTCOME_PERFORMED); // TODO [04-03-15]
-//   setNextTurnState();
-// }
-
-// bool Battle::checkPartyDeath(Party* const check_party, Person* target)
-// {
-//   auto party_death = false;
-
-//   if(check_party != nullptr && target != nullptr)
-//   {
-//     auto living_members = check_party->getLivingMembers();
-
-//     party_death = living_members.size() < 2;
-
-//     if(living_members.size() == 1)
-//     {
-//       party_death &= (check_party->getMember(living_members.at(0)) ==
-//       target);
-//     }
-//   }
-
-//   return party_death;
-// }
-
-// /*
-//  * Description: Cleanup before the end of a Battle turn. Clears the action
-//  *              buffer, resets person index, the action variables. Updates
-//  *              the turns elapsed and menu fora new turn.
-//  *
-//  * Inputs: none
-//  * Output: none
-//  */
 // void Battle::cleanUp()
 // {
-//   action_buffer->update(false);
-//   action_buffer->print(false);
-
-//   upkeep_persons.clear();
-//   temp_ailments.clear();
 //   person_index = 0;
 
 //   setBattleFlag(CombatState::BEGIN_PROCESSING, false);
@@ -2566,9 +2564,6 @@ bool Battle::setBackground(Sprite* background)
 //   setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, false);
 //   setBattleFlag(CombatState::CURR_TARG_DEAD, false);
 //   setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-
-//   /* Clean all action processing related variables */
-//   clearActionVariables();
 
 //   /* Increment the turn counter */
 //   turns_elapsed++;
@@ -3706,14 +3701,6 @@ void Battle::setNextTurnState()
   /* Set the CURRENT_STATE to incomplete */
   setFlagCombat(CombatState::PHASE_DONE, false);
 
-  //   /* If the Battle victory/loss has been complete, go to Destruct */
-  //   if(getBattleFlag(CombatState::OUTCOME_PROCESSED))
-  //   {
-  //     setTurnState(TurnState::DESTRUCT);
-  //     menu->unsetAll(true);
-  //     // TODO [11-0614]: Eventhandler battle finish signal?
-  //   }
-
   if(turn_state != TurnState::FINISHED)
   {
     if(turn_state == TurnState::BEGIN)
@@ -3721,7 +3708,12 @@ void Battle::setNextTurnState()
     else if(turn_state == TurnState::ENTER_DIM)
       turn_state = TurnState::FADE_IN_TEXT;
     else if(turn_state == TurnState::FADE_IN_TEXT)
-      turn_state = TurnState::GENERAL_UPKEEP;
+    {
+      if(turns_elapsed == 0)
+        turn_state = TurnState::SELECT_ACTION_ALLY;
+      else
+        turn_state = TurnState::GENERAL_UPKEEP;
+    }
     else if(turn_state == TurnState::GENERAL_UPKEEP)
       turn_state = TurnState::UPKEEP;
     else if(turn_state == TurnState::UPKEEP)
@@ -3732,6 +3724,9 @@ void Battle::setNextTurnState()
       turn_state = TurnState::PROCESS_ACTIONS;
     else if(turn_state == TurnState::PROCESS_ACTIONS)
       turn_state = TurnState::CLEAN_UP;
+    /* Select moar actions dude */
+    else if(turn_state == TurnState::CLEAN_UP)
+      turn_state = TurnState::SELECT_ACTION_ALLY;
   }
 
   std::cout << "[Turn State] " << Helpers::turnStateToStr(turn_state)
@@ -3745,114 +3740,34 @@ bool Battle::update(int32_t cycle_time)
   updateDelay(cycle_time);
   updateRendering(cycle_time);
 
-  if(getFlagCombat(CombatState::PHASE_DONE))
+  if(turn_state != TurnState::OUTCOME)
+    checkIfOutcome();
+
+  if(getFlagCombat(CombatState::PHASE_DONE) && delay == 0)
     setNextTurnState();
 
-  /* ----------------------------- BEGIN ------------------------------------ */
   if(turn_state == TurnState::BEGIN)
-  {
-    std::cout << "Update beginning!" << std::endl;
     updateBegin();
-  }
   else if(turn_state == TurnState::ENTER_DIM)
     updateScreenDim();
   else if(turn_state == TurnState::FADE_IN_TEXT)
     updateFadeInText();
-
-  /* ------------------------ GENERAL UPKEEP -------------------------------- */
-
-  /* ---------------------------- UPKEEP  ----------------------------------- */
-
-  if(turn_state == TurnState::SELECT_ACTION_ALLY)
+  else if(turn_state == TurnState::GENERAL_UPKEEP)
+    updateGeneralUpkeep();
+  else if(turn_state == TurnState::UPKEEP)
+    updatePersonalUpkeep();
+  else if(turn_state == TurnState::SELECT_ACTION_ALLY)
     updateUserSelection();
   else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
     updateEnemySelection();
   else if(turn_state == TurnState::PROCESS_ACTIONS)
     updateProcessing();
+  else if(turn_state == TurnState::CLEAN_UP)
+    cleanUpTurn();
+  else if(turn_state == TurnState::OUTCOME)
+    updateOutcome();
 
   clearElementsTimedOut();
 
   return false;
 }
-
-//   else if(turn_state == TurnState::GENERAL_UPKEEP)
-//   {
-//     if(getBattleFlag(CombatState::RENDERING_COMPLETE))
-//     {
-//       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-
-//       generalUpkeep();
-//     }
-//   }
-//   else if(turn_state == TurnState::UPKEEP)
-//   {
-//     /* If the phase was not yet done and rendering complete, there exists
-//     more
-//      * personal upkeeps to perform -> reset rendering flag and continue */
-//     if(getBattleFlag(CombatState::RENDERING_COMPLETE))
-//     {
-//       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-//       setBattleFlag(CombatState::READY_TO_RENDER, false);
-
-//       if(!getBattleFlag(CombatState::PHASE_DONE))
-//       {
-//         event_buffer->setCurrentIndex();
-//         performEvents();
-//       }
-
-//       if(getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE))
-//         setBattleFlag(CombatState::PHASE_DONE);
-//     }
-//     /* Continue processing upkeeps if they are not yet ready to render or
-//     there
-//      * if there is no rendering to take place */
-//     else if(!getBattleFlag(CombatState::READY_TO_RENDER))
-//     {
-//       upkeep();
-//     }
-//   }
-
-//   else if(turn_state == TurnState::PROCESS_ACTIONS)
-//   {
-//     menu->setWindowStatus(WindowStatus::OFF);
-
-//     /* If rendering is complete -> perform events on the stack and then
-//      * continue processing battle events */
-//     if(getBattleFlag(CombatState::RENDERING_COMPLETE))
-//     {
-//       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-//       setBattleFlag(CombatState::READY_TO_RENDER, false);
-
-//       if(!getBattleFlag(CombatState::PHASE_DONE))
-//       {
-//         event_buffer->setCurrentIndex();
-//         performEvents();
-//       }
-
-//       /* If all processing is complete, after performing -> move state */
-//       if(getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-//       {
-//         auto phase_done =
-//         getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
-
-//         phase_done |= (outcome != OutcomeType::NONE);
-
-//         setBattleFlag(CombatState::PHASE_DONE, phase_done);
-//       }
-//     }
-//     else if(!getBattleFlag(CombatState::READY_TO_RENDER))
-//     {
-//       processBuffer();
-//     }
-//   }
-//   else if(turn_state == TurnState::RUNNING)
-//   {
-//   }
-//   else if(turn_state == TurnState::DESTRUCT)
-//   {
-//     // TODO [11-19-14] EventHandlers - return state to map or wherever nicely
-//     return false;
-//   }
-
-//   return false;
-// }
