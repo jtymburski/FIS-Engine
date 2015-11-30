@@ -2316,22 +2316,9 @@ void Map::unlockIO(int io_id, UnlockIOMode mode, int state_num,
   /* Find io ptr */
   MapInteractiveObject* found = getIO(io_id);
 
-  /* Parse and attempt unlock, if found */
+  /* Parse and attempt unlock, if found and check view */
   if(found != nullptr && found->unlockTrigger(mode, state_num, mode_events))
-  {
-    /* Was unlocked: check if view is required */
     triggerViewThing(found, mode_view, view_time);
-
-    // TODO: Possibly pull out into function (or in MapViewport)
-    //bool view, scroll;
-    //EventSet::dataEnumView(mode_view, view, scroll);
-    //if(view && view_time > 0)
-    //{
-      // TODO
-      //std::cout << "TODO - View IO: " << io_id << ",Scroll: " << scroll
-      //          << ",Time: " << view_time << std::endl;
-    //}
-  }
 }
 
 /* Unlock triggers, based on parameter information */
@@ -2346,21 +2333,10 @@ void Map::unlockThing(int thing_id, UnlockView mode_view, int view_time)
   if(found != nullptr)
   {
     EventSet* set = found->getEventSet();
-    if(set != nullptr && set->unlockTrigger())
-    {
-      /* Was unlocked: check if view is required */
-      triggerViewThing(found, mode_view, view_time);
 
-      /* Was unlocked: check if view is required */
-      //bool view, scroll;
-      //EventSet::dataEnumView(mode_view, view, scroll);
-      //if(view && view_time > 0)
-      //{
-        // TODO
-        //std::cout << "TODO - View thing: " << thing_id << ",Scroll: "
-        //          << scroll << ",Time: " << view_time << std::endl;
-      //}
-    }
+    /* Was unlocked: check if view is required */
+    if(set != nullptr && set->unlockTrigger())
+      triggerViewThing(found, mode_view, view_time);
   }
 }
 
@@ -2390,19 +2366,7 @@ void Map::unlockTile(int section_id, int tile_x, int tile_y,
 
       /* If unlocked, proceed to parse view and if required */
       if(unlocked)
-      {
         triggerViewTile(found, section_id, mode_view, view_time);
-
-        //bool view, scroll;
-        //EventSet::dataEnumView(mode_view, view, scroll);
-        //if(view && view_time > 0)
-        //{
-          // TODO
-          //std::cout << "TODO - View tile: section: " << section_id << ",x: "
-          //          << tile_x << ",y: " << tile_y << ",Scroll: " << scroll
-          //          << ",Time: " << view_time << std::endl;
-        //}
-      }
     }
   }
 }
