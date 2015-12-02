@@ -45,8 +45,6 @@ ENUM_FLAGS(ActorState)
 enum class ActorState
 {
   // clang-format off
-  KO                = 1 << 1, /* Is the person KO'd ? */
-  ALIVE             = 1 << 2, /* Is the person alive? (not imploded) */
   ITM_ENABLED       = 1 << 5, /* Can the person use item in battle? */
   DEF_ENABLED       = 1 << 6, /* Can the person use 'Defend'? */
   GRD_ENABLED       = 1 << 7, /* Can theisin person use 'Guard?' */
@@ -55,7 +53,7 @@ enum class ActorState
   RUN_ENABLED       = 1 << 10, /* Can the person use 'Run'? */
   PAS_ENABLED       = 1 << 11, /* Can the person use 'Pass'? */
   REVIVABLE         = 1 << 12, /* Can this person be revived if they are KO? */
-  ALLY              = 1 << 15, /* Is this actor an ally */
+  ALLY              = 1 << 15, /* Is this \actor an ally */
   SELECTION_RANDOM  = 1 << 16,
   SELECTION_SKIP    = 1 << 17,
   MENU_HOVERED      = 1 << 18,
@@ -79,6 +77,14 @@ enum class FlashingType
   DAMAGE,
   POISON,
   KOING
+};
+
+enum class LivingState
+{
+  ALIVE,
+  KO,
+  DEAD,
+  REMOVED
 };
 
 enum class SelectionState
@@ -218,6 +224,9 @@ private:
 
   /* The guarding state for the BattleActor */
   GuardingState state_guarding;
+
+  /* Whether the actor is alive, KO, etc. */
+  LivingState state_living;
 
   /* The state of selection for the BattleActor */
   SelectionState state_selection;
@@ -363,6 +372,9 @@ public:
   SpriteState getStateActiveSprite();
   SpriteState getStateActionFrame();
 
+  /* Returns an enumerated living state of the actor */
+  LivingState getStateLiving();
+
   /* Returns the enumerated upkeep state */
   UpkeepState getStateUpkeep();
 
@@ -385,6 +397,9 @@ public:
 
   /* Assigns a new enumerated SpriteState value to the action frame */
   void setStateActionFrame(SpriteState new_state);
+
+  /* Assigns a new enumerated living state to the Battle Actor */
+  void setStateLiving(LivingState new_state);
 
   /* Assigns a new active sprite for the BattleActor */
   void setActiveSprite(ActiveSprite new_active_sprite);

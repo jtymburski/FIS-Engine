@@ -399,6 +399,7 @@ bool Battle::bufferModuleSelection()
     }
     else if(action_type == ActionType::PASS)
     {
+      std::cout << "Buffering a pass selection!" << std::endl;
       battle_buffer->addPass(curr_actor, turns_elapsed);
     }
     else if(action_type == ActionType::RUN)
@@ -470,9 +471,7 @@ bool Battle::checkAlliesDeath()
   bool dead = true;
 
   for(const auto& ally : getAllies())
-    if(ally)
-      dead &=
-          ally->getFlag(ActorState::KO) || !ally->getFlag(ActorState::ALIVE);
+    dead &= ally && (ally->getStateLiving() != LivingState::ALIVE);
 
   return dead;
 }
@@ -482,30 +481,35 @@ bool Battle::checkEnemiesDeath()
   bool dead = true;
 
   for(const auto& foe : getEnemies())
-    if(foe)
-      dead &= foe->getFlag(ActorState::KO) || !foe->getFlag(ActorState::ALIVE);
+    dead &= foe && (foe->getStateLiving() != LivingState::ALIVE);
 
   return dead;
 }
 
 void Battle::checkIfOutcome()
 {
-  if(delay == 0)
+  // if(delay == 0)
+  // {
+  auto allies_dead = checkAlliesDeath();
+  auto enemies_dead = checkEnemiesDeath();
+
+  if(enemies_dead)
   {
-    auto allies_dead = checkAlliesDeath();
-    auto enemies_dead = checkEnemiesDeath();
-
-    if(enemies_dead)
-      outcome = OutcomeType::VICTORY;
-    else if(allies_dead)
-      outcome = OutcomeType::DEFEAT;
-
-    if(outcome != OutcomeType::NONE)
-    {
-      setFlagCombat(CombatState::PHASE_DONE, false);
-      turn_state = TurnState::OUTCOME;
-    }
+    std::cout << "Setting outcome to VICTORY" << std::endl;
+    outcome = OutcomeType::VICTORY;
   }
+  else if(allies_dead)
+  {
+    std::cout << "Setting outcome to DEFEAT" << std::endl;
+    outcome = OutcomeType::DEFEAT;
+  }
+
+  // if(outcome != OutcomeType::NONE)
+  // {
+  //   setFlagCombat(CombatState::PHASE_DONE, false);
+  //   turn_state = TurnState::OUTCOME;
+  // }
+  // }
 }
 
 void Battle::clearEvent()
@@ -533,7 +537,7 @@ bool Battle::doesActorNeedToUpkeep(BattleActor* actor)
 
   if(to_upkeep)
   {
-    to_upkeep &= actor->getFlag(ActorState::ALIVE);
+    to_upkeep &= actor->getStateLiving() == LivingState::ALIVE;
     to_upkeep &= actor->getStateUpkeep() == UpkeepState::UPKEEP_BEGIN;
   }
 
@@ -564,14 +568,18 @@ bool Battle::isBufferElementValid()
   bool valid = true;
   auto actor = battle_buffer->getUser();
 
-  if(actor && actor->getFlag(ActorState::KO))
+  if(actor && actor->getStateLiving() != LivingState::ALIVE)
+  {
+    std::cout << "Actor user is not alive" << std::endl;
     valid = false;
+  }
 
   if(valid)
   {
     for(auto& target : battle_buffer->getTargets())
     {
-      if(target && target->getFlag(ActorState::KO))
+      // TODO: If target death matches death scope, also permit.
+      if(target && target->getStateLiving() == LivingState::ALIVE)
       {
         ActionScope buffer_scope = ActionScope::NO_SCOPE;
         auto skill = battle_buffer->getSkill();
@@ -582,14 +590,17 @@ bool Battle::isBufferElementValid()
         else if(item && item->item && item->item->getUseSkill())
           buffer_scope = item->item->getUseSkill()->getScope();
 
-        if(buffer_scope != ActionScope::ALL_ALLIES_KO ||
-           buffer_scope != ActionScope::ONE_ALLY_KO)
+        if(buffer_scope == ActionScope::ALL_ALLIES_KO ||
+           buffer_scope == ActionScope::ONE_ALLY_KO)
         {
           valid = false;
         }
       }
-      else if(target && !target->getFlag(ActorState::ALIVE))
+      else if(target && target->getStateLiving() != LivingState::ALIVE)
+      {
+        std::cout << "Target is not alive --> invalid" << std::endl;
         valid = false;
+      }
     }
   }
 
@@ -703,13 +714,15 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
 
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
 {
-  std::cout << "Sprite flashing!" << std::endl;
   if(outcome.actor->dealDamage(outcome.damage))
   {
     outcome.causes_ko = true;
+    delay = 100;
+    std::cout << "Setting delay to be 100" << std::endl;
   }
   else
   {
+    std::cout << "Sprite flashing!" << std::endl;
     outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
     // delay = 750;
   }
@@ -723,7 +736,10 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 
   /* If Person's VITA is 0 -> they are KOed) */
   if(outcome.causes_ko)
+  {
+    std::cout << "KO Flashing!" << std::endl;
     outcome.actor->startFlashing(FlashingType::KOING);
+  }
 
   outcome.actor_outcome_state = ActionState::ACTION_END;
 }
@@ -921,6 +937,7 @@ void Battle::updateFadeInText()
 void Battle::updateOutcome()
 {
   std::cout << "Updating to the outcome!" << std::endl;
+  setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
 void Battle::updatePersonalUpkeep()
@@ -1765,8 +1782,27 @@ bool Battle::renderEnemies()
   /* Render each enemy */
   for(const auto& enemy : getEnemies())
   {
-    success &= enemy->getActiveSprite()->render(renderer, getActorX(enemy),
-                                                getActorY(enemy));
+    if(enemy)
+    {
+      auto active_sprite = enemy->getActiveSprite();
+      auto x_factor = 1.00;
+      auto y_factor = 1.00;
+
+      if(event && event->actor == enemy)
+      {
+        x_factor = 1.08;
+        y_factor = 1.08;
+      }
+
+      if(active_sprite && active_sprite->getCurrent())
+      {
+        auto w = (int)(active_sprite->getCurrent()->getWidth() * x_factor);
+        auto h = (int)(active_sprite->getCurrent()->getHeight() * y_factor);
+
+        success &= enemy->getActiveSprite()->render(renderer, getActorX(enemy),
+                                                    getActorY(enemy), w, h);
+      }
+    }
   }
 
   return success;
@@ -2367,11 +2403,19 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 
 void Battle::stopBattle()
 {
+  std::cout << "Stopping the Battle!" << std::endl;
+
   /* Destroy the battle actors at the end of a Battle */
   aiClear();
   clearBattleActors();
   clearEvent();
   clearElements();
+
+  if(battle_menu)
+    battle_menu->clear();
+
+  if(battle_buffer)
+    battle_buffer->clear();
 
   background = nullptr;
   // config = nullptr;
@@ -3701,36 +3745,40 @@ void Battle::setNextTurnState()
   /* Set the CURRENT_STATE to incomplete */
   setFlagCombat(CombatState::PHASE_DONE, false);
 
-  if(turn_state != TurnState::FINISHED)
+  if(outcome != OutcomeType::NONE)
   {
-    if(turn_state == TurnState::BEGIN)
-      turn_state = TurnState::ENTER_DIM;
-    else if(turn_state == TurnState::ENTER_DIM)
-      turn_state = TurnState::FADE_IN_TEXT;
-    else if(turn_state == TurnState::FADE_IN_TEXT)
-    {
-      if(turns_elapsed == 0)
-        turn_state = TurnState::SELECT_ACTION_ALLY;
-      else
-        turn_state = TurnState::GENERAL_UPKEEP;
-    }
-    else if(turn_state == TurnState::GENERAL_UPKEEP)
-      turn_state = TurnState::UPKEEP;
-    else if(turn_state == TurnState::UPKEEP)
-      turn_state = TurnState::SELECT_ACTION_ALLY;
-    else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-      turn_state = TurnState::SELECT_ACTION_ENEMY;
-    else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-      turn_state = TurnState::PROCESS_ACTIONS;
-    else if(turn_state == TurnState::PROCESS_ACTIONS)
-      turn_state = TurnState::CLEAN_UP;
-    /* Select moar actions dude */
-    else if(turn_state == TurnState::CLEAN_UP)
-      turn_state = TurnState::SELECT_ACTION_ALLY;
+    if(turn_state != TurnState::OUTCOME)
+      turn_state = TurnState::OUTCOME;
+    else
+      turn_state = TurnState::FINISHED;
   }
+  else if(turn_state == TurnState::BEGIN)
+    turn_state = TurnState::ENTER_DIM;
+  else if(turn_state == TurnState::ENTER_DIM)
+    turn_state = TurnState::FADE_IN_TEXT;
+  else if(turn_state == TurnState::FADE_IN_TEXT)
+  {
+    if(turns_elapsed == 0)
+      turn_state = TurnState::SELECT_ACTION_ALLY;
+    else
+      turn_state = TurnState::GENERAL_UPKEEP;
+  }
+  else if(turn_state == TurnState::GENERAL_UPKEEP)
+    turn_state = TurnState::UPKEEP;
+  else if(turn_state == TurnState::UPKEEP)
+    turn_state = TurnState::SELECT_ACTION_ALLY;
+  else if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    turn_state = TurnState::SELECT_ACTION_ENEMY;
+  else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
+    turn_state = TurnState::PROCESS_ACTIONS;
+  else if(turn_state == TurnState::PROCESS_ACTIONS)
+    turn_state = TurnState::CLEAN_UP;
+  else if(turn_state == TurnState::CLEAN_UP)
+    turn_state = TurnState::SELECT_ACTION_ALLY;
+  else if(turn_state == TurnState::OUTCOME)
+    turn_state = TurnState::FINISHED;
 
-  std::cout << "[Turn State] " << Helpers::turnStateToStr(turn_state)
-            << std::endl;
+  std::cout << "[Turn] " << Helpers::turnStateToStr(turn_state) << std::endl;
 }
 
 bool Battle::update(int32_t cycle_time)
@@ -3740,32 +3788,38 @@ bool Battle::update(int32_t cycle_time)
   updateDelay(cycle_time);
   updateRendering(cycle_time);
 
-  if(turn_state != TurnState::OUTCOME)
-    checkIfOutcome();
+  if(turn_state != TurnState::FINISHED && turn_state != TurnState::STOPPED)
+  {
+    if(outcome == OutcomeType::NONE && delay == 0)
+      checkIfOutcome();
 
-  if(getFlagCombat(CombatState::PHASE_DONE) && delay == 0)
-    setNextTurnState();
+    if(outcome != OutcomeType::NONE)
+      setFlagCombat(CombatState::PHASE_DONE);
 
-  if(turn_state == TurnState::BEGIN)
-    updateBegin();
-  else if(turn_state == TurnState::ENTER_DIM)
-    updateScreenDim();
-  else if(turn_state == TurnState::FADE_IN_TEXT)
-    updateFadeInText();
-  else if(turn_state == TurnState::GENERAL_UPKEEP)
-    updateGeneralUpkeep();
-  else if(turn_state == TurnState::UPKEEP)
-    updatePersonalUpkeep();
-  else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-    updateUserSelection();
-  else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-    updateEnemySelection();
-  else if(turn_state == TurnState::PROCESS_ACTIONS)
-    updateProcessing();
-  else if(turn_state == TurnState::CLEAN_UP)
-    cleanUpTurn();
-  else if(turn_state == TurnState::OUTCOME)
-    updateOutcome();
+    if(getFlagCombat(CombatState::PHASE_DONE) && delay == 0)
+      setNextTurnState();
+
+    if(turn_state == TurnState::BEGIN)
+      updateBegin();
+    else if(turn_state == TurnState::ENTER_DIM)
+      updateScreenDim();
+    else if(turn_state == TurnState::FADE_IN_TEXT)
+      updateFadeInText();
+    else if(turn_state == TurnState::GENERAL_UPKEEP)
+      updateGeneralUpkeep();
+    else if(turn_state == TurnState::UPKEEP)
+      updatePersonalUpkeep();
+    else if(turn_state == TurnState::SELECT_ACTION_ALLY)
+      updateUserSelection();
+    else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
+      updateEnemySelection();
+    else if(turn_state == TurnState::PROCESS_ACTIONS)
+      updateProcessing();
+    else if(turn_state == TurnState::CLEAN_UP)
+      cleanUpTurn();
+    else if(turn_state == TurnState::OUTCOME)
+      updateOutcome();
+  }
 
   clearElementsTimedOut();
 

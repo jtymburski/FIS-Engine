@@ -44,6 +44,9 @@ public:
   /* BattleMenu Default Initialization Function */
   BattleMenu();
 
+  /* Annihilates a BattleMenu object */
+  ~BattleMenu();
+
 private:
   /* The BattleActor which is using the Menu */
   BattleActor* actor;

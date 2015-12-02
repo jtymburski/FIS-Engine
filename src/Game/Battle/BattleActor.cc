@@ -53,6 +53,7 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
       state_elapsed_time{0},
       state_flashing{FlashingState()},
       state_guarding{GuardingState::NONE},
+      state_living{LivingState::REMOVED},
       state_selection{SelectionState::NOT_SELECTED},
       state_upkeep{UpkeepState::COMPLETE},
       stats_actual{AttributeSet()},
@@ -105,9 +106,12 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   // person_base->resetSkills();
 
   /* If the person's current VITA is >0, they are not KO'd */
-  setFlag(ActorState::KO,
-          !(person_base->getCurr().getStat(Attribute::VITA) > 0));
-  setFlag(ActorState::ALIVE, true);
+  if(person_base->getCurr().getStat(Attribute::VITA) > 0)
+  {
+    std::cout << "Setting state living!" << std::endl;
+    setStateLiving(LivingState::ALIVE);
+  }
+
   setFlag(ActorState::REVIVABLE, true);
   setFlag(ActorState::RUN_ENABLED, true);
 
@@ -453,7 +457,9 @@ bool BattleActor::dealDamage(int32_t damage_amount)
   if(damage_amount >= (int32_t)curr_vita)
   {
     stats_actual.setBaseValue(Attribute::VITA, 0);
-    setFlag(ActorState::KO);
+
+    if(state_living == LivingState::ALIVE)
+      state_living = LivingState::KO;
 
     return true;
   }
@@ -709,6 +715,11 @@ SpriteState BattleActor::getStateActionFrame()
   return action_element.element_state;
 }
 
+LivingState BattleActor::getStateLiving()
+{
+  return state_living;
+}
+
 UpkeepState BattleActor::getStateUpkeep()
 {
   return state_upkeep;
@@ -774,6 +785,11 @@ void BattleActor::setActionFrameStart(int32_t new_x, int32_t new_y)
 void BattleActor::setStateActionFrame(SpriteState new_state)
 {
   action_element.element_state = new_state;
+}
+
+void BattleActor::setStateLiving(LivingState new_state)
+{
+  state_living = new_state;
 }
 
 void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
@@ -871,8 +887,8 @@ BattleActor::getLivingTargets(std::vector<BattleActor*> targets)
                                {
                                  if(actor)
                                  {
-                                   return (!actor->getFlag(ActorState::KO) &&
-                                           actor->getFlag(ActorState::ALIVE));
+                                   return actor->getStateLiving() ==
+                                          LivingState::ALIVE;
                                  }
 
                                  return true;

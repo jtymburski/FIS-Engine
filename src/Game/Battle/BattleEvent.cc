@@ -519,7 +519,7 @@ bool BattleEvent::doesActionHit(BattleActor* curr_target)
   if(curr_action && curr_target)
   {
     if(curr_action->actionFlag(ActionFlags::DAMAGE))
-      if(!curr_target->getFlag(ActorState::ALIVE))
+      if(curr_target->getStateLiving() != LivingState::ALIVE)
         return false;
 
     return Helpers::chanceHappens(

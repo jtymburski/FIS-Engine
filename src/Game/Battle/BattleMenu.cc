@@ -79,6 +79,12 @@ BattleMenu::BattleMenu()
 {
 }
 
+BattleMenu::~BattleMenu()
+{
+  clearSkillFrames();
+  clearItemFrames();
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS - RENDERING
  *============================================================================*/
@@ -960,6 +966,7 @@ void BattleMenu::clear()
 {
   actor = nullptr;
   clearSkillFrames();
+  clearItemFrames();
   setFlag(BattleMenuState::READY, false);
   setFlag(BattleMenuState::SELECTION_COMPLETE, false);
   setFlag(BattleMenuState::SKILL_FRAMES_BUILT, false);

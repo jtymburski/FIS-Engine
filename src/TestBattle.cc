@@ -358,7 +358,7 @@ void TestBattle::create()
 
   stats_player_min = AttributeSet(
   {
-    100, 25, 6, 5,
+    200, 25, 6, 5,
     0, 0, 0, 0,
     6, 5, 3, 2,
     0, 0, 0, 0,
@@ -367,7 +367,7 @@ void TestBattle::create()
 
   stats_player_max = AttributeSet(
   {
-    225, 50, 12, 12,
+    425, 50, 12, 12,
     0, 0, 0, 0,
     12, 12, 7, 7,
     0, 0, 0, 0,
@@ -1769,15 +1769,14 @@ bool TestBattle::setConfiguration(Options* running_config)
 /* ------------------------------------------------------------------------- */
 bool TestBattle::update(int cycle_time)
 {
-  if(mode == TEST_BATTLE)
+  if(mode == TEST_BATTLE && battle_logic)
   {
     battle_logic->update(cycle_time);
 
-    if(battle_logic->getTurnState() == TurnState::STOPPED)
-    {
+    if(battle_logic->getTurnState() == TurnState::FINISHED)
+      battle_logic->stopBattle();
+    else if(battle_logic->getTurnState() == TurnState::STOPPED)
       mode = SCENARIO;
-      destroyBattle();
-    }
   }
 
   return false;
