@@ -488,8 +488,6 @@ bool Battle::checkEnemiesDeath()
 
 void Battle::checkIfOutcome()
 {
-  // if(delay == 0)
-  // {
   auto allies_dead = checkAlliesDeath();
   auto enemies_dead = checkEnemiesDeath();
 
@@ -503,18 +501,10 @@ void Battle::checkIfOutcome()
     std::cout << "Setting outcome to DEFEAT" << std::endl;
     outcome = OutcomeType::DEFEAT;
   }
-
-  // if(outcome != OutcomeType::NONE)
-  // {
-  //   setFlagCombat(CombatState::PHASE_DONE, false);
-  //   turn_state = TurnState::OUTCOME;
-  // }
-  // }
 }
 
 void Battle::clearEvent()
 {
-  std::cout << "[BattleEvent] Cleared" << std::endl;
   if(event)
     delete event;
 
@@ -925,10 +915,11 @@ void Battle::updateFadeInText()
   {
     auto font = config->getFontTTF(FontName::BATTLE_TURN);
     auto element = new RenderElement(renderer, font);
-    element->createAsEnterText("Decide Your Fate", config->getScreenHeight(),
+    element->createAsEnterText("Mr Boopster For President",
+                               config->getScreenHeight(),
                                config->getScreenWidth());
     render_elements.push_back(element);
-    delay = 2000;
+    delay = 1700;
 
     setFlagCombat(CombatState::PHASE_DONE, true);
   }
@@ -936,7 +927,6 @@ void Battle::updateFadeInText()
 
 void Battle::updateOutcome()
 {
-  std::cout << "Updating to the outcome!" << std::endl;
   setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
@@ -1790,8 +1780,8 @@ bool Battle::renderEnemies()
 
       if(event && event->actor == enemy)
       {
-        x_factor = 1.08;
-        y_factor = 1.08;
+        x_factor = 1.11;
+        y_factor = 1.11;
       }
 
       if(active_sprite && active_sprite->getCurrent())

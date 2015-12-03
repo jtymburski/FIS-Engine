@@ -145,16 +145,16 @@ private:
   const static std::vector<int32_t> kINDEX_ORDER;
   const static std::vector<int32_t> kREVERSE_ORDER;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS - RENDERING
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS - RENDERING
+   *============================================================================*/
 private:
   void setRectBot(SDL_Rect& srect, uint32_t height);
   void setRectTop(SDL_Rect& rect);
 
-/*=============================================================================
- * PRIVATE FUNCTIONS - OPERATION
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS - OPERATION
+   *============================================================================*/
 private:
   /* Returns the actor of a given element index */
   BattleActor* actorOfElementIndex(int32_t index);
@@ -167,6 +167,9 @@ private:
 
   /* Determines whether a given element index is valid for selection purp. */
   bool isIndexValid(int32_t index);
+
+  /* Checks to make sure the target is valid before allowing a selection */
+  bool isTargetValid(BattleActor* check_target);
 
   /* Get element index of a given BattleActor */
   int32_t elementIndexOfActor(BattleActor* check_actor);

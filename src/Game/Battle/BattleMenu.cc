@@ -175,6 +175,30 @@ bool BattleMenu::isIndexValid(int32_t index)
   return false;
 }
 
+bool BattleMenu::isTargetValid(BattleActor* check_target)
+{
+  if(check_target)
+  {
+    if(selected_action_scope == ActionScope::ONE_ALLY_KO ||
+       selected_action_scope == ActionScope::ALL_ALLIES_KO)
+    {
+      if(check_target->getStateLiving() != LivingState::ALIVE)
+        return true;
+
+      return false;
+    }
+    else if(selected_action_scope != ActionScope::NO_SCOPE)
+    {
+      if(check_target->getStateLiving() == LivingState::ALIVE)
+        return true;
+
+      return false;
+    }
+  }
+
+  return false;
+}
+
 int32_t BattleMenu::elementIndexOfActor(BattleActor* check_actor)
 {
   int32_t index = 0;
@@ -241,7 +265,8 @@ void BattleMenu::keyDownCancel()
 
 void BattleMenu::keyDownDecrement()
 {
-  element_index = validPrevious();
+  if(selected_action_scope != ActionScope::USER)
+    element_index = validPrevious();
 
   if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
     setHoverTargets();
@@ -251,7 +276,8 @@ void BattleMenu::keyDownIncrement()
 {
   printSelectableTargets();
 
-  element_index = validNext();
+  if(selected_action_scope != ActionScope::USER)
+    element_index = validNext();
 
   if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
     setHoverTargets();
@@ -387,7 +413,7 @@ BattleActor* BattleMenu::getMostLeft(bool allied_party)
     {
       auto target = targetOfOrderedIndex(targets, ordered);
 
-      if(target)
+      if(isTargetValid(target))
         return target;
     }
   }
@@ -397,7 +423,7 @@ BattleActor* BattleMenu::getMostLeft(bool allied_party)
     {
       auto target = targetOfOrderedIndex(targets, ordered);
 
-      if(target)
+      if(isTargetValid(target))
       {
         std::cout << "Returning most left person: "
                   << target->getBasePerson()->getName() << std::endl;
@@ -1391,7 +1417,10 @@ void BattleMenu::keyDownSelect()
 
       menu_layer = BattleMenuLayer::TARGET_SELECTION;
 
-      if(isActionOffensive())
+      /* If the selected scope is the user, then the EI */
+      if(selected_action_scope == ActionScope::USER)
+        element_index = elementIndexOfActor(actor);
+      else if(isActionOffensive())
         element_index = elementIndexOfActor(getMostLeft(false));
       else
         element_index = elementIndexOfActor(getMostRight(true));
