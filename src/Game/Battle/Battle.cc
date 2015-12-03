@@ -42,12 +42,6 @@ const float Battle::kALLY_RUN_MODIFIER = 1.00;
 const float Battle::kENEMY_RUN_MODIFIER = 1.00;
 const float Battle::kRUN_PC_PER_POINT = 0.003;
 
-const int16_t Battle::kREGEN_RATE_ZERO_PC = 0;
-const int16_t Battle::kREGEN_RATE_WEAK_PC = 3;
-const int16_t Battle::kREGEN_RATE_NORMAL_PC = 4;
-const int16_t Battle::kREGEN_RATE_STRONG_PC = 5;
-const int16_t Battle::kREGEN_RATE_GRAND_PC = 6;
-
 /* ------------ Battle Outcome Modifiers ---------------
  * kENEMY_RUN_EXP_PC - %EXP to maintain on pyrric victory (enemies run)
  * kRUN_PC_EXP_PENALTY - %EXP (MAX) penalty when the Allies run from Battle.
@@ -352,7 +346,10 @@ bool Battle::bufferMenuSelection()
     if(skill && skill->skill)
     {
       auto cooldown = skill->skill->getCooldown();
+      auto true_cost = skill->true_cost;
+      auto curr_qd = actor->getStats().getValue(Attribute::QTDR);
 
+      actor->getStats().setBaseValue(Attribute::QTDR, curr_qd - true_cost);
       battle_buffer->addSkill(actor, skill, targets, cooldown, turns_elapsed);
     }
   }
@@ -393,8 +390,7 @@ bool Battle::bufferModuleSelection()
 
       /* Pay the required QTDR cost for the Skill */
       auto true_cost = curr_module->getSelectedBattleSkill()->true_cost;
-      auto curr_qd = curr_actor->getStats().getBaseValue(Attribute::QTDR);
-
+      auto curr_qd = curr_actor->getStats().getValue(Attribute::QTDR);
       curr_actor->getStats().setBaseValue(Attribute::QTDR, curr_qd - true_cost);
     }
     else if(action_type == ActionType::PASS)
@@ -438,19 +434,15 @@ void Battle::buildBattleActors(Party* allies, Party* enemies)
 
 void Battle::cleanUpTurn()
 {
-  prepareActorUpkeeps();
-
-  for(auto& actor : actors)
-    if(actor)
-      actor->setSelectionState(SelectionState::NOT_SELECTED);
-
   // Reset each member.
   // -- For each battle actor:
   // ----- clear Defend/Guard/Guarding/Temp ailment efffects
 
   battle_buffer->clearForTurn(turns_elapsed);
+  battle_menu->clear();
 
   turns_elapsed++;
+  delay = 500;
   setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
@@ -528,13 +520,13 @@ bool Battle::doesActorNeedToUpkeep(BattleActor* actor)
   if(to_upkeep)
   {
     to_upkeep &= actor->getStateLiving() == LivingState::ALIVE;
-    to_upkeep &= actor->getStateUpkeep() == UpkeepState::UPKEEP_BEGIN;
+    to_upkeep &= actor->getStateUpkeep() == UpkeepState::VITA_REGEN;
   }
 
   return to_upkeep;
 }
 
-void Battle::generalUpkeep()
+void Battle::updateGeneralUpkeep()
 {
 #ifdef UDEBUG
   std::cout << "\n=============\n";
@@ -543,13 +535,13 @@ void Battle::generalUpkeep()
 #endif
 
   /* First turn -> skip updates, other turns -> add to update */
-  if(turns_elapsed > 0)
-  {
-    for(auto& actor : actors)
-      if(actor)
-        actor->setUpkeepState(UpkeepState::UPKEEP_BEGIN);
-  }
+  prepareActorUpkeeps();
 
+  for(auto& actor : actors)
+    if(actor)
+      actor->setSelectionState(SelectionState::NOT_SELECTED);
+
+  /* Upkeep before the personal upkeeps start */
   setFlagCombat(CombatState::PHASE_DONE);
 }
 
@@ -737,8 +729,20 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 void Battle::prepareActorUpkeeps()
 {
   for(auto& actor : actors)
+  {
     if(actor)
-      actor->setUpkeepState(UpkeepState::UPKEEP_BEGIN);
+    {
+      actor->setUpkeepState(UpkeepState::VITA_REGEN);
+
+      auto ailments = actor->getAilments();
+
+      for(auto& ailment : ailments)
+      {
+        if(ailment)
+          ailment->setUpdateStatus(AilmentStatus::INCOMPLETE);
+      }
+    }
+  }
 }
 
 bool Battle::calculateEnemySelection(BattleActor* next_actor,
@@ -932,12 +936,77 @@ void Battle::updateOutcome()
 
 void Battle::updatePersonalUpkeep()
 {
-  if(upkeep_actor)
+  if(upkeep_actor && delay == 0)
   {
+    auto state = upkeep_actor->getStateUpkeep();
+
+    if(state == UpkeepState::COMPLETE)
+      upkeep_actor = nullptr;
+    else if(state == UpkeepState::VITA_REGEN)
+      updatePersonalVitaRegen();
+    else if(state == UpkeepState::QTDR_REGEN)
+      updatePersonalQtdrRegen();
+    else if(state == UpkeepState::AILMENTS)
+      updatePersonalAilments();
   }
-  else
+  else if(!upkeep_actor && delay == 0)
   {
+    upkeep_actor = getNextUpkeepActor();
+
+    if(!upkeep_actor)
+      setFlagCombat(CombatState::PHASE_DONE, true);
+    else
+      delay = 200;
   }
+}
+
+void Battle::updatePersonalVitaRegen()
+{
+  // Calculate and create the vita regen for the upkeep_actor
+  auto vita_regen = upkeep_actor->calcTurnRegen(Attribute::VITA);
+
+  if(vita_regen > 0)
+  {
+    upkeep_actor->restoreVita(vita_regen);
+    auto font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+    auto element = new RenderElement(renderer, font);
+
+    element->createAsRegenValue(
+        vita_regen, DamageType::VITA_REGEN, config->getScreenHeight(),
+        getActorX(upkeep_actor), getActorY(upkeep_actor));
+
+    render_elements.push_back(element);
+    delay = 600;
+  }
+
+  upkeep_actor->setUpkeepState(UpkeepState::QTDR_REGEN);
+}
+
+void Battle::updatePersonalQtdrRegen()
+{
+  auto qtdr_regen = upkeep_actor->calcTurnRegen(Attribute::QTDR);
+
+  if(qtdr_regen > 0)
+  {
+    upkeep_actor->restoreQtdr(qtdr_regen);
+    auto font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+    auto element = new RenderElement(renderer, font);
+
+    element->createAsRegenValue(
+        qtdr_regen, DamageType::QTDR_REGEN, config->getScreenHeight(),
+        getActorX(upkeep_actor), getActorY(upkeep_actor));
+    render_elements.push_back(element);
+    delay = 600;
+  }
+  // Calculate and create the qtdr regen for the upkeep_actor
+  upkeep_actor->setUpkeepState(UpkeepState::AILMENTS);
+}
+
+void Battle::updatePersonalAilments()
+{
+  // Personal Ailments for the upkeep_actor
+  std::cout << "Personal Ailments" << std::endl;
+  upkeep_actor->setUpkeepState(UpkeepState::COMPLETE);
 }
 
 void Battle::updateProcessing()
@@ -995,12 +1064,6 @@ void Battle::updateScreenDim()
 
     setFlagCombat(CombatState::PHASE_DONE);
   }
-}
-
-void Battle::updateGeneralUpkeep()
-{
-
-  setFlagCombat(CombatState::PHASE_DONE);
 }
 
 void Battle::updateSelectingState(BattleActor* actor, bool set_selected)
@@ -2532,6 +2595,90 @@ bool Battle::setBackground(Sprite* background)
   return false;
 }
 
+void Battle::setNextTurnState()
+{
+  /* Set the CURRENT_STATE to incomplete */
+  setFlagCombat(CombatState::PHASE_DONE, false);
+
+  if(outcome != OutcomeType::NONE)
+  {
+    if(turn_state != TurnState::OUTCOME)
+      turn_state = TurnState::OUTCOME;
+    else
+      turn_state = TurnState::FINISHED;
+  }
+  else if(turn_state == TurnState::BEGIN)
+    turn_state = TurnState::ENTER_DIM;
+  else if(turn_state == TurnState::ENTER_DIM)
+    turn_state = TurnState::FADE_IN_TEXT;
+  else if(turn_state == TurnState::FADE_IN_TEXT)
+    turn_state = TurnState::SELECT_ACTION_ALLY;
+  else if(turn_state == TurnState::GENERAL_UPKEEP)
+    turn_state = TurnState::UPKEEP;
+  else if(turn_state == TurnState::UPKEEP)
+    turn_state = TurnState::SELECT_ACTION_ALLY;
+  else if(turn_state == TurnState::SELECT_ACTION_ALLY)
+    turn_state = TurnState::SELECT_ACTION_ENEMY;
+  else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
+    turn_state = TurnState::PROCESS_ACTIONS;
+  else if(turn_state == TurnState::PROCESS_ACTIONS)
+    turn_state = TurnState::CLEAN_UP;
+  else if(turn_state == TurnState::CLEAN_UP)
+    turn_state = TurnState::GENERAL_UPKEEP;
+  else if(turn_state == TurnState::OUTCOME)
+    turn_state = TurnState::FINISHED;
+
+  std::cout << "[Turn] " << Helpers::turnStateToStr(turn_state) << std::endl;
+}
+
+bool Battle::update(int32_t cycle_time)
+{
+  time_elapsed += cycle_time;
+
+  updateDelay(cycle_time);
+  updateRendering(cycle_time);
+
+  if(turn_state != TurnState::FINISHED && turn_state != TurnState::STOPPED)
+  {
+    if(outcome == OutcomeType::NONE && delay == 0)
+      checkIfOutcome();
+
+    if(outcome != OutcomeType::NONE)
+      setFlagCombat(CombatState::PHASE_DONE);
+
+    if(getFlagCombat(CombatState::PHASE_DONE) && delay == 0)
+      setNextTurnState();
+
+    if(delay == 0)
+    {
+      if(turn_state == TurnState::BEGIN)
+        updateBegin();
+      else if(turn_state == TurnState::ENTER_DIM)
+        updateScreenDim();
+      else if(turn_state == TurnState::FADE_IN_TEXT)
+        updateFadeInText();
+      else if(turn_state == TurnState::GENERAL_UPKEEP)
+        updateGeneralUpkeep();
+      else if(turn_state == TurnState::UPKEEP)
+        updatePersonalUpkeep();
+      else if(turn_state == TurnState::SELECT_ACTION_ALLY)
+        updateUserSelection();
+      else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
+        updateEnemySelection();
+      else if(turn_state == TurnState::PROCESS_ACTIONS)
+        updateProcessing();
+      else if(turn_state == TurnState::CLEAN_UP)
+        cleanUpTurn();
+      else if(turn_state == TurnState::OUTCOME)
+        updateOutcome();
+    }
+  }
+
+  clearElementsTimedOut();
+
+  return false;
+}
+
 /*=============================================================================
  * TO REFACTOR
  *============================================================================*/
@@ -2625,9 +2772,6 @@ bool Battle::setBackground(Sprite* background)
 //     member->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
 //   }
 
-//   /* Reset the update processed flag for all ailments at the end of the
-//   turn
-//   */
 //   for(auto ailment : ailments)
 //     ailment->setFlag(AilState::UPDATE_PROCESSED, false);
 
@@ -2695,10 +2839,6 @@ bool Battle::setBackground(Sprite* background)
 
 // void Battle::performEvents()
 // {
-// #ifdef UDEBUG
-//   std::cout << "---- Performing Events ----" << std::endl;
-// #endif
-
 //   /* Assert there is at least one index of events to perform */
 //   auto valid_next = true;
 //   valid_next &= event_buffer->getCurrentSize() > 0;
@@ -2709,49 +2849,22 @@ bool Battle::setBackground(Sprite* background)
 
 //   while(valid_next)
 //   {
-//     // auto current_size = event_buffer->getCurrentSize();
 //     auto event = event_buffer->getCurrentEvent();
 //     auto index = event_buffer->getIndex();
-
-//     // TODO [04-04-15] Temporary code
 //     event_buffer->printEvent(index);
 
-//     if(event->type == EventType::SKILL_COOLDOWN)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "{COOLDOWN} -- The skill " <<
-//       event->skill_use->getName()
-//                 << " being used by " << event->user->getName()
-//                 << " will cooldown "
-//                 << " from " << event->amount << " to " << event->amount - 1
-//                 << "." << std::endl;
-// #endif
-//     }
 //     else if(event->type == EventType::ACTION_BEGIN)
 //     {
 //       if(event->user)
 //         setUserAttacking(event->user);
 //     }
 //     else if(event->type == EventType::ACTION_END)
-//     {
 //       unsetActorsAttacking();
-//     }
-//     else if(event->type == EventType::MISS_TURN)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "{MISS TURN} -- The user " << event->user
-//                 << " misses their turn!" << std::endl;
-// #endif
-//     }
 //     if(event->type == EventType::IMPLODE)
 //     {
 //       performDamageEvent(event);
 //       // TODO [08-30-15]: Move the member to reserve (not needed until
 //       revive)
-//     }
-//     else if(event->type == EventType::INSPECT)
-//     {
-//       // TODO [02-08-15]: Determine inspect outcome
 //     }
 //     else if(event->type == EventType::SUCCEED_RUN)
 //     {
@@ -2763,60 +2876,16 @@ bool Battle::setBackground(Sprite* background)
 
 //       setBattleFlag(CombatState::PHASE_DONE, true);
 //     }
-//     else if(event->type == EventType::STANDARD_DAMAGE ||
-//             event->type == EventType::CRITICAL_DAMAGE ||
-//             event->type == EventType::POISON_DAMAGE ||
-//             event->type == EventType::BURN_DAMAGE ||
-//             event->type == EventType::HITBACK_DAMAGE ||
-//             event->type == EventType::METABOLIC_DAMAGE)
-//     {
-//       performDamageEvent(event);
-//     }
 //     else if(event->type == EventType::METABOLIC_KILL)
-//     {
 //       event->user->setBFlag(BState::ALIVE, false);
-//     }
-//     else if(event->type == EventType::DEATH_COUNTDOWN)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "{DEATHTIMER} " << event->ailment_use->getTurnsLeft()
-//                 << " turns until death! " << std::endl;
-// #endif
-//     }
 //     else if(event->type == EventType::BOND)
-//     {
 //       // TODO [02-14-15] To Hell with this bond effect
-//     }
 //     else if(event->type == EventType::BONDING)
-//     {
 //       // TODO [02-14-15] To Hell with this bonding effect
-//     }
 //     else if(event->type == EventType::BEGIN_DEFEND)
-//     {
 //       event->user->setBFlag(BState::DEFENDING, true);
-
-// #ifdef UDEBUG
-//       std::cout << "{DEFEND} " << event->user->getName()
-//                 << " is now defending themselves from damage." <<
-//                 std::endl;
-// #endif
-//     }
 //     else if(event->type == EventType::BREAK_DEFEND)
-//     {
 //       event->user->resetDefend();
-
-// #ifdef UDEBUG
-//       std::cout << "{BREAK DEFEND} " << curr_target->getName()
-//                 << " is no longer defending from damage.\n\n";
-// #endif
-//     }
-//     else if(event->type == EventType::PERSIST_DEFEND)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "{PERSIST DEFEND} " << curr_target->getName()
-//                 << " continues to defend themselves from damage.\n\n";
-// #endif
-//     }
 //     else if(event->type == EventType::BEGIN_GUARD)
 //     {
 //       /* Update the buffer to swap out Guard <--> Guardee
@@ -2827,42 +2896,12 @@ bool Battle::setBackground(Sprite* background)
 //       {
 //         action_buffer->injectGuardTargets(event->user->getGuard(),
 //         event->user);
-
-// #ifdef UDEBUG
-//         std::cout << "{GUARD} " << event->user->getGuard()->getName()
-//                   << " is now guarding " << event->user->getName()
-//                   << " from some damage.\n";
-// #endif
-//       }
-//       else
-//       {
-// #ifdef UDEBUG
-//         std::cerr << "[ERROR] Guard pair not made successfully" <<
-//         std::endl;
-// #endif
-//       }
-//     }
-//     else if(event->type == EventType::PERSIST_GUARD)
-//     {
-// #ifdef UDEBUG
-//       std::cout << "{PERSIST GUARD " << curr_target->getName() << "
-//       continues"
-//                 << " to protect " << curr_target->getGuardee()->getName()
-//                 << " from damage" << std::endl;
-// #endif
 //     }
 //     else if(event->type == EventType::BREAK_GUARD)
 //     {
 //       action_buffer->rejectGuardTargets(event->user->getGuard());
-
 //       curr_target->getGuardee()->resetGuard();
 //       curr_target->resetGuardee();
-
-// #ifdef UDEBUG
-//       std::cout << "{BREAK GUARD} " << event->user->getGuard()->getName()
-//                 << " is no longer guarding " << event->user->getName()
-//                 << " from some damage.\n";
-// #endif
 //     }
 //     else if(event->type == EventType::DEATH)
 //     {
@@ -2904,13 +2943,6 @@ bool Battle::setBackground(Sprite* background)
 
 //       /* Perform the alteration on the target */
 //       event->targets.at(0)->getCurr().alterStat(target_attr, amount);
-
-// #ifdef UDEBUG
-//       std::cout << "{ALTER}" << event->targets.at(0)->getName() << "'s"
-//                 << AttributeSet::getName(target_attr) << " has been altered
-//                 by "
-//                 << amount << "." << std::endl;
-// #endif
 //     }
 //     else if(event->type == EventType::ASSIGNMENT)
 //     {
@@ -2926,13 +2958,6 @@ bool Battle::setBackground(Sprite* background)
 //       // else
 //       //   action_target->getTemp().setStat(targ_attr, set_value);
 //       event->targets.at(0)->getCurr().setStat(assign_attr, amount);
-
-// #ifdef UDEBUG
-//       std::cout << "{ASSIGN} " << event->targets.at(0)->getName() << "'s"
-//                 << AttributeSet::getName(assign_attr) << " has been altered
-//                 by "
-//                 << amount << "." << std::endl;
-// #endif
 //     }
 //     else if(event->type == EventType::REVIVAL)
 //     {
@@ -2941,14 +2966,6 @@ bool Battle::setBackground(Sprite* background)
 //        * VITA to */
 //       event->targets.at(0)->setBFlag(BState::ALIVE, true);
 //       curr_target->getCurr().setStat(Attribute::VITA, event->amount);
-
-// #ifdef UDEBUG
-//       std::cout << "{REVIVE} " << event->targets.at(0)->getName()
-//                 << " has been brought back from KO with "
-//                 << curr_target->getCurr().getStat(Attribute::VITA) << "
-//                 VITA."
-//                 << std::endl;
-// #endif
 //     }
 //     else if(event->type == EventType::HEAL_HEALTH)
 //     {
@@ -2970,15 +2987,6 @@ bool Battle::setBackground(Sprite* background)
 //                      event->amount;
 
 //       event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
-
-// #ifdef UDEBUG
-//       if(event->amount > 0)
-//       {
-//         std::cout << "{REGEN} " << event->targets.at(0)->getName()
-//                   << " has restored " << event->amount << " VITA." <<
-//                   std::endl;
-//       }
-// #endif
 //     }
 //     else if(event->type == EventType::REGEN_QTDR)
 //     {
@@ -2988,15 +2996,6 @@ bool Battle::setBackground(Sprite* background)
 //                      event->amount;
 
 //       event->targets.at(0)->getCurr().setStat(Attribute::QTDR, new_val);
-
-// #ifdef UDEBUG
-//       if(event->amount != 0)
-//       {
-//         std::cout << "{REGEN} " << event->targets.at(0)->getName()
-//                   << " has regained " << event->amount << " QTDR." <<
-//                   std::endl;
-//       }
-// #endif
 //     }
 //     /* Deathtimer death -> the countdown has reached zero and the target
 //     will
@@ -3012,112 +3011,10 @@ bool Battle::setBackground(Sprite* background)
 //   }
 // }
 
-// void Battle::performDamageEvent(BattleEvent* event)
-// {
-// #ifdef UDEBUG
-//   auto str_damage = "";
-
-//   if(event->type == EventType::STANDARD_DAMAGE)
-//     str_damage = "STND DMG";
-//   else if(event->type == EventType::CRITICAL_DAMAGE)
-//     str_damage = "CRIT DMG";
-//   else if(event->type == EventType::POISON_DAMAGE)
-//     str_damage = "POSN DMG";
-//   else if(event->type == EventType::BURN_DAMAGE)
-//     str_damage = "BURN DMG";
-//   else if(event->type == EventType::HITBACK_DAMAGE)
-//     str_damage = "HITB DMG";
-//   else if(event->type == EventType::METABOLIC_DAMAGE)
-//     str_damage = "META DMG";
-// #endif
-
-//   auto amount = event->amount;
-//   auto targets = event->targets;
-
-//   if(event->type == EventType::IMPLODE)
-//   {
-//     auto temp = event->user;
-//     event->user = event->targets.at(0);
-//     targets.at(0) = temp;
-//   }
-
-//   /* Do the actual damage to the person */
-//   if(targets.size() > 0)
-//   {
-//     targets.at(0)->doDmg(amount);
-
-// #ifdef UDEBUG
-//     std::cout << "{" << str_damage << "} " << targets.at(0)->getName()
-//               << " struck with " << amount << " damage." << std::endl;
-// #endif
-//   }
-// }
-
 // void Battle::resetTurnFlags(Person* user)
 // {
 //   user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
 //   user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
-// }
-
-// void Battle::personalUpkeep(Person* const target)
-// {
-//   curr_target = target;
-
-//   /* If ailment processing hasn't begun for this person, reset the
-//   processing
-//    * index and stash all the ailments they are inflicted with in a temp
-//    vec.
-//    */
-//   if(!getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS))
-//   {
-//     pro_index = 0;
-//     temp_ailments = getPersonAilments(target);
-
-//     setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
-//     setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, true);
-
-//     if(temp_ailments.size() == 0)
-//       setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
-//   }
-
-//   /* If there were > 0 ailment, and the processing index is in bounds,
-//   update
-//    * the ailment using its update function (which may cure the ailmenmt),
-//    * then process its effects for rendering (ex. POISON inflicting damage)
-//    */
-//   if(!getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS) &&
-//      pro_index < temp_ailments.size())
-//   {
-//     processAilment();
-
-//     /* Increment the ailment processing index */
-//     if(getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE))
-//     {
-//       setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
-//       pro_index++;
-//     }
-
-//     if(pro_index >= temp_ailments.size())
-//       setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
-//   }
-//   else if(getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS))
-//   {
-//     /* Calculate the turn regen values and append "negative" damage events
-//      * (Regen events) to the event buffer, completing the upkeep of person
-//      */
-//     auto vita_regen = calcTurnRegen(target, Attribute::VITA);
-//     auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
-
-//     event_buffer->createDamageEvent(EventType::REGEN_VITA, target,
-//     vita_regen);
-//     event_buffer->createDamageEvent(EventType::REGEN_QTDR, target,
-//     qtdr_regen);
-
-//     target->battleTurnPrep();
-//     setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
-//   }
-
-//   setBattleFlag(CombatState::READY_TO_RENDER, true);
 // }
 
 // void Battle::processBuffer()
@@ -3242,31 +3139,12 @@ bool Battle::setBackground(Sprite* background)
 //   setBattleFlag(CombatState::READY_TO_RENDER, true);
 // }
 
-// /*
-//  * Description: Checks to see whether a good guard pair can be made between
-//  the
-//  *              current target and current user pointers and returns the
-//  result
-//  *
-//  * Inputs: none
-//  * Output: bool - the correctness of a guard pair between cur user and cur
-//  targ
-//  */
 // bool Battle::processGuard()
 // {
 //   auto can_guard = true;
 
 //   if(curr_target == nullptr || curr_user == nullptr)
-//   {
-
-// #ifdef UDEBUG
-//     std::cerr << "[Error] Curr target/user is null for guard processing"
-//               << std::endl;
-// #endif
-
 //     can_guard = false;
-//   }
-
 //   /* A guard/guardee combo can only be made if both the guard and guardee
 //   are
 //    * not being guarded by, or guarding any persons */
@@ -3391,13 +3269,9 @@ bool Battle::setBackground(Sprite* background)
 //       done = processDamageAction(damage_event);
 //     }
 //     else if(curr_action->actionFlag(ActionFlags::INFLICT))
-//     {
 //       done = processInflictAction();
-//     }
 //     else if(curr_action->actionFlag(ActionFlags::RELIEVE))
-//     {
 //       done = processRelieveAction();
-//     }
 //     else if(curr_action->actionFlag(ActionFlags::REVIVE))
 //     {
 //       auto revive_event = event_buffer->createReviveEvent(curr_target, 0);
@@ -3435,12 +3309,6 @@ bool Battle::setBackground(Sprite* background)
 
 //   if(ail != nullptr)
 //   {
-// #ifdef UDEBUG
-//     std::cout << "--- Ailment Proc: " <<
-//     Helpers::ailmentToStr(ail->getType())
-//               << " ---" << std::endl;
-// #endif
-
 //     /* If the ailment has not yet been updated this turn, perform standard
 //      * updates (flag setting/turn incrementing && damages) */
 //     if(!ail->getFlag(AilState::UPDATE_PROCESSED) &&
@@ -3653,42 +3521,6 @@ bool Battle::setBackground(Sprite* background)
 //   return party_death;
 // }
 
-// void Battle::upkeep()
-// {
-//   if(!(getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS)))
-//   {
-//     setBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS, true);
-//   }
-//   if(upkeep_persons.size() > 0)
-//   {
-//     /* If there is still people to upkeep, upkeep the first person */
-//     personalUpkeep(upkeep_persons.at(0));
-//     /* If that prerson's upkeep is complete, reset the flags and erase the
-//      * person from the upkeep persons vector */
-//     if(getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE))
-//     {
-//       setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, false);
-//       setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
-//       setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
-//       setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
-//       upkeep_persons.erase(begin(upkeep_persons));
-//     }
-//   }
-//   /* If there are no remaining upkeep persons, the personal upkeep phase is
-//    * complete -> reset flags so update() will set the next turn state */
-//   if(upkeep_persons.size() == 0)
-//     setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, true);
-// }
-
-// bool Battle::updatePartyDeaths(Person* target)
-// {
-//   if(target != nullptr)
-//     return (checkPartyDeath(friends, target) || checkPartyDeath(foes,
-//     target));
-
-//   return false;
-// }
-
 // bool Battle::updateTargetDefense()
 // {
 //   auto can_process = true;
@@ -3729,89 +3561,3 @@ bool Battle::setBackground(Sprite* background)
 
 //   return can_process;
 // }
-
-void Battle::setNextTurnState()
-{
-  /* Set the CURRENT_STATE to incomplete */
-  setFlagCombat(CombatState::PHASE_DONE, false);
-
-  if(outcome != OutcomeType::NONE)
-  {
-    if(turn_state != TurnState::OUTCOME)
-      turn_state = TurnState::OUTCOME;
-    else
-      turn_state = TurnState::FINISHED;
-  }
-  else if(turn_state == TurnState::BEGIN)
-    turn_state = TurnState::ENTER_DIM;
-  else if(turn_state == TurnState::ENTER_DIM)
-    turn_state = TurnState::FADE_IN_TEXT;
-  else if(turn_state == TurnState::FADE_IN_TEXT)
-  {
-    if(turns_elapsed == 0)
-      turn_state = TurnState::SELECT_ACTION_ALLY;
-    else
-      turn_state = TurnState::GENERAL_UPKEEP;
-  }
-  else if(turn_state == TurnState::GENERAL_UPKEEP)
-    turn_state = TurnState::UPKEEP;
-  else if(turn_state == TurnState::UPKEEP)
-    turn_state = TurnState::SELECT_ACTION_ALLY;
-  else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-    turn_state = TurnState::SELECT_ACTION_ENEMY;
-  else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-    turn_state = TurnState::PROCESS_ACTIONS;
-  else if(turn_state == TurnState::PROCESS_ACTIONS)
-    turn_state = TurnState::CLEAN_UP;
-  else if(turn_state == TurnState::CLEAN_UP)
-    turn_state = TurnState::SELECT_ACTION_ALLY;
-  else if(turn_state == TurnState::OUTCOME)
-    turn_state = TurnState::FINISHED;
-
-  std::cout << "[Turn] " << Helpers::turnStateToStr(turn_state) << std::endl;
-}
-
-bool Battle::update(int32_t cycle_time)
-{
-  time_elapsed += cycle_time;
-
-  updateDelay(cycle_time);
-  updateRendering(cycle_time);
-
-  if(turn_state != TurnState::FINISHED && turn_state != TurnState::STOPPED)
-  {
-    if(outcome == OutcomeType::NONE && delay == 0)
-      checkIfOutcome();
-
-    if(outcome != OutcomeType::NONE)
-      setFlagCombat(CombatState::PHASE_DONE);
-
-    if(getFlagCombat(CombatState::PHASE_DONE) && delay == 0)
-      setNextTurnState();
-
-    if(turn_state == TurnState::BEGIN)
-      updateBegin();
-    else if(turn_state == TurnState::ENTER_DIM)
-      updateScreenDim();
-    else if(turn_state == TurnState::FADE_IN_TEXT)
-      updateFadeInText();
-    else if(turn_state == TurnState::GENERAL_UPKEEP)
-      updateGeneralUpkeep();
-    else if(turn_state == TurnState::UPKEEP)
-      updatePersonalUpkeep();
-    else if(turn_state == TurnState::SELECT_ACTION_ALLY)
-      updateUserSelection();
-    else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
-      updateEnemySelection();
-    else if(turn_state == TurnState::PROCESS_ACTIONS)
-      updateProcessing();
-    else if(turn_state == TurnState::CLEAN_UP)
-      cleanUpTurn();
-    else if(turn_state == TurnState::OUTCOME)
-      updateOutcome();
-  }
-
-  clearElementsTimedOut();
-
-  return false;
-}

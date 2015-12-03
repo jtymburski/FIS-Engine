@@ -138,8 +138,15 @@ public:
   /* Returns the enumerated type of the Ailment */
   Infliction getType();
 
+  /* Returns the enumerated update status */
+  AilmentStatus getUpdateStatus();
+
   /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
   void setFlag(const AilState& flags, const bool& set_value = true);
+
+  /* Assigns the update status to the ailment */
+  void setUpdateStatus(AilmentStatus new_status);
+
   /*============================================================================
    * PUBLIC STATIC FUNCTIONS
    *============================================================================*/

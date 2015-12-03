@@ -161,7 +161,6 @@ void RenderElement::createAsDamageValue(int32_t amount, DamageType type,
 {
   text_string = std::to_string(amount);
   createAsDamageText(text_string, type, sc_height, x, y);
-  // status = initialStatusFade();
 
   render_type = RenderType::DAMAGE_VALUE;
 }
@@ -171,8 +170,9 @@ void RenderElement::createAsRegenValue(int32_t amount, DamageType type,
 {
   createAsDamageText(std::to_string(amount), type, sc_height, x, y);
   setTimes(650, 300, 300);
-  setAcceleration(0.001, 0.005);
-  setVelocity(0.000, -0.350);
+  status = initialStatusFade();
+  setAcceleration(0.000, -0.0001);
+  setVelocity(0.000, 0.001);
   render_type = RenderType::DAMAGE_VALUE;
 }
 

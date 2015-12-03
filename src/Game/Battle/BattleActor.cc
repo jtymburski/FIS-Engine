@@ -25,6 +25,12 @@ const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{225, 10, 10, 85};
 const SDL_Color BattleActor::kFLASHING_POISON_COLOR{0, 255, 0, 155};
 const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 225};
 
+const float BattleActor::kREGEN_RATE_ZERO_PC = 0.00;
+const float BattleActor::kREGEN_RATE_WEAK_PC = 0.03;
+const float BattleActor::kREGEN_RATE_NORMAL_PC = 0.04;
+const float BattleActor::kREGEN_RATE_STRONG_PC = 0.05;
+const float BattleActor::kREGEN_RATE_GRAND_PC = 0.06;
+
 const uint8_t BattleActor::kACTOR_KO_ALPHA{50};
 
 /*=============================================================================
@@ -365,11 +371,18 @@ void BattleActor::updateStats(int32_t cycle_time)
 {
   auto vita = stats_rendered.getBaseValue(Attribute::VITA);
   auto actual_vita = stats_actual.getBaseValue(Attribute::VITA);
+  auto qtdr = stats_rendered.getBaseValue(Attribute::QTDR);
+  auto actual_qtdr = stats_actual.getBaseValue(Attribute::QTDR);
 
   if(vita > actual_vita)
     stats_rendered.setBaseValue(Attribute::VITA, vita - 1 * (cycle_time / 15));
   else if(vita < actual_vita)
     stats_rendered.setBaseValue(Attribute::VITA, vita + 1 * (cycle_time / 15));
+
+  if(qtdr > actual_qtdr)
+    stats_rendered.setBaseValue(Attribute::QTDR, qtdr - 1 * (cycle_time / 15));
+  else if(qtdr < actual_qtdr)
+    stats_rendered.setBaseValue(Attribute::QTDR, qtdr + 1 * (cycle_time / 15));
 }
 
 /*=============================================================================
@@ -410,6 +423,8 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
         auto targets = getTargetsFromScope(this, skill->getScope(), a_targets);
 
         battle_skill->targets = targets;
+
+        std::cout << " Getting the true cost of the skill!" << std::endl;
         battle_skill->true_cost = getSkillCost(skill);
 
         bool is_valid{!battle_skill->targets.empty()};
@@ -467,6 +482,30 @@ bool BattleActor::dealDamage(int32_t damage_amount)
   stats_actual.setBaseValue(Attribute::VITA, curr_vita - damage_amount);
 
   return false;
+}
+
+void BattleActor::dealQtdr(int32_t dealt_amount)
+{
+  (void)dealt_amount;//TODO
+}
+
+void BattleActor::restoreQtdr(int32_t amount)
+{
+  auto curr_value = stats_actual.getBaseValue(Attribute::QTDR);
+  auto max_value = stats_actual.getBaseValue(Attribute::MQTD);
+
+  if(amount > 0 && amount + curr_value <= max_value)
+    stats_actual.setBaseValue(Attribute::QTDR, curr_value + amount);
+}
+
+void BattleActor::restoreVita(int32_t amount)
+{
+
+  auto curr_value = stats_actual.getBaseValue(Attribute::VITA);
+  auto max_value = stats_actual.getBaseValue(Attribute::MVIT);
+
+  if(amount > 0 && amount + curr_value <= max_value)
+    stats_actual.setBaseValue(Attribute::VITA, curr_value + amount);
 }
 
 void BattleActor::endFlashing()
@@ -761,6 +800,29 @@ uint32_t BattleActor::getPCQtdr()
   return std::round(proportion * 100);
 }
 
+float BattleActor::getRegenRate(Attribute attr)
+{
+  if(person_base && attr == Attribute::VITA)
+    return getRegenFactor(person_base->getVitaRegenRate());
+  if(person_base && attr == Attribute::QTDR)
+    return getRegenFactor(person_base->getQDRegenRate());
+
+  return 0.00;
+}
+
+float BattleActor::getRegenFactor(RegenRate regen_rate)
+{
+  if(regen_rate == RegenRate::WEAK)
+    return kREGEN_RATE_WEAK_PC;
+  else if(regen_rate == RegenRate::NORMAL)
+    return kREGEN_RATE_NORMAL_PC;
+  else if(regen_rate == RegenRate::STRONG)
+    return kREGEN_RATE_STRONG_PC;
+  else if(regen_rate == RegenRate::GRAND)
+    return kREGEN_RATE_GRAND_PC;
+  return kREGEN_RATE_ZERO_PC;
+}
+
 void BattleActor::setActionFrame(Frame* frame_action)
 {
   clearActionFrame();
@@ -965,56 +1027,29 @@ BattleActor::getTargetsFromScope(BattleActor* user, ActionScope scope,
   return valid_targets;
 }
 
-// int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
-// {
-//   auto regen_amt = 0;
-//   auto can_process = (target != nullptr);
-//   can_process &= (attr == Attribute::VITA || attr == Attribute::QTDR);
+int32_t BattleActor::calcTurnRegen(Attribute attr)
+{
+  auto regen_rate = getRegenRate(attr);
+  int32_t max_attr_val = 0;
+  int32_t amount = 0;
+  int32_t max = 0;
 
-//   if(can_process)
-//   {
-//     /* Default QTDR, and find one pc value and the factor to apply */
-//     auto one_pc = static_cast<float>(target->getTemp().getStat(attr)) /
-//     100.0;
-//     auto alt_factor = getRegenFactor(target->getQDRegenRate());
+  if(attr == Attribute::VITA)
+  {
+    max_attr_val = stats_actual.getValue(Attribute::MVIT);
+    amount = regen_rate * max_attr_val;
+    max = max_attr_val - stats_actual.getValue(Attribute::VITA);
+  }
+  else if(attr == Attribute::QTDR)
+  {
+    max_attr_val = stats_actual.getValue(Attribute::MQTD);
+    amount = regen_rate * max_attr_val;
+    max = max_attr_val - stats_actual.getValue(Attribute::VITA);
+  }
 
-//     /* Override QTDR if the Attribute to find is VITA */
-//     if(attr == Attribute::VITA)
-//       alt_factor = getRegenFactor(target->getVitaRegenRate());
-
-//     /* The regen amt is the alt_factor * 1 % of the given attribute, but
-//      * the value cannot exceed the maximum value of the stat for attribute
-//      */
-//     regen_amt = one_pc * static_cast<float>(alt_factor);
-//     auto max_amt =
-//         target->getTemp().getStat(attr) - target->getCurr().getStat(attr);
-
-//     regen_amt = (regen_amt >= max_amt) ? max_amt : regen_amt;
-//   }
-//   else
-//   {
-//     std::cerr << "[Error] Bad turn regeneration calculation" << std::endl;
-//   }
-
-//   return regen_amt;
-// }
-
-// /*
-//  * Description: Determines the regeneration factor corresponding to an
-//  *              enumerated regeneration rate.
-//  *
-//  * Inputs: RegenRate - the enumerated rate of regeneration
-//  * Output: int16_t - the corresponding factor of regeneration
-//  */
-// int16_t Battle::getRegenFactor(const RegenRate& regen_rate)
-// {
-//   if(regen_rate == RegenRate::WEAK)
-//     return kREGEN_RATE_WEAK_PC;
-//   else if(regen_rate == RegenRate::NORMAL)
-//     return kREGEN_RATE_NORMAL_PC;
-//   else if(regen_rate == RegenRate::STRONG)
-//     return kREGEN_RATE_STRONG_PC;
-//   else if(regen_rate == RegenRate::GRAND)
-//     return kREGEN_RATE_GRAND_PC;
-//   return kREGEN_RATE_ZERO_PC;
-// }
+  /* Cannot return more than the maximum possible regeneration value */
+  if(max > 0)
+    return std::min(max, amount);
+  else
+    return amount;
+}

@@ -128,12 +128,6 @@ private:
   static const float kENEMY_RUN_MODIFIER;
   static const float kRUN_PC_PER_POINT;
 
-  static const int16_t kREGEN_RATE_ZERO_PC;
-  static const int16_t kREGEN_RATE_WEAK_PC;
-  static const int16_t kREGEN_RATE_NORMAL_PC;
-  static const int16_t kREGEN_RATE_STRONG_PC;
-  static const int16_t kREGEN_RATE_GRAND_PC;
-
   static const uint16_t kBIGBAR_CHOOSE;
 
   /* -------- Battle Outcome Constants (See Implementation) ----------- */
@@ -275,9 +269,6 @@ private:
   /* Returns whether an actor needs to be upkeeped or not */
   bool doesActorNeedToUpkeep(BattleActor* actor);
 
-  /* General upkeep phase */
-  void generalUpkeep();
-
   /* Checks whether the current buffer element is valid for processing */
   bool isBufferElementValid();
 
@@ -330,6 +321,9 @@ private:
 
   /* Updates the personal upkeep step */
   void updatePersonalUpkeep();
+  void updatePersonalVitaRegen();
+  void updatePersonalQtdrRegen();
+  void updatePersonalAilments();
 
   /* Updates the processing state of the Battle */
   void updateProcessing();

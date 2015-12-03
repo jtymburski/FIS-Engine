@@ -129,11 +129,9 @@ enum class GuardingState
 
 enum class UpkeepState
 {
-  UPKEEP_BEGIN,
-  UPKEEP_VITA_REGEN,
-  UPKEEP_QTDR_REGEN,
-  UPKEEP_AILMENT_BEGIN,
-  UPKEEP_AILMENT_FINISH,
+  VITA_REGEN,
+  QTDR_REGEN,
+  AILMENTS,
   COMPLETE
 };
 
@@ -254,6 +252,12 @@ private:
   static const SDL_Color kFLASHING_POISON_COLOR;
   static const SDL_Color kFLASHING_KO_COLOR;
 
+  static const float kREGEN_RATE_ZERO_PC;
+  static const float kREGEN_RATE_WEAK_PC;
+  static const float kREGEN_RATE_NORMAL_PC;
+  static const float kREGEN_RATE_STRONG_PC;
+  static const float kREGEN_RATE_GRAND_PC;
+
   /*=============================================================================
    * PRIVATE FUNCTIONS
    *============================================================================*/
@@ -294,8 +298,14 @@ public:
   /* Constructs BattleSkill objects of the BattleActor */
   bool buildBattleSkills(std::vector<BattleActor*> all_targets);
 
+  /* Calculates the turn regeneration for a given enumerated attr (vita/qd) */
+  int32_t calcTurnRegen(Attribute attr);
+
   /* Method to deal damage to this actor */
   bool dealDamage(int32_t damage_amount);
+  void dealQtdr(int32_t dealt_amount);
+  void restoreVita(int32_t restore_amount);
+  void restoreQtdr(int32_t restore_amount);
 
   /* Ends the sprite's flashing */
   void endFlashing();
@@ -389,6 +399,10 @@ public:
 
   /* Returns the % of quantum drive the actor has available (rounded) */
   uint32_t getPCQtdr();
+
+  /* Methods to return the floats for calculating turn regen rates */
+  float getRegenRate(Attribute attr);
+  float getRegenFactor(RegenRate regen_rate);
 
   /* Sets the battle actor's action frame */
   void setActionFrame(Frame* action_frame);

@@ -645,7 +645,7 @@ void TestBattle::createClasses()
   /* Player Class */
   class_player = new Category(200, "Bearanator", "player", stats_player_min,
                               stats_player_max, getSkillSet(200));
-  class_player->setVitaRegenRate(RegenRate::ZERO);
+  class_player->setVitaRegenRate(RegenRate::STRONG);
   class_player->setQDRegenRate(RegenRate::WEAK);
   class_player->setDescription("This is me and I am awesome");
 

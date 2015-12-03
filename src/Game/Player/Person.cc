@@ -1868,21 +1868,21 @@ std::vector<uint32_t> Person::getItemDrops()
  * Inputs: none
  * Output: RegenRate - enumerated regen rate for quantum drive / turn
  */
-// RegenRate Person::getQDRegenRate()
-// {
-//   if(battle_class != nullptr && race_class != nullptr)
-//   {
-//     auto total_rate = static_cast<int16_t>(battle_class->getQDRegenRate()) +
-//                       static_cast<int16_t>(race_class->getQDRegenRate());
+RegenRate Person::getQDRegenRate()
+{
+  if(battle_class != nullptr && race_class != nullptr)
+  {
+    auto total_rate = static_cast<int16_t>(battle_class->getQDRegenRate()) +
+                      static_cast<int16_t>(race_class->getQDRegenRate());
 
-//     if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
-//       return static_cast<RegenRate>(total_rate);
-//     else
-//       return RegenRate::GRAND;
-//   }
+    if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+      return static_cast<RegenRate>(total_rate);
+    else
+      return RegenRate::GRAND;
+  }
 
-//   return RegenRate::ZERO;
-// }
+  return RegenRate::ZERO;
+}
 
 /*
  * Description: Calculates the total Vita regeneration rate from the battle
@@ -1892,21 +1892,21 @@ std::vector<uint32_t> Person::getItemDrops()
  * Inputs: none
  * Output: RegenRate - enumerated regen rate for vitality / turn
  */
-// RegenRate Person::getVitaRegenRate()
-// {
-//   if(battle_class != nullptr && race_class != nullptr)
-//   {
-//     auto total_rate = static_cast<int16_t>(battle_class->getVitaRegenRate()) +
-//                       static_cast<int16_t>(race_class->getVitaRegenRate());
+RegenRate Person::getVitaRegenRate()
+{
+  if(battle_class != nullptr && race_class != nullptr)
+  {
+    auto total_rate = static_cast<int16_t>(battle_class->getVitaRegenRate()) +
+                      static_cast<int16_t>(race_class->getVitaRegenRate());
 
-//     if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
-//       return static_cast<RegenRate>(total_rate);
-//     else
-//       return RegenRate::GRAND;
-//   }
+    if(total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+      return static_cast<RegenRate>(total_rate);
+    else
+      return RegenRate::GRAND;
+  }
 
-//   return RegenRate::ZERO;
-// }
+  return RegenRate::ZERO;
+}
 
 /*
  * Description: Sets the action x and y offset for the rendering person in
@@ -1934,29 +1934,6 @@ void Person::setAI(AIModule* const new_ai_module)
   ai_module = new_ai_module;
 }
 
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// void Person::setAilFlag(const PersonAilState &flag, const bool
-// &set_value)
-// {
-//   (set_value) ? (ailment_flags |= flag) : (ailment_flags &= ~flag);
-// }
-
-/*
- * Description: Assigns a given BState flag a given set value
- *
- * Inputs: flag - the BState flag to be assigned a value
- *         set_value - the value to assign the flag to
- * Output: none
- */
-// void Person::setBFlag(const BState &flag, const bool &set_value)
-// {
-//   (set_value) ? (battle_flags |= flag) : (battle_flags &= ~flag);
-// }
 
 /*
  * Description: Evaluates and returns a given PState flag

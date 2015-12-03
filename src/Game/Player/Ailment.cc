@@ -271,9 +271,19 @@ Infliction Ailment::getType()
   return type;
 }
 
+AilmentStatus Ailment::getUpdateStatus()
+{
+  return update_status;
+}
+
 void Ailment::setFlag(const AilState& flags, const bool& set_value)
 {
   (set_value) ? (flag_set |= flags) : (flag_set &= ~flags);
+}
+
+void Ailment::setUpdateStatus(AilmentStatus new_status)
+{
+  update_status = new_status;
 }
 
 /*============================================================================

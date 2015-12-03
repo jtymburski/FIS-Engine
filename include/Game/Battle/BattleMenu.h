@@ -181,6 +181,7 @@ private:
   void keyDownIncrement();
   void keyDownSelect();
 
+  /* Returns actor among actors which corresponds to the sp. ordered index */
   BattleActor* targetOfOrderedIndex(std::vector<BattleActor*> actors,
                                     int32_t ordered_index);
 
