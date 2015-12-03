@@ -296,7 +296,7 @@ bool EventHandler::pollLockSetData(Locked lock)
 //  }
 //  return false;
 //}
-  
+
 /* Poll the empty event */
 bool EventHandler::pollNone()
 {
@@ -461,12 +461,12 @@ bool EventHandler::pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,
                                 UnlockIOEvent* mode_events,
                                 UnlockView* mode_view, int* view_time)
 {
-  if(io_id != nullptr && mode != nullptr && state_num != nullptr && 
+  if(io_id != nullptr && mode != nullptr && state_num != nullptr &&
      mode_events != nullptr && mode_view != nullptr && view_time != nullptr)
   {
     Event event;
     if(getEvent(event, true) &&
-       EventSet::dataEventUnlockIO(event, *io_id, *mode, *state_num, 
+       EventSet::dataEventUnlockIO(event, *io_id, *mode, *state_num,
                                    *mode_events, *mode_view, *view_time))
     {
       triggerQueueSound(event);
@@ -498,7 +498,7 @@ bool EventHandler::pollUnlockTile(int* section_id, int* tile_x, int* tile_y,
                                   UnlockTileMode* mode, UnlockView* mode_view,
                                   int* view_time)
 {
-  if(section_id != nullptr && tile_x != nullptr && tile_y != nullptr && 
+  if(section_id != nullptr && tile_x != nullptr && tile_y != nullptr &&
      mode != nullptr && mode_view != nullptr && view_time != nullptr)
   {
     Event event;

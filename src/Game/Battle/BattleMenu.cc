@@ -662,7 +662,6 @@ SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
   return nullptr;
 }
 
-// TODO - seg fault
 SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
                                           uint32_t width, uint32_t height)
 {
@@ -766,24 +765,24 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   }
 
   /* Render the description */
-  // uint16_t line_width = width - text_x;
-  // std::vector<std::string> desc_set =
-  //     Text::splitLine(font_subheader, skill->getDescription(), line_width);
+  uint16_t line_width = width - text_x;
+  std::vector<std::string> desc_set =
+      Text::splitLine(font_subheader, skill->getDescription(), line_width);
 
-  // text_y += t4.getHeight() + kSKILL_DESC_GAP;
-  // for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
-  // {
-  //   if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
-  //     t5.setText(renderer, Text::splitLine(font_subheader,
-  //                                          desc_set[i] + " " + desc_set[i +
-  //                                          1],
-  //                                          line_width, true).front(),
-  //                color);
-  //   else
-  //     t5.setText(renderer, desc_set[i], color);
-  //   t5.render(renderer, text_x,
-  //             text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
-  // }
+  text_y += t4.getHeight() + kSKILL_DESC_GAP;
+  for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
+  {
+    if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
+      t5.setText(renderer, Text::splitLine(font_subheader,
+                                           desc_set[i] + " " + desc_set[i +
+                                           1],
+                                           line_width, true).front(),
+                 color);
+    else
+      t5.setText(renderer, desc_set[i], color);
+    t5.render(renderer, text_x,
+              text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
+  }
 
   /* Return the new texture */
   SDL_SetRenderTarget(renderer, nullptr);

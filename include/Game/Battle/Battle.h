@@ -17,14 +17,13 @@
 *
 * KNOWN BUGS
 * ----------
-* [Battle Menu] - getMostLeft() will return a dead person despite scope?
-* [Battle Processing] - Player Missed may still involve a hit? How?
+* [Dec. 2015 Destruction] - Possible seg fault
+* [Dec. 2015 Battle Processing] - Player Missed may still involve a hit? How?
 *****************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
 
 #include "Game/Battle/BattleEvent.h"
-// #include "Game/Battle/BattleActor.h"
 #include "Game/Battle/Buffer.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/RenderElement.h"
@@ -57,6 +56,11 @@ public:
 
   /* Annihilates a Battle object */
   ~Battle();
+
+  /* ----- Public Constants ------ */
+  const static float kDELAY_SLOW_FACTOR;
+  const static float kDELAY_NORM_FACTOR;
+  const static float kDELAY_FAST_FACTOR;
 
 private:
   /* Vector of actors for the Battle */
@@ -121,13 +125,11 @@ private:
    *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
-
   static const float kBASE_RUN_CHANCE;
   static const float kUSER_RUN_MODIFIER;
   static const float kALLY_RUN_MODIFIER;
   static const float kENEMY_RUN_MODIFIER;
   static const float kRUN_PC_PER_POINT;
-
   static const uint16_t kBIGBAR_CHOOSE;
 
   /* -------- Battle Outcome Constants (See Implementation) ----------- */
@@ -138,6 +140,7 @@ private:
   /*=============================================================================
    * CONSTANTS - Battle Display
    *============================================================================*/
+
   const static uint16_t kACTION_BORDER; /* Border width on action slideout */
 
   const static uint16_t kACTION_COLOR_A; /* Alpha for inner portion */
@@ -232,6 +235,9 @@ private:
 
   /* Deletes the AI modules at the end of a Battle */
   void aiClear();
+
+  /* Adds a delay amount for processing relative to the current speed setting */
+  void addDelay(int32_t delay_amount);
 
   /* Buffer the current selection of the menu to the action buffer */
   bool bufferMenuSelection();

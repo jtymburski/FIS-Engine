@@ -32,10 +32,8 @@
  * Guard Modifier (Base Damage Mod While Being Guarded)
  */
 const uint16_t Battle::kBIGBAR_CHOOSE{100};
-
 const size_t Battle::kMAX_AILMENTS = 50;
 const size_t Battle::kMAX_EACH_AILMENTS = 5;
-
 const float Battle::kBASE_RUN_CHANCE = 0.25;
 const float Battle::kUSER_RUN_MODIFIER = 2.00;
 const float Battle::kALLY_RUN_MODIFIER = 1.00;
@@ -45,7 +43,6 @@ const float Battle::kRUN_PC_PER_POINT = 0.003;
 /* ------------ Battle Outcome Modifiers ---------------
  * kENEMY_RUN_EXP_PC - %EXP to maintain on pyrric victory (enemies run)
  * kRUN_PC_EXP_PENALTY - %EXP (MAX) penalty when the Allies run from Battle.
-
  * kALLY_KO_EXP_PC - %EXP which KO member get for winning a Battle.
  */
 const int16_t Battle::kALLY_KO_EXP_PC = 50;
@@ -55,6 +52,10 @@ const int16_t Battle::kRUN_PC_EXP_PENALTY = 5;
 /*=============================================================================
  * CONSTANTS - Battle Display
  *============================================================================*/
+
+const float Battle::kDELAY_SLOW_FACTOR{1.50};
+const float Battle::kDELAY_NORM_FACTOR{1.00};
+const float Battle::kDELAY_FAST_FACTOR{0.70};
 
 const uint16_t Battle::kACTION_BORDER = 10;
 const uint16_t Battle::kACTION_COLOR_A = 175;
@@ -186,7 +187,7 @@ void Battle::actionStateBegin()
 {
   event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
   event->action_state = ActionState::SLIDE_IN;
-  delay = 250;
+  addDelay(250);
 }
 
 void Battle::actionStateSlideIn()
@@ -198,7 +199,7 @@ void Battle::actionStateSlideIn()
   element->createAsActionText(event->getActionName());
   render_elements.push_back(element);
   event->action_state = ActionState::FADE_IN_TEXT;
-  delay = 350;
+  addDelay(350);
 }
 
 void Battle::actionStateFadeInText()
@@ -209,7 +210,7 @@ void Battle::actionStateFadeInText()
     event->action_state = ActionState::SLIDE_OUT;
   }
 
-  delay = 350;
+  addDelay(350);
 }
 
 void Battle::actionStateSlideOut()
@@ -218,7 +219,7 @@ void Battle::actionStateSlideOut()
     event->actor->setActiveSprite(ActiveSprite::ACTION);
 
   event->action_state = ActionState::SWITCH_SPRITE;
-  delay = 250;
+  addDelay(250);
 }
 
 void Battle::actionStateSwitchSprite()
@@ -231,7 +232,7 @@ void Battle::actionStateSwitchSprite()
   else
     event->action_state = ActionState::SKILL_MISS;
 
-  delay = 200;
+  addDelay(200);
 }
 
 /* Create the fading-in action text */
@@ -243,14 +244,12 @@ void Battle::actionStateSkillMiss()
   element->createAsActionText(action_text);
   render_elements.push_back(element);
   event->action_state = ActionState::DONE;
-  delay = 1000;
+  addDelay(1000);
 }
 
 void Battle::actionStateActionStart()
 {
   bool done = true;
-
-  std::cout << "Outcome size: " << event->actor_outcomes.size() << std::endl;
 
   for(auto& outcome : event->actor_outcomes)
   {
@@ -271,30 +270,24 @@ void Battle::actionStateActionStart()
   if(done)
   {
     if(event->setNextAction())
-    {
       event->action_state = ActionState::SWITCH_SPRITE;
-    }
     else
-    {
-      std::cout << "No more actions -> setting action state to done "
-                << std::endl;
       event->action_state = ActionState::DONE;
-    }
 
-    delay = 250;
+    addDelay(250);
   }
 }
 
 void Battle::actionStatePassBob()
 {
   std::cout << "Starting pass" << std::endl;
-  delay = 400;
+  addDelay(400);
 }
 
 void Battle::actionStateEndBob()
 {
   std::cout << "Ending pass" << std::endl;
-  delay = 300;
+  addDelay(300);
 }
 
 // ALPHA
@@ -330,14 +323,22 @@ void Battle::aiClear()
   }
 }
 
+void Battle::addDelay(int32_t delay_amount)
+{
+  if(delay_amount > 0)
+  {
+    auto to_add = delay_amount;
+
+    delay += (to_add * kDELAY_FAST_FACTOR);
+  }
+}
+
 bool Battle::bufferMenuSelection()
 {
-  auto success = true;
   auto actor = battle_menu->getActor();
   auto action_type = battle_menu->getSelectedType();
   auto targets = battle_menu->getTargetsSelected();
-
-  success &= (actor != nullptr);
+  auto success = (actor != nullptr);
 
   if(success && action_type == ActionType::SKILL)
   {
@@ -363,7 +364,6 @@ bool Battle::bufferMenuSelection()
 
 bool Battle::bufferModuleSelection()
 {
-  auto success = true;
   auto curr_actor = getCurrentModuleActor();
   auto curr_module = getCurrentModule();
 
@@ -405,10 +405,10 @@ bool Battle::bufferModuleSelection()
   }
   else
   {
-    success = false;
+    return false;
   }
 
-  return success;
+  return true;
 }
 
 // TODO: Determine can run
@@ -442,7 +442,7 @@ void Battle::cleanUpTurn()
   battle_menu->clear();
 
   turns_elapsed++;
-  delay = 500;
+  addDelay(500);
   setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
@@ -484,15 +484,9 @@ void Battle::checkIfOutcome()
   auto enemies_dead = checkEnemiesDeath();
 
   if(enemies_dead)
-  {
-    std::cout << "Setting outcome to VICTORY" << std::endl;
     outcome = OutcomeType::VICTORY;
-  }
   else if(allies_dead)
-  {
-    std::cout << "Setting outcome to DEFEAT" << std::endl;
     outcome = OutcomeType::DEFEAT;
-  }
 }
 
 void Battle::clearEvent()
@@ -528,12 +522,6 @@ bool Battle::doesActorNeedToUpkeep(BattleActor* actor)
 
 void Battle::updateGeneralUpkeep()
 {
-#ifdef UDEBUG
-  std::cout << "\n=============\n";
-  std::cout << "  TURN " << Helpers::numToRoman(turns_elapsed + 1)
-            << "\n=============" << std::endl;
-#endif
-
   /* First turn -> skip updates, other turns -> add to update */
   prepareActorUpkeeps();
 
@@ -551,10 +539,7 @@ bool Battle::isBufferElementValid()
   auto actor = battle_buffer->getUser();
 
   if(actor && actor->getStateLiving() != LivingState::ALIVE)
-  {
-    std::cout << "Actor user is not alive" << std::endl;
     valid = false;
-  }
 
   if(valid)
   {
@@ -579,10 +564,7 @@ bool Battle::isBufferElementValid()
         }
       }
       else if(target && target->getStateLiving() != LivingState::ALIVE)
-      {
-        std::cout << "Target is not alive --> invalid" << std::endl;
         valid = false;
-      }
     }
   }
 
@@ -609,15 +591,9 @@ void Battle::loadBattleEvent()
   if(to_build)
   {
     if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
-    {
-      std::cout << "Creating a skill or item event!" << std::endl;
       event = new BattleEvent(action_type, user, targets);
-    }
     else if(action_type == ActionType::PASS)
-    {
-      std::cout << "Creating pass event here! " << std::endl;
       event = new BattleEvent(action_type, user);
-    }
 
     if(action_type == ActionType::SKILL)
       event->event_skill = battle_buffer->getSkill();
@@ -662,7 +638,7 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
                               config->getScreenHeight(),
                               getActorX(event->actor), getActorY(event->actor));
   render_elements.push_back(element);
-  delay = 600;
+  addDelay(600);
   outcome.actor_outcome_state = ActionState::ACTION_END;
 }
 
@@ -675,8 +651,7 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
 
   render_elements.push_back(element);
   outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
-
-  delay = 150;
+  addDelay(150);
 }
 
 void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
@@ -690,8 +665,7 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
 
   render_elements.push_back(element);
   outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
-
-  delay = 300;
+  addDelay(300);
 }
 
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
@@ -699,29 +673,19 @@ void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
   if(outcome.actor->dealDamage(outcome.damage))
   {
     outcome.causes_ko = true;
-    delay = 100;
-    std::cout << "Setting delay to be 100" << std::endl;
+    addDelay(100);
   }
   else
-  {
-    std::cout << "Sprite flashing!" << std::endl;
     outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
-    // delay = 750;
-  }
 
   outcome.actor_outcome_state = ActionState::OUTCOME;
 }
 
 void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 {
-  std::cout << "outcome state actor outcome " << std::endl;
-
   /* If Person's VITA is 0 -> they are KOed) */
   if(outcome.causes_ko)
-  {
-    std::cout << "KO Flashing!" << std::endl;
     outcome.actor->startFlashing(FlashingType::KOING);
-  }
 
   outcome.actor_outcome_state = ActionState::ACTION_END;
 }
@@ -769,11 +733,7 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
 
 void Battle::updateBegin()
 {
-  if(delay == 0)
-  {
-    std::cout << "Setting phase done flag" << std::endl;
-    setFlagCombat(CombatState::PHASE_DONE, true);
-  }
+  setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
 void Battle::updateBufferNext()
@@ -782,17 +742,11 @@ void Battle::updateBufferNext()
 
   if(has_element && !isBufferElementValid())
   {
-    std::cout << "Has element? " << has_element << std::endl;
-    std::cout << "isBufferElementValid()" << isBufferElementValid()
-              << std::endl;
     bool found_good = false;
-    // has_element = false;
 
     while(has_element && !found_good)
     {
       has_element = battle_buffer->setNext();
-
-      std::cout << "Doth hath element? " << has_element << std::endl;
 
       if(has_element)
         found_good = isBufferElementValid();
@@ -802,10 +756,7 @@ void Battle::updateBufferNext()
   }
 
   if(!has_element)
-  {
-    std::cout << "Buffer depleted -> ending PROCESS ACTIONS." << std::endl;
     setFlagCombat(CombatState::PHASE_DONE, true);
-  }
 }
 
 void Battle::updateDelay(int32_t decrement_delay)
@@ -855,32 +806,48 @@ void Battle::processEventSkill()
 
   if(curr_action)
   {
-    if(curr_action->actionFlag(ActionFlags::DAMAGE))
+
+    for(auto& target : event->actor_targets)
     {
-      for(auto& target : event->actor_targets)
+      assert(target);
+      ActorOutcome outcome;
+      outcome.actor = target;
+
+      if(event->doesActionHit(target))
       {
-        assert(target);
-        ActorOutcome outcome;
-        outcome.actor = target;
-
-        if(event->doesActionHit(target))
-        {
-          // TODO crit factor
-          std::cout << "Calculating a damage" << std::endl;
+        if(curr_action->actionFlag(ActionFlags::DAMAGE))
           outcome.damage = event->calcDamage(target);
-          outcome.actor_outcome_state = ActionState::PLEP;
-        }
-        else
-        {
-          outcome.damage = 0;
-          outcome.actor_outcome_state = ActionState::ACTION_MISS;
-        }
+        // else if(curr_action->actionFlag(ActionFlags::INFLICT))
+        //   processInfliction(target, curr_action->getInfliction());
 
-        event->actor_outcomes.push_back(outcome);
+        outcome.actor_outcome_state = ActionState::PLEP;
       }
+      else
+      {
+        outcome.damage = 0;
+        outcome.actor_outcome_state = ActionState::ACTION_MISS;
+      }
+
+      event->actor_outcomes.push_back(outcome);
     }
   }
 }
+
+// void Battle::processInfliciton(BattleActor* target, Ailment ailment_type)
+// {
+//   // POISON
+//   // CONFUSE
+//   // SILENCE
+//   // HIBERNATION
+//   // CONFUSION
+//   // PARALYSIS
+
+//   // ALL ATK BUFF
+//   // ALL DEF BUFF
+//   // LIMB BUFF
+//   // ALL ATK BUFF
+//   // ALL DEF BUFF
+// }
 
 void Battle::updateEnemySelection()
 {
@@ -915,18 +882,15 @@ void Battle::updateEnemySelection()
 
 void Battle::updateFadeInText()
 {
-  if(delay == 0)
-  {
-    auto font = config->getFontTTF(FontName::BATTLE_TURN);
-    auto element = new RenderElement(renderer, font);
-    element->createAsEnterText("Mr Boopster For President",
-                               config->getScreenHeight(),
-                               config->getScreenWidth());
-    render_elements.push_back(element);
-    delay = 1700;
+  auto font = config->getFontTTF(FontName::BATTLE_TURN);
+  auto element = new RenderElement(renderer, font);
 
-    setFlagCombat(CombatState::PHASE_DONE, true);
-  }
+  element->createAsEnterText("D Side Yer Phate Der Bud",
+                             config->getScreenHeight(),
+                             config->getScreenWidth());
+  render_elements.push_back(element);
+  addDelay(1700);
+  setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
 void Battle::updateOutcome()
@@ -936,7 +900,7 @@ void Battle::updateOutcome()
 
 void Battle::updatePersonalUpkeep()
 {
-  if(upkeep_actor && delay == 0)
+  if(upkeep_actor)
   {
     auto state = upkeep_actor->getStateUpkeep();
 
@@ -949,14 +913,14 @@ void Battle::updatePersonalUpkeep()
     else if(state == UpkeepState::AILMENTS)
       updatePersonalAilments();
   }
-  else if(!upkeep_actor && delay == 0)
+  else
   {
     upkeep_actor = getNextUpkeepActor();
 
     if(!upkeep_actor)
       setFlagCombat(CombatState::PHASE_DONE, true);
     else
-      delay = 200;
+      addDelay(200);
   }
 }
 
@@ -976,7 +940,7 @@ void Battle::updatePersonalVitaRegen()
         getActorX(upkeep_actor), getActorY(upkeep_actor));
 
     render_elements.push_back(element);
-    delay = 600;
+    addDelay(600);
   }
 
   upkeep_actor->setUpkeepState(UpkeepState::QTDR_REGEN);
@@ -996,7 +960,7 @@ void Battle::updatePersonalQtdrRegen()
         qtdr_regen, DamageType::QTDR_REGEN, config->getScreenHeight(),
         getActorX(upkeep_actor), getActorY(upkeep_actor));
     render_elements.push_back(element);
-    delay = 600;
+    addDelay(600);
   }
   // Calculate and create the qtdr regen for the upkeep_actor
   upkeep_actor->setUpkeepState(UpkeepState::AILMENTS);
@@ -1018,52 +982,46 @@ void Battle::updateProcessing()
     battle_buffer->print(false);
   }
 
-  if(delay == 0)
+  /* Check if the current event is finished processing */
+  if(event && event->action_state == ActionState::DONE)
   {
-    /* Check if the current event is finished processing */
-    if(event && event->action_state == ActionState::DONE)
-    {
-      std::cout << "Setting buffer processed " << std::endl;
-      battle_buffer->setProcessed();
+    std::cout << "Setting buffer processed " << std::endl;
+    battle_buffer->setProcessed();
 
-      if(event->actor && event->actor->getFlag(ActorState::ALLY))
-        event->actor->setActiveSprite(ActiveSprite::FIRST_PERSON);
+    if(event->actor && event->actor->getFlag(ActorState::ALLY))
+      event->actor->setActiveSprite(ActiveSprite::FIRST_PERSON);
 
-      clearEvent();
-    }
-    else if(battle_buffer->isIndexProcessed())
-    {
-      std::cout << " Updating buffer next " << std::endl;
-      updateBufferNext();
-    }
-    else if(battle_buffer->isIndexStarted() && event)
-    {
-      std::cout << "Updating battle event" << std::endl;
-      updateEvent();
-    }
-    else if(battle_buffer->getCooldown() == 0)
-    {
-      std::cout << "Loading battle event" << std::endl;
-      loadBattleEvent();
-    }
-    else
-      updateBufferNext();
+    clearEvent();
   }
+  else if(battle_buffer->isIndexProcessed())
+  {
+    std::cout << " Updating buffer next " << std::endl;
+    updateBufferNext();
+  }
+  else if(battle_buffer->isIndexStarted() && event)
+  {
+    std::cout << "Updating battle event" << std::endl;
+    updateEvent();
+  }
+  else if(battle_buffer->getCooldown() == 0)
+  {
+    std::cout << "Loading battle event" << std::endl;
+    loadBattleEvent();
+  }
+  else
+    updateBufferNext();
 }
 
 void Battle::updateScreenDim()
 {
-  if(delay == 0)
-  {
-    auto element = new RenderElement();
-    element->createAsRGBOverlay({0, 0, 0, 150}, 3000, 500, 1250,
-                                config->getScreenHeight(),
-                                config->getScreenWidth());
-    render_elements.push_back(element);
-    delay = 750;
+  auto element = new RenderElement();
+  element->createAsRGBOverlay({0, 0, 0, 150}, 3000, 500, 1250,
+                              config->getScreenHeight(),
+                              config->getScreenWidth());
+  render_elements.push_back(element);
+  addDelay(750);
 
-    setFlagCombat(CombatState::PHASE_DONE);
-  }
+  setFlagCombat(CombatState::PHASE_DONE);
 }
 
 void Battle::updateSelectingState(BattleActor* actor, bool set_selected)
@@ -1956,7 +1914,7 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
 {
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
   bool success = true;
-  // bool below = true;
+  bool below = true;
 
   auto x = 0;
   auto y = 0;
@@ -2053,21 +2011,24 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
   delete t;
 
   /* Render ailments */
-  // if(below)
-  // {
-  //   uint16_t ailment_y = y + kALLY_HEIGHT + kAILMENT_GAP * 2 +
-  //                        kAILMENT_BORDER * 2 +
-  //                        ailments.front().getHeight();
+  if(below && ally->getAilments().size() > 0)
+  {
+    auto frame = battle_display_data->getFrameAilment(Infliction::SILENCE);
+    auto frame_size = 0;
 
-  //   success &= renderAilmentsActor(state->self, x + kINFO_W / 2,
-  //   ailment_y,
-  //                            false, true);
-  // }
-  // else
-  // {
-  //   success &= renderAilment(renderer, state->self, x + kINFO_W / 2,
-  //                            screen_height - kBIGBAR_OFFSET);
-  // }
+    if(frame)
+      frame_size = frame->getHeight();
+
+    auto ailment_y =
+        y + kALLY_HEIGHT + kAILMENT_GAP * 2 + kAILMENT_BORDER * 2 + frame_size;
+
+    success &= renderAilmentsActor(ally, x + kINFO_W / 2, ailment_y, false);
+  }
+  else if(ally->getAilments().size() > 0)
+  {
+    auto ailment_y = config->getScreenHeight() - kBIGBAR_OFFSET;
+    success &= renderAilmentsActor(ally, x + kINFO_W / 2, ailment_y, true);
+  }
 
   return success;
 }
@@ -2103,135 +2064,6 @@ bool Battle::renderAlliesInfo()
 
   return success;
 }
-
-//   if(rendering_state == TurnState::BEGIN)
-//   {
-//     bar_offset = 0;
-
-//     setRenderFlag(RenderState::BEGIN_RENDERING, false);
-
-//     rendering_state = battle_state;
-//   }
-
-//   else if(rendering_state == TurnState::GENERAL_UPKEEP)
-//   {
-//     bar_offset = 0;
-
-//     /* Upon general upkeep state, the screen needs to be dimmed and the
-//     text
-//      * "Turn X: Decide Your Fate" displayed on the screen. This screen dim
-//      * will use a RGB_Overlay RenderElement with fade-in and fade-out
-//      */
-//     if(getRenderFlag(RenderState::SCREEN_DIM) &&
-//        !getRenderFlag(RenderState::TURN_TEXT_CREATED))
-//     {
-//       processing_delay = 3500;
-
-//       SDL_Color shadow_color = {194, 59, 34, 255};
-//       RenderElement *turn_text =
-//           new RenderElement(RenderType::ACTION_TEXT, 1300, 500, 300);
-
-//       turn_text->setColor({0, 0, 0, 255});
-//       turn_text->setShadowColor(shadow_color);
-//       turn_text->setShadow();
-
-//       auto turn_string = Helpers::numToRoman(battle->getTurnsElapsed() +
-//       1);
-
-//       // TODO: Remove [07-11-15]
-//       auto rand_int = Helpers::randInt(10);
-
-//       if(rand_int == 9)
-//         turn_string = "Turn " + turn_string + " Kevins a Schweeb";
-//       else
-//         turn_string = "Turn " + turn_string + "  Decide Your Fate";
-//       // END TODO
-
-//       turn_text->setFont(font_turn);
-//       turn_text->setText(turn_string);
-
-//       Text t(font_turn);
-//       t.setText(renderer, turn_text->getText(), shadow_color);
-
-//       auto text_x = system_options->getScreenWidth() / 2;
-//       text_x -= t.getWidth() / 2;
-//       auto text_y = system_options->getScreenHeight() / 2;
-//       text_y -= t.getHeight() / 2;
-
-//       turn_text->setCoordinates(text_x, text_y);
-//       turn_text->setShadowCoordinates(kACTION_TEXT_SHADOW + 2,
-//                                       kACTION_TEXT_SHADOW + 2);
-
-//       render_elements.push_back(turn_text);
-
-//       setRenderFlag(RenderState::TURN_TEXT_CREATED, true);
-//     }
-
-//     /* If the screen is not currently dimming, append a new render elmt */
-//     else if(!getRenderFlag(RenderState::SCREEN_DIMMING))
-//     {
-//       processing_delay = 750;
-
-//       SDL_Color screen_dim_color = {0, 0, 0, 185};
-
-//       RenderElement *dim_element =
-//           new RenderElement(RenderType::RGB_OVERLAY, 2000, 400, 300);
-
-//       dim_element->setColor(screen_dim_color);
-//       dim_element->setCoordinates(0, 0);
-//       dim_element->setSizeX(system_options->getScreenWidth());
-//       dim_element->setSizeY(system_options->getScreenHeight());
-
-//       render_elements.push_back(dim_element);
-
-//       setRenderFlag(RenderState::SCREEN_DIMMING, true);
-//     }
-//     else
-//     {
-//       if(!delay <= 0 && !getRenderFlag(RenderState::TURN_TEXT_CREATED))
-//       {
-//         setRenderFlag(RenderState::SCREEN_DIM, true);
-//       }
-//       else if(processing_delay <= 0 &&
-//               getRenderFlag(RenderState::TURN_TEXT_CREATED))
-//       {
-//         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-//       }
-//     }
-
-//     rendering_state = battle_state;
-//   }
-
-//   else if(rendering_state == TurnState::UPKEEP)
-//   {
-//     bar_offset = 0;
-
-//     if(!getRenderFlag(RenderState::BEGIN_RENDERING))
-//     {
-//       setRenderFlag(RenderState::BEGIN_RENDERING, true);
-//       processing_delay = 350;
-//     }
-//     else if(!delay)
-//     {
-//       if(buffer->setRenderIndex())
-//       {
-//         curr_event = buffer->getCurrentEvent();
-
-//         if(curr_event != nullptr)
-//         {
-//           updateEvent();
-//           buffer->setRendered(buffer->getIndex());
-//         }
-//       }
-//       else
-//       {
-//         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-//         setRenderFlag(RenderState::BEGIN_RENDERING, false);
-//       }
-//     }
-
-//     rendering_state = battle_state;
-//   }
 
 void Battle::updateBarOffset()
 {
@@ -2471,11 +2303,9 @@ void Battle::stopBattle()
     battle_buffer->clear();
 
   background = nullptr;
-  // config = nullptr;
   delay = 0;
   frame_enemy_backdrop = nullptr;
   outcome = OutcomeType::NONE;
-  // renderer = nullptr;
   turn_state = TurnState::STOPPED;
   time_elapsed = 0;
   turns_elapsed = 0;
