@@ -22,8 +22,9 @@
 
 const float BattleActor::kVELOCITY_X{-1.550};
 const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{225, 10, 10, 85};
-const SDL_Color BattleActor::kFLASHING_POISON_COLOR{0, 255, 0, 155};
+const SDL_Color BattleActor::kFLASHING_POISON_COLOR{10, 245, 10, 115};
 const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 225};
+const SDL_Color BattleActor::kFLASHING_RELIEVE_COLOR{200, 200, 200, 225};
 
 const float BattleActor::kREGEN_RATE_ZERO_PC = 0.00;
 const float BattleActor::kREGEN_RATE_WEAK_PC = 0.03;
@@ -389,6 +390,14 @@ void BattleActor::updateStats(int32_t cycle_time)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+void BattleActor::addAilment(Infliction type, int32_t min_turns,
+                             int32_t max_turns, double chance)
+{
+  auto new_ailment = new Ailment(type, &stats_actual, min_turns, max_turns, chance);
+
+  ailments.push_back(new_ailment);
+}
+
 // TODO: Build battle Items [09-07-15]
 bool BattleActor::buildBattleItems(std::vector<BattleActor*> all_targets)
 {
@@ -486,7 +495,7 @@ bool BattleActor::dealDamage(int32_t damage_amount)
 
 void BattleActor::dealQtdr(int32_t dealt_amount)
 {
-  (void)dealt_amount;//TODO
+  (void)dealt_amount; // TODO
 }
 
 void BattleActor::restoreQtdr(int32_t amount)
@@ -536,14 +545,14 @@ bool BattleActor::isImmune(Infliction type)
   /* Check Battle Class Immunity */
   if(person_base && person_base->getClass())
     if(person_base->getClass()->isImmune(type))
-      return false;
+      return true;
 
   /* Check Race Immunity */
   if(person_base && person_base->getRace())
     if(person_base->getRace()->isImmune(type))
-      return false;
+      return true;
 
-  return true;
+  return false;
 }
 
 bool BattleActor::isInflicted(Infliction test_infliction)
@@ -553,6 +562,17 @@ bool BattleActor::isInflicted(Infliction test_infliction)
       return true;
 
   return false;
+}
+
+Ailment* BattleActor::nextUpdateAilment()
+{
+  for(auto& ailment : ailments)
+  {
+    if(ailment && ailment->getUpdateStatus() == AilmentStatus::INCOMPLETE)
+      return ailment;
+  }
+
+  return nullptr;
 }
 
 bool BattleActor::removeAilment(Ailment* remove_ailment)
@@ -891,6 +911,10 @@ SDL_Color BattleActor::getFlashingColor(FlashingType flashing_type)
     return kFLASHING_DAMAGE_COLOR;
   else if(flashing_type == FlashingType::KOING)
     return kFLASHING_KO_COLOR;
+  else if(flashing_type == FlashingType::POISON)
+    return kFLASHING_POISON_COLOR;
+  else if(flashing_type == FlashingType::RELIEVE)
+    return kFLASHING_RELIEVE_COLOR;
 
   return kFLASHING_POISON_COLOR;
 }

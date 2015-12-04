@@ -119,6 +119,7 @@ private:
 
   /* Curent actor being upkept */
   BattleActor* upkeep_actor;
+  Ailment* upkeep_ailment;
 
   /*=============================================================================
    * CONSTANTS - Battle Operations
@@ -269,6 +270,9 @@ private:
   /* Clears the Battle event if built */
   void clearEvent();
 
+  /* Creates a DamageElement RenderElement type on th given actor */
+  void createDamageElement(BattleActor* actor, DamageType damage_type, uint32_t amount);
+
   /* Returns true if the given actor needs to select a menu option */
   bool doesActorNeedToSelect(BattleActor* actor);
 
@@ -289,6 +293,7 @@ private:
   void outcomeStatePlep(ActorOutcome& outcome);
   void outcomeStateDamageValue(ActorOutcome& outcome);
   void outcomeStateSpriteFlash(ActorOutcome& outcome);
+  void outcomeStateInflictFlash(ActorOutcome& outcome);
   void outcomeStateActionOutcome(ActorOutcome& outcome);
 
   /* Prepare the actor upkeeps */
@@ -297,6 +302,7 @@ private:
   /* Process Event methods -> ex. DAMAGE actions for a Skill etc. */
   void processEvent();
   void processEventSkill();
+  void processInfliction(BattleActor* target, Infliction type);
 
   /* Update the begin step of the Battle */
   void updateBegin();
@@ -340,6 +346,12 @@ private:
   /* Updates the selection of the user */
   void updateUserSelection();
 
+  /* Methods for upkeep ailment processing states */
+  void upkeepAilmentClear();
+  void upkeepAilmentDamage();
+  void upkeepAilmentFlash();
+  void upkeepAilmentOutcome();
+
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);
 
@@ -368,6 +380,10 @@ private:
    * PRIVATE FUNCTIONS - Battle Display
    *============================================================================*/
 private:
+  /* Upkeep functions for ailment damagin */
+  void ailmentDamageFlash();
+  void ailmentDamageAmount();
+
   /* Creates action frames for a given BattleActor */
   void buildActionFrame(BattleActor* actor);
 

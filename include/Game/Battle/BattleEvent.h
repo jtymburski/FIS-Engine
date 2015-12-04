@@ -44,6 +44,16 @@ enum class SkillHitStatus
   DREAMSNARED
 };
 
+enum class InflictionStatus
+{
+  INFLICTION,
+  IMMUNE,
+  ALREADY_INFLICTED,
+  UPDATE,
+  FIZZLE
+};
+
+/* ActionState - enumeration describing the processing state of the event */
 enum class ActionState
 {
   BEGIN,
@@ -55,21 +65,29 @@ enum class ActionState
   SKILL_MISS,
   ACTION_START,
   ACTION_MISS,
+  INFLICTION_MISS,
   PLEP,
   SPRITE_FLASH,
+  INFLICT_FLASH,
   DAMAGE_VALUE,
+  INFLICT,
   ACTION_END,
   OUTCOME,
   DONE
 };
 
+/* Actor Outcome Structure - Describes the outcome the greater BattleEvent
+ * object will have during a specific action upon a specific target for
+ * Battle to render and perform that outcome */
 struct ActorOutcome
 {
   ActorOutcome()
       : actor_outcome_state{ActionState::BEGIN},
         actor{nullptr},
+        causes_ko{false},
         damage{0},
-        causes_ko{false} {};
+        infliction_type{Infliction::INVALID},
+        infliction_status{InflictionStatus::FIZZLE} {};
 
   /* The enumerated action outcome state this actor outcome's currently proc. */
   ActionState actor_outcome_state;
@@ -77,11 +95,17 @@ struct ActorOutcome
   /* Pointer to the Battle Actor for the outcome */
   BattleActor* actor;
 
+  /* Whether this outcome caused the actor to become KOed */
+  bool causes_ko;
+
   /* The amount of damage that occured */
   int32_t damage;
 
-  /* Whether this outcome caused the actor to become KOed */
-  bool causes_ko;
+  /* Type of infliction inflicted */
+  Infliction infliction_type;
+
+  /* The status of the infliction on this ActorOutcome [miss/immune/etc.] */
+  InflictionStatus infliction_status;
 };
 
 class BattleEvent
@@ -214,6 +238,9 @@ private:
   int32_t calcValSecdDef(Skill* curr_skill);
   int32_t calcValLuckAtk();
   int32_t calcValLuckDef(BattleStats target_stats);
+
+  /* Can a given BattleActor be inflicted with the */
+  InflictionStatus canInflictTarget(BattleActor* curr_target, Infliction type);
 
   /* Methods for matching primary and secondary skills to their users */
   bool doesPrimMatch(Skill* skill);

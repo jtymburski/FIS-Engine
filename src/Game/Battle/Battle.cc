@@ -153,7 +153,8 @@ Battle::Battle()
       turn_state{TurnState::STOPPED},
       time_elapsed{0},
       turns_elapsed{0},
-      upkeep_actor{nullptr}
+      upkeep_actor{nullptr},
+      upkeep_ailment{nullptr}
 {
   /* Create a new action buffer and a menu object */
   battle_buffer = new Buffer();
@@ -255,12 +256,16 @@ void Battle::actionStateActionStart()
   {
     if(outcome.actor_outcome_state == ActionState::ACTION_MISS)
       outcomeStateActionMiss(outcome);
+    else if(outcome.actor_outcome_state == ActionState::INFLICTION_MISS)
+      outcomeStateActionMiss(outcome);
     else if(outcome.actor_outcome_state == ActionState::PLEP)
       outcomeStatePlep(outcome);
     else if(outcome.actor_outcome_state == ActionState::DAMAGE_VALUE)
       outcomeStateDamageValue(outcome);
     else if(outcome.actor_outcome_state == ActionState::SPRITE_FLASH)
       outcomeStateSpriteFlash(outcome);
+    else if(outcome.actor_outcome_state == ActionState::INFLICT_FLASH)
+      outcomeStateInflictFlash(outcome);
     else if(outcome.actor_outcome_state == ActionState::OUTCOME)
       outcomeStateActionOutcome(outcome);
 
@@ -282,6 +287,8 @@ void Battle::actionStatePassBob()
 {
   std::cout << "Starting pass" << std::endl;
   addDelay(400);
+
+  event->action_state = ActionState::END_BOB;
 }
 
 void Battle::actionStateEndBob()
@@ -329,7 +336,7 @@ void Battle::addDelay(int32_t delay_amount)
   {
     auto to_add = delay_amount;
 
-    delay += (to_add * kDELAY_FAST_FACTOR);
+    delay += (to_add * kDELAY_NORM_FACTOR);
   }
 }
 
@@ -497,6 +504,20 @@ void Battle::clearEvent()
   event = nullptr;
 }
 
+void Battle::createDamageElement(BattleActor* actor, DamageType damage_type,
+                                 uint32_t amount)
+{
+  if(actor && config)
+  {
+    auto font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+    auto element = new RenderElement(renderer, font);
+
+    element->createAsDamageValue(amount, damage_type, config->getScreenHeight(),
+                                 getActorX(actor), getActorY(actor));
+    render_elements.push_back(element);
+  }
+}
+
 bool Battle::doesActorNeedToSelect(BattleActor* actor)
 {
   bool to_select = (actor != nullptr);
@@ -631,6 +652,7 @@ bool Battle::loadMenuForActor(BattleActor* actor)
 
 void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
 {
+  std::cout << "[Action Miss!]" << std::endl;
   auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
   auto element = new RenderElement(renderer, damage_font);
 
@@ -681,11 +703,58 @@ void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
   outcome.actor_outcome_state = ActionState::OUTCOME;
 }
 
+void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
+{
+  if(outcome.infliction_status == InflictionStatus::INFLICTION)
+  {
+    outcome.actor->startFlashing(FlashingType::POISON, 750);
+    outcome.actor_outcome_state = ActionState::OUTCOME;
+    addDelay(100);
+  }
+  else if(outcome.infliction_status == InflictionStatus::IMMUNE)
+  {
+    // TODO: Factor this out
+    std::cout << "[IMMUNE!]" << std::endl;
+    auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+    auto element = new RenderElement(renderer, damage_font);
+
+    element->createAsDamageText(
+        "Immune", DamageType::BASE, config->getScreenHeight(),
+        getActorX(event->actor), getActorY(event->actor));
+    render_elements.push_back(element);
+    addDelay(600);
+    outcome.actor_outcome_state = ActionState::ACTION_END;
+  }
+  else if(outcome.infliction_status == InflictionStatus::ALREADY_INFLICTED)
+  {
+    // TODO: Factor this out
+    std::cout << "[Already Inflicted]" << std::endl;
+    auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
+    auto element = new RenderElement(renderer, damage_font);
+
+    element->createAsDamageText(
+        "Already Inflicted", DamageType::BASE, config->getScreenHeight(),
+        getActorX(event->actor), getActorY(event->actor));
+    render_elements.push_back(element);
+    addDelay(600);
+    outcome.actor_outcome_state = ActionState::ACTION_END;
+  }
+  else if(outcome.infliction_status == InflictionStatus::FIZZLE)
+  {
+    std::cout << "Well that's a fizzle" << std::endl;
+    outcome.actor_outcome_state = ActionState::ACTION_END;
+  }
+}
+
 void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 {
   /* If Person's VITA is 0 -> they are KOed) */
   if(outcome.causes_ko)
     outcome.actor->startFlashing(FlashingType::KOING);
+
+  /* If the outcome causes an infliction -> inflict that person */
+  if(outcome.infliction_type != Infliction::INVALID)
+    processInfliction(outcome.actor, outcome.infliction_type);
 
   outcome.actor_outcome_state = ActionState::ACTION_END;
 }
@@ -816,16 +885,32 @@ void Battle::processEventSkill()
       if(event->doesActionHit(target))
       {
         if(curr_action->actionFlag(ActionFlags::DAMAGE))
+        {
           outcome.damage = event->calcDamage(target);
-        // else if(curr_action->actionFlag(ActionFlags::INFLICT))
-        //   processInfliction(target, curr_action->getInfliction());
+          outcome.actor_outcome_state = ActionState::PLEP;
+        }
+        else if(curr_action->actionFlag(ActionFlags::INFLICT))
+        {
+          auto type = curr_action->getAilment();
 
-        outcome.actor_outcome_state = ActionState::PLEP;
+          outcome.infliction_type = curr_action->getAilment();
+
+          if(outcome.actor->isInflicted(type))
+            outcome.infliction_status = InflictionStatus::ALREADY_INFLICTED;
+          else if(outcome.actor->isImmune(type))
+            outcome.infliction_status = InflictionStatus::IMMUNE;
+
+          outcome.infliction_status = InflictionStatus::INFLICTION;
+          outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+        }
       }
       else
       {
         outcome.damage = 0;
         outcome.actor_outcome_state = ActionState::ACTION_MISS;
+
+        if(curr_action->actionFlag(ActionFlags::INFLICT))
+          outcome.actor_outcome_state = ActionState::INFLICTION_MISS;
       }
 
       event->actor_outcomes.push_back(outcome);
@@ -833,21 +918,32 @@ void Battle::processEventSkill()
   }
 }
 
-// void Battle::processInfliciton(BattleActor* target, Ailment ailment_type)
-// {
-//   // POISON
-//   // CONFUSE
-//   // SILENCE
-//   // HIBERNATION
-//   // CONFUSION
-//   // PARALYSIS
+void Battle::processInfliction(BattleActor* target, Infliction type)
+{
+  assert(target && event);
+  auto curr_action = event->getCurrAction();
+  auto min = curr_action->getMin();
+  auto max = curr_action->getMax();
+  auto chance = curr_action->getChance();
 
-//   // ALL ATK BUFF
-//   // ALL DEF BUFF
-//   // LIMB BUFF
-//   // ALL ATK BUFF
-//   // ALL DEF BUFF
-// }
+  // POISON
+  if(type == Infliction::POISON)
+  {
+    std::cout << "[Inflicting Target With Poison" << std::endl;
+    target->addAilment(type, min, max, chance);
+  }
+  // CONFUSE
+  // SILENCE
+  // HIBERNATION
+  // CONFUSION
+  // PARALYSIS
+
+  // ALL ATK BUFF
+  // ALL DEF BUFF
+  // LIMB BUFF
+  // ALL ATK BUFF
+  // ALL DEF BUFF
+}
 
 void Battle::updateEnemySelection()
 {
@@ -885,7 +981,7 @@ void Battle::updateFadeInText()
   auto font = config->getFontTTF(FontName::BATTLE_TURN);
   auto element = new RenderElement(renderer, font);
 
-  element->createAsEnterText("D Side Yer Phate Der Bud",
+  element->createAsEnterText("Don't Hit The Good Guys",
                              config->getScreenHeight(),
                              config->getScreenWidth());
   render_elements.push_back(element);
@@ -910,7 +1006,7 @@ void Battle::updatePersonalUpkeep()
       updatePersonalVitaRegen();
     else if(state == UpkeepState::QTDR_REGEN)
       updatePersonalQtdrRegen();
-    else if(state == UpkeepState::AILMENTS)
+    else if(state != UpkeepState::COMPLETE)
       updatePersonalAilments();
   }
   else
@@ -963,14 +1059,49 @@ void Battle::updatePersonalQtdrRegen()
     addDelay(600);
   }
   // Calculate and create the qtdr regen for the upkeep_actor
-  upkeep_actor->setUpkeepState(UpkeepState::AILMENTS);
+  upkeep_actor->setUpkeepState(UpkeepState::AILMENT_BEGIN);
 }
 
 void Battle::updatePersonalAilments()
 {
-  // Personal Ailments for the upkeep_actor
-  std::cout << "Personal Ailments" << std::endl;
-  upkeep_actor->setUpkeepState(UpkeepState::COMPLETE);
+  std::cout << "Updating ailments!" << std::endl;
+  if(upkeep_ailment)
+  {
+    if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_BEGIN)
+    {
+      upkeep_ailment->update();
+
+      if(upkeep_ailment->getUpdateStatus() == AilmentStatus::TO_REMOVE)
+      {
+        std::cout << "[Ailment TO_REMOVE]" << std::endl;
+        upkeep_actor->setUpkeepState(UpkeepState::AILMENT_CLEAR);
+      }
+      else if(upkeep_ailment->getUpdateStatus() == AilmentStatus::TO_DAMAGE)
+      {
+        std::cout << "[Ailment TO_DAMAGE]" << std::endl;
+        upkeep_actor->setUpkeepState(UpkeepState::AILMENT_FLASH);
+      }
+    }
+    else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_CLEAR)
+      upkeepAilmentClear();
+    else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_FLASH)
+      upkeepAilmentFlash();
+    else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_DAMAGE)
+      upkeepAilmentDamage();
+    else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_OUTCOME)
+      upkeepAilmentOutcome();
+  }
+  else
+  {
+    std::cout << "Getting next upkeep ailment!" << std::endl;
+
+    upkeep_ailment = upkeep_actor->nextUpdateAilment();
+
+    if(!upkeep_ailment)
+      upkeep_actor->setUpkeepState(UpkeepState::COMPLETE);
+    else
+      upkeep_actor->setUpkeepState(UpkeepState::AILMENT_BEGIN);
+  }
 }
 
 void Battle::updateProcessing()
@@ -985,7 +1116,6 @@ void Battle::updateProcessing()
   /* Check if the current event is finished processing */
   if(event && event->action_state == ActionState::DONE)
   {
-    std::cout << "Setting buffer processed " << std::endl;
     battle_buffer->setProcessed();
 
     if(event->actor && event->actor->getFlag(ActorState::ALLY))
@@ -994,20 +1124,11 @@ void Battle::updateProcessing()
     clearEvent();
   }
   else if(battle_buffer->isIndexProcessed())
-  {
-    std::cout << " Updating buffer next " << std::endl;
     updateBufferNext();
-  }
   else if(battle_buffer->isIndexStarted() && event)
-  {
-    std::cout << "Updating battle event" << std::endl;
     updateEvent();
-  }
   else if(battle_buffer->getCooldown() == 0)
-  {
-    std::cout << "Loading battle event" << std::endl;
     loadBattleEvent();
-  }
   else
     updateBufferNext();
 }
@@ -1032,7 +1153,6 @@ void Battle::updateSelectingState(BattleActor* actor, bool set_selected)
 
     if(set_selected)
     {
-      std::cout << "Setting selected state " << std::endl;
       if(state == SelectionState::SELECTING)
         actor->setSelectionState(SelectionState::SELECTED_ACTION);
       else if(state == SelectionState::SELECTING_2ND_ACTION)
@@ -1221,10 +1341,6 @@ void Battle::buildActionFrame(BattleActor* actor)
     action_frames->render(renderer, actor->getDialogX(), actor->getDialogY(),
                           action_frames->getCurrent()->getWidth(),
                           action_frames->getCurrent()->getHeight());
-  }
-  else
-  {
-    std::cout << "Bad dialog sprite!" << std::endl;
   }
 
   /* Try and chop out the base of the person */
@@ -1914,7 +2030,6 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
 {
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
   bool success = true;
-  bool below = true;
 
   auto x = 0;
   auto y = 0;
@@ -2011,7 +2126,7 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
   delete t;
 
   /* Render ailments */
-  if(below && ally->getAilments().size() > 0)
+  if(for_menu && ally->getAilments().size() > 0)
   {
     auto frame = battle_display_data->getFrameAilment(Infliction::SILENCE);
     auto frame_size = 0;
@@ -2022,12 +2137,12 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
     auto ailment_y =
         y + kALLY_HEIGHT + kAILMENT_GAP * 2 + kAILMENT_BORDER * 2 + frame_size;
 
-    success &= renderAilmentsActor(ally, x + kINFO_W / 2, ailment_y, false);
+    success &= renderAilmentsActor(ally, x + kINFO_W / 2, ailment_y, true);
   }
-  else if(ally->getAilments().size() > 0)
+  else if(!for_menu && ally->getAilments().size() > 0)
   {
     auto ailment_y = config->getScreenHeight() - kBIGBAR_OFFSET;
-    success &= renderAilmentsActor(ally, x + kINFO_W / 2, ailment_y, true);
+    success &= renderAilmentsActor(ally, x + (kINFO_W / 2), ailment_y, false);
   }
 
   return success;
@@ -2189,6 +2304,56 @@ void Battle::updateRenderSprites(int32_t cycle_time)
 
 // return opacity;
 
+void Battle::upkeepAilmentClear()
+{
+  upkeep_actor->startFlashing(FlashingType::RELIEVE, 750);
+  upkeep_ailment->setUpdateStatus(AilmentStatus::COMPLETED);
+  upkeep_actor->setUpkeepState(UpkeepState::AILMENT_OUTCOME);
+
+  // Remove the ailment - How to deal with consequences?
+  upkeep_actor->removeAilment(upkeep_ailment);
+  addDelay(100);
+}
+
+void Battle::upkeepAilmentDamage()
+{
+  // TODO [12-04-15] -- Damage types for different ailments
+  createDamageElement(upkeep_actor, DamageType::POISON,
+                      upkeep_ailment->getDamageAmount());
+  upkeep_actor->setUpkeepState(UpkeepState::AILMENT_OUTCOME);
+  upkeep_ailment->setUpdateStatus(AilmentStatus::COMPLETED);
+  addDelay(300);
+}
+
+void Battle::upkeepAilmentFlash()
+{
+  // TODO [12-04-15] -- Flashing types for different ailments
+  upkeep_actor->startFlashing(FlashingType::POISON, 750);
+  upkeep_actor->setUpkeepState(UpkeepState::AILMENT_DAMAGE);
+  addDelay(600);
+}
+
+void Battle::upkeepAilmentOutcome()
+{
+  // If the ailment was relieved, remove the ailment.
+
+  // If the ailment caused damage, deal damage.
+
+  if(upkeep_ailment->getDamageAmount() > 0)
+  {
+    if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()))
+    {
+      // DEAL WITH DEATH CASE
+      // RELIEVE OTHER AILMENTS CASE
+      // PARTY DEATH CASE
+    }
+  }
+
+  /* Unset the upkeep ailment for updatePersonalAilments() to grab the next */
+  upkeep_ailment = nullptr;
+  addDelay(100);
+}
+
 int32_t Battle::getActorX(BattleActor* actor)
 {
   if(actor && actor->getFlag(ActorState::ALLY))
@@ -2310,6 +2475,7 @@ void Battle::stopBattle()
   time_elapsed = 0;
   turns_elapsed = 0;
   upkeep_actor = nullptr;
+  upkeep_ailment = nullptr;
 }
 
 std::vector<BattleActor*> Battle::getAllies()

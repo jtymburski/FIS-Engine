@@ -119,9 +119,10 @@ bool Ailment::doesAilmentCure()
   }
   // else if(getFlag(AilState::CURABLE_KO))
   // {
-  //   if(actor_victim && !actor_victim->getFlag(ActorState::KO))
+  //   if(actor_victim && actor_victim->getStateLiving() == LivingState::KO)
   //     to_cure = true;
   // }
+
   // else if(getFlag(AilState::CURABLE_DEATH))
   // {
   //   if(actor_victim && !actor_victim->getFlag(ActorState::ALIVE))
@@ -134,6 +135,12 @@ bool Ailment::doesAilmentCure()
 /* Updates effects of the Ailment, ex. METATETHER -> death */
 AilmentStatus Ailment::updateEffect()
 {
+  if(type == Infliction::POISON)
+  {
+    if(calcPoisonDamage())
+      return AilmentStatus::TO_DAMAGE;
+  }
+
   return AilmentStatus::COMPLETED;
 }
 

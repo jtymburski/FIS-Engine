@@ -518,12 +518,25 @@ bool BattleEvent::doesActionHit(BattleActor* curr_target)
 
   if(curr_action && curr_target)
   {
-    if(curr_action->actionFlag(ActionFlags::DAMAGE))
-      if(curr_target->getStateLiving() != LivingState::ALIVE)
-        return false;
+    auto targ_alive = (curr_target->getStateLiving() == LivingState::ALIVE);
+    auto go_to_chance = false;
 
-    return Helpers::chanceHappens(
-        static_cast<uint32_t>(curr_action->getChance()), 100);
+    if(targ_alive)
+    {
+      if(curr_action->actionFlag(ActionFlags::DAMAGE))
+        go_to_chance = true;
+      else if(curr_action->actionFlag(ActionFlags::INFLICT))
+      {
+        auto status = canInflictTarget(curr_target, curr_action->getAilment());
+        go_to_chance = (status == InflictionStatus::INFLICTION);
+      }
+    }
+
+    if(go_to_chance)
+    {
+      return Helpers::chanceHappens(
+          static_cast<uint32_t>(curr_action->getChance()), 100);
+    }
   }
 
   return false;
@@ -672,6 +685,29 @@ int32_t BattleEvent::calcValLuckDef(BattleStats target_stats)
     return 0;
 
   return target_stats.getValue(Attribute::MANN) * kMANNA_DEF_MODIFIER;
+}
+
+InflictionStatus BattleEvent::canInflictTarget(BattleActor* curr_target,
+                                               Infliction type)
+{
+  if(curr_target && type != Infliction::INVALID)
+  {
+    if(curr_target->isInflicted(type))
+    {
+      std::cout << "Already inflicted!" << std::endl;
+      return InflictionStatus::ALREADY_INFLICTED;
+    }
+    if(curr_target->isImmune(type))
+    {
+      std::cout << "Target is immune!" << std::endl;
+      return InflictionStatus::IMMUNE;
+    }
+
+    if(curr_target->getAilments().size() < 5)
+      return InflictionStatus::INFLICTION;
+  }
+
+  return InflictionStatus::FIZZLE;
 }
 
 bool BattleEvent::doesPrimMatch(Skill* skill)

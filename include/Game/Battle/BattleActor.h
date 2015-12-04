@@ -76,7 +76,8 @@ enum class FlashingType
   NONE,
   DAMAGE,
   POISON,
-  KOING
+  KOING,
+  RELIEVE
 };
 
 enum class LivingState
@@ -131,7 +132,11 @@ enum class UpkeepState
 {
   VITA_REGEN,
   QTDR_REGEN,
-  AILMENTS,
+  AILMENT_BEGIN,
+  AILMENT_CLEAR,
+  AILMENT_FLASH,
+  AILMENT_DAMAGE,
+  AILMENT_OUTCOME,
   COMPLETE
 };
 
@@ -251,6 +256,7 @@ private:
   static const SDL_Color kFLASHING_DAMAGE_COLOR;
   static const SDL_Color kFLASHING_POISON_COLOR;
   static const SDL_Color kFLASHING_KO_COLOR;
+  static const SDL_Color kFLASHING_RELIEVE_COLOR;
 
   static const float kREGEN_RATE_ZERO_PC;
   static const float kREGEN_RATE_WEAK_PC;
@@ -292,6 +298,10 @@ private:
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
+  /* Inflicts the BattleActor with a given ailment */
+  void addAilment(Infliction type, int32_t min_turns, int32_t max_turns,
+                  double chance);
+
   /* Constructs BattleItem objects of the BattleActor */
   bool buildBattleItems(std::vector<BattleActor*> all_targets);
 
@@ -315,6 +325,9 @@ public:
 
   /* Determines whether the Actor is inflicted with a given infliction */
   bool isInflicted(Infliction test_infliction);
+
+  /* Returns the next ailment which needs to be updated */
+  Ailment* nextUpdateAilment();
 
   /* Removes a given ailment from the vector of ailmnents, if it is found */
   bool removeAilment(Ailment* remove_ailment);
