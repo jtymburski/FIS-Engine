@@ -1158,6 +1158,10 @@ void TestBattle::createSkillSets()
   SkillSet* set_player = new SkillSet(200);
   set_player->addSkill(getSkill(200), 1);
   set_player->addSkill(getSkill(201), 15);
+
+  //TODO: Remove
+  set_player->addSkill(getSkill(242), 1);
+
   skillsets.push_back(set_player);
 
   /* Reverdile */
@@ -1172,6 +1176,7 @@ void TestBattle::createSkillSets()
   set_reverdling->addSkill(getSkill(240), 1);
   set_reverdling->addSkill(getSkill(241), 1);
   set_reverdling->addSkill(getSkill(242), 1);
+
   set_reverdling->addSkill(getSkill(243), 1);
   skillsets.push_back(set_reverdling);
 

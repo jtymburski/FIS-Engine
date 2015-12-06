@@ -89,8 +89,9 @@ bool Ailment::calcPoisonDamage()
     auto max_health = stats_victim->getValue(Attribute::MVIT);
     auto change = kPOISON_DMG_INIT + ((float)total_turns * kPOISON_DMG_INCR);
 
-    if(std::round(max_health * change) >= 0)
-      damage_amount = std::round(max_health * change);
+    damage_amount = 200;
+    // if(std::round(max_health * change) >= 0)
+    //   damage_amount = std::round(max_health * change);
 
     return true;
   }

@@ -491,9 +491,15 @@ void Battle::checkIfOutcome()
   auto enemies_dead = checkEnemiesDeath();
 
   if(enemies_dead)
+  {
     outcome = OutcomeType::VICTORY;
+    addDelay(2500);
+  }
   else if(allies_dead)
+  {
     outcome = OutcomeType::DEFEAT;
+    addDelay(2500);
+  }
 }
 
 void Battle::clearEvent()
@@ -2343,6 +2349,8 @@ void Battle::upkeepAilmentOutcome()
   {
     if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()))
     {
+      upkeep_actor->startFlashing(FlashingType::KOING);
+
       // DEAL WITH DEATH CASE
       // RELIEVE OTHER AILMENTS CASE
       // PARTY DEATH CASE
