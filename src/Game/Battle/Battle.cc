@@ -166,9 +166,11 @@ Battle::Battle()
  */
 Battle::~Battle()
 {
+  aiClear();
   clearBattleActors();
   clearBackground();
   clearElements();
+  clearEnemyBackdrop();
   clearEvent();
 
   if(battle_buffer)
@@ -402,7 +404,6 @@ bool Battle::bufferModuleSelection()
     }
     else if(action_type == ActionType::PASS)
     {
-      std::cout << "Buffering a pass selection!" << std::endl;
       battle_buffer->addPass(curr_actor, turns_elapsed);
     }
     else if(action_type == ActionType::RUN)
@@ -491,15 +492,9 @@ void Battle::checkIfOutcome()
   auto enemies_dead = checkEnemiesDeath();
 
   if(enemies_dead)
-  {
     outcome = OutcomeType::VICTORY;
-    addDelay(2500);
-  }
   else if(allies_dead)
-  {
     outcome = OutcomeType::DEFEAT;
-    addDelay(2500);
-  }
 }
 
 void Battle::clearEvent()
@@ -666,8 +661,8 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
                               config->getScreenHeight(),
                               getActorX(event->actor), getActorY(event->actor));
   render_elements.push_back(element);
-  addDelay(600);
   outcome.actor_outcome_state = ActionState::ACTION_END;
+  addDelay(600);
 }
 
 void Battle::outcomeStatePlep(ActorOutcome& outcome)
@@ -699,10 +694,7 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
 {
   if(outcome.actor->dealDamage(outcome.damage))
-  {
     outcome.causes_ko = true;
-    addDelay(100);
-  }
   else
     outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
 
@@ -747,7 +739,6 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
   }
   else if(outcome.infliction_status == InflictionStatus::FIZZLE)
   {
-    std::cout << "Well that's a fizzle" << std::endl;
     outcome.actor_outcome_state = ActionState::ACTION_END;
   }
 }
@@ -756,7 +747,13 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 {
   /* If Person's VITA is 0 -> they are KOed) */
   if(outcome.causes_ko)
+  {
+    if(this->outcome != OutcomeType::NONE)
+      addDelay(2000);
+
     outcome.actor->startFlashing(FlashingType::KOING);
+    outcome.actor->removeAilmentsKO();
+  }
 
   /* If the outcome causes an infliction -> inflict that person */
   if(outcome.infliction_type != Infliction::INVALID)
@@ -987,7 +984,7 @@ void Battle::updateFadeInText()
   auto font = config->getFontTTF(FontName::BATTLE_TURN);
   auto element = new RenderElement(renderer, font);
 
-  element->createAsEnterText("Don't Hit The Good Guys",
+  element->createAsEnterText("Only Hit The Bad Guys",
                              config->getScreenHeight(),
                              config->getScreenWidth());
   render_elements.push_back(element);
@@ -1070,7 +1067,6 @@ void Battle::updatePersonalQtdrRegen()
 
 void Battle::updatePersonalAilments()
 {
-  std::cout << "Updating ailments!" << std::endl;
   if(upkeep_ailment)
   {
     if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_BEGIN)
@@ -1078,15 +1074,9 @@ void Battle::updatePersonalAilments()
       upkeep_ailment->update();
 
       if(upkeep_ailment->getUpdateStatus() == AilmentStatus::TO_REMOVE)
-      {
-        std::cout << "[Ailment TO_REMOVE]" << std::endl;
         upkeep_actor->setUpkeepState(UpkeepState::AILMENT_CLEAR);
-      }
       else if(upkeep_ailment->getUpdateStatus() == AilmentStatus::TO_DAMAGE)
-      {
-        std::cout << "[Ailment TO_DAMAGE]" << std::endl;
         upkeep_actor->setUpkeepState(UpkeepState::AILMENT_FLASH);
-      }
     }
     else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_CLEAR)
       upkeepAilmentClear();
@@ -1099,8 +1089,6 @@ void Battle::updatePersonalAilments()
   }
   else
   {
-    std::cout << "Getting next upkeep ailment!" << std::endl;
-
     upkeep_ailment = upkeep_actor->nextUpdateAilment();
 
     if(!upkeep_ailment)
@@ -1645,6 +1633,14 @@ void Battle::clearElements()
   }
 
   render_elements.clear();
+}
+
+void Battle::clearEnemyBackdrop()
+{
+  if(frame_enemy_backdrop)
+    delete frame_enemy_backdrop;
+
+  frame_enemy_backdrop = nullptr;
 }
 
 void Battle::clearElementsTimedOut()
@@ -2318,7 +2314,7 @@ void Battle::upkeepAilmentClear()
 
   // Remove the ailment - How to deal with consequences?
   upkeep_actor->removeAilment(upkeep_ailment);
-  addDelay(100);
+  addDelay(400);
 }
 
 void Battle::upkeepAilmentDamage()
@@ -2345,21 +2341,23 @@ void Battle::upkeepAilmentOutcome()
 
   // If the ailment caused damage, deal damage.
 
-  if(upkeep_ailment->getDamageAmount() > 0)
+  if(upkeep_ailment->getDamageAmount() > 0 &&
+     upkeep_ailment->getFlag(AilState::CURABLE_KO))
   {
     if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()))
     {
       upkeep_actor->startFlashing(FlashingType::KOING);
-
-      // DEAL WITH DEATH CASE
-      // RELIEVE OTHER AILMENTS CASE
-      // PARTY DEATH CASE
+      upkeep_actor->removeAilmentsKO();
+      addDelay(1200);
     }
+  }
+  else
+  {
+    addDelay(100);
   }
 
   /* Unset the upkeep ailment for updatePersonalAilments() to grab the next */
   upkeep_ailment = nullptr;
-  addDelay(100);
 }
 
 int32_t Battle::getActorX(BattleActor* actor)
@@ -2461,13 +2459,13 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 
 void Battle::stopBattle()
 {
-  std::cout << "Stopping the Battle!" << std::endl;
-
   /* Destroy the battle actors at the end of a Battle */
   aiClear();
   clearBattleActors();
-  clearEvent();
+  clearBackground();
   clearElements();
+  clearEnemyBackdrop();
+  clearEvent();
 
   if(battle_menu)
     battle_menu->clear();
@@ -2475,9 +2473,7 @@ void Battle::stopBattle()
   if(battle_buffer)
     battle_buffer->clear();
 
-  background = nullptr;
   delay = 0;
-  frame_enemy_backdrop = nullptr;
   outcome = OutcomeType::NONE;
   turn_state = TurnState::STOPPED;
   time_elapsed = 0;
@@ -2650,7 +2646,16 @@ bool Battle::update(int32_t cycle_time)
     if(outcome != OutcomeType::NONE)
       setFlagCombat(CombatState::PHASE_DONE);
 
-    if(getFlagCombat(CombatState::PHASE_DONE) && delay == 0)
+    bool allow_set_next = true;
+
+    if(event && event->action_state != ActionState::OUTCOME)
+      allow_set_next = false;
+    else if(!getFlagCombat(CombatState::PHASE_DONE))
+      allow_set_next = false;
+    else if(delay > 0)
+      allow_set_next = false;
+
+    if(allow_set_next)
       setNextTurnState();
 
     if(delay == 0)
@@ -2834,25 +2839,8 @@ bool Battle::update(int32_t cycle_time)
 //   return run_happens;
 // }
 
-// void Battle::loadBattleStateFlags()
-// {
-//   setBattleFlag(CombatState::PHASE_DONE, false);
-//   setBattleFlag(CombatState::OUTCOME_PROCESSED, false);
-//   setBattleFlag(CombatState::OUTCOME_PERFORMED, false);
-// }
-
 // void Battle::performEvents()
 // {
-//   /* Assert there is at least one index of events to perform */
-//   auto valid_next = true;
-//   valid_next &= event_buffer->getCurrentSize() > 0;
-
-//   /* Assert the current event exists and has not been performed already */
-//   if(valid_next)
-//     valid_next &= !event_buffer->getCurrentEvent()->performed;
-
-//   while(valid_next)
-//   {
 //     auto event = event_buffer->getCurrentEvent();
 //     auto index = event_buffer->getIndex();
 //     event_buffer->printEvent(index);
@@ -2882,10 +2870,6 @@ bool Battle::update(int32_t cycle_time)
 //     }
 //     else if(event->type == EventType::METABOLIC_KILL)
 //       event->user->setBFlag(BState::ALIVE, false);
-//     else if(event->type == EventType::BOND)
-//       // TODO [02-14-15] To Hell with this bond effect
-//     else if(event->type == EventType::BONDING)
-//       // TODO [02-14-15] To Hell with this bonding effect
 //     else if(event->type == EventType::BEGIN_DEFEND)
 //       event->user->setBFlag(BState::DEFENDING, true);
 //     else if(event->type == EventType::BREAK_DEFEND)
@@ -3015,12 +2999,6 @@ bool Battle::update(int32_t cycle_time)
 //   }
 // }
 
-// void Battle::resetTurnFlags(Person* user)
-// {
-//   user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
-//   user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
-// }
-
 // void Battle::processBuffer()
 // {
 //   /* If Buffer index == 0, don't increment, else, increment */
@@ -3143,43 +3121,6 @@ bool Battle::update(int32_t cycle_time)
 //   setBattleFlag(CombatState::READY_TO_RENDER, true);
 // }
 
-// bool Battle::processGuard()
-// {
-//   auto can_guard = true;
-
-//   if(curr_target == nullptr || curr_user == nullptr)
-//     can_guard = false;
-//   /* A guard/guardee combo can only be made if both the guard and guardee
-//   are
-//    * not being guarded by, or guarding any persons */
-//   if(can_guard)
-//   {
-//     can_guard &= curr_target->getGuard() == nullptr;
-//     can_guard &= curr_target->getGuardee() == nullptr;
-//     can_guard &= curr_user->getGuard() == nullptr;
-//     can_guard &= curr_user->getGuardee() == nullptr;
-//   }
-
-//   return can_guard;
-// }
-
-// bool Battle::performGuard(BattleEvent* guard_event)
-// {
-//   /* If a guard ca be made, attempt to assign guardee and guarding persons.
-//    * This should assign the GUARDING/GUARDED flags properly */
-//   if(guard_event != nullptr && guard_event->type == EventType::BEGIN_GUARD)
-//   {
-//     auto guard = guard_event->targets.at(0);
-//     auto guardee = guard_event->user;
-//     auto good_guard = guard->setGuardee(guardee);
-//     good_guard &= guardee->setGuard(guard);
-
-//     return good_guard;
-//   }
-
-//   return false;
-// }
-
 // bool Battle::processAction(BattleEvent* battle_event)
 // {
 //   auto can_process = false;
@@ -3298,117 +3239,6 @@ bool Battle::update(int32_t cycle_time)
 //   }
 
 //   return done;
-// }
-
-// bool Battle::processAilment()
-// {
-//   /* The current ailment pointer being processed is the processing index of
-//   the
-//    * temporary vector for the current person having their upkeep processed
-//    */
-//   auto ail = temp_ailments[pro_index];
-
-//   bool allies = friends->isInParty(curr_target);
-//   bool party_death = false;
-
-//   if(ail != nullptr)
-//   {
-//     /* If the ailment has not yet been updated this turn, perform standard
-//      * updates (flag setting/turn incrementing && damages) */
-//     if(!ail->getFlag(AilState::UPDATE_PROCESSED) &&
-//        ail->getFlag(AilState::TO_UPDATE))
-//     {
-//       party_death = processAilmentUpdate(ail);
-//     }
-
-//     /* If a party death didn't occur, continue processing on the flags that
-//      * were set during ailment updates/other outcomes (deaths, etc.) */
-//     if(!party_death && ail->getFlag(AilState::UPDATE_PROCESSED))
-//     {
-//       auto to_kill = ail->getFlag(AilState::TO_KILL);
-//       auto to_cure = ail->getFlag(AilState::TO_CURE);
-
-//       /* Process DeathTimer outcomes */
-//       if(ail->getType() == Infliction::DEATHTIMER)
-//       {
-//         if(to_kill)
-//         {
-//           event_buffer->createDeathEvent(EventType::DEATHTIMER_DEATH,
-//                                          curr_target, allies);
-//         }
-//         else
-//         {
-//           event_buffer->createAilmentEvent(EventType::DEATH_COUNTDOWN,
-//           nullptr,
-//                                            curr_target, nullptr, ail);
-//         }
-//       }
-//       else if(ail->getType() == Infliction::METATETHER && to_kill)
-//       {
-//         event_buffer->createDeathEvent(EventType::METABOLIC_KILL,
-//         curr_target,
-//                                        allies);
-//       }
-
-//       /* Check for party death */
-//       if(to_kill)
-//       {
-//         /* If the person is to die, their upkeeping has been processed */
-//         setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, true);
-
-//         event_buffer->createDeathEvent(EventType::DEATH, curr_target,
-//         allies);
-
-//         party_death = processPersonDeath(allies);
-//       }
-
-//       /* Cure the ailment */
-//       if(to_cure)
-//       {
-//         event_buffer->createAilmentEvent(EventType::CURE_INFLICTION,
-//         nullptr,
-//                                          curr_target, nullptr, ail);
-//       }
-//     }
-//   }
-
-//   setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
-
-//   return party_death;
-// }
-
-// bool Battle::processAilmentUpdate(Ailment* ail)
-// {
-//   /* Update the ailment with turn updating true (this sets the update
-//    * processed flag in the update call which is cleaned up in cleanUp() */
-//   ail->update(true);
-
-//   if(ail->getFlag(AilState::DEALS_DAMAGE) &&
-//      curr_target->getBFlag(BState::ALIVE))
-//   {
-//     auto damage_amount = ail->getDamageAmount();
-//     auto event_type = EventType::STANDARD_DAMAGE;
-
-//     if(ail->getType() == Infliction::POISON)
-//       event_type = EventType::POISON_DAMAGE;
-//     else if(ail->getType() == Infliction::BURN)
-//       event_type = EventType::BURN_DAMAGE;
-//     else if(ail->getType() == Infliction::METATETHER)
-//       event_type = EventType::METABOLIC_DAMAGE;
-//     else if(ail->getType() == Infliction::HIBERNATION)
-//       event_type = EventType::HIBERNATION;
-
-//     /* Create an event for the amount of damage the ailment will inflict */
-//     event_buffer->createDamageEvent(event_type, curr_target,
-//     damage_amount);
-
-//     /* Process death outcomes for the damage and return party death truth
-//     */
-//     if(ail->getType() != Infliction::HIBERNATION)
-//       return processDamageAmount(damage_amount);
-//   }
-
-//   return false;
 // }
 
 // bool Battle::processAlterAction(BattleEvent* alter_event, Person*

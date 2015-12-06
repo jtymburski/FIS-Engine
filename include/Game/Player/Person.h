@@ -86,11 +86,8 @@ private:
 
   /* Pointer to the base person */
   Person* base_person;
-  // Person* guardee;
-  // Person* guard;
 
   /* Flags for the curent Battle State and Person State */
-  // BState battle_flags;
   PState person_flags;
 
   /* Record of the Person */ // TODO [12-21-13]
@@ -236,10 +233,6 @@ public:
   /* Clears the skills the player has learned */
   void clearLearnedSkills();
 
-  /* Creates an AI module given a difficulty and personalities */
-  bool createAI(const AIDifficulty& diff, const AIPersonality& prim_personality,
-                const AIPersonality& secd_personality);
-
   /* Shorthand function for dealing damage, returns true if the Person KO's */
   bool doDmg(const uint32_t& amount);
 
@@ -284,21 +277,6 @@ public:
   /* Recalculates the Base skills based on categories */
   void updateBaseSkills();
 
-  // /* Resets the AI module for a new turn */
-  // bool resetAI();
-
-  // /* Clear the guard status of this person */
-  // bool resetGuard();
-
-  //  Clear the defend status of this person
-  // bool resetDefend();
-
-  // /* Clear the guarding status of this person */
-  // bool resetGuardee();
-
-  // /* Resets the skills for use in battle */
-  // void resetSkills();
-
   /* Returns a pointer to the action sprite */
   Sprite* getActionSprite();
 
@@ -309,7 +287,6 @@ public:
   int16_t getActionX();
   int16_t getActionY();
 
-  /* Returns a pointer to the AI module */
   AIModule* getAI();
 
   /* Returns the real % QD value of the maximum QD */
@@ -318,17 +295,11 @@ public:
   /* Returns the real % VITA value of the maximum VITA */
   float getVitaPercent();
 
-  /* Find the true cost for a Skill to the Person's QD */
-  // int16_t getTrueCost(Skill* test_skill);
-
   /* Returns the game_id (not unique) of the Person */
   int32_t getGameID() const;
 
   /* Returns the my_id (unique) of the Person */
   int32_t getMyID();
-
-  // Evaluates and returns the state of a given BState flag bool
-  // getBFlag(const BState& test_flag);
 
   /* Evaluates and returns the state of a given PState flag */
   bool getPFlag(const PState& test_flag);
@@ -458,12 +429,6 @@ public:
 
   /* Assigns the game ID for the person */
   void setGameID(int id);
-
-  /* Assigns a new guard (person guarding this object) */
-  bool setGuard(Person* const new_guard);
-
-  /* Assign a new person this person is guarding */
-  bool setGuardee(Person* const new_guarding_person);
 
   /* Attempts to assign a new loop set for the person */
   bool setLoot(const uint32_t& new_credit_drop, const uint32_t& new_exp_drop,

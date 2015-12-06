@@ -278,6 +278,9 @@ private:
   void clearBattleSkills();
   void clearInfoFrame();
 
+  /* CLears the flashing element on top of the sprite */
+  void clearFlashing();
+
   /* Clears all the sprites */
   void clearSprites();
 
@@ -331,6 +334,9 @@ public:
 
   /* Removes a given ailment from the vector of ailmnents, if it is found */
   bool removeAilment(Ailment* remove_ailment);
+
+  /* Remove all the ailments on the BattleActor for a KO Scenario */
+  void removeAilmentsKO();
 
   /* Assigns the actor's active sprite to start flashing */
   void startFlashing(FlashingType type, int32_t time_left = 0);

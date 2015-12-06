@@ -30,11 +30,6 @@ const uint8_t TestBattle::kNUM_MENU_ITEMS = 16;
 /* ------------------------------------------------------------------------- */
 TestBattle::TestBattle(Options* running_config)
     : display_data{nullptr},
-      sprite_paralysis{nullptr},
-      sprite_confusion{nullptr},
-      sprite_buff{nullptr},
-      sprite_poison{nullptr},
-      sprite_hibernation{nullptr},
       plep_sullen_sting{nullptr},
       plep_befuddling_sting{nullptr},
       plep_chlorophoria{nullptr},
@@ -56,9 +51,6 @@ TestBattle::TestBattle(Options* running_config)
       plep_ensnare{nullptr},
       plep_enrich{nullptr},
       plep_upgrade{nullptr},
-      sprite_defend_start{nullptr},
-      sprite_defend_break{nullptr},
-      sprite_defend_persist{nullptr},
       font_normal{nullptr},
       inventory_allies{nullptr},
       inventory_foes{nullptr},
@@ -66,7 +58,6 @@ TestBattle::TestBattle(Options* running_config)
       party_friends{nullptr}
 
 {
-  display_data = new BattleDisplayData();
   base_path = "";
   battle_logic = nullptr;
   battle_start = false;
@@ -80,6 +71,7 @@ TestBattle::TestBattle(Options* running_config)
   party_foes = nullptr;
   party_friends = nullptr;
 
+  display_data = new BattleDisplayData();
   battle_logic = new Battle();
 
   setConfiguration(running_config);
@@ -482,7 +474,7 @@ void TestBattle::create()
   /* Actions */
   createActions();
   createSkills();
-  createInventories();
+  // createInventories();
   createSkillSets();
   createClasses();
   createRaces();
@@ -809,16 +801,12 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   }
 
   /* Common person logic */
-  new_person->loseExp(new_person->getTotalExp());
-  new_person->addExp(new_person->getExpAt(level));
-
-  if(include_ai)
+  if(new_person)
   {
-    // AIModule* ai_module = new AIModule();
-    // ai_module->setParent(new_person);
-    // new_person->setAI(ai_module);
+    new_person->loseExp(new_person->getTotalExp());
+    new_person->addExp(new_person->getExpAt(level));
+    new_person->setSprites(fp, tp, ds, as);
   }
-  new_person->setSprites(fp, tp, ds, as);
 
   return new_person;
 }
@@ -1099,19 +1087,19 @@ void TestBattle::createSkills()
   skills.push_back(enrich);
 }
 
-void TestBattle::createInventories()
-{
-  /* Clears the inventories */
-  deleteInventories();
+// void TestBattle::createInventories()
+// {
+//   /* Clears the inventories */
+//   deleteInventories();
 
-  /* Allied Inventory */
-  inventory_allies = new Inventory(1337);
-  inventory_foes   = new Inventory(1338);
+//   /* Allied Inventory */
+//   inventory_allies = new Inventory(1337);
+//   inventory_foes = new Inventory(1338);
 
-  /* Allied Items */
+//   /* Allied Items */
 
-  /* Foes Items */
-}
+//   /* Foes Items */
+// }
 
 /* ------------------------------------------------------------------------- */
 /* Create Skill Sets */
@@ -1159,7 +1147,7 @@ void TestBattle::createSkillSets()
   set_player->addSkill(getSkill(200), 1);
   set_player->addSkill(getSkill(201), 15);
 
-  //TODO: Remove
+  // TODO: Remove
   set_player->addSkill(getSkill(242), 1);
 
   skillsets.push_back(set_player);
@@ -1245,40 +1233,40 @@ void TestBattle::deleteActions()
 void TestBattle::deleteClasses()
 {
   delete class_arcadius1;
-  class_arcadius1 = NULL;
+  class_arcadius1 = nullptr;
 
   delete class_aurora_agent;
-  class_aurora_agent = NULL;
+  class_aurora_agent = nullptr;
 
   delete class_aurora_heavy;
-  class_aurora_heavy = NULL;
+  class_aurora_heavy = nullptr;
 
   delete class_aurora_drone;
-  class_aurora_drone = NULL;
+  class_aurora_drone = nullptr;
 
   delete class_aurora_engg;
-  class_aurora_engg = NULL;
+  class_aurora_engg = nullptr;
 
   delete class_player;
-  class_player = NULL;
+  class_player = nullptr;
 
   delete class_reverdile;
-  class_reverdile = NULL;
+  class_reverdile = nullptr;
 
   delete class_reverdling;
-  class_reverdling = NULL;
+  class_reverdling = nullptr;
 }
 
-void TestBattle::deleteInventories()
-{
-  if(inventory_allies)
-    delete inventory_allies;
-  if(inventory_foes)
-    delete inventory_foes;
+// void TestBattle::deleteInventories()
+// {
+//   if(inventory_allies)
+//     delete inventory_allies;
+//   if(inventory_foes)
+//     delete inventory_foes;
 
-  inventory_allies = nullptr;
-  inventory_foes = nullptr;
-}
+//   inventory_allies = nullptr;
+//   inventory_foes = nullptr;
+// }
 
 /* ------------------------------------------------------------------------- */
 /* Delete menu */
@@ -1342,20 +1330,41 @@ void TestBattle::destroy()
 {
   mode = NONE;
 
-  /* Delete battle and information */
+  // /* Delete battle and information */
   destroyBattle();
 
+  // /* Delete skill information */
+  // deleteClasses();
+  // deleteInventories();
+  // deleteRaces();
+  // deleteSkillSets();
+  // deleteSkills();
+  // deleteActions();
 
-  /* Delete skill information */
-  deleteClasses();
-  deleteInventories();
-  deleteRaces();
-  deleteSkillSets();
-  deleteSkills();
-  deleteActions();
+  // /* Delete fonts and menus */
+  // deleteMenu();
 
-  /* Delete fonts and menus */
-  deleteMenu();
+  // delete plep_sullen_sting;
+  // delete plep_befuddling_sting;
+  // delete plep_chlorophoria;
+  // delete plep_canopy;
+  // delete plep_numbing_sting;
+  // delete plep_toxic_sting;
+  // delete plep_updraft;
+  // delete plep_light_push;
+  // delete plep_light_shot;
+  // delete plep_prismatic_shot;
+  // delete plep_rail_shot;
+  // delete plep_shatter_shot;
+  // delete plep_static_shot;
+  // delete plep_locked_shot;
+  // delete plep_strike;
+  // delete plep_paw_strike;
+  // delete plep_maul;
+  // delete plep_multi_strike;
+  // delete plep_upgrade;
+  // delete plep_ensnare;
+  // delete plep_enrich;
 }
 
 /* Battle destruction */
@@ -1371,8 +1380,11 @@ void TestBattle::destroyBattle()
   if(party_foes)
   {
     for(auto& member : party_foes->getMembers())
+    {
       if(member)
         delete member;
+      member = nullptr;
+    }
 
     delete party_foes;
     party_foes = nullptr;
@@ -1575,7 +1587,10 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
 
   battle_logic->setRenderer(renderer);
   display_data->setRenderer(renderer);
-  display_data->buildData();
+
+  if(!display_data->isDataBuilt())
+    display_data->buildData();
+
   battle_logic->startBattle(party_friends, party_foes, background);
 }
 
@@ -1780,7 +1795,7 @@ bool TestBattle::update(int cycle_time)
 
     if(battle_logic->getTurnState() == TurnState::FINISHED)
       battle_logic->stopBattle();
-    else if(battle_logic->getTurnState() == TurnState::STOPPED)
+    if(battle_logic->getTurnState() == TurnState::STOPPED)
       mode = SCENARIO;
   }
 

@@ -27,7 +27,13 @@
  * Inputs:
  */
 BattleDisplayData::BattleDisplayData()
-    : data_built{false}, config{nullptr}, renderer{nullptr}
+    : data_built{false},
+      config{nullptr},
+      frame_battle_bar{nullptr},
+      frame_percent{nullptr},
+      frame_qd{nullptr},
+      frame_time{nullptr},
+      renderer{nullptr}
 {
 }
 
@@ -51,32 +57,27 @@ BattleDisplayData::~BattleDisplayData()
       delete ailment.second;
   frames_ailments.clear();
 
-  // TODO: This fails?
+  //TODO: THIS STILL FAILS -- WHY??
   // for(auto& ailment_plep : pleps_ailments)
   //   if(ailment_plep.second)
   //     delete ailment_plep.second;
   // pleps_ailments.clear();
 
-  // for(auto& event_plep : pleps_events)
-  //   if(event_plep.second)
-  //     delete event_plep.second;
-  // pleps_events.clear();
+  if(frame_battle_bar)
+    delete frame_battle_bar;
+  frame_battle_bar = nullptr;
 
-  // if(frame_battle_bar)
-  //   delete frame_battle_bar;
-  // frame_battle_bar = nullptr;
+  if(frame_percent)
+    delete frame_percent;
+  frame_percent = nullptr;
 
-  // if(frame_percent)
-  //   delete frame_percent;
-  // frame_percent = nullptr;
+  if(frame_qd)
+    delete frame_qd;
+  frame_qd = nullptr;
 
-  // if(frame_qd)
-  //   delete frame_qd;
-  // frame_qd = nullptr;
-
-  // if(frame_time)
-  //   delete frame_time;
-  // frame_time = nullptr;
+  if(frame_time)
+    delete frame_time;
+  frame_time = nullptr;
 }
 
 /*=============================================================================
@@ -302,32 +303,34 @@ void BattleDisplayData::buildFramesExtra()
 
 void BattleDisplayData::buildPlepsAilments()
 {
+  bool success = true;
+
   /* Set up the Ailment pleps */
   auto sprite_paralysis = new Sprite(
       config->getBasePath() + "sprites/Battle/Pleps/paralysisplep_AA_A", 3,
       ".png", renderer);
   sprite_paralysis->setAnimationTime(70);
-  setPlepAilment(Infliction::PARALYSIS, sprite_paralysis);
+  pleps_ailments.emplace(Infliction::PARALYSIS, sprite_paralysis);
 
   auto sprite_confusion = new Sprite(
       config->getBasePath() + "sprites/Battle/Pleps/confusionplep_AA_A", 3,
       ".png", renderer);
   sprite_confusion->setAnimationTime(80);
-  setPlepAilment(Infliction::CONFUSE, sprite_confusion);
+  pleps_ailments.emplace(Infliction::CONFUSE, sprite_confusion);
 
   auto sprite_poison =
       new Sprite(config->getBasePath() + "sprites/Battle/Pleps/poisonplep_AA_A",
                  4, ".png", renderer);
   sprite_poison->setAnimationTime(70);
-  setPlepAilment(Infliction::POISON, sprite_poison);
+  pleps_ailments.emplace(Infliction::POISON, sprite_poison);
 
   auto sprite_buff =
       new Sprite(config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A",
                  9, ".png", renderer);
   sprite_buff->setAnimationTime(95);
-  setPlepAilment(Infliction::ALLATKBUFF, sprite_buff);
-  setPlepAilment(Infliction::ALLDEFBUFF, sprite_buff);
-  setPlepAilment(Infliction::LIMBUFF, sprite_buff);
+  pleps_ailments.emplace(Infliction::ALLATKBUFF, sprite_buff);
+  pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_buff);
+  pleps_ailments.emplace(Infliction::LIMBUFF, sprite_buff);
 
   auto sprite_hibernation = new Sprite(
       config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A", 4,
@@ -345,29 +348,34 @@ void BattleDisplayData::buildPlepsAilments()
       config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A03.png",
       renderer);
   sprite_hibernation->setAnimationTime(70);
-  setPlepAilment(Infliction::HIBERNATION, sprite_hibernation);
+  pleps_ailments.emplace(Infliction::HIBERNATION, sprite_hibernation);
+
+  if(!success)
+    std::cout << "[Error] Building ailment pleps." << std::endl;
+  else
+    std::cout << "Successfully built sprites " << std::endl;
 }
 
 void BattleDisplayData::buildPlepsEvents()
 {
-  assert(renderer);
+  // assert(renderer);
 
-  auto sprite_defend_start =
-      new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
-                 7, ".png", renderer);
-  sprite_defend_start->setAnimationTime(375);
-  sprite_defend_start->switchDirection();
+  // auto sprite_defend_start =
+  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
+  //                7, ".png", renderer);
+  // sprite_defend_start->setAnimationTime(375);
+  // sprite_defend_start->switchDirection();
 
-  auto sprite_defend_break =
-      new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
-                 7, ".png", renderer);
-  sprite_defend_break->setAnimationTime(90);
-  // sprite_defend_break->switchDirection();
+  // auto sprite_defend_break =
+  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
+  //                7, ".png", renderer);
+  // sprite_defend_break->setAnimationTime(90);
+  // // sprite_defend_break->switchDirection();
 
-  auto sprite_defend_persist =
-      new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
-                 7, ".png", renderer);
-  sprite_defend_persist->setAnimationTime(90);
+  // auto sprite_defend_persist =
+  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
+  //                7, ".png", renderer);
+  // sprite_defend_persist->setAnimationTime(90);
 
   // sprite_implode = new Sprite(config->getBasePath() +
   // "sprites/Battle/Pleps/detonateplep_AA_A", 6, ".png", renderer);
@@ -395,12 +403,6 @@ void BattleDisplayData::setFrameScope(ActionScope type, std::string path)
     frames_scopes.emplace(type, new Frame(path, renderer));
 }
 
-void BattleDisplayData::setPlepAilment(Infliction type, Sprite* plep)
-{
-  if(renderer && type != Infliction::INVALID)
-    pleps_ailments.emplace(type, plep);
-}
-
 // void BattleDisplayData::setPlepEvent(EventType event, Sprite* plep)
 // {
 //   if(renderer)
@@ -426,7 +428,7 @@ bool BattleDisplayData::buildData()
     buildFramesScopes();
     buildFramesExtra();
     buildPlepsAilments();
-    buildPlepsEvents();
+    // buildPlepsEvents();
 
     data_built = true;
 

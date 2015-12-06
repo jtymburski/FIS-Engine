@@ -87,6 +87,8 @@ BattleActor::~BattleActor()
   clearBattleItems();
   clearBattleSkills();
   clearInfoFrame();
+  clearFlashing();
+  clearSprites();
 }
 
 /*=============================================================================
@@ -190,6 +192,14 @@ void BattleActor::clearInfoFrame()
   if(frame_info)
     delete frame_info;
   frame_info = nullptr;
+}
+
+void BattleActor::clearFlashing()
+{
+  if(state_flashing.element)
+    delete state_flashing.element;
+
+  state_flashing.element = nullptr;
 }
 
 void BattleActor::clearSprites()
@@ -393,7 +403,8 @@ void BattleActor::updateStats(int32_t cycle_time)
 void BattleActor::addAilment(Infliction type, int32_t min_turns,
                              int32_t max_turns, double chance)
 {
-  auto new_ailment = new Ailment(type, &stats_actual, min_turns, max_turns, chance);
+  auto new_ailment =
+      new Ailment(type, &stats_actual, min_turns, max_turns, chance);
 
   ailments.push_back(new_ailment);
 }
@@ -519,12 +530,8 @@ void BattleActor::restoreVita(int32_t amount)
 
 void BattleActor::endFlashing()
 {
+  clearFlashing();
   auto koing = (state_flashing.flashing_type == FlashingType::KOING);
-
-  if(state_flashing.element)
-    delete state_flashing.element;
-
-  state_flashing.element = nullptr;
 
   if(getActiveSprite() && !koing)
   {
@@ -575,18 +582,48 @@ Ailment* BattleActor::nextUpdateAilment()
   return nullptr;
 }
 
+// TODO: [09-06-15] Removing ailments. Corner cases?
 bool BattleActor::removeAilment(Ailment* remove_ailment)
 {
-  (void)remove_ailment;
+  if(remove_ailment)
+  {
+    ailments.erase(std::remove_if(ailments.begin(), ailments.end(),
+                                  [&](Ailment* a) -> bool
+                                  {
+                                    return a == remove_ailment;
+                                  }),
+                   ailments.end());
+
+    /* Deal with corner cases for removing ailments */
+    delete remove_ailment;
+    remove_ailment = nullptr;
+
+    return true;
+  }
 
   return false;
-  // TODO: [09-06-15] Removing ailments
+}
+
+void BattleActor::removeAilmentsKO()
+{
+  for(auto& ailment : ailments)
+  {
+    if(ailment && ailment->getFlag(AilState::CURABLE_KO))
+    {
+      delete ailment;
+      ailment = nullptr;
+    }
+
+    /* TODO: Deal with corner cases for removing ailments */
+  }
+
+  ailments.clear();
 }
 
 /* Sets up start of flashingness */
 void BattleActor::startFlashing(FlashingType flashing_type, int32_t time_left)
 {
-  std::cout << "Starting the flashing process " << std::endl;
+  clearFlashing();
   auto active_sprite = getActiveSprite();
   auto color = getFlashingColor(flashing_type);
 

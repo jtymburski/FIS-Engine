@@ -46,7 +46,7 @@ const float Ailment::kPC_QTDR_BUFF{1.200};
 
 /* % damage for Turn # 1 for Poison */
 /* % change / turn for Poison */
-const float Ailment::kPOISON_DMG_INIT{0.14};
+const float Ailment::kPOISON_DMG_INIT{0.17};
 const float Ailment::kPOISON_DMG_INCR{-0.03};
 
 /*============================================================================
@@ -75,6 +75,9 @@ Ailment::Ailment(Infliction type, BattleStats* stats_victim, uint32_t min_turns,
   cure_chance = chance;
   min_turns_left = min_turns;
   max_turns_left = max_turns;
+  setFlag(AilState::CURABLE_TIME, true);
+  setFlag(AilState::CURABLE_KO, true);
+  setFlag(AilState::CURABLE_DEATH, true);
 }
 
 /*=============================================================================
@@ -89,9 +92,8 @@ bool Ailment::calcPoisonDamage()
     auto max_health = stats_victim->getValue(Attribute::MVIT);
     auto change = kPOISON_DMG_INIT + ((float)total_turns * kPOISON_DMG_INCR);
 
-    damage_amount = 200;
-    // if(std::round(max_health * change) >= 0)
-    //   damage_amount = std::round(max_health * change);
+    if(std::round(max_health * change) >= 0)
+      damage_amount = std::round(max_health * change);
 
     return true;
   }
@@ -110,6 +112,7 @@ bool Ailment::doesAilmentCure()
     {
       to_cure = true;
     }
+
     if(min_turns_left == 0)
     {
       if(cure_chance > 1)
@@ -118,6 +121,7 @@ bool Ailment::doesAilmentCure()
         to_cure = Helpers::chanceHappens(cure_chance * 1000, 1000);
     }
   }
+
   // else if(getFlag(AilState::CURABLE_KO))
   // {
   //   if(actor_victim && actor_victim->getStateLiving() == LivingState::KO)
@@ -256,6 +260,7 @@ bool Ailment::applyBuffs()
 
 void Ailment::update()
 {
+  damage_amount = 0;
   updateTurnCount();
 
   if(doesAilmentCure())

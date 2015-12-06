@@ -403,6 +403,9 @@ private:
   void clearElements();
   void clearElementsTimedOut();
 
+  /* Clears Enemy Backdrop */
+  void clearEnemyBackdrop();
+
   /* Renders the action frame if needed */
   bool renderActionFrame();
 

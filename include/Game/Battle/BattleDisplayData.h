@@ -106,7 +106,7 @@ private:
   void setFrameScope(ActionScope type, std::string path);
 
   /* Assigns an ailment plep */
-  void setPlepAilment(Infliction type, Sprite* plep);
+  bool setPlepAilment(Infliction type, Sprite* plep);
 
   // /* Assigns a plep event */
   // void setPlepEvent(EventType event, Sprite* plep);

@@ -51,8 +51,8 @@ Party::Party() : id{kUNSET_ID}
  *         PartyType type - enumerated type of the party.
  *         uint16_t max - maximum size of the party.
  */
-Party::Party(const int32_t &my_id, Person *const main, const PartyType &type,
-             const uint16_t &max)
+Party::Party(const int32_t& my_id, Person* const main, const PartyType& type,
+             const uint16_t& max)
     : id{my_id}
 {
   assert(main);
@@ -75,8 +75,8 @@ Party::Party(const int32_t &my_id, Person *const main, const PartyType &type,
  *         std::vector<Person*> - pointers to the members of the Party.
  *         uint16_t max - the maximum size of the party.
  */
-Party::Party(const int32_t &my_id, std::vector<Person *> members,
-             const uint16_t &max, const PartyType &type)
+Party::Party(const int32_t& my_id, std::vector<Person*> members,
+             const uint16_t& max, const PartyType& type)
     : id{my_id}
 {
   assert(members.size() < max_size);
@@ -85,7 +85,7 @@ Party::Party(const int32_t &my_id, std::vector<Person *> members,
 
   loadDefaults();
 
-  for(const auto &member : members)
+  for(const auto& member : members)
     members.push_back(member);
 
   party_type = type;
@@ -112,7 +112,7 @@ Party::~Party()
  * Inputs: Party &source - the source to copy from
  * Output: none
  */
-void Party::copySelf(const Party &source)
+void Party::copySelf(const Party& source)
 {
   flags = source.flags;
 
@@ -169,7 +169,7 @@ void Party::loadDefaults()
  * Inputs: Person* - member to be added to the party.
  * Output: bool - true if the person was added successfully.
  */
-bool Party::addMember(Person *const new_member)
+bool Party::addMember(Person* const new_member)
 {
   if(getFlag(PartyState::CAN_ADD_MEMBERS) && members.size() < max_size &&
      new_member)
@@ -211,9 +211,9 @@ bool Party::clearParty()
  * Inputs: Person* - person to be checked whether they are in the party.
  * Output: bool - true if the person is in the party.
  */
-bool Party::isInParty(Person *const check_person)
+bool Party::isInParty(Person* const check_person)
 {
-  for(const auto &member : members)
+  for(const auto& member : members)
     if(member == check_person)
       return true;
 
@@ -228,7 +228,7 @@ bool Party::isInParty(Person *const check_person)
  *         SDL_Renderer* renderer - the rendering engine
  * Output: bool - true if load was successful
  */
-bool Party::loadData(XmlData data, int index, SDL_Renderer *renderer,
+bool Party::loadData(XmlData data, int index, SDL_Renderer* renderer,
                      std::string base_path)
 {
   bool success = true;
@@ -252,7 +252,7 @@ bool Party::loadData(XmlData data, int index, SDL_Renderer *renderer,
  * Inputs:
  * Output:
  */
-bool Party::moveMemberToReserve(Person *test_member)
+bool Party::moveMemberToReserve(Person* test_member)
 {
   auto success = false;
 
@@ -278,7 +278,7 @@ bool Party::moveMemberToReserve(Person *test_member)
  * Inputs:
  * Output:
  */
-bool Party::moveReserveMember(Person *test_member)
+bool Party::moveReserveMember(Person* test_member)
 {
   auto success = false;
 
@@ -305,7 +305,7 @@ bool Party::moveReserveMember(Person *test_member)
  *         const bool flags  - whether to print out the value of the flags.
  * Output: none
  */
-void Party::print(const bool &simple, const bool &flags)
+void Party::print(const bool& simple, const bool& flags)
 {
   std::cout << "=== Party ===\n";
   std::cout << "ID: " << id << "\n";
@@ -317,11 +317,11 @@ void Party::print(const bool &simple, const bool &flags)
   {
     std::cout << "----- Members -----\n";
 
-    for(const auto &member : members)
+    for(const auto& member : members)
       std::cout << "Member: " << member->getMyID() << " - " << member->getName()
                 << ":" << member->getLevel() << "\n";
     std::cout << "----- Reserve Members -----\n";
-    for(const auto &member : reserve_members)
+    for(const auto& member : reserve_members)
       std::cout << "Reserve Member: " << member->getMyID() << " - "
                 << member->getName() << ":" << member->getLevel() << "\n";
 
@@ -354,7 +354,7 @@ void Party::print(const bool &simple, const bool &flags)
  * Inputs: uint8_t - index of party member to be removed
  * Output: bool - true if the removal was successful.
  */
-bool Party::removeMember(const uint8_t &index)
+bool Party::removeMember(const uint8_t& index)
 {
   if(index < members.size() && members.size() > 1)
   {
@@ -373,7 +373,7 @@ bool Party::removeMember(const uint8_t &index)
  * Inputs: const std::string - name of the party member to be removed.
  * Output: bool - true if the removal was successful.
  */
-bool Party::removeMember(const std::string &name)
+bool Party::removeMember(const std::string& name)
 {
   if(members.size() == 1)
     return false;
@@ -442,7 +442,7 @@ uint32_t Party::getSize()
  * Inputs: PartyState test_flag - eumerated flag to grab the value for
  * Output: bool - the value of the flag.
  */
-bool Party::getFlag(const PartyState &test_flag)
+bool Party::getFlag(const PartyState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
@@ -464,7 +464,7 @@ int32_t Party::getID() const
  * Inputs: none
  * Output: Inventory* - pointer to the Inventory object.
  */
-Inventory *Party::getInventory()
+Inventory* Party::getInventory()
 {
   return pouch;
 }
@@ -525,7 +525,7 @@ uint32_t Party::getMaxSize()
  * Inputs: uint8_t - index to check member for.
  * Output: Person* - pointer to a the person at the given index (or nullptr)
  */
-Person *Party::getMember(const uint32_t &index)
+Person* Party::getMember(const uint32_t& index)
 {
   if(index < members.size())
     return members.at(index);
@@ -564,7 +564,7 @@ Person *Party::getMember(const uint32_t &index)
  * Inputs: uint32_t - index of the party member to find the name of.
  * Output: std::string - string name of hte member.
  */
-std::string Party::getMemberName(const uint32_t &index)
+std::string Party::getMemberName(const uint32_t& index)
 {
   if(index < members.size())
     return members.at(index)->getName();
@@ -578,7 +578,7 @@ std::string Party::getMemberName(const uint32_t &index)
  * Inputs: none
  * Output: std::vector<Person*> - stack of persons
  */
-std::vector<Person *> Party::getMembers()
+std::vector<Person*> Party::getMembers()
 {
   return members;
 }
@@ -589,7 +589,7 @@ std::vector<Person *> Party::getMembers()
  * Inputs:
  * Output:
  */
-std::vector<Person *> Party::getReserveMembers()
+std::vector<Person*> Party::getReserveMembers()
 {
   return reserve_members;
 }
@@ -631,7 +631,7 @@ PartyType Party::getPartyType()
  *         const bool set_value - value to be assigned to the flag.
  * Output: none
  */
-void Party::setFlag(const PartyState &flag, const bool &set_value)
+void Party::setFlag(const PartyState& flag, const bool& set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
@@ -656,7 +656,7 @@ void Party::setID(int id)
  * Inputs: Inventory* - new inventory for the Party.
  * Output: bool- true if the inventory assignment was successful.
  */
-bool Party::setInventory(Inventory *const new_inventory)
+bool Party::setInventory(Inventory* const new_inventory)
 {
   if(pouch != nullptr)
     delete pouch;
@@ -672,7 +672,7 @@ bool Party::setInventory(Inventory *const new_inventory)
  * Inputs: uin8_t - index of party member to be assigned as the leader.
  * Output: bool - true if a main member was successfully assigned
  */
-bool Party::setMainMember(const uint32_t &new_main)
+bool Party::setMainMember(const uint32_t& new_main)
 {
   if(new_main != 0 && new_main < members.size())
   {
@@ -693,7 +693,7 @@ bool Party::setMainMember(const uint32_t &new_main)
  * Inputs: const uin8_t - new maximum size for the Party.
  * Output: bool - true if the maximum size was assigned succesfully
  */
-bool Party::setMaxSize(const uint32_t &new_max_size)
+bool Party::setMaxSize(const uint32_t& new_max_size)
 {
   uint32_t limit = 0;
 
@@ -720,7 +720,7 @@ bool Party::setMaxSize(const uint32_t &new_max_size)
  * Inputs: PartyType type - the new type of the party
  * Output: bool - true if the type was set successfully
  */
-bool Party::setPartyType(const PartyType &type)
+bool Party::setPartyType(const PartyType& type)
 {
   bool success = true;
 
@@ -773,7 +773,7 @@ bool Party::setPartyType(const PartyType &type)
  * Inputs: const Party &source - the source class constructor
  * Output: Party& - pointer to the copied class
  */
-Party& Party::operator= (const Party &source)
+Party& Party::operator=(const Party& source)
 {
   /* Check for self assignment */
   if(this == &source)

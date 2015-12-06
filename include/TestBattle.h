@@ -96,12 +96,6 @@ private:
   Category* class_reverdile;
   Category* class_reverdling;
 
-  Sprite* sprite_paralysis;
-  Sprite* sprite_confusion;
-  Sprite* sprite_buff;
-  Sprite* sprite_poison;
-  Sprite* sprite_hibernation;
-
   Sprite* plep_sullen_sting;
   Sprite* plep_befuddling_sting;
   Sprite* plep_chlorophoria;
@@ -123,10 +117,6 @@ private:
   Sprite* plep_ensnare;
   Sprite* plep_enrich;
   Sprite* plep_upgrade;
-
-  Sprite* sprite_defend_start;
-  Sprite* sprite_defend_break;
-  Sprite* sprite_defend_persist;
 
   /* First run trigger */
   bool first_run;

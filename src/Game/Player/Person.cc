@@ -176,14 +176,7 @@ void Person::loadDefaults()
 {
   action_x = kACTION_X;
   action_y = kACTION_Y;
-
   ai_module = nullptr;
-
-  // guardee = nullptr;
-  // guard = nullptr;
-
-  // ailment_flags = static_cast<PersonAilState>(0);
-  // battle_flags = static_cast<BState>(0);
   person_flags = static_cast<PState>(0);
 
   setPFlag(PState::CAN_GAIN_EXP, true);
@@ -266,23 +259,11 @@ void Person::setupClass()
   {
     action_x = base_person->action_x;
     action_y = base_person->action_y;
-
-    /* Deep copied AI Module */
-    //TODO: Reimplement when AI Modules are fixed
-    // if(base_person->ai_module != nullptr)
-    // {
-    //   ai_module = new AIModule(base_person->ai_module->getDifficulty(),
-    //                            base_person->ai_module->getPrimPersonality(),
-    //                            base_person->ai_module->getSecdPersonality());
-    // }
-
-    // guardee = base_person->guardee;
-    // guard = base_person->guard;
-    // ailment_flags = base_person->ailment_flags;
-    // battle_flags = base_person->battle_flags;
     person_flags = base_person->person_flags;
+
     // TODO: Dynamic initialization of record? [10-25-14]
     // person_record = base-person->person_record;
+
     battle_class = base_person->battle_class;
     race_class = base_person->race_class;
     name = base_person->name;
@@ -298,9 +279,7 @@ void Person::setupClass()
     temp_max_stats = base_person->temp_max_stats;
     base_skills = base_person->base_skills;
     curr_skills = nullptr;
-    // curr_skills = base_person->curr_skills;
     learned_skills = nullptr;
-    // learned_skills = base_person->learned_skills;
     dmg_mod = base_person->dmg_mod;
     exp_mod = base_person->exp_mod;
 
@@ -342,10 +321,6 @@ void Person::unsetAll(const bool& clear)
 {
   if(clear)
   {
-    /* Delete the AI module */
-    if(ai_module != nullptr)
-      delete ai_module;
-
     /* Delete the equipments contained within the person */
     for(auto equipment_index : equipments)
     {
@@ -734,37 +709,6 @@ void Person::clearLearnedSkills()
 }
 
 /*
- * Description: Creates a new AIModule for the person given a difficulty and
- *              a primary and secodary personality type
- *
- * Inputs: diff - the difficulty the AI will have
- *         prim_personality - the primary personality for the AI
- *         secd_personality - the secondary personality for the AI
- * Output: bool - true if the old AIModule underwent annihilation
- */
-bool Person::createAI(const AIDifficulty& diff,
-                      const AIPersonality& prim_personality,
-                      const AIPersonality& secd_personality)
-{
-  auto destroyed = false;
-
-  if(ai_module != nullptr)
-  {
-    delete ai_module;
-    ai_module = nullptr;
-    destroyed = true;
-  }
-
-  (void)diff;
-  (void)prim_personality;
-  (void)secd_personality;
-  // ai_module = new AIModule(diff, prim_personality, secd_personality);
-  // ai_module->setParent(this);
-
-  return destroyed;
-}
-
-/*
  * Description: Shorthand function for dealing damage to the Person. Returns
  *              true if the Person's HP is 0 after the damage takes place.
  *
@@ -1076,164 +1020,6 @@ bool Person::loseExpPercent(const uint16_t& percent)
 }
 
 /*
- * Description: Method for printing out the data describing a person
- *
- * Inputs: simple - true for a simplified version of a person, false otherwise
- *         equips - true to print out the equipment of the person
- *         flags - true to print out each flag of the person
- *         skills - true to print out information for each skill
- * Output: none
- */
-// void Person::print(const bool& simple, const bool& equips, const bool& flags,
-//                    const bool& skills)
-// {
-  // std::cout << "==== Person: " << getName() << " ====\n";
-  // if(simple)
-  // {
-  //   std::cout << "GID: " << game_id << " MID: " << my_id << " Name: " << name
-  //             << " Level: " << static_cast<int>(level) << " Exp: " <<
-  //             total_exp
-  //             << "\n";
-  // }
-  // else
-  // {
-  // std::cout << "Game ID: " << game_id << "\n";
-  // std::cout << "My ID: " << my_id << "\n";
-  // std::cout << "Base Person? " << (base_person == nullptr) << "\n";
-  // if(battle_class != nullptr)
-  //   std::cout << "Battle Class: " << battle_class->getName() << "\n";
-  // if(race_class != nullptr)
-  //   std::cout << "Race? " << race_class->getName() << "\n";
-  // std::cout << "Name: " << name << "\n";
-  // std::cout << "[void]Rank "
-  //           << "\n";
-  // std::cout << "Primary: " << Helpers::elementToString(primary) << "\n";
-  // std::cout << "Secondary: " << Helpers::elementToString(secondary);
-  // std::cout << "\nPrim Curve: " << static_cast<int>(primary_curve);
-  // std::cout << "\nSecd Curve: " << static_cast<int>(secondary_curve);
-  // std::cout << "\nDmg Modifier: " << dmg_mod << "\n";
-  // std::cout << "Exp Modifier: " << exp_mod << "\n";
-  // std::cout << "Item Drops: " << item_drops.size() << "\n";
-  // std::cout << "Credit Drop: " << credit_drop << "\n";
-  // std::cout << "Exp Drop: " << exp_drop << "\n";
-  // std::cout << "Level: " << static_cast<int>(level) << "\n";
-  // std::cout << "Total Exp: " << total_exp << "\n";
-  // std::cout << "To Next Lvl: " << findExpPerPC() << "\n";
-  // std::cout << "First Person? " << (first_person != nullptr) << "\n";
-  // std::cout << "Third Person? " << (third_person != nullptr) << "\n";
-  // std::cout << "VITA Regn: " << Helpers::regenRateToStr(getVitaRegenRate());
-  // std::cout << "\nQTDR Regn: " << Helpers::regenRateToStr(getQDRegenRate());
-  // std::cout << "\n\n";
-
-  // std::cout << "Base Stats: ";
-  // base_stats.print(true);
-  // std::cout << "\n";
-  // std::cout << "Base Max Stats: ";
-  // base_max_stats.print(true);
-  // std::cout << "\n";
-  // std::cout << "Curr Stats: ";
-  // curr_stats.print(true);
-  // std::cout << "\n";
-  // std::cout << "Curr Max Stats: ";
-  // curr_max_stats.print(true);
-  // std::cout << "\n";
-  // std::cout << "Temp Max Stats: ";
-  // temp_max_stats.print(true);
-  // std::cout << "\n";
-
-  // if(skills)
-  // {
-  //   std::cout << "Base Skill Set: ";
-
-  //   if(base_skills != nullptr)
-  //     base_skills->print();
-
-  //   std::cout << "\nCurr Skill Set: ";
-
-  //   if(curr_skills != nullptr)
-  //     curr_skills->print();
-
-  //   std::cout << "\nLearned Skills: ";
-
-  //   if(learned_skills != nullptr)
-  //     learned_skills->print();
-
-  //   std::cout << "\n";
-  // }
-
-  // if(equips)
-  //   for(auto equipment : equipments)
-  //     if(equipment != nullptr)
-  //       equipment->print();
-
-  // if(flags)
-  // {
-  // std::cout << "--- Battle State Flags ---\n";
-  // std::cout << "IN_BATTLE: " << getBFlag(BState::IN_BATTLE) << "\n";
-  // std::cout << "ALIVE: " << getBFlag(BState::ALIVE) << "\n";
-  // std::cout << "ATK_ENABLED: " << getBFlag(BState::ATK_ENABLED) << "\n";
-  // std::cout << "SKL_ENABLED: " << getBFlag(BState::SKL_ENABLED) << "\n";
-  // std::cout << "ITM_ENABLED: " << getBFlag(BState::ITM_ENABLED) << "\n";
-  // std::cout << "DEF_ENABLED: " << getBFlag(BState::DEF_ENABLED) << "\n";
-  // std::cout << "GRD_ENABLED: " << getBFlag(BState::GRD_ENABLED) << "\n";
-  // std::cout << "IMP_ENABLED: " << getBFlag(BState::IMP_ENABLED) << "\n";
-  // std::cout << "RUN_ENABLED: " << getBFlag(BState::RUN_ENABLED) << "\n";
-  // std::cout << "PAS_ENABLED: " << getBFlag(BState::PAS_ENABLED) << "\n";
-  // std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN);
-  // std::cout << "\nMISS_NEXT_TARGET: " <<
-  // getBFlag(BState::MISS_NEXT_TARGET);
-  // std::cout << "\nNEXT_ATK_NO_EFFECT: "
-  //           << getBFlag(BState::NEXT_ATK_NO_EFFECT);
-  // std::cout << "\nIS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
-  // std::cout << "TWO_SKILLS: " << getBFlag(BState::TWO_SKILLS) << "\n";
-  // std::cout << "THREE_SKILLS: " << getBFlag(BState::THREE_SKILLS) <<
-  // "\n";
-  // std::cout << "HALF_COST: " << getBFlag(BState::HALF_COST) << "\n";
-  // std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
-  // std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
-  // std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
-  // std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE);
-  //     std::cout << "\nIS_SELECTING: " << getBFlag(BState::IS_SELECTING);
-  //     std::cout << "\nSELECTED_ACTION: " <<
-  //     getBFlag(BState::SELECTED_ACTION);
-  //     std::cout << "\nSELECTED_2ND_ACTION: "
-  //               << getBFlag(BState::SELECTED_2ND_ACTION);
-  //     std::cout << "\nSELECTED_3RD_ACTION: "
-  //               << getBFlag(BState::SELECTED_3RD_ACTION);
-  //     std::cout << "\nCAN_CRIT: " << getBFlag(BState::CAN_CRIT);
-  //     std::cout << "\nCAN_BE_CRIT: " << getBFlag(BState::CAN_BE_CRIT);
-  //     std::cout << "\nDEFENDING: " << getBFlag(BState::DEFENDING);
-  //     std::cout << "\nGUARDED: " << getBFlag(BState::GUARDED);
-  //     std::cout << "\nGUARDING: " << getBFlag(BState::GUARDING);
-  //     std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED);
-  //     std::cout << "\nIS_ATTACKING: " << getBFlag(BState::IS_ATTACKING);
-
-  //     std::cout << "\n\n--- Person State Flags ---\n";
-  //     std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";
-  //     std::cout << "BEARACKS: " << getPFlag(PState::BEARACKS) << "\n";
-  //     std::cout << "MAIN: " << getPFlag(PState::MAIN) << "\n";
-  //     std::cout << "FINAL: " << getPFlag(PState::FINAL) << "\n";
-  //     std::cout << "BOSS: " << getPFlag(PState::BOSS) << "\n";
-  //     std::cout << "MINI_BOSS: " << getPFlag(PState::MINI_BOSS) << "\n";
-  //     std::cout << "CAN_GAIN_EXP: " << getPFlag(PState::CAN_GAIN_EXP) <<
-  //     "\n";
-  //     std::cout << "CAN_LEVEL_UP: " << getPFlag(PState::CAN_LEVEL_UP) <<
-  //     "\n";
-  //     std::cout << "CAN_LEARN_SKILLS: " <<
-  //     getPFlag(PState::CAN_LEARN_SKILLS)
-  //               << "\n";
-  //     std::cout << "CAN_CHANGE_EQUIP: " <<
-  //     getPFlag(PState::CAN_CHANGE_EQUIP)
-  //               << "\n";
-  //     std::cout << "MAX_LVL: " << getPFlag(PState::MAX_LVL) << "\n";
-  //   }
-  // }
-  // std::cout << "==== // Person ====\n\n";
-  //   }
-  // }
-// }
-
-/*
  * Description: Attempts to remove equipment from a given equip slot.
  *Removes
  *              true if an equipment at that slot was found and it was
@@ -1282,97 +1068,6 @@ bool Person::removeEquip(const EquipSlots& equip_slot)
 
   return removed;
 }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// bool Person::resetAI()
-// {
-//   if(ai_module == nullptr)
-//     return false;
-
-//   ai_module->incrementTurns();
-//   ai_module->resetForNewTurn(this);
-
-//   return true;
-// }
-
-/*
- * Description: Resets the Person pointer guard and GUARDED flag of this
- *person
- *              and returns true if the guard status has properly changed.
- *
- * Inputs: none
- * Output: bool - true if the guard status was reset properly
- */
-// bool Person::resetGuard()
-// {
-//   bool good_reset = false;
-
-//   /* Proper reset if guard was assigned as well as GUARDED flag */
-//   good_reset &= (guard != nullptr && getBFlag(BState::GUARDED));
-
-//   /* Unassign the guard and turn off GUARDED flag */
-//   guard = nullptr;
-//   setBFlag(BState::GUARDED, false);
-
-//   return good_reset;
-// }
-
-/*
- * Description: Resets the defending status of the person. Returns true if
- *              the defending status was removed from a defending state.
- *
- * Inputs: none
- * Output: bool - true if the person was defending and now no longer is
- */
-// bool Person::resetDefend()
-// {
-//   bool good_defend = false;
-
-//   good_defend &= getBFlag(BState::DEFENDING);
-
-//   setBFlag(BState::DEFENDING, false);
-
-//   return good_defend;
-// }
-
-/*
- * Description: Resets the guarding status of this person. Returns true if
- *              this person was being a person and now no longer is.
- *
- * Inputs: none
- * Output: bool - true if guarding state was set and no longer is
- */
-// bool Person::resetGuardee()
-// {
-//   bool good_reset = false;
-
-//   good_reset &= (guardee != nullptr && getBFlag(BState::GUARDING));
-
-//   guardee = nullptr;
-//   setBFlag(BState::GUARDING, false);
-
-//   return good_reset;
-// }
-
-/*
- * Description: Resets the state of the users current skill set for proper
- *              use in Battle. updateSkils() should be called prior.
- *
- * Inputs: none
- * Output: none
- */
-// void Person::resetSkills()
-// {
-//   auto elements = curr_skills->getElements(level);
-
-//   for(auto& element : elements)
-//     element.silenced = false;
-// }
 
 Sprite* Person::getActionSprite()
 {
@@ -1451,28 +1146,6 @@ int32_t Person::getMyID()
 }
 
 /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-// bool Person::getAilFlag(const PersonAilState& test_flag)
-// {
-//   return static_cast<bool>((ailment_flags & test_flag) == test_flag);
-// }
-
-/*
- * Description: Evaluates and returns the state of a given BState flag
- *
- * Inputs: test_flag - BState flag to find the value for
- * Output: bool - the value of the given flag to check
- */
-// bool Person::getBFlag(const BState& test_flag)
-// {
-//   return static_cast<bool>((battle_flags & test_flag) == test_flag);
-// }
-
-/*
  * Description: Evaluates and returns the state of a given PState flag
  *
  * Inputs: test_flag - PState flag to find the value for
@@ -1493,30 +1166,6 @@ Person* Person::getBasePerson()
 {
   return base_person;
 }
-
-/*
- * Description: Returns the pointer to the person who is guarding this
- *person
- *
- * Inputs: none
- * Output: Person* - person guarding this person
- */
-// Person* Person::getGuard()
-// {
-//   return guard;
-// }
-
-/*
- * Description: Returns the pointer to the person being guarded by this
- *person
- *
- * Inputs: none
- * Output: Person* - the person being guarded
- */
-// Person* Person::getGuardee()
-// {
-//   return guardee;
-// }
 
 /*
  * Description: Returns a pointer to the battle class category
@@ -1977,20 +1626,6 @@ void Person::setPFlag(const PartyType& type)
   else if(type == PartyType::FINAL_BOSS)
     flag = PState::FINAL;
 
-  /* Set or unset AI */
-  if(type == PartyType::SLEUTH || type == PartyType::BEARACKS)
-  {
-    if(ai_module != nullptr)
-      delete ai_module;
-    ai_module = nullptr;
-  }
-  else
-  {
-    if(ai_module == nullptr)
-      createAI(AIDifficulty::RANDOM, AIPersonality::MODERATOR,
-               AIPersonality::AGGRESSOR);
-  }
-
   /* Set the flag */
   setPFlag(flag, true);
 }
@@ -2168,52 +1803,6 @@ void Person::setGameID(int id)
   else
     game_id = id;
 }
-
-/*
- * Description: Assigns a new guard (person guarding this object)
- *
- * Inputs: Person* - the new guard for this person
- * Output: bool - true if the guard was assigned
- */
-// bool Person::setGuard(Person *const new_guard)
-// {
-//   /* If this person is guarding someone, the guard cannot be made, or if
-//   this
-//    * is trying to be as assigned to a guard to self */
-//   if(guardee == nullptr && new_guard != nullptr && this != new_guard)
-//   {
-//     setBFlag(BState::GUARDED, true);
-//     setBFlag(BState::GUARDING, false);
-//     guard = new_guard;
-
-//     return true;
-//   }
-
-//   return false;
-// }
-
-/*
- * Description: Assigns a new person to be guarded
- *
- * Inputs: Person* - the new person being guarded by this person
- * Output: bool - true if the guarding person was assigned
- */
-// bool Person::setGuardee(Person *const new_guardee)
-// {
-//   /* If this has a guard, they cannot guard someone else. They cannot be
-//   guarded
-//    * by themselves as well */
-//   if(guard == nullptr && new_guardee != nullptr && this != new_guardee)
-//   {
-//     setBFlag(BState::GUARDING, true);
-//     setBFlag(BState::GUARDED, false);
-//     guardee = new_guardee;
-
-//     return true;
-//   }
-
-//   return false;
-// }
 
 /*
  * Description: Attempts to assign a new loot set for the Person
