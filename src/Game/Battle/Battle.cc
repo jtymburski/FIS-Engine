@@ -705,7 +705,12 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
 {
   if(outcome.infliction_status == InflictionStatus::INFLICTION)
   {
-    outcome.actor->startFlashing(FlashingType::POISON, 750);
+    auto flashing_type = FlashingType::INFLICT;
+
+    if(outcome.infliction_type == Infliction::POISON)
+      flashing_type = FlashingType::POISON;
+
+    outcome.actor->startFlashing(flashing_type, 750);
     outcome.actor_outcome_state = ActionState::OUTCOME;
     addDelay(100);
   }

@@ -221,7 +221,7 @@ private:
   void createInventories();
   void createMenu();
   Person* createPerson(int id, TestPerson type, SDL_Renderer* renderer,
-                       uint8_t level = 1, bool include_ai = true);
+                       uint8_t level = 1);
   void createRaces();
   void createSkills();
   void createSkillSets();

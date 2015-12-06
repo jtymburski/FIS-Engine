@@ -675,8 +675,7 @@ void TestBattle::createMenu()
 /* Create person of type */
 /* ------------------------------------------------------------------------- */
 Person* TestBattle::createPerson(int id, TestPerson type,
-                                 SDL_Renderer* renderer, uint8_t level,
-                                 bool include_ai)
+                                 SDL_Renderer* renderer, uint8_t level)
 {
   Person* new_person = nullptr;
   Sprite* as = nullptr;
@@ -1438,7 +1437,7 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   MenuItems ref = (MenuItems)menu_index;
 
   /* Set up FRIEND party */
-  Person* player = createPerson(100, PLAYER, renderer, lvl_friend, false);
+  Person* player = createPerson(100, PLAYER, renderer, lvl_friend);
   party_friends = new Party(200, player, PartyType::SLEUTH, 5);
 
   /* Set up FOE party based on menu index */

@@ -22,9 +22,10 @@
 
 const float BattleActor::kVELOCITY_X{-1.550};
 const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{225, 10, 10, 85};
-const SDL_Color BattleActor::kFLASHING_POISON_COLOR{10, 245, 10, 115};
-const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 225};
-const SDL_Color BattleActor::kFLASHING_RELIEVE_COLOR{200, 200, 200, 225};
+const SDL_Color BattleActor::kFLASHING_POISON_COLOR{84, 22, 180, 85};
+const SDL_Color BattleActor::kFLASHING_INFLICT_COLOR{96, 88, 133, 85};
+const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 115};
+const SDL_Color BattleActor::kFLASHING_RELIEVE_COLOR{200, 200, 200, 125};
 
 const float BattleActor::kREGEN_RATE_ZERO_PC = 0.00;
 const float BattleActor::kREGEN_RATE_WEAK_PC = 0.03;
@@ -39,7 +40,7 @@ const uint8_t BattleActor::kACTOR_KO_ALPHA{50};
  *============================================================================*/
 
 /*
- * Description:
+* Description:
  *
  * Inputs:
  */
@@ -953,7 +954,7 @@ SDL_Color BattleActor::getFlashingColor(FlashingType flashing_type)
   else if(flashing_type == FlashingType::RELIEVE)
     return kFLASHING_RELIEVE_COLOR;
 
-  return kFLASHING_POISON_COLOR;
+  return kFLASHING_INFLICT_COLOR;
 }
 
 /* Grab all allied targets for given user */

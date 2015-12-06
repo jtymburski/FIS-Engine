@@ -76,6 +76,7 @@ enum class FlashingType
   NONE,
   DAMAGE,
   POISON,
+  INFLICT,
   KOING,
   RELIEVE
 };
@@ -255,6 +256,7 @@ private:
   static const float kVELOCITY_X;
   static const SDL_Color kFLASHING_DAMAGE_COLOR;
   static const SDL_Color kFLASHING_POISON_COLOR;
+  static const SDL_Color kFLASHING_INFLICT_COLOR;
   static const SDL_Color kFLASHING_KO_COLOR;
   static const SDL_Color kFLASHING_RELIEVE_COLOR;
 
