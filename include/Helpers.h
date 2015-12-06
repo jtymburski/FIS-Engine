@@ -77,9 +77,9 @@ public:
  *============================================================================*/
 #include "Helpers.tcc" /* Template Implementation */
 
-  /*=============================================================================
-   * RANDOM GENERATOR FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * RANDOM GENERATOR FUNCTIONS
+ *============================================================================*/
 private:
   /* Mersenne Twister Engines */
   static const uint32_t seed_original;
@@ -185,6 +185,8 @@ public:
   static std::string tierToStr(const ItemTier& tier);
 
   static std::string turnStateToStr(const TurnState& turn_state);
+
+  static std::string validStatusToStr(const ValidStatus& valid_status);
 
   /*=============================================================================
    * PLAYER / BATTLE HELPER FUNCTIONS

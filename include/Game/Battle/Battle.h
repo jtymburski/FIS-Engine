@@ -17,8 +17,8 @@
 *
 * KNOWN BUGS
 * ----------
-* [Dec. 2015 Destruction] - Possible seg fault
 * [Dec. 2015 Battle Processing] - Player Missed may still involve a hit? How?
+* [Dec. 2015 Battle Processing] - Sometimes Turn 1 Moves Do Not Occur [5%?]
 *****************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -39,7 +39,8 @@ ENUM_FLAGS(CombatState)
 enum class CombatState
 {
   PHASE_DONE = 1 << 0,
-  EVENT_READY = 1 << 1
+  EVENT_READY = 1 << 1,
+  AILMENT_CLEARS = 1 << 2
 };
 
 ENUM_FLAGS(RenderState)
@@ -351,6 +352,7 @@ private:
   void upkeepAilmentDamage();
   void upkeepAilmentFlash();
   void upkeepAilmentOutcome();
+  void upkeepAilmentPlep();
 
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);

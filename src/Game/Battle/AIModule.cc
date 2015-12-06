@@ -266,7 +266,6 @@ void AIModule::calculateActionTypeChances()
       skill_lean_factor = kPAI_BASE_SKILL_FACTOR;
 
     /* Adjust the skill lean factor and apply to chance to use skill */
-
     skill_chance = calcFloatValVariance(skill_lean_factor);
     act_typ_chances.push_back(std::make_pair(ActionType::SKILL, skill_chance));
   }

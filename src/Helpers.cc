@@ -1167,6 +1167,20 @@ std::string Helpers::turnStateToStr(const TurnState& turn_state)
   return "FINISHED";
 }
 
+std::string Helpers::validStatusToStr(const ValidStatus& valid_status)
+{
+  if(valid_status == ValidStatus::VALID)
+    return "VALID";
+  if(valid_status == ValidStatus::NOT_AFFORDABLE)
+    return "NOT_AFFORDABLE";
+  if(valid_status == ValidStatus::SILENCED)
+    return "SILENCED";
+  if(valid_status == ValidStatus::NO_TARGETS)
+    return "NO_TARGETS";
+
+  return "INVALID";
+}
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

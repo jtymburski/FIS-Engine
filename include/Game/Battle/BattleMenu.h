@@ -206,6 +206,7 @@ private:
   /* Targets which are currently possible to select */
   std::vector<BattleActor*> getSelectableTargets();
 
+  /* Obtains the maximum index value for the current issue */
   int32_t getMaxIndex();
 
   /* Returns the most left selectable BattleActor */
@@ -288,6 +289,7 @@ public:
   /* Assigns a BattleMenuState flag a given value */
   void setFlag(BattleMenuState flags, const bool& set_value = true);
 
+  /* Set up the hover targets */
   void setHoverTargets();
 
   /* Assigns the Renderer of BattleMenu elements */

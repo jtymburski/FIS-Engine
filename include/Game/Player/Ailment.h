@@ -103,6 +103,10 @@ private:
   static const float kPOISON_DMG_INIT; /* % damage for Turn # 1 for Poison */
   static const float kPOISON_DMG_INCR; /* % chance / turn for Poison */
 
+  /* Confusion / Paralysis Chances */
+  static const float kCONFUSION_CHANCE;
+  static const float kPARALYSIS_CHANCE;
+
   /*============================================================================
    * PRIVATE FUNCTIONS
    *============================================================================*/
@@ -112,6 +116,10 @@ private:
 
   /* Does the ailment cure this turn? */
   bool doesAilmentCure();
+
+  /* Do confusion and paralysis occur? */
+  bool doesConfusionOccur();
+  bool doesParalysisOccur();
 
   /* Updates the effect of the Ailment for the turn */
   AilmentStatus updateEffect();

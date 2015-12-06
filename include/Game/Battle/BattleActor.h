@@ -138,6 +138,7 @@ enum class UpkeepState
   AILMENT_FLASH,
   AILMENT_DAMAGE,
   AILMENT_OUTCOME,
+  AILMENT_PLEP,
   COMPLETE
 };
 
@@ -316,6 +317,9 @@ public:
   /* Calculates the turn regeneration for a given enumerated attr (vita/qd) */
   int32_t calcTurnRegen(Attribute attr);
 
+  /* Cleans up the BattleActor for a new turn */
+  void cleanUpForTurn();
+
   /* Method to deal damage to this actor */
   bool dealDamage(int32_t damage_amount);
   void dealQtdr(int32_t dealt_amount);
@@ -333,6 +337,9 @@ public:
 
   /* Returns the next ailment which needs to be updated */
   Ailment* nextUpdateAilment();
+
+  /* Frees the ailment from memory */
+  void clearAilment(Ailment* remove_ailment);
 
   /* Removes a given ailment from the vector of ailmnents, if it is found */
   bool removeAilment(Ailment* remove_ailment);

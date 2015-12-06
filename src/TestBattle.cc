@@ -541,33 +541,33 @@ void TestBattle::createActions()
   /* Inflict Actions */
 
   /* Poison */
-  act_inf.push_back(new Action("500,INFLICT,3.6,,,POISON,,,VITA,100"));
+  act_inf.push_back(new Action("500,INFLICT,3.6,,,POISON,AMOUNT.30,,VITA,100"));
 
   /* Confusion */
   act_inf.push_back(
-      new Action("501,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,100"));
+      new Action("501,INFLICT,2.5,,,CONFUSE,AMOUNT.30,,VITA,100"));
 
   /* Silence */
   act_inf.push_back(
-      new Action("502,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,100"));
+      new Action("502,INFLICT,3.5,,,SILENCE,AMOUNT.30,,VITA,100"));
 
   /* All Attack Buff */
   act_inf.push_back(
-      new Action("503,INFLICT,3.6,,,ALLATKBUFF,AMOUNT.0,,VITA,100"));
+      new Action("503,INFLICT,3.6,,,ALLATKBUFF,AMOUNT.5,,VITA,100"));
 
   /* All Def Buff */
   act_inf.push_back(
-      new Action("504,INFLICT,3.6,,,ALLDEFBUFF,AMOUNT.0,,VITA,100"));
+      new Action("504,INFLICT,3.6,,,ALLDEFBUFF,AMOUNT.5,,VITA,100"));
 
   /* Dodge Buff */
-  act_inf.push_back(new Action("505,INFLICT,4.7,,,LIMBUFF,AMOUNT.0,,VITA,100"));
+  act_inf.push_back(new Action("505,INFLICT,4.7,,,LIMBUFF,AMOUNT.5,,VITA,100"));
 
   /* Paralysis */
   act_inf.push_back(
-      new Action("506,INFLICT,1.3,,,PARALYSIS,AMOUNT.30,,VITA,100"));
+      new Action("506,INFLICT,2.5,,,PARALYSIS,AMOUNT.30,,VITA,100"));
 
   /* Hibernation */
-  act_inf.push_back(new Action("507,INFLICT,2.3,,,HIBERNATION,,,VITA,100"));
+  act_inf.push_back(new Action("507,INFLICT,2.3,,,HIBERNATION,AMOUNT.5,,VITA,100"));
 
   /* Check to check all the actions are checked [checkingly] */
   // for(const auto& action : act_alt)

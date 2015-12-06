@@ -788,7 +788,7 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target)
 {
   calcIgnoreState();
   calcElementalMods(curr_target);
-  auto crit_factor = calcCritFactor(curr_target);
+  //auto crit_factor = calcCritFactor(curr_target);
   auto targ_stats = getStatsOfTarget(curr_target);
   auto curr_skill = getCurrSkill();
   auto curr_action = getCurrAction();

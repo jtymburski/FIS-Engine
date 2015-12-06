@@ -9,3 +9,21 @@ BattleSkill::BattleSkill()
 {
 
 }
+
+void BattleSkill::print()
+{
+  std::cout << "-- Battle Skill --" << std::endl;
+  std::cout << "ValidStatus: " << Helpers::validStatusToStr(valid_status);
+
+  if(skill)
+    std::cout << "\nSkill: " << skill->getName();
+  std::cout << "True Cost: " << true_cost << std::endl;
+
+  std::cout << "Targets: ";
+
+  for(auto& target : targets)
+    if(target && target->getBasePerson())
+      std::cout << target->getBasePerson()->getName() << ", ";
+
+  std::cout << std::endl;
+}

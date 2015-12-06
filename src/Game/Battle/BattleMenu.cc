@@ -774,8 +774,7 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   {
     if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
       t5.setText(renderer, Text::splitLine(font_subheader,
-                                           desc_set[i] + " " + desc_set[i +
-                                           1],
+                                           desc_set[i] + " " + desc_set[i + 1],
                                            line_width, true).front(),
                  color);
     else

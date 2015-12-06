@@ -176,6 +176,9 @@ enum class AilmentStatus
   TO_REMOVE,
   KO_USER,
   TO_DAMAGE,
+  RANDOM,
+  SKIP,
+  NOTHING,
   COMPLETED,
   NONE
 };

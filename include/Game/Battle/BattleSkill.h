@@ -25,6 +25,9 @@ public:
 
   /* The valid targets for the Battle Skill */
   std::vector<BattleActor*> targets;
+
+public:
+  void print();
 };
 
 #endif

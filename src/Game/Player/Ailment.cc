@@ -48,6 +48,8 @@ const float Ailment::kPC_QTDR_BUFF{1.200};
 /* % change / turn for Poison */
 const float Ailment::kPOISON_DMG_INIT{0.17};
 const float Ailment::kPOISON_DMG_INCR{-0.03};
+const float Ailment::kCONFUSION_CHANCE{0.60};
+const float Ailment::kPARALYSIS_CHANCE{0.30};
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -115,26 +117,28 @@ bool Ailment::doesAilmentCure()
 
     if(min_turns_left == 0)
     {
-      if(cure_chance > 1)
+      std::cout << "No Min Turns Left, Cure Chance: " << cure_chance << std::endl;
+      if(cure_chance >= 100)
         to_cure = true;
       else
-        to_cure = Helpers::chanceHappens(cure_chance * 1000, 1000);
+      {
+        std::cout << "Checking ailment cure chance of: " << cure_chance << std::endl;
+        to_cure = Helpers::chanceHappens(cure_chance * 10, 1000);
+      }
     }
   }
 
-  // else if(getFlag(AilState::CURABLE_KO))
-  // {
-  //   if(actor_victim && actor_victim->getStateLiving() == LivingState::KO)
-  //     to_cure = true;
-  // }
-
-  // else if(getFlag(AilState::CURABLE_DEATH))
-  // {
-  //   if(actor_victim && !actor_victim->getFlag(ActorState::ALIVE))
-  //     to_cure = true;
-  // }
-
   return to_cure;
+}
+
+bool Ailment::doesConfusionOccur()
+{
+  return Helpers::chanceHappens(kCONFUSION_CHANCE * 1000, 1000);
+}
+
+bool Ailment::doesParalysisOccur()
+{
+  return Helpers::chanceHappens(kPARALYSIS_CHANCE * 1000, 1000);
 }
 
 /* Updates effects of the Ailment, ex. METATETHER -> death */
@@ -145,8 +149,18 @@ AilmentStatus Ailment::updateEffect()
     if(calcPoisonDamage())
       return AilmentStatus::TO_DAMAGE;
   }
+  else if(type == Infliction::CONFUSE)
+  {
+    if(doesConfusionOccur())
+      return AilmentStatus::RANDOM;
+  }
+  else if(type == Infliction::PARALYSIS)
+  {
+    if(doesParalysisOccur())
+      return AilmentStatus::SKIP;
+  }
 
-  return AilmentStatus::COMPLETED;
+  return AilmentStatus::NOTHING;
 }
 
 /* Update the turn counts for the Ailment */
@@ -264,7 +278,10 @@ void Ailment::update()
   updateTurnCount();
 
   if(doesAilmentCure())
+  {
+    std::cout << "Ailment Does Cure! " << std::endl;
     update_status = AilmentStatus::TO_REMOVE;
+  }
   else
     update_status = updateEffect();
 }

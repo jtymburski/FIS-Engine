@@ -22,7 +22,7 @@
 
 const float BattleActor::kVELOCITY_X{-1.550};
 const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{225, 10, 10, 85};
-const SDL_Color BattleActor::kFLASHING_POISON_COLOR{84, 22, 180, 85};
+const SDL_Color BattleActor::kFLASHING_POISON_COLOR{84, 152, 80, 85};
 const SDL_Color BattleActor::kFLASHING_INFLICT_COLOR{96, 88, 133, 85};
 const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 115};
 const SDL_Color BattleActor::kFLASHING_RELIEVE_COLOR{200, 200, 200, 125};
@@ -117,10 +117,7 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
 
   /* If the person's current VITA is >0, they are not KO'd */
   if(person_base->getCurr().getStat(Attribute::VITA) > 0)
-  {
-    std::cout << "Setting state living!" << std::endl;
     setStateLiving(LivingState::ALIVE);
-  }
 
   setFlag(ActorState::REVIVABLE, true);
   setFlag(ActorState::RUN_ENABLED, true);
@@ -381,20 +378,37 @@ void BattleActor::updateSpriteKO(int32_t cycle_time)
 
 void BattleActor::updateStats(int32_t cycle_time)
 {
-  auto vita = stats_rendered.getBaseValue(Attribute::VITA);
-  auto actual_vita = stats_actual.getBaseValue(Attribute::VITA);
-  auto qtdr = stats_rendered.getBaseValue(Attribute::QTDR);
-  auto actual_qtdr = stats_actual.getBaseValue(Attribute::QTDR);
+  int32_t vita = stats_rendered.getBaseValue(Attribute::VITA);
+  int32_t act_vita = stats_actual.getBaseValue(Attribute::VITA);
+  int32_t qtdr = stats_rendered.getBaseValue(Attribute::QTDR);
+  int32_t act_qtdr = stats_actual.getBaseValue(Attribute::QTDR);
 
-  if(vita > actual_vita)
-    stats_rendered.setBaseValue(Attribute::VITA, vita - 1 * (cycle_time / 15));
-  else if(vita < actual_vita)
-    stats_rendered.setBaseValue(Attribute::VITA, vita + 1 * (cycle_time / 15));
+  auto vita_diff = std::round(std::abs(vita - act_vita) / 100);
+  auto qtdr_diff = std::round(std::abs(qtdr - act_qtdr) / 100);
+  auto vita_amt = (uint32_t)((1 + vita_diff) * (cycle_time / 15));
+  auto qtdr_amt = (uint32_t)((1 + qtdr_diff) * (cycle_time / 15));
 
-  if(qtdr > actual_qtdr)
-    stats_rendered.setBaseValue(Attribute::QTDR, qtdr - 1 * (cycle_time / 15));
-  else if(qtdr < actual_qtdr)
-    stats_rendered.setBaseValue(Attribute::QTDR, qtdr + 1 * (cycle_time / 15));
+  if(vita > act_vita)
+  {
+    stats_rendered.setBaseValue(Attribute::VITA,
+                                std::max((uint32_t)1, vita - vita_amt));
+  }
+  else if(vita < act_vita)
+  {
+    stats_rendered.setBaseValue(Attribute::VITA,
+                                std::max((uint32_t)1, vita + vita_amt));
+  }
+
+  if(qtdr > act_qtdr)
+  {
+    stats_rendered.setBaseValue(Attribute::QTDR,
+                                std::max((uint32_t)1, qtdr - qtdr_amt));
+  }
+  else if(qtdr < act_qtdr)
+  {
+    stats_rendered.setBaseValue(Attribute::QTDR,
+                                std::max((uint32_t)1, qtdr + qtdr_amt));
+  }
 }
 
 /*=============================================================================
@@ -444,8 +458,6 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
         auto targets = getTargetsFromScope(this, skill->getScope(), a_targets);
 
         battle_skill->targets = targets;
-
-        std::cout << " Getting the true cost of the skill!" << std::endl;
         battle_skill->true_cost = getSkillCost(skill);
 
         bool is_valid{!battle_skill->targets.empty()};
@@ -455,7 +467,10 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
           battle_skill->valid_status = ValidStatus::VALID;
 
           if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
+          {
+            std::cout << "[Silenced Skill!] " << std::endl;
             battle_skill->valid_status = ValidStatus::SILENCED;
+          }
           if(battle_skill->true_cost > stats_actual.getValue(Attribute::QTDR))
             battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
         }
@@ -475,6 +490,12 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
   }
 
   return success;
+}
+
+void BattleActor::cleanUpForTurn()
+{
+  setFlag(ActorState::SELECTION_RANDOM, false);
+  setFlag(ActorState::SELECTION_SKIP, false);
 }
 
 bool BattleActor::dealDamage(int32_t damage_amount)
@@ -584,6 +605,13 @@ Ailment* BattleActor::nextUpdateAilment()
 }
 
 // TODO: [09-06-15] Removing ailments. Corner cases?
+
+void BattleActor::clearAilment(Ailment* remove_ailment)
+{
+  delete remove_ailment;
+  remove_ailment = nullptr;
+}
+
 bool BattleActor::removeAilment(Ailment* remove_ailment)
 {
   if(remove_ailment)
@@ -594,10 +622,6 @@ bool BattleActor::removeAilment(Ailment* remove_ailment)
                                     return a == remove_ailment;
                                   }),
                    ailments.end());
-
-    /* Deal with corner cases for removing ailments */
-    delete remove_ailment;
-    remove_ailment = nullptr;
 
     return true;
   }

@@ -303,7 +303,7 @@ void Battle::actionStateEndBob()
 // Constructs AI
 void Battle::aiBuild()
 {
-  for(auto& enemy : getEnemies())
+  for(auto& enemy : actors)
   {
     if(enemy && enemy->getBasePerson())
     {
@@ -321,7 +321,7 @@ void Battle::aiBuild()
 // Clears AI.
 void Battle::aiClear()
 {
-  for(auto& enemy : getEnemies())
+  for(auto& enemy : actors)
   {
     if(enemy && enemy->getBasePerson() && enemy->getBasePerson()->getAI())
     {
@@ -376,6 +376,10 @@ bool Battle::bufferModuleSelection()
   auto curr_actor = getCurrentModuleActor();
   auto curr_module = getCurrentModule();
 
+  // std::cout << "--- Bufferin Module Selection ---- " << std::endl;
+  // std::cout << "--- Curr Actor: " << curr_actor->getBasePerson()->getName()
+  //           << std::endl;
+
   if(curr_actor && curr_module)
   {
     auto action_type = curr_module->getActionType();
@@ -392,6 +396,7 @@ bool Battle::bufferModuleSelection()
     }
     else if(action_type == ActionType::SKILL && curr_module->getSelectedSkill())
     {
+      std::cout << "Literally buffering a skill." << std::endl;
       auto skill = curr_module->getSelectedBattleSkill();
       auto cooldown = skill->skill->getCooldown();
       battle_buffer->addSkill(curr_actor, skill, targets, cooldown,
@@ -413,6 +418,7 @@ bool Battle::bufferModuleSelection()
   }
   else
   {
+    std::cout << "Problem with curr actor or cur module. " << std::endl;
     return false;
   }
 
@@ -448,6 +454,10 @@ void Battle::cleanUpTurn()
 
   battle_buffer->clearForTurn(turns_elapsed);
   battle_menu->clear();
+
+  for(auto& actor : actors)
+    if(actor)
+      actor->cleanUpForTurn();
 
   turns_elapsed++;
   addDelay(500);
@@ -524,7 +534,13 @@ bool Battle::doesActorNeedToSelect(BattleActor* actor)
   bool to_select = (actor != nullptr);
 
   if(to_select)
+  {
+    to_select &= (actor->getStateLiving() == LivingState::ALIVE);
     to_select &= (actor->getSelectionState() == SelectionState::NOT_SELECTED);
+
+    /* Not paralyzed/stunned/etc. */
+    to_select &= (!actor->getFlag(ActorState::SELECTION_SKIP));
+  }
 
   return to_select;
 }
@@ -668,11 +684,10 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
 void Battle::outcomeStatePlep(ActorOutcome& outcome)
 {
   auto animation = event->event_skill->skill->getAnimation();
-  auto actor_x = getActorX(outcome.actor);
-  auto actor_y = getActorY(outcome.actor);
-  auto element = new RenderElement(renderer, animation, 1, actor_x, actor_y);
+  auto x = getActorX(outcome.actor);
+  auto y = getActorY(outcome.actor);
+  render_elements.push_back(new RenderElement(renderer, animation, 1, x, y));
 
-  render_elements.push_back(element);
   outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
   addDelay(150);
 }
@@ -932,25 +947,8 @@ void Battle::processInfliction(BattleActor* target, Infliction type)
   auto curr_action = event->getCurrAction();
   auto min = curr_action->getMin();
   auto max = curr_action->getMax();
-  auto chance = curr_action->getChance();
 
-  // POISON
-  if(type == Infliction::POISON)
-  {
-    std::cout << "[Inflicting Target With Poison" << std::endl;
-    target->addAilment(type, min, max, chance);
-  }
-  // CONFUSE
-  // SILENCE
-  // HIBERNATION
-  // CONFUSION
-  // PARALYSIS
-
-  // ALL ATK BUFF
-  // ALL DEF BUFF
-  // LIMB BUFF
-  // ALL ATK BUFF
-  // ALL DEF BUFF
+  target->addAilment(type, min, max, curr_action->getBase());
 }
 
 void Battle::updateEnemySelection()
@@ -989,8 +987,7 @@ void Battle::updateFadeInText()
   auto font = config->getFontTTF(FontName::BATTLE_TURN);
   auto element = new RenderElement(renderer, font);
 
-  element->createAsEnterText("Only Hit The Bad Guys",
-                             config->getScreenHeight(),
+  element->createAsEnterText("Only Hit The Bad Guys", config->getScreenHeight(),
                              config->getScreenWidth());
   render_elements.push_back(element);
   addDelay(1700);
@@ -1076,15 +1073,30 @@ void Battle::updatePersonalAilments()
   {
     if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_BEGIN)
     {
+      setFlagCombat(CombatState::AILMENT_CLEARS, false);
       upkeep_ailment->update();
 
       if(upkeep_ailment->getUpdateStatus() == AilmentStatus::TO_REMOVE)
         upkeep_actor->setUpkeepState(UpkeepState::AILMENT_CLEAR);
       else if(upkeep_ailment->getUpdateStatus() == AilmentStatus::TO_DAMAGE)
-        upkeep_actor->setUpkeepState(UpkeepState::AILMENT_FLASH);
+        upkeep_actor->setUpkeepState(UpkeepState::AILMENT_PLEP);
+      else if(upkeep_ailment->getUpdateStatus() == AilmentStatus::SKIP)
+      {
+        upkeep_actor->setUpkeepState(UpkeepState::AILMENT_PLEP);
+        upkeep_actor->setFlag(ActorState::SELECTION_SKIP, true);
+      }
+      else if(upkeep_ailment->getUpdateStatus() == AilmentStatus::RANDOM)
+      {
+        upkeep_actor->setUpkeepState(UpkeepState::AILMENT_PLEP);
+        upkeep_actor->setFlag(ActorState::SELECTION_RANDOM, true);
+      }
+      else if(upkeep_ailment->getUpdateStatus() == AilmentStatus::NOTHING)
+        upkeep_actor->setUpkeepState(UpkeepState::AILMENT_OUTCOME);
     }
     else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_CLEAR)
       upkeepAilmentClear();
+    else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_PLEP)
+      upkeepAilmentPlep();
     else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_FLASH)
       upkeepAilmentFlash();
     else if(upkeep_actor->getStateUpkeep() == UpkeepState::AILMENT_DAMAGE)
@@ -1199,8 +1211,36 @@ void Battle::updateUserSelection()
 
     if(next_actor)
     {
-      loadMenuForActor(next_actor);
       updateSelectingState(next_actor, false);
+
+      /* If confused -> put in a random selection, else allow selection */
+      if(next_actor->getFlag(ActorState::SELECTION_RANDOM))
+      {
+        std::cout << " Attempting to choose a a random action for actor: "
+                  << next_actor->getBasePerson()->getName() << "." << std::endl;
+
+        auto next_module = getModuleOfActor(next_actor);
+        next_module->resetForNewTurn(next_actor);
+        next_actor->buildBattleSkills(actors);
+
+        auto battle_skills = next_actor->getBattleSkills();
+
+        for(auto& battle_skill : battle_skills)
+          battle_skill->print();
+
+        next_module->setSkills(next_actor->getBattleSkills());
+
+        next_module->calculateAction();
+        next_module->calculateTargets();
+
+        bufferModuleSelection();
+        updateSelectingState(next_actor, true);
+      }
+      else
+      {
+        /* Load the menu for the actor */
+        loadMenuForActor(next_actor);
+      }
     }
     else
       setFlagCombat(CombatState::PHASE_DONE);
@@ -1229,7 +1269,7 @@ AIModule* Battle::getCurrentModule()
 
 BattleActor* Battle::getCurrentModuleActor()
 {
-  for(const auto& enemy : getEnemies())
+  for(const auto& enemy : actors)
     if(enemy && enemy->getSelectionState() == SelectionState::SELECTING)
       return enemy;
 
@@ -2314,41 +2354,48 @@ void Battle::updateRenderSprites(int32_t cycle_time)
 void Battle::upkeepAilmentClear()
 {
   upkeep_actor->startFlashing(FlashingType::RELIEVE, 750);
-  upkeep_ailment->setUpdateStatus(AilmentStatus::COMPLETED);
   upkeep_actor->setUpkeepState(UpkeepState::AILMENT_OUTCOME);
 
   // Remove the ailment - How to deal with consequences?
   upkeep_actor->removeAilment(upkeep_ailment);
+  setFlagCombat(CombatState::AILMENT_CLEARS, true);
   addDelay(400);
 }
 
 void Battle::upkeepAilmentDamage()
 {
   // TODO [12-04-15] -- Damage types for different ailments
-  createDamageElement(upkeep_actor, DamageType::POISON,
-                      upkeep_ailment->getDamageAmount());
+  if(upkeep_ailment->getType() == Infliction::POISON)
+  {
+    createDamageElement(upkeep_actor, DamageType::POISON,
+                        upkeep_ailment->getDamageAmount());
+  }
+
   upkeep_actor->setUpkeepState(UpkeepState::AILMENT_OUTCOME);
-  upkeep_ailment->setUpdateStatus(AilmentStatus::COMPLETED);
   addDelay(300);
 }
 
 void Battle::upkeepAilmentFlash()
 {
   // TODO [12-04-15] -- Flashing types for different ailments
-  upkeep_actor->startFlashing(FlashingType::POISON, 750);
+  if(upkeep_ailment->getType() == Infliction::POISON)
+  {
+    upkeep_actor->startFlashing(FlashingType::POISON, 750);
+  }
+  else
+    upkeep_actor->startFlashing(FlashingType::INFLICT, 750);
+
   upkeep_actor->setUpkeepState(UpkeepState::AILMENT_DAMAGE);
-  addDelay(600);
+  addDelay(750);
 }
 
 void Battle::upkeepAilmentOutcome()
 {
-  // If the ailment was relieved, remove the ailment.
-
-  // If the ailment caused damage, deal damage.
-
+  /* If the ailment has caused amage, deal the damage that it is caused */
   if(upkeep_ailment->getDamageAmount() > 0 &&
      upkeep_ailment->getFlag(AilState::CURABLE_KO))
   {
+    /* Check if the ailment damage kills the actor */
     if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()))
     {
       upkeep_actor->startFlashing(FlashingType::KOING);
@@ -2361,8 +2408,33 @@ void Battle::upkeepAilmentOutcome()
     addDelay(100);
   }
 
+  upkeep_ailment->setUpdateStatus(AilmentStatus::COMPLETED);
+
+  if(getFlagCombat(CombatState::AILMENT_CLEARS))
+    upkeep_actor->clearAilment(upkeep_ailment);
+
   /* Unset the upkeep ailment for updatePersonalAilments() to grab the next */
   upkeep_ailment = nullptr;
+}
+
+void Battle::upkeepAilmentPlep()
+{
+  auto type = upkeep_ailment->getType();
+  auto plep = battle_display_data->getPlepAilment(type);
+
+  /* Create the plep on the upkeep actor */
+  if(plep)
+  {
+    auto x = getActorX(upkeep_actor);
+    auto y = getActorY(upkeep_actor);
+    render_elements.push_back(new RenderElement(renderer, plep, 2, x, y));
+  }
+
+  upkeep_ailment->setUpdateStatus(AilmentStatus::COMPLETED);
+  upkeep_actor->setUpkeepState(UpkeepState::AILMENT_FLASH);
+
+  // TODO: Delay based on the animation time?
+  addDelay(450);
 }
 
 int32_t Battle::getActorX(BattleActor* actor)
