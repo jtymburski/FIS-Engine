@@ -873,6 +873,7 @@ Event EventSet::copyEvent(Event source)
   event.classification = source.classification;
   event.convo = nullptr;
   event.ints = source.ints;
+  event.one_shot = source.one_shot;
   event.sound_id = source.sound_id;
   event.strings = source.strings;
 

@@ -1090,6 +1090,10 @@ bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
 bool Map::triggerViewTile(Tile* view_tile, uint16_t view_section,
                           UnlockView view_mode, int view_time)
 {
+  std::cout << "INIT DATA: " << view_tile->getX() << "," << view_tile->getY()
+            << "," << view_section << ","
+            << (int)view_mode << "," << view_time << std::endl;
+
   /* Parse and check view data */
   bool view, scroll;
   EventSet::dataEnumView(view_mode, view, scroll);
