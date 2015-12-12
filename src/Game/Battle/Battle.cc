@@ -683,12 +683,25 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
 
 void Battle::outcomeStatePlep(ActorOutcome& outcome)
 {
-  auto animation = event->event_skill->skill->getAnimation();
+  Sprite* animation = nullptr;
   auto x = getActorX(outcome.actor);
   auto y = getActorY(outcome.actor);
+
   render_elements.push_back(new RenderElement(renderer, animation, 1, x, y));
 
-  outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+  if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE))
+  {
+    animation = event->event_skill->skill->getAnimation();
+    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+  }
+  else if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
+  {
+    auto type = event->getCurrAction()->getAilment();
+    animation = battle_display_data->getPlepAilment(type);
+    outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+  }
+
+  render_elements.push_back(new RenderElement(renderer, animation, 1, x, y));
   addDelay(150);
 }
 
@@ -924,7 +937,7 @@ void Battle::processEventSkill()
             outcome.infliction_status = InflictionStatus::IMMUNE;
 
           outcome.infliction_status = InflictionStatus::INFLICTION;
-          outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+          outcome.actor_outcome_state = ActionState::PLEP;
         }
       }
       else

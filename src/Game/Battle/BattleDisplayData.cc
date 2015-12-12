@@ -321,7 +321,7 @@ void BattleDisplayData::buildPlepsAilments()
   auto sprite_poison =
       new Sprite(config->getBasePath() + "sprites/Battle/Pleps/poisonplep_AA_A",
                  4, ".png", renderer);
-  sprite_poison->setAnimationTime(70);
+  sprite_poison->setAnimationTime(95);
   pleps_ailments.emplace(Infliction::POISON, sprite_poison);
 
   auto sprite_buff =
