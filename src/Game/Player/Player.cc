@@ -47,24 +47,23 @@ Player::Player(Party* sleuth, Party* bearacks)
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Attempts to add an amount of credits to the player's total.
  *
- * Inputs: 
- * Output: 
+ * Inputs: uint32_t value - the number of credits to add
+ * Output: bool - true if credits added (even if max limit reached)
  */
-/* Attempts to add an amount of credits to the player's total */
 bool Player::addCredits(const uint32_t &value)
 {
   auto added = false;
 
-  if (value < kMAX_CREDITS / 2 && kMAX_CREDITS - value < kMAX_CREDITS)
+  if (value < kMAX_CREDITS)
   {
-    credits += value;
+    if(kMAX_CREDITS - value >= credits)
+      credits += value;
+    else
+      credits = kMAX_CREDITS;
     added = true;
   }
-
-  if (credits > kMAX_CREDITS)
-      credits = kMAX_CREDITS;
 
   return added;
 }
@@ -142,30 +141,6 @@ void Player::print()
 }
 
 /*
- * Description: Removes a sleuth member by index by calling its party's removal
- *              function.
- *          
- * Inputs: uint32_t index - the index of sleuth member to be removed.
- * Output: bool - true if the member was removed successfully.
- */
-bool Player::removeSleuthMember(const uint32_t &index)
-{
-  return sleuth->removeMember(index);
-}
-
-/*
- * Description: Removes a sleuth member by name by calling Party's remove
- *              function.
- *
- * Inputs: const std::string name - the name of the sleuth member to remo.
- * Output: bool - true if the member was removed.
- */
-bool Player::removeSleuthMember(const std::string &name)
-{
-  return sleuth->removeMember(name);
-}
-
-/*
  * Description: Removes a bearacks member by index by calling the Paty's
  *              remove function.
  *
@@ -187,6 +162,49 @@ bool Player::removeBearacksMember(const uint32_t &index)
 bool Player::removeBearacksMember(const std::string &name)
 {
   return bearacks->removeMember(name);
+}
+  
+/*
+ * Description: Attempts to remove an amount of credits to the player's total.
+ *
+ * Inputs: uint32_t value - the number of credits to remove
+ * Output: bool - true if credits removed
+ */
+bool Player::removeCredits(const uint32_t &value)
+{
+  bool removed = false;
+
+  if(value <= credits)
+  {
+    credits -= value;
+    removed = true;
+  }
+
+  return removed;
+}
+
+/*
+ * Description: Removes a sleuth member by index by calling its party's removal
+ *              function.
+ *          
+ * Inputs: uint32_t index - the index of sleuth member to be removed.
+ * Output: bool - true if the member was removed successfully.
+ */
+bool Player::removeSleuthMember(const uint32_t &index)
+{
+  return sleuth->removeMember(index);
+}
+
+/*
+ * Description: Removes a sleuth member by name by calling Party's remove
+ *              function.
+ *
+ * Inputs: const std::string name - the name of the sleuth member to remo.
+ * Output: bool - true if the member was removed.
+ */
+bool Player::removeSleuthMember(const std::string &name)
+{
+  return sleuth->removeMember(name);
 }
 
 /*

@@ -69,17 +69,20 @@ public:
   /* Methods for printing ou the info of the player */
   void print();
 
+  /* Removes a bearacks member by index by calling Party's remove function */
+  bool removeBearacksMember(const uint32_t &index);
+
+  /* Removes a bearacks member by name by calling Party's remove function */
+  bool removeBearacksMember(const std::string &name); 
+
+  /* Attempt to remove an amount of credits from the current total */
+  bool removeCredits(const uint32_t &value);
+  
   /* Removes a sleuth member by index by calling Party's remove function */
   bool removeSleuthMember(const uint32_t &index);
 
   /* Removes a sleuth member by name by calling Party's remove function */
   bool removeSleuthMember(const std::string &name);
-
-  /* Removes a bearacks member by index by calling Party's remove function */
-  bool removeBearacksMember(const uint32_t &index);
-
-  /* Removes a bearacks member by name by calling Party's remove function */
-  bool removeBearacksMember(const std::string &name);
 
   /* Sets the amount of money the player has */
   bool setCredits(const uint32_t &value);

@@ -398,7 +398,11 @@ int Game::eventTakeItem(int id, int count)
      player_main->getSleuth()->getInventory() != nullptr)
   {
     Inventory* inv = player_main->getSleuth()->getInventory();
-    int item_count = inv->getItemCount(id);
+    int item_count = 0;
+    if(id == (int)Item::kID_MONEY)
+      item_count = player_main->getCredits();
+    else
+      item_count = inv->getItemCount(id);
     if(item_count > 0)
     {
       /* Update if requested count is greater than range */
@@ -407,8 +411,15 @@ int Game::eventTakeItem(int id, int count)
       else
         remove_count = count;
 
-      /* Remove items */
-      if(inv->removeID(id, remove_count))
+      /* Attempt remove */
+      bool removed = false;
+      if(id == (int)Item::kID_MONEY)
+        removed = player_main->removeCredits(remove_count);
+      else
+        removed = inv->removeID(id, remove_count);
+
+      /* If removed, proceed to notify */
+      if(removed)
       {
         /* Notify about removal */
         Item* found_item = getItem(id);
@@ -765,7 +776,11 @@ bool Game::parseLock(Locked& lock_struct)
       {
         /* Get count */
         Inventory* inv = player_main->getSleuth()->getInventory();
-        int count_avail = inv->getItemCount(id);
+        int count_avail = 0;
+        if(id == (int)Item::kID_MONEY)
+          count_avail = player_main->getCredits();
+        else
+          count_avail = inv->getItemCount(id);
 
         /* Attempt unlock */
         if(count_avail >= count)
