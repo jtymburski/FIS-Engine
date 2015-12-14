@@ -1181,8 +1181,9 @@ bool MapInteractiveObject::unlockTrigger(UnlockIOMode mode, int state_num,
       /* Parse all states */
       while(parser != nullptr)
       {
-        if(parser != nullptr && parser->state != nullptr)
+        if(parser->state != nullptr)
           unlocked |= parser->state->unlockTrigger(mode_events);
+        parser = parser->next;
       }
     }
     /* Only designated state is modified */
