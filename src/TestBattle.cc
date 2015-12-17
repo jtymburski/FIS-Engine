@@ -309,7 +309,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     16, 16, 12, 12,
     0, 0, 0, 0,
-    20, 20, 15
+    20, 25, 20, 0
   }, true);
 
   stats_treefolk_min = AttributeSet(
@@ -383,7 +383,25 @@ void TestBattle::create()
     0, 0, 0, 0,
     10, 10, 15, 0
   }, true);
-
+  
+  stats_aurora_eng_min = AttributeSet(
+  {
+    50, 100, 3, 2,
+    0, 0, 0, 0,
+    3, 2, 5, 4,
+    0, 0, 0, 0,
+    9, 9, 10, 0
+  }, true);  
+  
+  stats_aurora_eng_max = AttributeSet(
+  {
+    100, 125, 8, 6,
+    0, 0, 0, 0,
+    8, 6, 12, 12,
+    0, 0, 0, 0,
+    18, 18, 15, 0
+  }, true);
+  
   stats_aurora_agent_min = AttributeSet(
   {
     50, 100, 3, 2,
