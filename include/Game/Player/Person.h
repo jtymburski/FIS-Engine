@@ -201,7 +201,7 @@ private:
   void updateBaseStats();
 
   /* Updates the level of the person based on their current total experience */
-  void updateLevel();
+  void updateLevel(const bool& ignore_flags = false);
 
   /* Updates the current stats of the Person based on their current level */
   void updateStats();
@@ -221,7 +221,8 @@ private:
    *============================================================================*/
 public:
   /* Adds an amount of experience and may update the level */
-  bool addExp(const uint32_t& amount, const bool& update = true);
+  bool addExp(const uint32_t& amount, const bool& update = true, 
+              const bool& ignore_flags = false);
 
   /* Recalculates the stat bonuses for equipment */
   AttributeSet calcEquipStats();

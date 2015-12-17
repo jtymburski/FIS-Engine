@@ -45,7 +45,7 @@ Skill::Skill()
     , chance{0}
     , cooldown{0}
     , cost{0}
-    , description{0}
+    , description{""}
     , flags{static_cast<SkillFlags>(0)}
     , id{kUNSET_ID}
     , message{""}
@@ -747,11 +747,8 @@ bool Skill::setDescription(const std::string &new_description)
   if (new_description.size() < kMAX_DESC_LENGTH)
   {
     description = new_description;
-
     return true;
   }
-
-  description = "";
 
   return false;
 }

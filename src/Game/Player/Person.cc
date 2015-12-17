@@ -498,13 +498,13 @@ AttributeSet Person::calcEquipStats()
  * Description: Updates he level of the Person based on their curren total
  *              experience.
  *
- * Inputs: none
+ * Inputs: bool ignore_flags - true to ignore CAN_LEVEL_UP flag. default false
  * Output: none
  */
 /* Updates the level of the person based on their current total experience */
-void Person::updateLevel()
+void Person::updateLevel(const bool& ignore_flags)
 {
-  if(getPFlag(PState::CAN_LEVEL_UP))
+  if(getPFlag(PState::CAN_LEVEL_UP) || ignore_flags)
   {
     auto before = level;
 
@@ -646,13 +646,15 @@ float Person::getCurveModifier(const ElementCurve& curve, const bool primary)
  *
  * Inputs: amount - the amount of experience to be added
  *         update - a boolean value whether to be updated
+ *         ignore_flags - true to ignore CAN_GAIN_EXP flag. default false
  * Output: bool - true if the experience was added successfully
  */
-bool Person::addExp(const uint32_t& amount, const bool& update)
+bool Person::addExp(const uint32_t& amount, const bool& update, 
+                    const bool& ignore_flags)
 {
   auto can_add = false;
 
-  if(getPFlag(PState::CAN_GAIN_EXP))
+  if(getPFlag(PState::CAN_GAIN_EXP) || ignore_flags)
   {
     auto mod_amount = std::floor(amount * exp_mod);
 
@@ -673,7 +675,7 @@ bool Person::addExp(const uint32_t& amount, const bool& update)
   }
 
   if(can_add && update)
-    updateLevel();
+    updateLevel(ignore_flags);
 
   return can_add;
 }

@@ -206,7 +206,7 @@ Person* Game::addPersonInst(Person* base_person, const uint32_t& lvl)
 
     /* Set Level */
     new_person->loseExp(new_person->getTotalExp());
-    new_person->addExp(new_person->getExpAt(lvl));
+    new_person->addExp(new_person->getExpAt(lvl), true, true);
 
     list_person_inst.push_back(new_person);
   }
