@@ -655,6 +655,12 @@ std::string Action::outputString()
 
       output += std::to_string(base);
     }
+    else if(actionFlag(ActionFlags::INFLICT))
+    {
+      output += "AMOUNT";
+      output += kDELIMITER_2;
+      output += std::to_string(base);
+    }
     output += kDELIMITER;
 
     /* Add the variance to the base amount */
