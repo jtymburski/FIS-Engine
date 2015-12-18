@@ -1194,7 +1194,8 @@ int MapThing::getID() const
 }
 
 /*
- * Description: Returns the interaction event that fires upon an interact()
+ * Description: Returns the interaction event that fires upon an 
+ * interact()
  *              call to this thing.
  *
  * Inputs: none

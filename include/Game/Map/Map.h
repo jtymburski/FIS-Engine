@@ -227,10 +227,10 @@ private:
 
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);
-  
+
   /* Initiates a check for NPC if a forced interaction will occur */
-  bool initiateNPCInteraction(MapPerson* player, MapNPC* npc, int cycle_time);
-  
+  bool initiateNPCInteraction();
+
   /* Initiates a thing action, based on the action key being hit */
   void initiateThingInteraction(MapPerson* initiator);
 

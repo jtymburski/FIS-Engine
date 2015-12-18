@@ -86,6 +86,7 @@ Game::Game(Options* running_config)
 
   /* Set game configuration */
   setConfiguration(running_config);
+  battle_ctrl->setDisplayData(battle_display_data);
 }
 
 /* Destructor function */
@@ -373,7 +374,19 @@ void Game::eventStartBattle(int person_id, int source_id)
     if(battle_ctrl)
     {
       battle_ctrl->setRenderer(active_renderer);
+      battle_display_data->setRenderer(active_renderer);
+
+      if(!battle_display_data->isDataBuilt())
+        battle_display_data->buildData();
+
+      // TODO: Why is it seg faulting??
+      std::vector<Person*> persons = getParty(source_id)->getMembers();
+      for(uint16_t i = 0; i < persons.size(); i++)
+        if(persons[i] != nullptr && persons[i]->getAI() != nullptr)
+          persons[i]->getAI()->resetForNewBattle();
+
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
+
       changeMode(BATTLE);
     }
   }
@@ -1544,7 +1557,8 @@ void Game::unloadCore()
 
 /* Unloads the sub map data of the game */
 void Game::unloadSub()
-{
+{  /* Resets the AI for a new battle */
+  void resetForNewBattle();
   map_ctrl.unloadMap();
   loaded_sub = false;
 }
@@ -1575,6 +1589,9 @@ bool Game::update(int32_t cycle_time)
     if(battle_ctrl->getTurnState() == TurnState::FINISHED)
     {
       battle_ctrl->stopBattle();
+    }
+    else if(battle_ctrl->getTurnState() == TurnState::STOPPED)
+    {
       changeMode(MAP);
     }
     else if(!event_handler.getKeyHandler().isDepressed(GameKey::PAUSE))

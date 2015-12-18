@@ -130,7 +130,7 @@ public:
 
   /* Attempts to remove a member of the party by a given string name */
   bool removeMember(const std::string &name);
-
+  
   /* Calculates and returns the average speed of the Party */
   // int32_t getAverageSpeed();
 

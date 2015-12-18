@@ -762,23 +762,21 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
 }
 
 /* Initiates a check for NPC if a forced interaction will occur */
-bool Map::initiateNPCInteraction(MapPerson* player, MapNPC* npc, int cycle_time)
+bool Map::initiateNPCInteraction()
 {
   /* Pre-checks */
-  if(player != nullptr && npc != nullptr &&
-     player->getMapSection() == npc->getMapSection() &&
-     player->getTarget() == nullptr && npc->isAlmostOnTile(cycle_time))
+  if(player != nullptr && player->getTarget() == nullptr)
   {
     /* Directional locator */
-    bool finished = false;
-    std::vector<std::vector<Tile*>> tile_set = npc->getTileRender(0);
-    int16_t starting_x = npc->getTileX();
-    int16_t starting_y = npc->getTileY();
+    MapPerson* found_npc = nullptr;
+    std::vector<std::vector<Tile*>> tile_set = player->getTileRender(0);
+    int16_t starting_x = player->getTileX();
+    int16_t starting_y = player->getTileY();
 
     /* Parse tiles */
-    for(uint16_t i = 0; !finished && i < tile_set.size(); i++)
+    for(uint16_t i = 0; found_npc == nullptr && i < tile_set.size(); i++)
     {
-      for(uint16_t j = 0; !finished && j < tile_set[i].size(); j++)
+      for(uint16_t j = 0; found_npc == nullptr && j < tile_set[i].size(); j++)
       {
         /* Only proceed if tile is valid on a render depth of 0 */
         if(tile_set[i][j] != nullptr)
@@ -788,43 +786,60 @@ bool Map::initiateNPCInteraction(MapPerson* player, MapNPC* npc, int cycle_time)
           uint16_t y = starting_y + j;
 
           /* Check left */
-          if(!finished && x > 0 && 
-             sub_map[map_index].tiles[x-1][y]->getPersonMain(0) == player)
+          if(found_npc == nullptr && x > 0)
           {
-            finished = true;
+            MapPerson* npc = sub_map[map_index].tiles[x-1][y]->getPersonMain(0);
+            if(npc != nullptr && npc->isForcedInteraction() &&
+               npc->getTarget() == nullptr)
+            {
+              found_npc = npc;
+            }
           }
 
           /* Check top */
-          if(!finished && y > 0 &&
-             sub_map[map_index].tiles[x][y-1]->getPersonMain(0) == player)
+          if(found_npc == nullptr && y > 0)
           {
-            finished = true;
+            MapPerson* npc = sub_map[map_index].tiles[x][y-1]->getPersonMain(0);
+            if(npc != nullptr && npc->isForcedInteraction() &&
+               npc->getTarget() == nullptr)
+            {
+              found_npc = npc;
+            }
           }
 
           /* Check right */
-          if(!finished && (x + 1) < (int)sub_map[map_index].tiles.size() &&
-             sub_map[map_index].tiles[x+1][y]->getPersonMain(0) == player)
+          if(found_npc == nullptr &&
+             (x + 1) < (int)sub_map[map_index].tiles.size())
           {
-            finished = true;
+            MapPerson* npc = sub_map[map_index].tiles[x+1][y]->getPersonMain(0);
+            if(npc != nullptr && npc->isForcedInteraction() &&
+               npc->getTarget() == nullptr)
+            {
+              found_npc = npc;
+            }
           }
 
           /* Check bottom */
-          if(!finished && (y + 1) < (int)sub_map[map_index].tiles[x].size() &&
-             sub_map[map_index].tiles[x][y+1]->getPersonMain(0) == player)
+          if(found_npc == nullptr &&
+             (y + 1) < (int)sub_map[map_index].tiles[x].size())
           {
-            finished = true;
+            MapPerson* npc = sub_map[map_index].tiles[x][y+1]->getPersonMain(0);
+            if(npc != nullptr && npc->isForcedInteraction() &&
+               npc->getTarget() == nullptr)
+            {
+              found_npc = npc;
+            }
           }
         }
       }
     }
 
     /* If found, trigger */
-    if(finished)
+    if(found_npc != nullptr)
     {
-      npc->interactForced(player);
+      static_cast<MapNPC*>(found_npc)->interactForced(player);
+      return true;
     }
-
-    return finished;
   }
   return false;
 }
@@ -2163,8 +2178,7 @@ bool Map::render(SDL_Renderer* renderer)
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
     {
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
-      {  /* Returns if there is any form of tracking */
-  bool isTracking();
+      {
         sub_map[map_index].tiles[i][j]->renderUpper(renderer,
                                                     x_offset, y_offset);
       }
@@ -2463,13 +2477,18 @@ bool Map::update(int cycle_time)
   }
 
   /* Check on player interaction */
-  if(player != NULL && player->getTarget() != NULL
-                    && !map_dialog.isConversationActive()
-                    && !map_dialog.isConversationReady()
-                    && !map_dialog.isConversationWaiting())
+  if(player != nullptr)
   {
-    player->getTarget()->clearTarget();
-    player->clearTarget();
+    /* Initiate NPC interaction in cases where the interaction is forced */
+    initiateNPCInteraction();
+
+    /* Clearing dialog info if target is set */
+    if(player->getTarget() != nullptr && !map_dialog.isConversationActive() &&
+       !map_dialog.isConversationReady() && !map_dialog.isConversationWaiting())
+    {
+      player->getTarget()->clearTarget();
+      player->clearTarget();
+    }
   }
 
   /* Update the sprite animation */
@@ -2488,15 +2507,12 @@ bool Map::update(int cycle_time)
     if(persons[i] != NULL && persons[i]->getMapSection() == map_index &&
        persons[i]->isTilesSet())
     {
+      /* Tile set for movement */
       if(persons[i]->isMoving() || persons[i]->isMoveRequested())
-      {
         tile_set = getTileMatrix(persons[i],
                                  persons[i]->getPredictedMoveRequest());
-        if(persons[i]->isForcedInteraction())
-          initiateNPCInteraction(player, (MapNPC*)persons[i], cycle_time);
-      }
 
-      /* Proceed to update the person */
+      /* Update person */
       persons[i]->update(cycle_time, tile_set);
     }
   }

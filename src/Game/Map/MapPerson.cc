@@ -692,6 +692,18 @@ Direction MapPerson::getMoveRequest()
 }
 
 /*
+ * Description: Returns the player reference. NULL if not set. Virtualized for
+ *              MapNPC
+ *
+ * Inputs: none
+ * Output: MapPerson* - the person reference pointer
+ */
+MapPerson* MapPerson::getPlayer()
+{
+  return nullptr;
+}
+
+/*
  * Description: Returns the number of steps for the person, aka the number of
  *              tiles walked on.
  *
@@ -770,11 +782,14 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
  * Description: Returns if the NPC will force interaction - always false when
  *              called on parent MapPerson class.
  *
- * Inputs: none
+ * Inputs: bool false_if_active - true to also include if there has been a
+ *                                recent forced interaction. If so, this will
+ *                                return false regardless. Default true
  * Output: bool - true if the interaction is set to be forced
  */
-bool MapPerson::isForcedInteraction()
+bool MapPerson::isForcedInteraction(bool false_if_active)
 {
+  (void)false_if_active;
   return false;
 }
 
@@ -1031,10 +1046,21 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         tileMoveFinish(getID() != kPLAYER_ID);
       if(getMovementPaused())
       {
-        if(getTarget() != NULL)
+        if(getTarget() != nullptr || 
+           (isForcedInteraction(false) && getPlayer() != nullptr))
         {
-          int delta_x = getTarget()->getCenterX() - getCenterX();
-          int delta_y = getTarget()->getCenterY() - getCenterY();
+          int delta_x = 0;
+          int delta_y = 0;
+          if(getTarget() != nullptr)
+          {
+            delta_x = getTarget()->getCenterX() - getCenterX();
+            delta_y = getTarget()->getCenterY() - getCenterY();
+          }
+          else
+          {
+            delta_x = getPlayer()->getCenterX() - getCenterX();
+            delta_y = getPlayer()->getCenterY() - getCenterY();
+          }
 
           /* Determine the absolute values of each variable */
           int pos_x = delta_x < 0 ? 0 - delta_x : delta_x;

@@ -51,7 +51,9 @@ public:
                                               again. In ms */
   const static uint16_t kMAX_DELAY; /* The max delay for random delay calcs */
   const static uint16_t kMAX_RANGE; /* THe max range for random x,y move */
-
+  const static uint16_t kTRACK_DIST_MIN; /* The default min distance to track */
+  const static uint16_t kTRACK_DIST_MAX; /* The default max distance to give up
+                                            tracking */
 private:
   /* Does the NPC force interaction if possible? */
   bool forced_interaction;
@@ -64,6 +66,7 @@ private:
   /* The nodes for control */
   Path* node_current;
   Path* node_head;
+  Path node_player;
   Path node_random;
   Path node_start;
 
@@ -83,7 +86,10 @@ private:
   bool starting;
 
   /* The state of tracking */
+  int track_dist;
+  int track_dist_max;
   TrackingState track_state;
+  bool tracking;
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -150,7 +156,7 @@ public:
   bool interactForced(MapPerson* initiator);
 
   /* Returns if the NPC will force interaction */
-  bool isForcedInteraction();
+  bool isForcedInteraction(bool false_if_active = true);
 
   /* Returns if there is any form of tracking */
   bool isTracking();

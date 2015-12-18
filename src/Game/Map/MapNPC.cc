@@ -13,6 +13,8 @@ const uint16_t MapNPC::kFORCED_FREEZE = 5000;
 const uint16_t MapNPC::kFORCED_NOTRIGGER = 30000;
 const uint16_t MapNPC::kMAX_DELAY = 2000;
 const uint16_t MapNPC::kMAX_RANGE = 10;
+const uint16_t MapNPC::kTRACK_DIST_MIN = 5;
+const uint16_t MapNPC::kTRACK_DIST_MAX = 10;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -615,8 +617,15 @@ Direction MapNPC::getPredictedMoveRequest()
  */
 MapNPC::TrackingState MapNPC::getTrackingState()
 {
-  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
-    return static_cast<MapNPC*>(base)->track_state;
+  //if(base != nullptr)
+  //{
+  //  MapNPC* base_npc = static_cast<MapNPC*>(base);
+
+  //  if(base_npc->track_state != track_state)
+  //    return track_state;
+  //  else
+  //    return base_npc->track_state;
+  //}
   return track_state;
 }
 
@@ -688,14 +697,28 @@ bool MapNPC::interactForced(MapPerson* initiator)
  * Description: Returns if the NPC will force interaction upon the player if it
  *              moves within the vicinity of the NPC.
  *
- * Inputs: none
+ * Inputs: bool false_if_active - true to also include if there has been a
+ *                                recent forced interaction. If so, this will
+ *                                return false regardless. Default true
  * Output: bool - true if the NPC will force interaction
  */
-bool MapNPC::isForcedInteraction()
+bool MapNPC::isForcedInteraction(bool false_if_active)
 {
-  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
-    return (static_cast<MapNPC*>(base)->forced_interaction && !forced_recent);
-  return (forced_interaction && !forced_recent);
+  //bool curr = forced_interaction;
+
+  //if(base != nullptr)
+  //{
+  //  MapNPC* base_npc = static_cast<MapNPC*>(base);
+
+  //  if(base_npc->forced_interaction != forced_interaction)
+  //    curr = forced_interaction;
+  //  else
+  //    curr = base_npc->forced_interaction;
+  //}
+  //return (curr && !forced_recent);
+  if(false_if_active)
+    return (forced_interaction && !forced_recent);
+  return forced_interaction;
 }
 
 /*
@@ -809,6 +832,8 @@ bool MapNPC::setBase(MapThing* base)
       base_category = ThingBase::NPC;
       setMatrix(getState(getSurface(), getDirection()));
       setSpeed(base->getSpeed());
+      forced_interaction = static_cast<MapNPC*>(base)->forced_interaction;
+      track_state = static_cast<MapNPC*>(base)->track_state;
       if(node_head == NULL)
       {
         node_head = static_cast<MapNPC*>(base)->node_head;
@@ -1026,6 +1051,8 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 
             /* Randomize a new location */
             randomizeNode();
+            //node_random.x = player->getTileX();
+            //node_random.y = player->getTileY();
           }
           npc_delay = 0;
         }

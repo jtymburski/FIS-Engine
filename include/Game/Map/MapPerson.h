@@ -144,6 +144,9 @@ public:
   /* Returns the move request in the class (virtual reimplemented) */
   Direction getMoveRequest();
 
+  /* Returns the stored player. Blank in Person, used in NPC child */
+  virtual MapPerson* getPlayer();
+
   /* Returns the number of tiles walked on for the person */
   uint32_t getStepCount();
 
@@ -158,7 +161,7 @@ public:
   SurfaceClassifier getSurface();
   
   /* Returns if the NPC will force interaction - always false for player */
-  virtual bool isForcedInteraction();
+  virtual bool isForcedInteraction(bool false_if_active = true);
   
   /* Determines if there is an active move request (virtual reimplemented) */
   bool isMoveRequested();
