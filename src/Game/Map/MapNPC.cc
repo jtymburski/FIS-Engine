@@ -1025,9 +1025,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
             }
 
             /* Randomize a new location */
-            //randomizeNode();
-            node_random.x = player->getTileX();
-            node_random.y = player->getTileY();
+            randomizeNode();
           }
           npc_delay = 0;
         }
