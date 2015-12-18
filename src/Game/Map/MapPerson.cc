@@ -825,14 +825,17 @@ bool MapPerson::isRunning()
  */
 void MapPerson::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if(event.keysym.sym == SDLK_DOWN)
-    addDirection(Direction::SOUTH);
-  else if(event.keysym.sym == SDLK_UP)
-    addDirection(Direction::NORTH);
-  else if(event.keysym.sym == SDLK_RIGHT)
-    addDirection(Direction::EAST);
-  else if(event.keysym.sym == SDLK_LEFT)
-    addDirection(Direction::WEST);
+  if(getTarget() == nullptr)
+  {
+    if(event.keysym.sym == SDLK_DOWN)
+      addDirection(Direction::SOUTH);
+    else if(event.keysym.sym == SDLK_UP)
+      addDirection(Direction::NORTH);
+    else if(event.keysym.sym == SDLK_RIGHT)
+      addDirection(Direction::EAST);
+    else if(event.keysym.sym == SDLK_LEFT)
+      addDirection(Direction::WEST);
+  }
 }
 
 /*

@@ -857,6 +857,7 @@ void Game::pollEvents()
         MapThing* source;
         if(event_handler.pollStartBattle(&person, &source))
         {
+          //map_ctrl.initBattle(person, source);
           /* Try and find parties and start battle */
           if(person != nullptr && source != nullptr)
           {

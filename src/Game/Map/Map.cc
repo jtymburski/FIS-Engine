@@ -44,6 +44,9 @@ Map::Map(Options* running_config, EventHandler* event_handler)
 {
   /* Set initial variables */
   base_path = "";
+  battle_person = nullptr;
+  battle_thing = nullptr;
+  battle_trigger = false;
   this->event_handler = NULL;
   fade_alpha = 255;
   fade_status = BLACK;
@@ -786,7 +789,8 @@ bool Map::initiateNPCInteraction()
           uint16_t y = starting_y + j;
 
           /* Check left */
-          if(found_npc == nullptr && x > 0)
+          if(found_npc == nullptr && x > 0 &&
+             sub_map[map_index].tiles[x-1][y] != nullptr)
           {
             MapPerson* npc = sub_map[map_index].tiles[x-1][y]->getPersonMain(0);
             if(npc != nullptr && npc->isForcedInteraction() &&
@@ -797,7 +801,8 @@ bool Map::initiateNPCInteraction()
           }
 
           /* Check top */
-          if(found_npc == nullptr && y > 0)
+          if(found_npc == nullptr && y > 0 &&
+             sub_map[map_index].tiles[x][y-1] != nullptr)
           {
             MapPerson* npc = sub_map[map_index].tiles[x][y-1]->getPersonMain(0);
             if(npc != nullptr && npc->isForcedInteraction() &&
@@ -809,7 +814,8 @@ bool Map::initiateNPCInteraction()
 
           /* Check right */
           if(found_npc == nullptr &&
-             (x + 1) < (int)sub_map[map_index].tiles.size())
+             (x + 1) < (int)sub_map[map_index].tiles.size() &&
+             sub_map[map_index].tiles[x+1][y] != nullptr)
           {
             MapPerson* npc = sub_map[map_index].tiles[x+1][y]->getPersonMain(0);
             if(npc != nullptr && npc->isForcedInteraction() &&
@@ -821,7 +827,8 @@ bool Map::initiateNPCInteraction()
 
           /* Check bottom */
           if(found_npc == nullptr &&
-             (y + 1) < (int)sub_map[map_index].tiles[x].size())
+             (y + 1) < (int)sub_map[map_index].tiles[x].size() &&
+             sub_map[map_index].tiles[x][y+1] != nullptr)
           {
             MapPerson* npc = sub_map[map_index].tiles[x][y+1]->getPersonMain(0);
             if(npc != nullptr && npc->isForcedInteraction() &&
@@ -1172,10 +1179,6 @@ bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
 bool Map::triggerViewTile(Tile* view_tile, uint16_t view_section,
                           UnlockView view_mode, int view_time)
 {
-  std::cout << "INIT DATA: " << view_tile->getX() << "," << view_tile->getY()
-            << "," << view_section << ","
-            << (int)view_mode << "," << view_time << std::endl;
-
   /* Parse and check view data */
   bool view, scroll;
   EventSet::dataEnumView(view_mode, view, scroll);
@@ -1462,22 +1465,48 @@ void Map::enableView(bool enable)
   }
 }
 
-// MapPerson* Map::getPlayer()
-// {
-  // return player;
-// }
+/* Returns the battle information */
+int Map::getBattlePersonID()
+{
+  if(battle_person != nullptr)
+    return battle_person->getGameID();
+  return -1;
+}
 
-// /* Returns the map viewport, for scrolling through the scene */
-// MapViewport* Map::getViewport()
-// {
-  // return viewport;
-// }
+/* Returns the battle information */
+int Map::getBattleThingID()
+{
+  if(battle_thing != nullptr)
+    return battle_thing->getGameID();
+  return -1;
+}
 
-// void Map::initialization()
-// {
-  // player->setFocus();
-// }
+/* Initiates a battle, within the map */
+bool Map::initBattle(MapPerson* person, MapThing* source)
+{
+  if(!battle_trigger && person != nullptr && source != nullptr)
+  {
+    battle_trigger = true;
+    battle_person = person;
+    battle_thing = source;
+    
+    /* Flush person keys */
+    person->keyFlush();
+    
+    /* Set the targets */
+    person->setTarget(source);
+    source->setTarget(person);
+    
+    /* Clear running status */
+    if(system_options != nullptr && !system_options->isAutoRun())
+      person->setRunning(false);
 
+    return true;
+  }
+  return false;
+}
+
+/* Initiates a conversation, within the map */
 bool Map::initConversation(Conversation* convo, MapThing* source)
 {
   if(player != NULL && player->getTarget() == NULL
@@ -1505,11 +1534,13 @@ bool Map::initConversation(Conversation* convo, MapThing* source)
   return false;
 }
 
+/* Initiates a notification, within the map (either string or image based) */
 bool Map::initNotification(std::string notification)
 {
   return map_dialog.initNotification(notification);
 }
 
+/* Initiates a notification, within the map (either string or image based) */
 bool Map::initNotification(Frame* image, int count)
 {
   return map_dialog.initPickup(image, count);
@@ -1533,13 +1564,14 @@ bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
 
   return true;
 }
-
-// /* Checks whether the viewport contains any tiles with the given sector */
-// bool Map::isInSector(int index)
-// {
-  // (void)index;//warning
-  // return true;
-// }
+  
+/* Returns if the map is ready for battle */
+bool Map::isBattleReady()
+{
+  return (battle_trigger && 
+          battle_person != nullptr && !battle_person->isMoving() && 
+          battle_thing != nullptr && !battle_thing->isMoving());
+}
 
 /* Returns if the map has been currently loaded with data */
 bool Map::isLoaded()
@@ -1744,7 +1776,9 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
           viewport.lockOn(getPerson(10000));
       }
       else
+      {
         player->keyDownEvent(event);
+      }
     }
   }
 
@@ -2480,10 +2514,12 @@ bool Map::update(int cycle_time)
   if(player != nullptr)
   {
     /* Initiate NPC interaction in cases where the interaction is forced */
-    initiateNPCInteraction();
+    if(mode_curr == NORMAL && mode_next == NONE)
+      initiateNPCInteraction();
 
     /* Clearing dialog info if target is set */
-    if(player->getTarget() != nullptr && !map_dialog.isConversationActive() &&
+    if(player->getTarget() != nullptr && !battle_trigger && 
+       !map_dialog.isConversationActive() &&
        !map_dialog.isConversationReady() && !map_dialog.isConversationWaiting())
     {
       player->getTarget()->clearTarget();

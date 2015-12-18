@@ -82,6 +82,11 @@ private:
   /* The base system path to the resources */
   std::string base_path;
 
+  /* Battling things/information */
+  MapPerson* battle_person;
+  MapThing* battle_thing;
+  bool battle_trigger;
+
   /* A reference blank event for setting events in the game */
   EventHandler* event_handler;
 
@@ -272,14 +277,12 @@ public:
   /* Enable view trigger */
   void enableView(bool enable);
 
-  // /* Returns the map person, for access */
-  // MapPerson* getPlayer();
-
-  // /* Returns the map viewport, for displaying the scene to the screen */
-  // MapViewport* getViewport();
-
-  // /* Initial call when map is displayed */
-  // void initialization();
+  /* Returns the battle information */
+  int getBattlePersonID();
+  int getBattleThingID();
+  
+  /* Initiates a battle, within the map */
+  bool initBattle(MapPerson* person, MapThing* source);
 
   /* Initiates a conversation, within the map. */
   bool initConversation(Conversation* convo, MapThing* source);
@@ -294,8 +297,8 @@ public:
                  std::vector<int32_t> cost_modifiers,
                  std::string name = "", bool show_empty = false);
 
-  // /* Checks whether the viewport contains any tiles with the given sector */
-  // bool isInSector(int index);
+  /* Returns if the map is ready for battle */
+  bool isBattleReady();
 
   /* Returns if the map has been currently loaded with data */
   bool isLoaded();
