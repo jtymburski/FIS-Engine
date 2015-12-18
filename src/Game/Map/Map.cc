@@ -761,8 +761,75 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
   return false;
 }
 
+/* Initiates a check for NPC if a forced interaction will occur */
+bool Map::initiateNPCInteraction(MapPerson* player, MapNPC* npc, int cycle_time)
+{
+  /* Pre-checks */
+  if(player != nullptr && npc != nullptr &&
+     player->getMapSection() == npc->getMapSection() &&
+     player->getTarget() == nullptr && npc->isAlmostOnTile(cycle_time))
+  {
+    /* Directional locator */
+    bool finished = false;
+    std::vector<std::vector<Tile*>> tile_set = npc->getTileRender(0);
+    int16_t starting_x = npc->getTileX();
+    int16_t starting_y = npc->getTileY();
+
+    /* Parse tiles */
+    for(uint16_t i = 0; !finished && i < tile_set.size(); i++)
+    {
+      for(uint16_t j = 0; !finished && j < tile_set[i].size(); j++)
+      {
+        /* Only proceed if tile is valid on a render depth of 0 */
+        if(tile_set[i][j] != nullptr)
+        {
+          /* Base index */
+          uint16_t x = starting_x + i;
+          uint16_t y = starting_y + j;
+
+          /* Check left */
+          if(!finished && x > 0 && 
+             sub_map[map_index].tiles[x-1][y]->getPersonMain(0) == player)
+          {
+            finished = true;
+          }
+
+          /* Check top */
+          if(!finished && y > 0 &&
+             sub_map[map_index].tiles[x][y-1]->getPersonMain(0) == player)
+          {
+            finished = true;
+          }
+
+          /* Check right */
+          if(!finished && (x + 1) < (int)sub_map[map_index].tiles.size() &&
+             sub_map[map_index].tiles[x+1][y]->getPersonMain(0) == player)
+          {
+            finished = true;
+          }
+
+          /* Check bottom */
+          if(!finished && (y + 1) < (int)sub_map[map_index].tiles[x].size() &&
+             sub_map[map_index].tiles[x][y+1]->getPersonMain(0) == player)
+          {
+            finished = true;
+          }
+        }
+      }
+    }
+
+    /* If found, trigger */
+    if(finished)
+    {
+      npc->interactForced(player);
+    }
+
+    return finished;
+  }
+  return false;
+}
+
 /* Initiates a thing action, based on the action key being hit */
-// TODO: Fix for generic things
 void Map::initiateThingInteraction(MapPerson* initiator)
 {
   // FIND EACH AT 0. IF 0, check direction facing and tile adjacent for
@@ -1881,10 +1948,16 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
     {
       std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
       if(tile_set.size() > 0)
+      {
         persons[i]->setStartingTiles(tile_set,
                                      persons[i]->getStartingSection(), true);
+        if(persons[i]->classDescriptor() == "MapNPC")
+          ((MapNPC*)persons[i])->setPlayer(player);
+      }
       else
+      {
         persons[i]->unsetStates(true);
+      }
     }
     else
     {
@@ -2090,7 +2163,8 @@ bool Map::render(SDL_Renderer* renderer)
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
     {
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
-      {
+      {  /* Returns if there is any form of tracking */
+  bool isTracking();
         sub_map[map_index].tiles[i][j]->renderUpper(renderer,
                                                     x_offset, y_offset);
       }
@@ -2415,8 +2489,12 @@ bool Map::update(int cycle_time)
        persons[i]->isTilesSet())
     {
       if(persons[i]->isMoving() || persons[i]->isMoveRequested())
+      {
         tile_set = getTileMatrix(persons[i],
                                  persons[i]->getPredictedMoveRequest());
+        if(persons[i]->isForcedInteraction())
+          initiateNPCInteraction(player, (MapNPC*)persons[i], cycle_time);
+      }
 
       /* Proceed to update the person */
       persons[i]->update(cycle_time, tile_set);

@@ -126,8 +126,7 @@ protected:
   Tile* getTileMain(uint32_t x, uint32_t y);
   Tile* getTilePrevious(uint32_t x, uint32_t y);
 
-  /* Is the thing almost centered on a tile (less than 1 pulse away) */
-  bool isAlmostOnTile(int cycle_time);
+
 
   /* Is move allowed, based on main tile and the next tile */
   bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
@@ -239,7 +238,7 @@ public:
 
   /* Get the specific details of the movement information */
   Direction getMovement();
-  bool getMovementPaused();
+  virtual bool getMovementPaused();
   virtual Direction getMoveRequest();
 
   /* Returns the move X/Y, as a float 0 to 1 with respect to width/height */
@@ -290,6 +289,9 @@ public:
 
   /* Starts interaction (conversation, giving something, etc) */
   virtual bool interact(MapPerson* initiator);
+
+  /* Is the thing almost centered on a tile (less than 1 pulse away) */
+  bool isAlmostOnTile(int cycle_time);
 
   /* Returns if there is a move request for the given thing */
   virtual bool isMoveRequested();

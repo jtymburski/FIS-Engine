@@ -9,6 +9,8 @@
 #include "Game/Map/MapNPC.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint16_t MapNPC::kFORCED_FREEZE = 5000;
+const uint16_t MapNPC::kFORCED_NOTRIGGER = 30000;
 const uint16_t MapNPC::kMAX_DELAY = 2000;
 const uint16_t MapNPC::kMAX_RANGE = 10;
 
@@ -27,7 +29,7 @@ MapNPC::MapNPC() : MapPerson()
 }
 
 /*
- * Description: Constructor for this class. Takes basic data to start with a 
+ * Description: Constructor for this class. Takes basic data to start with a
  *              basic version of the NPC.
  *
  * Inputs: int id - the ID of the NPC
@@ -68,7 +70,7 @@ void MapNPC::appendEmptyNode()
   new_node->xy_flip = false;
   new_node->previous = NULL;
   new_node->next = NULL;
-  
+
   /* Append the node to the end of the list */
   if(!insertNode(getPathLength(), new_node))
     delete new_node;
@@ -117,7 +119,7 @@ Path* MapNPC::getNode(uint16_t index)
 {
   bool failed = false;
   Path* returned_node = NULL;
- 
+
   if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
   {
     returned_node = static_cast<MapNPC*>(base)->getNode(index);
@@ -142,7 +144,7 @@ Path* MapNPC::getNode(uint16_t index)
     returned_node = NULL;
   return returned_node;
 }
-  
+
 /*
  * Description: Initializes the class. Only called on initial construction.
  *
@@ -153,15 +155,18 @@ void MapNPC::initializeClass()
 {
   /* Clear the path pointers */
   forced_interaction = false;
+  forced_recent = false;
+  forced_time = 0;
   moving_forward = true;
   node_current = &node_start;
   node_head = NULL;
   node_state = LOOPED;
   nodes_delete = true;
   npc_delay = 0;
+  player = nullptr;
   starting = true;
-  tracking_state = NOTRACK;
-  
+  track_state = NOTRACK;
+
   /* Set the path random node to blank state */
   node_random.x = 0;
   node_random.y = 0;
@@ -200,7 +205,7 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
       node_head = NULL;
       nodes_delete = true;
     }
-  
+
     /* If the head is 0 and the index is 0, drop it in the first slot */
     if(node_head == NULL && index == 0)
     {
@@ -209,7 +214,7 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
       node_head = node;
       success = true;
     }
-    /* If it's at the end of the 
+    /* If it's at the end of the
      * Otherwise, drop it behind the first, if the index is in range */
     else if(index <= getPathLength())
     {
@@ -219,18 +224,18 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
       /* Loop through to find the insertion point */
       for(uint16_t i = 0; i < index; i++)
         temp_node = temp_node->next;
-      
+
       /* Re-reference the double linked list pointers */
       temp_node->previous->next = node;
       node->previous = temp_node->previous;
       temp_node->previous = node;
       node->next = temp_node;
-      
+
       /* If the index is at 0, reset the head */
       if(index == 0)
         node_head = node;
     }
-    
+
     /* If successful, reset the current node ptr of the class */
     if(success)
     {
@@ -260,24 +265,24 @@ void MapNPC::randomizeNode()
     node_random.x += delta_x;
   else
     node_random.x = 0;
-  
+
   /* Y calc */
   int delta_y = Helpers::randU(-kMAX_RANGE, kMAX_RANGE);
   if(delta_y + node_random.y >= 0)
     node_random.y += delta_y;
   else
     node_random.y = 0;
-  
+
   /* Delay calc */
   int delay = Helpers::randU(0, kMAX_DELAY); // -kMAX_DELAY, kMAX_DELAY);
   if(delay > 0)
     node_random.delay = delay;
   else
     node_random.delay = 0;
-  
+
   /* Flip calc */
   node_random.xy_flip = Helpers::flipCoin();
-  
+
   /* Validate range if it's a randomrange move */
   if(node_state == RANDOMRANGE)
   {
@@ -286,7 +291,7 @@ void MapNPC::randomizeNode()
     int y1 = node_head->y;
     int x2 = node_head->next->x;
     int y2 = node_head->next->y;
-    
+
     /* Order properly */
     if(x1 > x2)
     {
@@ -300,7 +305,7 @@ void MapNPC::randomizeNode()
       y1 = y2;
       y2 = temp_y;
     }
-    
+
     /* Ensure within range */
     if(node_random.x < x1)
       node_random.x = x1;
@@ -331,14 +336,14 @@ void MapNPC::randomizeNode()
  *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
-bool MapNPC::addThingInformation(XmlData data, int file_index, 
-                                 int section_index, SDL_Renderer* renderer, 
+bool MapNPC::addThingInformation(XmlData data, int file_index,
+                                 int section_index, SDL_Renderer* renderer,
                                  std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
   bool success = true;
-  
+
   /* Parse the identifier for setting the person information */
   /*--------------------- NODESTATE --------------------*/
   if(identifier == "nodestate" && elements.size() == 1)
@@ -365,14 +370,14 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   {
     uint16_t index = std::stoul(data.getKeyValue(file_index));
     uint16_t length = getPathLength();
-    
+
     /* Increase the length if necessary to allow for the new node */
     while(index >= length)
     {
       appendEmptyNode();
       length++;
     }
-    
+
     /* Get the node and work with it, if relevant */
     Path* node = getNode(index);
     if(node != NULL)
@@ -450,10 +455,10 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   }
   else
   {
-    success &= MapPerson::addThingInformation(data, file_index, section_index, 
-                                              renderer, base_path); 
+    success &= MapPerson::addThingInformation(data, file_index, section_index,
+                                              renderer, base_path);
   }
-  
+
   return success;
 }
 
@@ -470,9 +475,9 @@ std::string MapNPC::classDescriptor()
   return "MapNPC";
 }
 
-/* 
+/*
  * Description: Clears out all information stored in the class
- * 
+ *
  * Inputs: none
  * Output: none
  */
@@ -485,9 +490,134 @@ void MapNPC::clear()
 
   /* Clear out other variables */
   npc_delay = 0;
+  player = nullptr;
 
   /* Clear out parent */
   MapPerson::clear();
+}
+  
+/*
+ * Description: Gets if the movement is paused. This calls on parent MapThing
+ *              for paused information in addition to forced recent freeze
+ *              holds triggered by NPC.
+ *
+ * Inputs: none
+ * Output: bool - true if the movement is paused
+ */
+bool MapNPC::getMovementPaused()
+{
+  return MapThing::getMovementPaused() || 
+         (forced_recent && forced_time < kFORCED_FREEZE);
+}
+
+/*
+ * Description: Returns the current node state, which is an Enum.
+ *
+ * Inputs: none
+ * Output: MapNPC::NodeState - a node state enum
+ */
+MapNPC::NodeState MapNPC::getNodeState()
+{
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
+    return static_cast<MapNPC*>(base)->node_state;
+  return node_state;
+}
+
+/*
+ * Description: Returns the number of nodes in the node sequence of the NPC.
+ *
+ * Inputs: none
+ * Output: uint16_t - the number of nodes from HEAD to TAIL
+ */
+uint16_t MapNPC::getPathLength()
+{
+  uint16_t size = 1;
+  Path* temp_node = node_head;
+
+  /* Check if base is used or not */
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
+  {
+    size = static_cast<MapNPC*>(base)->getPathLength();
+  }
+  else
+  {
+    if(node_head == NULL)
+      size = 0;
+    else
+    {
+      while(temp_node->next != node_head)
+      {
+        temp_node = temp_node->next;
+        size++;
+      }
+    }
+  }
+
+  return size;
+}
+
+/*
+ * Description: Returns the player reference. NULL if not set
+ *
+ * Inputs: none
+ * Output: MapPerson* - the person reference pointer
+ */
+MapPerson* MapNPC::getPlayer()
+{
+  return player;
+}
+
+/*
+ * Description: Returns the predicted move request for the class, based on the
+ *              next node in the sequence.
+ *
+ * Inputs: none
+ * Output: Direction - the direction the NPC will be pointing
+ */
+Direction MapNPC::getPredictedMoveRequest()
+{
+  if(isTilesSet() && node_current != NULL)
+  {
+    int delta_x = node_current->x - tile_main.front().front()->getX();
+    int delta_y = node_current->y - tile_main.front().front()->getY();
+    Direction direction = Direction::DIRECTIONLESS;
+    bool xy_flip = getXYFlip();
+
+    /* If the npc needs to move on the X plane */
+    if(delta_x != 0 && (!xy_flip || (xy_flip && delta_y == 0)))
+    {
+      if(delta_x < 0)
+        direction = Direction::WEST;
+      else
+        direction = Direction::EAST;
+    }
+    /* Else if the npc needs to move on the Y plane */
+    else if(delta_y != 0)
+    {
+      if(delta_y < 0)
+        direction = Direction::NORTH;
+      else
+        direction = Direction::SOUTH;
+    }
+
+    return direction;
+  }
+
+  return getMoveRequest();
+}
+
+/*
+ * Description: Returns the tracking state. This defines how the NPC reacts to
+ *              the player as it nears the NPC.
+ *
+ * Inputs: none
+ * Output: MapNPC::TrackingState - the tracking state enum
+ */
+MapNPC::TrackingState MapNPC::getTrackingState()
+{
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
+    return static_cast<MapNPC*>(base)->track_state;
+  return track_state;
 }
 
 /*
@@ -536,102 +666,22 @@ bool MapNPC::insertNodeAtTail(uint16_t x, uint16_t y, uint16_t delay)
 }
 
 /*
- * Description: Returns the current node state, which is an Enum.
+ * Description: This is the call map will make when a forced interaction is
+ *              triggered after it is determined the 'initiator' is nearby.
+ *              Also sets some hold delays for when the NPC will trigger again
  *
- * Inputs: none
- * Output: MapNPC::NodeState - a node state enum
+ * Inputs: MapPerson* initiator - the event initiator, typically the player
+ * Output: bool - true if an event was triggered
  */
-MapNPC::NodeState MapNPC::getNodeState()
+bool MapNPC::interactForced(MapPerson* initiator)
 {
-  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
-    return static_cast<MapNPC*>(base)->node_state;
-  return node_state;
-}
-
-/*
- * Description: Returns the number of nodes in the node sequence of the NPC.
- *
- * Inputs: none
- * Output: uint16_t - the number of nodes from HEAD to TAIL
- */
-uint16_t MapNPC::getPathLength()
-{
-  uint16_t size = 1;
-  Path* temp_node = node_head;
- 
-  /* Check if base is used or not */
-  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
+  if(!forced_recent && interact(initiator))
   {
-    size = static_cast<MapNPC*>(base)->getPathLength();
+    forced_recent = true;
+    forced_time = 0;
+    return true;
   }
-  else
-  {
-    if(node_head == NULL)
-      size = 0;
-    else
-    {
-      while(temp_node->next != node_head)
-      {
-        temp_node = temp_node->next;
-        size++;
-      }
-    }
-  }
-  
-  return size;
-}
-
-/*
- * Description: Returns the predicted move request for the class, based on the
- *              next node in the sequence.
- *
- * Inputs: none
- * Output: Direction - the direction the NPC will be pointing
- */
-Direction MapNPC::getPredictedMoveRequest()
-{
-  if(isTilesSet() && node_current != NULL)
-  {
-    int delta_x = node_current->x - tile_main.front().front()->getX();
-    int delta_y = node_current->y - tile_main.front().front()->getY();
-    Direction direction = Direction::DIRECTIONLESS;
-    bool xy_flip = getXYFlip();
-
-    /* If the npc needs to move on the X plane */
-    if(delta_x != 0 && (!xy_flip || (xy_flip && delta_y == 0)))
-    {
-      if(delta_x < 0)
-        direction = Direction::WEST;
-      else
-        direction = Direction::EAST;
-    }
-    /* Else if the npc needs to move on the Y plane */
-    else if(delta_y != 0)
-    {
-      if(delta_y < 0)
-        direction = Direction::NORTH;
-      else
-        direction = Direction::SOUTH;
-    }
-    
-    return direction;
-  }
-  
-  return getMoveRequest();
-}
-
-/*
- * Description: Returns the tracking state. This defines how the NPC reacts to
- *              the player as it nears the NPC.
- *
- * Inputs: none
- * Output: MapNPC::TrackingState - the tracking state enum
- */
-MapNPC::TrackingState MapNPC::getTrackingState()
-{
-  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
-    return static_cast<MapNPC*>(base)->tracking_state;
-  return tracking_state;
+  return false;
 }
 
 /*
@@ -644,8 +694,19 @@ MapNPC::TrackingState MapNPC::getTrackingState()
 bool MapNPC::isForcedInteraction()
 {
   if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
-    return static_cast<MapNPC*>(base)->forced_interaction;
-  return forced_interaction;
+    return (static_cast<MapNPC*>(base)->forced_interaction && !forced_recent);
+  return (forced_interaction && !forced_recent);
+}
+
+/*
+ * Description: Returns if there is any tracking within the NPC.
+ *
+ * Inputs: none
+ * Output: bool - true if any tracking is set
+ */
+bool MapNPC::isTracking()
+{
+  return (getTrackingState() != MapNPC::NOTRACK);
 }
 
 /*
@@ -707,7 +768,7 @@ bool MapNPC::removeNode(uint16_t index)
       success = true;
     }
   }
-  
+
   /* Finish by deleting the pointer */
   if(success)
     delete temp_node;
@@ -794,13 +855,13 @@ void MapNPC::setForcedInteraction(bool forced)
 void MapNPC::setNodeState(NodeState state)
 {
   node_state = state;
-  
+
   /* Set starting moving direction */
   if(state == BACKANDFORTH)
     moving_forward = true;
-  
+
   /* Fix the current node state */
-//  if(node_state == NodeState::LOOPED || 
+//  if(node_state == NodeState::LOOPED ||
 //     node_state == NodeState::BACKANDFORTH)
 //  {
 //    node_current = node_head;
@@ -813,7 +874,19 @@ void MapNPC::setNodeState(NodeState state)
 }
 
 /*
- * Description: Sets the starting location which needs the map section id and 
+ * Description: Sets the reference player. The reference player is used for
+ *              tracking and event forced triggering by the NPC object
+ *
+ * Inputs: MapPerson* player - the new player reference. NULL to unset
+ * Output: none
+ */
+void MapNPC::setPlayer(MapPerson* player)
+{
+  this->player = player;
+}
+
+/*
+ * Description: Sets the starting location which needs the map section id and
  *              an x and y coordinate. Virtually called before sending to thing
  *              to set the random starting location.
  *
@@ -843,7 +916,7 @@ void MapNPC::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
  */
 void MapNPC::setTrackingState(TrackingState state)
 {
-  tracking_state = state;
+  track_state = state;
 }
 
 /*
@@ -852,9 +925,9 @@ void MapNPC::setTrackingState(TrackingState state)
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none 
+ * Output: none
  */
-// TODO: Add forced interaction, tracking state
+// TODO: Add forced interaction, tracking state - working
 void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   /* Begin the check to handle each time the NPC is on a tile */
@@ -868,7 +941,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       if(!isMoving())
       {
         /* If reached node and done movement again, kill starting */
-        if(node_current != &node_start && 
+        if(node_current != &node_start &&
            node_current->x == tile_main.front().front()->getX() &&
            node_current->y == tile_main.front().front()->getY())
         {
@@ -890,7 +963,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
           /* Then updates current node */
           else
           {
-            if(node_state == LOOPED || node_state == BACKANDFORTH || 
+            if(node_state == LOOPED || node_state == BACKANDFORTH ||
                node_state == RANDOMRANGE)
             {
               node_current = node_head;
@@ -914,7 +987,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     else
     {
       /* On tile if not moving so handle pauses or shifts */
-      if(!isMoving() && (direction == Direction::DIRECTIONLESS || 
+      if(!isMoving() && (direction == Direction::DIRECTIONLESS ||
          node_state == RANDOM || node_state == RANDOMRANGE))
       {
         if(node_current->delay > npc_delay)
@@ -934,14 +1007,14 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
               moving_forward = false;
             else if(!moving_forward && node_current == node_head)
               moving_forward = true;
-          
+
             /* Move in the new / old direction */
             if(moving_forward)
               node_current = node_current->next;
             else
               node_current = node_current->previous;
           }
-          else if(node_state == RANDOM || 
+          else if(node_state == RANDOM ||
                   (node_state == RANDOMRANGE && node_head != NULL))
           {
             /* If direction is not directionless, reset random tile location */
@@ -950,9 +1023,11 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
               node_random.x = tile_main.front().front()->getX();
               node_random.y = tile_main.front().front()->getY();
             }
-          
+
             /* Randomize a new location */
-            randomizeNode();
+            //randomizeNode();
+            node_random.x = player->getTileX();
+            node_random.y = player->getTileY();
           }
           npc_delay = 0;
         }
@@ -971,6 +1046,14 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     }
   }
 
+  /* Checks on the forced interaction delays and holds */
+  if(forced_recent && getTarget() == nullptr)
+  {
+    forced_time += cycle_time;
+    if(forced_time > kFORCED_NOTRIGGER)
+      forced_recent = false;
+  }
+
   MapPerson::update(cycle_time, tile_set);
 }
 
@@ -987,7 +1070,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 std::string MapNPC::getNodeString(NodeState state)
 {
   std::string node = "";
-  
+
   if(state == LOOPED)
     node = "looped";
   else if(state == BACKANDFORTH)
@@ -998,7 +1081,7 @@ std::string MapNPC::getNodeString(NodeState state)
     node = "random";
   else if(state == LOCKED)
     node = "locked";
-  
+
   return node;
 }
 
@@ -1011,7 +1094,7 @@ std::string MapNPC::getNodeString(NodeState state)
 std::string MapNPC::getTrackingString(TrackingState state)
 {
   std::string node = "";
-  
+
   if(state == NOTRACK)
     node = "none";
   else if(state == TOPLAYER)

@@ -76,7 +76,7 @@ private:
 
   /* Initializes the states stack to an empty set */
   void initializeStates();
-
+  
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -156,7 +156,10 @@ public:
 
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
-
+  
+  /* Returns if the NPC will force interaction - always false for player */
+  virtual bool isForcedInteraction();
+  
   /* Determines if there is an active move request (virtual reimplemented) */
   bool isMoveRequested();
 

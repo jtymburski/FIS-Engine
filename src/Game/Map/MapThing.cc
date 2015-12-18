@@ -275,29 +275,6 @@ Tile* MapThing::getTilePrevious(uint32_t x, uint32_t y)
 }
 
 /*
- * Description: Is the thing almost on the tile (less than 1 pulse away).
- *              This is used to check movement limits to allow the update
- *              cycle to know when passability needs to be checked or when
- *              to stop the man from moving.
- *
- * Inputs: int cycle_time - time since the last update call (ms)
- * Output: bool - is the thing almost on the tile?
- */
-bool MapThing::isAlmostOnTile(int cycle_time)
-{
-  if(x > 0.0)
-  {
-    return (moveAmount(cycle_time) > (1.0 - x));
-  }
-  else if(y > 0.0)
-  {
-    return (moveAmount(cycle_time) > (1.0 - y));
-  }
-
-  return false;
-}
-
-/*
  * Description: Checks if a move is allowed from the current thing main
  *              tile and the next tile that it is trying to move to. Utilizes
  *              the move request inside the thing class to determine where to
@@ -1624,6 +1601,29 @@ bool MapThing::interact(MapPerson* initiator)
   {
     event_handler->executeEventSet(getEventSet(), initiator, this);
     return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Is the thing almost on the tile (less than 1 pulse away).
+ *              This is used to check movement limits to allow the update
+ *              cycle to know when passability needs to be checked or when
+ *              to stop the man from moving.
+ *
+ * Inputs: int cycle_time - time since the last update call (ms)
+ * Output: bool - is the thing almost on the tile?
+ */
+bool MapThing::isAlmostOnTile(int cycle_time)
+{
+  if(x > 0.0)
+  {
+    return (moveAmount(cycle_time) > (1.0 - x));
+  }
+  else if(y > 0.0)
+  {
+    return (moveAmount(cycle_time) > (1.0 - y));
   }
 
   return false;

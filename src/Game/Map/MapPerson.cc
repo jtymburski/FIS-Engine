@@ -181,7 +181,7 @@ void MapPerson::initializeStates()
   /* Set the initial frames in the thing */
   setMatrix(getState(surface, direction));
 }
-
+  
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -765,6 +765,18 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
 {
   return surface;
 }
+  
+/*
+ * Description: Returns if the NPC will force interaction - always false when
+ *              called on parent MapPerson class.
+ *
+ * Inputs: none
+ * Output: bool - true if the interaction is set to be forced
+ */
+bool MapPerson::isForcedInteraction()
+{
+  return false;
+}
 
 /*
  * Description: Reimplemented is move request call from map thing. This
@@ -1014,9 +1026,9 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     /* If moving and almost on tile, finish move and check what to do next */
     if(!isMoving() || (almost_there = isAlmostOnTile(cycle_time)))
     {
+      /* Finish tile move */
       if(almost_there)
         tileMoveFinish(getID() != kPLAYER_ID);
-
       if(getMovementPaused())
       {
         if(getTarget() != NULL)
