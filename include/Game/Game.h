@@ -152,7 +152,7 @@ private:
   void eventPickupItem(MapItem* item, bool walkover);
 
   /* Starts a battle event. Using the given information */
-  void eventStartBattle(int person_id, int source_id);
+  bool eventStartBattle(int person_id, int source_id);
 
   /* Switch maps event. - utilizing a map ID */
   void eventSwitchMap(int map_id);

@@ -274,6 +274,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Battle won trigger for map */
+  void battleWon();
+  
   /* Enable view trigger */
   void enableView(bool enable);
 

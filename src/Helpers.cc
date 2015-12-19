@@ -1280,9 +1280,18 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t& min,
 
   for(uint32_t i = 1; i <= iter; i++)
   {
-    auto old_exp = round(a * exp(b * (i - 1)));
-    auto new_exp = round(a * exp(b * i));
-    table.push_back(new_exp - old_exp);
+    /* Corner case if min and max are equivalent */
+    if(min == max)
+    {
+      table.push_back(min);
+    }
+    /* All other cases */
+    else
+    {
+      auto old_exp = round(a * exp(b * (i - 1)));
+      auto new_exp = round(a * exp(b * i));
+      table.push_back(new_exp - old_exp);
+    }
   }
 
   return table;

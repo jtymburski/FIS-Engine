@@ -367,9 +367,9 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 }
 
 /* Starts a battle event. Using the given information */
-void Game::eventStartBattle(int person_id, int source_id)
+bool Game::eventStartBattle(int person_id, int source_id)
 {
-  if(person_id >= 0 && source_id >= 0 && mode == MAP)
+  if(person_id >= 0 && source_id >= 0 && mode == BATTLE)//MAP && mode_next == NONE)
   {
     if(battle_ctrl)
     {
@@ -387,9 +387,11 @@ void Game::eventStartBattle(int person_id, int source_id)
 
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
 
-      changeMode(BATTLE);
+      //changeMode(BATTLE);
+      return true;
     }
   }
+  return false;
 }
 
 /* Switch maps event. - utilizing a map ID */
@@ -857,11 +859,10 @@ void Game::pollEvents()
         MapThing* source;
         if(event_handler.pollStartBattle(&person, &source))
         {
-          //map_ctrl.initBattle(person, source);
-          /* Try and find parties and start battle */
-          if(person != nullptr && source != nullptr)
+          if(person != nullptr && getParty(Party::kID_SLEUTH) != nullptr &&
+             source != nullptr && getParty(source->getGameID()) != nullptr)
           {
-            eventStartBattle(Party::kID_SLEUTH, source->getGameID());
+            map_ctrl.initBattle(person, source);
           }
         }
       }
@@ -1047,7 +1048,6 @@ void Game::removeSkillSets()
 void Game::updateMode(int cycle_time)
 {
   (void)cycle_time;
-
   if(mode_next != NONE)
   {
     if(mode == MAP)
@@ -1055,6 +1055,10 @@ void Game::updateMode(int cycle_time)
       if(map_ctrl.isModeDisabled())
       {
         mode = mode_next;
+        if(mode_next == BATTLE)
+        {
+          eventStartBattle(Party::kID_SLEUTH, map_ctrl.getBattleThingID());
+        }
         mode_next = NONE;
       }
     }
@@ -1578,10 +1582,13 @@ bool Game::update(int32_t cycle_time)
 
   /* Mode next handling */
   updateMode(cycle_time);
-
+  
   /* MAP MODE */
   if(mode == MAP)
   {
+    if(map_ctrl.isBattleReady())
+      changeMode(BATTLE);
+    //eventStartBattle(Party::kID_SLEUTH, map_ctrl.getBattleThingID());
     return map_ctrl.update(cycle_time);
   }
   /* BATTLE MODE */
@@ -1590,6 +1597,10 @@ bool Game::update(int32_t cycle_time)
     if(battle_ctrl->getTurnState() == TurnState::FINISHED)
     {
       battle_ctrl->stopBattle();
+      
+      // TODO: Clarify based on if battle is actually won and either destruct
+      // or return to map
+      map_ctrl.battleWon();
     }
     else if(battle_ctrl->getTurnState() == TurnState::STOPPED)
     {

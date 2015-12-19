@@ -1052,8 +1052,12 @@ bool Map::setSectionIndex(uint16_t index)
 /* Changes the map section index - what is displayed - called from mode */
 bool Map::setSectionIndexMode(int index_next)
 {
+  bool real_move = false;
   if(index_next < 0)
+  {
     index_next = map_index_next;
+    real_move = true;
+  }
   if(index_next >= 0 && index_next < 256)
   {
     uint8_t index = static_cast<uint8_t>(index_next);
@@ -1068,7 +1072,7 @@ bool Map::setSectionIndexMode(int index_next)
                           map_index);
 
       /* Update sound and dialog now that index is fresh */
-      if(index_next < 0)
+      if(real_move)
       {
         audioUpdate(true);
         map_dialog.clearAll();
@@ -1445,6 +1449,14 @@ void Map::updateTileSize()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+  
+/* Battle won trigger for map */
+void Map::battleWon()
+{
+  // TODO: Clean up target source based on battle properties
+  
+  battle_trigger = false;
+}
 
 /* Enable view trigger */
 void Map::enableView(bool enable)

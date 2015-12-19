@@ -453,7 +453,7 @@ bool MapThing::setMatrix(SpriteMatrix* matrix)
   if(matrix != NULL)
   {
     sprite_set = matrix;
-
+    
     /* Set up the base control variable */
     if(base_control == NULL)
       base_control = new AnimationControl;

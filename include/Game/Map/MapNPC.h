@@ -66,8 +66,10 @@ private:
   /* The nodes for control */
   Path* node_current;
   Path* node_head;
-  Path node_player;
+  Path node_player; // track
+  Path* node_previous; // track
   Path node_random;
+  SDL_Rect node_rect; // track
   Path node_start;
 
   /* The state of movement */
@@ -86,10 +88,10 @@ private:
   bool starting;
 
   /* The state of tracking */
-  int track_dist;
-  int track_dist_max;
+  int track_dist; // track
+  int track_dist_max; // track
   TrackingState track_state;
-  bool tracking;
+  bool tracking; // track
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -112,6 +114,9 @@ private:
 
   /* Takes the path node and randomizes the x, y, delay, and flip */
   void randomizeNode();
+
+  /* update the node bounding rect */
+  void updateBound();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

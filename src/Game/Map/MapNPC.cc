@@ -93,6 +93,10 @@ bool MapNPC::getXYFlip()
   {
     return node_start.xy_flip;
   }
+  else if(tracking)
+  {
+    return false;
+  }
   else
   {
     if(node_state == LOOPED)
@@ -161,14 +165,26 @@ void MapNPC::initializeClass()
   forced_time = 0;
   moving_forward = true;
   node_current = &node_start;
-  node_head = NULL;
+  node_head = nullptr;
+  node_previous = nullptr;
   node_state = LOOPED;
   nodes_delete = true;
   npc_delay = 0;
   player = nullptr;
   starting = true;
+  track_dist = kTRACK_DIST_MIN;
+  track_dist_max = kTRACK_DIST_MAX;
   track_state = NOTRACK;
+  tracking = false;
 
+  /* Set the path player node to blank state */
+  node_player.x = 0;
+  node_player.y = 0;
+  node_player.delay = 0;
+  node_player.xy_flip = false;
+  node_player.previous = nullptr;
+  node_player.next = nullptr;
+  
   /* Set the path random node to blank state */
   node_random.x = 0;
   node_random.y = 0;
@@ -176,6 +192,9 @@ void MapNPC::initializeClass()
   node_random.xy_flip = false;
   node_random.previous = NULL;
   node_random.next = NULL;
+
+  /* Bounding rect init to 0 state */
+  node_rect = {0, 0, 0, 0};
 
   /* Blank out start node */
   node_start.x = 0;
@@ -244,6 +263,7 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
       resetPosition();
       node_current = &node_start;
       npc_delay = 0;
+      updateBound();
     }
   }
 
@@ -320,6 +340,49 @@ void MapNPC::randomizeNode()
   }
 }
 
+/* Update the node bounding rect */
+void MapNPC::updateBound()
+{
+  Path* node_parse = node_head;
+  int x_max = -1;
+  int x_min = -1;
+  int y_max = -1;
+  int y_min = -1;
+  
+  /* Proceed to generate new information */
+  if(node_parse != nullptr)
+  {
+    do
+    {
+      /* Min */
+      if(x_min < 0 || (node_parse->x < x_min))
+        x_min = node_parse->x;
+      if(y_min < 0 || (node_parse->y < y_min))
+        y_min = node_parse->y;
+      
+      /* Max */
+      if(x_max < 0 || (node_parse->x > x_max))
+        x_max = node_parse->x;
+      if(y_max < 0 || (node_parse->y > y_max))
+        y_max = node_parse->y;
+      
+      /* Go to next */
+      node_parse = node_parse->next;
+
+    } while(node_parse != node_head);
+  }
+  
+  /* If data is valid, load it in */
+  if(x_min >= 0 && y_min >= 0 && x_max >= 0 && y_max >= 0)
+  {
+    node_rect = {x_min, y_min, x_max - x_min + 1, y_max - y_min + 1};
+  }
+  else
+  {
+    node_rect = {0, 0, 0, 0};
+  }
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -389,13 +452,19 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
       {
         uint16_t x = data.getDataInteger(&success);
         if(success)
+        {
           node->x = x;
+          updateBound();
+        }
       }
       else if(elements[1] == "y")
       {
         uint16_t y = data.getDataInteger(&success);
         if(success)
+        {
           node->y = y;
+          updateBound();
+        }
       }
       else if(elements[1] == "delay")
       {
@@ -788,6 +857,7 @@ bool MapNPC::removeNode(uint16_t index)
       if(index == 0)
         node_head = temp_node->next;
 
+      updateBound();
       success = true;
     }
   }
@@ -840,6 +910,7 @@ bool MapNPC::setBase(MapThing* base)
         nodes_delete = false;
         node_current = &node_start;
         npc_delay = 0;
+        updateBound();
       }
       success = true;
     }
@@ -1011,9 +1082,65 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     }
     else
     {
+      /* Handle tracking */
+      if(track_state != NOTRACK)
+      {
+        /* Delta X/Y distances */
+        int delta_x = 0;
+        if(player->getTileX() >= getTileX())
+          delta_x = player->getTileX() - getTileX();
+        else
+          delta_x = getTileX() - player->getTileX();
+        int delta_y = 0;
+        if(player->getTileY() >= getTileY())
+          delta_y = player->getTileY() - getTileY();
+        else
+          delta_y = getTileY() - player->getTileY();
+
+        /* Main delta */
+        int delta = 0;
+        if(delta_x >= delta_y)
+          delta = delta_x + delta_y * 0.4;
+        else
+          delta = delta_y + delta_x * 0.4;
+        //std::cout << "Location: " << player->getTileX() << "," 
+        //          << player->getTileY() << "," << getTileX() << ","
+        //          << getTileY() << "," << delta << std::endl;
+
+        /* Logic for when NPC is not currently tracking */
+        if(!tracking)
+        {
+          /* Check if tracking should be enabled */
+          if(delta < track_dist)
+          {
+            tracking = true;
+            node_previous = node_current;
+            node_current = &node_player;
+          }
+        }
+        /* Otherwise it is tracking - handle */
+        else
+        {
+          /* Check if tracking should be disabled */
+          if(delta > track_dist_max)
+          {
+            tracking = false;
+            node_current = node_previous;
+            node_previous = nullptr;
+          }
+        }
+      }
+
+      /* If tracking, modify how movement is handled */
+      if(tracking)
+      {
+        /* Update location - TODO: needs to be refined */
+        node_player.x = player->getTileX();
+        node_player.y = player->getTileY();
+      }
       /* On tile if not moving so handle pauses or shifts */
-      if(!isMoving() && (direction == Direction::DIRECTIONLESS ||
-         node_state == RANDOM || node_state == RANDOMRANGE))
+      else if(!isMoving() && (direction == Direction::DIRECTIONLESS ||
+              node_state == RANDOM || node_state == RANDOMRANGE))
       {
         if(node_current->delay > npc_delay)
         {
@@ -1080,6 +1207,10 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   }
 
   MapPerson::update(cycle_time, tile_set);
+
+  //std::cout << "BOUND (" << getID() << "): " << node_rect.x << "," // TODO: Working
+  //          << node_rect.y << "," << node_rect.w << "," << node_rect.h 
+  //          << std::endl;
 }
 
 /*=============================================================================
