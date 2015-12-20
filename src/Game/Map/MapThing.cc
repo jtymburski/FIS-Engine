@@ -1497,12 +1497,15 @@ uint16_t MapThing::getTileWidth()
  *              the thing. If the object is moving, this coordinate will be
  *              where the tile will be, as opposed to where it was.
  *
- * Inputs: none
+ * Inputs: bool previous - true to access previous tile instead of main.
+ *                         If there is no previous, gets main. default false
  * Output: uint16_t - X tile coordinate
  */
-uint16_t MapThing::getTileX()
+uint16_t MapThing::getTileX(bool previous)
 {
-  if(tile_main.size() > 0)
+  if(previous && tile_prev.size() > 0)
+    return tile_prev.front().front()->getX();
+  else if(tile_main.size() > 0)
     return tile_main.front().front()->getX();
   return starting_x;
 }
@@ -1512,12 +1515,15 @@ uint16_t MapThing::getTileX()
  *              the thing. If the object is moving, this coordinate will be
  *              where the tile will be, as opposed to where it was.
  *
- * Inputs: none
+ * Inputs: bool previous - true to access previous tile instead of main.
+ *                         If there is no previous, gets main. default false
  * Output: uint16_t - Y tile coordinate
  */
-uint16_t MapThing::getTileY()
+uint16_t MapThing::getTileY(bool previous)
 {
-  if(tile_main.size() > 0)
+  if(previous && tile_prev.size() > 0)
+    return tile_prev.front().front()->getY();
+  else if(tile_main.size() > 0)
     return tile_main.front().front()->getY();
   return starting_y;
 }
@@ -1598,7 +1604,7 @@ uint32_t MapThing::getY()
  */
 bool MapThing::interact(MapPerson* initiator)
 {
-  if(event_handler != NULL)
+  if(event_handler != NULL && !getEventSet()->isNoInteraction())
   {
     event_handler->executeEventSet(getEventSet(), initiator, this);
     return true;

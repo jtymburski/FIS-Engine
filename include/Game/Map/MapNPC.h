@@ -51,9 +51,14 @@ public:
                                               again. In ms */
   const static uint16_t kMAX_DELAY; /* The max delay for random delay calcs */
   const static uint16_t kMAX_RANGE; /* THe max range for random x,y move */
+  const static float kPYTH_APPROX; /* Pythagorean c side approx factor */
+  const static uint16_t kSTUCK_DELAY; /* The time to sit when stuck */
+  const static uint16_t kTRACK_DELAY; /* The track delay before trying dir */
   const static uint16_t kTRACK_DIST_MIN; /* The default min distance to track */
   const static uint16_t kTRACK_DIST_MAX; /* The default max distance to give up
                                             tracking */
+  const static uint16_t kTRACK_DIST_RUN; /* The run distance. Between min max */
+
 private:
   /* Does the NPC force interaction if possible? */
   bool forced_interaction;
@@ -66,10 +71,10 @@ private:
   /* The nodes for control */
   Path* node_current;
   Path* node_head;
-  Path node_player; // track
-  Path* node_previous; // track
+  Path node_player;
+  Path* node_previous;
   Path node_random;
-  SDL_Rect node_rect; // track
+  SDL_Rect node_rect;
   Path node_start;
 
   /* The state of movement */
@@ -87,11 +92,18 @@ private:
   /* Is this the first run of the path move? */
   bool starting;
 
+  /* Stuck delay */
+  int stuck_delay;
+  bool stuck_flip;
+
   /* The state of tracking */
-  int track_dist; // track
-  int track_dist_max; // track
+  int track_delay;
+  int track_dist;
+  int track_dist_max;
+  int track_dist_run;
+  bool track_recent;
   TrackingState track_state;
-  bool tracking; // track
+  bool tracking;
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -99,7 +111,7 @@ private:
 private:
   /* Appends an empty node onto the back of the movement stack */
   void appendEmptyNode();
-
+  
   /* Returns if the XY movement is flipped for the direction to move */
   bool getXYFlip();
 
@@ -115,6 +127,10 @@ private:
   /* Takes the path node and randomizes the x, y, delay, and flip */
   void randomizeNode();
 
+  /* Tracking functions - called by update */
+  void trackAvoidPlayer(int cycle_time, bool stopped);
+  bool trackOutOfRange();
+  
   /* update the node bounding rect */
   void updateBound();
 
@@ -150,6 +166,11 @@ public:
   /* Returns the predicted move request in the class */
   Direction getPredictedMoveRequest();
 
+  /* Tracking distance setpoints getters */
+  int getTrackDistMax();
+  int getTrackDistMin();
+  int getTrackDistRun();
+  
   /* Returns the tracking state - how the NPC reacts to others */
   TrackingState getTrackingState();
 
@@ -185,6 +206,10 @@ public:
 
   /* Sets the starting x and y coordinate */
   void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
+
+  /* Sets the tracking distance setpoints */
+  void setTrackingDist(int trigger = kTRACK_DIST_MIN, 
+                       int max = kTRACK_DIST_MAX, int run = kTRACK_DIST_RUN);
 
   /* Sets the tracking state - how the NPC reacts */
   void setTrackingState(TrackingState state);

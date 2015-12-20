@@ -517,8 +517,11 @@ bool EventSet::isBaseSet()
  */
 bool EventSet::isEmpty()
 {
+  /* If base, returns the base call */
   if(base != nullptr)
     return base->isEmpty();
+
+  /* Otherwise, the instance version */
   return (event_locked.classification == EventClassifier::NOEVENT &&
           events_unlocked.size() == 0 &&
           locked_status.state == LockedState::NONE);
@@ -535,6 +538,37 @@ bool EventSet::isEmpty()
 bool EventSet::isLocked()
 {
   return isLocked(locked_status);
+}
+
+/* Returns if there is no interaction if triggering the class */
+// TODO: Comment
+bool EventSet::isNoInteraction()
+{
+  bool no_interact = isEmpty();
+
+  /* First check to ensure it is not empty */
+  if(!no_interact)
+  {
+    bool valid_event = false;
+
+    /* Locked Events */
+    Event* lock_base = getEventLockedRef();
+    Event* lock_inst = getEventLockedRef(true);
+    valid_event |= (lock_base->classification != EventClassifier::NOEVENT &&
+                    !(lock_base->one_shot && lock_inst->has_exec));
+
+    /* Unlocked Events */
+    std::vector<Event*> unlock_base = getEventUnlockedRef();
+    std::vector<Event*> unlock_inst = getEventUnlockedRef(true);
+    for(uint32_t i = 0; i < unlock_base.size(); i++)
+      valid_event |=
+               (unlock_base[i]->classification != EventClassifier::NOEVENT &&
+                !(unlock_base[i]->one_shot && unlock_inst[i]->has_exec));
+
+    /* Finally certify */
+    no_interact = !valid_event;
+  }
+  return no_interact;
 }
 
 /*

@@ -448,10 +448,10 @@ bool Category::removeImmunity(const Infliction &rem_immunity)
 void Category::triggerEditMode(bool enabled)
 {
   base_stats.setFlag(AttributeState::PERSONAL, !enabled);
-  base_stats.setFlag(AttributeState::CONSTANT, !enabled);
+  base_stats.setFlag(AttributeState::CONSTANT, false);
 
   top_stats.setFlag(AttributeState::PERSONAL, !enabled);
-  top_stats.setFlag(AttributeState::CONSTANT, !enabled);
+  top_stats.setFlag(AttributeState::CONSTANT, false);
 }
 
 /*

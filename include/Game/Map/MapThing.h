@@ -277,8 +277,8 @@ public:
   uint16_t getTileWidth();
 
   /* Returns x/y of the top left, in tile units */
-  uint16_t getTileX();
-  uint16_t getTileY();
+  uint16_t getTileX(bool previous = false);
+  uint16_t getTileY(bool previous = false);
 
   /* Returns the width of the thing */
   uint16_t getWidth();

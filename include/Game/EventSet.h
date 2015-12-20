@@ -269,6 +269,9 @@ public:
   /* Returns if the class is currently locked */
   bool isLocked();
 
+  /* Returns if there is no interaction if triggering the class */
+  bool isNoInteraction();
+
   /* Load data from file */
   bool loadData(XmlData data, int file_index, int section_index);
 

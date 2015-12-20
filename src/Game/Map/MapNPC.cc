@@ -13,8 +13,12 @@ const uint16_t MapNPC::kFORCED_FREEZE = 5000;
 const uint16_t MapNPC::kFORCED_NOTRIGGER = 30000;
 const uint16_t MapNPC::kMAX_DELAY = 2000;
 const uint16_t MapNPC::kMAX_RANGE = 10;
-const uint16_t MapNPC::kTRACK_DIST_MIN = 5;
-const uint16_t MapNPC::kTRACK_DIST_MAX = 10;
+const float MapNPC::kPYTH_APPROX = 0.4;
+const uint16_t MapNPC::kSTUCK_DELAY = 3000;
+const uint16_t MapNPC::kTRACK_DELAY = 250;
+const uint16_t MapNPC::kTRACK_DIST_MIN = 4;
+const uint16_t MapNPC::kTRACK_DIST_MAX = 8;
+const uint16_t MapNPC::kTRACK_DIST_RUN = 5;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -172,8 +176,13 @@ void MapNPC::initializeClass()
   npc_delay = 0;
   player = nullptr;
   starting = true;
+  stuck_delay = 0;
+  stuck_flip = false;
+  track_delay = 0;
   track_dist = kTRACK_DIST_MIN;
   track_dist_max = kTRACK_DIST_MAX;
+  track_dist_run = kTRACK_DIST_RUN;
+  track_recent = false;
   track_state = NOTRACK;
   tracking = false;
 
@@ -340,7 +349,210 @@ void MapNPC::randomizeNode()
   }
 }
 
+/* Tracking functions - called by update */
+// TODO: Comment
+void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
+{
+  /* Check if movement has stopped */
+  if(stopped)
+    track_delay += cycle_time;
+
+  /* Determine if an update should occur based on location of npc */
+  if((!stopped && getTileX() == node_player.x && 
+      getTileY() == node_player.y) || track_delay > kTRACK_DELAY)
+  {
+    Direction dir_curr = getDirection();
+    int play_delt_x = getTileX() - player->getTileX();
+    int play_delt_y = getTileY() - player->getTileY();
+    int new_x = getTileX();
+    int new_y = getTileY();
+    
+    /* Change direction handle */
+    bool change_dir = (track_delay > kTRACK_DELAY);
+    track_delay = 0;
+
+    /* Parse and determine quadrant - on X-Axis - E-W */
+    if(play_delt_x == 0)
+    {
+      if(change_dir)
+      {
+        if(dir_curr == Direction::EAST)
+          new_x--;
+        else
+          new_x++;
+      }
+      else
+      {
+        /* In N quadrant */
+        if(play_delt_y > 0)
+          new_y++;
+        /* In S quadrant */
+        else
+          new_y--;
+      }
+    }
+    /* On Y-Axis - N-S */
+    else if(play_delt_y == 0)
+    {
+      if(change_dir)
+      {
+        if(dir_curr == Direction::SOUTH)
+          new_y--;
+        else
+          new_y++;
+      }
+      else
+      {
+        /* In W quadrant */
+        if(play_delt_x > 0)
+          new_x++;
+        /* In E quadrant */
+        else
+          new_x--;
+      }
+    }
+    /* In NW quadrant */
+    else if(play_delt_x > 0 && play_delt_y > 0)
+    {
+      if((!change_dir && dir_curr == Direction::SOUTH) ||
+         (change_dir && dir_curr != Direction::SOUTH))
+        new_y++;
+      else
+        new_x++;
+    }
+    /* In SW quadrant */
+    else if(play_delt_x > 0 && play_delt_y < 0)
+    {
+      if((!change_dir && dir_curr == Direction::NORTH) ||
+         (change_dir && dir_curr != Direction::NORTH))
+        new_y--;
+      else
+        new_x++;
+    }
+    /* In NE quadrant */
+    else if(play_delt_x < 0 && play_delt_y > 0)
+    {
+      if((!change_dir && dir_curr == Direction::SOUTH) ||
+         (change_dir && dir_curr != Direction::SOUTH))
+        new_y++;
+      else
+        new_x--;
+    }
+    /* In SE quadrant */
+    else if(play_delt_x < 0 && play_delt_y < 0)
+    {
+      if((!change_dir && dir_curr == Direction::NORTH) ||
+         (change_dir && dir_curr != Direction::NORTH))
+        new_y--;
+      else
+        new_x--;
+    }
+    
+    /* Check the new point */
+    if(new_x < 0)
+      new_x = 0;
+    node_player.x = new_x;
+    if(new_y < 0)
+      new_y = 0;
+    node_player.y = new_y;
+  }
+}
+
+/* Tracking functions - called by update */
+// TODO: Comment
+bool MapNPC::trackOutOfRange()
+{
+  if(node_state != RANDOM)
+  {
+    int dist = 0;
+    int npc_x = getTileX();
+    int npc_y = getTileY();
+    int x1 = node_rect.x;
+    int x2 = node_rect.x + node_rect.w;
+    int y1 = node_rect.y;
+    int y2 = node_rect.y + node_rect.h;
+
+    /* Determine if it outside the range rect */
+    if(npc_x < x1 || npc_x > x2 || npc_y < y1 || npc_y > y2)
+    {
+      /* Separate out into the given range - North */
+      if(npc_y < y1)
+      {
+        /* North West */
+        if(npc_x < x1)
+        {
+          int temp_x = (x1 - npc_x);
+          int temp_y = (y1 - npc_y);
+          if(temp_x > temp_y)
+            dist = temp_x + temp_y * kPYTH_APPROX;
+          else
+            dist = temp_y + temp_x * kPYTH_APPROX;
+        }
+        /* North East */
+        else if(npc_x > x2)
+        {
+          int temp_x = (npc_x - x2);
+          int temp_y = (y1 - npc_y);
+          if(temp_x > temp_y)
+            dist = temp_x + temp_y * kPYTH_APPROX;
+          else
+            dist = temp_y + temp_x * kPYTH_APPROX;
+        }
+        /* North */
+        else
+        {
+          dist = (y1 - npc_y);
+        }
+      }
+      /* South */
+      else if(npc_y > y2)
+      {
+        /* South West */
+        if(npc_x < x1)
+        {
+          int temp_x = (x1 - npc_x);
+          int temp_y = (npc_y - y2);
+          if(temp_x > temp_y)
+            dist = temp_x + temp_y * kPYTH_APPROX;
+          else
+            dist = temp_y + temp_x * kPYTH_APPROX;
+        }
+        /* South East */
+        else if(npc_x > x2)
+        {
+          int temp_x = (npc_x - x2);
+          int temp_y = (npc_y - y2);
+          if(temp_x > temp_y)
+            dist = temp_x + temp_y * kPYTH_APPROX;
+          else
+            dist = temp_y + temp_x * kPYTH_APPROX;
+        }
+        /* South */
+        else
+        {
+          dist = (npc_y - y2);
+        }
+      }
+      /* West */
+      else if(npc_x < x1)
+      {
+        dist = (x1 - npc_x);
+      }
+      /* East */
+      else if(npc_x > x2)
+      {
+        dist = (npc_x - x2);
+      }
+      
+      /* Check the distance */
+      return (dist > track_dist_max);
+    }
+  }
+  return false;
+}
+
 /* Update the node bounding rect */
+// TODO: Comment
 void MapNPC::updateBound()
 {
   Path* node_parse = node_head;
@@ -652,7 +864,7 @@ Direction MapNPC::getPredictedMoveRequest()
     int delta_x = node_current->x - tile_main.front().front()->getX();
     int delta_y = node_current->y - tile_main.front().front()->getY();
     Direction direction = Direction::DIRECTIONLESS;
-    bool xy_flip = getXYFlip();
+    bool xy_flip = getXYFlip() ^ stuck_flip;
 
     /* If the npc needs to move on the X plane */
     if(delta_x != 0 && (!xy_flip || (xy_flip && delta_y == 0)))
@@ -675,6 +887,27 @@ Direction MapNPC::getPredictedMoveRequest()
   }
 
   return getMoveRequest();
+}
+
+/* Tracking distance setpoints getters */
+// TODO: Comment
+int MapNPC::getTrackDistMax()
+{
+  return track_dist_max;
+}
+
+/* Tracking distance setpoints getters */
+// TODO: Comment
+int MapNPC::getTrackDistMin()
+{
+  return track_dist;
+}
+
+/* Tracking distance setpoints getters */
+// TODO: Comment
+int MapNPC::getTrackDistRun()
+{
+  return track_dist_run;
 }
 
 /*
@@ -753,7 +986,7 @@ bool MapNPC::insertNodeAtTail(uint16_t x, uint16_t y, uint16_t delay)
  */
 bool MapNPC::interactForced(MapPerson* initiator)
 {
-  if(!forced_recent && interact(initiator))
+  if(!forced_recent && !getEventSet()->isNoInteraction() && interact(initiator))
   {
     forced_recent = true;
     forced_time = 0;
@@ -1002,6 +1235,18 @@ void MapNPC::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   /* Set to parent */
   MapThing::setStartingLocation(section_id, x, y);
 }
+  
+/* Sets the tracking distance setpoints */
+// TODO: Comment
+void MapNPC::setTrackingDist(int trigger, int max, int run)
+{
+  if(trigger > 0)
+    track_dist = trigger;
+  if(max > 0)
+    track_dist_max = max;
+  if(run > 0)
+    track_dist_run = run;
+}
 
 /*
  * Description: Sets the tracking state of the NPC and how it reacts as a player
@@ -1023,18 +1268,33 @@ void MapNPC::setTrackingState(TrackingState state)
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
  * Output: none
  */
-// TODO: Add forced interaction, tracking state - working
 void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   /* Begin the check to handle each time the NPC is on a tile */
   if(isTilesSet() && node_current != NULL)
   {
+    int delta = 0;
+    bool stopped = !isMoving();
+
+    /* Do checks if stuck */
+    if(stopped && node_current->x != getTileX() && /* removed !tracking */
+       node_current->y != getTileY())
+    {
+      stuck_delay += cycle_time;
+      if(stuck_delay > kSTUCK_DELAY)
+      {
+        stuck_delay = 0;
+        stuck_flip = !stuck_flip;
+      }
+    }
+
+    /* Acquire direction */
     Direction direction = getPredictedMoveRequest();
 
     /* If starting sequence, operate on different parameters */
     if(starting)
     {
-      if(!isMoving())
+      if(stopped)
       {
         /* If reached node and done movement again, kill starting */
         if(node_current != &node_start &&
@@ -1098,33 +1358,43 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
           delta_y = getTileY() - player->getTileY();
 
         /* Main delta */
-        int delta = 0;
         if(delta_x >= delta_y)
-          delta = delta_x + delta_y * 0.4;
+          delta = delta_x + delta_y * kPYTH_APPROX;
         else
-          delta = delta_y + delta_x * 0.4;
-        //std::cout << "Location: " << player->getTileX() << "," 
-        //          << player->getTileY() << "," << getTileX() << ","
-        //          << getTileY() << "," << delta << std::endl;
+          delta = delta_y + delta_x * kPYTH_APPROX;
 
         /* Logic for when NPC is not currently tracking */
         if(!tracking)
         {
+          /* Check the recent status */
+          if(track_recent)
+          {
+            if(getTileX() == node_current->x && getTileY() == node_current->y)
+              track_recent = false;
+          }
+
           /* Check if tracking should be enabled */
-          if(delta < track_dist)
+          if(delta < track_dist && !track_recent)
           {
             tracking = true;
+            track_delay = 0;
             node_previous = node_current;
             node_current = &node_player;
+            
+            /* Initialize node */
+            node_player.x = getTileX();
+            node_player.y = getTileY();
           }
         }
         /* Otherwise it is tracking - handle */
         else
         {
           /* Check if tracking should be disabled */
-          if(delta > track_dist_max)
+          if(delta > track_dist_max || trackOutOfRange() || 
+             getTarget() != nullptr)
           {
             tracking = false;
+            track_recent = true;
             node_current = node_previous;
             node_previous = nullptr;
           }
@@ -1132,16 +1402,34 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       }
 
       /* If tracking, modify how movement is handled */
-      if(tracking)
+      if(tracking)// && getTarget() == nullptr)
       {
-        /* Update location - TODO: needs to be refined */
-        node_player.x = player->getTileX();
-        node_player.y = player->getTileY();
+        bool track_almost = isAlmostOnTile(cycle_time);
+
+        /* Track to the player location */
+        if(track_state == TOPLAYER)
+        {
+          if(track_almost || stopped)
+          {
+            node_player.x = player->getTileX();
+            node_player.y = player->getTileY();
+          }
+        }
+        /* Track from the player location */
+        else
+        {
+          if(delta < track_dist_run)
+            trackAvoidPlayer(cycle_time, stopped);
+        }
       }
       /* On tile if not moving so handle pauses or shifts */
-      else if(!isMoving() && (direction == Direction::DIRECTIONLESS ||
+      else if(stopped && (direction == Direction::DIRECTIONLESS ||
               node_state == RANDOM || node_state == RANDOMRANGE))
       {
+        /* Clear stuck data */
+        stuck_delay = 0;
+        stuck_flip = false;
+
         if(node_current->delay > npc_delay)
         {
           npc_delay += cycle_time;
@@ -1178,8 +1466,6 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 
             /* Randomize a new location */
             randomizeNode();
-            //node_random.x = player->getTileX();
-            //node_random.y = player->getTileY();
           }
           npc_delay = 0;
         }
@@ -1207,10 +1493,6 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   }
 
   MapPerson::update(cycle_time, tile_set);
-
-  //std::cout << "BOUND (" << getID() << "): " << node_rect.x << "," // TODO: Working
-  //          << node_rect.y << "," << node_rect.w << "," << node_rect.h 
-  //          << std::endl;
 }
 
 /*=============================================================================
