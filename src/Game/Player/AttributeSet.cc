@@ -83,8 +83,8 @@ AttributeSet::AttributeSet()
  *
  * Inputs: const int &preset_level - const ref to the preset to set
  */
-AttributeSet::AttributeSet(const int32_t& preset_level, const bool& personal,
-                           const bool& constant)
+AttributeSet::AttributeSet(const int32_t &preset_level, const bool &personal,
+                           const bool &constant)
 {
   buildAsPreset(preset_level);
 
@@ -101,8 +101,8 @@ AttributeSet::AttributeSet(const int32_t& preset_level, const bool& personal,
  *
  * Inputs: std::vector<int> new_values - vector of values to be set
  */
-AttributeSet::AttributeSet(const std::vector<int32_t>& new_values,
-                           const bool& personal, const bool& constant)
+AttributeSet::AttributeSet(const std::vector<int32_t> &new_values,
+                           const bool &personal, const bool &constant)
 {
   if(new_values.size() == kSHORT_NAMES.size())
     values = new_values;
@@ -126,7 +126,7 @@ AttributeSet::AttributeSet(const std::vector<int32_t>& new_values,
  *         constant - boolean value if the AttributeSet is of unchanging value
  * Output: none
  */
-void AttributeSet::classSetup(const bool& personal, const bool& constant)
+void AttributeSet::classSetup(const bool &personal, const bool &constant)
 {
   if(personal)
     flags |= AttributeState::PERSONAL;
@@ -145,7 +145,7 @@ void AttributeSet::classSetup(const bool& personal, const bool& constant)
  * Inputs: const size_t &level - const ref to which preset to use
  * Output: none
  */
-void AttributeSet::buildAsPreset(const size_t& level)
+void AttributeSet::buildAsPreset(const size_t &level)
 {
   if(level == 0 || level > kPRESETS.size())
     values = std::vector<int>(kSHORT_NAMES.size(), kDEFAULT);
@@ -185,7 +185,7 @@ void AttributeSet::cleanUp()
  * Inputs: simple - boolean value whether to show simple or large format
  * Output:
  */
-void AttributeSet::print(const bool& simple)
+void AttributeSet::print(const bool &simple)
 {
   std::cout << "--- Attribute Set ---\n";
 
@@ -206,7 +206,7 @@ void AttributeSet::print(const bool& simple)
  *         const int &amount - the amount by which to alter the stat (+/-)
  * Output: bool - true if the index was a valid stat
  */
-bool AttributeSet::alterStat(const int32_t& index, const int32_t& amount)
+bool AttributeSet::alterStat(const int32_t &index, const int32_t &amount)
 {
   if(getFlag(AttributeState::CONSTANT))
     return false;
@@ -236,7 +236,7 @@ bool AttributeSet::alterStat(const int32_t& index, const int32_t& amount)
  *         const int &amount - the amount by which to alter the stat (+/-)
  * Output: bool - true if the enumeration was a valid attribute
  */
-bool AttributeSet::alterStat(const Attribute& stat, const int32_t& amount)
+bool AttributeSet::alterStat(const Attribute &stat, const int32_t &amount)
 {
   return alterStat(getIndex(stat), amount);
 }
@@ -250,7 +250,7 @@ bool AttributeSet::alterStat(const Attribute& stat, const int32_t& amount)
  *         const int &amount - the amount by which to alter the stat
  * Output: bool - true if the name relates to a valid stat
  */
-bool AttributeSet::alterStat(const std::string& name, const int32_t& amount)
+bool AttributeSet::alterStat(const std::string &name, const int32_t &amount)
 {
   return alterStat(getIndex(name), amount);
 }
@@ -273,7 +273,7 @@ bool AttributeSet::getFlag(AttributeState test_flag) const
  * Inputs: const int &index - const ref. to the index to be retrieved (def. 0)
  * Output: int - the value of the stat at the index, else -1
  */
-int32_t AttributeSet::getStat(const int32_t& index) const
+int32_t AttributeSet::getStat(const int32_t &index) const
 {
   if(index != -1 && index < static_cast<int32_t>(values.size()))
     return values[index];
@@ -289,7 +289,7 @@ int32_t AttributeSet::getStat(const int32_t& index) const
  * Inputs: const Attribute &stat - enumerated value representing an attribute
  * Output: int - the value of the stat corresponding to the enum value, or -1
  */
-int32_t AttributeSet::getStat(const Attribute& stat) const
+int32_t AttributeSet::getStat(const Attribute &stat) const
 {
   return getStat(getIndex(stat));
 }
@@ -301,7 +301,7 @@ int32_t AttributeSet::getStat(const Attribute& stat) const
  * Inputs: const std::string &name - name of stat to check value for
  * Output: int - the value of the stat if it exists, else -1
  */
-int32_t AttributeSet::getStat(const std::string& name) const
+int32_t AttributeSet::getStat(const std::string &name) const
 {
   return getStat(getIndex(name));
 }
@@ -314,7 +314,7 @@ int32_t AttributeSet::getStat(const std::string& name) const
  *         bool state - true the flag is enabled. false otherwise. def true.
  * Output: none
  */
-void AttributeSet::setFlag(const AttributeState& flag, const bool& state)
+void AttributeSet::setFlag(const AttributeState &flag, const bool &state)
 {
   if(state)
     flags |= flag;
@@ -330,7 +330,7 @@ void AttributeSet::setFlag(const AttributeState& flag, const bool& state)
  *         const int32_t &value - the value to assign the stat to
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const int32_t& index, const int32_t& value)
+bool AttributeSet::setStat(const int32_t &index, const int32_t &value)
 {
   auto can_set = true;
 
@@ -362,7 +362,7 @@ bool AttributeSet::setStat(const int32_t& index, const int32_t& value)
  *         const int32_t &value - the value to assign to the stat
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const Attribute& stat, const int32_t& value)
+bool AttributeSet::setStat(const Attribute &stat, const int32_t &value)
 {
   return setStat(getIndex(stat), value);
 }
@@ -375,7 +375,7 @@ bool AttributeSet::setStat(const Attribute& stat, const int32_t& value)
  *         const int &value - the value to assign to the stat
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const std::string& name, const int32_t& value)
+bool AttributeSet::setStat(const std::string &name, const int32_t &value)
 {
   return setStat(getIndex(name), value);
 }
@@ -396,7 +396,7 @@ std::vector<Attribute> AttributeSet::getAllOffensive()
 std::vector<Attribute> AttributeSet::getAllDefensive()
 {
   std::vector<Attribute> defensive{
-      Attribute::PHFD,  Attribute::THFD, Attribute::PRFD, Attribute::POFD,
+      Attribute::PHFD, Attribute::THFD, Attribute::PRFD, Attribute::POFD,
       Attribute::CHFD, Attribute::CYFD, Attribute::NIFD};
 
   return defensive;
@@ -409,7 +409,7 @@ std::vector<Attribute> AttributeSet::getAllDefensive()
  * Inputs: const Attribute &stat - enumerated attribute to find the index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int32_t AttributeSet::getIndex(const Attribute& stat)
+int32_t AttributeSet::getIndex(const Attribute &stat)
 {
   if(stat < Attribute::NONE)
     return static_cast<int32_t>(stat);
@@ -424,7 +424,7 @@ int32_t AttributeSet::getIndex(const Attribute& stat)
  * Inputs: const Element &stat - enumerated Element to find offensive index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int32_t AttributeSet::getOffensiveIndex(const Element& stat)
+int32_t AttributeSet::getOffensiveIndex(const Element &stat)
 {
   switch(stat)
   {
@@ -459,7 +459,7 @@ int32_t AttributeSet::getOffensiveIndex(const Element& stat)
  * Inputs: const Element &stat - enumerated Element to find defensive index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int32_t AttributeSet::getDefensiveIndex(const Element& stat)
+int32_t AttributeSet::getDefensiveIndex(const Element &stat)
 {
   switch(stat)
   {
@@ -494,7 +494,7 @@ int32_t AttributeSet::getDefensiveIndex(const Element& stat)
  * Inputs: const std::string &name - the name of the attribute to find index of
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int32_t AttributeSet::getIndex(const std::string& name)
+int32_t AttributeSet::getIndex(const std::string &name)
 {
   /* Find the index in the vector of short or long names */
   for(size_t i = 0; i < kSHORT_NAMES.size(); i++)
@@ -535,7 +535,7 @@ uint32_t AttributeSet::getMaxValue()
  * Inputs: const Attribute &stat - the enum. stat to find the name for
  * Output: std::string - the long version of the attributes name (if it exists)
  */
-std::string AttributeSet::getLongName(const Attribute& s)
+std::string AttributeSet::getLongName(const Attribute &s)
 {
   auto index = getIndex(s);
 
@@ -551,7 +551,7 @@ std::string AttributeSet::getLongName(const Attribute& s)
  * Inputs: const size_t &index - the index to return the long-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getLongName(const size_t& index)
+std::string AttributeSet::getLongName(const size_t &index)
 {
   if(index < kSHORT_NAMES.size())
     return kLONG_NAMES[index];
@@ -566,7 +566,7 @@ std::string AttributeSet::getLongName(const size_t& index)
  * Inputs: const Attribute &stat - the enumerated attribute to find the name for
  * Output: std::string - the short version of the attributes name (if it exists)
  */
-std::string AttributeSet::getName(const Attribute& stat)
+std::string AttributeSet::getName(const Attribute &stat)
 {
   auto index = getIndex(stat);
 
@@ -582,7 +582,7 @@ std::string AttributeSet::getName(const Attribute& stat)
  * Inputs: const size_t &index - the index to return the short-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getName(const size_t& index)
+std::string AttributeSet::getName(const size_t &index)
 {
   if(index < kSHORT_NAMES.size())
     return kSHORT_NAMES[index];
@@ -597,7 +597,7 @@ std::string AttributeSet::getName(const size_t& index)
  * Inputs: std::string str - the comma delimited string
  * Output: AttributeSet - the produced set from the string
  */
-AttributeSet AttributeSet::setFromStr(const std::string& str)
+AttributeSet AttributeSet::setFromStr(const std::string &str)
 {
   std::vector<std::string> set = Helpers::split(str, ',');
   std::vector<int> value_set;
@@ -633,7 +633,7 @@ AttributeSet AttributeSet::setFromStr(const std::string& str)
  * Inputs: AttributeSet set - the set to convert to a string
  * Output: std::string - the produced comma delimited string
  */
-std::string AttributeSet::setToStr(const AttributeSet& set)
+std::string AttributeSet::setToStr(const AttributeSet &set)
 {
   std::string str = "";
 
@@ -665,7 +665,7 @@ std::string AttributeSet::setToStr(const AttributeSet& set)
  * Inputs: const AttributeSet& rhs - the set to be added to the current set
  * Output: AttributeSet& - ref to the current object (after compounding)
  */
-AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
+AttributeSet &AttributeSet::operator+=(const AttributeSet &rhs)
 {
   /* Inherit flags from rhs */
   this->classSetup(rhs.getFlag(AttributeState::PERSONAL),
@@ -691,7 +691,7 @@ AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
  * Inputs: const AttributeSet& rhs - the set to be subtracted from the current
  * Output: AttributeSet& - ref to the current object (after subtraction)
  */
-AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
+AttributeSet &AttributeSet::operator-=(const AttributeSet &rhs)
 {
   /* Inherit flags from rhs */
   this->classSetup(rhs.getFlag(AttributeState::PERSONAL),
@@ -718,7 +718,7 @@ AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
  *         const AttributeSet &rhs - the right side expression AttributeSet
  * Output: AttributeSet - the new object after addition
  */
-AttributeSet& AttributeSet::operator+(const AttributeSet& rhs)
+AttributeSet &AttributeSet::operator+(const AttributeSet &rhs)
 {
   /* Reuse compound addition operator */
   *this += rhs;
@@ -734,7 +734,7 @@ AttributeSet& AttributeSet::operator+(const AttributeSet& rhs)
  *         const AttributeSet& rhs - the right expression AS
  * Output: AttributeSet - the left hand expression after subtration
  */
-AttributeSet& AttributeSet::operator-(const AttributeSet& rhs)
+AttributeSet &AttributeSet::operator-(const AttributeSet &rhs)
 {
   /* Reuse the compound subtraction operator */
   *this -= rhs;
@@ -750,7 +750,7 @@ AttributeSet& AttributeSet::operator-(const AttributeSet& rhs)
  *         const AttributeSet& rhs - the right expression AS
  * Output: bool - truth if lhs and rhs are equivalent
  */
-bool AttributeSet::operator==(const AttributeSet& rhs)
+bool AttributeSet::operator==(const AttributeSet &rhs)
 {
   return ((values == rhs.values) && (flags == rhs.flags));
 }
@@ -763,7 +763,7 @@ bool AttributeSet::operator==(const AttributeSet& rhs)
  *         const AttributeSet& rhs - the right expression AS
  * Output: bool - truth if lhs and rhs are not equivalent
  */
-bool AttributeSet::operator!=(const AttributeSet& rhs)
+bool AttributeSet::operator!=(const AttributeSet &rhs)
 {
   return !(this->operator==(rhs));
 }

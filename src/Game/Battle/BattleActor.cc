@@ -105,15 +105,13 @@ BattleActor::~BattleActor()
 void BattleActor::battleSetup(bool is_ally, bool can_run)
 {
   /* Recalculate the current stats of the base person, create BattleStats */
+  person_base->updateBaseStats();
+  person_base->updateBaseSkills();
+
   auto equip_stats = person_base->calcEquipStats();
+
   stats_actual = BattleStats(equip_stats);
   stats_rendered = BattleStats(equip_stats);
-
-  /* Recalculate the skills the person has available at the moment */
-  // person_base->updateSkills();
-
-  /* Reset the 'silenced' flag on skills */
-  // person_base->resetSkills();
 
   /* If the person's current VITA is >0, they are not KO'd */
   if(person_base->getCurr().getStat(Attribute::VITA) > 0)
@@ -383,8 +381,8 @@ void BattleActor::updateStats(int32_t cycle_time)
   int32_t qtdr = stats_rendered.getBaseValue(Attribute::QTDR);
   int32_t act_qtdr = stats_actual.getBaseValue(Attribute::QTDR);
 
-  auto vita_diff = std::round(std::abs(vita - act_vita) / 100);
-  auto qtdr_diff = std::round(std::abs(qtdr - act_qtdr) / 100);
+  auto vita_diff = std::ceil(std::abs(vita - act_vita) / 100);
+  auto qtdr_diff = std::ceil(std::abs(qtdr - act_qtdr) / 100);
   auto vita_amt = (uint32_t)((1 + vita_diff) * (cycle_time / 15));
   auto qtdr_amt = (uint32_t)((1 + qtdr_diff) * (cycle_time / 15));
 
@@ -409,6 +407,11 @@ void BattleActor::updateStats(int32_t cycle_time)
     stats_rendered.setBaseValue(Attribute::QTDR,
                                 std::max((uint32_t)1, qtdr + qtdr_amt));
   }
+
+  if(vita == 1 && act_vita == 0)
+    stats_rendered.setBaseValue(Attribute::VITA, 0);
+  if(qtdr == 1 && act_qtdr == 0)
+    stats_rendered.setBaseValue(Attribute::QTDR, 0);
 }
 
 /*=============================================================================

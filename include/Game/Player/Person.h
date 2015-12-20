@@ -197,14 +197,8 @@ private:
   /* Unsets the sprites for the person */
   void unsetSprites();
 
-  /* Recalculates the Person's base and base_max stats based on categories */
-  void updateBaseStats();
-
   /* Updates the level of the person based on their current total experience */
   void updateLevel(const bool& ignore_flags = false);
-
-  /* Updates the current stats of the Person based on their current level */
-  void updateStats();
 
   /* Updates the rank of the Person based on their Person record */
   void updateRank();
@@ -221,7 +215,7 @@ private:
    *============================================================================*/
 public:
   /* Adds an amount of experience and may update the level */
-  bool addExp(const uint32_t& amount, const bool& update = true, 
+  bool addExp(const uint32_t& amount, const bool& update = true,
               const bool& ignore_flags = false);
 
   /* Recalculates the stat bonuses for equipment */
@@ -274,6 +268,12 @@ public:
 
   /* Recalculates Curr skills based on flags */
   void updateSkills();
+
+    /* Recalculates the Person's base and base_max stats based on categories */
+  void updateBaseStats();
+
+  /* Updates the current stats of the Person based on their current level */
+  void updateStats();
 
   /* Recalculates the Base skills based on categories */
   void updateBaseSkills();

@@ -379,12 +379,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
       if(!battle_display_data->isDataBuilt())
         battle_display_data->buildData();
 
-      // TODO: Why is it seg faulting??
-      std::vector<Person*> persons = getParty(source_id)->getMembers();
-      for(uint16_t i = 0; i < persons.size(); i++)
-        if(persons[i] != nullptr && persons[i]->getAI() != nullptr)
-          persons[i]->getAI()->resetForNewBattle();
-
+      // TODO: Why is it seg faulting?
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
 
       //changeMode(BATTLE);
@@ -1387,7 +1382,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
         changeMode(DISABLED);
     }
     /* -- TODO: TEMP - just for dev mode so you can escape battle -- */
-    else if(event.keysym.sym == SDLK_ESCAPE)
+    else if(event.keysym.sym == SDLK_BACKSPACE)
     {
       changeMode(DISABLED);
     }
@@ -1582,12 +1577,13 @@ bool Game::update(int32_t cycle_time)
 
   /* Mode next handling */
   updateMode(cycle_time);
-  
+
   /* MAP MODE */
   if(mode == MAP)
   {
     if(map_ctrl.isBattleReady())
       changeMode(BATTLE);
+
     //eventStartBattle(Party::kID_SLEUTH, map_ctrl.getBattleThingID());
     return map_ctrl.update(cycle_time);
   }
@@ -1597,7 +1593,7 @@ bool Game::update(int32_t cycle_time)
     if(battle_ctrl->getTurnState() == TurnState::FINISHED)
     {
       battle_ctrl->stopBattle();
-      
+
       // TODO: Clarify based on if battle is actually won and either destruct
       // or return to map
       map_ctrl.battleWon();

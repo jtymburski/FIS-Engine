@@ -163,10 +163,15 @@ bool AIModule::battleItemValid(const BattleItem* battle_item)
 //  */
 bool AIModule::battleSkillValid(const BattleSkill* battle_skill)
 {
-  if(battle_skill)
-    return battle_skill->targets.size();
+  bool valid = true;
 
-  return false;
+  if(battle_skill)
+  {
+    valid &= battle_skill->targets.size();
+    valid &= battle_skill->valid_status == ValidStatus::VALID;
+  }
+
+  return valid;
 }
 
 // * Description: Constructs a uniform distribution between valid skill choices
@@ -836,21 +841,6 @@ void AIModule::resetForNewTurn(BattleActor* parent)
 
   if(parent != nullptr)
     valid_action_types = parent->getValidActionTypes();
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void AIModule::resetForNewBattle()
-{
-  resetForNewTurn();
-
-  actions_elapsed_battle = 0;
-  turns_elapsed_battle = 0;
-  battles_elapsed = 0;
 }
 
 /*

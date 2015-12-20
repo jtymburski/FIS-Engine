@@ -383,7 +383,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     10, 10, 15, 0
   }, true);
-  
+
   stats_aurora_eng_min = AttributeSet(
   {
     50, 100, 3, 2,
@@ -391,8 +391,8 @@ void TestBattle::create()
     3, 2, 5, 4,
     0, 0, 0, 0,
     9, 9, 10, 0
-  }, true);  
-  
+  }, true);
+
   stats_aurora_eng_max = AttributeSet(
   {
     100, 125, 8, 6,
@@ -401,7 +401,7 @@ void TestBattle::create()
     0, 0, 0, 0,
     18, 18, 15, 0
   }, true);
-  
+
   stats_aurora_agent_min = AttributeSet(
   {
     50, 100, 3, 2,

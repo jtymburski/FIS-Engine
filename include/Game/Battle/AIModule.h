@@ -225,9 +225,6 @@ public:
   /* Resets the AI for a new turn */
   void resetForNewTurn(BattleActor* parent = nullptr);
 
-  /* Resets the AI for a new battle */
-  void resetForNewBattle();
-
   /* Returns the scope of the selected action (if assigned) */
   ActionScope getActionScope();
 

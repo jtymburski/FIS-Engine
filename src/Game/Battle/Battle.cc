@@ -241,12 +241,14 @@ void Battle::actionStateSwitchSprite()
 /* Create the fading-in action text */
 void Battle::actionStateSkillMiss()
 {
+  std::cout << "[Skill Miss!]" << std::endl;
   auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
   auto element = new RenderElement(renderer, action_font);
   auto action_text = event->actor->getBasePerson()->getName() + " Missed";
   element->createAsActionText(action_text);
   render_elements.push_back(element);
   event->action_state = ActionState::DONE;
+
   addDelay(1000);
 }
 
@@ -303,16 +305,21 @@ void Battle::actionStateEndBob()
 // Constructs AI
 void Battle::aiBuild()
 {
-  for(auto& enemy : actors)
+  for(auto& actor : actors)
   {
-    if(enemy && enemy->getBasePerson())
+    if(actor && actor->getBasePerson())
     {
-      if(!enemy->getBasePerson()->getAI())
+      if(!actor->getBasePerson()->getAI())
       {
         AIModule* new_ai_module = new AIModule();
-        new_ai_module->setParent(enemy);
-        enemy->getBasePerson()->setAI(new_ai_module);
+        new_ai_module->setParent(actor);
+        actor->getBasePerson()->setAI(new_ai_module);
       }
+      else
+      {
+        std::cout << "WARNING" << std::endl;
+      }
+
     }
   }
 }
@@ -321,11 +328,12 @@ void Battle::aiBuild()
 // Clears AI.
 void Battle::aiClear()
 {
-  for(auto& enemy : actors)
+  for(auto& actor : actors)
   {
-    if(enemy && enemy->getBasePerson() && enemy->getBasePerson()->getAI())
+    if(actor && actor->getBasePerson() && actor->getBasePerson()->getAI())
     {
-      auto module = enemy->getBasePerson()->getAI();
+      auto module = actor->getBasePerson()->getAI();
+      actor->getBasePerson()->setAI(nullptr);
       delete module;
       module = nullptr;
     }
@@ -338,7 +346,7 @@ void Battle::addDelay(int32_t delay_amount)
   {
     auto to_add = delay_amount;
 
-    delay += (to_add * kDELAY_NORM_FACTOR);
+    delay += (to_add * kDELAY_FAST_FACTOR);
   }
 }
 
@@ -677,6 +685,7 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
                               config->getScreenHeight(),
                               getActorX(event->actor), getActorY(event->actor));
   render_elements.push_back(element);
+
   outcome.actor_outcome_state = ActionState::ACTION_END;
   addDelay(600);
 }
@@ -918,8 +927,11 @@ void Battle::processEventSkill()
       ActorOutcome outcome;
       outcome.actor = target;
 
-      if(event->doesActionHit(target))
+      auto action_hits = event->doesActionHit(target);
+
+      if(action_hits)
       {
+        std::cout << "Action Hits!" << std::endl;
         if(curr_action->actionFlag(ActionFlags::DAMAGE))
         {
           outcome.damage = event->calcDamage(target);
@@ -942,6 +954,7 @@ void Battle::processEventSkill()
       }
       else
       {
+        std::cout << "Action Does NOT Hit!" << std::endl;
         outcome.damage = 0;
         outcome.actor_outcome_state = ActionState::ACTION_MISS;
 
@@ -1140,6 +1153,7 @@ void Battle::updateProcessing()
   /* Check if the current event is finished processing */
   if(event && event->action_state == ActionState::DONE)
   {
+    std::cout << "Setting the Buffer index to be processed" << std::endl;
     battle_buffer->setProcessed();
 
     if(event->actor && event->actor->getFlag(ActorState::ALLY))
@@ -2513,10 +2527,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 {
   /* Assert everything important is not nullptr */
-  assert(config);
-  assert(renderer);
-  assert(friends);
-  assert(foes);
+  assert(config && renderer && friends && foes);
 
   /* Construct the Battle actor objects based on the persons in the parties */
   buildBattleActors(friends, foes);
@@ -2563,6 +2574,7 @@ void Battle::stopBattle()
   if(battle_buffer)
     battle_buffer->clear();
 
+  flags_combat = static_cast<CombatState>(0);
   delay = 0;
   outcome = OutcomeType::NONE;
   turn_state = TurnState::STOPPED;

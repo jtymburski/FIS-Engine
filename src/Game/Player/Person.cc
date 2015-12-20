@@ -92,8 +92,8 @@ Person::Person()
  *         battle_class - pointer to the battle class
  *         race_class - pointer to the race class
  */
-Person::Person(const int32_t& game_id, const std::string& name,
-               Category* const battle_class, Category* const race_class)
+Person::Person(const int32_t &game_id, const std::string &name,
+               Category *const battle_class, Category *const race_class)
     : game_id{game_id},
       my_id{++id},
       base_person{nullptr},
@@ -109,7 +109,7 @@ Person::Person(const int32_t& game_id, const std::string& name,
  *
  * Inputs: Person* - pointer to the base person
  */
-Person::Person(Person* const source)
+Person::Person(Person *const source)
     : game_id{source->game_id}, my_id{++id}, base_person{source}
 {
   setupClass();
@@ -135,7 +135,7 @@ Person::~Person()
  * Output: none
  */
 // TODO: NOT FULLY COMPLETE. Relevant??
-void Person::copySelf(const Person& source)
+void Person::copySelf(const Person &source)
 {
   action_x = source.action_x;
   action_y = source.action_y;
@@ -266,17 +266,15 @@ void Person::setupClass()
 
     battle_class = base_person->battle_class;
     race_class = base_person->race_class;
+
+    assert(battle_class && race_class);
+
     name = base_person->name;
     rank = base_person->rank;
     primary = base_person->primary;
     secondary = base_person->secondary;
     primary_curve = base_person->primary_curve;
     secondary_curve = base_person->secondary_curve;
-    base_stats = base_person->base_stats;
-    base_max_stats = base_person->base_max_stats;
-    curr_stats = base_person->curr_stats;
-    curr_max_stats = base_person->curr_max_stats;
-    temp_max_stats = base_person->temp_max_stats;
     base_skills = base_person->base_skills;
     curr_skills = nullptr;
     learned_skills = nullptr;
@@ -307,7 +305,12 @@ void Person::setupClass()
     dialog_sprite = base_person->dialog_sprite;
     action_sprite = base_person->action_sprite;
 
-    updateSkills();
+    updateBaseStats();
+    curr_stats = base_stats;
+    curr_max_stats = base_stats;
+    temp_max_stats = base_stats;
+
+    updateBaseSkills();
   }
 }
 
@@ -317,7 +320,7 @@ void Person::setupClass()
  * Inputs: bool - clears the memory of anything dynamically allocated by Person
  * Output: none
  */
-void Person::unsetAll(const bool& clear)
+void Person::unsetAll(const bool &clear)
 {
   if(clear)
   {
@@ -387,6 +390,7 @@ void Person::updateBaseStats()
 {
   AttributeSet temp;
   AttributeSet temp_max;
+
   if(battle_class != nullptr)
   {
     temp = battle_class->getBaseSet();
@@ -394,7 +398,7 @@ void Person::updateBaseStats()
   }
   if(race_class != nullptr)
   {
-    temp += race_class->getBaseSet();
+    temp += battle_class->getBaseSet();
     temp_max += race_class->getTopSet();
   }
 
@@ -485,13 +489,15 @@ void Person::updateBaseSkills()
  */
 AttributeSet Person::calcEquipStats()
 {
-  auto equip_bonus = AttributeSet();
+  // auto equip_bonus = AttributeSet();
 
-  for(auto it = begin(equipments); it != end(equipments); ++it)
-    if((*it) != nullptr)
-      equip_bonus += (*it)->getStats();
+  // for(auto it = begin(equipments); it != end(equipments); ++it)
+  //   if((*it) != nullptr)
+  //     equip_bonus += (*it)->getStats();
 
-  return (curr_max_stats + equip_bonus);
+  // return (curr_max_stats + equip_bonus);
+
+  return curr_max_stats;
 }
 
 /*
@@ -502,7 +508,7 @@ AttributeSet Person::calcEquipStats()
  * Output: none
  */
 /* Updates the level of the person based on their current total experience */
-void Person::updateLevel(const bool& ignore_flags)
+void Person::updateLevel(const bool &ignore_flags)
 {
   if(getPFlag(PState::CAN_LEVEL_UP) || ignore_flags)
   {
@@ -623,7 +629,7 @@ void Person::buildExpTable()
  * Output: float - the obtained curve modifier
  */
 /* Returns the curve modifier given a curve value and whether to check prim */
-float Person::getCurveModifier(const ElementCurve& curve, const bool primary)
+float Person::getCurveModifier(const ElementCurve &curve, const bool primary)
 {
   auto index = static_cast<uint8_t>(curve);
 
@@ -649,8 +655,8 @@ float Person::getCurveModifier(const ElementCurve& curve, const bool primary)
  *         ignore_flags - true to ignore CAN_GAIN_EXP flag. default false
  * Output: bool - true if the experience was added successfully
  */
-bool Person::addExp(const uint32_t& amount, const bool& update, 
-                    const bool& ignore_flags)
+bool Person::addExp(const uint32_t &amount, const bool &update,
+                    const bool &ignore_flags)
 {
   auto can_add = false;
 
@@ -717,7 +723,7 @@ void Person::clearLearnedSkills()
  * Inputs: amount - amount of damage to deal
  * Output: bool - true if the Person is now dead
  */
-bool Person::doDmg(const uint32_t& amount)
+bool Person::doDmg(const uint32_t &amount)
 {
   curr_stats.alterStat(Attribute::VITA, -amount);
 
@@ -834,7 +840,7 @@ bool Person::isPowerGuarder()
  *         SDL_Renderer* renderer - the rendering engine
  * Output: bool - true if load was successful
  */
-bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
+bool Person::loadData(XmlData data, int index, SDL_Renderer *renderer,
                       std::string base_path)
 {
   bool success = true;
@@ -979,7 +985,7 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
  *         update - whether to update the level
  * Output: bool - whether the loss of experience was possible
  */
-bool Person::loseExp(const uint32_t& amount, const bool& update)
+bool Person::loseExp(const uint32_t &amount, const bool &update)
 {
   if(amount >= total_exp)
     total_exp -= amount;
@@ -1000,7 +1006,7 @@ bool Person::loseExp(const uint32_t& amount, const bool& update)
  * Inputs: percentage - the percentage to take away gained experience.
  * Output: bool - whether a loss of experience happened properly
  */
-bool Person::loseExpPercent(const uint16_t& percent)
+bool Person::loseExpPercent(const uint16_t &percent)
 {
   auto lost_exp = false;
   auto exp_pc = findExpPercent();
@@ -1033,7 +1039,7 @@ bool Person::loseExpPercent(const uint16_t& percent)
  * Inputs: equip_slot - enumerated equip slot to remove the equipment for
  * Output: bool - true if a piece of equipment was there and removed
  */
-bool Person::removeEquip(const EquipSlots& equip_slot)
+bool Person::removeEquip(const EquipSlots &equip_slot)
 {
   auto removed = false;
 
@@ -1071,7 +1077,7 @@ bool Person::removeEquip(const EquipSlots& equip_slot)
   return removed;
 }
 
-Sprite* Person::getActionSprite()
+Sprite *Person::getActionSprite()
 {
   return action_sprite;
 }
@@ -1083,7 +1089,7 @@ Sprite* Person::getActionSprite()
  * Inputs: none
  * Output: Sprite* - the sprite pointer
  */
-Sprite* Person::getDialogSprite()
+Sprite *Person::getDialogSprite()
 {
   return dialog_sprite;
 }
@@ -1120,7 +1126,7 @@ int16_t Person::getActionY()
  * Inputs:
  * Output:
  */
-AIModule* Person::getAI()
+AIModule *Person::getAI()
 {
   return ai_module;
 }
@@ -1153,7 +1159,7 @@ int32_t Person::getMyID()
  * Inputs: test_flag - PState flag to find the value for
  * Output: bool - the value of the given flag to check
  */
-bool Person::getPFlag(const PState& test_flag)
+bool Person::getPFlag(const PState &test_flag)
 {
   return static_cast<bool>((person_flags & test_flag) == test_flag);
 }
@@ -1164,7 +1170,7 @@ bool Person::getPFlag(const PState& test_flag)
  * Inputs: none
  * Output: Person* - pointer to the assigned base person
  */
-Person* Person::getBasePerson()
+Person *Person::getBasePerson()
 {
   return base_person;
 }
@@ -1175,7 +1181,7 @@ Person* Person::getBasePerson()
  * Inputs: none
  * Output: Category* - pointer to the base class
  */
-Category* Person::getClass()
+Category *Person::getClass()
 {
   return battle_class;
 }
@@ -1186,7 +1192,7 @@ Category* Person::getClass()
  * Inputs: none
  * Output: Category* - pointer to the race class
  */
-Category* Person::getRace()
+Category *Person::getRace()
 {
   return race_class;
 }
@@ -1265,7 +1271,7 @@ ElementCurve Person::getSecondaryCurve()
  * Inputs: none
  * Output: AttributeSet& - ref. to the base stats of the Person
  */
-AttributeSet& Person::getBase()
+AttributeSet &Person::getBase()
 {
   return base_stats;
 }
@@ -1276,7 +1282,7 @@ AttributeSet& Person::getBase()
  * Inputs: none
  * Output: AttributeSet& - ref. to the base max stats of the Person
  */
-AttributeSet& Person::getBaseMax()
+AttributeSet &Person::getBaseMax()
 {
   return base_max_stats;
 }
@@ -1287,7 +1293,7 @@ AttributeSet& Person::getBaseMax()
  * Inputs: none
  * Output: AttributeSet& - ref. to the curr stats of the Person
  */
-AttributeSet& Person::getCurr()
+AttributeSet &Person::getCurr()
 {
   return curr_stats;
 }
@@ -1298,7 +1304,7 @@ AttributeSet& Person::getCurr()
  * Inputs: none
  * Output: AttributeSet& - ref. to the curr max stats of the Person
  */
-AttributeSet& Person::getCurrMax()
+AttributeSet &Person::getCurrMax()
 {
   return curr_max_stats;
 }
@@ -1309,7 +1315,7 @@ AttributeSet& Person::getCurrMax()
  * Inputs: none
  * Output: AttributeSet& - ref. to the temp stats of the Person
  */
-AttributeSet& Person::getTemp()
+AttributeSet &Person::getTemp()
 {
   return temp_max_stats;
 }
@@ -1320,7 +1326,7 @@ AttributeSet& Person::getTemp()
  * Inputs: none
  * Output: SkillSet* - pointer to the base skills of the Person
  */
-SkillSet* Person::getBaseSkills()
+SkillSet *Person::getBaseSkills()
 {
   return base_skills;
 }
@@ -1331,7 +1337,7 @@ SkillSet* Person::getBaseSkills()
  * Inputs: none
  * Output: SkillSet* - pointer to the current SkillSet of the Person
  */
-SkillSet* Person::getCurrSkills()
+SkillSet *Person::getCurrSkills()
 {
   return curr_skills;
 }
@@ -1364,7 +1370,7 @@ float Person::getExpMod()
  * Inputs: equip_slot - the equip slot to check the equipment for
  * Output: Equipment* - pointer to the equipment at the enumerated slot
  */
-Equipment* Person::getEquip(const EquipSlots& equip_slot)
+Equipment *Person::getEquip(const EquipSlots &equip_slot)
 {
   auto index = getEquipIndex(equip_slot);
 
@@ -1381,7 +1387,7 @@ Equipment* Person::getEquip(const EquipSlots& equip_slot)
  * Inputs: none
  * Output: uint32_t - the mapped index of a given equip slot
  */
-uint32_t Person::getEquipIndex(const EquipSlots& equip_slot)
+uint32_t Person::getEquipIndex(const EquipSlots &equip_slot)
 {
   if(static_cast<uint8_t>(equip_slot) < equipments.size())
   {
@@ -1478,7 +1484,7 @@ float Person::getVitaPercent()
  * Inputs: none
  * Output: Sprite* - pointer to the correct current first person sprite
  */
-Sprite* Person::getFirstPerson()
+Sprite *Person::getFirstPerson()
 {
   if(base_person != nullptr)
     return base_person->first_person;
@@ -1492,7 +1498,7 @@ Sprite* Person::getFirstPerson()
  * Inputs: none
  * Output: Sprite* - pointer to the correct current third person sprite
  */
-Sprite* Person::getThirdPerson()
+Sprite *Person::getThirdPerson()
 {
   if(base_person != nullptr)
     return base_person->third_person;
@@ -1580,11 +1586,10 @@ void Person::setActionXY(int16_t action_x, int16_t action_y)
  * Inputs:
  * Output:
  */
-void Person::setAI(AIModule* const new_ai_module)
+void Person::setAI(AIModule *const new_ai_module)
 {
   ai_module = new_ai_module;
 }
-
 
 /*
  * Description: Evaluates and returns a given PState flag
@@ -1593,7 +1598,7 @@ void Person::setAI(AIModule* const new_ai_module)
  *         set_value - the value to assign the flag to
  * Output: none
  */
-void Person::setPFlag(const PState& flag, const bool& set_value)
+void Person::setPFlag(const PState &flag, const bool &set_value)
 {
   (set_value) ? (person_flags |= flag) : (person_flags &= ~flag);
 }
@@ -1605,7 +1610,7 @@ void Person::setPFlag(const PState& flag, const bool& set_value)
  * Inputs: PartyType type - the type to correlate the PState flag to
  * Output: none
  */
-void Person::setPFlag(const PartyType& type)
+void Person::setPFlag(const PartyType &type)
 {
   PState flag = PState::SLEUTH;
 
@@ -1639,7 +1644,7 @@ void Person::setPFlag(const PartyType& type)
  * Inputs: Category* category - the new class category
  * Output: none
  */
-void Person::setClass(Category* const category)
+void Person::setClass(Category *const category)
 {
   battle_class = category;
 
@@ -1658,7 +1663,7 @@ void Person::setClass(Category* const category)
  * Output: none
  */
 void Person::setCurves(Element prim, ElementCurve prim_curve, Element secd,
-                       ElementCurve secd_curve, const bool& update_level)
+                       ElementCurve secd_curve, const bool &update_level)
 {
   primary = prim;
   secondary = secd;
@@ -1675,7 +1680,7 @@ void Person::setCurves(Element prim, ElementCurve prim_curve, Element secd,
  * Inputs: new_curr_set - const ref. to an AttributeSet to be assigned
  * Output: bool - true if the assignment was successful
  */
-bool Person::setCurr(const AttributeSet& new_curr_set)
+bool Person::setCurr(const AttributeSet &new_curr_set)
 {
   if(new_curr_set.getFlag(AttributeState::PERSONAL))
   {
@@ -1693,7 +1698,7 @@ bool Person::setCurr(const AttributeSet& new_curr_set)
  * Inputs: new_curr_max_set - const ref. to an AttributeSet to be assigned
  * Output: bool - true if the assignment was successfully
  */
-bool Person::setCurrMax(const AttributeSet& new_curr_max_set)
+bool Person::setCurrMax(const AttributeSet &new_curr_max_set)
 {
   if(curr_max_stats.getFlag(AttributeState::PERSONAL))
   {
@@ -1711,7 +1716,7 @@ bool Person::setCurrMax(const AttributeSet& new_curr_max_set)
  * Inputs: new_temp_set - const ref. to an AttributeSet to be assigned
  * Output: bool - true if the assignment was successfully
  */
-bool Person::setTemp(const AttributeSet& new_temp_set)
+bool Person::setTemp(const AttributeSet &new_temp_set)
 {
   if(new_temp_set.getFlag(AttributeState::PERSONAL))
   {
@@ -1729,7 +1734,7 @@ bool Person::setTemp(const AttributeSet& new_temp_set)
  * Inputs: new_dmg_mod - float value that is a new dmg modifier value
  * Output: bool - true if the new value was within range
  */
-bool Person::setDmgMod(const float& new_dmg_mod)
+bool Person::setDmgMod(const float &new_dmg_mod)
 {
   if(Helpers::isInRange(new_dmg_mod, kMIN_DMG_MODI, kMAX_DMG_MODI))
   {
@@ -1747,7 +1752,7 @@ bool Person::setDmgMod(const float& new_dmg_mod)
  * Inputs: new_exp_mod - float value that is a new exp modifier value
  * Output: bool - true if the nw value was within range
  */
-bool Person::setExpMod(const float& new_exp_mod)
+bool Person::setExpMod(const float &new_exp_mod)
 {
   if(Helpers::isInRange(new_exp_mod, kMIN_EXP_MODI, kMAX_EXP_MODI))
   {
@@ -1767,7 +1772,7 @@ bool Person::setExpMod(const float& new_exp_mod)
  *         new_equip - pointer to the equipment to be equipped
  * Output: bool - true if the equipment was attached successfully
  */
-bool Person::setEquip(const EquipSlots& slot, Equipment* new_equip)
+bool Person::setEquip(const EquipSlots &slot, Equipment *new_equip)
 {
   if(new_equip == nullptr || slot != new_equip->getEquipSlot())
     return false;
@@ -1814,9 +1819,9 @@ void Person::setGameID(int id)
  *         new_item_drops - new item drop IDs for drop loot
  * Output: bool - true if the loot assignment was successful
  */
-bool Person::setLoot(const uint32_t& new_credit_drop,
-                     const uint32_t& new_exp_drop,
-                     const std::vector<uint32_t>& new_item_drops)
+bool Person::setLoot(const uint32_t &new_credit_drop,
+                     const uint32_t &new_exp_drop,
+                     const std::vector<uint32_t> &new_item_drops)
 {
   auto all_set = true;
 
@@ -1865,12 +1870,12 @@ void Person::setName(std::string name)
  * Inputs: Category* category - the new race class category
  * Output: none
  */
-void Person::setRace(Category* const category)
+void Person::setRace(Category *const category)
 {
   race_class = category;
 
-  updateBaseStats();
-  updateBaseSkills();
+  // updateBaseStats();
+  // updateBaseSkills();
 }
 
 /*
@@ -1881,8 +1886,8 @@ void Person::setRace(Category* const category)
  *         new_action - pointer to an action frame sprite
  * Output: none
  */
-void Person::setSprites(Sprite* new_fp, Sprite* new_tp, Sprite* new_dialog,
-                        Sprite* new_action)
+void Person::setSprites(Sprite *new_fp, Sprite *new_tp, Sprite *new_dialog,
+                        Sprite *new_action)
 {
   /* Unset the current sprites */
   unsetSprites();
@@ -1906,7 +1911,7 @@ void Person::setSprites(Sprite* new_fp, Sprite* new_tp, Sprite* new_dialog,
  * Inputs: const Person &source - the source class constructor
  * Output: Person& - pointer to the copied class
  */
-Person& Person::operator=(const Person& source)
+Person &Person::operator=(const Person &source)
 {
   /* Check for self assignment */
   if(this == &source)
@@ -1930,7 +1935,7 @@ Person& Person::operator=(const Person& source)
  * Inputs: level - the level to be checked for
  * Output: uint32_t - the minimum experience required to reach that level
  */
-uint32_t Person::getExpAt(const uint8_t& level)
+uint32_t Person::getExpAt(const uint8_t &level)
 {
   if(level != 0 && level <= kNUM_LEVELS)
     return exp_table.at(level - 1);
@@ -1944,7 +1949,7 @@ uint32_t Person::getExpAt(const uint8_t& level)
  * Inputs: experience - the experience to find a level for
  * Output: uint8_t - the highest level reachable at the given experience
  */
-uint16_t Person::getLevelAt(const uint32_t& experience)
+uint16_t Person::getLevelAt(const uint32_t &experience)
 {
   for(size_t i = 0; i < exp_table.size(); i++)
     if(exp_table.at(i) > experience)
