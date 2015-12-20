@@ -44,8 +44,8 @@ const uint8_t BattleActor::kACTOR_KO_ALPHA{50};
  *
  * Inputs:
  */
-BattleActor::BattleActor(Person* person_base, int32_t battle_index,
-                         bool is_ally, bool can_run, SDL_Renderer* renderer)
+BattleActor::BattleActor(Person *person_base, int32_t battle_index,
+                         bool is_ally, bool can_run, SDL_Renderer *renderer)
     : action_element{ActionElement()},
       active_sprite{ActiveSprite::NONE},
       battle_index{battle_index},
@@ -142,7 +142,7 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
 
 void BattleActor::clearAilments()
 {
-  for(auto& clear_ailment : ailments)
+  for(auto &clear_ailment : ailments)
   {
     if(clear_ailment)
       delete clear_ailment;
@@ -154,7 +154,7 @@ void BattleActor::clearAilments()
 
 void BattleActor::clearBattleItems()
 {
-  for(auto& battle_item : battle_items)
+  for(auto &battle_item : battle_items)
   {
     if(battle_item)
       delete battle_item;
@@ -166,7 +166,7 @@ void BattleActor::clearBattleItems()
 
 void BattleActor::clearBattleSkills()
 {
-  for(auto& battle_skill : battle_skills)
+  for(auto &battle_skill : battle_skills)
   {
     if(battle_skill)
       delete battle_skill;
@@ -212,7 +212,7 @@ void BattleActor::clearSprites()
   sprite_third_person = nullptr;
 }
 
-void BattleActor::createSprites(SDL_Renderer* renderer)
+void BattleActor::createSprites(SDL_Renderer *renderer)
 {
   if(person_base)
   {
@@ -302,9 +302,9 @@ void BattleActor::updateActionElement(int32_t cycle_time)
   auto delta_x = std::floor(cycle_time * kVELOCITY_X);
 
   /* Approach the end position */
-  auto& end = action_element.position_end;
-  auto& start = action_element.position_start;
-  auto& curr = action_element.position_curr;
+  auto &end = action_element.position_end;
+  auto &start = action_element.position_start;
+  auto &curr = action_element.position_curr;
 
   if(action_element.element_state == SpriteState::SLIDING_IN)
   {
@@ -356,7 +356,9 @@ void BattleActor::updateSpriteFlashing(int32_t cycle_time)
                                          Helpers::calcColorBlue(color, alpha));
     }
     else
+    {
       endFlashing();
+    }
   }
 }
 
@@ -428,7 +430,7 @@ void BattleActor::addAilment(Infliction type, int32_t min_turns,
 }
 
 // TODO: Build battle Items [09-07-15]
-bool BattleActor::buildBattleItems(std::vector<BattleActor*> all_targets)
+bool BattleActor::buildBattleItems(std::vector<BattleActor *> all_targets)
 {
   (void)all_targets;
   bool success = person_base;
@@ -436,7 +438,7 @@ bool BattleActor::buildBattleItems(std::vector<BattleActor*> all_targets)
   return success;
 }
 
-bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
+bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
 {
   person_base->updateBaseSkills();
 
@@ -450,7 +452,7 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
     auto curr_skills = person_base->getCurrSkills();
     auto useable_skills = curr_skills->getElements(person_base->getLevel());
 
-    for(auto& element : useable_skills)
+    for(auto &element : useable_skills)
     {
       auto battle_skill = new BattleSkill();
       battle_skill->skill = element.skill;
@@ -589,16 +591,16 @@ bool BattleActor::isImmune(Infliction type)
 
 bool BattleActor::isInflicted(Infliction test_infliction)
 {
-  for(const auto& ailment : ailments)
+  for(const auto &ailment : ailments)
     if(ailment && ailment->getType() == test_infliction)
       return true;
 
   return false;
 }
 
-Ailment* BattleActor::nextUpdateAilment()
+Ailment *BattleActor::nextUpdateAilment()
 {
-  for(auto& ailment : ailments)
+  for(auto &ailment : ailments)
   {
     if(ailment && ailment->getUpdateStatus() == AilmentStatus::INCOMPLETE)
       return ailment;
@@ -609,18 +611,18 @@ Ailment* BattleActor::nextUpdateAilment()
 
 // TODO: [09-06-15] Removing ailments. Corner cases?
 
-void BattleActor::clearAilment(Ailment* remove_ailment)
+void BattleActor::clearAilment(Ailment *remove_ailment)
 {
   delete remove_ailment;
   remove_ailment = nullptr;
 }
 
-bool BattleActor::removeAilment(Ailment* remove_ailment)
+bool BattleActor::removeAilment(Ailment *remove_ailment)
 {
   if(remove_ailment)
   {
     ailments.erase(std::remove_if(ailments.begin(), ailments.end(),
-                                  [&](Ailment* a) -> bool
+                                  [&](Ailment *a) -> bool
                                   {
                                     return a == remove_ailment;
                                   }),
@@ -634,7 +636,7 @@ bool BattleActor::removeAilment(Ailment* remove_ailment)
 
 void BattleActor::removeAilmentsKO()
 {
-  for(auto& ailment : ailments)
+  for(auto &ailment : ailments)
   {
     if(ailment && ailment->getFlag(AilState::CURABLE_KO))
     {
@@ -716,7 +718,7 @@ bool BattleActor::update(int32_t cycle_time)
 //   }
 // }
 
-Frame* BattleActor::getActionFrame()
+Frame *BattleActor::getActionFrame()
 {
   return action_element.frame_action;
 }
@@ -731,7 +733,7 @@ int32_t BattleActor::getActionFrameY()
   return action_element.position_curr.y;
 }
 
-Sprite* BattleActor::getActiveSprite()
+Sprite *BattleActor::getActiveSprite()
 {
   if(active_sprite == ActiveSprite::FIRST_PERSON)
     return sprite_first_person;
@@ -759,27 +761,27 @@ std::vector<ActionType> BattleActor::getValidActionTypes()
   return valid_types;
 }
 
-std::vector<Ailment*> BattleActor::getAilments()
+std::vector<Ailment *> BattleActor::getAilments()
 {
   return ailments;
 }
 
-Person* BattleActor::getBasePerson()
+Person *BattleActor::getBasePerson()
 {
   return person_base;
 }
 
-std::vector<BattleItem*> BattleActor::getBattleItems()
+std::vector<BattleItem *> BattleActor::getBattleItems()
 {
   return battle_items;
 }
 
-std::vector<BattleSkill*> BattleActor::getBattleSkills()
+std::vector<BattleSkill *> BattleActor::getBattleSkills()
 {
   return battle_skills;
 }
 
-bool BattleActor::getFlag(const ActorState& test_flag)
+bool BattleActor::getFlag(const ActorState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
@@ -789,12 +791,12 @@ int32_t BattleActor::getIndex()
   return battle_index;
 }
 
-Frame* BattleActor::getInfoFrame()
+Frame *BattleActor::getInfoFrame()
 {
   return frame_info;
 }
 
-Sprite* BattleActor::getDialogSprite()
+Sprite *BattleActor::getDialogSprite()
 {
   return sprite_dialog;
 }
@@ -821,7 +823,7 @@ SelectionState BattleActor::getSelectionState()
 
 // TODO: Bubbification cost
 // TODO: Halfcost infliction cost
-uint32_t BattleActor::getSkillCost(Skill* test_skill)
+uint32_t BattleActor::getSkillCost(Skill *test_skill)
 {
   if(test_skill)
     return test_skill->getCost();
@@ -849,12 +851,12 @@ UpkeepState BattleActor::getStateUpkeep()
   return state_upkeep;
 }
 
-BattleStats& BattleActor::getStats()
+BattleStats &BattleActor::getStats()
 {
   return stats_actual;
 }
 
-BattleStats& BattleActor::getStatsRendered()
+BattleStats &BattleActor::getStatsRendered()
 {
   return stats_rendered;
 }
@@ -908,7 +910,7 @@ float BattleActor::getRegenFactor(RegenRate regen_rate)
   return kREGEN_RATE_ZERO_PC;
 }
 
-void BattleActor::setActionFrame(Frame* frame_action)
+void BattleActor::setActionFrame(Frame *frame_action)
 {
   clearActionFrame();
 
@@ -941,10 +943,25 @@ void BattleActor::setStateLiving(LivingState new_state)
 
 void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
 {
+  auto old_active_sprite = getActiveSprite();
   active_sprite = new_active_sprite;
+  auto sprite = getActiveSprite();
+
+  if(sprite && old_active_sprite && state_flashing.is_flashing)
+  {
+    sprite->setTempColorBalance(old_active_sprite->getTempColorRed(),
+                                old_active_sprite->getTempColorGreen(),
+                                old_active_sprite->getTempColorBlue());
+
+    sprite->setColorBalance(old_active_sprite->getColorRed(),
+                            old_active_sprite->getColorGreen(),
+                            old_active_sprite->getColorBlue());
+
+    old_active_sprite->revertColorBalance();
+  }
 }
 
-void BattleActor::setFlag(ActorState set_flags, const bool& set_value)
+void BattleActor::setFlag(ActorState set_flags, const bool &set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
 }
@@ -954,7 +971,7 @@ void BattleActor::setGuardingState(GuardingState state_guarding)
   this->state_guarding = state_guarding;
 }
 
-void BattleActor::setInfoFrame(Frame* frame_info)
+void BattleActor::setInfoFrame(Frame *frame_info)
 {
   clearInfoFrame();
   this->frame_info = frame_info;
@@ -985,14 +1002,14 @@ SDL_Color BattleActor::getFlashingColor(FlashingType flashing_type)
 }
 
 /* Grab all allied targets for given user */
-std::vector<BattleActor*>
-BattleActor::getAllyTargets(BattleActor* user,
-                            std::vector<BattleActor*> targets)
+std::vector<BattleActor *>
+BattleActor::getAllyTargets(BattleActor *user,
+                            std::vector<BattleActor *> targets)
 {
   assert(user);
-  std::vector<BattleActor*> valid_targets;
+  std::vector<BattleActor *> valid_targets;
 
-  for(const auto& target : targets)
+  for(const auto &target : targets)
   {
     if(target)
     {
@@ -1008,14 +1025,14 @@ BattleActor::getAllyTargets(BattleActor* user,
 }
 
 /* Grab all enemy targets for given user */
-std::vector<BattleActor*>
-BattleActor::getEnemyTargets(BattleActor* user,
-                             std::vector<BattleActor*> targets)
+std::vector<BattleActor *>
+BattleActor::getEnemyTargets(BattleActor *user,
+                             std::vector<BattleActor *> targets)
 {
   assert(user);
-  std::vector<BattleActor*> valid_targets;
+  std::vector<BattleActor *> valid_targets;
 
-  for(const auto& target : targets)
+  for(const auto &target : targets)
   {
     if(target)
     {
@@ -1030,11 +1047,11 @@ BattleActor::getEnemyTargets(BattleActor* user,
   return valid_targets;
 }
 
-std::vector<BattleActor*>
-BattleActor::getLivingTargets(std::vector<BattleActor*> targets)
+std::vector<BattleActor *>
+BattleActor::getLivingTargets(std::vector<BattleActor *> targets)
 {
   targets.erase(std::remove_if(begin(targets), end(targets),
-                               [&](BattleActor* actor) -> bool
+                               [&](BattleActor *actor) -> bool
                                {
                                  if(actor)
                                  {
@@ -1049,9 +1066,9 @@ BattleActor::getLivingTargets(std::vector<BattleActor*> targets)
   return targets;
 }
 
-std::vector<BattleActor*>
-BattleActor::getRemovedUser(BattleActor* user,
-                            std::vector<BattleActor*> targets)
+std::vector<BattleActor *>
+BattleActor::getRemovedUser(BattleActor *user,
+                            std::vector<BattleActor *> targets)
 {
   targets.erase(std::remove(begin(targets), end(targets), user), end(targets));
 
@@ -1062,13 +1079,13 @@ BattleActor::getRemovedUser(BattleActor* user,
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-std::vector<BattleActor*>
-BattleActor::getTargetsFromScope(BattleActor* user, ActionScope scope,
-                                 std::vector<BattleActor*> targets)
+std::vector<BattleActor *>
+BattleActor::getTargetsFromScope(BattleActor *user, ActionScope scope,
+                                 std::vector<BattleActor *> targets)
 {
   assert(user);
 
-  std::vector<BattleActor*> valid_targets;
+  std::vector<BattleActor *> valid_targets;
 
   /* User Scope - only the user is selectable */
   if(scope == ActionScope::USER)
