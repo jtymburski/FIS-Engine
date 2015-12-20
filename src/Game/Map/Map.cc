@@ -1449,12 +1449,12 @@ void Map::updateTileSize()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-  
+
 /* Battle won trigger for map */
 void Map::battleWon()
 {
   // TODO: Clean up target source based on battle properties
-  
+
   battle_trigger = false;
 }
 
@@ -1501,14 +1501,14 @@ bool Map::initBattle(MapPerson* person, MapThing* source)
     battle_trigger = true;
     battle_person = person;
     battle_thing = source;
-    
+
     /* Flush person keys */
     person->keyFlush();
-    
+
     /* Set the targets */
     person->setTarget(source);
     source->setTarget(person);
-    
+
     /* Clear running status */
     if(system_options != nullptr && !system_options->isAutoRun())
       person->setRunning(false);
@@ -1576,12 +1576,12 @@ bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
 
   return true;
 }
-  
+
 /* Returns if the map is ready for battle */
 bool Map::isBattleReady()
 {
-  return (battle_trigger && 
-          battle_person != nullptr && !battle_person->isMoving() && 
+  return (battle_trigger &&
+          battle_person != nullptr && !battle_person->isMoving() &&
           battle_thing != nullptr && !battle_thing->isMoving());
 }
 
@@ -2530,7 +2530,7 @@ bool Map::update(int cycle_time)
       initiateNPCInteraction();
 
     /* Clearing dialog info if target is set */
-    if(player->getTarget() != nullptr && !battle_trigger && 
+    if(player->getTarget() != nullptr && !battle_trigger &&
        !map_dialog.isConversationActive() &&
        !map_dialog.isConversationReady() && !map_dialog.isConversationWaiting())
     {

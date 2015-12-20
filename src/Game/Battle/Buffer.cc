@@ -138,7 +138,7 @@ void Buffer::clearForTurn(uint32_t turn_number)
   action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
                                      [&](const BufferAction a) -> bool
                                      {
-                                       return (a.initial_turn == turn_number);
+                                       return (a.initial_turn == turn_number) && (a.cooldown < 1);
                                      }),
                       end(action_buffer));
 
@@ -191,7 +191,7 @@ void Buffer::print(bool simple)
       std::cout << "  -- Element -- \n";
       std::cout << "Type: " << Helpers::actionTypeToStr(element.type) << "\n";
 
-      if(element.type == ActionType::SKILL && element.used_skill)
+      if(element.type == ActionType::SKILL && element.used_skill && element.used_skill->skill)
       {
         std::cout << "Skill: " << element.used_skill->skill->getName() << "\n";
         std::cout << "Scope: " << Helpers::actionScopeToStr(

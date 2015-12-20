@@ -345,7 +345,7 @@ void Battle::addDelay(int32_t delay_amount)
   {
     auto to_add = delay_amount;
 
-    delay += (to_add * kDELAY_FAST_FACTOR);
+    delay += (to_add * kDELAY_FAST_FACTOR * 0.4);
   }
 }
 
@@ -460,6 +460,7 @@ void Battle::cleanUpTurn()
   // ----- clear Defend/Guard/Guarding/Temp ailment efffects
 
   battle_buffer->clearForTurn(turns_elapsed);
+  battle_buffer->updateCooldowns();
   battle_menu->clear();
 
   for(auto &actor : actors)
@@ -544,6 +545,7 @@ bool Battle::doesActorNeedToSelect(BattleActor *actor)
   {
     to_select &= (actor->getStateLiving() == LivingState::ALIVE);
     to_select &= (actor->getSelectionState() == SelectionState::NOT_SELECTED);
+    to_select &= (!battle_buffer->hasCoolingSkill(actor));
 
     /* Not paralyzed/stunned/etc. */
     to_select &= (!actor->getFlag(ActorState::SELECTION_SKIP));
@@ -707,6 +709,11 @@ void Battle::outcomeStatePlep(ActorOutcome &outcome)
     auto type = event->getCurrAction()->getAilment();
     animation = battle_display_data->getPlepAilment(type);
     outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+  }
+  else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
+  {
+    animation = event->event_skill->skill->getAnimation();
+    // outcome.actor_outcome_state = ActionState:
   }
 
   render_elements.push_back(new RenderElement(renderer, animation, 1, x, y));
@@ -1031,7 +1038,7 @@ void Battle::updateOutcome()
 
     for(auto &enemy : getEnemies())
       if(enemy && enemy->getBasePerson())
-        total_exp_drop += enemy->getBasePerson()->getExpDrop();
+        total_exp_drop += (enemy->getBasePerson()->getExpDrop() * enemy->getBasePerson()->getLevel());
 
     for(auto &ally : getAllies())
     {
@@ -1692,6 +1699,9 @@ void Battle::buildInfoEnemy(BattleActor *enemy)
   /* Render the enemy name */
   SDL_Color color = {255, 255, 255, 255};
   Text *t = new Text(font_header);
+
+  auto name = enemy->getBasePerson()->getName();
+
   t->setText(renderer, enemy->getBasePerson()->getName(), color);
   t->render(renderer, (kINFO_W - t->getWidth()) / 2,
             (border[0].y - t->getHeight()) / 2);
@@ -1699,14 +1709,17 @@ void Battle::buildInfoEnemy(BattleActor *enemy)
   delete t;
 
   /* Render the enemy level */
-  t = new Text(font_subheader);
-  t->setText(renderer,
-             "Level " + std::to_string(enemy->getBasePerson()->getLevel()),
-             color);
-  t->render(renderer, (kINFO_W - t->getWidth()) / 2,
-            border[0].y + bar_height +
-                (kINFO_H - border[0].y - bar_height - t->getHeight()) / 2);
-  delete t;
+  if(name != "Arcadius")
+  {
+    t = new Text(font_subheader);
+    t->setText(renderer,
+               "Level " + std::to_string(enemy->getBasePerson()->getLevel()),
+               color);
+    t->render(renderer, (kINFO_W - t->getWidth()) / 2,
+              border[0].y + bar_height +
+                  (kINFO_H - border[0].y - bar_height - t->getHeight()) / 2);
+    delete t;
+  }
 
   /* Set the new frame */
   Frame *enemy_info = new Frame();
@@ -2408,7 +2421,7 @@ void Battle::upkeepAilmentOutcome()
     }
     /* Check if the ailment damage kills the actor */
     else if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()) &&
-       upkeep_ailment->getFlag(AilState::CURABLE_KO))
+            upkeep_ailment->getFlag(AilState::CURABLE_KO))
     {
       upkeep_actor->startFlashing(FlashingType::KOING);
       upkeep_actor->removeAilmentsKO();

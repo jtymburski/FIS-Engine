@@ -624,9 +624,6 @@ bool BattleActor::removeAilment(Ailment *remove_ailment)
 {
   if(remove_ailment)
   {
-    std::cout << "=== Before === " << std::endl;
-    stats_actual.print();
-
     /* Remove the modifier from the BattleStats, if a buff */
     auto ail_class = Ailment::getClassOfInfliction(remove_ailment->getType());
     if(ail_class == AilmentClass::BUFF)
@@ -638,9 +635,6 @@ bool BattleActor::removeAilment(Ailment *remove_ailment)
                                     return a == remove_ailment;
                                   }),
                    ailments.end());
-
-    std::cout << "=== After === " << std::endl;
-    stats_actual.print();
 
     return true;
   }

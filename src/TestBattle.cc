@@ -477,7 +477,7 @@ void TestBattle::create()
   // Yuki DO NOT edit Arcadius
   stats_arcadius_race_min = AttributeSet(
   {
-    55000, 10000, 1000, 1000,
+    55000, 10000, 40000, 40000,
     1000, 1000, 1000, 1000,
     1000, 1000, 1000, 1000,
     1000, 1000, 1000, 1000,
@@ -521,7 +521,7 @@ void TestBattle::createActions()
   /* Damage actions */
 
   /* Light Push (~5000 Damage) */
-  act_dmg.push_back(new Action("0,DAMAGE,,,,VITA,AMOUNT.2000,AMOUNT.200,,100"));
+  act_dmg.push_back(new Action("0,DAMAGE,,,,VITA,AMOUNT.100000,AMOUNT.200,,100"));
 
   /* Prismatic Shot (~20 Damage / Hit) */
   act_dmg.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.25,AMOUNT.2,,95"));
