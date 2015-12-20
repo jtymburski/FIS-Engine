@@ -426,6 +426,9 @@ void BattleActor::addAilment(Infliction type, int32_t min_turns,
   auto new_ailment =
       new Ailment(type, &stats_actual, min_turns, max_turns, chance);
 
+  if(Ailment::getClassOfInfliction(type) == AilmentClass::BUFF)
+    new_ailment->applyBuffs();
+
   ailments.push_back(new_ailment);
 }
 
@@ -621,12 +624,23 @@ bool BattleActor::removeAilment(Ailment *remove_ailment)
 {
   if(remove_ailment)
   {
+    std::cout << "=== Before === " << std::endl;
+    stats_actual.print();
+
+    /* Remove the modifier from the BattleStats, if a buff */
+    auto ail_class = Ailment::getClassOfInfliction(remove_ailment->getType());
+    if(ail_class == AilmentClass::BUFF)
+      stats_actual.removeLinked(remove_ailment);
+
     ailments.erase(std::remove_if(ailments.begin(), ailments.end(),
                                   [&](Ailment *a) -> bool
                                   {
                                     return a == remove_ailment;
                                   }),
                    ailments.end());
+
+    std::cout << "=== After === " << std::endl;
+    stats_actual.print();
 
     return true;
   }
@@ -1153,12 +1167,11 @@ int32_t BattleActor::calcTurnRegen(Attribute attr)
   {
     max_attr_val = stats_actual.getValue(Attribute::MQTD);
     amount = regen_rate * max_attr_val;
-    max = max_attr_val - stats_actual.getValue(Attribute::VITA);
+    max = max_attr_val - stats_actual.getValue(Attribute::QTDR);
+
+    std::cout << "Max Possible: " << max << std::endl;
   }
 
   /* Cannot return more than the maximum possible regeneration value */
-  if(max > 0)
-    return std::min(max, amount);
-  else
-    return amount;
+  return std::min(max, amount);
 }

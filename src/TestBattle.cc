@@ -350,7 +350,7 @@ void TestBattle::create()
 
   stats_player_min = AttributeSet(
   {
-    200, 25, 6, 5,
+    200, 50, 6, 5,
     0, 0, 0, 0,
     6, 5, 3, 2,
     0, 0, 0, 0,
@@ -359,7 +359,7 @@ void TestBattle::create()
 
   stats_player_max = AttributeSet(
   {
-    425, 50, 12, 12,
+    425, 75, 14, 14,
     0, 0, 0, 0,
     12, 12, 7, 7,
     0, 0, 0, 0,
@@ -585,7 +585,7 @@ void TestBattle::createActions()
       new Action("506,INFLICT,2.5,,,PARALYSIS,AMOUNT.30,,VITA,100"));
 
   /* Hibernation */
-  act_inf.push_back(new Action("507,INFLICT,2.3,,,HIBERNATION,AMOUNT.5,,VITA,100"));
+  act_inf.push_back(new Action("507,INFLICT,3.5,,,HIBERNATION,AMOUNT.10,,VITA,100"));
 
   /* Check to check all the actions are checked [checkingly] */
   // for(const auto& action : act_alt)
@@ -655,7 +655,7 @@ void TestBattle::createClasses()
   /* Player Class */
   class_player = new Category(200, "Bearanator", "player", stats_player_min,
                               stats_player_max, getSkillSet(200));
-  class_player->setVitaRegenRate(RegenRate::STRONG);
+  class_player->setVitaRegenRate(RegenRate::ZERO);
   class_player->setQDRegenRate(RegenRate::WEAK);
   class_player->setDescription("This is me and I am awesome");
 
@@ -852,7 +852,7 @@ void TestBattle::createRaces()
   race_bear = new Category(1020, "Bear", "bear", stats_bear_min, stats_bear_max,
                            getSkillSet(1020));
   // race_bear->setVitaRegenRate(RegenRate::WEAK);
-  race_bear->setQDRegenRate(RegenRate::WEAK);
+  race_bear->setQDRegenRate(RegenRate::ZERO);
   race_bear->setDescription("A sentient and intelligent bear");
   // race_bear->setFlag(CategoryState::DEF_ENABLED, true);
   // race_bear->setFlag(CategoryState::GRD_ENABLED, true);
@@ -1163,10 +1163,6 @@ void TestBattle::createSkillSets()
   SkillSet* set_player = new SkillSet(200);
   set_player->addSkill(getSkill(200), 1);
   set_player->addSkill(getSkill(201), 15);
-
-  // TODO: Remove
-  set_player->addSkill(getSkill(242), 1);
-
   skillsets.push_back(set_player);
 
   /* Reverdile */

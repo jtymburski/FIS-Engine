@@ -2347,74 +2347,11 @@ void Battle::updateRenderSprites(int32_t cycle_time)
             brightness = 1.0;
         }
       }
-      // else if(turn_state == TurnState::PROCESS_ACTIONS)
-      // {
-      //   auto opacity = 255;
-
-      //   if(event &&
-      //      (event->actor == actor || event->isActorAmongTargets(actor)) &&
-      //      isBufferElementValid())
-      //   {
-      //     opacity = 255;
-      //     brightness = 1.0;
-      //   }
-      //   else if(!actor->getFlag(ActorState::KO) &&
-      //           actor->getFlag(ActorState::ALIVE))
-      //   {
-      //     opacity = 255;
-      //     brightness = 0.3;
-      //   }
-
-      //   actor->getActiveSprite()->setOpacity(opacity);
-      // }
 
       actor->getActiveSprite()->setBrightness(brightness);
     }
   }
 }
-
-// if(rendering_state == TurnState::SELECT_ACTION_ALLY)
-// {
-//   if(layer_index == 1 || layer_index == 2)
-//   {
-//     brightness = 0.25;
-
-//     if(test_person->getBFlag(BState::IS_SELECTING))
-//     {
-
-//     }
-//   }
-//   else if(layer_index == 3 || layer_index == 4)
-//   {
-//     auto hover_targets = battle->getBattleMenu()->getHoverTargets();
-//     auto h_it =
-//         std::find(begin(hover_targets), end(hover_targets), person_index);
-//     bool is_hovered = (h_it != end(hover_targets));
-
-//     auto selected = battle->getBattleMenu()->getActionTargets();
-//     auto s_it = std::find(begin(selected), end(selected), person_index);
-//     bool is_selected = (s_it != end(selected));
-
-//     if(is_hovered || is_selected)
-//       brightness = 1.0;
-//     else
-//       brightness = 0.25;
-
-//     if(layer_index == 4)
-//     {
-//       if(!is_selected)
-//         brightness = 0.25;
-//       else
-//         brightness = 1.0;
-//     }
-//   }
-// }
-// else
-// {
-//   brightness = 1.0;
-// }
-
-// return opacity;
 
 void Battle::upkeepAilmentClear()
 {
@@ -2433,6 +2370,11 @@ void Battle::upkeepAilmentDamage()
   if(upkeep_ailment->getType() == Infliction::POISON)
   {
     createDamageElement(upkeep_actor, DamageType::POISON,
+                        upkeep_ailment->getDamageAmount());
+  }
+  else if(upkeep_ailment->getType() == Infliction::HIBERNATION)
+  {
+    createDamageElement(upkeep_actor, DamageType::HIBERNATION_REGEN,
                         upkeep_ailment->getDamageAmount());
   }
 
@@ -2457,11 +2399,16 @@ void Battle::upkeepAilmentFlash()
 void Battle::upkeepAilmentOutcome()
 {
   /* If the ailment has caused amage, deal the damage that it is caused */
-  if(upkeep_ailment->getDamageAmount() > 0 &&
-     upkeep_ailment->getFlag(AilState::CURABLE_KO))
+  if(upkeep_ailment->getDamageAmount() > 0)
   {
+    if(upkeep_ailment->getType() == Infliction::HIBERNATION)
+    {
+      upkeep_actor->restoreVita(upkeep_ailment->getDamageAmount());
+      upkeep_actor->setFlag(ActorState::SELECTION_SKIP, true);
+    }
     /* Check if the ailment damage kills the actor */
-    if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()))
+    else if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()) &&
+       upkeep_ailment->getFlag(AilState::CURABLE_KO))
     {
       upkeep_actor->startFlashing(FlashingType::KOING);
       upkeep_actor->removeAilmentsKO();
@@ -2773,13 +2720,13 @@ void Battle::setNextTurnState()
 
 bool Battle::update(int32_t cycle_time)
 {
-  //TODO: Cycle update bug [12-19-15]
+  // TODO: Cycle update bug [12-19-15]
   // if(turn_state == TurnState::BEGIN || turn_state == TurnState::ENTER_DIM ||
   //    turn_state == TurnState::FADE_IN_TEXT)
   // {
   //   std::cout << "Cycle Time: " << cycle_time << std::endl;
   // }
-    time_elapsed += cycle_time;
+  time_elapsed += cycle_time;
 
   updateDelay(cycle_time);
   updateRendering(cycle_time);

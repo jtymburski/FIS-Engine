@@ -102,6 +102,9 @@ private:
   /*------------------- Damaging Constants -----------------------*/
   static const float kPOISON_DMG_INIT; /* % damage for Turn # 1 for Poison */
   static const float kPOISON_DMG_INCR; /* % chance / turn for Poison */
+  static const float kHIBER_PC_INIT; /* % heal for 1st turn */
+  static const float kHIBER_PC_INCR; /* incr for per turn heal */
+  static const float kHIBER_PC_MAX; /* max value for hibernation */
 
   /* Confusion / Paralysis Chances */
   static const float kCONFUSION_CHANCE;
@@ -113,6 +116,7 @@ private:
 private:
   /* Calculates the amount of poison damage, assigns to damage_amount */
   bool calcPoisonDamage();
+  bool calcHibernationHeal();
 
   /* Does the ailment cure this turn? */
   bool doesAilmentCure();

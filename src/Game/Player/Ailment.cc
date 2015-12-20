@@ -35,8 +35,8 @@
  *============================================================================*/
 
 /*------------------- Buff Constants ----------------------- */
-const float Ailment::kPC_ALL_ATK_BUFF{1.070};
-const float Ailment::kPC_ALL_DEF_BUFF{1.0700};
+const float Ailment::kPC_ALL_ATK_BUFF{1.150};
+const float Ailment::kPC_ALL_DEF_BUFF{1.1500};
 const float Ailment::kPC_PHYS_BUFF{1.100};
 const float Ailment::kPC_ELEMENTAL_BUFF{1.150};
 const float Ailment::kPC_LIMB_BUFF{1.100};
@@ -48,6 +48,11 @@ const float Ailment::kPC_QTDR_BUFF{1.200};
 /* % change / turn for Poison */
 const float Ailment::kPOISON_DMG_INIT{0.17};
 const float Ailment::kPOISON_DMG_INCR{-0.03};
+
+const float Ailment::kHIBER_PC_INIT{0.15};
+const float Ailment::kHIBER_PC_INCR{0.05};
+const float Ailment::kHIBER_PC_MAX{0.30};
+
 const float Ailment::kCONFUSION_CHANCE{0.60};
 const float Ailment::kPARALYSIS_CHANCE{0.30};
 
@@ -103,6 +108,32 @@ bool Ailment::calcPoisonDamage()
   return false;
 }
 
+bool Ailment::calcHibernationHeal()
+{
+  if(stats_victim)
+  {
+    auto max_health = stats_victim->getValue(Attribute::MVIT);
+    auto health = stats_victim->getValue(Attribute::VITA);
+    auto max_heal = static_cast<int32_t>(max_health - health);
+
+    auto pc = kHIBER_PC_INIT + ((float)total_turns * kHIBER_PC_INCR);
+
+    pc = std::min(pc, kHIBER_PC_MAX);
+
+    auto value = static_cast<int32_t>(std::round(max_health * pc));
+    value = std::min(max_heal, value);
+
+    if(value > 0)
+      damage_amount = value;
+
+    std::cout << "Hibernation heal amount: " << damage_amount << std::endl;
+
+    return true;
+  }
+
+  return false;
+}
+
 /* Does the ailment cure? */
 bool Ailment::doesAilmentCure()
 {
@@ -114,17 +145,12 @@ bool Ailment::doesAilmentCure()
     {
       to_cure = true;
     }
-
-    if(min_turns_left == 0)
+    else if(min_turns_left == 0)
     {
-      std::cout << "No Min Turns Left, Cure Chance: " << cure_chance << std::endl;
       if(cure_chance >= 100)
         to_cure = true;
       else
-      {
-        std::cout << "Checking ailment cure chance of: " << cure_chance << std::endl;
         to_cure = Helpers::chanceHappens(cure_chance * 10, 1000);
-      }
     }
   }
 
@@ -158,6 +184,11 @@ AilmentStatus Ailment::updateEffect()
   {
     if(doesParalysisOccur())
       return AilmentStatus::SKIP;
+  }
+  else if(type == Infliction::HIBERNATION)
+  {
+    if(calcHibernationHeal())
+      return AilmentStatus::TO_DAMAGE;
   }
 
   return AilmentStatus::NOTHING;
@@ -259,12 +290,17 @@ bool Ailment::applyBuffs()
 
   if(stats_victim)
   {
+    std::cout << "=== Before === " << std::endl;
+    stats_victim->print();
+
     for(const auto& attribute : stats_to_buff)
     {
-
       stats_victim->addModifier(attribute, ModifierType::MULTIPLICATIVE, value,
                                 false, 0, this);
     }
+
+    std::cout << "=== After === " << std::endl;
+    stats_victim->print();
 
     return true;
   }
