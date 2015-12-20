@@ -884,7 +884,7 @@ uint32_t BattleActor::getPCQtdr()
   if(max_qtdr != 0)
     proportion = (float)qtdr / (float)max_qtdr;
 
-  return std::round(proportion * 100);
+  return std::ceil(proportion * 100);
 }
 
 float BattleActor::getRegenRate(Attribute attr)

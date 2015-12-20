@@ -1589,7 +1589,7 @@ void Battle::buildInfoAlly(BattleActor *ally)
   uint8_t qd_x =
       border[0].x + health_width - qd_offset - qd_triangle - qd_width;
   uint8_t qd_y = border[0].y + health_height - (qd_height / 2);
-  Frame::renderBar(qd_x, qd_y, qd_width + qd_triangle, qd_height,
+  Frame::renderBar(qd_x + 1, qd_y, qd_width + qd_triangle, qd_height,
                    (float)qd_triangle / qd_height, renderer);
 
   /* Render the ally name */
@@ -2132,7 +2132,7 @@ bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
 
   setupHealthDraw(ally, health_pc);
 
-  uint16_t health_x = x + 1 + (kINFO_W - kALLY_HEALTH_W) / 2;
+  uint16_t health_x = x + (kINFO_W - kALLY_HEALTH_W) / 2;
   uint16_t health_y = y + (kALLY_HEIGHT - kALLY_HEALTH_H) / 2;
 
   /* Calculate health bar render amount */
@@ -2146,7 +2146,7 @@ bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
 
   /* Render health bar */
   success &=
-      Frame::renderBar(health_x, health_y, health_amount, kALLY_HEALTH_H,
+      Frame::renderBar(health_x + 1, health_y, health_amount, kALLY_HEALTH_H,
                        (float)kALLY_HEALTH_TRIANGLE / kALLY_HEALTH_H, renderer);
 
   /* Render friends info */
@@ -2155,6 +2155,8 @@ bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
   /* Calculate qd bar amount and color */
   auto qd_percent = (float)ally->getPCQtdr() / 100.0;
   qd_percent = Helpers::setInRange(qd_percent, 0.0, 1.0);
+
+  std::cout << "QD Percent: " << qd_percent << std::endl;
 
   SDL_SetRenderDrawColor(renderer, 58, 170, 198, 255);
   uint16_t qd_x = health_x + kALLY_HEALTH_W - kALLY_QD_OFFSET -
@@ -2169,7 +2171,7 @@ bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
     qd_amount--;
 
   /* Render the qd bar */
-  success &= Frame::renderBar(qd_x + 1, qd_y, qd_amount, kALLY_QD_H,
+  success &= Frame::renderBar(qd_x, qd_y, qd_amount + 2, kALLY_QD_H,
                               (float)kALLY_QD_TRIANGLE / kALLY_QD_H, renderer);
 
   /* Render the qd bar border */
