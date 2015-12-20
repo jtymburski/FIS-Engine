@@ -654,7 +654,10 @@ void BattleActor::removeAilmentsKO()
 void BattleActor::startFlashing(FlashingType flashing_type, int32_t time_left)
 {
   clearFlashing();
+
   auto active_sprite = getActiveSprite();
+
+  active_sprite->revertColorBalance();
   auto color = getFlashingColor(flashing_type);
 
   if(active_sprite)

@@ -1021,6 +1021,36 @@ void Battle::updateFadeInText()
 
 void Battle::updateOutcome()
 {
+  if(outcome == OutcomeType::VICTORY)
+  {
+    std::cout << "==================" << std::endl;
+    std::cout << "   VICTORIOUS     " << std::endl;
+    std::cout << "==================" << std::endl;
+
+    auto total_exp_drop = 0;
+
+    for(auto &enemy : getEnemies())
+      if(enemy && enemy->getBasePerson())
+        total_exp_drop += enemy->getBasePerson()->getExpDrop();
+
+    for(auto &ally : getAllies())
+    {
+      if(ally && ally->getBasePerson())
+      {
+        auto name = ally->getBasePerson()->getName();
+        std::cout << name << " has gained: " << total_exp_drop << " experience!"
+                  << std::endl;
+
+        auto old_level = ally->getBasePerson()->getLevel();
+        ally->getBasePerson()->addExp(total_exp_drop);
+        auto new_level = ally->getBasePerson()->getLevel();
+
+        for(int i = (new_level - old_level); i > 0; i--)
+          std::cout << name << " has leveled up!" << std::endl;
+      }
+    }
+  }
+
   setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
@@ -2155,9 +2185,6 @@ bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
   /* Calculate qd bar amount and color */
   auto qd_percent = (float)ally->getPCQtdr() / 100.0;
   qd_percent = Helpers::setInRange(qd_percent, 0.0, 1.0);
-
-  std::cout << "QD Percent: " << qd_percent << std::endl;
-
   SDL_SetRenderDrawColor(renderer, 58, 170, 198, 255);
   uint16_t qd_x = health_x + kALLY_HEALTH_W - kALLY_QD_OFFSET -
                   kALLY_QD_TRIANGLE - kALLY_QD_W;
@@ -2746,7 +2773,13 @@ void Battle::setNextTurnState()
 
 bool Battle::update(int32_t cycle_time)
 {
-  time_elapsed += cycle_time;
+  //TODO: Cycle update bug [12-19-15]
+  // if(turn_state == TurnState::BEGIN || turn_state == TurnState::ENTER_DIM ||
+  //    turn_state == TurnState::FADE_IN_TEXT)
+  // {
+  //   std::cout << "Cycle Time: " << cycle_time << std::endl;
+  // }
+    time_elapsed += cycle_time;
 
   updateDelay(cycle_time);
   updateRendering(cycle_time);

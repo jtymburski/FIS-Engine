@@ -489,13 +489,13 @@ void Person::updateBaseSkills()
  */
 AttributeSet Person::calcEquipStats()
 {
-  // auto equip_bonus = AttributeSet();
+  auto equip_bonus = AttributeSet();
 
-  // for(auto it = begin(equipments); it != end(equipments); ++it)
-  //   if((*it) != nullptr)
-  //     equip_bonus += (*it)->getStats();
+  for(auto it = begin(equipments); it != end(equipments); ++it)
+    if((*it) != nullptr)
+      equip_bonus += (*it)->getStats();
 
-  // return (curr_max_stats + equip_bonus);
+  return (curr_max_stats + equip_bonus);
 
   return curr_max_stats;
 }
