@@ -29,9 +29,15 @@ public:
    *  GROUND - is on a dirt like substance (where walking is possible) */
   enum SurfaceClassifier{GROUND = 0};
 
-private:
-  /* The direction of the player and the current movement direction */
+protected: 
+/* The direction of the player */
   Direction direction;
+
+  /* The surface that the person is walking on */
+  SurfaceClassifier surface;
+
+private:
+  /* The current movement direction */
   std::vector<Direction> movement_stack;
 
   /* Is the person running? */
@@ -49,9 +55,6 @@ private:
 
   /* A counter of steps made on the map */
   uint32_t steps;
-
-  /* The surface that the person is walking on */
-  SurfaceClassifier surface;
 
   /* -------------------------- Constants ------------------------- */
   const static int kDELAY_MAX; /* The maximum delay (in milliseconds) */
@@ -95,7 +98,7 @@ protected:
   void removeDirection(Direction direction);
 
   /* Sets the direction that the person is travelling in */
-  bool setDirection(Direction direction, bool set_movement = true);
+  virtual bool setDirection(Direction direction, bool set_movement = true);
 
   /* Sets the tile of the selected with the corresponding frames */
   virtual bool setTile(Tile* tile, TileSprite* frames,

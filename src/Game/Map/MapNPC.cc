@@ -14,7 +14,7 @@ const uint16_t MapNPC::kFORCED_NOTRIGGER = 30000;
 const uint16_t MapNPC::kMAX_DELAY = 2000;
 const uint16_t MapNPC::kMAX_RANGE = 10;
 const float MapNPC::kPYTH_APPROX = 0.4;
-const uint16_t MapNPC::kSTUCK_DELAY = 3000;
+const uint16_t MapNPC::kSTUCK_DELAY = 250;
 const uint16_t MapNPC::kTRACK_DELAY = 250;
 const uint16_t MapNPC::kTRACK_DIST_MIN = 4;
 const uint16_t MapNPC::kTRACK_DIST_MAX = 8;
@@ -193,14 +193,6 @@ void MapNPC::initializeClass()
   track_recent = false;
   track_state = NOTRACK;
   tracking = false;
-
-  /* Set the initial path node */ // TODO: Remove
-  //node_initial.x = 0;
-  //node_initial.y = 0;
-  //node_initial.delay = 0;
-  //node_initial.xy_flip = false;
-  //node_initial.previous = nullptr;
-  //node_initial.next = nullptr;
   
   /* Set the path player node to blank state */
   node_player.x = 0;
@@ -476,13 +468,15 @@ void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
 
 /* Tracking functions - called by update */
 // TODO: Comment
-bool MapNPC::trackOutOfRange()
+int MapNPC::trackOutOfRange(MapPerson* ref)
 {
+  if(ref == nullptr)
+    ref = this;
   if(node_state != RANDOM)
   {
     int dist = 0;
-    int npc_x = getTileX();
-    int npc_y = getTileY();
+    int npc_x = ref->getTileX();
+    int npc_y = ref->getTileY();
     int x1 = node_rect.x;
     int x2 = node_rect.x + node_rect.w;
     int y1 = node_rect.y;
@@ -560,11 +554,10 @@ bool MapNPC::trackOutOfRange()
         dist = (npc_x - x2);
       }
       
-      /* Check the distance */
-      return (dist > track_dist_max);
+      return dist;
     }
   }
-  return false;
+  return -1;
 }
 
 /* Update the node bounding rect */
@@ -617,6 +610,48 @@ void MapNPC::updateBound()
   {
     node_rect = {0, 0, 0, 0};
   }
+}
+  
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Sets a new direction for the person on the map. It will update
+ *              the parent frame so a new classifier is printed.
+ *
+ * Inputs: Direction direction - the new direction to set
+ *         bool set_movement - if the movement should be set as well
+ * Output: bool - indicates if the directional movement changed
+ */
+bool MapNPC::setDirection(Direction direction, bool set_movement)
+{
+  bool changed = (this->direction != direction);
+  bool movement_changed = false;
+
+  /* If moving, set the direction in map thing */
+  if(set_movement)
+  {
+    /* Update preferred movement direction */
+    movement_changed = MapThing::setDirection(direction);
+
+    /* If it's a movement direction, rotate the fellow */
+    SpriteMatrix* state = getState(surface, direction);
+    if(state != NULL)
+    {
+      if(changed)
+        setMatrix(state);
+
+      /* Finally set the in class direction */
+      this->direction = direction;
+    }
+  }
+  else
+  {
+    MapThing::setDirection(Direction::DIRECTIONLESS);
+  }
+
+  return movement_changed;
 }
 
 /*============================================================================
@@ -1314,16 +1349,9 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   /* Begin the check to handle each time the NPC is on a tile */
   if(isTilesSet() && node_current != nullptr) //getNodeState() != LOCKED)
   {
-    /* Pre-checks if current node is empty */ // TODO: Remove
-    //if(node_current == nullptr)
-    //{
-    //  node_initial.x = getStartingX();
-    //  node_initial.y = getStartingY();
-    //  node_current = &node_initial;
-    //}
-    
     /* Variables */
     int delta = 0;
+    int delta_range = 0;
     bool stopped = !isMoving();
 
     /* Do checks if stuck */
@@ -1395,6 +1423,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     }
     else
     {
+
       /* Handle tracking */
       if(track_state != NOTRACK && player != nullptr)
       {
@@ -1427,7 +1456,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
           }
 
           /* Check if tracking should be enabled */
-          if(delta < track_dist && !track_recent)
+          if(delta <= track_dist && !track_recent && !forced_recent)
           {
             tracking = true;
             track_delay = 0;
@@ -1442,9 +1471,14 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         /* Otherwise it is tracking - handle */
         else
         {
+          /* Check the distance */
+          delta_range = trackOutOfRange();
+
           /* Check if tracking should be disabled */
-          if(delta > track_dist_max || trackOutOfRange() || 
-             getTarget() != nullptr)
+          if(delta > track_dist_max || delta_range > track_dist_max || 
+             forced_recent || getTarget() != nullptr || 
+             (track_state == AVOIDPLAYER && delta_range == track_dist_max && 
+              trackOutOfRange(player) >= delta_range))
           {
             tracking = false;
             track_recent = true;
@@ -1471,7 +1505,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         /* Track from the player location */
         else
         {
-          if(delta < track_dist_run)
+          if(delta < track_dist_run && delta_range < track_dist_max)
             trackAvoidPlayer(cycle_time, stopped);
         }
       }

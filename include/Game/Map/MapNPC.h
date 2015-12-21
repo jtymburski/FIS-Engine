@@ -71,7 +71,6 @@ private:
   /* The nodes for control */
   Path* node_current;
   Path* node_head;
-  //Path node_initial; // TODO: Remove?
   Path node_player;
   Path* node_previous;
   Path node_random;
@@ -130,10 +129,17 @@ private:
 
   /* Tracking functions - called by update */
   void trackAvoidPlayer(int cycle_time, bool stopped);
-  bool trackOutOfRange();
+  int trackOutOfRange(MapPerson* ref = nullptr);
   
   /* update the node bounding rect */
   void updateBound();
+
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  /* Sets the direction that the person is travelling in */
+  bool setDirection(Direction direction, bool set_movement = true);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
