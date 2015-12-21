@@ -345,7 +345,7 @@ void Battle::addDelay(int32_t delay_amount)
   {
     auto to_add = delay_amount;
 
-    delay += (to_add * kDELAY_FAST_FACTOR * 0.4);
+    delay += (to_add * kDELAY_FAST_FACTOR);
   }
 }
 
@@ -713,7 +713,7 @@ void Battle::outcomeStatePlep(ActorOutcome &outcome)
   else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
   {
     animation = event->event_skill->skill->getAnimation();
-    // outcome.actor_outcome_state = ActionState:
+    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
   }
 
   render_elements.push_back(new RenderElement(renderer, animation, 1, x, y));
@@ -725,9 +725,24 @@ void Battle::outcomeStateDamageValue(ActorOutcome &outcome)
   auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
   auto element = new RenderElement(renderer, damage_font);
 
-  element->createAsDamageValue(
-      outcome.damage, DamageType::BASE, config->getScreenHeight(),
-      getActorX(outcome.actor), getActorY(outcome.actor));
+  if(event->getCurrAction())
+  {
+    if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE))
+    {
+      // TODO: Critical
+      element->createAsDamageValue(
+          outcome.damage, DamageType::BASE, config->getScreenHeight(),
+          getActorX(outcome.actor), getActorY(outcome.actor));
+    }
+    else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
+    {
+      std::cout << "Creating the healing amount. " << std::endl;
+      // TODO: Non-VITA altering stats?
+      element->createAsDamageValue(
+          outcome.damage, DamageType::HEALING, config->getScreenHeight(),
+          getActorX(outcome.actor), getActorY(outcome.actor));
+    }
+  }
 
   render_elements.push_back(element);
   outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
@@ -841,6 +856,12 @@ bool Battle::calculateEnemySelection(BattleActor *next_actor,
   {
     success &= next_actor->buildBattleItems(actors);
     success &= next_actor->buildBattleSkills(actors);
+
+    std::cout << "----- Enemy Valid Battle Skills ----- " << std::endl;
+    auto battle_skills = next_actor->getBattleSkills();
+
+    for(auto battle_skill : battle_skills)
+      battle_skill->print();
 
     curr_module->setItems(next_actor->getBattleItems());
     curr_module->setSkills(next_actor->getBattleSkills());
@@ -957,6 +978,12 @@ void Battle::processEventSkill()
           outcome.infliction_status = InflictionStatus::INFLICTION;
           outcome.actor_outcome_state = ActionState::PLEP;
         }
+        else if(curr_action->actionFlag(ActionFlags::ALTER))
+        {
+          std::cout << "Counting the amount to alter!" << std::endl;
+          outcome.damage = event->calcAltering(target);
+          outcome.actor_outcome_state = ActionState::PLEP;
+        }
       }
       else
       {
@@ -1037,8 +1064,15 @@ void Battle::updateOutcome()
     auto total_exp_drop = 0;
 
     for(auto &enemy : getEnemies())
+    {
       if(enemy && enemy->getBasePerson())
-        total_exp_drop += (enemy->getBasePerson()->getExpDrop() * enemy->getBasePerson()->getLevel());
+      {
+        auto xp = enemy->getBasePerson()->getExpDrop();
+        auto lv = enemy->getBasePerson()->getLevel();
+
+        total_exp_drop += (xp + ((lv - 1) * xp * 0.60));
+      }
+    }
 
     for(auto &ally : getAllies())
     {

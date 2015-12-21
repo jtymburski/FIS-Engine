@@ -54,7 +54,7 @@ const uint8_t BattleMenu::kTYPE_SELECT{3};
 const uint16_t BattleMenu::kINFO_W{180};
 
 const std::vector<int32_t> BattleMenu::kINDEX_ORDER{1, 0, 2, 3, 4};
-const std::vector<int32_t> BattleMenu::kREVERSE_ORDER{4, 3, 2, 1, 0};
+const std::vector<int32_t> BattleMenu::kREVERSE_ORDER{4, 3, 2, 0, 1};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -89,7 +89,7 @@ BattleMenu::~BattleMenu()
  * PRIVATE FUNCTIONS - RENDERING
  *============================================================================*/
 
-void BattleMenu::setRectBot(SDL_Rect& rect, uint32_t height)
+void BattleMenu::setRectBot(SDL_Rect &rect, uint32_t height)
 {
   rect.x = kSKILL_BORDER;
   rect.h = kSKILL_FRAME_S;
@@ -97,7 +97,7 @@ void BattleMenu::setRectBot(SDL_Rect& rect, uint32_t height)
   rect.w = kSKILL_FRAME_L;
 }
 
-void BattleMenu::setRectTop(SDL_Rect& rect)
+void BattleMenu::setRectTop(SDL_Rect &rect)
 {
   rect.x = kSKILL_BORDER;
   rect.y = kSKILL_BORDER;
@@ -109,9 +109,9 @@ void BattleMenu::setRectTop(SDL_Rect& rect)
  * PRIVATE FUNCTIONS - OPERATION
  *============================================================================*/
 
-BattleActor* BattleMenu::actorOfElementIndex(int32_t index)
+BattleActor *BattleMenu::actorOfElementIndex(int32_t index)
 {
-  for(const auto& target : getSelectableTargets())
+  for(const auto &target : getSelectableTargets())
     if(elementIndexOfActor(target) == index)
       return target;
 
@@ -137,7 +137,7 @@ bool BattleMenu::isActionOffensive()
   return false;
 }
 
-bool BattleMenu::isActorMatch(BattleActor* target, bool same)
+bool BattleMenu::isActorMatch(BattleActor *target, bool same)
 {
   if(target && actor)
   {
@@ -175,7 +175,7 @@ bool BattleMenu::isIndexValid(int32_t index)
   return false;
 }
 
-bool BattleMenu::isTargetValid(BattleActor* check_target)
+bool BattleMenu::isTargetValid(BattleActor *check_target)
 {
   if(check_target)
   {
@@ -199,11 +199,11 @@ bool BattleMenu::isTargetValid(BattleActor* check_target)
   return false;
 }
 
-int32_t BattleMenu::elementIndexOfActor(BattleActor* check_actor)
+int32_t BattleMenu::elementIndexOfActor(BattleActor *check_actor)
 {
   int32_t index = 0;
 
-  for(const auto& actor : getSelectableTargets())
+  for(const auto &actor : getSelectableTargets())
   {
     if(actor == check_actor)
       return index;
@@ -214,10 +214,10 @@ int32_t BattleMenu::elementIndexOfActor(BattleActor* check_actor)
   return -1;
 }
 
-BattleActor* BattleMenu::targetOfOrderedIndex(std::vector<BattleActor*> actors,
+BattleActor *BattleMenu::targetOfOrderedIndex(std::vector<BattleActor *> actors,
                                               int32_t ordered)
 {
-  for(const auto& actor : actors)
+  for(const auto &actor : actors)
     if(actor && (actor->getIndex() == ordered))
       return actor;
 
@@ -344,23 +344,28 @@ int32_t BattleMenu::validLast()
   return -1;
 }
 
-std::vector<BattleActor*> BattleMenu::getSelectableTargets()
+std::vector<BattleActor *> BattleMenu::getSelectableTargets()
 {
-  std::vector<BattleActor*> selectable_targets;
+  std::vector<BattleActor *> action_targets;
+  std::vector<BattleActor *> selectable_targets;
 
   if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
   {
     if(selected_action_type == ActionType::SKILL && selected_battle_skill)
-      selectable_targets = selected_battle_skill->targets;
+      action_targets = selected_battle_skill->targets;
     else if(selected_action_type == ActionType::ITEM && selected_battle_item)
-      selectable_targets = selected_battle_item->targets;
+      action_targets = selected_battle_item->targets;
+
+    for(auto &target : action_targets)
+      if(target && isTargetValid(target))
+        selectable_targets.push_back(target);
   }
 
   /* Sub. the already selected targets from the selectable targets vector */
   std::sort(begin(selectable_targets), end(selectable_targets));
   std::sort(begin(selected_targets), end(selected_targets));
 
-  std::vector<BattleActor*> difference;
+  std::vector<BattleActor *> difference;
 
   std::set_difference(begin(selectable_targets), end(selectable_targets),
                       begin(selected_targets), end(selected_targets),
@@ -369,12 +374,12 @@ std::vector<BattleActor*> BattleMenu::getSelectableTargets()
   return selectable_targets;
 }
 
-std::vector<BattleActor*>
-BattleMenu::getPartyTargets(std::vector<BattleActor*> actors, bool allies)
+std::vector<BattleActor *>
+BattleMenu::getPartyTargets(std::vector<BattleActor *> actors, bool allies)
 {
-  std::vector<BattleActor*> party_targets;
+  std::vector<BattleActor *> party_targets;
 
-  for(const auto& actor : actors)
+  for(const auto &actor : actors)
     if(actor->getFlag(ActorState::ALLY) == allies)
       party_targets.push_back(actor);
 
@@ -401,7 +406,7 @@ int32_t BattleMenu::getMaxIndex()
 }
 
 /* kINDEX_ORDER {2, 1, 3, 4, 5} */
-BattleActor* BattleMenu::getMostLeft(bool allied_party)
+BattleActor *BattleMenu::getMostLeft(bool allied_party)
 {
   assert(actor);
 
@@ -409,7 +414,7 @@ BattleActor* BattleMenu::getMostLeft(bool allied_party)
 
   if(allied_party)
   {
-    for(auto& ordered : kINDEX_ORDER)
+    for(auto &ordered : kINDEX_ORDER)
     {
       auto target = targetOfOrderedIndex(targets, ordered);
 
@@ -419,16 +424,12 @@ BattleActor* BattleMenu::getMostLeft(bool allied_party)
   }
   else
   {
-    for(auto& ordered : kREVERSE_ORDER)
+    for(auto &ordered : kREVERSE_ORDER)
     {
       auto target = targetOfOrderedIndex(targets, ordered);
 
       if(isTargetValid(target))
-      {
-        std::cout << "Returning most left person: "
-                  << target->getBasePerson()->getName() << std::endl;
         return target;
-      }
     }
   }
 
@@ -439,14 +440,14 @@ void BattleMenu::printSelectableTargets()
 {
   int32_t element = 0;
 
-  for(auto& target : getSelectableTargets())
+  for(auto &target : getSelectableTargets())
   {
     std::cout << "[" << element << "] -- " << target->getBasePerson()->getName()
               << " Index: " << target->getIndex() << std::endl;
   }
 }
 
-BattleActor* BattleMenu::getMostRight(bool allied_party)
+BattleActor *BattleMenu::getMostRight(bool allied_party)
 {
   assert(actor);
 
@@ -498,54 +499,66 @@ int32_t BattleMenu::validNext()
     }
     else if(curr_hover)
     {
-      std::cout << "Finding next enemy for curr_hoverer: "
-                << curr_hover->getBasePerson()->getName() << std::endl;
       return validNextEnemy(curr_hover);
     }
   }
 
+  std::cout << "[ERROR] Menu selection out of bounds." << std::endl;
   return -1;
 }
 
-int32_t BattleMenu::validNextAlly(BattleActor* curr_hovered)
+int32_t BattleMenu::validNextAlly(BattleActor *curr_hovered)
 {
   (void)curr_hovered;
   return -1;
 }
 
-int32_t BattleMenu::validNextEnemy(BattleActor* curr_hovered)
+int32_t BattleMenu::validNextEnemy(BattleActor *curr_hovered)
 {
+  auto selectable = getSelectableTargets();
   auto targets = getPartyTargets(getSelectableTargets(), false);
-  auto next_index = -1;
 
+  auto found_it = end(kREVERSE_ORDER);
+  auto next  = -1;
+
+  /* Find the current index, assign +1 for the next */
   for(auto it = begin(kREVERSE_ORDER); it != end(kREVERSE_ORDER); ++it)
   {
+    std::cout << "Checking current hover at: " << *it << std::endl;
+
     if(*it == (curr_hovered->getIndex()))
-      if((it + 1) != end(kREVERSE_ORDER))
-        next_index = *(it + 1);
+    {
+      std::cout << "Found current hover at: " << *it;
+      found_it = it;
+    }
   }
 
-  if(next_index != -1)
+  if(found_it != end(kREVERSE_ORDER))
   {
-    auto target = targetOfOrderedIndex(targets, next_index);
+    for(auto it = found_it + 1; it != end(kREVERSE_ORDER); ++it)
+    {
+      std::cout << "Checking: " << *(it) << std::endl;
+      auto target = targetOfOrderedIndex(targets, *it);
 
-    return elementIndexOfActor(target);
+      if(target && isTargetValid(target))
+        next = *it;
+    }
   }
+
+  if(next != -1)
+    return elementIndexOfActor(targetOfOrderedIndex(targets, next));
   else
-  {
     return elementIndexOfActor(getMostLeft(false));
-  }
-
   return -1;
 }
 
-int32_t BattleMenu::validPreviousAlly(BattleActor* curr_hovered)
+int32_t BattleMenu::validPreviousAlly(BattleActor *curr_hovered)
 {
   (void)curr_hovered;
   return -1;
 }
 
-int32_t BattleMenu::validPreviousEnemy(BattleActor* curr_hovered)
+int32_t BattleMenu::validPreviousEnemy(BattleActor *curr_hovered)
 {
   auto targets = getPartyTargets(getSelectableTargets(), false);
   auto prev_index = -1;
@@ -615,14 +628,14 @@ int32_t BattleMenu::validPrevious()
 
 void BattleMenu::clearItemFrames()
 {
-  for(auto& item_frame : frames_item_info)
+  for(auto &item_frame : frames_item_info)
   {
     if(item_frame)
       delete item_frame;
     item_frame = nullptr;
   }
 
-  for(auto& name_frame : frames_item_name)
+  for(auto &name_frame : frames_item_name)
   {
     if(name_frame)
       delete name_frame;
@@ -635,14 +648,14 @@ void BattleMenu::clearItemFrames()
 
 void BattleMenu::clearSkillFrames()
 {
-  for(auto& skill_frame : frames_skill_info)
+  for(auto &skill_frame : frames_skill_info)
   {
     if(skill_frame)
       delete skill_frame;
     skill_frame = nullptr;
   }
 
-  for(auto& name_frame : frames_skill_name)
+  for(auto &name_frame : frames_skill_name)
   {
     if(name_frame)
       delete name_frame;
@@ -653,7 +666,7 @@ void BattleMenu::clearSkillFrames()
   frames_skill_name.clear();
 }
 
-SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
+SDL_Texture *BattleMenu::createItemFrame(BattleItem *battle_item,
                                          uint32_t width, uint32_t height)
 {
   (void)width;
@@ -662,7 +675,7 @@ SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
   return nullptr;
 }
 
-SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
+SDL_Texture *BattleMenu::createSkillFrame(BattleSkill *battle_skill,
                                           uint32_t width, uint32_t height)
 {
   /* Grab the skill pointer, and QD frame from display data */
@@ -688,7 +701,7 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   t4.setText(renderer, std::to_string((int)skill->getChance()), color);
 
   /* Create rendering texture */
-  SDL_Texture* texture =
+  SDL_Texture *texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -798,7 +811,7 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
   /* Variable Construction */
   SDL_Color color{255, 255, 255, 255};
   bool success{true};
-  Text* t{new Text(font_header)};
+  Text *t{new Text(font_header)};
   uint32_t valid_size{(uint32_t)valid_action_types.size()};
 
   /* Calculate starting Y co-ordinate */
@@ -912,7 +925,7 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
   }
   else
   {
-    for(const auto& frame_skill_name : frames_skill_name)
+    for(const auto &frame_skill_name : frames_skill_name)
       text_y += frame_skill_name->getHeight();
 
     text_y = y + (h - text_y) / 2;
@@ -1041,12 +1054,12 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
   return false;
 }
 
-BattleActor* BattleMenu::getActor()
+BattleActor *BattleMenu::getActor()
 {
   return actor;
 }
 
-bool BattleMenu::getFlag(const BattleMenuState& test_flag)
+bool BattleMenu::getFlag(const BattleMenuState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
@@ -1056,12 +1069,12 @@ BattleMenuLayer BattleMenu::getMenuLayer()
   return menu_layer;
 }
 
-BattleSkill* BattleMenu::getSelectedBattleSkill()
+BattleSkill *BattleMenu::getSelectedBattleSkill()
 {
   return selected_battle_skill;
 }
 
-BattleItem* BattleMenu::getSelectedBattleItem()
+BattleItem *BattleMenu::getSelectedBattleItem()
 {
   return selected_battle_item;
 }
@@ -1071,13 +1084,13 @@ ActionType BattleMenu::getSelectedType()
   return selected_action_type;
 }
 
-std::vector<BattleActor*> BattleMenu::getTargetsHovered()
+std::vector<BattleActor *> BattleMenu::getTargetsHovered()
 {
-  std::vector<BattleActor*> hovered_targets;
+  std::vector<BattleActor *> hovered_targets;
 
   auto selectable_targets = getSelectableTargets();
 
-  for(auto& target : selectable_targets)
+  for(auto &target : selectable_targets)
     if(target && target->getFlag(ActorState::MENU_HOVERED))
       hovered_targets.push_back(target);
 
@@ -1089,7 +1102,7 @@ void BattleMenu::unsetHoverTargets()
   auto selectable_targets = getSelectableTargets();
 
   /* Unset current hovering targets */
-  for(auto& target : selectable_targets)
+  for(auto &target : selectable_targets)
     if(target)
       target->setFlag(ActorState::MENU_HOVERED, false);
 }
@@ -1120,24 +1133,24 @@ void BattleMenu::setHoverTargets()
     auto hovered_party =
         BattleActor::getAllyTargets(hovered_actor, selectable_targets);
 
-    for(auto& target : hovered_party)
+    for(auto &target : hovered_party)
       if(target)
         target->setFlag(ActorState::MENU_HOVERED, true);
   }
   else if(selected_action_scope == ActionScope::ALL_NOT_USER)
   {
-    for(auto& target : selectable_targets)
+    for(auto &target : selectable_targets)
       if(target != actor)
         target->setFlag(ActorState::MENU_HOVERED, true);
   }
 }
 
-std::vector<BattleActor*> BattleMenu::getTargetsSelected()
+std::vector<BattleActor *> BattleMenu::getTargetsSelected()
 {
   return selected_targets;
 }
 
-bool BattleMenu::setActor(BattleActor* actor)
+bool BattleMenu::setActor(BattleActor *actor)
 {
   this->actor = actor;
 
@@ -1145,27 +1158,27 @@ bool BattleMenu::setActor(BattleActor* actor)
 }
 
 /* Assigns the configuration of the BattleMenu */
-bool BattleMenu::setConfig(Options* config)
+bool BattleMenu::setConfig(Options *config)
 {
   this->config = config;
 
   return this->config;
 }
 
-bool BattleMenu::setDisplayData(BattleDisplayData* battle_display_data)
+bool BattleMenu::setDisplayData(BattleDisplayData *battle_display_data)
 {
   this->battle_display_data = battle_display_data;
 
   return this->battle_display_data;
 }
 
-void BattleMenu::setFlag(BattleMenuState flag, const bool& set_value)
+void BattleMenu::setFlag(BattleMenuState flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
 /* Assigns the Renderer of BattleMenu elements */
-bool BattleMenu::setRenderer(SDL_Renderer* renderer)
+bool BattleMenu::setRenderer(SDL_Renderer *renderer)
 {
   this->renderer = renderer;
 
@@ -1177,12 +1190,12 @@ void BattleMenu::setSelectableTypes(std::vector<ActionType> valid_action_types)
   this->valid_action_types = valid_action_types;
 }
 
-void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)
+void BattleMenu::setSelectableSkills(std::vector<BattleSkill *> menu_skills)
 {
   this->valid_battle_skills = menu_skills;
 }
 
-void BattleMenu::setSelectableItems(std::vector<BattleItem*> menu_items)
+void BattleMenu::setSelectableItems(std::vector<BattleItem *> menu_items)
 {
   this->valid_battle_items = menu_items;
 }
@@ -1226,7 +1239,7 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   /* Delete frames for skills if skills are already rendered */
   clearSkillFrames();
 
-  for(auto& skill : valid_battle_skills)
+  for(auto &skill : valid_battle_skills)
   {
     /* Skill must have (a) valid pointer(s) */
     assert(skill && skill->skill);
@@ -1263,7 +1276,7 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
       text_height = t.getHeight() + kTYPE_MARGIN * 2;
 
     /* Create rendering texture */
-    SDL_Texture* texture =
+    SDL_Texture *texture =
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                           SDL_TEXTUREACCESS_TARGET, text_width, text_height);
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);

@@ -443,6 +443,7 @@ bool BattleActor::buildBattleItems(std::vector<BattleActor *> all_targets)
 
 bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
 {
+  /* Updates the base person skills */
   person_base->updateBaseSkills();
 
   /* Clear BattleSkills if they were previously created */
@@ -453,6 +454,10 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
   if(success)
   {
     auto curr_skills = person_base->getCurrSkills();
+
+    // std::cout << "==== Skill Set ==== " << std::endl;
+    // curr_skills->print(false);
+
     auto useable_skills = curr_skills->getElements(person_base->getLevel());
 
     for(auto &element : useable_skills)
@@ -463,7 +468,12 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
       if(battle_skill->skill)
       {
         auto skill = battle_skill->skill;
+
+        // std::cout << "Getting targets for skill with scope: " << Helpers::actionScopeToStr(skill->getScope()) << std::endl;
         auto targets = getTargetsFromScope(this, skill->getScope(), a_targets);
+
+        // for(auto target : targets)
+        //   std::cout << target->getBasePerson()->getName() << std::endl;
 
         battle_skill->targets = targets;
         battle_skill->true_cost = getSkillCost(skill);
@@ -1027,7 +1037,7 @@ BattleActor::getAllyTargets(BattleActor *user,
       auto user_is_ally = user->getFlag(ActorState::ALLY);
       auto target_is_ally = target->getFlag(ActorState::ALLY);
 
-      if(user_is_ally != target_is_ally)
+      if(user_is_ally == target_is_ally)
         valid_targets.push_back(target);
     }
   }

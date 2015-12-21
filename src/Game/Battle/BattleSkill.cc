@@ -16,7 +16,7 @@ void BattleSkill::print()
   std::cout << "ValidStatus: " << Helpers::validStatusToStr(valid_status);
 
   if(skill)
-    std::cout << "\nSkill: " << skill->getName();
+    std::cout << "\nSkill: " << skill->getName() << std::endl;;
   std::cout << "True Cost: " << true_cost << std::endl;
 
   std::cout << "Targets: ";

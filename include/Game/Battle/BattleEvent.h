@@ -253,6 +253,9 @@ private:
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
+  /* Calculate alteration taking place */
+  int32_t calcAltering(BattleActor* curr_target);
+
   /* Calculate the base damage against a given target */
   int32_t calcDamage(BattleActor* curr_target);
   int32_t calcDamageImplode(BattleActor* curr_target);

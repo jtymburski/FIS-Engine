@@ -542,6 +542,7 @@ bool BattleEvent::doesActionHit(BattleActor* curr_target)
   return false;
 }
 
+
 int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target)
 {
   auto targ_stats = getStatsOfTarget(curr_target);
@@ -780,6 +781,11 @@ int32_t BattleEvent::calcExperience()
   }
 
   return static_cast<int32_t>(experience * actor->getBasePerson()->getExpMod());
+}
+
+int32_t BattleEvent::calcAltering(BattleActor* curr_target)
+{
+  return 1;
 }
 
 // TODO: Guarding damage factor [11-01-15]
