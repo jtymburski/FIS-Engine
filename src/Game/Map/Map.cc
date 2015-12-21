@@ -2552,6 +2552,8 @@ bool Map::update(int cycle_time)
   /* Update persons for movement and animation */
   for(uint16_t i = 0; i < persons.size(); i++)
   {
+    tile_set.clear();
+
     if(persons[i] != NULL && persons[i]->getMapSection() == map_index &&
        persons[i]->isTilesSet())
     {

@@ -71,6 +71,7 @@ private:
   /* The nodes for control */
   Path* node_current;
   Path* node_head;
+  //Path node_initial; // TODO: Remove?
   Path node_player;
   Path* node_previous;
   Path node_random;

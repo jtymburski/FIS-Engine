@@ -104,15 +104,23 @@ bool MapNPC::getXYFlip()
   else
   {
     if(node_state == LOOPED)
-      return node_current->previous->xy_flip;
+    {
+      if(node_current->previous != nullptr)
+        return node_current->previous->xy_flip;
+    }
     else if(node_state == RANDOMRANGE || node_state == RANDOM)
+    {
       return node_current->xy_flip;
+    }
     else if(node_state == BACKANDFORTH)
     {
-      if(moving_forward)
-        return node_current->previous->xy_flip;
-      else
-        return !node_current->xy_flip;
+      if(node_current->previous != nullptr)
+      {
+        if(moving_forward)
+          return node_current->previous->xy_flip;
+        else
+          return !node_current->xy_flip;
+      }
     }
   }
 
@@ -186,6 +194,14 @@ void MapNPC::initializeClass()
   track_state = NOTRACK;
   tracking = false;
 
+  /* Set the initial path node */ // TODO: Remove
+  //node_initial.x = 0;
+  //node_initial.y = 0;
+  //node_initial.delay = 0;
+  //node_initial.xy_flip = false;
+  //node_initial.previous = nullptr;
+  //node_initial.next = nullptr;
+  
   /* Set the path player node to blank state */
   node_player.x = 0;
   node_player.y = 0;
@@ -210,8 +226,8 @@ void MapNPC::initializeClass()
   node_start.y = 0;
   node_start.delay = 0;
   node_start.xy_flip = false;
-  node_start.previous = NULL;
-  node_start.next = NULL;
+  node_start.previous = &node_start;
+  node_start.next = &node_start;
 }
 
 /*
@@ -561,7 +577,7 @@ void MapNPC::updateBound()
   int y_max = -1;
   int y_min = -1;
   
-  /* Proceed to generate new information */
+  /* Proceed to generate new information - on node set*/
   if(node_parse != nullptr)
   {
     do
@@ -582,6 +598,14 @@ void MapNPC::updateBound()
       node_parse = node_parse->next;
 
     } while(node_parse != node_head);
+  }
+  /* If no nodes, it is the starting point */
+  else
+  {
+    x_min = getStartingX();
+    x_max = getStartingX();
+    y_min = getStartingY();
+    y_max = getStartingY();
   }
   
   /* If data is valid, load it in */
@@ -713,6 +737,21 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
         node_start.xy_flip = flip;
     }
   }
+  /* -- TRACKING DIST MAX -- */
+  else if(identifier == "trackmax" && elements.size() == 1)
+  {
+    setTrackingDist(track_dist, data.getDataInteger(), track_dist_run);
+  }
+  /* -- TRACKING DIST MIN -- */
+  else if(identifier == "trackmin" && elements.size() == 1)
+  {
+    setTrackingDist(data.getDataInteger(), track_dist_max, track_dist_run);
+  }
+  /* -- TRACKING DIST RUN -- */
+  else if(identifier == "trackrun" && elements.size() == 1)
+  {
+    setTrackingDist(track_dist, track_dist_max, data.getDataInteger());
+  }
   /*--------------------- TRACKING --------------------*/
   else if(identifier == "tracking" && elements.size() == 1)
   {
@@ -740,6 +779,8 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   {
     success &= MapPerson::addThingInformation(data, file_index, section_index,
                                               renderer, base_path);
+    if(identifier == "startpoint")
+      updateBound();
   }
 
   return success;
@@ -769,7 +810,7 @@ void MapNPC::clear()
   /* Clear out all the nodes */
   removeAllNodes();
   node_head = NULL;
-  node_current = NULL;
+  node_current = &node_start;
 
   /* Clear out other variables */
   npc_delay = 0;
@@ -1047,7 +1088,7 @@ bool MapNPC::removeAllNodes()
   else
   {
     node_head = NULL;
-    node_current = NULL;
+    node_current = &node_start;
   }
 
   return true;
@@ -1072,7 +1113,7 @@ bool MapNPC::removeNode(uint16_t index)
     {
       temp_node = node_head;
       node_head = NULL;
-      node_current = NULL;
+      node_current = &node_start;
       success = true;
     }
     else if(index < length)
@@ -1271,8 +1312,17 @@ void MapNPC::setTrackingState(TrackingState state)
 void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   /* Begin the check to handle each time the NPC is on a tile */
-  if(isTilesSet() && node_current != NULL)
+  if(isTilesSet() && node_current != nullptr) //getNodeState() != LOCKED)
   {
+    /* Pre-checks if current node is empty */ // TODO: Remove
+    //if(node_current == nullptr)
+    //{
+    //  node_initial.x = getStartingX();
+    //  node_initial.y = getStartingY();
+    //  node_current = &node_initial;
+    //}
+    
+    /* Variables */
     int delta = 0;
     bool stopped = !isMoving();
 
@@ -1311,7 +1361,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         }
         else if(node_current == &node_start)
         {
-        /* Delay first */
+          /* Delay first */
           if(node_start.delay > npc_delay)
           {
             npc_delay += cycle_time;
@@ -1322,7 +1372,10 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
             if(node_state == LOOPED || node_state == BACKANDFORTH ||
                node_state == RANDOMRANGE)
             {
-              node_current = node_head;
+              if(node_head != nullptr)
+                node_current = node_head;
+              else
+                starting = false;
             }
             else if(node_state == RANDOM)
             {
@@ -1343,7 +1396,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     else
     {
       /* Handle tracking */
-      if(track_state != NOTRACK)
+      if(track_state != NOTRACK && player != nullptr)
       {
         /* Delta X/Y distances */
         int delta_x = 0;
@@ -1404,16 +1457,16 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       /* If tracking, modify how movement is handled */
       if(tracking)// && getTarget() == nullptr)
       {
-        bool track_almost = isAlmostOnTile(cycle_time);
+        //bool track_almost = isAlmostOnTile(cycle_time);
 
         /* Track to the player location */
         if(track_state == TOPLAYER)
         {
-          if(track_almost || stopped)
-          {
-            node_player.x = player->getTileX();
-            node_player.y = player->getTileY();
-          }
+          //if(track_almost || stopped)
+          //{
+          node_player.x = player->getTileX();
+          node_player.y = player->getTileY();
+          //}
         }
         /* Track from the player location */
         else
