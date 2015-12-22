@@ -1541,6 +1541,7 @@ void Game::unload(bool full_unload)
   //changeMode(DISABLED);
 
   /* Unload map */
+  event_handler.pollClear();
   unloadSub();
 
   /* Unload game data */

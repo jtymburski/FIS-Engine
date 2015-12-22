@@ -182,6 +182,19 @@ void MapDialog::clearData()
   text_update = false;
   thing_active = NULL;
   thing_data.clear();
+
+  // img_convo->unsetTexture();
+  // img_convo_m->unsetTexture();
+  // img_convo_n->unsetTexture();
+  // img_name_l->unsetTexture();
+  // img_name_r->unsetTexture();
+  // img_opt_c->unsetTexture();
+  // img_opt_d->unsetTexture();
+  // img_opt_u->unsetTexture();
+  // img_pick_b->unsetTexture();
+  // img_pick_t->unsetTexture();
+  frame_bottom.unsetTexture();
+  frame_right.unsetTexture();
 }
 
 /*
@@ -771,12 +784,17 @@ void MapDialog::clearAll(bool include_convo)
   {
     dialog_mode = DISABLED;
     dialog_status = WindowStatus::OFF;
+
   }
   notification_queue.clear();
 
   /* Pick up */
   pickup_queue.clear();
   pickup_status = WindowStatus::OFF;
+
+  /* Clear frame data */
+  frame_bottom.unsetTexture();
+  frame_right.unsetTexture();
 }
 
 /*

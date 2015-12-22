@@ -352,5 +352,12 @@ void Buffer::reorder()
                       static_cast<uint16_t>(b.type));
             });
 
+  std::sort(begin(action_buffer), end(action_buffer),
+   [&](const BufferAction& a, const BufferAction& b) -> bool
+    { 
+
+          return (a.user->getStats().getValue(Attribute::MMNT) < b.user->getStats().getValue(Attribute::MMNT));
+           });
+
   sorted = true;
 }

@@ -101,6 +101,7 @@ private:
   int track_dist;
   int track_dist_max;
   int track_dist_run;
+  bool track_initial;
   bool track_recent;
   TrackingState track_state;
   bool tracking;

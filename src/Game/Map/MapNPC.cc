@@ -190,6 +190,7 @@ void MapNPC::initializeClass()
   track_dist = kTRACK_DIST_MIN;
   track_dist_max = kTRACK_DIST_MAX;
   track_dist_run = kTRACK_DIST_RUN;
+  track_initial = false;
   track_recent = false;
   track_state = NOTRACK;
   tracking = false;
@@ -362,34 +363,30 @@ void MapNPC::randomizeNode()
 void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
 {
   /* Check if movement has stopped */
-  if(stopped)
+  if(stopped)// && (getTileX() != node_player.x || getTileY() != node_player.y))
     track_delay += cycle_time;
 
   /* Determine if an update should occur based on location of npc */
   if((!stopped && getTileX() == node_player.x && 
-      getTileY() == node_player.y) || track_delay > kTRACK_DELAY)
+      getTileY() == node_player.y) || 
+     track_initial || track_delay > kTRACK_DELAY)
   {
     Direction dir_curr = getDirection();
     int play_delt_x = getTileX() - player->getTileX();
     int play_delt_y = getTileY() - player->getTileY();
     int new_x = getTileX();
     int new_y = getTileY();
-    
+    track_initial = false;
+
     /* Change direction handle */
     bool change_dir = (track_delay > kTRACK_DELAY);
-    track_delay = 0;
+    if(change_dir)
+      track_delay = 0;
 
     /* Parse and determine quadrant - on X-Axis - E-W */
     if(play_delt_x == 0)
     {
-      if(change_dir)
-      {
-        if(dir_curr == Direction::EAST)
-          new_x--;
-        else
-          new_x++;
-      }
-      else
+      if(!change_dir || (change_dir && dir_curr == Direction::WEST))
       {
         /* In N quadrant */
         if(play_delt_y > 0)
@@ -398,18 +395,18 @@ void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
         else
           new_y--;
       }
+      else
+      {
+        if(dir_curr == Direction::EAST)
+          new_x--;
+        else
+          new_x++;
+      }
     }
     /* On Y-Axis - N-S */
     else if(play_delt_y == 0)
     {
-      if(change_dir)
-      {
-        if(dir_curr == Direction::SOUTH)
-          new_y--;
-        else
-          new_y++;
-      }
-      else
+      if(!change_dir || (change_dir && dir_curr == Direction::NORTH))
       {
         /* In W quadrant */
         if(play_delt_x > 0)
@@ -417,6 +414,13 @@ void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
         /* In E quadrant */
         else
           new_x--;
+      }
+      else
+      {
+        if(dir_curr == Direction::SOUTH)
+          new_y--;
+        else
+          new_y++;
       }
     }
     /* In NW quadrant */
@@ -455,7 +459,7 @@ void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
       else
         new_x--;
     }
-    
+
     /* Check the new point */
     if(new_x < 0)
       new_x = 0;
@@ -626,6 +630,8 @@ void MapNPC::updateBound()
  */
 bool MapNPC::setDirection(Direction direction, bool set_movement)
 {
+  //return MapPerson::setDirection(direction, set_movement);
+
   bool changed = (this->direction != direction);
   bool movement_changed = false;
 
@@ -634,7 +640,16 @@ bool MapNPC::setDirection(Direction direction, bool set_movement)
   {
     /* Update preferred movement direction */
     movement_changed = MapThing::setDirection(direction);
+  }
+  else
+  {
+    MapThing::setDirection(Direction::DIRECTIONLESS);
+  }
 
+  /* Rotate direction */
+  if(set_movement || getTarget() != nullptr || node_current->x == getTileX() ||
+     node_current->y == getTileY() || forced_recent)
+  {
     /* If it's a movement direction, rotate the fellow */
     SpriteMatrix* state = getState(surface, direction);
     if(state != NULL)
@@ -645,10 +660,6 @@ bool MapNPC::setDirection(Direction direction, bool set_movement)
       /* Finally set the in class direction */
       this->direction = direction;
     }
-  }
-  else
-  {
-    MapThing::setDirection(Direction::DIRECTIONLESS);
   }
 
   return movement_changed;
@@ -1460,6 +1471,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
           {
             tracking = true;
             track_delay = 0;
+            track_initial = true;
             node_previous = node_current;
             node_current = &node_player;
             
@@ -1481,6 +1493,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
               trackOutOfRange(player) >= delta_range))
           {
             tracking = false;
+            track_initial = false;
             track_recent = true;
             node_current = node_previous;
             node_previous = nullptr;
@@ -1507,6 +1520,8 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         {
           if(delta < track_dist_run && delta_range < track_dist_max)
             trackAvoidPlayer(cycle_time, stopped);
+          else
+            track_initial = true;
         }
       }
       /* On tile if not moving so handle pauses or shifts */

@@ -2342,6 +2342,8 @@ void Map::unloadMap()
 {
   /* Reset the index and applicable parameters */
   map_index = 0;
+  //map_dialog = MapDialog();
+  //map_dialog.setEventHandler
   map_dialog.clearAll(true);
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
