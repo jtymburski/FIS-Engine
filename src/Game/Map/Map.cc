@@ -678,7 +678,6 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
                                                    Direction direction)
 {
   std::vector<std::vector<Tile*>> tile_set;
-
   if(thing != NULL)
   {
     SDL_Rect render_box = thing->getBoundingBox();

@@ -40,7 +40,7 @@ EventHandler::~EventHandler()
 /* Returns the event in the queue: either from the set or event pointer */
 bool EventHandler::getEvent(Event& event, bool trigger)
 {
-  if(queue_index < event_queue.size())
+  if(pollEventAvailable())
   {
     if(event_queue[queue_index].event_set != nullptr)
     {
@@ -213,7 +213,7 @@ bool EventHandler::pollEvent()
 /* Checks if there is any valid event available - usually called first */
 bool EventHandler::pollEventAvailable()
 {
-  return (queue_index < event_queue.size());
+  return (event_queue.size() > 0 && queue_index < event_queue.size());
 }
 
 /* Returns the current event type, to be polled by the management class */
@@ -286,7 +286,7 @@ bool EventHandler::pollLockSetData(Locked lock)
 //{
 //  if(queue_index < event_queue.size() &&
 //     event_queue[queue_index].event_set != nullptr)
-//  {
+//  {t
 //    EventSet* set = event_queue[queue_index].event_set;
 //    if(set->isLocked() && set->getLockedState().state == LockedState::ITEM)
 //    {

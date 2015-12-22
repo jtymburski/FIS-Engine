@@ -1558,9 +1558,9 @@ void Game::unloadCore()
 
 /* Unloads the sub map data of the game */
 void Game::unloadSub()
-{  /* Resets the AI for a new battle */
-  void resetForNewBattle();
+{
   map_ctrl.unloadMap();
+  event_handler.pollClear();
   loaded_sub = false;
 }
 
@@ -1570,18 +1570,22 @@ bool Game::update(int32_t cycle_time)
   ++ticks_total;
 
   /* Poll System Events */
-  pollEvents();
+  //pollEvents();
 
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
   // event_handler.getKeyHandler().print(true);
-
+  
   /* Mode next handling */
   updateMode(cycle_time);
-
+  
   /* MAP MODE */
   if(mode == MAP)
   {
+    /* Poll Events */
+    pollEvents();
+
+    /* Change mode to battle if ready */
     if(map_ctrl.isBattleReady())
       changeMode(BATTLE);
 

@@ -11,6 +11,7 @@
 /* Constant Implementation - see header file for descriptions */
 const uint16_t MapNPC::kFORCED_FREEZE = 5000;
 const uint16_t MapNPC::kFORCED_NOTRIGGER = 30000;
+const uint16_t MapNPC::kFORCED_RESET = 5000;
 const uint16_t MapNPC::kMAX_DELAY = 2000;
 const uint16_t MapNPC::kMAX_RANGE = 10;
 const float MapNPC::kPYTH_APPROX = 0.4;
@@ -1073,7 +1074,7 @@ bool MapNPC::insertNodeAtTail(uint16_t x, uint16_t y, uint16_t delay)
  */
 bool MapNPC::interactForced(MapPerson* initiator)
 {
-  if(!forced_recent && !getEventSet()->isNoInteraction() && interact(initiator))
+  if(!forced_recent && interact(initiator))
   {
     forced_recent = true;
     forced_time = 0;
@@ -1360,6 +1361,9 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   /* Begin the check to handle each time the NPC is on a tile */
   if(isTilesSet() && node_current != nullptr) //getNodeState() != LOCKED)
   {
+    /* Acquire direction */
+    Direction direction = getPredictedMoveRequest();
+
     /* Variables */
     int delta = 0;
     int delta_range = 0;
@@ -1376,9 +1380,6 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         stuck_flip = !stuck_flip;
       }
     }
-
-    /* Acquire direction */
-    Direction direction = getPredictedMoveRequest();
 
     /* If starting sequence, operate on different parameters */
     if(starting)
@@ -1462,8 +1463,19 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
           /* Check the recent status */
           if(track_recent)
           {
-            if(getTileX() == node_current->x && getTileY() == node_current->y)
+            /* If stopped, compute stuck time */
+            if(stopped)
+              track_delay += cycle_time;
+            else
+              track_delay = 0;
+
+            /* Once limits reach, reset tracking recent */
+            if((getTileX() == node_current->x && 
+                getTileY() == node_current->y) || 
+               (stopped && track_delay > kFORCED_RESET))
+            {
               track_recent = false;
+            }
           }
 
           /* Check if tracking should be enabled */
@@ -1493,6 +1505,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
               trackOutOfRange(player) >= delta_range))
           {
             tracking = false;
+            track_delay = 0;
             track_initial = false;
             track_recent = true;
             node_current = node_previous;

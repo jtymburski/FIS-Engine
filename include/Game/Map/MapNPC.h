@@ -49,6 +49,7 @@ public:
                                            a forced. In ms */
   const static uint16_t kFORCED_NOTRIGGER; /* Time before triggering a forced
                                               again. In ms */
+  const static uint16_t kFORCED_RESET; /* Reset delay if trying to go home */
   const static uint16_t kMAX_DELAY; /* The max delay for random delay calcs */
   const static uint16_t kMAX_RANGE; /* THe max range for random x,y move */
   const static float kPYTH_APPROX; /* Pythagorean c side approx factor */
