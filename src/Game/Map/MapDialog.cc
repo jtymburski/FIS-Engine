@@ -366,7 +366,7 @@ void MapDialog::setAlpha(uint8_t alpha)
  */
 void MapDialog::setConversation(Conversation* new_convo)
 {
-  /* Clear the old conversation */
+  /* Clear the old conversation */ // TODO: Need to change to reference...
   clearConversation(&conversation_info);
   conversation_info.text = "";
   conversation_info.thing_id = -1;

@@ -43,6 +43,7 @@ MapPerson::MapPerson() : MapThing()
 {
   running = false;
   sound_delay = -1;
+  starting_dir = Direction::NORTH;
   starting_section = 0;
   steps = 0;
 
@@ -534,15 +535,16 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
       surface = GROUND;
 
     /* Create the direction identifier */
-    Direction direction = Direction::DIRECTIONLESS;
-    if(elements[1] == "north")
-      direction = Direction::NORTH;
-    else if(elements[1] == "south")
-      direction = Direction::SOUTH;
-    else if(elements[1] == "east")
-      direction = Direction::EAST;
-    else if(elements[1] == "west")
-      direction = Direction::WEST;
+    Direction direction = Helpers::directionFromString(elements[1]);
+    // Direction direction = Direction::DIRECTIONLESS;
+    // if(elements[1] == "north")
+    //   direction = Direction::NORTH;
+    // else if(elements[1] == "south")
+    //   direction = Direction::SOUTH;
+    // else if(elements[1] == "east")
+    //   direction = Direction::EAST;
+    // else if(elements[1] == "west")
+    //   direction = Direction::WEST;
 
     /* Only proceed if the direction was a valid direction */
     SpriteMatrix* matrix = getState(surface, direction);
@@ -563,10 +565,18 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
       }
     }
   }
+   /*----------------- STARTING DIRECTION -----------------*/
+  else if(data.getElement(file_index) == "startingdir")
+  {
+    Direction dir = Helpers::directionFromString(data.getDataString());
+    success &= setStartingDirection(dir);
+  }
+  /* Failed conditions with sprites at root - invalid and keep from thing */
   else if(data.getElement(file_index) == "sprites")
   {
     success = false;
   }
+  /* -- All Other Conditions to Thing -- */
   else
   {
     /* Proceed to parent */
@@ -701,6 +711,17 @@ Direction MapPerson::getMoveRequest()
 MapPerson* MapPerson::getPlayer()
 {
   return nullptr;
+}
+
+/*
+ * Description: Returns the starting facing direction of the person
+ *
+ * Inputs: none
+ * Output: Direction - the facing direction enum
+ */
+Direction MapPerson::getStartingDirection() const
+{
+  return starting_dir;
 }
 
 /*
@@ -932,6 +953,27 @@ bool MapPerson::setBase(MapThing* base)
 void MapPerson::setRunning(bool running)
 {
   this->running = running;
+}
+
+/*
+ * Description: Sets the person starting facing direction. This is used on
+ *              initial creation and certain inactive cases.
+ *
+ * Inputs: Direction starting - the starting direction facing of the person
+ * Output: bool - returns if the direction was set
+ */
+bool MapPerson::setStartingDirection(Direction starting)
+{
+  if(starting != Direction::DIRECTIONLESS)
+  {
+    if(starting != starting_dir)
+    {
+      starting_dir = starting;
+      setDirection(starting_dir, false);
+    }
+    return true;
+  }
+  return false;
 }
 
 /*

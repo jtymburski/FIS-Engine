@@ -540,8 +540,15 @@ bool EventSet::isLocked()
   return isLocked(locked_status);
 }
 
-/* Returns if there is no interaction if triggering the class */
-// TODO: Comment
+/*
+ * Description: Returns if there is no interaction if triggering the event set
+ *              within the handler. This takes into account if one shots have
+ *              been used as opposed to isEmpty() which just checks if data
+ *              exists
+ *
+ * Inputs: none
+ * Output: bool - true if no interaction within
+ */
 bool EventSet::isNoInteraction()
 {
   bool no_interact = isEmpty();

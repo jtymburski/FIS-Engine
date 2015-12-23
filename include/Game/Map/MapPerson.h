@@ -29,7 +29,7 @@ public:
    *  GROUND - is on a dirt like substance (where walking is possible) */
   enum SurfaceClassifier{GROUND = 0};
 
-protected: 
+protected:
 /* The direction of the player */
   Direction direction;
 
@@ -45,6 +45,9 @@ private:
 
   /* Sound delay */
   int sound_delay;
+
+  /* The initial starting direction */
+  Direction starting_dir;
 
   /* The initial tile location to start movement on */
   std::vector<std::vector<Tile*>> starting_tiles;
@@ -150,6 +153,9 @@ public:
   /* Returns the stored player. Blank in Person, used in NPC child */
   virtual MapPerson* getPlayer();
 
+  /* Returns the starting facing direction of the person */
+  Direction getStartingDirection() const;
+
   /* Returns the number of tiles walked on for the person */
   uint32_t getStepCount();
 
@@ -185,6 +191,9 @@ public:
 
   /* Sets if the person is running */
   void setRunning(bool running);
+
+  /* Sets the starting direction of the person */
+  bool setStartingDirection(Direction starting);
 
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/

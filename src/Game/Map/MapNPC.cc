@@ -4,7 +4,7 @@
  * Inheritance: MapPerson
  * Description: The MapNPC class, this covers all AI found on the map in game
  *
- * TODO: 1. Reimplement the movement functions based on NPC scripts
+ * TODO: See header for list
  ******************************************************************************/
 #include "Game/Map/MapNPC.h"
 
@@ -359,8 +359,15 @@ void MapNPC::randomizeNode()
   }
 }
 
-/* Tracking functions - called by update */
-// TODO: Comment
+/*
+ * Description: This function is called by the update call when an NPC is 
+ *              triggered to avoid the player and each update cycle to determine
+ *              where the NPC should proceed to go (new node locations).
+ *
+ * Inputs: int cycle_time - the current previous cycle time that has lapsed
+ *         bool stopped - true if the NPC is currently stopped and not moving
+ * Output: none
+ */
 void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
 {
   /* Check if movement has stopped */
@@ -471,8 +478,15 @@ void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
   }
 }
 
-/* Tracking functions - called by update */
-// TODO: Comment
+/*
+ * Description: This is called by the update call to check if the given map
+ *              person reference is out of the calculated 'home' bounding
+ *              box range. It returns the number of tiles in approx distance
+ *              from the 'home' range.
+ *
+ * Inputs: MapPerson* ref - the reference person to check the tile x and y
+ * Output: int - the number of tiles in distance from home
+ */
 int MapNPC::trackOutOfRange(MapPerson* ref)
 {
   if(ref == nullptr)
@@ -565,8 +579,14 @@ int MapNPC::trackOutOfRange(MapPerson* ref)
   return -1;
 }
 
-/* Update the node bounding rect */
-// TODO: Comment
+/*
+ * Description: This is called in order to update the home bound rect struct.
+ *              It is required to be accessed each time any node changes occur
+ *              to update what is defined as home.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapNPC::updateBound()
 {
   Path* node_parse = node_head;
@@ -648,8 +668,8 @@ bool MapNPC::setDirection(Direction direction, bool set_movement)
   }
 
   /* Rotate direction */
-  if(set_movement || getTarget() != nullptr || node_current->x == getTileX() ||
-     node_current->y == getTileY() || forced_recent)
+  if(set_movement || getTarget() != nullptr || forced_recent || 
+     node_current->x == getTileX() || node_current->y == getTileY() )
   {
     /* If it's a movement direction, rotate the fellow */
     SpriteMatrix* state = getState(surface, direction);
@@ -977,22 +997,39 @@ Direction MapNPC::getPredictedMoveRequest()
   return getMoveRequest();
 }
 
-/* Tracking distance setpoints getters */
-// TODO: Comment
+/*
+ * Description: Returns the tracking distance max in tile count when the
+ *              tracking NPC releases its hold on the player.
+ *
+ * Inputs: none
+ * Output: int - the distance in tiles for the max
+ */
 int MapNPC::getTrackDistMax()
 {
   return track_dist_max;
 }
 
-/* Tracking distance setpoints getters */
-// TODO: Comment
+/*
+ * Description: Returns the tracking distance min in tile count when the
+ *              tracking NPC initiates its hold on the player and follows or
+ *              runs away.
+ *
+ * Inputs: none
+ * Output: int - the distance in tiles for the min
+ */
 int MapNPC::getTrackDistMin()
 {
   return track_dist;
 }
 
-/* Tracking distance setpoints getters */
-// TODO: Comment
+/*
+ * Description: Returns the tracking distance run in tile count when the
+ *              tracking NPC which is set to keep away from the player attempts
+ *              to maintain this distance at all times.
+ *
+ * Inputs: none
+ * Output: int - the distance in tiles for the keep away
+ */
 int MapNPC::getTrackDistRun()
 {
   return track_dist_run;
@@ -1323,9 +1360,17 @@ void MapNPC::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   /* Set to parent */
   MapThing::setStartingLocation(section_id, x, y);
 }
-  
-/* Sets the tracking distance setpoints */
-// TODO: Comment
+
+/*
+ * Description: Sets the three tracking distance tile setpoints for the
+ *              current NPC. For explanation of each, see the associated
+ *              getter functions.
+ *
+ * Inputs: int trigger - the distance from the player to trigger tracking
+ *         int max - the distance from the player or home to release tracking
+ *         int run - the distance from the player to stay away if running
+ * Output: none
+ */
 void MapNPC::setTrackingDist(int trigger, int max, int run)
 {
   if(trigger > 0)
@@ -1435,7 +1480,6 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     }
     else
     {
-
       /* Handle tracking */
       if(track_state != NOTRACK && player != nullptr)
       {
@@ -1553,21 +1597,31 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         {
           if(node_state == LOOPED)
           {
-            node_current = node_current->next;
+            if(node_head != nullptr)
+              node_current = node_current->next;
+            else
+              setDirection(getStartingDirection(), false);
           }
           else if(node_state == BACKANDFORTH)
           {
-            /* Check to see if the ends are reached */
-            if(moving_forward && node_current->next == node_head)
-              moving_forward = false;
-            else if(!moving_forward && node_current == node_head)
-              moving_forward = true;
+            if(node_head != nullptr)
+            {
+              /* Check to see if the ends are reached */
+              if(moving_forward && node_current->next == node_head)
+                moving_forward = false;
+              else if(!moving_forward && node_current == node_head)
+                moving_forward = true;
 
-            /* Move in the new / old direction */
-            if(moving_forward)
-              node_current = node_current->next;
+              /* Move in the new / old direction */
+              if(moving_forward)
+                node_current = node_current->next;
+              else
+                node_current = node_current->previous;
+            }
             else
-              node_current = node_current->previous;
+            {
+              setDirection(getStartingDirection(), false);
+            }
           }
           else if(node_state == RANDOM ||
                   (node_state == RANDOMRANGE && node_head != NULL))
@@ -1596,6 +1650,16 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     {
       clearAllMovement();
       addDirection(direction);
+    }
+  }
+  /* Locked state - just handle visible direction */
+  else
+  {
+    /* If not targetting the player, restore direction */
+    if(!getMovementPaused() && getTarget() == nullptr && 
+       getDirection() != getStartingDirection())
+    {
+      setDirection(getStartingDirection(), false);
     }
   }
 

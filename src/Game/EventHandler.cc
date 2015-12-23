@@ -46,6 +46,13 @@ bool EventHandler::getEvent(Event& event, bool trigger)
     {
       event = event_queue[queue_index].event_set->getEvent(trigger);
     }
+    else if(event_queue[queue_index].event_ref != nullptr)
+    {
+
+      event = *(event_queue[queue_index].event_ref);
+      if(trigger)
+        event_queue[queue_index].event_ref->has_exec = true;
+    }
     else
     {
       event = event_queue[queue_index].event;
@@ -75,6 +82,28 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
     /* Create the executed event queue entry */
     EventExecution executed_event;
     executed_event.event = event;
+    executed_event.event_ref = nullptr;
+    executed_event.event_set = nullptr;
+    executed_event.item = nullptr;
+    executed_event.initiator = initiator;
+    executed_event.source = source;
+
+    /* Push the event to the back of the queue */
+    event_queue.push_back(executed_event);
+  }
+}
+
+/* Execute the given event reference */
+void EventHandler::executeEventRef(Event* event, MapPerson* initiator, 
+                                   MapThing* source)
+{
+  if(event != nullptr && event->classification != EventClassifier::NOEVENT &&
+     (!event->one_shot || !event->has_exec))
+  {
+    /* Create the executed eevent queue entry */
+    EventExecution executed_event;
+    executed_event.event = EventSet::createBlankEvent();
+    executed_event.event_ref = event;
     executed_event.event_set = nullptr;
     executed_event.item = nullptr;
     executed_event.initiator = initiator;
@@ -94,6 +123,7 @@ void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator,
     /* Create the executed event queue entry */
     EventExecution executed_event;
     executed_event.event = EventSet::createBlankEvent();
+    executed_event.event_ref = nullptr;
     executed_event.event_set = set;
     executed_event.item = nullptr;
     executed_event.initiator = initiator;
@@ -115,6 +145,7 @@ void EventHandler::executeIOTrigger(MapInteractiveObject* io,
     /* Create the executed event queue entry */
     EventExecution executed_event;
     executed_event.event = EventSet::createBlankEvent();
+    executed_event.event_ref = nullptr;
     executed_event.event_set = nullptr;
     executed_event.item = nullptr;
     executed_event.initiator = initiator;
@@ -281,22 +312,6 @@ bool EventHandler::pollLockSetData(Locked lock)
   return false;
 }
 
-/* Polls the lock item for the related properties associated */
-//bool EventHandler::pollLockItem(int& id, int& count, bool& consume)
-//{
-//  if(queue_index < event_queue.size() &&
-//     event_queue[queue_index].event_set != nullptr)
-//  {t
-//    EventSet* set = event_queue[queue_index].event_set;
-//    if(set->isLocked() && set->getLockedState().state == LockedState::ITEM)
-//    {
-//      EventSet::dataLockedItem(set->getLockedState(), id, count, consume);
-//      return true;
-//    }
-//  }
-//  return false;
-//}
-
 /* Poll the empty event */
 bool EventHandler::pollNone()
 {
@@ -438,23 +453,6 @@ bool EventHandler::pollTriggerIO(MapInteractiveObject** io, int* state,
   }
   return false;
 }
-
-/* Unlock triggers, based on if the event set has a lock struct */
-//bool EventHandler::pollUnlockItem(int id, int count)
-//{
-//  int id_curr, count_curr;
-//  bool consume = false;
-//
-//  /* Check to make sure the current is a lock item polled event */
-//  if(pollLockItem(id_curr, count_curr, consume))
-//  {
-//    Locked locked_state = event_queue[queue_index].event_set->getLockedState();
-//    consume = EventSet::unlockItem(locked_state, id, count);
-//    event_queue[queue_index].event_set->setLocked(locked_state);
-//  }
-//
-//  return consume;
-//}
 
 /* Poll the unlock event(s) */
 bool EventHandler::pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,

@@ -35,6 +35,7 @@ class MapThing;
 struct EventExecution
 {
   Event event;
+  Event* event_ref;
   EventSet* event_set;
 
   MapItem* item;
@@ -84,6 +85,8 @@ private:
 public:
   /* Execute the given event */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
+  void executeEventRef(Event* event, MapPerson* initiator, 
+                       MapThing* source = nullptr);
 
   /* Execute the given event set */
   void executeEventSet(EventSet* set, MapPerson* initiator,
@@ -128,9 +131,6 @@ public:
   bool pollLockGetData(Locked& lock);
   bool pollLockSetData(Locked lock);
 
-  /* Accesses lock properties */
-  //bool pollLockItem(int& id, int& count, bool& consume); // TODO: REMOVE
-
   /* Poll the empty event */
   bool pollNone();
 
@@ -158,9 +158,6 @@ public:
   /* Poll a trigger IO event */
   bool pollTriggerIO(MapInteractiveObject** io, int* state,
                      MapPerson** initiator);
-
-  /* Unlock triggers, based on if the event set has a lock struct */
-  //bool pollUnlockItem(int id, int count); // TODO: REMOVE
 
   /* Poll the unlock event(s) */
   bool pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,

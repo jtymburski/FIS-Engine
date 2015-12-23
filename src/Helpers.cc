@@ -701,6 +701,48 @@ std::string Helpers::curveToString(const ElementCurve& curve, bool simple)
 }
 
 /*
+ * Description: Direction enum form of an string direction.
+ *
+ * Inputs: std::string direction - string form of direction
+ * Output: Direction - enum form of the direction
+ */
+Direction Helpers::directionFromString(const std::string& direction)
+{
+  std::string dir_up = direction;
+  std::transform(dir_up.begin(), dir_up.end(), dir_up.begin(), toupper);
+
+  /* Parse */
+  if(dir_up == "NORTH")
+    return Direction::NORTH;
+  else if(dir_up == "EAST")
+    return Direction::EAST;
+  else if(dir_up == "SOUTH")
+    return Direction::SOUTH;
+  else if(dir_up == "WEST")
+    return Direction::WEST;
+  return Direction::DIRECTIONLESS;
+}
+
+/*
+ * Description: Direction string form of an enumerated direction.
+ *
+ * Inputs: Direction direction - enumerated form of direction.
+ * Output: std::string - string form of the direction
+ */
+std::string Helpers::directionToString(const Direction& direction)
+{
+  if(direction == Direction::NORTH)
+    return "NORTH";
+  else if(direction == Direction::EAST)
+    return "EAST";
+  else if(direction == Direction::SOUTH)
+    return "SOUTH";
+  else if(direction == Direction::WEST)
+    return "WEST";
+  return "";
+}
+
+/*
  * Description: Elemental enum form of an string element.
  *
  * Inputs: std::string element - string form of element
