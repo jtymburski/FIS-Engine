@@ -81,9 +81,9 @@ int main(int argc, char** argv)
       game_app->run(!init_app.empty());
 
     /* Clean up the application, after the run loop is finished */
-    game_app->uninitialize();
+    //game_app->uninitialize();
     delete game_app;
-    game_app = NULL;
+    game_app = nullptr;
   }
 
   /* Clean up SDL libraries */

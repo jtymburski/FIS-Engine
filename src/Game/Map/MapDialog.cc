@@ -99,19 +99,27 @@ MapDialog::~MapDialog()
  * Inputs: Conversation convo - the conversation to parse for IDs
  * Output: std::vector<int> - vector array of all thing IDs
  */
-std::vector<int> MapDialog::calculateThingList(Conversation convo)
+std::vector<int> MapDialog::calculateThingList(Conversation* convo)
 {
   std::vector<int> list;
 
-  /* Recursively get all other IDs from embedded conversations */
-  for(auto i = convo.next.begin(); i != convo.next.end(); i++)
+  if(convo != nullptr)
   {
-    std::vector<int> computed_list = calculateThingList(*i);
-    list.insert(list.end(), computed_list.begin(), computed_list.end());
-  }
+    /* Recursively get all other IDs from embedded conversations */
+    for(uint32_t i = 0; i < convo->next.size(); i++)
+    {
+      std::vector<int> computed_list = calculateThingList(&(convo->next[i]));
+      list.insert(list.end(), computed_list.begin(), computed_list.end());
+    }
+    //for(auto i = convo->next.begin(); i != convo->next.end(); i++)
+    //{
+    //  std::vector<int> computed_list = calculateThingList(i);
+    //  list.insert(list.end(), computed_list.begin(), computed_list.end());
+    //}
 
-  /* Append final ID for the current conversation */
-  list.push_back(convo.thing_id);
+    /* Append final ID for the current conversation */
+    list.push_back(convo->thing_id);
+  }
 
   return list;
 }
@@ -124,18 +132,18 @@ std::vector<int> MapDialog::calculateThingList(Conversation convo)
  * Inputs: Conversation* convo - a convo reference pointer, to clean up
  * Output: none
  */
-void MapDialog::clearConversation(Conversation* convo)
-{
-  if(convo != NULL)
-  {
-    /* Recursively get all other IDs from embedded conversations */
-    for(auto i = convo->next.begin(); i != convo->next.end(); i++)
-      clearConversation(&(*i));
-    convo->text = "";
-    convo->thing_id = -1;
-    convo->next.clear();
-  }
-}
+//void MapDialog::clearConversation(Conversation* convo)
+//{
+//  if(convo != NULL)
+//  {
+//    /* Recursively get all other IDs from embedded conversations */
+//    for(auto i = convo->next.begin(); i != convo->next.end(); i++)
+//      clearConversation(&(*i));
+//    convo->text = "";
+//    convo->thing_id = -1;
+//    convo->next.clear();
+//  }
+//}
 
 /*
  * Description: Clears all data that is stored in the class. Primarily for
@@ -149,7 +157,8 @@ void MapDialog::clearData()
   animation_cursor = 0.0;
   animation_cursor_up = true;
   animation_shifter = 0.0;
-  clearConversation(&conversation_info);
+  //clearConversation(&conversation_info);
+  conversation_info = nullptr;
   conversation_ready = false;
   conversation_update = false;
   conversation_waiting = false;
@@ -267,10 +276,12 @@ void MapDialog::deleteFonts()
  */
 void MapDialog::executeEvent()
 {
-  if(event_handler != NULL &&
-     conversation_info.action_event.classification != EventClassifier::NOEVENT)
+  if(event_handler != nullptr && conversation_info != nullptr &&
+     conversation_info->action_event.classification != EventClassifier::NOEVENT)
   {
-    event_handler->executeEvent(conversation_info.action_event, target, source);
+    event_handler->executeEventRef(&(conversation_info->action_event), 
+                                   target, source);
+    conversation_info->action_event.has_exec = true;
   }
 }
 
@@ -364,26 +375,28 @@ void MapDialog::setAlpha(uint8_t alpha)
  * Inputs: Conversation* new_convo - the new conversation pointer to set
  * Output: none
  */
-void MapDialog::setConversation(Conversation* new_convo)
-{
+//void MapDialog::setConversation(Conversation* new_convo)
+//{
   /* Clear the old conversation */ // TODO: Need to change to reference...
-  clearConversation(&conversation_info);
-  conversation_info.text = "";
-  conversation_info.thing_id = -1;
-  conversation_info.category = DialogCategory::TEXT;
-  if(event_handler != NULL)
-    conversation_info.action_event = EventSet::createBlankEvent();
+  //clearConversation(&conversation_info);
+  //conversation_info.text = "";
+  //conversation_info.thing_id = -1;
+  //conversation_info.category = DialogCategory::TEXT;
+  //if(event_handler != NULL)
+  //  conversation_info.action_event = EventSet::createBlankEvent();
 
   /* Insert new conversation */
-  if(new_convo != NULL)
-  {
-    conversation_info.text = new_convo->text;
-    conversation_info.thing_id = new_convo->thing_id;
-    conversation_info.category = new_convo->category;
-    conversation_info.action_event = new_convo->action_event;
-    conversation_info.next = new_convo->next;
-  }
-}
+//  conversation_info = new_convo;
+  //if(new_convo != NULL)
+  //{
+  //  conversation_info = new_convo
+  //  conversation_info.text = new_convo->text;
+  //  conversation_info.thing_id = new_convo->thing_id;
+  //  conversation_info.category = new_convo->category;
+  //  conversation_info.action_event = new_convo->action_event;
+  //  conversation_info.next = new_convo->next;
+  //}
+//}
 
 /*
  * Description: Sets up the current conversation snapshot by rendering the main
@@ -397,128 +410,132 @@ void MapDialog::setConversation(Conversation* new_convo)
  */
 void MapDialog::setupConversation(SDL_Renderer* renderer)
 {
-  Frame* dialog_frame = NULL;
-  int render_height = img_convo.getHeight();
-  int render_width = img_convo.getWidth();
-  int txt_length = img_convo.getWidth() - (kMARGIN_SIDES << 1);
-
-  /* Set the active thing data plus grab image frame */
-  thing_active = getThingReference(conversation_info.thing_id);
-  if(thing_active != NULL)
+  if(conversation_info != nullptr)
   {
-    dialog_frame = thing_active->getDialogImage();
+    Frame* dialog_frame = NULL;
+    int render_height = img_convo.getHeight();
+    int render_width = img_convo.getWidth();
+    int txt_length = img_convo.getWidth() - (kMARGIN_SIDES << 1);
 
-    /* Modify render height/width for new frame */
-    if(dialog_frame->getHeight() > render_height)
-      render_height = dialog_frame->getHeight();
-    render_width += dialog_frame->getWidth() / 2;
-
-    /* Modify text length limiters */
-    int width_modifier = (dialog_frame->getWidth() >> 1);
-    if(width_modifier > kMARGIN_SIDES)
-      txt_length -= (width_modifier - kMARGIN_SIDES);
-  }
-
-  /* Create the name information */
-  std::string name = "";
-  Text name_text;
-  if(thing_active != NULL)
-   name = thing_active->getName();
-  if(!name.empty())
-  {
-    SDL_Color text_color = {255, 255, 255, kOPACITY_MAX};
-    name_text.setFont(font_title);
-    name_text.setText(renderer, name, text_color);
-    if((img_convo.getHeight() + img_name_l.getHeight()) > render_height)
-      render_height = img_convo.getHeight() + img_name_l.getHeight();
-  }
-
-  /* Render texture creation and setup */
-  SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                           SDL_TEXTUREACCESS_TARGET,
-                                           render_width, render_height);
-  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-  SDL_SetRenderTarget(renderer, texture);
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  SDL_RenderClear(renderer);
-
-  /* Render images onto texture */
-  int convo_y = render_height - img_convo.getHeight();
-  img_convo.render(renderer, 0, convo_y);
-  if(dialog_frame != NULL)
-    dialog_frame->render(renderer, render_width - dialog_frame->getWidth(),
-                                   render_height - dialog_frame->getHeight());
-
-  /* Handle name rendering, if it exists */
-  if(!name.empty())
-  {
-    /* Draw corners to name box */
-    int textbox_height = img_name_l.getHeight();
-    img_name_l.render(renderer, kNAME_BOX_OFFSET, convo_y - textbox_height);
-    img_name_r.render(renderer,
-                kNAME_BOX_OFFSET + img_name_l.getWidth() + name_text.getWidth(),
-                convo_y - textbox_height);
-
-    /* Draw top white bar encapsulating text */
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, kOPACITY_MAX);
-    SDL_Rect src_rect;
-    src_rect.x = kNAME_BOX_OFFSET + img_name_l.getWidth();
-    src_rect.y = convo_y - textbox_height;
-    src_rect.w = name_text.getWidth();
-    src_rect.h = kBORDER_WIDTH;
-    SDL_RenderFillRect(renderer, &src_rect);
-
-    /* Draw opaque fill under text */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, kOPACITY_MAX * kOPACITY_BACKEND);
-    src_rect.y += src_rect.h;
-    src_rect.h = textbox_height - src_rect.h;
-    SDL_RenderFillRect(renderer, &src_rect);
-
-    /* Draw text */
-    name_text.render(renderer,
-                     src_rect.x + (src_rect.w - name_text.getWidth()) / 2,
-                     src_rect.y + (src_rect.h - name_text.getHeight()) / 2);
-  }
-  SDL_SetRenderTarget(renderer, NULL);
-
-  /* Create the base frame display texture */
-  frame_bottom.setTexture(texture);
-
-  /* Determine the length of the viewing area and split text lines */
-  std::string txt_line = conversation_info.text;
-  if(font_normal != NULL)
-  {
-    if(conversation_info.next.size() > 1)
+    /* Set the active thing data plus grab image frame */
+    thing_active = getThingReference(conversation_info->thing_id);
+    if(thing_active != NULL)
     {
-      text_strings = Text::splitLine(font_normal, txt_line, txt_length, true);
+      dialog_frame = thing_active->getDialogImage();
 
-      /* Fill the options */
-      int options_length = txt_length - kOPTION_OFFSET;
-      std::vector<std::string> options_text;
+      /* Modify render height/width for new frame */
+      if(dialog_frame->getHeight() > render_height)
+        render_height = dialog_frame->getHeight();
+      render_width += dialog_frame->getWidth() / 2;
 
-      for(auto i = conversation_info.next.begin();
-               i != conversation_info.next.end(); i++)
+      /* Modify text length limiters */
+      int width_modifier = (dialog_frame->getWidth() >> 1);
+      if(width_modifier > kMARGIN_SIDES)
+        txt_length -= (width_modifier - kMARGIN_SIDES);
+    }
+
+    /* Create the name information */
+    std::string name = "";
+    Text name_text;
+    if(thing_active != NULL)
+     name = thing_active->getName();
+    if(!name.empty())
+    {
+      SDL_Color text_color = {255, 255, 255, kOPACITY_MAX};
+      name_text.setFont(font_title);
+      name_text.setText(renderer, name, text_color);
+      if((img_convo.getHeight() + img_name_l.getHeight()) > render_height)
+        render_height = img_convo.getHeight() + img_name_l.getHeight();
+    }
+
+    /* Render texture creation and setup */
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                             SDL_TEXTUREACCESS_TARGET,
+                                             render_width, render_height);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    /* Render images onto texture */
+    int convo_y = render_height - img_convo.getHeight();
+    img_convo.render(renderer, 0, convo_y);
+    if(dialog_frame != NULL)
+      dialog_frame->render(renderer, render_width - dialog_frame->getWidth(),
+                                     render_height - dialog_frame->getHeight());
+
+    /* Handle name rendering, if it exists */
+    if(!name.empty())
+    {
+      /* Draw corners to name box */
+      int textbox_height = img_name_l.getHeight();
+      img_name_l.render(renderer, kNAME_BOX_OFFSET, convo_y - textbox_height);
+      img_name_r.render(renderer,
+                  kNAME_BOX_OFFSET + img_name_l.getWidth() + name_text.getWidth(),
+                  convo_y - textbox_height);
+
+      /* Draw top white bar encapsulating text */
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, kOPACITY_MAX);
+      SDL_Rect src_rect;
+      src_rect.x = kNAME_BOX_OFFSET + img_name_l.getWidth();
+      src_rect.y = convo_y - textbox_height;
+      src_rect.w = name_text.getWidth();
+      src_rect.h = kBORDER_WIDTH;
+      SDL_RenderFillRect(renderer, &src_rect);
+
+      /* Draw opaque fill under text */
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, kOPACITY_MAX * kOPACITY_BACKEND);
+      src_rect.y += src_rect.h;
+      src_rect.h = textbox_height - src_rect.h;
+      SDL_RenderFillRect(renderer, &src_rect);
+
+      /* Draw text */
+      name_text.render(renderer,
+                       src_rect.x + (src_rect.w - name_text.getWidth()) / 2,
+                       src_rect.y + (src_rect.h - name_text.getHeight()) / 2);
+    }
+    SDL_SetRenderTarget(renderer, NULL);
+
+    /* Create the base frame display texture */
+    frame_bottom.setTexture(texture);
+
+    /* Determine the length of the viewing area and split text lines */
+    std::string txt_line = conversation_info->text;
+    if(font_normal != NULL)
+    {
+      if(conversation_info->next.size() > 1)
       {
-        options_text.push_back(
-           Text::splitLine(font_normal, (*i).text, options_length, true).at(0));
+        text_strings = Text::splitLine(font_normal, txt_line, txt_length, true);
+
+        /* Fill the options */
+        int options_length = txt_length - kOPTION_OFFSET;
+        std::vector<std::string> options_text;
+
+        
+        for(auto i = conversation_info->next.begin();
+                 i != conversation_info->next.end(); i++)
+        {
+          options_text.push_back(Text::splitLine(font_normal, (*i).text, 
+                                                   options_length, true).at(0));
+        }
+        renderOptions(renderer, options_text);
       }
-      renderOptions(renderer, options_text);
-    }
-    else
-    {
-      text_strings = Text::splitLine(font_normal, txt_line, txt_length);
-      renderOptions(NULL);
+      else
+      {
+        text_strings = Text::splitLine(font_normal, txt_line, txt_length);
+        renderOptions(NULL);
+      }
+
+      setupRenderText(text_strings, true);
     }
 
-    setupRenderText(text_strings, true);
+    /* Modify the offset if it's above the new limits */
+    dialog_mode = CONVERSATION;
+    if(dialog_offset > 0.0)
+      dialog_offset = frame_bottom.getHeight();
+    dialog_option = 0;
+    dialog_option_top = 0;
   }
-
-  /* Modify the offset if it's above the new limits */
-  dialog_mode = CONVERSATION;
-  if(dialog_offset > 0.0)
-    dialog_offset = frame_bottom.getHeight();
-  dialog_option = 0;
-  dialog_option_top = 0;
 }
 
 /*
@@ -773,7 +790,8 @@ void MapDialog::clearAll(bool include_convo)
     {
       renderOptions(NULL);
       setupRenderText();
-      setConversation();
+      conversation_info = nullptr;
+      //setConversation();
 
       dialog_mode = DISABLED;
       dialog_status = WindowStatus::OFF;
@@ -835,8 +853,19 @@ std::vector<int> MapDialog::getConversationIDs()
 bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target,
                                  MapThing* source)
 {
-  if(dialog_info != NULL)
-    return initConversation(*dialog_info, target, source);
+  if(dialog_info != nullptr && dialog_mode != CONVERSATION && 
+     target != nullptr && isImagesSet())
+  {
+    conversation_info = dialog_info;
+    this->source = source;
+    this->target = target;
+    thing_active = nullptr;
+    thing_data.clear();
+    conversation_ready = false;
+    conversation_waiting = true;
+
+    return true;
+  }
   return false;
 }
 
@@ -854,24 +883,24 @@ bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target,
  *         MapThing* source - the thing that initiated the event
  * Output: bool - status if conversation could be created.
  */
-bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target,
-                                 MapThing* source)
-{
-  if(dialog_mode != CONVERSATION && target != NULL && isImagesSet())
-  {
-    setConversation(&dialog_info);
-    this->source = source;
-    this->target = target;
-    thing_active = NULL;
-    thing_data.clear();
-    conversation_ready = false;
-    conversation_waiting = true;
+// bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target,
+//                                  MapThing* source)
+// {
+//   if(dialog_mode != CONVERSATION && target != NULL && isImagesSet())
+//   {
+//     setConversation(&dialog_info);
+//     this->source = source;
+//     this->target = target;
+//     thing_active = NULL;
+//     thing_data.clear();
+//     conversation_ready = false;
+//     conversation_waiting = true;
 
-    return true;
-  }
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*
  * Description: Initializes a notification to be added to the queue and
@@ -1013,7 +1042,7 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
  */
 bool MapDialog::isConversationActive()
 {
-  return (dialog_mode == CONVERSATION);
+  return (conversation_info != nullptr && dialog_mode == CONVERSATION);
 }
 
 /*
@@ -1120,7 +1149,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
                           * (kTEXT_LINES - 1);
         }
         /* Otherwise, if end of conversation is reached, start hiding it */
-        else if(conversation_info.next.size() == 0)
+        else if(conversation_info->next.size() == 0)
         {
           dialog_status = WindowStatus::HIDING;
           executeEvent();
@@ -1128,23 +1157,25 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
         /* Otherwise, there is a next conversation. Proceed */
         else
         {
-          bool multiple = (conversation_info.next.size() > 1);
+          bool multiple = (conversation_info->next.size() > 1);
 
           /* Do the initial conversation shift */
           executeEvent();
-          Conversation new_convo = conversation_info.next[dialog_option];
-          setConversation(&new_convo);
+          Conversation* new_convo = &(conversation_info->next[dialog_option]);
+          conversation_info = new_convo;
+          //setConversation(&new_convo);
 
           /* If multiple options, shift to the next one */
           if(multiple)
           {
             executeEvent();
-            if(conversation_info.next.size() == 0)
+            if(conversation_info->next.size() == 0)
               dialog_status = WindowStatus::HIDING;
             else
             {
-              Conversation new_convo2 = conversation_info.next[0];
-              setConversation(&new_convo2);
+              Conversation* new_convo2 = &(conversation_info->next[0]);
+              conversation_info = new_convo2;
+              //setConversation(&new_convo2);
             }
           }
 
@@ -1171,7 +1202,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
     }
     else if(event.keysym.sym == SDLK_DOWN && text_index >= text_index_max)
     {
-      if(dialog_option < (conversation_info.next.size() - 1))
+      if(dialog_option < (conversation_info->next.size() - 1))
       {
        dialog_option++;
        if(event_handler != nullptr)
@@ -1433,7 +1464,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
       }
 
       /* Render the options, if applicable */
-      if(conversation_info.next.size() > 1 && text_index >= text_index_max)
+      if(conversation_info->next.size() > 1 && text_index >= text_index_max)
       {
         uint8_t index = dialog_option_top;
         y_index += kLINE_SPACING;
@@ -1457,7 +1488,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
           }
 
           /* Determine if there is more than the display options */
-          if(conversation_info.next.size() > kTEXT_OPTIONS)
+          if(conversation_info->next.size() > kTEXT_OPTIONS)
           {
             Frame* frame = NULL;
 
@@ -1473,7 +1504,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
             /* If it's the bottom option, render beside */
             if(index == (dialog_option_top + kTEXT_OPTIONS - 1))
             {
-              if(index == (conversation_info.next.size() - 1))
+              if(index == (conversation_info->next.size() - 1))
                 frame = &img_opt_c;
               else
                 frame = &img_opt_d;
@@ -1685,7 +1716,8 @@ void MapDialog::update(int cycle_time)
         {
           renderOptions(NULL);
           setupRenderText();
-          setConversation();
+          conversation_info = nullptr;
+          //setConversation();
         }
         /* Or clean up the notification */
         else if(dialog_mode == NOTIFICATION)

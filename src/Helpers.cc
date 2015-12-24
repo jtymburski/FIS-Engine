@@ -564,50 +564,98 @@ std::string Helpers::ailmentToStr(const Infliction& ail)
  * Description: Returns the enumerated Attribute to String.
  *
  * Inputs: Attribute attribute - the attribute to convert
+ *         bool shortform - true for short form. Default true
  * Output: std::string - the converted string
  */
-std::string Helpers::attributeToStr(Attribute attribute)
+std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
 {
-  if(attribute == Attribute::VITA)
-    return "VITA";
-  else if(attribute == Attribute::QTDR)
-    return "QTDR";
-  else if(attribute == Attribute::PHAG)
-    return "PHAG";
-  else if(attribute == Attribute::PHFD)
-    return "PHFD";
-  else if(attribute == Attribute::THAG)
-    return "THAG";
-  else if(attribute == Attribute::THFD)
-    return "THFD";
-  else if(attribute == Attribute::PRAG)
-    return "PRAG";
-  else if(attribute == Attribute::PRFD)
-    return "PRFD";
-  else if(attribute == Attribute::POAG)
-    return "POAG";
-  else if(attribute == Attribute::POFD)
-    return "POFD";
-  else if(attribute == Attribute::CHAG)
-    return "CHAG";
-  else if(attribute == Attribute::CHFD)
-    return "CHFD";
-  else if(attribute == Attribute::CYAG)
-    return "CYAG";
-  else if(attribute == Attribute::CYFD)
-    return "CYFD";
-  else if(attribute == Attribute::NIAG)
-    return "NIAG";
-  else if(attribute == Attribute::NIFD)
-    return "NIFD";
-  else if(attribute == Attribute::MMNT)
-    return "MMNT";
-  else if(attribute == Attribute::LIMB)
-    return "LIMB";
-  else if(attribute == Attribute::UNBR)
-    return "UNBR";
-  else if(attribute == Attribute::MANN)
-    return "MANN";
+  if(shortform)
+  {
+    if(attribute == Attribute::VITA)
+      return "VITA";
+    else if(attribute == Attribute::QTDR)
+      return "QTDR";
+    else if(attribute == Attribute::PHAG)
+      return "PHAG";
+    else if(attribute == Attribute::PHFD)
+      return "PHFD";
+    else if(attribute == Attribute::THAG)
+      return "THAG";
+    else if(attribute == Attribute::THFD)
+      return "THFD";
+    else if(attribute == Attribute::PRAG)
+      return "PRAG";
+    else if(attribute == Attribute::PRFD)
+      return "PRFD";
+    else if(attribute == Attribute::POAG)
+      return "POAG";
+    else if(attribute == Attribute::POFD)
+      return "POFD";
+    else if(attribute == Attribute::CHAG)
+      return "CHAG";
+    else if(attribute == Attribute::CHFD)
+      return "CHFD";
+    else if(attribute == Attribute::CYAG)
+      return "CYAG";
+    else if(attribute == Attribute::CYFD)
+      return "CYFD";
+    else if(attribute == Attribute::NIAG)
+      return "NIAG";
+    else if(attribute == Attribute::NIFD)
+      return "NIFD";
+    else if(attribute == Attribute::MMNT)
+      return "MMNT";
+    else if(attribute == Attribute::LIMB)
+      return "LIMB";
+    else if(attribute == Attribute::UNBR)
+      return "UNBR";
+    else if(attribute == Attribute::MANN)
+      return "MANN";
+  }
+  /* Else long form - description */
+  else
+  {
+    if(attribute == Attribute::VITA)
+      return "Vitality - hit points, when 0 character is incapacitated";
+    else if(attribute == Attribute::QTDR)
+      return "Quantum Drive - skill cost currency";
+    else if(attribute == Attribute::PHAG)
+      return "Physical Aggression - non-elemental attack statistic";
+    else if(attribute == Attribute::PHFD)
+      return "Physical Fortitude - non-elemental defense statistic";
+    else if(attribute == Attribute::THAG)
+      return "Thermal Aggression - fire-elemental attack statistic";
+    else if(attribute == Attribute::THFD)
+      return "Thermal Fortitude - fire-elemental defense statistic";
+    else if(attribute == Attribute::PRAG)
+      return "Primal Aggression - forest-elemental attack statistic";
+    else if(attribute == Attribute::PRFD)
+      return "Primal Fortitude - forest-elemental defense statistic";
+    else if(attribute == Attribute::POAG)
+      return "Polar Aggression - ice-elemental attack statistic";
+    else if(attribute == Attribute::POFD)
+      return "Polar Fortitude - ice-elemental defense statistic";
+    else if(attribute == Attribute::CHAG)
+      return "Charged Aggression - electric-elemental attack statistic";
+    else if(attribute == Attribute::CHFD)
+      return "Charged Fortitude - electric-elemental defense statistic";
+    else if(attribute == Attribute::CYAG)
+      return "Cybernetic Aggression - digital-elemental attack statistic";
+    else if(attribute == Attribute::CYFD)
+      return "Cybernetic Fortitude - digital-elemental defense statistic";
+    else if(attribute == Attribute::NIAG)
+      return "Nihil Aggression - void-elemental attack statistic";
+    else if(attribute == Attribute::NIFD)
+      return "Nihil Fortitude - void-elemental defense statistic";
+    else if(attribute == Attribute::MMNT)
+      return "Momentum - speed, in relation to turn order and action order";
+    else if(attribute == Attribute::LIMB)
+      return "Limbertude - dodge chance in avoiding attacks/ActionScope";
+    else if(attribute == Attribute::UNBR)
+      return "Unbearability - critical hit chance,increases base dmg by factor";
+    else if(attribute == Attribute::MANN)
+      return "Manna - luck which has various effects on outcomes/earnings etc.";
+  }
   return "";
 }
 

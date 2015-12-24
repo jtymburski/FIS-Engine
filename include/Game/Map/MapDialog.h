@@ -56,7 +56,7 @@ private:
   float animation_shifter;
 
   /* The currently running conversation information */
-  Conversation conversation_info;
+  Conversation* conversation_info;
   bool conversation_ready;
   bool conversation_update;
   bool conversation_waiting;
@@ -165,10 +165,10 @@ private:
  *============================================================================*/
 private:
   /* Computes all IDs that are needed for displaying the conversation */
-  std::vector<int> calculateThingList(Conversation convo);
+  std::vector<int> calculateThingList(Conversation* convo);
 
   /* Clears the vector conversation data */
-  void clearConversation(Conversation* convo);
+  //void clearConversation(Conversation* convo);
 
   /* Clears all stored pointer data within the class */
   void clearData();
@@ -193,7 +193,7 @@ private:
   void setAlpha(uint8_t alpha);
 
   /* Sets the conversation - internal to the class */
-  void setConversation(Conversation* new_convo = NULL);
+  //void setConversation(Conversation* new_convo = NULL);
 
   /* Sets up the active conversation pointer to prepare for screen rendering */
   void setupConversation(SDL_Renderer* renderer);
@@ -222,8 +222,8 @@ public:
   /* Initializes a conversation with the two given people. */
   bool initConversation(Conversation* dialog_info, MapPerson* target,
                         MapThing* source);
-  bool initConversation(Conversation dialog_info, MapPerson* target,
-                        MapThing* source);
+  //bool initConversation(Conversation dialog_info, MapPerson* target,
+  //                      MapThing* source);
 
   /* Initializes a notification, using a string to be printed */
   bool initNotification(std::string notification, bool single_line = false,

@@ -62,7 +62,7 @@ private:
   std::string base_path;
 
   /* The running game */
-  Game game_handler;
+  Game* game_handler;
 
   /* Status if the subsystems have been successfully initialized */
   bool initialized;
@@ -133,6 +133,10 @@ private:
   /* Revert to temporary mode */
   bool revertMode();
 
+  /* Uninitializes all set functions in the application. Used to wind down
+   * and no rendering will take place after this. */
+  void uninitialize();
+
   /* Unloads all loaded application data */
   void unload();
 
@@ -146,6 +150,10 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Getter access functions */
+  SDL_Renderer* getRenderer();
+  SDL_Window* getWindow();
+
   /* Provides initialization of the SDL engine. Required for running. */
   bool initialize();
 
@@ -158,9 +166,12 @@ public:
   /* Sets the application path */
   void setPath(std::string path, int level = 0, bool skip_title = false);
 
-  /* Uninitializes all set functions in the application. Used to wind down
-   * and no rendering will take place after this. */
-  void uninitialize();
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Uninitialize the passed in renderer and window */
+  //void uninitialize(SDL_Renderer* renderer, SDL_Window* window);
 };
 
 #endif // APPLICATION_H

@@ -25,6 +25,9 @@ const uint8_t Application::kUPDATE_RATE = 32;
 Application::Application(std::string base_path, std::string app_path,
                          int app_map)
 {
+  /* Start game with a default state */
+  game_handler = new Game();
+
   /* Initialize the variables */
   if(app_path.empty())
   {
@@ -50,8 +53,8 @@ Application::Application(std::string base_path, std::string app_path,
   update_sync = 0;
 
   /* Game Handler */
-  game_handler.setConfiguration(system_options);
-  game_handler.setSoundHandler(&sound_handler);
+  game_handler->setConfiguration(system_options);
+  game_handler->setSoundHandler(&sound_handler);
 
   /* Test battle */
   test_battle.setConfiguration(system_options);
@@ -72,6 +75,9 @@ Application::~Application()
   /* Clear the options class */
   delete system_options;
   system_options = NULL;
+
+  /* Uninitialize */
+  uninitialize();
 }
 
 /*=============================================================================
@@ -91,7 +97,7 @@ bool Application::changeMode(AppMode mode)
     if(this->mode == TITLESCREEN)
       title_screen.enableView(false);
     else if(this->mode == GAME)
-      game_handler.enableView(false);
+      game_handler->enableView(false);
     else if(this->mode == PAUSED)
       Sound::resumeAllChannels();
 
@@ -102,7 +108,7 @@ bool Application::changeMode(AppMode mode)
     if(mode == TITLESCREEN)
       title_screen.enableView(true);
     else if(mode == GAME)
-      game_handler.enableView(true);
+      game_handler->enableView(true);
     else if(mode == PAUSED)
       Sound::pauseAllChannels();
     // else if(mode == LOADING)
@@ -228,7 +234,7 @@ void Application::handleEvents()
       }
       else if(mode == GAME)
       {
-        game_handler.keyDownEvent(press_event);
+        game_handler->keyDownEvent(press_event);
 
         /* If the key event returns true, exit the game view */
         // if(game_handler.keyDownEvent(press_event))
@@ -249,7 +255,7 @@ void Application::handleEvents()
       if(mode == TITLESCREEN)
         title_screen.keyUpEvent(release_event);
       else if(mode == GAME)
-        game_handler.keyUpEvent(release_event);
+        game_handler->keyUpEvent(release_event);
       else if(mode == TESTBATTLE)
         test_battle.keyUpEvent(release_event);
     }
@@ -320,7 +326,7 @@ bool Application::load()
 
   /* If success, load into game handler with noted map */
   if(success)
-    game_handler.setPath(app_path, app_map, false);
+    game_handler->setPath(app_path, app_map, false);
 
   /* Change mode back to title screen */
   changeMode(TITLESCREEN);
@@ -338,9 +344,9 @@ void Application::render(uint32_t cycle_time)
   }
   else if(mode == GAME)
   {
-    if(game_handler.getMode() == Game::LOADING)
+    if(game_handler->getMode() == Game::LOADING)
       displayLoadingFrame();
-    game_handler.render(renderer);
+    game_handler->render(renderer);
   }
   else if(mode == LOADING)
   {
@@ -368,6 +374,33 @@ bool Application::revertMode()
   return false;
 }
 
+/* Uninitializes all set functions in the application. Used to wind down
+ * and no rendering will take place after this. */
+void Application::uninitialize()
+{
+  /* Unloads application data */
+  unload();
+
+  /* Delete game */
+  delete game_handler;
+  game_handler = nullptr;
+
+  /* Clean up the renderer */
+  if(renderer != NULL)
+  {
+    Helpers::deleteMasks();
+    SDL_DestroyRenderer(renderer);
+  }
+  renderer = NULL;
+
+  /* Clean up the window */
+  if(window != NULL)
+    SDL_DestroyWindow(window);
+  window = NULL;
+
+  initialized = false;
+}
+
 /* Unloads all loaded application data */
 void Application::unload()
 {
@@ -375,7 +408,7 @@ void Application::unload()
   // changeMode(TITLESCREEN);
 
   /* Clean up game */
-  game_handler.unload();
+  game_handler->unload();
 
   /* Clean up sounds */
   sound_handler.removeAll();
@@ -434,7 +467,7 @@ bool Application::updateViews(int cycle_time)
   {
     if(mode == GAME)
     {
-      if(game_handler.isModeDisabled())
+      if(game_handler->isModeDisabled())
       {
         mode = mode_next;
         mode_next = NONE;
@@ -473,7 +506,7 @@ bool Application::updateViews(int cycle_time)
   /* Otherwise, update the game and check if the game is finished */
   else if(mode == GAME)
   {
-    if(game_handler.update(cycle_time))
+    if(game_handler->update(cycle_time))
     {
       if(mode_next == NONE)
         changeMode(TITLESCREEN);
@@ -500,9 +533,23 @@ bool Application::updateViews(int cycle_time)
   return quit;
 }
 
+
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+/* Getter access functions */
+SDL_Renderer* Application::getRenderer()
+{
+  return renderer;
+}
+
+/* Getter access functions */
+SDL_Window* Application::getWindow()
+{
+  return window;
+}
 
 /* Provides initialization of the SDL engine. Required for running. */
 bool Application::initialize()
@@ -616,7 +663,7 @@ bool Application::initialize()
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
       /* Set game handler renderer */
-      game_handler.setRenderer(renderer);
+      game_handler->setRenderer(renderer);
 
       /* Create helper graphical portions */
       Helpers::createMaskBlack(renderer);
@@ -781,7 +828,7 @@ void Application::setPath(std::string path, int level, bool skip_title)
 
       /* Set the new level */
       app_map = level;
-      game_handler.setPath(app_path, app_map, false);
+      game_handler->setPath(app_path, app_map, false);
 
       /* If mode is already in game, update the map accordingly */
       // if(mode == GAME)
@@ -797,28 +844,4 @@ void Application::setPath(std::string path, int level, bool skip_title)
     if(skip_title && mode != GAME)
       changeMode(GAME);
   }
-}
-
-/* Uninitializes all set functions in the application. Used to wind down
- * and no rendering will take place after this. */
-void Application::uninitialize()
-{
-  /* Unloads application data */
-  unload();
-
-  /* Clean up the renderer */
-  // TODO: Game needs to be brought down prior to render destruction
-  if(renderer != NULL)
-  {
-    Helpers::deleteMasks();
-    SDL_DestroyRenderer(renderer);
-  }
-  renderer = NULL;
-
-  /* Clean up the window */
-  if(window != NULL)
-    SDL_DestroyWindow(window);
-  window = NULL;
-
-  initialized = false;
 }

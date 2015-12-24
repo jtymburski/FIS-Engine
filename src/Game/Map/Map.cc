@@ -1730,7 +1730,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
         map_dialog.setConversationThings(getThingData(list));
       }
 
-      delete convo;
+      //delete convo;
     }
     /* Test: Zoom back out */
     else if(event.keysym.sym == SDLK_z)

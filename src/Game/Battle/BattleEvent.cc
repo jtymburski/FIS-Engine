@@ -792,6 +792,7 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
 // TODO: Guarding for users who are guarding this actor [11-01-15]
 int32_t BattleEvent::calcDamage(BattleActor* curr_target)
 {
+  updateStats();
   calcIgnoreState();
   calcElementalMods(curr_target);
   //auto crit_factor = calcCritFactor(curr_target);
@@ -801,12 +802,12 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target)
 
   /* Summation of base power / defense */
   auto base_user_pow = calcValPhysPow() + calcValPrimAtk(curr_skill) +
-                       calcValSecdAtk(curr_skill) + calcValLuckAtk();
+                       0.5*calcValSecdAtk(curr_skill);// + calcValLuckAtk();
   auto base_targ_def = calcValPhysDef(targ_stats) + calcValPrimDef(curr_skill) +
-                       calcValSecdDef(curr_skill) + calcValLuckDef(targ_stats);
+                       0.5*calcValSecdDef(curr_skill);// + calcValLuckDef(targ_stats);
 
-  base_user_pow *= kUSER_POW_MODIFIER;
-  base_targ_def *= kTARG_DEF_MODIFIER;
+  //base_user_pow *= kUSER_POW_MODIFIER;
+  //base_targ_def *= kTARG_DEF_MODIFIER;
 
   /* Addition of the power of the action */
   auto action_power = curr_action->getBase();
@@ -829,25 +830,28 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target)
 
   action_power = Helpers::randU(action_power - var_val, action_power + var_val);
 
-  float base_damage = 0;
+  /* Attack */
+  auto attack_modifier = base_user_pow;
+  //auto attack_modifier = 1.0 / (1.0 + std::exp(-base_user_pow / 255));
+  //auto attack_power = action_power * (1.0 + attack_modifier);
 
-  auto attack_modifier = 1.0 / (1.0 + std::exp(-base_user_pow / 255));
-  auto attack_power = action_power * (1.0 + attack_modifier);
+  /* Defense */
+  auto defense_modifier = base_targ_def;//0.0f;
+  //if(action_power + base_targ_def >= 0)
+  //{
+  //  defense_modifier =
+  //      (float)base_targ_def / (float)(action_power + base_targ_def);
+  //}
 
-  auto defense_modifier = 0.0f;
-
-  if(action_power + base_targ_def >= 0)
-  {
-    defense_modifier =
-        (float)base_targ_def / (float)(action_power + base_targ_def);
-  }
-
-  base_damage = attack_power * (1 - defense_modifier);
+  //float base_damage = attack_power * (1 - defense_modifier);
+  float base_damage = action_power + attack_modifier - defense_modifier;
+  if(base_damage < 1.0f)
+    base_damage = 1.0f;
 
 #ifdef UDEBUG
-  std::cout << "Attack Modifier: " << attack_modifier << std::endl;
   std::cout << "Action Power: " << action_power << std::endl;
-  std::cout << "Attack Power: " << attack_power << std::endl;
+  std::cout << "Attack Modifier: " << attack_modifier << std::endl;
+  //std::cout << "Attack Power: " << attack_power << std::endl;
   std::cout << "Defense Modifier: " << defense_modifier << std::endl;
   std::cout << "Base Damage: " << base_damage << std::endl;
 #endif

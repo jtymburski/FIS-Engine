@@ -669,7 +669,8 @@ bool MapNPC::setDirection(Direction direction, bool set_movement)
 
   /* Rotate direction */
   if(set_movement || getTarget() != nullptr || forced_recent || 
-     node_current->x == getTileX() || node_current->y == getTileY() )
+     node_current == nullptr || node_current->x == getTileX() || 
+     node_current->y == getTileY() )
   {
     /* If it's a movement direction, rotate the fellow */
     SpriteMatrix* state = getState(surface, direction);

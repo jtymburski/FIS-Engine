@@ -59,11 +59,11 @@ int Person::id{0};
 std::vector<uint32_t> Person::exp_table{};
 
 /* XS, S, A, B, C, D */
-const std::vector<float> Person::kPRIM_MODS = {1.425, 1.400, 1.375,
-                                               1.350, 1.325, 1.300};
+const std::vector<float> Person::kPRIM_MODS = {1,1,1,1,1,1};//1.425, 1.400, 1.375,
+                                               //1.350, 1.325, 1.300};
 
-const std::vector<float> Person::kSECD_MODS = {1.375, 1.300, 1.250,
-                                               1.225, 1.200, 1.175};
+const std::vector<float> Person::kSECD_MODS = {1,1,1,1,1,1};//1.375, 1.300, 1.250,
+                                               //1.225, 1.200, 1.175};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -398,7 +398,7 @@ void Person::updateBaseStats()
   }
   if(race_class != nullptr)
   {
-    temp += battle_class->getBaseSet();
+    temp += race_class->getBaseSet();
     temp_max += race_class->getTopSet();
   }
 
@@ -543,7 +543,7 @@ void Person::updateStats()
     curr_stats = base_max_stats;
     curr_max_stats = base_max_stats;
   }
-  else
+  else if(level > 1)
   {
     curr_stats = AttributeSet(0, true);
     curr_max_stats = AttributeSet(0, true);
@@ -553,7 +553,7 @@ void Person::updateStats()
       std::vector<uint32_t> stat_values{};
       stat_values = Helpers::buildExpTable(
           base_stats.getStat(i), base_max_stats.getStat(i), kNUM_LEVELS);
-      curr_stats.setStat(i, stat_values.at(level));
+      curr_stats.setStat(i, stat_values.at(level - 1));
     }
 
     curr_max_stats = curr_stats;

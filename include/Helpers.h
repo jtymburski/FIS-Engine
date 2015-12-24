@@ -142,7 +142,7 @@ public:
   static std::string ailmentToStr(const Infliction& ail);
 
   /* Returns the enumerated Attribute to String */
-  static std::string attributeToStr(Attribute attribute);
+  static std::string attributeToStr(Attribute attribute, bool shortform = true);
 
   /* Convert enumerated CellState to String */
   static std::string cellToStr(const CellState& cell_state);
