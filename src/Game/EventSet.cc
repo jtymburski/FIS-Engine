@@ -9,6 +9,9 @@
 #include "Game/EventSet.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint8_t EventSet::kBATTLE_EVENT_WIN = 0;
+const uint8_t EventSet::kBATTLE_EVENT_LOSE = 1;
+const uint8_t EventSet::kBATTLE_FLAGS = 0;
 const uint8_t EventSet::kGIVE_ITEM_COUNT = 1;
 const uint8_t EventSet::kGIVE_ITEM_ID = 0;
 const uint8_t EventSet::kMAP_ID = 0;
@@ -779,9 +782,9 @@ bool EventSet::setUnlockedState(UnlockedState state)
   }
   return false;
 }
-  
+
 /*
- * Description: Attempts an unlock on the locked state stored within the set 
+ * Description: Attempts an unlock on the locked state stored within the set
  *              with a trigger event.
  *
  * Inputs: none
@@ -910,7 +913,7 @@ EventSet& EventSet::operator=(const EventSet& source)
 Event EventSet::copyEvent(Event source)
 {
   /* Copy the event */
-  Event event;
+  Event event = createBlankEvent();
   event.classification = source.classification;
   event.convo = nullptr;
   event.ints = source.ints;
@@ -918,12 +921,21 @@ Event EventSet::copyEvent(Event source)
   event.sound_id = source.sound_id;
   event.strings = source.strings;
 
+  /* If events, do the proper copy */
+  for(uint32_t i = 0; i < source.events.size(); i++)
+  {
+    event.events.push_back(copyEvent(source.events[i]));
+    //Event* event_ptr = new Event();
+    //*event_ptr = copyEvent(*(source.events[i]));
+    //event.events.push_back(event_ptr);
+  }
+
   /* If convo, do the proper copy */
   if(event.classification == EventClassifier::STARTCONVO &&
      source.convo != nullptr)
   {
     event.convo = new Conversation;
-    event.convo->action_event = source.convo->action_event;
+    event.convo->action_event = copyEvent(source.convo->action_event);
     event.convo->category = source.convo->category;
     event.convo->next = source.convo->next;
     event.convo->text = source.convo->text;
@@ -963,6 +975,7 @@ Event EventSet::createBlankEvent()
 
   blank_event.classification = EventClassifier::NOEVENT;
   blank_event.convo = nullptr;
+  blank_event.events.clear();
   blank_event.ints.clear();
   blank_event.sound_id = kUNSET_ID;
   blank_event.strings.clear();
@@ -991,6 +1004,36 @@ Locked EventSet::createBlankLocked()
   blank_locked.ints.clear();
 
   return blank_locked;
+}
+
+/*
+ * Description: Public static. Creates the BattleFlags enum using the 4
+ *              boolean options.
+ *
+ * Inputs: bool win_disappear - true if on win, the initiating thing disappears
+ *         bool lose_gg - true if on lose, the game is over
+ *         bool restore_health - true if on battle end, health is restored
+ *         bool restore_qd - true if on battle end, qd is restored
+ * Output: BattleFlags - the battle flags enum from the input booleans
+ */
+BattleFlags EventSet::createEnumBattleFlags(bool win_disappear, bool lose_gg,
+                                            bool restore_health,
+                                            bool restore_qd)
+{
+  int flags_enum = 0;
+
+  /* Parse bools */
+  if(win_disappear)
+    flags_enum |= static_cast<int>(BattleFlags::ONWINDISAPPEAR);
+  if(lose_gg)
+    flags_enum |= static_cast<int>(BattleFlags::ONLOSEENDGAME);
+  if(restore_health)
+    flags_enum |= static_cast<int>(BattleFlags::RESTOREHEALTH);
+  if(restore_qd)
+    flags_enum |= static_cast<int>(BattleFlags::RESTOREQD);
+
+  /* Return the created enum */
+  return static_cast<BattleFlags>(flags_enum);
 }
 
 /*
@@ -1203,6 +1246,45 @@ Event EventSet::createEventStartBattle(int sound_id)
   new_event.classification = EventClassifier::RUNBATTLE;
   if(sound_id >= 0)
     new_event.sound_id = sound_id;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(static_cast<int>(BattleFlags::NONE));
+  new_event.events.push_back(createBlankEvent());
+  new_event.events.push_back(createBlankEvent());
+  //Event* event_ptr = new Event();
+  //*event_ptr = createBlankEvent();
+  //new_event.events.push_back(event_ptr);
+  //Event* event_ptr2 = new Event();
+  //*event_ptr2 = createBlankEvent();
+  //new_event.events.push_back(event_ptr2);
+
+  return new_event;
+}
+
+/*
+ * Description: Public static. Creates a new start battle event with an optional
+ *              connected sound ID.
+ *
+ * Inputs: BattleFlags flags - the flags to define battle handling by game
+ *         Event event_win - the event if won.
+ *         Event event_lose - the event if lost.
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the start battle event to utilize
+ */
+Event EventSet::createEventStartBattle(BattleFlags flags, Event event_win,
+                                       Event event_lose, int sound_id)
+{
+  /* Create the event and identify */
+  Event new_event = createEventStartBattle(sound_id);
+
+  /* Fill in the event specific information */
+  new_event.ints[kBATTLE_FLAGS] = static_cast<int>(flags);
+  new_event.events[kBATTLE_EVENT_WIN] =
+                            deleteEvent(new_event.events[kBATTLE_EVENT_WIN]);
+  new_event.events[kBATTLE_EVENT_WIN] = copyEvent(event_win);
+  new_event.events[kBATTLE_EVENT_LOSE] =
+                            deleteEvent(new_event.events[kBATTLE_EVENT_LOSE]);
+  new_event.events[kBATTLE_EVENT_LOSE] = copyEvent(event_lose);
 
   return new_event;
 }
@@ -1435,6 +1517,32 @@ Locked EventSet::createLockTriggered(bool permanent)
 }
 
 /*
+ * Description: Public static. Extracts data from the BattleFlags enum, as
+ *              defined by the inputs.
+ *
+ * Inputs: BattleFlags flags - the enum to extract bitwise data from
+ *         bool win_disappear - the if win, thing should disappear flag
+ *         bool lose_gg - the if lose, the game is over flag
+ *         bool restore_health - the if battle over, restore health to full
+ *         bool restore_qd - the if battle over, restore qd to full
+ * Output: none
+ */
+void EventSet::dataEnumBattleFlags(BattleFlags flags, bool& win_disappear,
+                                   bool& lose_gg, bool& restore_health,
+                                   bool& restore_qd)
+{
+  int enum_int = static_cast<int>(flags);
+
+  /* Extract data */
+  win_disappear =
+              ((enum_int & static_cast<int>(BattleFlags::ONWINDISAPPEAR)) > 0);
+  lose_gg = ((enum_int & static_cast<int>(BattleFlags::ONLOSEENDGAME)) > 0);
+  restore_health =
+               ((enum_int & static_cast<int>(BattleFlags::RESTOREHEALTH)) > 0);
+  restore_qd = ((enum_int & static_cast<int>(BattleFlags::RESTOREQD)) > 0);
+}
+
+/*
  * Description: Extracts data from the UnlockIOEvent enum, as defined by the
  *              inputs.
  *
@@ -1548,6 +1656,30 @@ bool EventSet::dataEventNotification(Event event, std::string& notification)
      event.strings.size() > 0)
   {
     notification = event.strings.front();
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Public static. Extracts data from the passed in event if it's
+ *              a start battle event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         BattleFlags& flags - the battle flag properties
+ *         Event*& event_win - the event triggered if battle is won
+ *         Event*& event_lose = the event triggered if the battle is lost
+ * Output: bool - true if the extracted data is valid
+ */
+bool EventSet::dataEventStartBattle(Event event, BattleFlags& flags,
+                                    Event*& event_win, Event*& event_lose)
+{
+  if(event.classification == EventClassifier::RUNBATTLE &&
+     event.ints.size() > 0 && event.events.size() > kBATTLE_EVENT_LOSE)
+  {
+    flags = static_cast<BattleFlags>(event.ints[kBATTLE_FLAGS]);
+    event_win = &(event.events[kBATTLE_EVENT_WIN]);
+    event_lose = &(event.events[kBATTLE_EVENT_LOSE]);
     return true;
   }
   return false;
@@ -1742,10 +1874,20 @@ bool EventSet::dataLockedItem(Locked lock, int& id, int& count, bool& consume)
  */
 Event EventSet::deleteEvent(Event event)
 {
-  /* Delet the existing event, if relevant */
+  /* Delete the existing conversation within the event, if relevant */
   if(event.convo != nullptr)
     delete event.convo;
   event.convo = nullptr;
+
+  /* Delete the existing events within the event, if relevant */
+  for(uint32_t i = 0; i < event.events.size(); i++)
+  {
+    deleteEvent(event.events[i]);
+    //deleteEvent(*event.events[i]);
+    //delete event.events[i];
+    //event.events[i] = nullptr;
+  }
+  event.events.clear();
 
   return createBlankEvent();
 }
@@ -1990,6 +2132,47 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   /* -- START BATTLE -- */
   else if(category == EventClassifier::RUNBATTLE)
   {
+    /* Get the existing data */
+    Event *event_win, *event_lose;
+    BattleFlags flags;
+    if(dataEventStartBattle(event, flags, event_win, event_lose))
+    {
+      /* Parse new data */
+      std::string element = data.getElement(file_index + 1);
+      if(element == "windisappear" || element == "losegg" ||
+         element == "restorehealth" || element == "restoreqd")
+      {
+        /* Get existing enum data */
+        bool win_disappear, lose_gg, restore_health, restore_qd;
+        dataEnumBattleFlags(flags, win_disappear, lose_gg,
+                            restore_health, restore_qd);
+
+        /* Parse new enum data */
+        if(element == "windisappear")
+          win_disappear = data.getDataBool();
+        else if(element == "losegg")
+          lose_gg = data.getDataBool();
+        else if(element == "restorehealth")
+          restore_health = data.getDataBool();
+        else if(element == "restoreqd")
+          restore_qd = data.getDataBool();
+
+        /* Set new enum data */
+        flags = createEnumBattleFlags(win_disappear, lose_gg,
+                                      restore_health, restore_qd);
+        event.ints[kBATTLE_FLAGS] = static_cast<int>(flags);
+      }
+      else if(element == "event_win")
+      {
+        *event_win = updateEvent(*event_win, data, file_index + 2,
+                                 section_index);
+      }
+      else if(element == "event_lose")
+      {
+        *event_lose = updateEvent(*event_lose, data, file_index + 2,
+                                  section_index);
+      }
+    }
   }
   /* -- CHANGE MAPS -- */
   else if(category == EventClassifier::RUNMAP)

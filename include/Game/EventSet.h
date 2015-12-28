@@ -21,6 +21,19 @@ struct Conversation;
 #include "XmlData.h"
 
 /*
+ * Description: The flags for the start battle reactions and interactions
+ *              and how it is handled by game
+ */
+enum class BattleFlags
+{
+  NONE = 0,
+  ONWINDISAPPEAR = 1,
+  ONLOSEENDGAME = 2,
+  RESTOREHEALTH = 4,
+  RESTOREQD = 8
+};
+
+/*
  * Description: The event classifier identification. Fully inclusive to events
  */
 enum class EventClassifier
@@ -127,6 +140,7 @@ struct Event
 {
   EventClassifier classification;
   Conversation* convo;
+  std::vector<Event> events;
   std::vector<int> ints;
   int32_t sound_id;
   std::vector<std::string> strings;
@@ -162,6 +176,9 @@ public:
   ~EventSet();
 
   /* -------------------------- Constants ------------------------- */
+  const static uint8_t kBATTLE_EVENT_WIN; /* The battle win event index */
+  const static uint8_t kBATTLE_EVENT_LOSE; /* The battle lose event index */
+  const static uint8_t kBATTLE_FLAGS; /* The battle flags index */
   const static uint8_t kGIVE_ITEM_COUNT; /* Give item count index */
   const static uint8_t kGIVE_ITEM_ID; /* Give item ID index */
   const static uint8_t kMAP_ID; /* The map ID location for the run event */
@@ -321,6 +338,10 @@ public:
   static Locked createBlankLocked();
 
   /* Creates enums with given data */
+  static BattleFlags createEnumBattleFlags(bool win_disappear = false,
+                                           bool lose_gg = false,
+                                           bool restore_health = false,
+                                           bool restore_qd = false);
   static UnlockIOEvent createEnumIOEvent(bool enter = false, bool exit = false,
                                       bool use = false, bool walkover = false);
   static UnlockIOMode createEnumIOMode(bool lock = false, bool events = false);
@@ -345,6 +366,10 @@ public:
 
   /* Creates a start battle event */
   static Event createEventStartBattle(int sound_id = kUNSET_ID);
+  static Event createEventStartBattle(BattleFlags flags,
+                                      Event event_win,
+                                      Event event_lose,
+                                      int sound_id = kUNSET_ID);
 
   /* Create a start map event */
   static Event createEventStartMap(int id = 0, int sound_id = kUNSET_ID);
@@ -381,6 +406,9 @@ public:
   static Locked createLockTriggered(bool permanent = true);
 
   /* Extract data from enum(s) */
+  static void dataEnumBattleFlags(BattleFlags flags, bool& win_disappear,
+                                  bool& lose_gg, bool& restore_health,
+                                  bool& restore_qd);
   static void dataEnumIOEvent(UnlockIOEvent io_enum, bool& enter, bool& exit,
                               bool& use, bool& walkover);
   static void dataEnumIOMode(UnlockIOMode io_enum, bool& lock, bool& events);
@@ -391,6 +419,8 @@ public:
   /* Extract data from event(s) */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
   static bool dataEventNotification(Event event, std::string& notification);
+  static bool dataEventStartBattle(Event event, BattleFlags& flags,
+                                   Event*& event_win, Event*& event_lose);
   static bool dataEventStartMap(Event event, int& map_id);
   static bool dataEventTakeItem(Event event, int& item_id, int& count);
   static bool dataEventTeleport(Event event, int& thing_id, int& x, int& y,

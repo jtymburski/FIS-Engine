@@ -11,7 +11,6 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
-//struct Conversation;
 class MapInteractiveObject;
 class MapItem;
 class MapPerson;
