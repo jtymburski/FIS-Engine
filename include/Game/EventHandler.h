@@ -74,6 +74,7 @@ private:
 private:
   /* Returns the event in the queue: either from the set or event pointer */
   bool getEvent(Event& event, bool trigger = false);
+  bool getEventRef(Event*& event_ref, bool trigger = false);
 
   /* Trigger queue sound */
   void triggerQueueSound(Event event);
@@ -84,7 +85,7 @@ private:
 public:
   /* Execute the given event */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
-  void executeEventRef(Event* event, MapPerson* initiator, 
+  void executeEventRef(Event* event, MapPerson* initiator,
                        MapThing* source = nullptr);
 
   /* Execute the given event set */
@@ -143,7 +144,9 @@ public:
   bool pollSound();
 
   /* Poll a start battle event */
-  bool pollStartBattle(MapPerson** person, MapThing** source);
+  bool pollStartBattle(MapPerson** person, MapThing** source,
+                       BattleFlags& flags, Event*& event_win,
+                       Event*& event_lose);
 
   /* Poll a start map event */
   bool pollStartMap(int* id);

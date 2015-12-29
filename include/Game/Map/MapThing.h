@@ -54,6 +54,7 @@ protected:
   AnimationControl* base_control;
 
   /* The thing classification */
+  bool active;
   std::string description;
   int id;
   std::string name;
@@ -290,6 +291,9 @@ public:
   /* Starts interaction (conversation, giving something, etc) */
   virtual bool interact(MapPerson* initiator);
 
+  /* Check if the thing is active */
+  bool isActive();
+
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
 
@@ -317,6 +321,9 @@ public:
 
   /* Resets the location back to default (0,0,0), relative to the map */
   virtual void resetLocation();
+
+  /* Sets if the thing is active */
+  void setActive(bool active);
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);

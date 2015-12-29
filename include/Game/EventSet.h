@@ -261,6 +261,7 @@ public:
 
   /* Returns the event when accessed - depending on locked unlocked status */
   Event getEvent(bool trigger = true);
+  Event* getEventRef(bool trigger = true);
 
   /* Access getters for locked event */
   Event getEventLocked();
@@ -419,7 +420,7 @@ public:
   /* Extract data from event(s) */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
   static bool dataEventNotification(Event event, std::string& notification);
-  static bool dataEventStartBattle(Event event, BattleFlags& flags,
+  static bool dataEventStartBattle(Event* event, BattleFlags& flags,
                                    Event*& event_win, Event*& event_lose);
   static bool dataEventStartMap(Event event, int& map_id);
   static bool dataEventTakeItem(Event event, int& item_id, int& count);

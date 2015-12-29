@@ -39,7 +39,7 @@
  *
  *     -- I wanted to do this just inside of Battle while all the info is
  *        available, and event handler just has to handle post-victory screen.
-*
+ *
  *  4. Add speed up button to allow the game to accelerate movement and
  *     everything else. Do it by multiplying the time elapsed.
  ******************************************************************************/
@@ -850,14 +850,17 @@ void Game::pollEvents()
       else if(classification == EventClassifier::RUNBATTLE)
       {
         /* Get the reference objects and check if valid */
+        Event *event_win, *event_lose;
+        BattleFlags flags;
         MapPerson* person;
         MapThing* source;
-        if(event_handler.pollStartBattle(&person, &source))
+        if(event_handler.pollStartBattle(&person, &source, flags, 
+                                         event_win, event_lose))
         {
           if(person != nullptr && getParty(Party::kID_SLEUTH) != nullptr &&
              source != nullptr && getParty(source->getGameID()) != nullptr)
           {
-            map_ctrl.initBattle(person, source);
+            map_ctrl.initBattle(person, source, flags, event_win, event_lose);
           }
         }
       }
@@ -1597,15 +1600,40 @@ bool Game::update(int32_t cycle_time)
   {
     if(battle_ctrl->getTurnState() == TurnState::FINISHED)
     {
-      battle_ctrl->stopBattle();
+      /* Check if health or qd should be restored */
+      bool restore_health = map_ctrl.isBattleRestoreHealth();
+      bool restore_qd = map_ctrl.isBattleRestoreQD();
+      
+      /* Check the status of the battle result */
+      if(battle_ctrl->getOutcomeType() == OutcomeType::VICTORY)
+      {
+        map_ctrl.battleWon();
+      }
+      else if(battle_ctrl->getOutcomeType() == OutcomeType::DEFEAT)
+      {
+        if(map_ctrl.isBattleLoseGameOver())
+          changeMode(DISABLED);
+        else
+          map_ctrl.battleLose();
+      }
+      else
+      {
+        map_ctrl.battleRun();
+      }
 
-      // TODO: Clarify based on if battle is actually won and either destruct
-      // or return to map
-      map_ctrl.battleWon();
+      /* End the battle */
+      battle_ctrl->stopBattle();
+      
+      /* Restore conditions */
+      if(restore_health)
+        std::cout << "TODO: Restore player health" << std::endl;
+      if(restore_qd)
+        std::cout << "TODO: Restore player QD" << std::endl;
     }
     else if(battle_ctrl->getTurnState() == TurnState::STOPPED)
     {
-      changeMode(MAP);
+      if(mode_next == NONE)
+        changeMode(MAP);
     }
     else if(!event_handler.getKeyHandler().isDepressed(GameKey::PAUSE))
     {

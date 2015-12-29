@@ -44,6 +44,9 @@ Map::Map(Options* running_config, EventHandler* event_handler)
 {
   /* Set initial variables */
   base_path = "";
+  battle_eventlose = nullptr;
+  battle_eventwin = nullptr;
+  battle_flags = BattleFlags::NONE;
   battle_person = nullptr;
   battle_thing = nullptr;
   battle_trigger = false;
@@ -1449,11 +1452,49 @@ void Map::updateTileSize()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/* Battle won/loss trigger for map */
+void Map::battleLose()
+{
+  if(battle_trigger)
+  {
+    /* Battle clean-up on lose condition */
+    if(!isBattleLoseGameOver())
+    {
+      if(event_handler != nullptr)
+        event_handler->executeEventRef(battle_eventlose, battle_person,
+                                       battle_thing);
+    }
+  }
+
+  /* Finally end battle */
+  battle_trigger = false;
+}
+
+/* Battle won/loss/end trigger for map */
+void Map::battleRun()
+{
+  battle_trigger = false;
+}
+
 /* Battle won trigger for map */
 void Map::battleWon()
 {
-  // TODO: Clean up target source based on battle properties
+  if(battle_trigger)
+  {
+    /* Battle clean-up on win condition */
+    if(isBattleWinDisappear())
+    {
+      std::cout << "TODO: Make the thing disappear" << std::endl;
+    }
+    else
+    {
+      if(event_handler != nullptr)
+        event_handler->executeEventRef(battle_eventwin, battle_person,
+                                       battle_thing);
+    }
+  }
 
+  /* Finally end battle */
   battle_trigger = false;
 }
 
@@ -1477,6 +1518,24 @@ void Map::enableView(bool enable)
 }
 
 /* Returns the battle information */
+Event* Map::getBattleEventLose()
+{
+  return battle_eventlose;
+}
+
+/* Returns the battle information */
+Event* Map::getBattleEventWin()
+{
+  return battle_eventwin;
+}
+
+/* Returns the battle information */
+BattleFlags Map::getBattleFlags()
+{
+  return battle_flags;
+}
+
+/* Returns the battle information */
 int Map::getBattlePersonID()
 {
   if(battle_person != nullptr)
@@ -1493,11 +1552,15 @@ int Map::getBattleThingID()
 }
 
 /* Initiates a battle, within the map */
-bool Map::initBattle(MapPerson* person, MapThing* source)
+bool Map::initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
+                     Event* event_win, Event* event_lose)
 {
   if(!battle_trigger && person != nullptr && source != nullptr)
   {
     battle_trigger = true;
+    battle_eventlose = event_lose;
+    battle_eventwin = event_win;
+    battle_flags = flags;
     battle_person = person;
     battle_thing = source;
 
@@ -1576,12 +1639,64 @@ bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
   return true;
 }
 
+/* Returns battle flags and properties */
+bool Map::isBattleLoseGameOver()
+{
+  if(battle_trigger)
+  {
+    bool win_disappear, lose_gg, restore_health, restore_qd;
+    EventSet::dataEnumBattleFlags(battle_flags, win_disappear, lose_gg,
+                                  restore_health, restore_qd);
+    return lose_gg;
+  }
+  return false;
+}
+
 /* Returns if the map is ready for battle */
 bool Map::isBattleReady()
 {
   return (battle_trigger &&
           battle_person != nullptr && !battle_person->isMoving() &&
           battle_thing != nullptr && !battle_thing->isMoving());
+}
+
+/* Returns battle flags and properties */
+bool Map::isBattleRestoreHealth()
+{
+  if(battle_trigger)
+  {
+    bool win_disappear, lose_gg, restore_health, restore_qd;
+    EventSet::dataEnumBattleFlags(battle_flags, win_disappear, lose_gg,
+                                  restore_health, restore_qd);
+    return restore_health;
+  }
+  return false;
+}
+
+/* Returns battle flags and properties */
+bool Map::isBattleRestoreQD()
+{
+  if(battle_trigger)
+  {
+    bool win_disappear, lose_gg, restore_health, restore_qd;
+    EventSet::dataEnumBattleFlags(battle_flags, win_disappear, lose_gg,
+                                  restore_health, restore_qd);
+    return restore_qd;
+  }
+  return false;
+}
+
+/* Returns battle flags and properties */
+bool Map::isBattleWinDisappear()
+{
+  if(battle_trigger)
+  {
+    bool win_disappear, lose_gg, restore_health, restore_qd;
+    EventSet::dataEnumBattleFlags(battle_flags, win_disappear, lose_gg,
+                                  restore_health, restore_qd);
+    return win_disappear;
+  }
+  return false;
 }
 
 /* Returns if the map has been currently loaded with data */
@@ -2340,6 +2455,12 @@ void Map::unfocus()
 void Map::unloadMap()
 {
   /* Reset the index and applicable parameters */
+  battle_eventlose = nullptr;
+  battle_eventwin = nullptr;
+  battle_flags = BattleFlags::NONE;
+  battle_person = nullptr;
+  battle_thing = nullptr;
+  battle_trigger = false;
   map_index = 0;
   //map_dialog = MapDialog();
   //map_dialog.setEventHandler

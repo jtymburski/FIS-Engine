@@ -424,7 +424,7 @@ bool MapThing::setDirection(Direction new_direction)
 
   return changed;
 }
-  
+
 /*
  * Description: Sets the base event within the set. Called from setBase() call
  *
@@ -453,7 +453,7 @@ bool MapThing::setMatrix(SpriteMatrix* matrix)
   if(matrix != NULL)
   {
     sprite_set = matrix;
-    
+
     /* Set up the base control variable */
     if(base_control == NULL)
       base_control = new AnimationControl;
@@ -874,6 +874,7 @@ void MapThing::clear()
   unsetTiles(true);
 
   /* Resets the class parameters */
+  active = true;
   base = NULL;
   base_category = ThingBase::ISBASE;
   if(base_control != NULL)
@@ -1194,7 +1195,7 @@ int MapThing::getID() const
 }
 
 /*
- * Description: Returns the interaction event that fires upon an 
+ * Description: Returns the interaction event that fires upon an
  * interact()
  *              call to this thing.
  *
@@ -1614,6 +1615,17 @@ bool MapThing::interact(MapPerson* initiator)
 }
 
 /*
+ * Description: Checks if the thing is currently active.
+ *
+ * Inputs: none
+ * Output: bool - true if the thing is active within the game
+ */
+bool MapThing::isActive()
+{
+  return active;
+}
+
+/*
  * Description: Is the thing almost on the tile (less than 1 pulse away).
  *              This is used to check movement limits to allow the update
  *              cycle to know when passability needs to be checked or when
@@ -1720,7 +1732,7 @@ bool MapThing::isVisible() const
  */
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
-  if(isTilesSet() && isVisible())
+  if(isTilesSet() && isActive() && isVisible())
   {
     if(base_category >= ThingBase::PERSON)
       return getMatrix()->render(base_control->curr_frame, renderer,
@@ -1751,7 +1763,7 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
                           uint8_t render_depth, int offset_x, int offset_y)
 {
-  if(isVisible())
+  if(isActive() && isVisible())
   {
     TileSprite* render_frame = getFrameMain(tile);
 
@@ -1790,7 +1802,7 @@ bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
 bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile,
                               uint8_t render_depth, int offset_x, int offset_y)
 {
-  if(isVisible())
+  if(isActive() && isVisible())
   {
     TileSprite* render_frame = getFramePrevious(tile);
 
@@ -1833,6 +1845,17 @@ void MapThing::resetLocation()
   starting_y = 0;
   x = 0.0;
   y = 0.0;
+}
+
+/*
+ * Description: Sets if the thing is active and usable within the space
+ *
+ * Inputs: bool active - true if the thing should be active. false otherwise
+ * Output: none
+ */
+void MapThing::setActive(bool active)
+{
+  this->active = active;
 }
 
 /*
@@ -2224,10 +2247,13 @@ void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   (void)tile_set;
 
-  if(isTilesSet())
-    moveThing(cycle_time);
-  if(getMatrix() != NULL)
-    animate(cycle_time);
+  if(isActive())
+  {
+    if(isTilesSet())
+      moveThing(cycle_time);
+    if(getMatrix() != NULL)
+      animate(cycle_time);
+  }
 }
 
 /*

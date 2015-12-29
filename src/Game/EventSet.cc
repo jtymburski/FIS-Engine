@@ -255,6 +255,24 @@ EventSet* EventSet::getBase()
  */
 Event EventSet::getEvent(bool trigger)
 {
+  Event* event_ref = getEventRef(trigger);
+  if(event_ref != nullptr)
+    return *event_ref;
+  return createBlankEvent();
+}
+
+/*
+ * Description: Returns the event reference when accessed which depends on the
+ *              locked or unlocked status, and if unlocked depends on the
+ *              UnlockedState. If trigger is set to true, it will identify this
+ *              get event will be triggering the returned event.
+ *
+ * Inputs: bool trigger - true if the returned event ref will be passed to the
+ *         EventHandler. Default to true.
+ * Output: Event* - the returned event ref at the forefront of the get access
+ */
+Event* EventSet::getEventRef(bool trigger)
+{
   Event* found_base = nullptr;
   Event* found_inst = nullptr;
 
@@ -357,9 +375,9 @@ Event EventSet::getEvent(bool trigger)
   {
     if(trigger)
       found_inst->has_exec = true;
-    return *found_base;
+    return found_base;
   }
-  return createBlankEvent();
+  return nullptr;
 }
 
 /*
@@ -1665,21 +1683,21 @@ bool EventSet::dataEventNotification(Event event, std::string& notification)
  * Description: Public static. Extracts data from the passed in event if it's
  *              a start battle event.
  *
- * Inputs: Event event - the event to extract the data from
+ * Inputs: Event* event - the event to extract the data from
  *         BattleFlags& flags - the battle flag properties
  *         Event*& event_win - the event triggered if battle is won
  *         Event*& event_lose = the event triggered if the battle is lost
  * Output: bool - true if the extracted data is valid
  */
-bool EventSet::dataEventStartBattle(Event event, BattleFlags& flags,
+bool EventSet::dataEventStartBattle(Event* event, BattleFlags& flags,
                                     Event*& event_win, Event*& event_lose)
 {
-  if(event.classification == EventClassifier::RUNBATTLE &&
-     event.ints.size() > 0 && event.events.size() > kBATTLE_EVENT_LOSE)
+  if(event != nullptr && event->classification == EventClassifier::RUNBATTLE &&
+     event->ints.size() > 0 && event->events.size() > kBATTLE_EVENT_LOSE)
   {
-    flags = static_cast<BattleFlags>(event.ints[kBATTLE_FLAGS]);
-    event_win = &(event.events[kBATTLE_EVENT_WIN]);
-    event_lose = &(event.events[kBATTLE_EVENT_LOSE]);
+    flags = static_cast<BattleFlags>(event->ints[kBATTLE_FLAGS]);
+    event_win = &(event->events[kBATTLE_EVENT_WIN]);
+    event_lose = &(event->events[kBATTLE_EVENT_LOSE]);
     return true;
   }
   return false;
@@ -2135,7 +2153,7 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     /* Get the existing data */
     Event *event_win, *event_lose;
     BattleFlags flags;
-    if(dataEventStartBattle(event, flags, event_win, event_lose))
+    if(dataEventStartBattle(&event, flags, event_win, event_lose))
     {
       /* Parse new data */
       std::string element = data.getElement(file_index + 1);
@@ -2162,12 +2180,12 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
                                       restore_health, restore_qd);
         event.ints[kBATTLE_FLAGS] = static_cast<int>(flags);
       }
-      else if(element == "event_win")
+      else if(element == "eventwin")
       {
         *event_win = updateEvent(*event_win, data, file_index + 2,
                                  section_index);
       }
-      else if(element == "event_lose")
+      else if(element == "eventlose")
       {
         *event_lose = updateEvent(*event_lose, data, file_index + 2,
                                   section_index);

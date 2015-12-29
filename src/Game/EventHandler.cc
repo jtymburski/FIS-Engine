@@ -48,7 +48,6 @@ bool EventHandler::getEvent(Event& event, bool trigger)
     }
     else if(event_queue[queue_index].event_ref != nullptr)
     {
-
       event = *(event_queue[queue_index].event_ref);
       if(trigger)
         event_queue[queue_index].event_ref->has_exec = true;
@@ -58,6 +57,28 @@ bool EventHandler::getEvent(Event& event, bool trigger)
       event = event_queue[queue_index].event;
     }
     return true;
+  }
+  return false;
+}
+
+/* Returns the event ref in the queue: either from the set or event pointer */
+bool EventHandler::getEventRef(Event*& event_ref, bool trigger)
+{
+  if(pollEventAvailable())
+  {
+    /* Find event references */
+    if(event_queue[queue_index].event_set != nullptr)
+    {
+      event_ref = event_queue[queue_index].event_set->getEventRef(trigger);
+      return true;
+    }
+    else if(event_queue[queue_index].event_ref != nullptr)
+    {
+      event_ref = event_queue[queue_index].event_ref;
+      if(trigger)
+        event_queue[queue_index].event_ref->has_exec = true;
+      return true;
+    }
   }
   return false;
 }
@@ -94,7 +115,7 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
 }
 
 /* Execute the given event reference */
-void EventHandler::executeEventRef(Event* event, MapPerson* initiator, 
+void EventHandler::executeEventRef(Event* event, MapPerson* initiator,
                                    MapThing* source)
 {
   if(event != nullptr && event->classification != EventClassifier::NOEVENT &&
@@ -370,17 +391,20 @@ bool EventHandler::pollSound()
 }
 
 /* Poll a start battle event */
-bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source)
+bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source,
+                                   BattleFlags& flags, Event*& event_win,
+                                   Event*& event_lose)
 {
   if(pollEventType() == EventClassifier::RUNBATTLE &&
-     person != NULL && source != NULL)
+     person != nullptr && source != nullptr)
   {
-    Event event;
-    if(getEvent(event, true))
+    Event* event;
+    if(getEventRef(event, true) &&
+       EventSet::dataEventStartBattle(event, flags, event_win, event_lose))
     {
       *person = event_queue[queue_index].initiator;
       *source = event_queue[queue_index].source;
-      triggerQueueSound(event);
+      triggerQueueSound(*event);
       return true;
     }
   }

@@ -83,6 +83,9 @@ private:
   std::string base_path;
 
   /* Battling things/information */
+  Event* battle_eventlose;
+  Event* battle_eventwin;
+  BattleFlags battle_flags;
   MapPerson* battle_person;
   MapThing* battle_thing;
   bool battle_trigger;
@@ -274,18 +277,24 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Battle won trigger for map */
+  /* Battle won/loss/end trigger for map */
+  void battleLose();
+  void battleRun();
   void battleWon();
-  
+
   /* Enable view trigger */
   void enableView(bool enable);
 
   /* Returns the battle information */
+  Event* getBattleEventLose();
+  Event* getBattleEventWin();
+  BattleFlags getBattleFlags();
   int getBattlePersonID();
   int getBattleThingID();
-  
+
   /* Initiates a battle, within the map */
-  bool initBattle(MapPerson* person, MapThing* source);
+  bool initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
+                  Event* event_win, Event* event_lose);
 
   /* Initiates a conversation, within the map. */
   bool initConversation(Conversation* convo, MapThing* source);
@@ -300,8 +309,12 @@ public:
                  std::vector<int32_t> cost_modifiers,
                  std::string name = "", bool show_empty = false);
 
-  /* Returns if the map is ready for battle */
+  /* Returns battle flags and properties */
+  bool isBattleLoseGameOver();
   bool isBattleReady();
+  bool isBattleRestoreHealth();
+  bool isBattleRestoreQD();
+  bool isBattleWinDisappear();
 
   /* Returns if the map has been currently loaded with data */
   bool isLoaded();
