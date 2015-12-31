@@ -403,6 +403,21 @@ bool MapInteractiveObject::shiftPrevious()
  *===========================================================================*/
 
 /*
+ * Description: Can the tile be set with the passed frame. Fails if there is
+ *              already a interactive object set on said tile
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ * Output: bool - true if the set was successful
+ */
+bool MapInteractiveObject::canSetTile(Tile* tile, TileSprite* frames)
+{
+  if(tile != nullptr)
+    return !tile->isIOSet(frames->getRenderDepth());
+  return false;
+}
+
+/*
  * Description: Checks if a move is allowed from the current IO main
  *              tile to the next tile that it is trying to move to. This
  *              handles the individual calculations for a single tile; used
@@ -1211,7 +1226,8 @@ void MapInteractiveObject::update(int cycle_time,
 {
   (void)tile_set;
 
-  if(isTilesSet())
+  /* For active and valid tiles, do update sequence */
+  if(isActive() && isTilesSet())
   {
     /* Animate the frames and determine if the frame has changed */
     bool frames_changed = animate(cycle_time, false, false);
@@ -1247,7 +1263,6 @@ void MapInteractiveObject::update(int cycle_time,
           }
         }
       }
-
     }
     else
     {
@@ -1292,6 +1307,11 @@ void MapInteractiveObject::update(int cycle_time,
         shiftPrevious();
       }
     }
+  }
+  /* Otherwise, just pass to parent */
+  else
+  {
+    MapThing::update(cycle_time, tile_set);
   }
 }
 

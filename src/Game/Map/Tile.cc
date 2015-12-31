@@ -943,6 +943,17 @@ bool Tile::isIOsSet() const
 }
 
 /*
+ * Description: Returns if the number of items on the stack is below the limit.
+ *
+ * Inputs: none
+ * Output: bool - true if there is room for more map items on the tile
+ */
+bool Tile::isItemsAtLimit() const
+{
+  return (items.size() >= kMAX_ITEMS);
+}
+
+/*
  * Description: Returns if at least one item is set and stored in the thing.
  *
  * Inputs: none

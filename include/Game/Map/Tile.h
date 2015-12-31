@@ -195,6 +195,7 @@ public:
   bool isIOsSet() const;
 
   /* Returns if an item thing is set */
+  bool isItemsAtLimit() const;
   bool isItemsSet() const;
 
   /* Returns if the Lower Layer is set */

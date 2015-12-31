@@ -209,6 +209,21 @@ void MapPerson::addDirection(Direction direction)
 }
 
 /*
+ * Description: Can the tile be set with the passed frame. Fails if there is
+ *              already a person set on said tile
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ * Output: bool - true if the set was successful
+ */
+bool MapPerson::canSetTile(Tile* tile, TileSprite* frames)
+{
+  if(tile != nullptr)
+    return !tile->isPersonSet(frames->getRenderDepth());
+  return false;
+}
+
+/*
  * Description: Checks if a move is allowed from the current person main
  *              tile to the next tile that it is trying to move to. This
  *              handles the individual calculations for a single tile; used
@@ -899,12 +914,9 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
  */
 bool MapPerson::resetPosition()
 {
+  /* Set the new tiles to the starting tiles */
   if(isTilesSet())
-  {
-    /* Set the new tiles to the starting tiles */
     return setStartingTiles(starting_tiles, getStartingSection(), true);
-  }
-
   return false;
 }
 
@@ -973,30 +985,6 @@ bool MapPerson::setStartingDirection(Direction starting)
     }
     return true;
   }
-  return false;
-}
-
-/*
- * Description: Sets the starting tiles, for rendering the person. This tile
- *              set needs to be equal to the size of the bounding box and
- *              each corresponding frame will be set to the tile. Will fail
- *              if a thing is already set up in the corresponding spot.
- *
- * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
- *         uint16_t section - the map section corresponding to the tile set
- *         bool no_events - if no events should occur from setting the thing
- * Output: bool - true if the tiles are set
- */
-bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
-                                uint16_t section, bool no_events)
-{
-  if(MapThing::setStartingTiles(tile_set, section, no_events))
-  {
-    if(starting_tiles.size() == 0)
-      starting_tiles = tile_set;
-    return true;
-  }
-
   return false;
 }
 
@@ -1078,7 +1066,8 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  */
 void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-  if(isTilesSet())
+  /* For active and set tiles, update movement and animation */
+  if(isActive() && isTilesSet())
   {
     bool almost_there = false;
     bool reset = false;
@@ -1164,6 +1153,10 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       if(sound_delay <= 0)
         sound_delay = Helpers::randU(kDELAY_MIN, kDELAY_MAX);
     }
+  }
+  else
+  {
+    MapThing::update(cycle_time, tile_set);
   }
 }
 

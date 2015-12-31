@@ -49,9 +49,6 @@ private:
   /* The initial starting direction */
   Direction starting_dir;
 
-  /* The initial tile location to start movement on */
-  std::vector<std::vector<Tile*>> starting_tiles;
-
   /* Set of all states for person. 1st index is surface (water, ground, etc)
    * and then 2nd index is direction facing */
   std::vector<std::vector<SpriteMatrix*>> states;
@@ -89,7 +86,10 @@ private:
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
-
+  
+  /* Check if the tile can be set with the person */
+  virtual bool canSetTile(Tile* tile, TileSprite* frames);
+  
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t
                                  render_depth, Direction move_request);
@@ -194,11 +194,6 @@ public:
 
   /* Sets the starting direction of the person */
   bool setStartingDirection(Direction starting);
-
-  /* Sets the set of tiles that the thing will be placed on. Needed after
-   * defining a starting point.*/
-  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
-                                uint16_t section, bool no_events = true);
 
   /* Sets a new state to add into the states list */
   bool setState(TileSprite* frame, SurfaceClassifier surface,

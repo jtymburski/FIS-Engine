@@ -30,7 +30,7 @@ MapItem::MapItem() : MapThing()
   walkover = false;
   
   /* Set the count to 0 since the map item is not configured */
-  setCount(0);
+  setStartCount(0);
 }
 
 /* 
@@ -50,7 +50,7 @@ MapItem::MapItem(TileSprite* frames, int id, std::string name,
   walkover = false;
   
   /* Set the count to the default since the map item is configured */
-  setCount(kDEFAULT_COUNT);
+  setStartCount(kDEFAULT_COUNT);
 }
 
 /* 
@@ -64,6 +64,23 @@ MapItem::~MapItem()
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Can the tile be set with the passed frame. Fails if there is
+ *              already a item set on said tile
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ * Output: bool - true if the set was successful
+ */
+bool MapItem::canSetTile(Tile* tile, TileSprite* frames)
+{
+  (void)frames;
+
+  if(tile != nullptr)
+    return !tile->isItemsAtLimit();
+  return false;
+}
 
 /*
  * Description: Sets the tile with the given object and frames and allows for
@@ -150,7 +167,7 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   {
     int count = data.getDataInteger(&success);
     if(success)
-      setCount(count);
+      setStartCount(count);
   }
   /*--------------------- WALKOVER --------------------*/
   else if(identifier == "walkover" && elements.size() == 1)
@@ -222,6 +239,7 @@ void MapItem::clear()
 {
   /* Clear out the item variables */
   setCount(0);
+  setStartCount(0);
   setWalkover(false);
 
   /* Clear out parent */
@@ -238,6 +256,29 @@ uint32_t MapItem::getCount()
 {
   return count;
 }
+   
+/*
+ * Description: Returns the starting number of items in the MapItem stack.
+ *
+ * Inputs: none
+ * Output; uint32_t - unsigned integer to represent starting count
+ */
+uint32_t MapItem::getStartCount()
+{
+  return start_count;
+}
+
+/*
+ * Description: Returns if the item is currently active. Supercedes the parent
+ *              function as active is defined by count.
+ *
+ * Inputs: none
+ * Output: bool - true if the item is presently active
+ */
+bool MapItem::isActive()
+{
+  return (count > 0);
+}
 
 /*
  * Description: Returns if the thing is visible for rendering. Note that the
@@ -245,14 +286,14 @@ uint32_t MapItem::getCount()
  *
  * Inputs: none
  * Output: bool - visibility status
- */
-bool MapItem::isVisible()
-{
-  if(count > 0)
-    return MapThing::isVisible();
-  return false;
-}
-  
+ */ // TODO: DELETE
+//bool MapItem::isVisible()
+//{
+//  if(count > 0)
+//    return MapThing::isVisible();
+//  return false;
+//}
+
 /*
  * Description: Returns if the item is walkover (picked up when the person
  *              enters the tile) or not (picked up only when the person is on
@@ -266,6 +307,24 @@ bool MapItem::isWalkover()
   if(base != NULL && base_category == ThingBase::ITEM)
     return static_cast<MapItem*>(base)->walkover;
   return walkover;
+}
+
+/*
+ * Description: Sets if the item is active and usable within the space
+ *
+ * Inputs: bool active - true if the item should be active. false otherwise
+ * Output: bool - returns if the item is active
+ */
+bool MapItem::setActive(bool active)
+{
+  bool previous = this->active;
+  bool next = MapThing::setActive(active);
+
+  /* Checks if status changed from false to true, update count */
+  if(!previous && next)
+    count = start_count;
+
+  return next;
 }
 
 /*
@@ -310,6 +369,10 @@ bool MapItem::setBase(MapThing* base)
 void MapItem::setCount(uint32_t count)
 {
   this->count = count;
+  if(count > 0)
+    setActive(true);
+  else
+    setActive(false);
 }
 
 /*
@@ -351,6 +414,19 @@ void MapItem::setFrames(std::vector<std::vector<TileSprite*>> frames,
   if(frames.size() == 1 && frames.front().size() == 1)
     MapThing::setFrames(frames, delete_old);
 }
+  
+/*
+ * Description: Sets the starting number of items on the map. This is also the
+ *              count that respawn uses if it is enabled.
+ *
+ * Inputs: uint32_t count - the number of items to start with on the pile
+ * Output: none
+ */
+void MapItem::setStartCount(uint32_t count)
+{
+  start_count = count;
+  setCount(start_count);
+}
 
 /*
  * Description: Sets if the item is walkover (picked up when the person
@@ -379,6 +455,7 @@ void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 
   if(sprite_set != NULL)
   {
+    /* Proceed to update sprite rendering */
     SpriteMatrix* sprite_set = getMatrix();
     if(base == NULL)
     {
@@ -408,6 +485,13 @@ void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 
       /* Update the brightness */
       sprite_set->at(0, 0)->setBrightness(brightness);
+    }
+    /* Instance */
+    else
+    {
+      /* Check active status */
+      //if(!isActive() && MapThing::isActive())
+      //  count = start_count;
     }
 
     /* Finally update the thing */

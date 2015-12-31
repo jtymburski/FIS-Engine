@@ -91,6 +91,9 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
+  /* Check if the tile can be set with the thing */
+  virtual bool canSetTile(Tile* tile, TileSprite* frames);
+
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next,
                                  uint8_t render_depth, Direction move_request);

@@ -1484,7 +1484,7 @@ void Map::battleWon()
     /* Battle clean-up on win condition */
     if(isBattleWinDisappear())
     {
-      std::cout << "TODO: Make the thing disappear" << std::endl;
+      battle_thing->setActive(false);
     }
     else
     {
@@ -2082,7 +2082,8 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
       std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
       if(tile_set.size() > 0)
         things[i]->setStartingTiles(tile_set,
-                                    things[i]->getStartingSection(), true);
+                                    things[i]->getStartingSection(), true,
+                                    !things[i]->isActive());
       else
         things[i]->unsetFrames(true);
     }
@@ -2104,7 +2105,8 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
       std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ios[i]);
       if(tile_set.size() > 0)
         ios[i]->setStartingTiles(tile_set,
-                                 ios[i]->getStartingSection(), true);
+                                 ios[i]->getStartingSection(), true,
+                                 !ios[i]->isActive());
       else
         ios[i]->unsetFrames(true);
     }
@@ -2125,7 +2127,8 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
       if(tile_set.size() > 0)
       {
         persons[i]->setStartingTiles(tile_set,
-                                     persons[i]->getStartingSection(), true);
+                                     persons[i]->getStartingSection(), true,
+                                     !persons[i]->isActive());
         if(persons[i]->classDescriptor() == "MapNPC")
           ((MapNPC*)persons[i])->setPlayer(player);
       }
@@ -2676,8 +2679,8 @@ bool Map::update(int cycle_time)
   {
     tile_set.clear();
 
-    if(persons[i] != NULL && persons[i]->getMapSection() == map_index &&
-       persons[i]->isTilesSet())
+    if(persons[i] != NULL && persons[i]->getMapSection() == map_index)// &&
+       //persons[i]->isTilesSet())
     {
       /* Tile set for movement */
       if(persons[i]->isMoving() || persons[i]->isMoveRequested())
@@ -2693,10 +2696,11 @@ bool Map::update(int cycle_time)
   for(uint16_t i = 0; i < base_things.size(); i++)
     base_things[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < things.size(); i++)
-    if(things[i]->getBase() == NULL)
-      things[i]->update(cycle_time, tile_set);
+    things[i]->update(cycle_time, tile_set);
 
   /* Update map interactive objects */
+  //for(uint16_t i = 0; i < ios.size(); i++)
+  //  base_ios[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < ios.size(); i++)
     ios[i]->update(cycle_time, tile_set);
 

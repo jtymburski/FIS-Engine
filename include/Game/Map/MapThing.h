@@ -48,13 +48,17 @@ public:
   virtual ~MapThing();
 
 protected:
+  /* Active status */
+  bool active;
+  int active_lapsed;
+  int active_time;
+
   /* The base class */
   MapThing* base;
   ThingBase base_category;
   AnimationControl* base_control;
 
   /* The thing classification */
-  bool active;
   std::string description;
   int id;
   std::string name;
@@ -85,6 +89,7 @@ protected:
 
   /* Startinc coordinate information */
   uint16_t starting_section;
+  std::vector<std::vector<Tile*>> starting_tiles;
   uint16_t starting_x;
   uint16_t starting_y;
 
@@ -97,6 +102,7 @@ protected:
   uint16_t tile_section;
 
   /* -------------------------- Constants ------------------------- */
+  const static int kACTIVE_DEFAULT; /* The active total time for respawn */
   const static uint16_t kDEFAULT_SPEED; /* The default thing speed */
   const static float kMOVE_FACTOR; /* Move factor for pixel movement */
   const static int kPLAYER_ID; /* The player ID */
@@ -115,6 +121,10 @@ protected:
   /* Animates the thing, if it has multiple frames */
   virtual bool animate(int cycle_time, bool reset = false,
                                        bool skip_head = false);
+
+  /* Check if the tile can be set with the thing */
+  virtual bool canSetTile(Tile* tile, TileSprite* frames);
+
   /* Returns the tile index as a decimal to indicate what percentage of the
    * next tile it resides in */
   float getFloatTileX();
@@ -126,8 +136,6 @@ protected:
   /* Returns the appropriate tile. NULL if unset or beyond range */
   Tile* getTileMain(uint32_t x, uint32_t y);
   Tile* getTilePrevious(uint32_t x, uint32_t y);
-
-
 
   /* Is move allowed, based on main tile and the next tile */
   bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
@@ -195,6 +203,9 @@ public:
 
   /* Clears the target that the map thing is currently pointing at */
   void clearTarget();
+
+  /* Returns the respawn active time */
+  int getActiveRespawn();
 
   /* Returns the base class */
   MapThing* getBase();
@@ -292,7 +303,7 @@ public:
   virtual bool interact(MapPerson* initiator);
 
   /* Check if the thing is active */
-  bool isActive();
+  virtual bool isActive();
 
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
@@ -323,7 +334,8 @@ public:
   virtual void resetLocation();
 
   /* Sets if the thing is active */
-  void setActive(bool active);
+  virtual bool setActive(bool active);
+  void setActiveRespawn(int time);
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
@@ -367,8 +379,9 @@ public:
 
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
-  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
-                                uint16_t section, bool no_events = true);
+  bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
+                        uint16_t section, bool no_events = true,
+                        bool just_store = false);
 
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);

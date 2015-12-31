@@ -14,6 +14,7 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
+const int MapThing::kACTIVE_DEFAULT = -1;
 const uint16_t MapThing::kDEFAULT_SPEED = 8;
 const float MapThing::kMOVE_FACTOR = 4096.0;
 const int MapThing::kPLAYER_ID = 0;
@@ -189,6 +190,21 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
   }
 
   return shift;
+}
+
+/*
+ * Description: Can the tile be set with the passed frame. Fails if there is
+ *              already a thing set on said tile
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ * Output: bool - true if the set was successful
+ */
+bool MapThing::canSetTile(Tile* tile, TileSprite* frames)
+{
+  if(tile != nullptr)
+    return !tile->isThingSet(frames->getRenderDepth());
+  return false;
 }
 
 /*
@@ -751,8 +767,18 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   bool success = true;
 
   /* Parse the identifier for setting the thing information */
+  /*--------------------- ACTIVE -----------------*/
+  if(identifier == "active" && elements.size() == 1)
+  {
+    setActive(data.getDataBool(&success));
+  }
+  /*--------------------- ACTIVE TIME -----------------*/
+  else if(identifier == "activetime" && elements.size() == 1)
+  {
+    setActiveRespawn(data.getDataInteger(&success));
+  }
   /*--------------------- DESCRIPTION -----------------*/
-  if(identifier == "description" && elements.size() == 1)
+  else if(identifier == "description" && elements.size() == 1)
   {
     setDescription(data.getDataString(&success));
   }
@@ -875,6 +901,8 @@ void MapThing::clear()
 
   /* Resets the class parameters */
   active = true;
+  active_lapsed = 0;
+  active_time = kACTIVE_DEFAULT;
   base = NULL;
   base_category = ThingBase::ISBASE;
   if(base_control != NULL)
@@ -921,6 +949,18 @@ void MapThing::clearTarget()
   if(target != NULL)
     setMovementPaused(false);
   target = NULL;
+}
+
+/*
+ * Description: Returns the time in milliseconds that must lapse when a thing
+ *              is inactive prior to it becoming active.
+ *
+ * Inputs: none
+ * Output: int - the time in milliseconds
+ */
+int MapThing::getActiveRespawn()
+{
+  return active_time;
 }
 
 /*
@@ -1851,11 +1891,40 @@ void MapThing::resetLocation()
  * Description: Sets if the thing is active and usable within the space
  *
  * Inputs: bool active - true if the thing should be active. false otherwise
- * Output: none
+ * Output: bool - returns if the thing is active
  */
-void MapThing::setActive(bool active)
+bool MapThing::setActive(bool active)
 {
   this->active = active;
+  active_lapsed = 0;
+
+  /* Update thing placement */
+  if(active)  // TODO: Implement fade instead of instant
+  {
+    this->active = setStartingTiles(starting_tiles, starting_section, true);
+  }
+  else
+  {
+    unsetTiles(true);
+  }
+
+  return this->active;
+}
+
+/*
+ * Description: Sets the time once a thing is inactive before it will respawn
+ *              on the map (assuming no thing is placed in its starting tile
+ *              location). If set less than 0, it will never respawn (default).
+ *
+ * Inputs: int time - the time in milliseconds before respawning the thing
+ * Output: none
+ */
+void MapThing::setActiveRespawn(int time)
+{
+  if(time < 0)
+    active_time = kACTIVE_DEFAULT;
+  else
+    active_time = time;
 }
 
 /*
@@ -1875,7 +1944,6 @@ bool MapThing::setBase(MapThing* base)
     {
       this->base = base;
       base_category = ThingBase::THING;
-      //setSpeed(base->getSpeed());
       success = true;
     }
     else if(base == NULL)
@@ -2115,15 +2183,18 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
  * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
  *         uint16_t section - map section corresponding to tiles
  *         bool no_events - if no events should occur from setting the thing
+ *         bool just_store - true to just store it as the starting tiles and
+ *                           not call setTile(). Default false
  * Output: bool - true if the tiles are set
  */
 bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
-                                uint16_t section, bool no_events)
+                                uint16_t section, bool no_events,
+                                bool just_store)
 {
   SpriteMatrix* sprite_set = getMatrix();
   bool success = true;
 
-  if(sprite_set != NULL && tile_set.size() > 0 &&
+  if(sprite_set != nullptr && tile_set.size() > 0 &&
      tile_set.size() == sprite_set->width() &&
      tile_set.back().size() == sprite_set->height())
   {
@@ -2132,18 +2203,30 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
     uint32_t end_x = 0;
     uint32_t end_y = 0;
 
+    /* Check if the thing can be placed */
+    if(getID() != kPLAYER_ID)
+      for(uint32_t i = 0; i < sprite_set->width(); i++)
+        for(uint32_t j = 0; j < sprite_set->height(); j++)
+          if(sprite_set->at(i, j) != NULL && 
+             sprite_set->at(i, j)->getSize() > 0)
+            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j));
+
     /* Attempt to set the new tiles */
-    for(uint32_t i = 0; success && (i < sprite_set->width()); i++)
+    if(!just_store)
     {
-      for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
+      for(uint32_t i = 0; success && (i < sprite_set->width()); i++)
       {
-        if(sprite_set->at(i, j) != NULL && sprite_set->at(i, j)->getSize() > 0)
+        for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
         {
-          success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
-          if(!success)
+          if(sprite_set->at(i, j) != NULL && 
+             sprite_set->at(i, j)->getSize() > 0)
           {
-            end_x = i;
-            end_y = j;
+            success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
+            if(!success)
+            {
+              end_x = i;
+              end_y = j;
+            }
           }
         }
       }
@@ -2152,26 +2235,35 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
     /* If unsuccessful, unset all that were set */
     if(!success)
     {
-      bool finished = false;
-
-      for(uint32_t i = 0; !finished && (i < sprite_set->width()); i++)
+      if(!just_store)
       {
-        for(uint32_t j = 0; !finished && (j < sprite_set->height()); j++)
+        bool finished = false;
+
+        for(uint32_t i = 0; !finished && (i < sprite_set->width()); i++)
         {
-          if(sprite_set->at(i, j) != NULL)
+          for(uint32_t j = 0; !finished && (j < sprite_set->height()); j++)
           {
-            if(i == end_x && j == end_y)
-              finished = true;
-            else
-              unsetTile(i, j, true);
+            if(sprite_set->at(i, j) != NULL)
+            {
+              if(i == end_x && j == end_y)
+                finished = true;
+              else
+                unsetTile(i, j, true);
+            }
           }
         }
       }
     }
     else
     {
-      tile_main = tile_set;
-      tile_section = section;
+      starting_tiles = tile_set;
+
+      if(!just_store)
+      {
+        active = true;
+        tile_main = tile_set;
+        tile_section = section;
+      }
     }
 
     return success;
@@ -2247,12 +2339,19 @@ void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   (void)tile_set;
 
-  if(isActive())
+  /* For active, update movement and animation */
+  if(isActive() && isTilesSet())
   {
-    if(isTilesSet())
-      moveThing(cycle_time);
-    if(getMatrix() != NULL)
+    moveThing(cycle_time);
+    if(getBase() == nullptr)
       animate(cycle_time);
+  }
+  /* Otherwise, just update the inactive respawn time */
+  else if(active_time >= 0)
+  {
+    active_lapsed += cycle_time;
+    if(active_lapsed >= active_time)
+      setActive(true);
   }
 }
 

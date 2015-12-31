@@ -195,7 +195,7 @@ void MapNPC::initializeClass()
   track_recent = false;
   track_state = NOTRACK;
   tracking = false;
-  
+
   /* Set the path player node to blank state */
   node_player.x = 0;
   node_player.y = 0;
@@ -203,7 +203,7 @@ void MapNPC::initializeClass()
   node_player.xy_flip = false;
   node_player.previous = nullptr;
   node_player.next = nullptr;
-  
+
   /* Set the path random node to blank state */
   node_random.x = 0;
   node_random.y = 0;
@@ -360,7 +360,7 @@ void MapNPC::randomizeNode()
 }
 
 /*
- * Description: This function is called by the update call when an NPC is 
+ * Description: This function is called by the update call when an NPC is
  *              triggered to avoid the player and each update cycle to determine
  *              where the NPC should proceed to go (new node locations).
  *
@@ -375,8 +375,8 @@ void MapNPC::trackAvoidPlayer(int cycle_time, bool stopped)
     track_delay += cycle_time;
 
   /* Determine if an update should occur based on location of npc */
-  if((!stopped && getTileX() == node_player.x && 
-      getTileY() == node_player.y) || 
+  if((!stopped && getTileX() == node_player.x &&
+      getTileY() == node_player.y) ||
      track_initial || track_delay > kTRACK_DELAY)
   {
     Direction dir_curr = getDirection();
@@ -572,7 +572,7 @@ int MapNPC::trackOutOfRange(MapPerson* ref)
       {
         dist = (npc_x - x2);
       }
-      
+
       return dist;
     }
   }
@@ -594,7 +594,7 @@ void MapNPC::updateBound()
   int x_min = -1;
   int y_max = -1;
   int y_min = -1;
-  
+
   /* Proceed to generate new information - on node set*/
   if(node_parse != nullptr)
   {
@@ -605,13 +605,13 @@ void MapNPC::updateBound()
         x_min = node_parse->x;
       if(y_min < 0 || (node_parse->y < y_min))
         y_min = node_parse->y;
-      
+
       /* Max */
       if(x_max < 0 || (node_parse->x > x_max))
         x_max = node_parse->x;
       if(y_max < 0 || (node_parse->y > y_max))
         y_max = node_parse->y;
-      
+
       /* Go to next */
       node_parse = node_parse->next;
 
@@ -625,7 +625,7 @@ void MapNPC::updateBound()
     y_min = getStartingY();
     y_max = getStartingY();
   }
-  
+
   /* If data is valid, load it in */
   if(x_min >= 0 && y_min >= 0 && x_max >= 0 && y_max >= 0)
   {
@@ -636,7 +636,7 @@ void MapNPC::updateBound()
     node_rect = {0, 0, 0, 0};
   }
 }
-  
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -668,8 +668,8 @@ bool MapNPC::setDirection(Direction direction, bool set_movement)
   }
 
   /* Rotate direction */
-  if(set_movement || getTarget() != nullptr || forced_recent || 
-     node_current == nullptr || node_current->x == getTileX() || 
+  if(set_movement || getTarget() != nullptr || forced_recent ||
+     node_current == nullptr || node_current->x == getTileX() ||
      node_current->y == getTileY() )
   {
     /* If it's a movement direction, rotate the fellow */
@@ -887,7 +887,7 @@ void MapNPC::clear()
   /* Clear out parent */
   MapPerson::clear();
 }
-  
+
 /*
  * Description: Gets if the movement is paused. This calls on parent MapThing
  *              for paused information in addition to forced recent freeze
@@ -898,7 +898,7 @@ void MapNPC::clear()
  */
 bool MapNPC::getMovementPaused()
 {
-  return MapThing::getMovementPaused() || 
+  return MapThing::getMovementPaused() ||
          (forced_recent && forced_time < kFORCED_FREEZE);
 }
 
@@ -1404,274 +1404,274 @@ void MapNPC::setTrackingState(TrackingState state)
  */
 void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-  /* Begin the check to handle each time the NPC is on a tile */
-  if(isTilesSet() && node_current != nullptr) //getNodeState() != LOCKED)
+  /* For active and set tiles, update movement and animation */
+  if(isActive() && isTilesSet())
   {
-    /* Acquire direction */
-    Direction direction = getPredictedMoveRequest();
-
-    /* Variables */
-    int delta = 0;
-    int delta_range = 0;
-    bool stopped = !isMoving();
-
-    /* Do checks if stuck */
-    if(stopped && node_current->x != getTileX() && /* removed !tracking */
-       node_current->y != getTileY())
+    /* Begin the check to handle each time the NPC is on a tile */
+    if(node_current != nullptr) //getNodeState() != LOCKED)
     {
-      stuck_delay += cycle_time;
-      if(stuck_delay > kSTUCK_DELAY)
-      {
-        stuck_delay = 0;
-        stuck_flip = !stuck_flip;
-      }
-    }
+      /* Acquire direction */
+      Direction direction = getPredictedMoveRequest();
 
-    /* If starting sequence, operate on different parameters */
-    if(starting)
-    {
-      if(stopped)
+      /* Variables */
+      int delta = 0;
+      int delta_range = 0;
+      bool stopped = !isMoving();
+
+      /* Do checks if stuck */
+      if(stopped && node_current->x != getTileX() && /* removed !tracking */
+         node_current->y != getTileY())
       {
-        /* If reached node and done movement again, kill starting */
-        if(node_current != &node_start &&
-           node_current->x == tile_main.front().front()->getX() &&
-           node_current->y == tile_main.front().front()->getY())
+        stuck_delay += cycle_time;
+        if(stuck_delay > kSTUCK_DELAY)
         {
-          if(node_state == RANDOMRANGE)
-          {
-            node_current = &node_random;
-            node_random.x = node_head->x;
-            node_random.y = node_head->y;
-          }
-          starting = false;
+          stuck_delay = 0;
+          stuck_flip = !stuck_flip;
         }
-        else if(node_current == &node_start)
+      }
+
+      /* If starting sequence, operate on different parameters */
+      if(starting)
+      {
+        if(stopped)
         {
-          /* Delay first */
-          if(node_start.delay > npc_delay)
+          /* If reached node and done movement again, kill starting */
+          if(node_current != &node_start &&
+             node_current->x == tile_main.front().front()->getX() &&
+             node_current->y == tile_main.front().front()->getY())
           {
-            npc_delay += cycle_time;
-          }
-          /* Then updates current node */
-          else
-          {
-            if(node_state == LOOPED || node_state == BACKANDFORTH ||
-               node_state == RANDOMRANGE)
-            {
-              if(node_head != nullptr)
-                node_current = node_head;
-              else
-                starting = false;
-            }
-            else if(node_state == RANDOM)
+            if(node_state == RANDOMRANGE)
             {
               node_current = &node_random;
-              starting = false;
+              node_random.x = node_head->x;
+              node_random.y = node_head->y;
             }
+            starting = false;
+          }
+          else if(node_current == &node_start)
+          {
+            /* Delay first */
+            if(node_start.delay > npc_delay)
+            {
+              npc_delay += cycle_time;
+            }
+            /* Then updates current node */
             else
             {
-              node_current = node_head;
-              starting = false;
-            }
-
-            npc_delay = 0;
-          }
-        }
-      }
-    }
-    else
-    {
-      /* Handle tracking */
-      if(track_state != NOTRACK && player != nullptr)
-      {
-        /* Delta X/Y distances */
-        int delta_x = 0;
-        if(player->getTileX() >= getTileX())
-          delta_x = player->getTileX() - getTileX();
-        else
-          delta_x = getTileX() - player->getTileX();
-        int delta_y = 0;
-        if(player->getTileY() >= getTileY())
-          delta_y = player->getTileY() - getTileY();
-        else
-          delta_y = getTileY() - player->getTileY();
-
-        /* Main delta */
-        if(delta_x >= delta_y)
-          delta = delta_x + delta_y * kPYTH_APPROX;
-        else
-          delta = delta_y + delta_x * kPYTH_APPROX;
-
-        /* Logic for when NPC is not currently tracking */
-        if(!tracking)
-        {
-          /* Check the recent status */
-          if(track_recent)
-          {
-            /* If stopped, compute stuck time */
-            if(stopped)
-              track_delay += cycle_time;
-            else
-              track_delay = 0;
-
-            /* Once limits reach, reset tracking recent */
-            if((getTileX() == node_current->x && 
-                getTileY() == node_current->y) || 
-               (stopped && track_delay > kFORCED_RESET))
-            {
-              track_recent = false;
-            }
-          }
-
-          /* Check if tracking should be enabled */
-          if(delta <= track_dist && !track_recent && !forced_recent)
-          {
-            tracking = true;
-            track_delay = 0;
-            track_initial = true;
-            node_previous = node_current;
-            node_current = &node_player;
-            
-            /* Initialize node */
-            node_player.x = getTileX();
-            node_player.y = getTileY();
-          }
-        }
-        /* Otherwise it is tracking - handle */
-        else
-        {
-          /* Check the distance */
-          delta_range = trackOutOfRange();
-
-          /* Check if tracking should be disabled */
-          if(delta > track_dist_max || delta_range > track_dist_max || 
-             forced_recent || getTarget() != nullptr || 
-             (track_state == AVOIDPLAYER && delta_range == track_dist_max && 
-              trackOutOfRange(player) >= delta_range))
-          {
-            tracking = false;
-            track_delay = 0;
-            track_initial = false;
-            track_recent = true;
-            node_current = node_previous;
-            node_previous = nullptr;
-          }
-        }
-      }
-
-      /* If tracking, modify how movement is handled */
-      if(tracking)// && getTarget() == nullptr)
-      {
-        //bool track_almost = isAlmostOnTile(cycle_time);
-
-        /* Track to the player location */
-        if(track_state == TOPLAYER)
-        {
-          //if(track_almost || stopped)
-          //{
-          node_player.x = player->getTileX();
-          node_player.y = player->getTileY();
-          //}
-        }
-        /* Track from the player location */
-        else
-        {
-          if(delta < track_dist_run && delta_range < track_dist_max)
-            trackAvoidPlayer(cycle_time, stopped);
-          else
-            track_initial = true;
-        }
-      }
-      /* On tile if not moving so handle pauses or shifts */
-      else if(stopped && (direction == Direction::DIRECTIONLESS ||
-              node_state == RANDOM || node_state == RANDOMRANGE))
-      {
-        /* Clear stuck data */
-        stuck_delay = 0;
-        stuck_flip = false;
-
-        if(node_current->delay > npc_delay)
-        {
-          npc_delay += cycle_time;
-        }
-        else
-        {
-          if(node_state == LOOPED)
-          {
-            if(node_head != nullptr)
-              node_current = node_current->next;
-            else
-              setDirection(getStartingDirection(), false);
-          }
-          else if(node_state == BACKANDFORTH)
-          {
-            if(node_head != nullptr)
-            {
-              /* Check to see if the ends are reached */
-              if(moving_forward && node_current->next == node_head)
-                moving_forward = false;
-              else if(!moving_forward && node_current == node_head)
-                moving_forward = true;
-
-              /* Move in the new / old direction */
-              if(moving_forward)
-                node_current = node_current->next;
+              if(node_state == LOOPED || node_state == BACKANDFORTH ||
+                 node_state == RANDOMRANGE)
+              {
+                if(node_head != nullptr)
+                  node_current = node_head;
+                else
+                  starting = false;
+              }
+              else if(node_state == RANDOM)
+              {
+                node_current = &node_random;
+                starting = false;
+              }
               else
-                node_current = node_current->previous;
-            }
-            else
-            {
-              setDirection(getStartingDirection(), false);
-            }
-          }
-          else if(node_state == RANDOM ||
-                  (node_state == RANDOMRANGE && node_head != NULL))
-          {
-            /* If direction is not directionless, reset random tile location */
-            if(direction != Direction::DIRECTIONLESS)
-            {
-              node_random.x = tile_main.front().front()->getX();
-              node_random.y = tile_main.front().front()->getY();
-            }
+              {
+                node_current = node_head;
+                starting = false;
+              }
 
-            /* Randomize a new location */
-            randomizeNode();
+              npc_delay = 0;
+            }
           }
-          npc_delay = 0;
         }
       }
       else
       {
-        npc_delay = 0;
+        /* Handle tracking */
+        if(track_state != NOTRACK && player != nullptr)
+        {
+          /* Delta X/Y distances */
+          int delta_x = 0;
+          if(player->getTileX() >= getTileX())
+            delta_x = player->getTileX() - getTileX();
+          else
+            delta_x = getTileX() - player->getTileX();
+          int delta_y = 0;
+          if(player->getTileY() >= getTileY())
+            delta_y = player->getTileY() - getTileY();
+          else
+            delta_y = getTileY() - player->getTileY();
+
+          /* Main delta */
+          if(delta_x >= delta_y)
+            delta = delta_x + delta_y * kPYTH_APPROX;
+          else
+            delta = delta_y + delta_x * kPYTH_APPROX;
+
+          /* Logic for when NPC is not currently tracking */
+          if(!tracking)
+          {
+            /* Check the recent status */
+            if(track_recent)
+            {
+              /* If stopped, compute stuck time */
+              if(stopped)
+                track_delay += cycle_time;
+              else
+                track_delay = 0;
+
+              /* Once limits reach, reset tracking recent */
+              if((getTileX() == node_current->x &&
+                  getTileY() == node_current->y) ||
+                 (stopped && track_delay > kFORCED_RESET))
+              {
+                track_recent = false;
+              }
+            }
+
+            /* Check if tracking should be enabled */
+            if(delta <= track_dist && !track_recent && !forced_recent)
+            {
+              tracking = true;
+              track_delay = 0;
+              track_initial = true;
+              node_previous = node_current;
+              node_current = &node_player;
+
+              /* Initialize node */
+              node_player.x = getTileX();
+              node_player.y = getTileY();
+            }
+          }
+          /* Otherwise it is tracking - handle */
+          else
+          {
+            /* Check the distance */
+            delta_range = trackOutOfRange();
+
+            /* Check if tracking should be disabled */
+            if(delta > track_dist_max || delta_range > track_dist_max ||
+               forced_recent || getTarget() != nullptr ||
+               (track_state == AVOIDPLAYER && delta_range == track_dist_max &&
+                trackOutOfRange(player) >= delta_range))
+            {
+              tracking = false;
+              track_delay = 0;
+              track_initial = false;
+              track_recent = true;
+              node_current = node_previous;
+              node_previous = nullptr;
+            }
+          }
+        }
+
+        /* If tracking, modify how movement is handled */
+        if(tracking)// && getTarget() == nullptr)
+        {
+          /* Track to the player location */
+          if(track_state == TOPLAYER)
+          {
+            node_player.x = player->getTileX();
+            node_player.y = player->getTileY();
+          }
+          /* Track from the player location */
+          else
+          {
+            if(delta < track_dist_run && delta_range < track_dist_max)
+              trackAvoidPlayer(cycle_time, stopped);
+            else
+              track_initial = true;
+          }
+        }
+        /* On tile if not moving so handle pauses or shifts */
+        else if(stopped && (direction == Direction::DIRECTIONLESS ||
+                node_state == RANDOM || node_state == RANDOMRANGE))
+        {
+          /* Clear stuck data */
+          stuck_delay = 0;
+          stuck_flip = false;
+
+          if(node_current->delay > npc_delay)
+          {
+            npc_delay += cycle_time;
+          }
+          else
+          {
+            if(node_state == LOOPED)
+            {
+              if(node_head != nullptr)
+                node_current = node_current->next;
+              else
+                setDirection(getStartingDirection(), false);
+            }
+            else if(node_state == BACKANDFORTH)
+            {
+              if(node_head != nullptr)
+              {
+                /* Check to see if the ends are reached */
+                if(moving_forward && node_current->next == node_head)
+                  moving_forward = false;
+                else if(!moving_forward && node_current == node_head)
+                  moving_forward = true;
+
+                /* Move in the new / old direction */
+                if(moving_forward)
+                  node_current = node_current->next;
+                else
+                  node_current = node_current->previous;
+              }
+              else
+              {
+                setDirection(getStartingDirection(), false);
+              }
+            }
+            else if(node_state == RANDOM ||
+                    (node_state == RANDOMRANGE && node_head != NULL))
+            {
+              /* If direction is not directionless, reset random location */
+              if(direction != Direction::DIRECTIONLESS)
+              {
+                node_random.x = tile_main.front().front()->getX();
+                node_random.y = tile_main.front().front()->getY();
+              }
+
+              /* Randomize a new location */
+              randomizeNode();
+            }
+            npc_delay = 0;
+          }
+        }
+        else
+        {
+          npc_delay = 0;
+        }
+      }
+
+      /* Update the new direction */
+      if(getMoveRequest() != direction)
+      {
+        clearAllMovement();
+        addDirection(direction);
+      }
+    }
+    /* Locked state - just handle visible direction */
+    else
+    {
+      /* If not targetting the player, restore direction */
+      if(!getMovementPaused() && getTarget() == nullptr &&
+         getDirection() != getStartingDirection())
+      {
+        setDirection(getStartingDirection(), false);
       }
     }
 
-    /* Update the new direction */
-    if(getMoveRequest() != direction)
+    /* Checks on the forced interaction delays and holds */
+    if(forced_recent && getTarget() == nullptr)
     {
-      clearAllMovement();
-      addDirection(direction);
-    }
-  }
-  /* Locked state - just handle visible direction */
-  else
-  {
-    /* If not targetting the player, restore direction */
-    if(!getMovementPaused() && getTarget() == nullptr && 
-       getDirection() != getStartingDirection())
-    {
-      setDirection(getStartingDirection(), false);
+      forced_time += cycle_time;
+      if(forced_time > kFORCED_NOTRIGGER)
+        forced_recent = false;
     }
   }
 
-  /* Checks on the forced interaction delays and holds */
-  if(forced_recent && getTarget() == nullptr)
-  {
-    forced_time += cycle_time;
-    if(forced_time > kFORCED_NOTRIGGER)
-      forced_recent = false;
-  }
-
+  /* Send call to parent */
   MapPerson::update(cycle_time, tile_set);
 }
 
