@@ -383,10 +383,6 @@ bool Battle::bufferModuleSelection()
   auto curr_actor = getCurrentModuleActor();
   auto curr_module = getCurrentModule();
 
-  // std::cout << "--- Bufferin Module Selection ---- " << std::endl;
-  // std::cout << "--- Curr Actor: " << curr_actor->getBasePerson()->getName()
-  //           << std::endl;
-
   if(curr_actor && curr_module)
   {
     auto action_type = curr_module->getActionType();
@@ -403,7 +399,6 @@ bool Battle::bufferModuleSelection()
     }
     else if(action_type == ActionType::SKILL && curr_module->getSelectedSkill())
     {
-      std::cout << "Literally buffering a skill." << std::endl;
       auto skill = curr_module->getSelectedBattleSkill();
       auto cooldown = skill->skill->getCooldown();
       battle_buffer->addSkill(curr_actor, skill, targets, cooldown,
@@ -425,7 +420,6 @@ bool Battle::bufferModuleSelection()
   }
   else
   {
-    std::cout << "Problem with curr actor or cur module. " << std::endl;
     return false;
   }
 
@@ -437,16 +431,18 @@ void Battle::buildBattleActors(Party *allies, Party *enemies)
 {
   for(uint32_t i = 0; i < allies->getSize(); i++)
   {
-    auto new_ally = new BattleActor(allies->getMember(i), getBattleIndex(i),
-                                    true, true, renderer);
+    auto new_ally =
+        new BattleActor(allies->getMember(i), getBattleIndex(i),
+                        getMenuIndex(i, true), true, true, renderer);
 
     /* Add the new ally to the vector of actors of the Battle */
     actors.push_back(new_ally);
   }
   for(uint32_t i = 0; i < enemies->getSize(); i++)
   {
-    auto new_enemy = new BattleActor(enemies->getMember(i), getBattleIndex(i),
-                                     false, true, renderer);
+    auto new_enemy =
+        new BattleActor(enemies->getMember(i), getBattleIndex(i),
+                        getMenuIndex(i, false), false, true, renderer);
 
     /* Add the new enemy to the vector of actors of the Battle */
     actors.push_back(new_enemy);
@@ -1347,6 +1343,8 @@ void Battle::updateUserSelection()
   }
 }
 
+
+//
 int32_t Battle::getBattleIndex(int32_t index)
 {
   if(index == 1)
@@ -1355,6 +1353,50 @@ int32_t Battle::getBattleIndex(int32_t index)
     return 1;
 
   return index;
+}
+
+// Party Index
+//
+
+// Battle Index
+//  4  3  2  1  0
+//  0  1  2  3  4
+
+// Menu Index
+// 9 8 7 6 5
+// 4 3 2 1 0
+int32_t Battle::getMenuIndex(int32_t index, bool allies)
+{
+  auto battle_index = getBattleIndex(index);
+
+  if(allies)
+  {
+    if(battle_index == 1)
+      return 3;
+    if(battle_index == 0)
+      return 4;
+    if(battle_index == 2)
+      return 2;
+    if(battle_index == 3)
+      return 1;
+    if(battle_index == 4)
+      return 0;
+  }
+  else
+  {
+    if(battle_index == 4)
+      return 9;
+    if(battle_index == 3)
+      return 8;
+    if(battle_index == 2)
+      return 7;
+    if(battle_index == 1)
+      return 6;
+    if(battle_index == 0)
+      return 5;
+  }
+
+  return 0;
 }
 
 AIModule *Battle::getCurrentModule()

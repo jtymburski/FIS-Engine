@@ -172,7 +172,7 @@ class BattleActor
 {
 public:
   /* Constructs the Battle object by a given base person */
-  BattleActor(Person* person_base, int32_t battle_index, bool is_ally,
+  BattleActor(Person* person_base, int32_t battle_index, int32_t menu_index, bool is_ally,
               bool can_run, SDL_Renderer* renderer);
 
   /* Default BattleActors may not be created */
@@ -205,6 +205,9 @@ private:
 
   /* The info frame for the Battle Actor */
   Frame* frame_info;
+
+  /* The menu index. [- for enemies, + for allies] */
+  int32_t menu_index;
 
   /* The base person for the BattleActor */
   Person* person_base;
@@ -384,6 +387,8 @@ public:
 
   /* Returns the modified index of the BattleActor */
   int32_t getIndex();
+
+  int32_t getMenuIndex();
 
   /* Pointer to the info frame */
   Frame* getInfoFrame();

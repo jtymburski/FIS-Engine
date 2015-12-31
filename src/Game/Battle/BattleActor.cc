@@ -45,12 +45,14 @@ const uint8_t BattleActor::kACTOR_KO_ALPHA{50};
  * Inputs:
  */
 BattleActor::BattleActor(Person *person_base, int32_t battle_index,
-                         bool is_ally, bool can_run, SDL_Renderer *renderer)
+                         int32_t menu_index, bool is_ally, bool can_run,
+                         SDL_Renderer *renderer)
     : action_element{ActionElement()},
       active_sprite{ActiveSprite::NONE},
       battle_index{battle_index},
       flags{static_cast<ActorState>(0)},
       frame_info{nullptr},
+      menu_index{menu_index},
       person_base{person_base},
       sprite_first_person{nullptr},
       sprite_third_person{nullptr},
@@ -454,10 +456,6 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
   if(success)
   {
     auto curr_skills = person_base->getCurrSkills();
-
-    // std::cout << "==== Skill Set ==== " << std::endl;
-    // curr_skills->print(false);
-
     auto useable_skills = curr_skills->getElements(person_base->getLevel());
 
     for(auto &element : useable_skills)
@@ -469,11 +467,18 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
       {
         auto skill = battle_skill->skill;
 
-        // std::cout << "Getting targets for skill with scope: " << Helpers::actionScopeToStr(skill->getScope()) << std::endl;
+        std::cout << "=== Target Construction For: "
+                  << this->getBasePerson()->getName() << " ===" << std::endl;
+        std::cout << "Scope: " << Helpers::actionScopeToStr(skill->getScope())
+                  << std::endl;
+
         auto targets = getTargetsFromScope(this, skill->getScope(), a_targets);
 
-        // for(auto target : targets)
-        //   std::cout << target->getBasePerson()->getName() << std::endl;
+        for(auto &target : targets)
+        {
+          std::cout << "Target: " << target->getBasePerson()->getName() << " "
+                    << target->getIndex() << std::endl;
+        }
 
         battle_skill->targets = targets;
         battle_skill->true_cost = getSkillCost(skill);
@@ -486,7 +491,7 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
 
           if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
           {
-            std::cout << "[Silenced Skill!] " << std::endl;
+            //   std::cout << "[Silenced Skill!] " << std::endl;
             battle_skill->valid_status = ValidStatus::SILENCED;
           }
           if(battle_skill->true_cost > stats_actual.getValue(Attribute::QTDR))
@@ -812,6 +817,11 @@ int32_t BattleActor::getIndex()
   return battle_index;
 }
 
+int32_t BattleActor::getMenuIndex()
+{
+  return menu_index;
+}
+
 Frame *BattleActor::getInfoFrame()
 {
   return frame_info;
@@ -1071,20 +1081,13 @@ BattleActor::getEnemyTargets(BattleActor *user,
 std::vector<BattleActor *>
 BattleActor::getLivingTargets(std::vector<BattleActor *> targets)
 {
-  targets.erase(std::remove_if(begin(targets), end(targets),
-                               [&](BattleActor *actor) -> bool
-                               {
-                                 if(actor)
-                                 {
-                                   return actor->getStateLiving() ==
-                                          LivingState::ALIVE;
-                                 }
+  std::vector<BattleActor *> living_targets;
 
-                                 return true;
-                               }),
-                end(targets));
+  for(const auto &target : targets)
+    if(target && target->getStateLiving() == LivingState::ALIVE)
+      living_targets.push_back(target);
 
-  return targets;
+  return living_targets;
 }
 
 std::vector<BattleActor *>
@@ -1117,24 +1120,32 @@ BattleActor::getTargetsFromScope(BattleActor *user, ActionScope scope,
   else if(scope == ActionScope::ONE_TARGET || scope == ActionScope::ONE_PARTY ||
           scope == ActionScope::ALL_TARGETS)
   {
-    valid_targets = targets;
+    valid_targets = getLivingTargets(targets);
   }
   /* One Enemy - any enemy opponent whose index sign is opposite the user */
   else if(scope == ActionScope::ONE_ENEMY ||
           scope == ActionScope::TWO_ENEMIES ||
           scope == ActionScope::ALL_ENEMIES)
   {
-    valid_targets = getEnemyTargets(user, targets);
+    std::cout << "Checking living on target size:" << targets.size()
+              << std::endl;
+    auto living_targets = getLivingTargets(targets);
+
+    std::cout << "Living targets size:" << living_targets.size() << std::endl;
+    valid_targets = getEnemyTargets(user, living_targets);
+    std::cout << "Valid targets size: " << valid_targets.size() << std::endl;
   }
   else if(scope == ActionScope::ONE_ALLY || scope == ActionScope::TWO_ALLIES ||
           scope == ActionScope::ALL_ALLIES)
   {
-    valid_targets = getAllyTargets(user, targets);
+    auto living_targets = getLivingTargets(targets);
+    valid_targets = getAllyTargets(user, living_targets);
   }
   else if(scope == ActionScope::ONE_ALLY_NOT_USER)
   {
-    valid_targets = getAllyTargets(user, targets);
-    valid_targets = getRemovedUser(user, valid_targets);
+    auto living_targets = getLivingTargets(targets);
+    auto ally_targets = getAllyTargets(user, living_targets);
+    valid_targets = getRemovedUser(user, ally_targets);
   }
   else if(scope == ActionScope::ONE_ALLY_KO ||
           scope == ActionScope::ALL_ALLIES_KO)
@@ -1148,7 +1159,8 @@ BattleActor::getTargetsFromScope(BattleActor *user, ActionScope scope,
   }
   else if(scope == ActionScope::NOT_USER || scope == ActionScope::ALL_NOT_USER)
   {
-    valid_targets = getRemovedUser(user, targets);
+    auto living_targets = getLivingTargets(targets);
+    valid_targets = getRemovedUser(user, living_targets);
   }
 
   return valid_targets;

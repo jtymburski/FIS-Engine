@@ -357,6 +357,9 @@ private:
   /* Returns the modified index of a given index value */
   int32_t getBattleIndex(int32_t index);
 
+  /* Returns the modified menu index for a given party index and whether ally */
+  int32_t getMenuIndex(int32_t index, bool allies);
+
   /* Returns the current AI Module pointer being worked on */
   AIModule* getCurrentModule();
 

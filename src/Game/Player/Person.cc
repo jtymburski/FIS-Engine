@@ -59,11 +59,11 @@ int Person::id{0};
 std::vector<uint32_t> Person::exp_table{};
 
 /* XS, S, A, B, C, D */
-const std::vector<float> Person::kPRIM_MODS = {1,1,1,1,1,1};//1.425, 1.400, 1.375,
-                                               //1.350, 1.325, 1.300};
+const std::vector<float> Person::kPRIM_MODS = {1.425, 1.400, 1.375,
+                                               1.350, 1.325, 1.300};
 
-const std::vector<float> Person::kSECD_MODS = {1,1,1,1,1,1};//1.375, 1.300, 1.250,
-                                               //1.225, 1.200, 1.175};
+const std::vector<float> Person::kSECD_MODS = {1.375, 1.300, 1.250,
+                                               1.225, 1.200, 1.175};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -618,11 +618,6 @@ void Person::updateRank()
 void Person::buildExpTable()
 {
   exp_table = Helpers::buildExpTable(kMIN_LVL_EXP, kMAX_LVL_EXP, kNUM_LEVELS);
-
-  int32_t level = 1;
-  for(auto row : exp_table)
-    std::cout << "Lv. " << level++ << " Exp: " << row << std::endl;
-
 }
 
 /*

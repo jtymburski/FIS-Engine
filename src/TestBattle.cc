@@ -350,7 +350,7 @@ void TestBattle::create()
 
   stats_player_min = AttributeSet(
   {
-    200, 50, 6, 5,
+    200, 50, 8, 8,
     0, 0, 0, 0,
     6, 5, 3, 2,
     0, 0, 0, 0,
@@ -521,40 +521,40 @@ void TestBattle::createActions()
   /* Damage actions */
 
   /* Light Push (~5000 Damage) */
-  act_dmg.push_back(new Action("0,DAMAGE,,,,VITA,AMOUNT.100000,AMOUNT.200,,100"));
+  act_dmg.push_back(new Action("0,DAMAGE,,,,VITA,AMOUNT.2000,AMOUNT.200,,100"));
 
   /* Prismatic Shot (~20 Damage / Hit) */
-  act_dmg.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.25,AMOUNT.2,,95"));
+  act_dmg.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.13,AMOUNT.2,,95"));
 
   /* Rail Shot (~35 Damage) */
-  act_dmg.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.38,AMOUNT.5,,100"));
 
   /* ShattersShot (~80 Damage) */
-  act_dmg.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.130,AMOUNT.10,,100"));
+  act_dmg.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.65,AMOUNT.10,,100"));
 
   /* Static Shot (drone nuisance) */
-  act_dmg.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.15,AMOUNT.5,,100"));
 
   /* Surge of Will */
-  act_dmg.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.260,AMOUNT.35,,100"));
+  act_dmg.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.130,AMOUNT.35,,100"));
 
   /* Strike (Humans) */
-  act_dmg.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.10,,100"));
+  act_dmg.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.10,,100"));
 
   /* Light Shot */
-  act_dmg.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.2,,100"));
+  act_dmg.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.2,,100"));
 
   /* Locked Shot */
-  act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.46,AMOUNT.2,,100"));
+  act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.13,AMOUNT.2,,100"));
 
   /* Paw Strike */
-  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.5,,100"));
 
   /* Maul */
-  act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.110,AMOUNT.10,,100"));
+  act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.55,AMOUNT.10,,100"));
 
   /* Ensnare */
-  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.40,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,100"));
 
   /* Inflict Actions */
 

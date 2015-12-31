@@ -155,7 +155,7 @@ public:
   /* Converts an enumerated direction to a string, and vice versa */
   static Direction directionFromString(const std::string& direction);
   static std::string directionToString(const Direction& direction);
-  
+
   /* Converts an enumerated element to a String */
   static Element elementFromString(const std::string& element);
   static uint16_t elementToInt(Element element);
