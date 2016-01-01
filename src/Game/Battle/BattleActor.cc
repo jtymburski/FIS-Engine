@@ -138,6 +138,10 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   /* Reset the action types useable by the battle actor */
   resetActionTypes();
 
+  std::cout << person_base->getName() << " ==== " << std::endl;
+  stats_actual.print();
+
+
   // TODO
   (void)can_run;
 }

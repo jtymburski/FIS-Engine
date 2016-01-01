@@ -548,7 +548,7 @@ void TestBattle::createActions()
   act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.13,AMOUNT.2,,100"));
 
   /* Paw Strike */
-  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.5,,100"));
+  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.5,,50"));
 
   /* Maul */
   act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.55,AMOUNT.10,,100"));
@@ -1050,7 +1050,7 @@ void TestBattle::createSkills()
 
   /* Paw Strike */
   Skill* paw_strike =
-      new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[9], 95, 0);
+      new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[9], 100, 0);
   paw_strike->setDescription("A standard, physical hit against a single foe");
   paw_strike->setPrimary(Element::PHYSICAL);
   paw_strike->setSecondary(Element::FOREST);

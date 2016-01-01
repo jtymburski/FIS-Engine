@@ -381,12 +381,6 @@ std::vector<BattleActor *> BattleMenu::getSelectableTargets()
                       begin(selected_targets), end(selected_targets),
                       std::back_inserter(difference));
 
-  std::cout << "Before Sort" << std::endl;
-
-  for(auto &target : selectable_targets)
-    if(target)
-      std::cout << target->getMenuIndex() << "   "
-                << target->getBasePerson()->getName() << std::endl;
 
   /* Sort the selectable targets by their menu index.
    *   Enemy Menu Index:  [9] [8] [7] [6] [5]
@@ -399,15 +393,6 @@ std::vector<BattleActor *> BattleMenu::getSelectableTargets()
 
               return false;
             });
-
-  std::cout << "After Sort" << std::endl;
-
-  std::cout << "Selectable Targets: " << std::endl;
-
-  for(auto &target : selectable_targets)
-    if(target)
-      std::cout << target->getMenuIndex() << "   "
-                << target->getBasePerson()->getName() << std::endl;
 
   return selectable_targets;
 }

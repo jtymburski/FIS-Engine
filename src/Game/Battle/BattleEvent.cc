@@ -83,8 +83,6 @@ const float BattleEvent::kDOUBLE_ELM_DIS_MODIFIER = 0.80;
 
 const float BattleEvent::kMANNA_POW_MODIFIER = 1.00;
 const float BattleEvent::kMANNA_DEF_MODIFIER = 1.00;
-const float BattleEvent::kUSER_POW_MODIFIER = 1.00;
-const float BattleEvent::kTARG_DEF_MODIFIER = 1.00;
 
 const float BattleEvent::kDEFEND_MODIFIER = 0.45;
 const float BattleEvent::kGUARD_MODIFIER = 1.10;
@@ -654,11 +652,11 @@ int32_t BattleEvent::calcValPrimAtk(Skill *curr_skill)
   return 0;
 }
 
-int32_t BattleEvent::calcValPrimDef(Skill *curr_skill)
+int32_t BattleEvent::calcValPrimDef(Skill *curr_skill, BattleStats target_stats)
 {
   if(!getFlagIgnore(IgnoreState::IGNORE_PRIM_DEF))
   {
-    auto val = temp_user_stats.getValue(attr_prid);
+    auto val = target_stats.getValue(attr_prid);
 
     if(doesPrimMatch(curr_skill))
       return val * kDEF_PRIM_ELM_MATCH_MODIFIER;
@@ -684,11 +682,11 @@ int32_t BattleEvent::calcValSecdAtk(Skill *curr_skill)
   return 0;
 }
 
-int32_t BattleEvent::calcValSecdDef(Skill *curr_skill)
+int32_t BattleEvent::calcValSecdDef(Skill *curr_skill, BattleStats target_stats)
 {
   if(!getFlagIgnore(IgnoreState::IGNORE_SECD_DEF))
   {
-    auto val = temp_user_stats.getValue(attr_secd) * kDEF_SECD_ELM_MODIFIER;
+    auto val = target_stats.getValue(attr_secd) * kDEF_SECD_ELM_MODIFIER;
 
     if(doesSecdMatch(curr_skill))
       return val * kDEF_SECD_ELM_MATCH_MODIFIER * kDEF_SECD_ELM_MODIFIER;
@@ -832,11 +830,8 @@ int32_t BattleEvent::calcDamage(BattleActor *curr_target)
   /* Summation of base power / defense */
   auto base_user_pow = calcValPhysPow() + calcValPrimAtk(curr_skill) +
                        calcValSecdAtk(curr_skill) + calcValLuckAtk();
-  auto base_targ_def = calcValPhysDef(targ_stats) + calcValPrimDef(curr_skill) +
-                       calcValSecdDef(curr_skill) + calcValLuckDef(targ_stats);
-
-  base_user_pow *= kUSER_POW_MODIFIER;
-  base_targ_def *= kTARG_DEF_MODIFIER;
+  auto base_targ_def = calcValPhysDef(targ_stats) + calcValPrimDef(curr_skill, targ_stats) +
+                       calcValSecdDef(curr_skill, targ_stats) + calcValLuckDef(targ_stats);
 
   /* Addition of the power of the action */
   auto action_power = curr_action->getBase();
@@ -872,12 +867,12 @@ int32_t BattleEvent::calcDamage(BattleActor *curr_target)
         (float)base_targ_def / (float)(action_power + base_targ_def);
   }
 
-  base_damage = attack_power * (1 - defense_modifier);
+  base_damage = 0.75 * (attack_power * (1 - defense_modifier));
 
 #ifdef UDEBUG
   std::cout << "=========== Damage Calculations ============" << std::endl;
-  // std::cout << "Base User Pow: " << base_user_pow << std::endl;
-  // std::cout << "Base User Def: " << base_targ_def << std::endl;
+  std::cout << "Base User Pow: " << base_user_pow << std::endl;
+  std::cout << "Base User Def: " << base_targ_def << std::endl;
   std::cout << "Attack Mod: " << attack_modifier << std::endl;
   std::cout << "Attack Pow: " << action_power << std::endl;
   std::cout << "Defens Mod: " << defense_modifier << std::endl;

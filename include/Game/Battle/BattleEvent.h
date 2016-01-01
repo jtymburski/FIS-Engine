@@ -186,9 +186,6 @@ public:
 
   static const float kMANNA_POW_MODIFIER;
   static const float kMANNA_DEF_MODIFIER;
-  static const float kUSER_POW_MODIFIER;
-  static const float kTARG_DEF_MODIFIER;
-
   static const float kDEFEND_MODIFIER;
   static const float kGUARD_MODIFIER;
   static const float kSHIELDED_MODIFIER;
@@ -233,9 +230,9 @@ private:
   int32_t calcValPhysPow();
   int32_t calcValPhysDef(BattleStats target_stats);
   int32_t calcValPrimAtk(Skill* curr_skill);
-  int32_t calcValPrimDef(Skill* curr_skill);
+  int32_t calcValPrimDef(Skill* curr_skill, BattleStats target_stats);
   int32_t calcValSecdAtk(Skill* curr_skill);
-  int32_t calcValSecdDef(Skill* curr_skill);
+  int32_t calcValSecdDef(Skill* curr_skill, BattleStats target_stats);
   int32_t calcValLuckAtk();
   int32_t calcValLuckDef(BattleStats target_stats);
 

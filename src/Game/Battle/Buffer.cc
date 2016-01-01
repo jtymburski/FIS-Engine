@@ -363,7 +363,7 @@ void Buffer::reorder()
             [&](const BufferAction &a, const BufferAction &b) -> bool
             {
 
-              return (a.user->getStats().getValue(Attribute::MMNT) <
+              return (a.user->getStats().getValue(Attribute::MMNT) >=
                       b.user->getStats().getValue(Attribute::MMNT));
             });
 
