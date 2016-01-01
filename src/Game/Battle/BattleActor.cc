@@ -11,6 +11,7 @@
 *
 * See .h file for TODOs
 ******************************************************************************/
+#include "Game/Battle/AIModule.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Person.h"
 #include "Game/Battle/BattleActor.h"
@@ -47,7 +48,8 @@ const uint8_t BattleActor::kACTOR_KO_ALPHA{50};
 BattleActor::BattleActor(Person *person_base, int32_t battle_index,
                          int32_t menu_index, bool is_ally, bool can_run,
                          SDL_Renderer *renderer)
-    : action_element{ActionElement()},
+    : ai{nullptr},
+      action_element{ActionElement()},
       active_sprite{ActiveSprite::NONE},
       battle_index{battle_index},
       flags{static_cast<ActorState>(0)},
@@ -92,6 +94,12 @@ BattleActor::~BattleActor()
   clearInfoFrame();
   clearFlashing();
   clearSprites();
+
+  if(ai)
+  {
+    delete ai;
+    ai = nullptr;
+  }
 }
 
 /*=============================================================================
@@ -138,9 +146,8 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   /* Reset the action types useable by the battle actor */
   resetActionTypes();
 
-  std::cout << person_base->getName() << " ==== " << std::endl;
-  stats_actual.print();
-
+  ai = new AIModule();
+  ai->setParent(this);
 
   // TODO
   (void)can_run;
@@ -470,19 +477,7 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor *> a_targets)
       if(battle_skill->skill)
       {
         auto skill = battle_skill->skill;
-
-        std::cout << "=== Target Construction For: "
-                  << this->getBasePerson()->getName() << " ===" << std::endl;
-        std::cout << "Scope: " << Helpers::actionScopeToStr(skill->getScope())
-                  << std::endl;
-
         auto targets = getTargetsFromScope(this, skill->getScope(), a_targets);
-
-        for(auto &target : targets)
-        {
-          std::cout << "Target: " << target->getBasePerson()->getName() << " "
-                    << target->getIndex() << std::endl;
-        }
 
         battle_skill->targets = targets;
         battle_skill->true_cost = getSkillCost(skill);
@@ -703,9 +698,9 @@ void BattleActor::startFlashing(FlashingType flashing_type, int32_t time_left)
     state_flashing.element = new RenderElement();
 
     if(flashing_type != FlashingType::KOING)
-      state_flashing.element->createAsSpriteFlash(this, color, time_left);
+      state_flashing.element->createAsSpriteFlash(color, time_left);
     else if(flashing_type == FlashingType::KOING)
-      state_flashing.element->createAsSpriteDeath(this, color, 3000, 500, 2000);
+      state_flashing.element->createAsSpriteDeath(color, 3000, 500, 2000);
   }
 }
 
@@ -713,7 +708,7 @@ void BattleActor::turnSetup()
 {
   state_selection = SelectionState::NOT_SELECTED;
 
-  if(person_base && person_base->getAI())
+  if(ai)
   {
     // person_base->getAI()->incrementTurns();
     // person_base->getAI()->resetForNewTurn(person_base);
@@ -789,6 +784,11 @@ std::vector<ActionType> BattleActor::getValidActionTypes()
   // TODO: Other action types [10-04-15]
 
   return valid_types;
+}
+
+AIModule* BattleActor::getAI()
+{
+  return ai;
 }
 
 std::vector<Ailment *> BattleActor::getAilments()

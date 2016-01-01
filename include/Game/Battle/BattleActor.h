@@ -27,7 +27,7 @@ class Ailment;
 class Person;
 class BattleSkill;
 class BattleItem;
-class RenderElement;
+//class RenderElement;
 
 #include "Game/Battle/RenderElement.h"
 #include "Game/Battle/BattleSkill.h"
@@ -182,6 +182,9 @@ public:
   ~BattleActor();
 
 private:
+  /* The actor's AI Module */
+  AIModule* ai;
+
   /* The action element */
   ActionElement action_element;
 
@@ -369,6 +372,9 @@ public:
 
   /* Returns a vector of valid action types for the actor */
   std::vector<ActionType> getValidActionTypes();
+
+  /* Returns the setup AI Module */
+  AIModule* getAI();
 
   /* Returns the ailments of the Battle Actor */
   std::vector<Ailment*> getAilments();

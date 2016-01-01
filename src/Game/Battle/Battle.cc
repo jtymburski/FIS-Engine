@@ -166,7 +166,6 @@ Battle::Battle()
  */
 Battle::~Battle()
 {
-  aiClear();
   clearBattleActors();
   clearBackground();
   clearElements();
@@ -256,7 +255,7 @@ void Battle::actionStateActionStart()
 {
   bool done = true;
 
-  for(auto &outcome : event->actor_outcomes)
+  for(auto& outcome : event->actor_outcomes)
   {
     if(outcome.actor_outcome_state == ActionState::ACTION_MISS)
       outcomeStateActionMiss(outcome);
@@ -299,44 +298,6 @@ void Battle::actionStateEndBob()
 {
   std::cout << "Ending pass" << std::endl;
   addDelay(300);
-}
-
-// ALPHA
-// Constructs AI
-void Battle::aiBuild()
-{
-  for(auto &actor : actors)
-  {
-    if(actor && actor->getBasePerson())
-    {
-      if(!actor->getBasePerson()->getAI())
-      {
-        AIModule *new_ai_module = new AIModule();
-        new_ai_module->setParent(actor);
-        actor->getBasePerson()->setAI(new_ai_module);
-      }
-      else
-      {
-        std::cout << "WARNING" << std::endl;
-      }
-    }
-  }
-}
-
-// ALPHA
-// Clears AI.
-void Battle::aiClear()
-{
-  for(auto &actor : actors)
-  {
-    if(actor && actor->getBasePerson() && actor->getBasePerson()->getAI())
-    {
-      auto module = actor->getBasePerson()->getAI();
-      actor->getBasePerson()->setAI(nullptr);
-      delete module;
-      module = nullptr;
-    }
-  }
 }
 
 void Battle::addDelay(int32_t delay_amount)
@@ -427,7 +388,7 @@ bool Battle::bufferModuleSelection()
 }
 
 // TODO: Determine can run
-void Battle::buildBattleActors(Party *allies, Party *enemies)
+void Battle::buildBattleActors(Party* allies, Party* enemies)
 {
   for(uint32_t i = 0; i < allies->getSize(); i++)
   {
@@ -459,7 +420,7 @@ void Battle::cleanUpTurn()
   battle_buffer->updateCooldowns();
   battle_menu->clear();
 
-  for(auto &actor : actors)
+  for(auto& actor : actors)
     if(actor)
       actor->cleanUpForTurn();
 
@@ -470,7 +431,7 @@ void Battle::cleanUpTurn()
 
 void Battle::clearBattleActors()
 {
-  for(auto &battle_actor : actors)
+  for(auto& battle_actor : actors)
   {
     if(battle_actor)
       delete battle_actor;
@@ -484,7 +445,7 @@ bool Battle::checkAlliesDeath()
 {
   bool dead = true;
 
-  for(const auto &ally : getAllies())
+  for(const auto& ally : getAllies())
     dead &= ally && (ally->getStateLiving() != LivingState::ALIVE);
 
   return dead;
@@ -494,7 +455,7 @@ bool Battle::checkEnemiesDeath()
 {
   bool dead = true;
 
-  for(const auto &foe : getEnemies())
+  for(const auto& foe : getEnemies())
     dead &= foe && (foe->getStateLiving() != LivingState::ALIVE);
 
   return dead;
@@ -519,7 +480,7 @@ void Battle::clearEvent()
   event = nullptr;
 }
 
-void Battle::createDamageElement(BattleActor *actor, DamageType damage_type,
+void Battle::createDamageElement(BattleActor* actor, DamageType damage_type,
                                  uint32_t amount)
 {
   if(actor && config)
@@ -533,7 +494,7 @@ void Battle::createDamageElement(BattleActor *actor, DamageType damage_type,
   }
 }
 
-bool Battle::doesActorNeedToSelect(BattleActor *actor)
+bool Battle::doesActorNeedToSelect(BattleActor* actor)
 {
   bool to_select = (actor != nullptr);
 
@@ -550,7 +511,7 @@ bool Battle::doesActorNeedToSelect(BattleActor *actor)
   return to_select;
 }
 
-bool Battle::doesActorNeedToUpkeep(BattleActor *actor)
+bool Battle::doesActorNeedToUpkeep(BattleActor* actor)
 {
   bool to_upkeep = (actor != nullptr);
 
@@ -568,7 +529,7 @@ void Battle::updateGeneralUpkeep()
   /* First turn -> skip updates, other turns -> add to update */
   prepareActorUpkeeps();
 
-  for(auto &actor : actors)
+  for(auto& actor : actors)
     if(actor)
       actor->setSelectionState(SelectionState::NOT_SELECTED);
 
@@ -586,7 +547,7 @@ bool Battle::isBufferElementValid()
 
   if(valid)
   {
-    for(auto &target : battle_buffer->getTargets())
+    for(auto& target : battle_buffer->getTargets())
     {
       // TODO: If target death matches death scope, also permit.
       if(target && target->getStateLiving() == LivingState::ALIVE)
@@ -647,7 +608,7 @@ void Battle::loadBattleEvent()
   }
 }
 
-bool Battle::loadMenuForActor(BattleActor *actor)
+bool Battle::loadMenuForActor(BattleActor* actor)
 {
   bool success = (actor != nullptr);
   success &= (battle_menu != nullptr);
@@ -672,24 +633,23 @@ bool Battle::loadMenuForActor(BattleActor *actor)
   return success;
 }
 
-void Battle::outcomeStateActionMiss(ActorOutcome &outcome)
+void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
 {
-  std::cout << "[Action Miss!]" << std::endl;
   auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
   auto element = new RenderElement(renderer, damage_font);
 
-  element->createAsDamageText("Miss", DamageType::BASE,
-                              config->getScreenHeight(),
-                              getActorX(event->actor), getActorY(event->actor));
+  element->createAsDamageText(
+      "Miss", DamageType::ACTION_MISS, config->getScreenHeight(),
+      getActorX(outcome.actor), getActorY(outcome.actor));
   render_elements.push_back(element);
 
   outcome.actor_outcome_state = ActionState::ACTION_END;
   addDelay(600);
 }
 
-void Battle::outcomeStatePlep(ActorOutcome &outcome)
+void Battle::outcomeStatePlep(ActorOutcome& outcome)
 {
-  Sprite *animation = nullptr;
+  Sprite* animation = nullptr;
   auto x = getActorX(outcome.actor);
   auto y = getActorY(outcome.actor);
 
@@ -716,7 +676,7 @@ void Battle::outcomeStatePlep(ActorOutcome &outcome)
   addDelay(150);
 }
 
-void Battle::outcomeStateDamageValue(ActorOutcome &outcome)
+void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
 {
   auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
   auto element = new RenderElement(renderer, damage_font);
@@ -745,7 +705,7 @@ void Battle::outcomeStateDamageValue(ActorOutcome &outcome)
   addDelay(300);
 }
 
-void Battle::outcomeStateSpriteFlash(ActorOutcome &outcome)
+void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
 {
   if(outcome.actor->dealDamage(outcome.damage))
     outcome.causes_ko = true;
@@ -755,7 +715,7 @@ void Battle::outcomeStateSpriteFlash(ActorOutcome &outcome)
   outcome.actor_outcome_state = ActionState::OUTCOME;
 }
 
-void Battle::outcomeStateInflictFlash(ActorOutcome &outcome)
+void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
 {
   if(outcome.infliction_status == InflictionStatus::INFLICTION)
   {
@@ -776,8 +736,8 @@ void Battle::outcomeStateInflictFlash(ActorOutcome &outcome)
     auto element = new RenderElement(renderer, damage_font);
 
     element->createAsDamageText(
-        "Immune", DamageType::BASE, config->getScreenHeight(),
-        getActorX(event->actor), getActorY(event->actor));
+        "Immune", DamageType::IMMUNE, config->getScreenHeight(),
+        getActorX(outcome.actor), getActorY(outcome.actor));
     render_elements.push_back(element);
     addDelay(600);
     outcome.actor_outcome_state = ActionState::ACTION_END;
@@ -790,8 +750,8 @@ void Battle::outcomeStateInflictFlash(ActorOutcome &outcome)
     auto element = new RenderElement(renderer, damage_font);
 
     element->createAsDamageText(
-        "Already Inflicted", DamageType::BASE, config->getScreenHeight(),
-        getActorX(event->actor), getActorY(event->actor));
+        "Fizzle", DamageType::ALREADY_INFLICTED, config->getScreenHeight(),
+        getActorX(outcome.actor), getActorY(outcome.actor));
     render_elements.push_back(element);
     addDelay(600);
     outcome.actor_outcome_state = ActionState::ACTION_END;
@@ -802,7 +762,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome &outcome)
   }
 }
 
-void Battle::outcomeStateActionOutcome(ActorOutcome &outcome)
+void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 {
   /* If Person's VITA is 0 -> they are KOed) */
   if(outcome.causes_ko)
@@ -823,7 +783,7 @@ void Battle::outcomeStateActionOutcome(ActorOutcome &outcome)
 
 void Battle::prepareActorUpkeeps()
 {
-  for(auto &actor : actors)
+  for(auto& actor : actors)
   {
     if(actor)
     {
@@ -831,7 +791,7 @@ void Battle::prepareActorUpkeeps()
 
       auto ailments = actor->getAilments();
 
-      for(auto &ailment : ailments)
+      for(auto& ailment : ailments)
       {
         if(ailment)
           ailment->setUpdateStatus(AilmentStatus::INCOMPLETE);
@@ -840,8 +800,8 @@ void Battle::prepareActorUpkeeps()
   }
 }
 
-bool Battle::calculateEnemySelection(BattleActor *next_actor,
-                                     AIModule *curr_module)
+bool Battle::calculateEnemySelection(BattleActor* next_actor,
+                                     AIModule* curr_module)
 {
   auto success = true;
 
@@ -944,7 +904,7 @@ void Battle::processEventSkill()
   if(curr_action)
   {
 
-    for(auto &target : event->actor_targets)
+    for(auto& target : event->actor_targets)
     {
       assert(target);
       ActorOutcome outcome;
@@ -983,7 +943,6 @@ void Battle::processEventSkill()
       }
       else
       {
-        std::cout << "Action Does NOT Hit!" << std::endl;
         outcome.damage = 0;
         outcome.actor_outcome_state = ActionState::ACTION_MISS;
 
@@ -996,7 +955,7 @@ void Battle::processEventSkill()
   }
 }
 
-void Battle::processInfliction(BattleActor *target, Infliction type)
+void Battle::processInfliction(BattleActor* target, Infliction type)
 {
   assert(target && event);
   auto curr_action = event->getCurrAction();
@@ -1059,7 +1018,7 @@ void Battle::updateOutcome()
 
     auto total_exp_drop = 0;
 
-    for(auto &enemy : getEnemies())
+    for(auto& enemy : getEnemies())
     {
       if(enemy && enemy->getBasePerson())
       {
@@ -1070,7 +1029,7 @@ void Battle::updateOutcome()
       }
     }
 
-    for(auto &ally : getAllies())
+    for(auto& ally : getAllies())
     {
       if(ally && ally->getBasePerson())
       {
@@ -1249,7 +1208,7 @@ void Battle::updateScreenDim()
   setFlagCombat(CombatState::PHASE_DONE);
 }
 
-void Battle::updateSelectingState(BattleActor *actor, bool set_selected)
+void Battle::updateSelectingState(BattleActor* actor, bool set_selected)
 {
   if(actor)
   {
@@ -1318,7 +1277,7 @@ void Battle::updateUserSelection()
 
         auto battle_skills = next_actor->getBattleSkills();
 
-        for(auto &battle_skill : battle_skills)
+        for(auto& battle_skill : battle_skills)
           battle_skill->print();
 
         next_module->setSkills(next_actor->getBattleSkills());
@@ -1342,7 +1301,6 @@ void Battle::updateUserSelection()
     }
   }
 }
-
 
 //
 int32_t Battle::getBattleIndex(int32_t index)
@@ -1399,54 +1357,54 @@ int32_t Battle::getMenuIndex(int32_t index, bool allies)
   return 0;
 }
 
-AIModule *Battle::getCurrentModule()
+AIModule* Battle::getCurrentModule()
 {
   auto curr_actor = getCurrentModuleActor();
 
-  if(curr_actor && curr_actor->getBasePerson())
-    return curr_actor->getBasePerson()->getAI();
+  if(curr_actor)
+    return curr_actor->getAI();
 
   return nullptr;
 }
 
-BattleActor *Battle::getCurrentModuleActor()
+BattleActor* Battle::getCurrentModuleActor()
 {
-  for(const auto &enemy : actors)
+  for(const auto& enemy : actors)
     if(enemy && enemy->getSelectionState() == SelectionState::SELECTING)
       return enemy;
 
   return nullptr;
 }
 
-AIModule *Battle::getModuleOfActor(BattleActor *actor)
+AIModule* Battle::getModuleOfActor(BattleActor* actor)
 {
-  if(actor && actor->getBasePerson())
-    return actor->getBasePerson()->getAI();
+  if(actor)
+    return actor->getAI();
 
   return nullptr;
 }
 
-BattleActor *Battle::getNextModuleActor()
+BattleActor* Battle::getNextModuleActor()
 {
-  for(const auto &enemy : getEnemies())
+  for(const auto& enemy : getEnemies())
     if(doesActorNeedToSelect(enemy))
       return enemy;
 
   return nullptr;
 }
 
-BattleActor *Battle::getNextMenuActor()
+BattleActor* Battle::getNextMenuActor()
 {
-  for(const auto &ally : getAllies())
+  for(const auto& ally : getAllies())
     if(doesActorNeedToSelect(ally))
       return ally;
 
   return nullptr;
 }
 
-BattleActor *Battle::getNextUpkeepActor()
+BattleActor* Battle::getNextUpkeepActor()
 {
-  for(const auto &actor : actors)
+  for(const auto& actor : actors)
     if(doesActorNeedToUpkeep(actor))
       return actor;
 
@@ -1457,7 +1415,7 @@ BattleActor *Battle::getNextUpkeepActor()
  * PRIVATE FUNCTIONS - Battle Display
  *============================================================================*/
 
-void Battle::buildActionFrame(BattleActor *actor)
+void Battle::buildActionFrame(BattleActor* actor)
 {
   uint16_t width = kACTION_W;
   uint16_t height = kACTION_H;
@@ -1474,14 +1432,14 @@ void Battle::buildActionFrame(BattleActor *actor)
   uint16_t cy2 = cy1 / 2;
 
   /* Create main rendering texture */
-  Frame *rendered_frame = new Frame();
-  SDL_Texture *texture =
+  Frame* rendered_frame = new Frame();
+  SDL_Texture* texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
   /* Create underlay rendering texture */
-  SDL_Texture *texture2 =
+  SDL_Texture* texture2 =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture2, SDL_BLENDMODE_BLEND);
@@ -1516,7 +1474,7 @@ void Battle::buildActionFrame(BattleActor *actor)
     SDL_RenderDrawLine(renderer, x2, y2 + i, x1, y1 + i);
 
   /* Render the person */
-  Sprite *action_frames = actor->getDialogSprite();
+  Sprite* action_frames = actor->getDialogSprite();
   if(action_frames && action_frames->isFramesSet())
   {
     action_frames->render(renderer, actor->getDialogX(), actor->getDialogY(),
@@ -1560,8 +1518,8 @@ void Battle::buildEnemyBackdrop()
   uint8_t grey_color = kINFO_GREY;
 
   /* Create rendering texture */
-  Frame *rendered_frame = new Frame();
-  SDL_Texture *texture =
+  Frame* rendered_frame = new Frame();
+  SDL_Texture* texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -1656,7 +1614,7 @@ void Battle::buildEnemyBackdrop()
 }
 
 // TODO: grab fonts
-void Battle::buildInfoAlly(BattleActor *ally)
+void Battle::buildInfoAlly(BattleActor* ally)
 {
   /* Sizing variables */
   uint8_t health_height = kALLY_HEALTH_H;
@@ -1674,7 +1632,7 @@ void Battle::buildInfoAlly(BattleActor *ally)
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
 
   /* Create rendering texture */
-  SDL_Texture *texture =
+  SDL_Texture* texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -1707,7 +1665,7 @@ void Battle::buildInfoAlly(BattleActor *ally)
 
   /* Render the ally name */
   SDL_Color color = {255, 255, 255, 255};
-  Text *t = new Text(font_header);
+  Text* t = new Text(font_header);
   t->setText(renderer, ally->getBasePerson()->getName(), color);
   t->render(renderer, (width - t->getWidth()) / 2,
             (border[0].y - t->getHeight()) / 2);
@@ -1726,7 +1684,7 @@ void Battle::buildInfoAlly(BattleActor *ally)
   delete t;
 
   /* Set the new frame */
-  Frame *ally_info = new Frame();
+  Frame* ally_info = new Frame();
   ally_info->setTexture(texture);
 
   /* Clear render connection */
@@ -1736,7 +1694,7 @@ void Battle::buildInfoAlly(BattleActor *ally)
 }
 
 /* Build the enemy info for a given enemy actor */
-void Battle::buildInfoEnemy(BattleActor *enemy)
+void Battle::buildInfoEnemy(BattleActor* enemy)
 {
   /* Sizing variables */
   uint16_t bar_width = kENEMY_BAR_W;
@@ -1749,7 +1707,7 @@ void Battle::buildInfoEnemy(BattleActor *enemy)
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
 
   /* Create rendering texture */
-  SDL_Texture *texture =
+  SDL_Texture* texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, kINFO_W, kINFO_H);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -1774,7 +1732,7 @@ void Battle::buildInfoEnemy(BattleActor *enemy)
 
   /* Render the enemy name */
   SDL_Color color = {255, 255, 255, 255};
-  Text *t = new Text(font_header);
+  Text* t = new Text(font_header);
 
   auto name = enemy->getBasePerson()->getName();
 
@@ -1798,7 +1756,7 @@ void Battle::buildInfoEnemy(BattleActor *enemy)
   }
 
   /* Set the new frame */
-  Frame *enemy_info = new Frame();
+  Frame* enemy_info = new Frame();
   enemy_info->setTexture(texture);
 
   /* Clear render connection */
@@ -1817,7 +1775,7 @@ void Battle::clearBackground()
 
 void Battle::clearElements()
 {
-  for(auto &element : render_elements)
+  for(auto& element : render_elements)
   {
     if(element)
       delete element;
@@ -1840,7 +1798,7 @@ void Battle::clearElementsTimedOut()
 {
   render_elements.erase(
       std::remove_if(begin(render_elements), end(render_elements),
-                     [&](RenderElement *element) -> bool
+                     [&](RenderElement* element) -> bool
                      {
                        if(element)
                        {
@@ -1908,7 +1866,7 @@ bool Battle::renderActionFrame()
 {
   auto success = true;
 
-  for(const auto &actor : actors)
+  for(const auto& actor : actors)
   {
     if(renderer && actor &&
        actor->getStateActionFrame() != SpriteState::HIDDEN &&
@@ -1942,7 +1900,7 @@ bool Battle::renderBattleBar()
   return false;
 }
 
-bool Battle::renderAilmentsActor(BattleActor *actor, uint32_t x, uint32_t y,
+bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
                                  bool full_border)
 {
   /* Big problems if calling with nullptr actor */
@@ -2001,7 +1959,7 @@ bool Battle::renderAilmentsActor(BattleActor *actor, uint32_t x, uint32_t y,
     rect.x += border + gap;
     rect.y += border + gap;
 
-    for(auto &ailment : ailments)
+    for(auto& ailment : ailments)
     {
       if(ailment)
       {
@@ -2023,7 +1981,7 @@ bool Battle::renderAllies()
   bool success = true;
 
   /* Render each ally */
-  for(auto &ally : getAllies())
+  for(auto& ally : getAllies())
   {
     success &= ally->getActiveSprite()->render(renderer, getActorX(ally),
                                                getActorY(ally));
@@ -2034,12 +1992,13 @@ bool Battle::renderAllies()
 
 bool Battle::renderElements()
 {
-  for(auto &element : render_elements)
+  for(auto& element : render_elements)
   {
     assert(element);
     auto ty = element->render_type;
 
-    if(ty == RenderType::ACTION_TEXT || ty == RenderType::DAMAGE_VALUE)
+    if(ty == RenderType::ACTION_TEXT || ty == RenderType::DAMAGE_VALUE ||
+       ty == RenderType::DAMAGE_TEXT)
       renderElementText(element);
     else if(ty == RenderType::RGB_OVERLAY)
       renderElementRGBOverlay(element);
@@ -2047,14 +2006,14 @@ bool Battle::renderElements()
       renderElementPlep(element);
   }
 
-  for(auto &element : render_elements)
+  for(auto& element : render_elements)
     if(element->render_type == RenderType::ENTER_TEXT)
       renderElementText(element);
 
   return false;
 }
 
-void Battle::renderElementPlep(RenderElement *element)
+void Battle::renderElementPlep(RenderElement* element)
 {
   if(element->element_sprite)
   {
@@ -2063,7 +2022,7 @@ void Battle::renderElementPlep(RenderElement *element)
   }
 }
 
-void Battle::renderElementRGBOverlay(RenderElement *element)
+void Battle::renderElementRGBOverlay(RenderElement* element)
 {
   auto color = element->color;
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, element->alpha);
@@ -2075,7 +2034,7 @@ void Battle::renderElementRGBOverlay(RenderElement *element)
   SDL_RenderFillRect(renderer, &overlay_rect);
 }
 
-void Battle::renderElementText(RenderElement *element)
+void Battle::renderElementText(RenderElement* element)
 {
   if(element->element_font)
   {
@@ -2102,7 +2061,7 @@ bool Battle::renderEnemies()
   bool success = true;
 
   /* Render each enemy */
-  for(const auto &enemy : getEnemies())
+  for(const auto& enemy : getEnemies())
   {
     if(enemy)
     {
@@ -2146,7 +2105,7 @@ bool Battle::renderEnemiesInfo()
   else
     success = false;
 
-  for(auto &enemy : getEnemies())
+  for(auto& enemy : getEnemies())
   {
     bool to_render = enemy && enemy->getInfoFrame() && enemy->getBasePerson();
 
@@ -2225,7 +2184,7 @@ bool Battle::renderMenu()
 }
 
 // TODO: Comment
-bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
+bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
 {
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
   bool success = true;
@@ -2307,7 +2266,7 @@ bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
 
   /* Health Text Amount */
   SDL_Color color = {255, 255, 255, 255};
-  Text *t = new Text(font_subheader);
+  Text* t = new Text(font_subheader);
   success &= t->setText(
       renderer,
       std::to_string(ally->getStatsRendered().getValue(Attribute::VITA)),
@@ -2346,7 +2305,7 @@ bool Battle::renderAllyInfo(BattleActor *ally, bool for_menu)
   return success;
 }
 
-bool Battle::setupHealthDraw(BattleActor *actor, float health_pc)
+bool Battle::setupHealthDraw(BattleActor* actor, float health_pc)
 {
   if(renderer && actor && actor->getBasePerson())
   {
@@ -2371,7 +2330,7 @@ bool Battle::renderAlliesInfo()
 {
   bool success = true;
 
-  for(const auto &ally : getAllies())
+  for(const auto& ally : getAllies())
     if(ally && ally->getBasePerson() && ally->getInfoFrame())
       success &= renderAllyInfo(ally);
 
@@ -2397,7 +2356,7 @@ void Battle::updateBarOffset()
 void Battle::updateRendering(int32_t cycle_time)
 {
   /* Update render elements */
-  for(auto &element : render_elements)
+  for(auto& element : render_elements)
     if(element)
       element->update(cycle_time);
 
@@ -2409,7 +2368,7 @@ void Battle::updateRenderSprites(int32_t cycle_time)
 {
   auto brightness = 1.0;
 
-  for(auto &actor : actors)
+  for(auto& actor : actors)
   {
     if(actor && actor->getActiveSprite())
     {
@@ -2538,17 +2497,17 @@ void Battle::upkeepAilmentPlep()
   addDelay(450);
 }
 
-int32_t Battle::getActorX(BattleActor *actor)
+int32_t Battle::getActorX(BattleActor* actor)
 {
   if(actor && actor->getFlag(ActorState::ALLY))
   {
-    for(const auto &ally : getAllies())
+    for(const auto& ally : getAllies())
       if(ally == actor)
         return actor->getIndex() * kPERSON_SPREAD;
   }
   else if(actor)
   {
-    for(const auto &enemy : getEnemies())
+    for(const auto& enemy : getEnemies())
     {
       if(enemy == actor)
       {
@@ -2561,17 +2520,17 @@ int32_t Battle::getActorX(BattleActor *actor)
   return -1;
 }
 
-int32_t Battle::getActorY(BattleActor *actor)
+int32_t Battle::getActorY(BattleActor* actor)
 {
   if(actor && actor->getFlag(ActorState::ALLY))
   {
-    for(const auto &ally : getAllies())
+    for(const auto& ally : getAllies())
       if((ally == actor) && config)
         return config->getScreenHeight() - kALLIES_OFFSET;
   }
   else if(actor)
   {
-    for(const auto &enemy : getEnemies())
+    for(const auto& enemy : getEnemies())
       if((enemy == actor))
         return kENEMIES_OFFSET;
   }
@@ -2598,7 +2557,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
   return false;
 }
 
-bool Battle::startBattle(Party *friends, Party *foes, Sprite *background)
+bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 {
   /* Assert everything important is not nullptr */
   assert(config && renderer && friends && foes);
@@ -2606,11 +2565,8 @@ bool Battle::startBattle(Party *friends, Party *foes, Sprite *background)
   /* Construct the Battle actor objects based on the persons in the parties */
   buildBattleActors(friends, foes);
 
-  /* Build AI Modules */
-  aiBuild();
-
   /* Build ally and enemy info frames, action frames */
-  for(auto &actor : actors)
+  for(auto& actor : actors)
   {
     buildActionFrame(actor);
 
@@ -2635,12 +2591,11 @@ bool Battle::startBattle(Party *friends, Party *foes, Sprite *background)
 void Battle::stopBattle()
 {
   /* Destroy the battle actors at the end of a Battle */
-  aiClear();
+  clearEvent();
   clearBattleActors();
   clearBackground();
   clearElements();
   clearEnemyBackdrop();
-  clearEvent();
 
   if(battle_menu)
     battle_menu->clear();
@@ -2658,22 +2613,22 @@ void Battle::stopBattle()
   upkeep_ailment = nullptr;
 }
 
-std::vector<BattleActor *> Battle::getAllies()
+std::vector<BattleActor*> Battle::getAllies()
 {
-  std::vector<BattleActor *> temp_actors;
+  std::vector<BattleActor*> temp_actors;
 
-  for(const auto &actor : actors)
+  for(const auto& actor : actors)
     if(actor->getFlag(ActorState::ALLY))
       temp_actors.push_back(actor);
 
   return temp_actors;
 }
 
-std::vector<BattleActor *> Battle::getEnemies()
+std::vector<BattleActor*> Battle::getEnemies()
 {
-  std::vector<BattleActor *> temp_actors;
+  std::vector<BattleActor*> temp_actors;
 
-  for(const auto &actor : actors)
+  for(const auto& actor : actors)
     if(!actor->getFlag(ActorState::ALLY))
       temp_actors.push_back(actor);
 
@@ -2700,7 +2655,7 @@ TurnState Battle::getTurnState()
   return turn_state;
 }
 
-bool Battle::setConfig(Options *config)
+bool Battle::setConfig(Options* config)
 {
   bool success{config};
 
@@ -2712,7 +2667,7 @@ bool Battle::setConfig(Options *config)
   return success;
 }
 
-bool Battle::setDisplayData(BattleDisplayData *battle_display_data)
+bool Battle::setDisplayData(BattleDisplayData* battle_display_data)
 {
   bool success{config};
 
@@ -2732,12 +2687,12 @@ bool Battle::setDisplayData(BattleDisplayData *battle_display_data)
   return success;
 }
 
-void Battle::setFlagCombat(CombatState flag, const bool &set_value)
+void Battle::setFlagCombat(CombatState flag, const bool& set_value)
 {
   (set_value) ? (flags_combat |= flag) : (flags_combat &= ~flag);
 }
 
-void Battle::setFlagRender(RenderState flag, const bool &set_value)
+void Battle::setFlagRender(RenderState flag, const bool& set_value)
 {
   (set_value) ? (flags_render |= flag) : (flags_render &= ~flag);
 }
@@ -2746,7 +2701,7 @@ void Battle::setFlagRender(RenderState flag, const bool &set_value)
  * PUBLIC FUNCTIONS - Battle Display
  *============================================================================*/
 
-bool Battle::setRenderer(SDL_Renderer *renderer)
+bool Battle::setRenderer(SDL_Renderer* renderer)
 {
   bool success{renderer};
 
@@ -2758,7 +2713,7 @@ bool Battle::setRenderer(SDL_Renderer *renderer)
   return success;
 }
 
-bool Battle::setBackground(Sprite *background)
+bool Battle::setBackground(Sprite* background)
 {
   if(background && background->isFramesSet())
   {

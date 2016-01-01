@@ -1121,17 +1121,6 @@ int16_t Person::getActionY()
 }
 
 /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-AIModule *Person::getAI()
-{
-  return ai_module;
-}
-
-/*
  * Description: Returns the non-unique game ID of the Person
  *
  * Inputs: none

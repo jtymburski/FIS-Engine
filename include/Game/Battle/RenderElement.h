@@ -16,13 +16,16 @@
 #ifndef RENDER_ELEMENT_H
 #define RENDER_ELEMENT_H
 
-#include "Game/Battle/BattleActor.h"
+//#include "Game/Battle/BattleActor.h"
 #include "Sprite.h"
 #include "Text.h"
 
 /* Forward declare for Battle constants */
 class Battle;
-class BattleActor;
+//class BattleActor;
+
+#include "Sprite.h"
+#include "Text.h"
 
 enum class RenderType
 {
@@ -100,9 +103,6 @@ public:
   /* RenderStatus */
   RenderStatus status;
 
-  /* Actor target pointer */
-  BattleActor* target;
-
   /* Type of the render */
   RenderType render_type;
 
@@ -116,6 +116,7 @@ private:
   const static SDL_Color kVITA_REGEN_COLOR;
   const static SDL_Color kQTDR_REGEN_COLOR;
   const static SDL_Color kHIBERNATION_REGEN_COLOR;
+  const static SDL_Color kMISS_TEXT_COLOR;
 
   const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
   const static uint16_t kACTION_SHADOW; /* Shadow offset of middle text */
@@ -157,12 +158,12 @@ public:
                           int32_t sc_height, int32_t sc_width);
 
   /* Creates the render element as a sprite death */
-  void createAsSpriteDeath(BattleActor* target, SDL_Color color,
+  void createAsSpriteDeath(SDL_Color color,
                            int32_t death_time, int32_t fade_in_time,
                            int32_t fade_out_time);
 
   /* Creates the render element as a sprite flash */
-  void createAsSpriteFlash(BattleActor* target, SDL_Color color,
+  void createAsSpriteFlash(SDL_Color color,
                            int32_t flash_time);
 
   /* Assigns floatinate acceleration coordinate point */

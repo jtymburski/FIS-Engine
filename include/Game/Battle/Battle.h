@@ -232,12 +232,6 @@ private:
   void actionStatePassBob();
   void actionStateEndBob();
 
-  /* Constructs AI Modules for the Battle */
-  void aiBuild();
-
-  /* Deletes the AI modules at the end of a Battle */
-  void aiClear();
-
   /* Adds a delay amount for processing relative to the current speed setting */
   void addDelay(int32_t delay_amount);
 

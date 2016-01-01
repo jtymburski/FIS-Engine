@@ -22,6 +22,7 @@ const SDL_Color RenderElement::kHEAL_DMG_COLOR = {50, 215, 49, 255};
 const SDL_Color RenderElement::kVITA_REGEN_COLOR = {50, 205, 50, 255};
 const SDL_Color RenderElement::kQTDR_REGEN_COLOR = {0, 128, 255, 255};
 const SDL_Color RenderElement::kHIBERNATION_REGEN_COLOR = {75, 205, 50, 255};
+const SDL_Color RenderElement::kMISS_TEXT_COLOR = {163, 163, 163, 225};
 const uint16_t RenderElement::kACTION_COLOR_R = 175;
 const uint16_t RenderElement::kACTION_SHADOW = 3;
 const uint16_t RenderElement::kDAMAGE_SHADOW = 2;
@@ -49,7 +50,6 @@ RenderElement::RenderElement()
       shadow_color{0, 0, 0, 0},
       renderer{nullptr},
       status{RenderStatus::DISPLAYING},
-      target{nullptr},
       render_type{RenderType::NONE}
 {
 }
@@ -192,7 +192,6 @@ void RenderElement::createAsEnterText(std::string text, int32_t sc_height,
     element_text.setText(renderer, text, color);
     location.point.x = (sc_width - element_text.getWidth()) / 2;
     location.point.y = sc_height / 2 - (element_text.getHeight() / 2);
-
   }
 }
 
@@ -211,7 +210,7 @@ void RenderElement::createAsRGBOverlay(SDL_Color color, int32_t overlay_time,
   render_type = RenderType::RGB_OVERLAY;
 }
 
-void RenderElement::createAsSpriteDeath(BattleActor* target, SDL_Color color,
+void RenderElement::createAsSpriteDeath(SDL_Color color,
                                         int32_t death_time,
                                         int32_t fade_in_time,
                                         int32_t fade_out_time)
@@ -219,18 +218,16 @@ void RenderElement::createAsSpriteDeath(BattleActor* target, SDL_Color color,
   setTimes(death_time, fade_in_time, fade_out_time);
   status = initialStatusFade();
   this->color = color;
-  this->target = target;
   render_type = RenderType::RGB_SPRITE_DEATH;
 }
 
-void RenderElement::createAsSpriteFlash(BattleActor* target, SDL_Color color,
+void RenderElement::createAsSpriteFlash(SDL_Color color,
                                         int32_t flash_time)
 {
   auto fade_time = std::floor(flash_time * 3.00 / 7.00);
   setTimes(flash_time, fade_time, fade_time);
   status = initialStatusFade();
   this->color = color;
-  this->target = target;
   render_type = RenderType::RGB_SPRITE_FLASH;
 }
 
@@ -395,6 +392,11 @@ SDL_Color RenderElement::colorFromDamageType(DamageType type)
     return kQTDR_REGEN_COLOR;
   else if(type == DamageType::HIBERNATION_REGEN)
     return kHIBERNATION_REGEN_COLOR;
+  else if(type == DamageType::ACTION_MISS ||
+          type == DamageType::ALREADY_INFLICTED || type == DamageType::IMMUNE)
+  {
+    return kMISS_TEXT_COLOR;
+  }
 
   return kSTRD_DMG_COLOR;
 }
