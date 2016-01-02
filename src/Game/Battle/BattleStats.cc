@@ -30,20 +30,20 @@ const uint32_t BattleStats::kMAX_ADDITIVE_MODS{7};
  *
  * Inputs:
  */
-BattleStats::BattleStats(AttributeSet attr_set)
+BattleStats::BattleStats(AttributeSet max_attr_set, AttributeSet min_attr_set)
 {
   /* Add in the AttributeSet by pairing it with corres. Attribute enums */
   for(uint32_t i = 0; i < AttributeSet::getSize(); i++)
   {
     Attribute curr_attr = static_cast<Attribute>(i);
-    values.push_back(std::make_pair(curr_attr, attr_set.getStat(i)));
+    values.push_back(std::make_pair(curr_attr, min_attr_set.getStat(i)));
   }
 
   /* Add Battle-only additional attribute values */
   values.push_back(
-      std::make_pair(Attribute::MVIT, attr_set.getStat(Attribute::VITA)));
+      std::make_pair(Attribute::MVIT, max_attr_set.getStat(Attribute::VITA)));
   values.push_back(
-      std::make_pair(Attribute::MQTD, attr_set.getStat(Attribute::QTDR)));
+      std::make_pair(Attribute::MQTD, max_attr_set.getStat(Attribute::QTDR)));
 }
 
 /*=============================================================================

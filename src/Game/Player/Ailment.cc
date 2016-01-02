@@ -35,14 +35,14 @@
  *============================================================================*/
 
 /*------------------- Buff Constants ----------------------- */
-const float Ailment::kPC_ALL_ATK_BUFF{1.150};
-const float Ailment::kPC_ALL_DEF_BUFF{1.1500};
-const float Ailment::kPC_PHYS_BUFF{1.100};
-const float Ailment::kPC_ELEMENTAL_BUFF{1.150};
-const float Ailment::kPC_LIMB_BUFF{1.100};
-const float Ailment::kPC_UNBR_BUFF{1.20};
-const float Ailment::kPC_VITA_BUFF{1.20};
-const float Ailment::kPC_QTDR_BUFF{1.200};
+const float Ailment::kPC_ALL_ATK_BUFF{1.280};
+const float Ailment::kPC_ALL_DEF_BUFF{1.2800};
+const float Ailment::kPC_PHYS_BUFF{1.30};
+const float Ailment::kPC_ELEMENTAL_BUFF{1.30};
+const float Ailment::kPC_LIMB_BUFF{1.40};
+const float Ailment::kPC_UNBR_BUFF{1.40};
+const float Ailment::kPC_VITA_BUFF{1.25};
+const float Ailment::kPC_QTDR_BUFF{1.25};
 
 /* % damage for Turn # 1 for Poison */
 /* % change / turn for Poison */
@@ -126,7 +126,7 @@ bool Ailment::calcHibernationHeal()
     if(value > 0)
       damage_amount = value;
 
-    std::cout << "Hibernation heal amount: " << damage_amount << std::endl;
+    // std::cout << "Hibernation heal amount: " << damage_amount << std::endl;
 
     return true;
   }
@@ -290,8 +290,8 @@ bool Ailment::applyBuffs()
 
   if(stats_victim)
   {
-    std::cout << "=== Before === " << std::endl;
-    stats_victim->print();
+    // std::cout << "=== Before === " << std::endl;
+    // stats_victim->print();
 
     for(const auto& attribute : stats_to_buff)
     {
@@ -299,8 +299,8 @@ bool Ailment::applyBuffs()
                                 false, 0, this);
     }
 
-    std::cout << "=== After === " << std::endl;
-    stats_victim->print();
+    // std::cout << "=== After === " << std::endl;
+    // stats_victim->print();
 
     return true;
   }
@@ -315,7 +315,7 @@ void Ailment::update()
 
   if(doesAilmentCure())
   {
-    std::cout << "Ailment Does Cure! " << std::endl;
+    // std::cout << "Ailment Does Cure! " << std::endl;
     update_status = AilmentStatus::TO_REMOVE;
   }
   else

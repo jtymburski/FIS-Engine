@@ -546,6 +546,7 @@ bool AIModule::selectRandomAction()
 
 bool AIModule::selectRandomTargets()
 {
+  std::cout << "Selecting random targets" << std::endl;
   std::vector<BattleActor*> targets{};
 
   if(chosen_action_type == ActionType::SKILL && chosen_skill)

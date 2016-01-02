@@ -350,7 +350,7 @@ void TestBattle::create()
 
   stats_player_min = AttributeSet(
   {
-    200, 50, 8, 8,
+    150, 50, 8, 8,
     0, 0, 0, 0,
     6, 5, 3, 2,
     0, 0, 0, 0,
@@ -359,9 +359,9 @@ void TestBattle::create()
 
   stats_player_max = AttributeSet(
   {
-    425, 75, 14, 14,
+    350, 75, 14, 14,
     0, 0, 0, 0,
-    12, 12, 7, 7,
+    12, 11, 7, 6,
     0, 0, 0, 0,
     20, 32, 15, 2
   }, true);
@@ -513,7 +513,7 @@ void TestBattle::createActions()
   /* Alter Actions */
 
   /* Enrich - healing */
-  act_alt.push_back(new Action("200,ALTER,,,,VITA,AMOUNT.40,AMOUNT.10,,100"));
+  act_alt.push_back(new Action("200,ALTER,,,,VITA,AMOUNT.50,AMOUNT.10,,100"));
 
   /* Chlorophona - healing */
   act_alt.push_back(new Action("201,ALTER,,,,VITA,PC.15,AMOUNT.10,,100"));
@@ -548,7 +548,7 @@ void TestBattle::createActions()
   act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.13,AMOUNT.2,,100"));
 
   /* Paw Strike */
-  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.5,,50"));
+  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.5,,100"));
 
   /* Maul */
   act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.55,AMOUNT.10,,100"));
@@ -903,7 +903,7 @@ void TestBattle::createSkills()
 
   /* Prismatic Shot */
   Skill* prismatic_shot = new Skill(121, "Prismatic Shot",
-                                    ActionScope::ONE_ENEMY, act_dmg[1], 90, 15);
+                                    ActionScope::ONE_ENEMY, act_dmg[1], 95, 15);
   prismatic_shot->addAction(act_dmg[1]);
   prismatic_shot->addAction(act_dmg[1]);
   prismatic_shot->setDescription("A triple strike electric hit against a foe");
@@ -921,7 +921,7 @@ void TestBattle::createSkills()
 
   /* Shatter Shot */
   Skill* shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
-                                  act_dmg[3], 95, 15);
+                                  act_dmg[3], 97, 15);
   shatter_shot->addAction(act_dmg[2]);
   shatter_shot->setDescription("This description sucks.");
   shatter_shot->setPrimary(Element::ELECTRIC);
@@ -929,7 +929,7 @@ void TestBattle::createSkills()
   skills.push_back(shatter_shot);
 
   /* Engineer Upgrade */
-  Skill* eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER,
+  Skill* eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY,
                                  act_inf[4], 100, 5);
   eng_upgrade->addAction(act_inf[5]);
   eng_upgrade->setDescription("Team upgrade to ally for defense and speed");
@@ -959,7 +959,7 @@ void TestBattle::createSkills()
 
   /* Hidden Amplification */
   Skill* hidden_amp = new Skill(200, "Hidden Amplification", ActionScope::USER,
-                                act_inf[3], 90, 5);
+                                act_inf[3], 97, 5);
   // hidden_amp->addAction(act_inf[4]);
   hidden_amp->setDescription("Raises one's attacking power.");
   hidden_amp->setPrimary(Element::PHYSICAL);
@@ -967,9 +967,6 @@ void TestBattle::createSkills()
   skills.push_back(hidden_amp);
 
   /* Surge of Will */
-  // TODO: HOW TO DO MULTI-TURN??
-  // You can't. I think it was supposed to be cooldown? Else it's another
-  // large scope change for no gain
   // Skill* surge_will = new Skill(201, "Surge of Will",
   // ActionScope::ALL_ALLIES,
   //   act_alt[0], 90, 25);
@@ -990,9 +987,9 @@ void TestBattle::createSkills()
   updraft->setFlag(SkillFlags::DEFENSIVE);
   skills.push_back(updraft);
 
-  /* Chlorophona */
+  /* Chlorophoria */
   Skill* chlorophoria = new Skill(222, "Chlorophoria", ActionScope::ALL_ALLIES,
-                                  act_alt[0], 90, 15);
+                                  act_alt[0], 100, 15);
   chlorophoria->setDescription("Team health up");
   chlorophoria->setPrimary(Element::PHYSICAL);
   chlorophoria->setFlag(SkillFlags::DEFENSIVE);
@@ -1068,7 +1065,7 @@ void TestBattle::createSkills()
 
   /* Multi-Strike */
   Skill* multi_strike = new Skill(1022, "Multi-Strike", ActionScope::ONE_ENEMY,
-                                  act_dmg[9], 90, 15);
+                                  act_dmg[9], 70, 15);
   multi_strike->addAction(act_dmg[9]);
   multi_strike->setDescription("What");
   multi_strike->setPrimary(Element::PHYSICAL);
@@ -1087,7 +1084,7 @@ void TestBattle::createSkills()
   /* Ensnare */
   // TODO: Slow down portion of ensnare? Ehhh...
   Skill* ensnare =
-      new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY, act_dmg[11], 80, 5);
+      new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY, act_dmg[11], 95, 5);
   ensnare->setDescription("Damage enemy");
   ensnare->setPrimary(Element::FOREST);
   ensnare->setFlag(SkillFlags::OFFENSIVE);
@@ -1149,7 +1146,7 @@ void TestBattle::createSkillSets()
   /* Aurora Engineer Class */
   SkillSet* set_engineer = new SkillSet(160);
   set_engineer->addSkill(getSkill(160), 1);
-  set_engineer->addSkill(getSkill(120), 12);
+  set_engineer->addSkill(getSkill(120), 1);
   skillsets.push_back(set_engineer);
 
   /* Aurora Drone Class */

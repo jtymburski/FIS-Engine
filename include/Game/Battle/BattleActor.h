@@ -27,7 +27,6 @@ class Ailment;
 class Person;
 class BattleSkill;
 class BattleItem;
-//class RenderElement;
 
 #include "Game/Battle/RenderElement.h"
 #include "Game/Battle/BattleSkill.h"

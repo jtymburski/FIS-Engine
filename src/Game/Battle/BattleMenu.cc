@@ -430,7 +430,6 @@ int32_t BattleMenu::getMaxIndex()
 
 int32_t BattleMenu::validNext()
 {
-  std::cout << "Finding next valid" << std::endl;
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
   {
     if((uint32_t)element_index + 1 < valid_action_types.size())
@@ -458,9 +457,6 @@ int32_t BattleMenu::validNext()
     else if(curr_hover)
     {
       auto curr_index = curr_hover->getMenuIndex();
-
-      std::cout << "For current index: " << curr_index << std::endl;
-
       auto next_menu_actor = nextMenuIndex(curr_index, selectable_targets);
 
       if(next_menu_actor)
@@ -475,7 +471,6 @@ int32_t BattleMenu::validNext()
 
 int32_t BattleMenu::validPrevious()
 {
-  std::cout << "Finding valid previous" << std::endl;
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
   {
     if(element_index > 0)
@@ -1356,12 +1351,10 @@ void BattleMenu::keyDownSelect()
 BattleActor *BattleMenu::nextMenuIndex(int32_t curr,
                                        std::vector<BattleActor *> selectable)
 {
-  std::cout << "Checking next menu index" << std::endl;
   for(const auto &target : selectable)
     if(target && target->getMenuIndex() < curr)
       return target;
 
-  std::cout << "End of vector reached" << std::endl;
   return nullptr;
 }
 
@@ -1369,11 +1362,9 @@ BattleActor *BattleMenu::nextMenuIndex(int32_t curr,
 BattleActor *BattleMenu::prevMenuIndex(int32_t curr,
                                        std::vector<BattleActor *> selectable)
 {
-  std::cout << "Checking prev menu index" << std::endl;
   for(auto it = selectable.rbegin(); it != selectable.rend(); ++it)
     if((*it) && (*it)->getMenuIndex() > curr)
       return *it;
 
-  std::cout << "End of vector reached" << std::endl;
   return nullptr;
 }

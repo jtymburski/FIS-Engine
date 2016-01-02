@@ -692,10 +692,10 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
     }
     else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
     {
-      std::cout << "Creating the healing amount. " << std::endl;
+      std::cout << "[RenderElement] Alter Value Creation" << std::endl;
       // TODO: Non-VITA altering stats?
       element->createAsDamageValue(
-          outcome.damage, DamageType::HEALING, config->getScreenHeight(),
+          std::abs(outcome.damage), DamageType::HEALING, config->getScreenHeight(),
           getActorX(outcome.actor), getActorY(outcome.actor));
     }
   }
@@ -731,7 +731,6 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
   else if(outcome.infliction_status == InflictionStatus::IMMUNE)
   {
     // TODO: Factor this out
-    std::cout << "[IMMUNE!]" << std::endl;
     auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
     auto element = new RenderElement(renderer, damage_font);
 
@@ -745,7 +744,6 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
   else if(outcome.infliction_status == InflictionStatus::ALREADY_INFLICTED)
   {
     // TODO: Factor this out
-    std::cout << "[Already Inflicted]" << std::endl;
     auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
     auto element = new RenderElement(renderer, damage_font);
 
@@ -914,7 +912,7 @@ void Battle::processEventSkill()
 
       if(action_hits)
       {
-        std::cout << "Action Hits!" << std::endl;
+        // std::cout << "Action Hits!" << std::endl;
         if(curr_action->actionFlag(ActionFlags::DAMAGE))
         {
           outcome.damage = event->calcDamage(target);
@@ -936,7 +934,7 @@ void Battle::processEventSkill()
         }
         else if(curr_action->actionFlag(ActionFlags::ALTER))
         {
-          std::cout << "Counting the amount to alter!" << std::endl;
+          std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
           outcome.damage = event->calcAltering(target);
           outcome.actor_outcome_state = ActionState::PLEP;
         }
@@ -1031,8 +1029,13 @@ void Battle::updateOutcome()
 
     for(auto& ally : getAllies())
     {
+      auto level_up_occured = false;
+
       if(ally && ally->getBasePerson())
       {
+        for(auto& ailment : ally->getAilments())
+          ally->removeAilment(ailment);
+
         auto name = ally->getBasePerson()->getName();
         std::cout << name << " has gained: " << total_exp_drop << " experience!"
                   << std::endl;
@@ -1041,8 +1044,34 @@ void Battle::updateOutcome()
         ally->getBasePerson()->addExp(total_exp_drop);
         auto new_level = ally->getBasePerson()->getLevel();
 
+        if(new_level != old_level)
+          level_up_occured = true;
+
         for(int i = (new_level - old_level); i > 0; i--)
           std::cout << name << " has leveled up!" << std::endl;
+
+        /* If no level up happened -> set the base person's health and qtdr to
+         *   the value in the actual stats */
+        if(!level_up_occured)
+        {
+          auto base = ally->getBasePerson();
+
+          if(base)
+          {
+            auto equip_stats = base->calcEquipStats();
+            auto max_health =
+                (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
+            auto curr_health = ally->getStats().getBaseValue(Attribute::VITA);
+            auto max_qtdr =
+                (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
+            auto curr_qtdr = ally->getStats().getBaseValue(Attribute::QTDR);
+
+            if(curr_health < max_health)
+              base->getCurr().setStat(Attribute::VITA, curr_health);
+            if(curr_qtdr < max_qtdr)
+              base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
+          }
+        }
       }
     }
   }

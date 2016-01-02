@@ -126,8 +126,8 @@ BattleEvent::BattleEvent()
 {
 }
 
-BattleEvent::BattleEvent(ActionType type, BattleActor *actor,
-                         std::vector<BattleActor *> targets)
+BattleEvent::BattleEvent(ActionType type, BattleActor* actor,
+                         std::vector<BattleActor*> targets)
     : BattleEvent()
 {
   action_type = type;
@@ -135,7 +135,7 @@ BattleEvent::BattleEvent(ActionType type, BattleActor *actor,
   actor_targets = targets;
 }
 
-BattleEvent::BattleEvent(ActionType type, BattleActor *actor) : BattleEvent()
+BattleEvent::BattleEvent(ActionType type, BattleActor* actor) : BattleEvent()
 {
   action_type = type;
   this->actor = actor;
@@ -194,7 +194,7 @@ void BattleEvent::calcActionVariables()
   temp_user_stats.setBaseValue(attr_secd, secd_user_def);
 }
 
-void BattleEvent::calcElementalMods(BattleActor *curr_target)
+void BattleEvent::calcElementalMods(BattleActor* curr_target)
 {
   auto curr_skill = getCurrSkill();
 
@@ -374,9 +374,9 @@ void BattleEvent::calcIgnoreState()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool BattleEvent::isActorAmongTargets(BattleActor *check_actor)
+bool BattleEvent::isActorAmongTargets(BattleActor* check_actor)
 {
-  for(const auto &actor : actor_targets)
+  for(const auto& actor : actor_targets)
     if(actor && actor == check_actor)
       return true;
 
@@ -389,7 +389,7 @@ void BattleEvent::updateStats()
   temp_user_stats = BattleStats(actor->getStats());
 
   /* Build vectors of curr and curr_max stas for each target */
-  for(const auto &target : actor_targets)
+  for(const auto& target : actor_targets)
     temp_targ_stats.push_back(BattleStats(target->getStats()));
 
   calcActionVariables();
@@ -404,7 +404,7 @@ std::string BattleEvent::getActionName()
   return "";
 }
 
-Action *BattleEvent::getCurrAction()
+Action* BattleEvent::getCurrAction()
 {
   auto curr_skill = getCurrSkill();
 
@@ -414,7 +414,7 @@ Action *BattleEvent::getCurrAction()
   return nullptr;
 }
 
-Skill *BattleEvent::getCurrSkill()
+Skill* BattleEvent::getCurrSkill()
 {
   if(action_type == ActionType::SKILL && event_skill)
     return event_skill->skill;
@@ -429,7 +429,7 @@ bool BattleEvent::getFlagIgnore(IgnoreState test_flag)
   return static_cast<bool>((flags_ignore & test_flag) == test_flag);
 }
 
-void BattleEvent::setFlagIgnore(IgnoreState flag, const bool &set_value)
+void BattleEvent::setFlagIgnore(IgnoreState flag, const bool& set_value)
 {
   (set_value) ? (flags_ignore |= flag) : (flags_ignore &= ~flag);
 }
@@ -453,7 +453,7 @@ bool BattleEvent::setNextAction()
 
 // Does the action crit the given BattleActor?
 // TODO: Crit level modifier
-bool BattleEvent::doesActionCrit(BattleActor *curr_target)
+bool BattleEvent::doesActionCrit(BattleActor* curr_target)
 {
   auto curr_action = getCurrAction();
 
@@ -503,14 +503,19 @@ SkillHitStatus BattleEvent::doesSkillHit()
       bool hits = Helpers::chanceHappens(static_cast<uint32_t>(hit_rate), 100);
 
       if(!hits)
+      {
+        std::cout << "[Skill Hit Status: MISS] " << std::endl;
         status = SkillHitStatus::MISS;
+      }
+
+      std::cout << "[Skill Hit Status: HIT]" << std::endl;
     }
   }
 
   return status;
 }
 
-bool BattleEvent::doesActionHit(BattleActor *curr_target)
+bool BattleEvent::doesActionHit(BattleActor* curr_target)
 {
   auto curr_action = getCurrAction();
 
@@ -521,8 +526,11 @@ bool BattleEvent::doesActionHit(BattleActor *curr_target)
 
     if(targ_alive)
     {
-      if(curr_action->actionFlag(ActionFlags::DAMAGE))
+      if(curr_action->actionFlag(ActionFlags::DAMAGE) ||
+         curr_action->actionFlag(ActionFlags::ALTER))
+      {
         go_to_chance = true;
+      }
       else if(curr_action->actionFlag(ActionFlags::INFLICT))
       {
         auto status = canInflictTarget(curr_target, curr_action->getAilment());
@@ -540,7 +548,7 @@ bool BattleEvent::doesActionHit(BattleActor *curr_target)
   return false;
 }
 
-int32_t BattleEvent::calcDamageImplode(BattleActor *curr_target)
+int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target)
 {
   auto targ_stats = getStatsOfTarget(curr_target);
   (void)targ_stats;
@@ -607,7 +615,7 @@ int32_t BattleEvent::calcLevelDifference()
 
   if(actor)
   {
-    for(const auto &target : actor_targets)
+    for(const auto& target : actor_targets)
       if(target)
         total += target->getBasePerson()->getLevel() * 100;
 
@@ -637,7 +645,7 @@ int32_t BattleEvent::calcValPhysDef(BattleStats target_stats)
   return target_stats.getValue(Attribute::PHFD) * kDEF_PHYS_MODIFIER;
 }
 
-int32_t BattleEvent::calcValPrimAtk(Skill *curr_skill)
+int32_t BattleEvent::calcValPrimAtk(Skill* curr_skill)
 {
   if(!getFlagIgnore(IgnoreState::IGNORE_PRIM_ATK))
   {
@@ -652,7 +660,7 @@ int32_t BattleEvent::calcValPrimAtk(Skill *curr_skill)
   return 0;
 }
 
-int32_t BattleEvent::calcValPrimDef(Skill *curr_skill, BattleStats target_stats)
+int32_t BattleEvent::calcValPrimDef(Skill* curr_skill, BattleStats target_stats)
 {
   if(!getFlagIgnore(IgnoreState::IGNORE_PRIM_DEF))
   {
@@ -666,7 +674,7 @@ int32_t BattleEvent::calcValPrimDef(Skill *curr_skill, BattleStats target_stats)
   return 0;
 }
 
-int32_t BattleEvent::calcValSecdAtk(Skill *curr_skill)
+int32_t BattleEvent::calcValSecdAtk(Skill* curr_skill)
 {
 
   if(!getFlagIgnore(IgnoreState::IGNORE_SECD_ATK))
@@ -682,7 +690,7 @@ int32_t BattleEvent::calcValSecdAtk(Skill *curr_skill)
   return 0;
 }
 
-int32_t BattleEvent::calcValSecdDef(Skill *curr_skill, BattleStats target_stats)
+int32_t BattleEvent::calcValSecdDef(Skill* curr_skill, BattleStats target_stats)
 {
   if(!getFlagIgnore(IgnoreState::IGNORE_SECD_DEF))
   {
@@ -691,7 +699,7 @@ int32_t BattleEvent::calcValSecdDef(Skill *curr_skill, BattleStats target_stats)
     if(doesSecdMatch(curr_skill))
       return val * kDEF_SECD_ELM_MATCH_MODIFIER * kDEF_SECD_ELM_MODIFIER;
 
-    return val* kDEF_SECD_ELM_MODIFIER;
+    return val * kDEF_SECD_ELM_MODIFIER;
   }
 
   return 0;
@@ -713,7 +721,7 @@ int32_t BattleEvent::calcValLuckDef(BattleStats target_stats)
   return target_stats.getValue(Attribute::MANN) * kMANNA_DEF_MODIFIER;
 }
 
-InflictionStatus BattleEvent::canInflictTarget(BattleActor *curr_target,
+InflictionStatus BattleEvent::canInflictTarget(BattleActor* curr_target,
                                                Infliction type)
 {
   if(curr_target && type != Infliction::INVALID)
@@ -736,7 +744,7 @@ InflictionStatus BattleEvent::canInflictTarget(BattleActor *curr_target,
   return InflictionStatus::FIZZLE;
 }
 
-bool BattleEvent::doesPrimMatch(Skill *skill)
+bool BattleEvent::doesPrimMatch(Skill* skill)
 {
   if(actor && actor->getBasePerson() && skill)
   {
@@ -748,7 +756,7 @@ bool BattleEvent::doesPrimMatch(Skill *skill)
   return false;
 }
 
-bool BattleEvent::doesSecdMatch(Skill *skill)
+bool BattleEvent::doesSecdMatch(Skill* skill)
 {
   if(actor && actor->getBasePerson() && skill)
   {
@@ -760,11 +768,11 @@ bool BattleEvent::doesSecdMatch(Skill *skill)
   return false;
 }
 
-BattleStats BattleEvent::getStatsOfTarget(BattleActor *curr_target)
+BattleStats BattleEvent::getStatsOfTarget(BattleActor* curr_target)
 {
   int32_t index = 0;
 
-  for(const auto &target : actor_targets)
+  for(const auto& target : actor_targets)
   {
     if(target == curr_target && temp_targ_stats.size() > (uint32_t)index)
       return temp_targ_stats.at(index);
@@ -775,7 +783,7 @@ BattleStats BattleEvent::getStatsOfTarget(BattleActor *curr_target)
   return BattleStats();
 }
 
-float BattleEvent::calcCritFactor(BattleActor *curr_target)
+float BattleEvent::calcCritFactor(BattleActor* curr_target)
 {
   /* Add the base crit modifier to the user of the action's unbr stat */
   auto unbearability = actor->getStats().getValue(Attribute::UNBR);
@@ -799,7 +807,7 @@ int32_t BattleEvent::calcExperience()
   assert(actor && actor->getBasePerson());
   auto experience = 0;
 
-  for(auto &enemy : actor_targets)
+  for(auto& enemy : actor_targets)
   {
     if(enemy && enemy->getBasePerson())
       experience += enemy->getBasePerson()->getExpDrop();
@@ -808,21 +816,56 @@ int32_t BattleEvent::calcExperience()
   return static_cast<int32_t>(experience * actor->getBasePerson()->getExpMod());
 }
 
-int32_t BattleEvent::calcAltering(BattleActor *curr_target)
+int32_t BattleEvent::calcAltering(BattleActor* curr_target)
 {
-  (void)curr_target;//TODO: Warning[12-28-15]
-  return 1;
+  auto action = getCurrAction();
+
+  if(action && curr_target)
+  {
+    int32_t amount = 0;
+    int32_t variance = 0;
+
+    //TODO: Other attributes
+    int32_t health = curr_target->getStats().getValue(Attribute::VITA);
+    int32_t max_health = curr_target->getStats().getValue(Attribute::MVIT);
+
+    auto action_amt = action->getBase();
+    auto action_var = action->getVariance();
+
+    if(action->actionFlag(ActionFlags::BASE_PC))
+      amount = std::round((float)action_amt / 100.0 * health);
+    else
+      amount = action_amt;
+
+    if(action->actionFlag(ActionFlags::VARI_PC))
+      variance = std::round((float)action_var / 100.0 * (float)health);
+    else
+      variance = action_var;
+
+    amount = Helpers::randU(amount - variance, amount + variance);
+
+    std::cout << "Alter amount: " << amount << std::endl;
+
+    auto max_amount = max_health - health;
+
+    if(amount > max_amount)
+      amount = max_amount;
+
+    return -amount;
+  }
+
+  return -1;
 }
 
 // TODO: Guarding damage factor [11-01-15]
 // TODO: Guarding for users who are guarding this actor [11-01-15]
-int32_t BattleEvent::calcDamage(BattleActor *curr_target)
+int32_t BattleEvent::calcDamage(BattleActor* curr_target)
 {
   updateStats();
   calcIgnoreState();
   calcElementalMods(curr_target);
 
-  //auto crit_factor = calcCritFactor(curr_target);
+  // auto crit_factor = calcCritFactor(curr_target);
   auto targ_stats = getStatsOfTarget(curr_target);
   auto curr_skill = getCurrSkill();
   auto curr_action = getCurrAction();
@@ -830,8 +873,9 @@ int32_t BattleEvent::calcDamage(BattleActor *curr_target)
   /* Summation of base power / defense */
   auto base_user_pow = calcValPhysPow() + calcValPrimAtk(curr_skill) +
                        calcValSecdAtk(curr_skill) + calcValLuckAtk();
-  auto base_targ_def = calcValPhysDef(targ_stats) + calcValPrimDef(curr_skill, targ_stats) +
-                       calcValSecdDef(curr_skill, targ_stats) + calcValLuckDef(targ_stats);
+  auto base_targ_def =
+      calcValPhysDef(targ_stats) + calcValPrimDef(curr_skill, targ_stats) +
+      calcValSecdDef(curr_skill, targ_stats) + calcValLuckDef(targ_stats);
 
   /* Addition of the power of the action */
   auto action_power = curr_action->getBase();

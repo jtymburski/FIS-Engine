@@ -64,7 +64,7 @@ class BattleStats
 {
 public:
   /* Construct the BattleStats with values given by an AttributeSet */
-  BattleStats(AttributeSet attr_set);
+  BattleStats(AttributeSet max_attr_set, AttributeSet min_attr_set);
 
   BattleStats() = default;
 

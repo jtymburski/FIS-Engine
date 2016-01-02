@@ -68,8 +68,8 @@ BattleActor::BattleActor(Person *person_base, int32_t battle_index,
       state_living{LivingState::REMOVED},
       state_selection{SelectionState::NOT_SELECTED},
       state_upkeep{UpkeepState::COMPLETE},
-      stats_actual{AttributeSet()},
-      stats_rendered{AttributeSet()},
+      stats_actual{AttributeSet(), AttributeSet()},
+      stats_rendered{AttributeSet(), AttributeSet()},
       temp_alpha{255},
       dialog_x{0},
       dialog_y{0}
@@ -114,14 +114,11 @@ BattleActor::~BattleActor()
  */
 void BattleActor::battleSetup(bool is_ally, bool can_run)
 {
-  /* Recalculate the current stats of the base person, create BattleStats */
-  person_base->updateBaseStats();
-  person_base->updateBaseSkills();
-
   auto equip_stats = person_base->calcEquipStats();
+  auto curr_stats = person_base->getCurr();
 
-  stats_actual = BattleStats(equip_stats);
-  stats_rendered = BattleStats(equip_stats);
+  stats_actual = BattleStats(equip_stats, curr_stats);
+  stats_rendered = BattleStats(equip_stats, curr_stats);
 
   /* If the person's current VITA is >0, they are not KO'd */
   if(person_base->getCurr().getStat(Attribute::VITA) > 0)
@@ -1131,13 +1128,13 @@ BattleActor::getTargetsFromScope(BattleActor *user, ActionScope scope,
           scope == ActionScope::TWO_ENEMIES ||
           scope == ActionScope::ALL_ENEMIES)
   {
-    std::cout << "Checking living on target size:" << targets.size()
-              << std::endl;
+    // std::cout << "Checking living on target size:" << targets.size()
+    //           << std::endl;
     auto living_targets = getLivingTargets(targets);
 
-    std::cout << "Living targets size:" << living_targets.size() << std::endl;
+    // std::cout << "Living targets size:" << living_targets.size() << std::endl;
     valid_targets = getEnemyTargets(user, living_targets);
-    std::cout << "Valid targets size: " << valid_targets.size() << std::endl;
+    // std::cout << "Valid targets size: " << valid_targets.size() << std::endl;
   }
   else if(scope == ActionScope::ONE_ALLY || scope == ActionScope::TWO_ALLIES ||
           scope == ActionScope::ALL_ALLIES)
@@ -1189,7 +1186,7 @@ int32_t BattleActor::calcTurnRegen(Attribute attr)
     amount = regen_rate * max_attr_val;
     max = max_attr_val - stats_actual.getValue(Attribute::QTDR);
 
-    std::cout << "Max Possible: " << max << std::endl;
+    // std::cout << "Max Possible: " << max << std::endl;
   }
 
   /* Cannot return more than the maximum possible regeneration value */
