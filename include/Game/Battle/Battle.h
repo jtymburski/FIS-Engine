@@ -291,6 +291,9 @@ private:
   void outcomeStateInflictFlash(ActorOutcome& outcome);
   void outcomeStateActionOutcome(ActorOutcome& outcome);
 
+  /* Returns the outnumbered value */
+  int32_t outnumberedVal();
+
   /* Prepare the actor upkeeps */
   void prepareActorUpkeeps();
 

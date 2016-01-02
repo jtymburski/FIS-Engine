@@ -320,7 +320,7 @@ public:
   bool buildBattleSkills(std::vector<BattleActor*> all_targets);
 
   /* Calculates the turn regeneration for a given enumerated attr (vita/qd) */
-  int32_t calcTurnRegen(Attribute attr);
+  int32_t calcTurnRegen(Attribute attr, int32_t outnumbered_val = 0);
 
   /* Cleans up the BattleActor for a new turn */
   void cleanUpForTurn();
@@ -439,7 +439,6 @@ public:
   uint32_t getPCQtdr();
 
   /* Methods to return the floats for calculating turn regen rates */
-  float getRegenRate(Attribute attr);
   float getRegenFactor(RegenRate regen_rate);
 
   /* Sets the battle actor's action frame */

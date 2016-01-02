@@ -559,15 +559,15 @@ void TestBattle::createActions()
   /* Inflict Actions */
 
   /* Poison */
-  act_inf.push_back(new Action("500,INFLICT,3.6,,,POISON,AMOUNT.30,,VITA,100"));
+  act_inf.push_back(new Action("500,INFLICT,3.6,,,POISON,AMOUNT.30,,VITA,90"));
 
   /* Confusion */
   act_inf.push_back(
-      new Action("501,INFLICT,2.5,,,CONFUSE,AMOUNT.30,,VITA,100"));
+      new Action("501,INFLICT,2.5,,,CONFUSE,AMOUNT.30,,VITA,75"));
 
   /* Silence */
   act_inf.push_back(
-      new Action("502,INFLICT,3.5,,,SILENCE,AMOUNT.30,,VITA,100"));
+      new Action("502,INFLICT,3.5,,,SILENCE,AMOUNT.30,,VITA,80"));
 
   /* All Attack Buff */
   act_inf.push_back(
@@ -582,7 +582,7 @@ void TestBattle::createActions()
 
   /* Paralysis */
   act_inf.push_back(
-      new Action("506,INFLICT,2.5,,,PARALYSIS,AMOUNT.30,,VITA,100"));
+      new Action("506,INFLICT,2.5,,,PARALYSIS,AMOUNT.30,,VITA,80"));
 
   /* Hibernation */
   act_inf.push_back(new Action("507,INFLICT,3.5,,,HIBERNATION,AMOUNT.10,,VITA,100"));
@@ -655,7 +655,7 @@ void TestBattle::createClasses()
   /* Player Class */
   class_player = new Category(200, "Bearanator", "player", stats_player_min,
                               stats_player_max, getSkillSet(200));
-  class_player->setVitaRegenRate(RegenRate::ZERO);
+  class_player->setVitaRegenRate(RegenRate::WEAK);
   class_player->setQDRegenRate(RegenRate::WEAK);
   class_player->setDescription("This is me and I am awesome");
 

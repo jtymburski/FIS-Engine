@@ -505,7 +505,11 @@ bool AIModule::selectRandomAction()
   if(chosen_action_type == ActionType::SKILL)
   {
     auto skills_size = valid_skills.size();
+
+    std::cout << "Skills Size: " << skills_size << std::endl;
     auto rand_value = Helpers::randU(1, skills_size);
+
+    std::cout << "Random index value: " << rand_value - 1 << std::endl;
 
     chosen_battle_skill = valid_skills.at(rand_value - 1);
     chosen_skill = valid_skills.at(rand_value - 1)->skill;

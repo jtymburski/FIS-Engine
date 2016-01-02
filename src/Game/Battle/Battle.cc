@@ -55,7 +55,7 @@ const int16_t Battle::kRUN_PC_EXP_PENALTY = 5;
 
 const float Battle::kDELAY_SLOW_FACTOR{1.50};
 const float Battle::kDELAY_NORM_FACTOR{1.00};
-const float Battle::kDELAY_FAST_FACTOR{0.70};
+const float Battle::kDELAY_FAST_FACTOR{0.55};
 
 const uint16_t Battle::kACTION_BORDER = 10;
 const uint16_t Battle::kACTION_COLOR_A = 175;
@@ -779,6 +779,16 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
   outcome.actor_outcome_state = ActionState::ACTION_END;
 }
 
+int32_t Battle::outnumberedVal()
+{
+  if(getEnemies().size() > getAllies().size())
+  {
+    return getEnemies().size() - getAllies().size();
+  }
+
+  return 0;
+}
+
 void Battle::prepareActorUpkeeps()
 {
   for(auto& actor : actors)
@@ -1108,7 +1118,7 @@ void Battle::updatePersonalUpkeep()
 void Battle::updatePersonalVitaRegen()
 {
   // Calculate and create the vita regen for the upkeep_actor
-  auto vita_regen = upkeep_actor->calcTurnRegen(Attribute::VITA);
+  auto vita_regen = upkeep_actor->calcTurnRegen(Attribute::VITA, outnumberedVal());
 
   if(vita_regen > 0)
   {
