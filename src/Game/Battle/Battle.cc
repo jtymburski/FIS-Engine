@@ -503,6 +503,7 @@ bool Battle::doesActorNeedToSelect(BattleActor* actor)
     to_select &= (actor->getStateLiving() == LivingState::ALIVE);
     to_select &= (actor->getSelectionState() == SelectionState::NOT_SELECTED);
     to_select &= (!battle_buffer->hasCoolingSkill(actor));
+    to_select &= (!actor->isInflicted(Infliction::HIBERNATION));
 
     /* Not paralyzed/stunned/etc. */
     to_select &= (!actor->getFlag(ActorState::SELECTION_SKIP));
