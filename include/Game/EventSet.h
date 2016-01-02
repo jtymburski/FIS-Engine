@@ -162,6 +162,20 @@ struct Conversation
   std::vector<Conversation> next;
 };
 
+/* 
+ * Description: Pairs for handling within the conversation/event space
+ */
+struct EventPair
+{
+  Event* base;
+  Event* inst;
+};
+struct ConvoPair
+{
+  Conversation* base;
+  Conversation* inst;
+};
+
 /* Event Set class */
 class EventSet
 {
@@ -261,6 +275,7 @@ public:
 
   /* Returns the event when accessed - depending on locked unlocked status */
   Event getEvent(bool trigger = true);
+  EventPair getEventPair(bool trigger = true);
   Event* getEventRef(bool trigger = true);
 
   /* Access getters for locked event */
@@ -327,7 +342,7 @@ public:
  *============================================================================*/
 public:
   /* Copies a passed in event */
-  static Event copyEvent(Event source);
+  static Event copyEvent(Event source, bool skeleton = false);
 
   /* Creates a blank conversation */
   static Conversation createBlankConversation();

@@ -342,9 +342,9 @@ int Game::eventGiveItem(int id, int count)
 }
 
 /* Initiates a conversation event */
-void Game::eventInitConversation(Conversation* convo, MapThing* source)
+void Game::eventInitConversation(ConvoPair convo_pair, MapThing* source)
 {
-  map_ctrl.initConversation(convo, source);
+  map_ctrl.initConversation(convo_pair, source);
 }
 
 /* Initiates a notification event (in map) */
@@ -850,7 +850,7 @@ void Game::pollEvents()
       else if(classification == EventClassifier::RUNBATTLE)
       {
         /* Get the reference objects and check if valid */
-        Event *event_win, *event_lose;
+        EventPair event_win, event_lose;
         BattleFlags flags;
         MapPerson* person;
         MapThing* source;
@@ -872,10 +872,10 @@ void Game::pollEvents()
       }
       else if(classification == EventClassifier::STARTCONVO)
       {
-        Conversation* convo;
+        ConvoPair convo_pair;
         MapThing* source;
-        event_handler.pollConversation(&convo, &source);
-        eventInitConversation(convo, source);
+        event_handler.pollConversation(convo_pair, &source);
+        eventInitConversation(convo_pair, source);
       }
       else if(classification == EventClassifier::TAKEITEM)
       {

@@ -57,6 +57,7 @@ private:
 
   /* The currently running conversation information */
   Conversation* conversation_info;
+  Conversation* conversation_inst;
   bool conversation_ready;
   bool conversation_update;
   bool conversation_waiting;
@@ -192,9 +193,6 @@ private:
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
 
-  /* Sets the conversation - internal to the class */
-  //void setConversation(Conversation* new_convo = NULL);
-
   /* Sets up the active conversation pointer to prepare for screen rendering */
   void setupConversation(SDL_Renderer* renderer);
 
@@ -220,10 +218,8 @@ public:
   std::vector<int> getConversationIDs();
 
   /* Initializes a conversation with the two given people. */
-  bool initConversation(Conversation* dialog_info, MapPerson* target,
+  bool initConversation(ConvoPair convo_pair, MapPerson* target,
                         MapThing* source);
-  //bool initConversation(Conversation dialog_info, MapPerson* target,
-  //                      MapThing* source);
 
   /* Initializes a notification, using a string to be printed */
   bool initNotification(std::string notification, bool single_line = false,

@@ -35,6 +35,7 @@ struct EventExecution
 {
   Event event;
   Event* event_ref;
+  Event* event_ref_inst;
   EventSet* event_set;
 
   MapItem* item;
@@ -74,6 +75,7 @@ private:
 private:
   /* Returns the event in the queue: either from the set or event pointer */
   bool getEvent(Event& event, bool trigger = false);
+  bool getEventPair(EventPair& event_pair, bool trigger = false);
   bool getEventRef(Event*& event_ref, bool trigger = false);
 
   /* Trigger queue sound */
@@ -86,6 +88,8 @@ public:
   /* Execute the given event */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
   void executeEventRef(Event* event, MapPerson* initiator,
+                       MapThing* source = nullptr);
+  void executeEventRef(Event* event, Event* event_inst, MapPerson* initiator,
                        MapThing* source = nullptr);
 
   /* Execute the given event set */
@@ -109,7 +113,7 @@ public:
   void pollClear();
 
   /* Poll a conversation event. Only true if this event is next on queue */
-  bool pollConversation(Conversation** convo, MapThing** source);
+  bool pollConversation(ConvoPair& convo_pair, MapThing** source);
 
   /* Poll a give item event */
   bool pollGiveItem(int* id, int* count);
@@ -145,8 +149,8 @@ public:
 
   /* Poll a start battle event */
   bool pollStartBattle(MapPerson** person, MapThing** source,
-                       BattleFlags& flags, Event*& event_win,
-                       Event*& event_lose);
+                       BattleFlags& flags, EventPair& event_win,
+                       EventPair& event_lose);
 
   /* Poll a start map event */
   bool pollStartMap(int* id);

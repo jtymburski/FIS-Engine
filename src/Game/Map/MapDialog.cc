@@ -159,6 +159,7 @@ void MapDialog::clearData()
   animation_shifter = 0.0;
   //clearConversation(&conversation_info);
   conversation_info = nullptr;
+  conversation_inst = nullptr;
   conversation_ready = false;
   conversation_update = false;
   conversation_waiting = false;
@@ -276,12 +277,15 @@ void MapDialog::deleteFonts()
  */
 void MapDialog::executeEvent()
 {
-  if(event_handler != nullptr && conversation_info != nullptr &&
+  if(event_handler != nullptr && conversation_info != nullptr && 
+     conversation_inst != nullptr && 
      conversation_info->action_event.classification != EventClassifier::NOEVENT)
   {
-    event_handler->executeEventRef(&(conversation_info->action_event), 
-                                   target, source);
-    conversation_info->action_event.has_exec = true;
+    EventPair pair;
+    pair.base = &(conversation_info->action_event);
+    pair.inst = &(conversation_inst->action_event);
+    event_handler->executeEventRef(pair.base, pair.inst, target, source);
+    pair.inst->has_exec = true;
   }
 }
 
@@ -367,36 +371,6 @@ void MapDialog::setAlpha(uint8_t alpha)
   for(auto i = text_options.begin(); i != text_options.end(); i++)
    (*i)->setAlpha(alpha);
 }
-
-/*
- * Description: Sets the conversation stored in the class. This will clean up
- *              the previous one before setting the new one cleanly.
- *
- * Inputs: Conversation* new_convo - the new conversation pointer to set
- * Output: none
- */
-//void MapDialog::setConversation(Conversation* new_convo)
-//{
-  /* Clear the old conversation */ // TODO: Need to change to reference...
-  //clearConversation(&conversation_info);
-  //conversation_info.text = "";
-  //conversation_info.thing_id = -1;
-  //conversation_info.category = DialogCategory::TEXT;
-  //if(event_handler != NULL)
-  //  conversation_info.action_event = EventSet::createBlankEvent();
-
-  /* Insert new conversation */
-//  conversation_info = new_convo;
-  //if(new_convo != NULL)
-  //{
-  //  conversation_info = new_convo
-  //  conversation_info.text = new_convo->text;
-  //  conversation_info.thing_id = new_convo->thing_id;
-  //  conversation_info.category = new_convo->category;
-  //  conversation_info.action_event = new_convo->action_event;
-  //  conversation_info.next = new_convo->next;
-  //}
-//}
 
 /*
  * Description: Sets up the current conversation snapshot by rendering the main
@@ -791,6 +765,7 @@ void MapDialog::clearAll(bool include_convo)
       renderOptions(NULL);
       setupRenderText();
       conversation_info = nullptr;
+      conversation_inst = nullptr;
       //setConversation();
 
       dialog_mode = DISABLED;
@@ -845,18 +820,19 @@ std::vector<int> MapDialog::getConversationIDs()
  *              initConversation(). Returns false if conversation was unable to
  *              be instantiated.
  *
- * Inputs: Conversation* dialog_info - a conversation pointer
+ * Inputs: ConvoPair convoPair - a conversation pointer pair set
  *         MapPerson* target - the person being targetted for the conversation
  *         MapThing* source - the thing that initiated the event
  * Output: bool - status if conversation could be created.
  */
-bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target,
+bool MapDialog::initConversation(ConvoPair convo_pair, MapPerson* target,
                                  MapThing* source)
 {
-  if(dialog_info != nullptr && dialog_mode != CONVERSATION && 
-     target != nullptr && isImagesSet())
+  if(convo_pair.base != nullptr && convo_pair.inst != nullptr && 
+     dialog_mode != CONVERSATION && target != nullptr && isImagesSet())
   {
-    conversation_info = dialog_info;
+    conversation_info = convo_pair.base;
+    conversation_inst = convo_pair.inst;
     this->source = source;
     this->target = target;
     thing_active = nullptr;
@@ -868,39 +844,6 @@ bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target,
   }
   return false;
 }
-
-/*
- * Description: Initializes a conversation with the current dialog. This
- *              attempts to make a conversation if none othe are active and the
- *              target is legitimate. This takes priority over notifications in
- *              the queue so once a conversation is set, the
- *              setConversationThings() needs to be called with the thing
- *              references related to getConversationIDs(), and then the convo
- *              will be displayed.
- *
- * Inputs: Conversation dialog_info - a conversation to display
- *         MapPerson* target - the person being targetted for the conversation
- *         MapThing* source - the thing that initiated the event
- * Output: bool - status if conversation could be created.
- */
-// bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target,
-//                                  MapThing* source)
-// {
-//   if(dialog_mode != CONVERSATION && target != NULL && isImagesSet())
-//   {
-//     setConversation(&dialog_info);
-//     this->source = source;
-//     this->target = target;
-//     thing_active = NULL;
-//     thing_data.clear();
-//     conversation_ready = false;
-//     conversation_waiting = true;
-
-//     return true;
-//   }
-
-//   return false;
-// }
 
 /*
  * Description: Initializes a notification to be added to the queue and
@@ -1149,7 +1092,8 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
                           * (kTEXT_LINES - 1);
         }
         /* Otherwise, if end of conversation is reached, start hiding it */
-        else if(conversation_info->next.size() == 0)
+        else if(conversation_info->next.size() == 0 || 
+                conversation_inst->next.size() == 0)
         {
           dialog_status = WindowStatus::HIDING;
           executeEvent();
@@ -1161,21 +1105,22 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
 
           /* Do the initial conversation shift */
           executeEvent();
-          Conversation* new_convo = &(conversation_info->next[dialog_option]);
-          conversation_info = new_convo;
-          //setConversation(&new_convo);
+          conversation_info = &(conversation_info->next[dialog_option]);
+          conversation_inst = &(conversation_inst->next[dialog_option]);
 
           /* If multiple options, shift to the next one */
           if(multiple)
           {
             executeEvent();
-            if(conversation_info->next.size() == 0)
+            if(conversation_info->next.size() == 0 ||
+               conversation_inst->next.size() == 0)
+            {
               dialog_status = WindowStatus::HIDING;
+            }
             else
             {
-              Conversation* new_convo2 = &(conversation_info->next[0]);
-              conversation_info = new_convo2;
-              //setConversation(&new_convo2);
+              conversation_info = &(conversation_info->next[0]);
+              conversation_inst = &(conversation_inst->next[0]);
             }
           }
 
@@ -1717,6 +1662,7 @@ void MapDialog::update(int cycle_time)
           renderOptions(NULL);
           setupRenderText();
           conversation_info = nullptr;
+          conversation_inst = nullptr;
           //setConversation();
         }
         /* Or clean up the notification */

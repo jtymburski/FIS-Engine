@@ -61,24 +61,40 @@ bool EventHandler::getEvent(Event& event, bool trigger)
   return false;
 }
 
-/* Returns the event ref in the queue: either from the set or event pointer */
-bool EventHandler::getEventRef(Event*& event_ref, bool trigger)
+/* Returns the event pair ref in the queue: either from the set or event
+ * pointer */
+bool EventHandler::getEventPair(EventPair& event_pair, bool trigger)
 {
   if(pollEventAvailable())
   {
     /* Find event references */
     if(event_queue[queue_index].event_set != nullptr)
     {
-      event_ref = event_queue[queue_index].event_set->getEventRef(trigger);
+      event_pair = event_queue[queue_index].event_set->getEventPair(trigger);
       return true;
     }
     else if(event_queue[queue_index].event_ref != nullptr)
     {
-      event_ref = event_queue[queue_index].event_ref;
+      event_pair.base = event_queue[queue_index].event_ref;
+      event_pair.inst = event_queue[queue_index].event_ref;
+      if(event_queue[queue_index].event_ref_inst != nullptr)
+        event_pair.inst = event_queue[queue_index].event_ref_inst;
       if(trigger)
-        event_queue[queue_index].event_ref->has_exec = true;
+        event_pair.inst->has_exec = true;
       return true;
     }
+  }
+  return false;
+}
+
+/* Returns the event ref in the queue: either from the set or event pointer */
+bool EventHandler::getEventRef(Event*& event_ref, bool trigger)
+{
+  EventPair pair;
+  if(getEventPair(pair, trigger))
+  {
+    event_ref = pair.base;
+    return true;
   }
   return false;
 }
@@ -104,6 +120,7 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
     EventExecution executed_event;
     executed_event.event = event;
     executed_event.event_ref = nullptr;
+    executed_event.event_ref_inst = nullptr;
     executed_event.event_set = nullptr;
     executed_event.item = nullptr;
     executed_event.initiator = initiator;
@@ -118,13 +135,26 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
 void EventHandler::executeEventRef(Event* event, MapPerson* initiator,
                                    MapThing* source)
 {
+  executeEventRef(event, nullptr, initiator, source);
+}
+
+/* Execute the given event reference */ 
+void EventHandler::executeEventRef(Event* event, Event* event_inst,
+                                   MapPerson* initiator, MapThing* source)
+{
+  /* Connection of inst to event if unset */
+  if(event_inst == nullptr)
+    event_inst = event;
+
+  /* Check and attempt to add */
   if(event != nullptr && event->classification != EventClassifier::NOEVENT &&
-     (!event->one_shot || !event->has_exec))
+     (!event->one_shot || !event_inst->has_exec))
   {
     /* Create the executed eevent queue entry */
     EventExecution executed_event;
     executed_event.event = EventSet::createBlankEvent();
     executed_event.event_ref = event;
+    executed_event.event_ref_inst = event_inst;
     executed_event.event_set = nullptr;
     executed_event.item = nullptr;
     executed_event.initiator = initiator;
@@ -145,6 +175,7 @@ void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator,
     EventExecution executed_event;
     executed_event.event = EventSet::createBlankEvent();
     executed_event.event_ref = nullptr;
+    executed_event.event_ref_inst = nullptr;
     executed_event.event_set = set;
     executed_event.item = nullptr;
     executed_event.initiator = initiator;
@@ -167,6 +198,7 @@ void EventHandler::executeIOTrigger(MapInteractiveObject* io,
     EventExecution executed_event;
     executed_event.event = EventSet::createBlankEvent();
     executed_event.event_ref = nullptr;
+    executed_event.event_ref_inst = nullptr;
     executed_event.event_set = nullptr;
     executed_event.item = nullptr;
     executed_event.initiator = initiator;
@@ -214,17 +246,18 @@ void EventHandler::pollClear()
 }
 
 /* Poll a conversation event. Only true if this event is next on queue */
-bool EventHandler::pollConversation(Conversation** convo, MapThing** source)
+bool EventHandler::pollConversation(ConvoPair& convo_pair, MapThing** source)
 {
-  if(pollEventType() == EventClassifier::STARTCONVO && convo != NULL &&
-     source != NULL)
+  if(pollEventType() == EventClassifier::STARTCONVO && source != nullptr)
   {
-    Event event;
-    if(getEvent(event, true))
+    EventPair pair;
+    if(getEventPair(pair, true) && pair.base->convo != nullptr &&
+       pair.inst->convo != nullptr)
     {
-      *convo = event.convo;
+      convo_pair.base = pair.base->convo;
+      convo_pair.inst = pair.inst->convo;
       *source = event_queue[queue_index].source;
-      triggerQueueSound(event);
+      triggerQueueSound(*pair.base);
       return true;
     }
   }
@@ -392,20 +425,26 @@ bool EventHandler::pollSound()
 
 /* Poll a start battle event */
 bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source,
-                                   BattleFlags& flags, Event*& event_win,
-                                   Event*& event_lose)
+                                   BattleFlags& flags, EventPair& event_win,
+                                   EventPair& event_lose)
 {
   if(pollEventType() == EventClassifier::RUNBATTLE &&
      person != nullptr && source != nullptr)
   {
-    Event* event;
-    if(getEventRef(event, true) &&
-       EventSet::dataEventStartBattle(event, flags, event_win, event_lose))
+    EventPair pair;
+    if(getEventPair(pair, true))
     {
-      *person = event_queue[queue_index].initiator;
-      *source = event_queue[queue_index].source;
-      triggerQueueSound(*event);
-      return true;
+      BattleFlags inst_flags;
+      if(EventSet::dataEventStartBattle(pair.base, flags, 
+                                        event_win.base, event_lose.base) && 
+         EventSet::dataEventStartBattle(pair.inst, inst_flags, 
+                                        event_win.inst, event_lose.inst))
+      {
+        *person = event_queue[queue_index].initiator;
+        *source = event_queue[queue_index].source;
+        triggerQueueSound(*pair.base);
+        return true;
+      }
     }
   }
   return false;

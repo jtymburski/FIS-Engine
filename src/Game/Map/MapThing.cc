@@ -2339,12 +2339,18 @@ void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   (void)tile_set;
 
+  /* For base, just update animation of thing */
+  if(getBase() == nullptr)
+  {
+    if(sprite_set != nullptr)
+      animate(cycle_time);
+  }
   /* For active, update movement and animation */
-  if(isActive() && isTilesSet())
+  else if(isActive() && isTilesSet())
   {
     moveThing(cycle_time);
-    if(getBase() == nullptr)
-      animate(cycle_time);
+    //if(getBase() == nullptr)
+    //  animate(cycle_time);
   }
   /* Otherwise, just update the inactive respawn time */
   else if(active_time >= 0)

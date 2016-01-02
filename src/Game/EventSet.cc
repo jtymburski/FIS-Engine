@@ -182,12 +182,12 @@ void EventSet::setupForBase()
   locked_status = base->getLockedState();
 
   /* Locked Event - ensures empty event */
-  event_locked = createBlankEvent();
+  event_locked = copyEvent(base->event_locked, true);
 
   /* Unlocked Event - ensures empty event with the correct stack count */
   int event_count = base->getEventUnlocked().size();
   for(int i = 0; i < event_count; i++)
-    events_unlocked.push_back(createBlankEvent());
+    events_unlocked.push_back(copyEvent(base->events_unlocked[i], true));
 
   /* Reset get index */
   get_index = -1;
@@ -271,10 +271,11 @@ Event EventSet::getEvent(bool trigger)
  *         EventHandler. Default to true.
  * Output: Event* - the returned event ref at the forefront of the get access
  */
-Event* EventSet::getEventRef(bool trigger)
+EventPair EventSet::getEventPair(bool trigger)
 {
   Event* found_base = nullptr;
   Event* found_inst = nullptr;
+  EventPair pair{nullptr, nullptr};
 
   /* -- If locked, use locked event -- */
   if(isLocked())
@@ -375,9 +376,27 @@ Event* EventSet::getEventRef(bool trigger)
   {
     if(trigger)
       found_inst->has_exec = true;
-    return found_base;
+
+    pair.base = found_base;
+    pair.inst = found_inst;
   }
-  return nullptr;
+  return pair;
+}
+
+/*
+ * Description: Returns the event reference when accessed which depends on the
+ *              locked or unlocked status, and if unlocked depends on the
+ *              UnlockedState. If trigger is set to true, it will identify this
+ *              get event will be triggering the returned event.
+ *
+ * Inputs: bool trigger - true if the returned event ref will be passed to the
+ *         EventHandler. Default to true.
+ * Output: Event* - the returned event ref at the forefront of the get access
+ */
+Event* EventSet::getEventRef(bool trigger)
+{
+  EventPair pair = getEventPair(trigger);
+  return pair.base;
 }
 
 /*
@@ -826,12 +845,12 @@ bool EventSet::unlockTrigger()
  */
 bool EventSet::unsetEventLocked()
 {
-  if(!isBaseSet())
-  {
-    event_locked = deleteEvent(event_locked);
-    return true;
-  }
-  return false;
+  //if(!isBaseSet())
+  //{
+  event_locked = deleteEvent(event_locked);
+  return true;
+  //}
+  //return false;
 }
 
 /*
@@ -845,7 +864,8 @@ bool EventSet::unsetEventLocked()
  */
 bool EventSet::unsetEventUnlocked(int index)
 {
-  if(!isBaseSet() && index >= 0 && (uint32_t)index < events_unlocked.size())
+  //if(!isBaseSet() && index >= 0 && (uint32_t)index < events_unlocked.size())
+  if(index >= 0 && (uint32_t)index < events_unlocked.size())
   {
     Event delete_event = events_unlocked[index];
     events_unlocked.erase(events_unlocked.begin() + index);
@@ -864,14 +884,14 @@ bool EventSet::unsetEventUnlocked(int index)
  */
 bool EventSet::unsetEventUnlocked()
 {
-  if(!isBaseSet())
-  {
-    for(uint16_t i = 0; i < events_unlocked.size(); i++)
-      deleteEvent(events_unlocked[i]);
-    events_unlocked.clear();
-    return true;
-  }
-  return false;
+  //if(!isBaseSet())
+  //{
+  for(uint16_t i = 0; i < events_unlocked.size(); i++)
+    deleteEvent(events_unlocked[i]);
+  events_unlocked.clear();
+  return true;
+  //}
+  //return false;
 }
 
 /*
@@ -926,23 +946,29 @@ EventSet& EventSet::operator=(const EventSet& source)
  *              deleting conversation, if that's been generated.
  *
  * Inputs: Event source - the event struct to copy
+ *         bool skeleton - true to only create a copy of source event as a
+ *                         skeleton. Used for instance based triggers
  * Output: Event - the copied event
  */
-Event EventSet::copyEvent(Event source)
+Event EventSet::copyEvent(Event source, bool skeleton)
 {
   /* Copy the event */
   Event event = createBlankEvent();
   event.classification = source.classification;
   event.convo = nullptr;
-  event.ints = source.ints;
   event.one_shot = source.one_shot;
+  event.has_exec = false;
+  //if(!skeleton) // TODO: FUTURE
+  //{
+  event.ints = source.ints;
   event.sound_id = source.sound_id;
   event.strings = source.strings;
+  //}
 
   /* If events, do the proper copy */
   for(uint32_t i = 0; i < source.events.size(); i++)
   {
-    event.events.push_back(copyEvent(source.events[i]));
+    event.events.push_back(copyEvent(source.events[i], skeleton));
     //Event* event_ptr = new Event();
     //*event_ptr = copyEvent(*(source.events[i]));
     //event.events.push_back(event_ptr);
@@ -953,11 +979,17 @@ Event EventSet::copyEvent(Event source)
      source.convo != nullptr)
   {
     event.convo = new Conversation;
-    event.convo->action_event = copyEvent(source.convo->action_event);
+    event.convo->action_event = copyEvent(source.convo->action_event,
+                                          skeleton);
     event.convo->category = source.convo->category;
     event.convo->next = source.convo->next;
     event.convo->text = source.convo->text;
     event.convo->thing_id = source.convo->thing_id;
+
+    /* If skeleton mode, purge conversation */
+    // TODO: FUTURE
+    //if(skeleton)
+    //  std::cout << "TODO: PURGE" << std::endl;
   }
 
   return event;

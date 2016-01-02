@@ -83,8 +83,8 @@ private:
   std::string base_path;
 
   /* Battling things/information */
-  Event* battle_eventlose;
-  Event* battle_eventwin;
+  EventPair battle_eventlose;
+  EventPair battle_eventwin;
   BattleFlags battle_flags;
   MapPerson* battle_person;
   MapThing* battle_thing;
@@ -286,18 +286,18 @@ public:
   void enableView(bool enable);
 
   /* Returns the battle information */
-  Event* getBattleEventLose();
-  Event* getBattleEventWin();
+  EventPair getBattleEventLose();
+  EventPair getBattleEventWin();
   BattleFlags getBattleFlags();
   int getBattlePersonID();
   int getBattleThingID();
 
   /* Initiates a battle, within the map */
   bool initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
-                  Event* event_win, Event* event_lose);
+                  EventPair event_win, EventPair event_lose);
 
   /* Initiates a conversation, within the map. */
-  bool initConversation(Conversation* convo, MapThing* source);
+  bool initConversation(ConvoPair convo_pair, MapThing* source);
 
   /* Initiates a notification, within the map (either string or image based) */
   bool initNotification(std::string notification);

@@ -44,8 +44,8 @@ Map::Map(Options* running_config, EventHandler* event_handler)
 {
   /* Set initial variables */
   base_path = "";
-  battle_eventlose = nullptr;
-  battle_eventwin = nullptr;
+  battle_eventlose = {nullptr, nullptr};
+  battle_eventwin = {nullptr, nullptr};
   battle_flags = BattleFlags::NONE;
   battle_person = nullptr;
   battle_thing = nullptr;
@@ -1461,8 +1461,12 @@ void Map::battleLose()
     if(!isBattleLoseGameOver())
     {
       if(event_handler != nullptr)
-        event_handler->executeEventRef(battle_eventlose, battle_person,
+      {
+        event_handler->executeEventRef(battle_eventlose.base, 
+                                       battle_eventlose.inst, battle_person,
                                        battle_thing);
+        battle_eventlose.inst->has_exec = true;
+      }
     }
   }
 
@@ -1489,8 +1493,12 @@ void Map::battleWon()
     else
     {
       if(event_handler != nullptr)
-        event_handler->executeEventRef(battle_eventwin, battle_person,
+      {
+        event_handler->executeEventRef(battle_eventwin.base, 
+                                       battle_eventwin.inst, battle_person,
                                        battle_thing);
+        battle_eventwin.inst->has_exec = true;
+      }
     }
   }
 
@@ -1518,13 +1526,13 @@ void Map::enableView(bool enable)
 }
 
 /* Returns the battle information */
-Event* Map::getBattleEventLose()
+EventPair Map::getBattleEventLose()
 {
   return battle_eventlose;
 }
 
 /* Returns the battle information */
-Event* Map::getBattleEventWin()
+EventPair Map::getBattleEventWin()
 {
   return battle_eventwin;
 }
@@ -1553,7 +1561,7 @@ int Map::getBattleThingID()
 
 /* Initiates a battle, within the map */
 bool Map::initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
-                     Event* event_win, Event* event_lose)
+                     EventPair event_win, EventPair event_lose)
 {
   if(!battle_trigger && person != nullptr && source != nullptr)
   {
@@ -1581,10 +1589,10 @@ bool Map::initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
 }
 
 /* Initiates a conversation, within the map */
-bool Map::initConversation(Conversation* convo, MapThing* source)
+bool Map::initConversation(ConvoPair convo_pair, MapThing* source)
 {
-  if(player != NULL && player->getTarget() == NULL
-                    && map_dialog.initConversation(convo, player, source))
+  if(player != nullptr && player->getTarget() == nullptr
+                    && map_dialog.initConversation(convo_pair, player, source))
   {
     /* Finalize conversation setup */
     std::vector<int> list = map_dialog.getConversationIDs();
@@ -1839,7 +1847,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       convo->next.push_back(convo2);
 
       /* Run the conversation and then delete */
-      if(map_dialog.initConversation(convo, player, NULL))
+      if(map_dialog.initConversation({convo, convo}, player, NULL))
       {
         std::vector<int> list = map_dialog.getConversationIDs();
         map_dialog.setConversationThings(getThingData(list));
@@ -2458,8 +2466,8 @@ void Map::unfocus()
 void Map::unloadMap()
 {
   /* Reset the index and applicable parameters */
-  battle_eventlose = nullptr;
-  battle_eventwin = nullptr;
+  battle_eventlose = {nullptr, nullptr};
+  battle_eventwin = {nullptr, nullptr};
   battle_flags = BattleFlags::NONE;
   battle_person = nullptr;
   battle_thing = nullptr;

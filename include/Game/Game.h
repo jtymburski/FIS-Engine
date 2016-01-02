@@ -143,7 +143,7 @@ private:
   int eventGiveItem(int id, int count);
 
   /* Initiates a conversation event */
-  void eventInitConversation(Conversation* convo, MapThing* source);
+  void eventInitConversation(ConvoPair convo_pair, MapThing* source);
 
   /* Initiates a notification event (in map) */
   void eventInitNotification(std::string notification);
