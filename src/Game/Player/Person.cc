@@ -1077,6 +1077,16 @@ bool Person::removeEquip(const EquipSlots &equip_slot)
   return removed;
 }
 
+void Person::restoreHealth()
+{
+  curr_stats.setStat(Attribute::VITA, curr_max_stats.getStat(Attribute::VITA));
+}
+
+void Person::restoreQtdr()
+{
+  curr_stats.setStat(Attribute::QTDR, curr_max_stats.getStat(Attribute::QTDR));
+}
+
 Sprite *Person::getActionSprite()
 {
   return action_sprite;

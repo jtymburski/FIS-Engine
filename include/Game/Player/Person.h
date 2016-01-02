@@ -263,8 +263,9 @@ public:
   /* Removes the equipment from a given slot */
   bool removeEquip(const EquipSlots& equip_slot);
 
-  /* Resets the action flags to their standard states */
-  void resetActionFlags();
+  /* Restoring functions */
+  void restoreHealth();
+  void restoreQtdr();
 
   /* Recalculates Curr skills based on flags */
   void updateSkills();

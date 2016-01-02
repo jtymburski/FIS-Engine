@@ -107,6 +107,10 @@ public:
   /* Clears all members of the party except the primary member */
   bool clearParty();
 
+  /* Restores the VITA // QTDR */
+  void restorePartyVita();
+  void restorePartyQtdr();
+
   /* Returns all the persons in the party except a given user */
   // std::vector<Person *> findMembersExcept(Person *const member,
   //                                         const bool &only_living = false);
@@ -130,7 +134,7 @@ public:
 
   /* Attempts to remove a member of the party by a given string name */
   bool removeMember(const std::string &name);
-  
+
   /* Calculates and returns the average speed of the Party */
   // int32_t getAverageSpeed();
 

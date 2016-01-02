@@ -205,6 +205,22 @@ bool Party::clearParty()
   return false;
 }
 
+//TODO Reserve members?
+void Party::restorePartyVita()
+{
+  for(auto& member : members)
+    if(member)
+      member->restoreHealth();
+}
+
+//TODO Reserve members?
+void Party::restorePartyQtdr()
+{
+  for(auto& member : members)
+    if(member)
+      member->restoreQtdr();
+}
+
 /*
  * Description: Determines whether a given person is in the Party.
  *
