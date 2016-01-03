@@ -85,6 +85,7 @@ struct ActorOutcome
       : actor_outcome_state{ActionState::BEGIN},
         actor{nullptr},
         causes_ko{false},
+        critical{false},
         damage{0},
         infliction_type{Infliction::INVALID},
         infliction_status{InflictionStatus::FIZZLE} {};
@@ -97,6 +98,7 @@ struct ActorOutcome
 
   /* Whether this outcome caused the actor to become KOed */
   bool causes_ko;
+  bool critical;
 
   /* The amount of damage that occured */
   int32_t damage;
@@ -211,9 +213,6 @@ private:
   /* Calculates the action variables for given skill */
   void calcActionVariables();
 
-  /* Returns the calculated critical hit factor */
-  float calcCritFactor(BattleActor* curr_target);
-
   /* Calculates the elemental modification vals for curr action */
   void calcElementalMods(BattleActor* curr_target);
 
@@ -253,8 +252,11 @@ public:
   /* Calculate alteration taking place */
   int32_t calcAltering(BattleActor* curr_target);
 
+  /* Returns the calculated critical hit factor */
+  float calcCritFactor(BattleActor* curr_target);
+
   /* Calculate the base damage against a given target */
-  int32_t calcDamage(BattleActor* curr_target);
+  int32_t calcDamage(BattleActor* curr_target, float crit_factor);
   int32_t calcDamageImplode(BattleActor* curr_target);
 
   bool doesActionCrit(BattleActor* curr_target);

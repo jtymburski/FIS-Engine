@@ -455,6 +455,7 @@ bool BattleEvent::setNextAction()
 // TODO: Crit level modifier
 bool BattleEvent::doesActionCrit(BattleActor* curr_target)
 {
+  std::cout << "Testing critical hit chance." << std::endl;
   auto curr_action = getCurrAction();
 
   if(actor && curr_target && curr_action)
@@ -474,7 +475,10 @@ bool BattleEvent::doesActionCrit(BattleActor* curr_target)
       uint32_t crit_pc_1000 = floor(crit_chance * 1000);
 
       if(Helpers::chanceHappens(crit_pc_1000, 1000))
+      {
+        std::cout << "Critical hit happens!" << std::endl;
         return true;
+      }
     }
   }
 
@@ -859,13 +863,12 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
 
 // TODO: Guarding damage factor [11-01-15]
 // TODO: Guarding for users who are guarding this actor [11-01-15]
-int32_t BattleEvent::calcDamage(BattleActor* curr_target)
+int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
 {
   updateStats();
   calcIgnoreState();
   calcElementalMods(curr_target);
 
-  // auto crit_factor = calcCritFactor(curr_target);
   auto targ_stats = getStatsOfTarget(curr_target);
   auto curr_skill = getCurrSkill();
   auto curr_action = getCurrAction();
@@ -929,5 +932,5 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target)
   else if(curr_target->getGuardingState() == GuardingState::GUARDED)
     base_damage *= kGUARD_MODIFIER;
 
-  return base_damage; // * crit_factor;
+  return base_damage * crit_factor;
 }

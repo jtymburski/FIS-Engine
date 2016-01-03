@@ -686,9 +686,13 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
   {
     if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE))
     {
-      // TODO: Critical
+      auto damage_type = DamageType::BASE;
+
+      if(outcome.critical)
+        damage_type = DamageType::CRITICAL;
+
       element->createAsDamageValue(
-          outcome.damage, DamageType::BASE, config->getScreenHeight(),
+          outcome.damage, damage_type, config->getScreenHeight(),
           getActorX(outcome.actor), getActorY(outcome.actor));
     }
     else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
@@ -926,7 +930,14 @@ void Battle::processEventSkill()
         // std::cout << "Action Hits!" << std::endl;
         if(curr_action->actionFlag(ActionFlags::DAMAGE))
         {
-          outcome.damage = event->calcDamage(target);
+          outcome.critical = event->doesActionCrit(target);
+
+          float crit_factor = 1.00;
+
+          if(outcome.critical)
+            crit_factor = event->calcCritFactor(target);
+
+          outcome.damage = event->calcDamage(target, crit_factor);
           outcome.actor_outcome_state = ActionState::PLEP;
         }
         else if(curr_action->actionFlag(ActionFlags::INFLICT))

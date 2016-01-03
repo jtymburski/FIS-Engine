@@ -1161,7 +1161,6 @@ BattleActor::getTargetsFromScope(BattleActor* user, ActionScope scope,
 
 int32_t BattleActor::calcTurnRegen(Attribute attr, int32_t outnumbered_val)
 {
-  std::cout << "Actor: " << person_base->getName() << std::endl;
   float reg_fac = 0.0f;
 
   if(person_base && attr == Attribute::VITA)
@@ -1169,12 +1168,8 @@ int32_t BattleActor::calcTurnRegen(Attribute attr, int32_t outnumbered_val)
   if(person_base && attr == Attribute::QTDR)
     reg_fac = getRegenFactor(person_base->getQDRegenRate());
 
-  std::cout << "reg fac" << reg_fac << std::endl;
-
   if(attr == Attribute::VITA && outnumbered_val != 0)
       reg_fac += (0.007 * outnumbered_val);
-
-    std::cout << "after reg fac: " << reg_fac << std::endl;
 
   int32_t max_attr_val = 0;
   int32_t amount = 0;
@@ -1191,8 +1186,6 @@ int32_t BattleActor::calcTurnRegen(Attribute attr, int32_t outnumbered_val)
     max_attr_val = stats_actual.getValue(Attribute::MQTD);
     amount = reg_fac * max_attr_val;
     max = max_attr_val - stats_actual.getValue(Attribute::QTDR);
-
-    // std::cout << "Max Possible: " << max << std::endl;
   }
 
   /* Cannot return more than the maximum possible regeneration value */
