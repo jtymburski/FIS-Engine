@@ -1462,7 +1462,7 @@ void Map::battleLose()
     {
       if(event_handler != nullptr)
       {
-        event_handler->executeEventRef(battle_eventlose.base, 
+        event_handler->executeEventRef(battle_eventlose.base,
                                        battle_eventlose.inst, battle_person,
                                        battle_thing);
         battle_eventlose.inst->has_exec = true;
@@ -1494,7 +1494,7 @@ void Map::battleWon()
     {
       if(event_handler != nullptr)
       {
-        event_handler->executeEventRef(battle_eventwin.base, 
+        event_handler->executeEventRef(battle_eventwin.base,
                                        battle_eventwin.inst, battle_person,
                                        battle_thing);
         battle_eventwin.inst->has_exec = true;
@@ -1592,7 +1592,7 @@ bool Map::initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
 /* Initiates a conversation, within the map */
 bool Map::initConversation(ConvoPair convo_pair, MapThing* source)
 {
-  if(player != nullptr && 
+  if(player != nullptr &&
      (player->getTarget() == nullptr || player->getTarget() == source) &&
      map_dialog.initConversation(convo_pair, player, source))
   {

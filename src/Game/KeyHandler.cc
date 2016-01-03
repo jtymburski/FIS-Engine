@@ -136,11 +136,7 @@ bool KeyHandler::isHeld(SDL_Keycode keycode, bool* found)
  */
 bool KeyHandler::isDepressed(GameKey game_key)
 {
-  std::cout << "Checking if a game key is depressed?" << std::endl;
   auto key = getKey(game_key);
-
-  if(key.depressed)
-    std::cout << "Yes" << std::endl;
 
   return key.depressed;
 }

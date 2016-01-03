@@ -105,6 +105,7 @@ public:
   const static uint32_t kID_SOUND_BTL_PLEP;
   const static uint32_t kID_SOUND_BTL_RAISE;
   const static uint32_t kID_SOUND_BTL_SILENCE;
+  const static uint32_t kID_SOUND_BTL_POISON;
 
   const static int kUNSET_ID; /* The placeholder unset ID */
 

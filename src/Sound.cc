@@ -26,11 +26,12 @@ const uint32_t Sound::kID_MUSIC_BATTLE = 2;
 /* -- */
 
 
-/* Reserved IDS
+/* Reserved IDS`
  *    System Sounds  0 - 49
  *    Map Sounds    50 - 99
  *   Battle Sounds 100 - 199
- *   Custom Sounds 1000+ */
+ *   Custom Sounds 1000+
+ */
 
 /* System Sounds */
 const uint32_t Sound::kID_SOUND_MENU_CHG = 0;
@@ -51,6 +52,7 @@ const uint32_t Sound::kID_SOUND_BTL_PARALYSIS = 116;
 const uint32_t Sound::kID_SOUND_BTL_PLEP = 117;
 const uint32_t Sound::kID_SOUND_BTL_RAISE = 118;
 const uint32_t Sound::kID_SOUND_BTL_SILENCE = 119;
+const uint32_t Sound::kID_SOUND_BTL_POISON = 120;
 
 /* -- */
 const int Sound::kUNSET_ID = -1;

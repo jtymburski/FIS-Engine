@@ -412,6 +412,9 @@ private:
   /* Clears Enemy Backdrop */
   void clearEnemyBackdrop();
 
+  /* Plays an infliction sound */
+  void playInflictionSound(Infliction type);
+
   /* Renders the action frame if needed */
   bool renderActionFrame();
 

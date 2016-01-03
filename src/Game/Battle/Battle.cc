@@ -659,12 +659,17 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE))
   {
     animation = event->event_skill->skill->getAnimation();
+    event_handler->triggerSound(Sound::kID_SOUND_BTL_PLEP,
+                                SoundChannels::TRIGGERS);
     outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
   }
   else if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
   {
     auto type = event->getCurrAction()->getAilment();
+    playInflictionSound(type);
+
     animation = battle_display_data->getPlepAilment(type);
+
     outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
   }
   else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
@@ -700,8 +705,9 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
       std::cout << "[RenderElement] Alter Value Creation" << std::endl;
       // TODO: Non-VITA altering stats?
       element->createAsDamageValue(
-          std::abs(outcome.damage), DamageType::HEALING, config->getScreenHeight(),
-          getActorX(outcome.actor), getActorY(outcome.actor));
+          std::abs(outcome.damage), DamageType::HEALING,
+          config->getScreenHeight(), getActorX(outcome.actor),
+          getActorY(outcome.actor));
     }
   }
 
@@ -773,6 +779,8 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
     if(this->outcome != OutcomeType::NONE)
       addDelay(2000);
 
+    event_handler->triggerSound(Sound::kID_SOUND_BTL_DEATH,
+                                SoundChannels::TRIGGERS);
     outcome.actor->startFlashing(FlashingType::KOING);
     outcome.actor->removeAilmentsKO();
   }
@@ -1130,7 +1138,8 @@ void Battle::updatePersonalUpkeep()
 void Battle::updatePersonalVitaRegen()
 {
   // Calculate and create the vita regen for the upkeep_actor
-  auto vita_regen = upkeep_actor->calcTurnRegen(Attribute::VITA, outnumberedVal());
+  auto vita_regen =
+      upkeep_actor->calcTurnRegen(Attribute::VITA, outnumberedVal());
 
   if(vita_regen > 0)
   {
@@ -1860,6 +1869,36 @@ void Battle::clearElementsTimedOut()
       end(render_elements));
 }
 
+void Battle::playInflictionSound(Infliction type)
+{
+  if(type == Infliction::CONFUSE)
+  {
+    event_handler->triggerSound(Sound::kID_SOUND_BTL_CONFUSE,
+                                SoundChannels::TRIGGERS);
+  }
+  else if(type == Infliction::POISON)
+  {
+    event_handler->triggerSound(Sound::kID_SOUND_BTL_POISON,
+                                SoundChannels::TRIGGERS);
+  }
+  else if(type == Infliction::HIBERNATION)
+  {
+    event_handler->triggerSound(Sound::kID_SOUND_BTL_HIBERNATE,
+                                SoundChannels::TRIGGERS);
+  }
+  else if(type == Infliction::SILENCE)
+  {
+    std::cout << "Playing silence sound. " << std::endl;
+    event_handler->triggerSound(Sound::kID_SOUND_BTL_SILENCE,
+                                SoundChannels::TRIGGERS);
+  }
+  else
+  {
+    event_handler->triggerSound(Sound::kID_SOUND_BTL_RAISE,
+                                SoundChannels::TRIGGERS);
+  }
+}
+
 // NOTE: On menu rendering, render the friend info of the selected ally
 // ex. //
 /* Render the selecting person info */
@@ -2509,6 +2548,8 @@ void Battle::upkeepAilmentOutcome()
     else if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()) &&
             upkeep_ailment->getFlag(AilState::CURABLE_KO))
     {
+      event_handler->triggerSound(Sound::kID_SOUND_BTL_DEATH,
+                                  SoundChannels::TRIGGERS);
       upkeep_actor->startFlashing(FlashingType::KOING);
       upkeep_actor->removeAilmentsKO();
       addDelay(1200);
@@ -2536,6 +2577,7 @@ void Battle::upkeepAilmentPlep()
   /* Create the plep on the upkeep actor */
   if(plep)
   {
+    playInflictionSound(type);
     auto x = getActorX(upkeep_actor);
     auto y = getActorY(upkeep_actor);
     render_elements.push_back(new RenderElement(renderer, plep, 2, x, y));
@@ -2832,12 +2874,6 @@ void Battle::setNextTurnState()
 
 bool Battle::update(int32_t cycle_time)
 {
-  // TODO: Cycle update bug [12-19-15]
-  // if(turn_state == TurnState::BEGIN || turn_state == TurnState::ENTER_DIM ||
-  //    turn_state == TurnState::FADE_IN_TEXT)
-  // {
-  //   std::cout << "Cycle Time: " << cycle_time << std::endl;
-  // }
   time_elapsed += cycle_time;
 
   updateDelay(cycle_time);
@@ -2897,30 +2933,7 @@ bool Battle::update(int32_t cycle_time)
  * TO REFACTOR
  *============================================================================*/
 
-// void Battle::battleRun()
-// {
-//   if(outcome == OutcomeType::ALLIES_RUN)
-//   {
-//     /* For each person on the friends team, incur a % penalty against the
-//      * experience to the next level */
-//     for(uint32_t i = 0; i < friends->getSize(); i++)
-//     {
-//       friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
-//       // TODO [11-06-14] Update personal record run from battle count
-//     }
-// }
-
 // void Battle::battleWon()
-// {
-//   /* Cleanup the current Battle state -- This includes unapplying ailments
-//   */
-//   for(auto ailment : ailments)
-//     removeAilment(ailment);
-//   auto living_members = friends->getLivingMemberPtrs();
-//   for(auto& member : living_members)
-//   {
-//     auto exp_to_add = calcExperience(member);
-//     member->addExp(exp_to_add);
 //   // TODO [04-03-15]
 //   // Update the personal record for each member, including battle counts
 //   // and what battles they have won
@@ -2940,57 +2953,6 @@ bool Battle::update(int32_t cycle_time)
 //   // Find out what items will be received -> add to inventory
 //   // Refuse gain of items?
 //   // Findo out how much money will be received -> add to inventory
-
-// void Battle::cleanUp()
-// {
-//   person_index = 0;
-
-//   setBattleFlag(CombatState::BEGIN_PROCESSING, false);
-//   setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
-//   setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
-//   setBattleFlag(CombatState::LAST_INDEX, false);
-//   setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, false);
-//   setBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS, false);
-//   setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
-//   setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, false);
-//   setBattleFlag(CombatState::CURRENT_AILMENT_STARTED, false);
-//   setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
-//   setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
-//   setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, false);
-//   setBattleFlag(CombatState::CURR_TARG_DEAD, false);
-//   setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-
-//   /* Increment the turn counter */
-//   turns_elapsed++;
-
-//   menu->unsetAll();
-//   curr_module = nullptr;
-
-//   /* Cleanup for each member of friends and persons */
-//   for(size_t i = 0; i < friends->getSize(); i++)
-//   {
-//     auto member = friends->getMember(i);
-//     member->resetDefend();
-//     member->resetGuard();
-//     member->resetGuardee();
-//     member->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
-//   }
-
-//   for(size_t i = 0; i < foes->getSize(); i++)
-//   {
-//     auto member = foes->getMember(i);
-//     member->resetAI();
-//     member->resetDefend();
-//     member->resetGuard();
-//     member->resetGuardee();
-//     member->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
-//   }
-
-//   for(auto ailment : ailments)
-//     ailment->setFlag(AilState::UPDATE_PROCESSED, false);
-
-//   setBattleFlag(CombatState::PHASE_DONE, true);
-// }
 
 // bool Battle::doesCurrPersonRun()
 // {
@@ -3044,91 +3006,6 @@ bool Battle::update(int32_t cycle_time)
 //   return run_happens;
 // }
 
-// void Battle::performEvents()
-// {
-//     auto event = event_buffer->getCurrentEvent();
-//     auto index = event_buffer->getIndex();
-//     event_buffer->printEvent(index);
-
-//     else if(event->type == EventType::ACTION_BEGIN)
-//     {
-//       if(event->user)
-//         setUserAttacking(event->user);
-//     }
-//     else if(event->type == EventType::ACTION_END)
-//       unsetActorsAttacking();
-//     if(event->type == EventType::IMPLODE)
-//     {
-//       performDamageEvent(event);
-//       // TODO [08-30-15]: Move the member to reserve (not needed until
-//       revive)
-//     }
-//     else if(event->type == EventType::SUCCEED_RUN)
-//     {
-//       /* In a succeed run event, the happens flag is used for "allies" */
-//       if(event->allies)
-//         setOutcome(OutcomeType::ALLIES_RUN);
-//       else
-//         setOutcome(OutcomeType::ENEMIES_RUN);
-
-//       setBattleFlag(CombatState::PHASE_DONE, true);
-//     }
-//     else if(event->type == EventType::METABOLIC_KILL)
-//       event->user->setBFlag(BState::ALIVE, false);
-//     else if(event->type == EventType::BEGIN_DEFEND)
-//       event->user->setBFlag(BState::DEFENDING, true);
-//     else if(event->type == EventType::BREAK_DEFEND)
-//       event->user->resetDefend();
-//     else if(event->type == EventType::BEGIN_GUARD)
-//     {
-//       /* Update the buffer to swap out Guard <--> Guardee
-//        * as targets for remaining actions to be processed & performed */
-//       auto success = performGuard(event);
-
-//       if(success)
-//       {
-//         action_buffer->injectGuardTargets(event->user->getGuard(),
-//         event->user);
-//     }
-//     else if(event->type == EventType::BREAK_GUARD)
-//     {
-//       action_buffer->rejectGuardTargets(event->user->getGuard());
-//       curr_target->getGuardee()->resetGuard();
-//       curr_target->resetGuardee();
-//     }
-//     else if(event->type == EventType::DEATH)
-//     {
-//       event->targets.at(0)->setBFlag(BState::ALIVE, false);
-
-//       /* Enable all skills corner case (silence cure on death) */
-//       auto skills = curr_target->getCurrSkills();
-//       for(size_t i = 0; i < skills->getSize(); i++)
-//         skills->setSilenced(i, false);
-//     }
-//     else if(event->type == EventType::PARTY_DEATH)
-//     {
-//       std::cout << "{PARTY DEATH} A party death has occured!" << std::endl;
-
-//       /* If a party death occurs on the allies -> victory, else -> loss */
-//       if(event->allies)
-//         setOutcome(OutcomeType::DEFEAT);
-//       else
-//         setOutcome(OutcomeType::VICTORY);
-//     }
-//     else if(event->type == EventType::INFLICTION)
-//     {
-//       assert(event->targets.size() > 0 && event->targets.at(0));
-
-//       curr_target = event->targets.at(0);
-
-//       addAilment(event->action_use->getAilment(), event->user,
-//                  event->action_use->getMin(), event->action_use->getMax(),
-//                  event->action_use->getBase());
-//     }
-//     else if(event->type == EventType::CURE_INFLICTION)
-//     {
-//       removeAilment(event->ailment_use);
-//     }
 //     else if(event->type == EventType::ALTERATION)
 //     {
 //       auto target_attr = event->action_use->getTargetAttribute();
@@ -3202,248 +3079,6 @@ bool Battle::update(int32_t cycle_time)
 //     event_buffer->setPerformed(index);
 //     valid_next = event_buffer->setNextIndex();
 //   }
-// }
-
-// void Battle::processBuffer()
-// {
-//   /* If Buffer index == 0, don't increment, else, increment */
-//   if(getBattleFlag(CombatState::BEGIN_PROCESSING) &&
-//      getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-//   {
-//     setBattleFlag(CombatState::LAST_INDEX, false);
-
-//     if(!action_buffer->setNext())
-//       setBattleFlag(CombatState::LAST_INDEX, true);
-
-//     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
-//     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
-//   }
-//   /* If begin processing has not been assigned (after checking for complete
-//    * action processing, then the action index should be set to 0 and flag
-//    * set to show that processing has begun) */
-//   else if(!getBattleFlag(CombatState::BEGIN_PROCESSING))
-//   {
-//      Clear action variables to ensure a clean slate for processing
-//     clearActionVariables();
-
-//     curr_action_index = 0;
-//     setBattleFlag(CombatState::BEGIN_PROCESSING, true);
-//   }
-
-//   auto curr_action_type = ActionType::NONE;
-//   auto curr_targets = action_buffer->getTargets();
-//   auto cooldown = action_buffer->getCooldown();
-//   curr_action_type = action_buffer->getActionType();
-//   curr_user = action_buffer->getUser();
-//   curr_skill = action_buffer->getSkill();
-
-//   /* Assert the current user is alive. If the current user is alive, the
-//    * processing of their action on the Buffer will be void */
-//   if(curr_user != nullptr && curr_user->getBFlag(BState::ALIVE))
-//   {
-
-//     if(curr_action_type == ActionType::SKILL)
-//     {
-//       /* Only process the skill if its cooldown is at zero, else: create a
-//       skill
-//        * cooldown event to cool the skill processing down */
-//       if(cooldown == 0)
-//       {
-//         processSkill(curr_targets);
-//       }
-//       else
-//       {
-//         event_buffer->createCooldownEvent(curr_user, curr_skill, cooldown);
-//         setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
-//       }
-//     }
-//     else if(curr_action_type == ActionType::ITEM)
-//     {
-//       processItem(curr_targets);
-//     }
-//     else if(curr_action_type == ActionType::DEFEND)
-//     {
-//       event_buffer->createDefendEvent(EventType::BEGIN_DEFEND, curr_user);
-//       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-//     else if(curr_action_type == ActionType::GUARD)
-//     {
-//       curr_target = curr_targets.at(0);
-//       bool good_guard = processGuard();
-
-//       /* Create begin guard or fail guard events based on the guard
-//       processing
-//        */
-//       if(good_guard)
-//       {
-//         event_buffer->createGuardEvent(EventType::BEGIN_GUARD, curr_user,
-//                                        action_buffer->getTargets().at(0));
-//       }
-//       else
-//       {
-//         event_buffer->createGuardEvent(EventType::FAIL_GUARD, curr_user,
-//                                        action_buffer->getTargets().at(0));
-//       }
-
-//       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-//     else if(curr_action_type == ActionType::IMPLODE)
-//     {
-//       assert(curr_targets.size() > 0);
-//       processImplode(curr_targets);
-//     }
-//     else if(curr_action_type == ActionType::RUN)
-//     {
-//       auto allies = friends->isInParty(curr_user);
-//       event_buffer->createRunEvent(EventType::ATTEMPT_RUN, curr_user,
-//       allies);
-
-//       if(doesCurrPersonRun())
-//         event_buffer->createRunEvent(EventType::SUCCEED_RUN, curr_user,
-//         allies);
-//       else
-//         event_buffer->createRunEvent(EventType::FAIL_RUN, curr_user,
-//         allies);
-
-//       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-//     else if(curr_action_type == ActionType::PASS)
-//     {
-//       event_buffer->createPassEvent(curr_user);
-//       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-//     }
-//   }
-//   else
-//     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
-
-//   /* Complete the processing of the last of events and move to clean up */
-//   if(getBattleFlag(CombatState::LAST_INDEX) &&
-//      getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-//   {
-//     setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, true);
-//   }
-
-//   setBattleFlag(CombatState::READY_TO_RENDER, true);
-// }
-
-// bool Battle::processAction(BattleEvent* battle_event)
-// {
-//   auto can_process = false;
-//   auto done = false;
-//   auto target_alive = curr_target->getBFlag(BState::ALIVE);
-//   std::vector<Person*> target_vec{curr_target};
-
-//   /* Non-revive actions can only be processed against targets who are alive
-//   */
-//   if(!target_alive && curr_action->actionFlag(ActionFlags::REVIVE))
-//     can_process = true;
-//   else if(target_alive && !curr_action->actionFlag(ActionFlags::REVIVE))
-//     can_process = true;
-
-//   auto action_hits = false;
-//   battle_event->happens = action_hits;
-
-//   if(can_process)
-//   {
-//     action_hits = doesActionHit();
-//   }
-
-//   /* Action/Factor targets for Alteration/Assignment */
-//   if(can_process && action_hits)
-//   {
-//     if(curr_action->actionFlag(ActionFlags::ALTER) ||
-//        curr_action->actionFlag(ActionFlags::ASSIGN))
-//     {
-//       auto action_target = curr_user;
-//       auto factor_target = curr_user;
-
-//       user_attr = curr_action->getUserAttribute();
-//       targ_attr = curr_action->getTargetAttribute();
-
-//       /* If the user's attribute is defined and the target's is not, the
-//        * alteration will be on the user's %/value up to their MAX attrs*/
-//       if(user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
-//         targ_attr = user_attr;
-//       /* If the target's attribute is defined and the user's is not, the
-//        * alteration or assignment will be on the target's %/value up to
-//        their
-//        * MAX or CURR amount, respectively */
-//       else if(user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
-//       {
-//         action_target = curr_target;
-//         factor_target = curr_target;
-//         user_attr = targ_attr;
-//       }
-//       /* If both the user and target's attributes are defined, the
-//       alteration
-//        * will alter the target's value by a percentage of the user's stat
-//        */
-//       else if(user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
-//         action_target = curr_target;
-//       else
-//         std::cerr << "[Error] - Critical error in Battle processing.\n";
-
-//       if(curr_action->actionFlag(ActionFlags::FLIP_ATTR))
-//       {
-//         std::cout << "Flipping!" << std::endl;
-//         std::swap(action_target, factor_target);
-//         std::swap(user_attr, targ_attr);
-//         std::cout << "Action Target:" << action_target->getName() <<
-//         std::endl;
-//         std::cout << "Factor Target: " << factor_target->getName() <<
-//         std::endl;
-//       }
-
-//       if(curr_action->actionFlag(ActionFlags::ALTER))
-//       {
-//         auto alter_event =
-//             event_buffer->createAlterEvent(curr_action, action_target, 0);
-
-//         done = processAlterAction(alter_event, action_target,
-//         factor_target);
-//       }
-//       else
-//       {
-//         auto assign_event =
-//             event_buffer->createAssignEvent(curr_action, action_target, 0);
-
-//         done = processAssignAction(assign_event, action_target,
-//         factor_target);
-//       }
-//     }
-//     else if(curr_action->actionFlag(ActionFlags::DAMAGE))
-//     {
-//       auto damage_event = event_buffer->createDamageEvent(
-//           EventType::STANDARD_DAMAGE, curr_target, 0);
-
-//       done = processDamageAction(damage_event);
-//     }
-//     else if(curr_action->actionFlag(ActionFlags::INFLICT))
-//       done = processInflictAction();
-//     else if(curr_action->actionFlag(ActionFlags::RELIEVE))
-//       done = processRelieveAction();
-//     else if(curr_action->actionFlag(ActionFlags::REVIVE))
-//     {
-//       auto revive_event = event_buffer->createReviveEvent(curr_target, 0);
-//       done = processReviveAction(revive_event);
-//     }
-//   }
-//   else if(!can_process)
-//   {
-//     auto fizzle = event_buffer->createFizzleEvent(EventType::FIZZLE,
-//     curr_user,
-//                                                   target_vec);
-//     fizzle->action_use = curr_action;
-//   }
-//   else if(can_process && !action_hits)
-//   {
-//     auto miss = event_buffer->createMissEvent(EventType::ACTION_MISS,
-//     curr_user,
-//                                               target_vec);
-//     miss->action_use = curr_action;
-//   }
-
-//   return done;
 // }
 
 // bool Battle::processAlterAction(BattleEvent* alter_event, Person*
@@ -3558,45 +3193,4 @@ bool Battle::update(int32_t cycle_time)
 //   }
 
 //   return party_death;
-// }
-
-// bool Battle::updateTargetDefense()
-// {
-//   auto can_process = true;
-
-//   can_process &= curr_target != nullptr;
-//   can_process &= curr_user != nullptr;
-
-//   if(can_process)
-//   {
-//     auto defending = curr_target->getBFlag(BState::DEFENDING);
-
-//     /* If the person was defending, unless they'r pow. def., reset def
-//     status
-//     */
-//     if(defending && !curr_target->isPowerDefender())
-//       event_buffer->createDefendEvent(EventType::BREAK_DEFEND,
-//       curr_target);
-//     else if(defending && curr_target->isPowerDefender())
-//       event_buffer->createDefendEvent(EventType::PERSIST_DEFEND,
-//       curr_target);
-
-//     auto guarding = curr_target->getBFlag(BState::GUARDING);
-
-//     /* If the person was guarding, unless they're pow. grd., reset grd
-//     status
-//     */
-//     if(guarding && !curr_target->isPowerGuarder())
-//     {
-//       event_buffer->createGuardEvent(EventType::BREAK_GUARD, curr_user,
-//                                      curr_target);
-//     }
-//     else if(guarding && curr_target->isPowerGuarder())
-//     {
-//       event_buffer->createGuardEvent(EventType::PERSIST_GUARD, curr_user,
-//                                      curr_target);
-//     }
-//   }
-
-//   return can_process;
 // }
