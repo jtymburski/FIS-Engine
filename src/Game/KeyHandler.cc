@@ -48,7 +48,7 @@ const SDL_Keycode KeyHandler::kMOVE_UP_DEFAULT = SDLK_UP;
 const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT = SDLK_DOWN;
 const SDL_Keycode KeyHandler::kMENU_DEFAULT = SDLK_d;
 const SDL_Keycode KeyHandler::kACTION_DEFAULT = SDLK_SPACE;
-const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_ESCAPE;
+const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_BACKSPACE;
 const SDL_Keycode KeyHandler::kRUN_DEFAULT = SDLK_LSHIFT;
 const SDL_Keycode KeyHandler::kDEBUG_DEFAULT = SDLK_f;
 const SDL_Keycode KeyHandler::kPAUSE_DEFAULT = SDLK_RCTRL;
@@ -136,7 +136,11 @@ bool KeyHandler::isHeld(SDL_Keycode keycode, bool* found)
  */
 bool KeyHandler::isDepressed(GameKey game_key)
 {
+  std::cout << "Checking if a game key is depressed?" << std::endl;
   auto key = getKey(game_key);
+
+  if(key.depressed)
+    std::cout << "Yes" << std::endl;
 
   return key.depressed;
 }

@@ -2596,7 +2596,7 @@ int32_t Battle::getActorY(BattleActor* actor)
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
-    battle_menu->keyDownEvent(event);
+    battle_menu->keyDownEvent();
   else
   {
     if(event.keysym.sym == SDLK_DELETE && battle_buffer)
@@ -2610,8 +2610,15 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 
 bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
 {
-  /* Assert everything important is not nullptr */
-  assert(config && renderer && friends && foes);
+  /* Assert  all essentials are not nullptr. We want Battle to fail */
+  assert(battle_display_data);
+  assert(config);
+  assert(event_handler);
+  assert(renderer);
+  assert(friends);
+  assert(foes);
+
+  event_handler->triggerMusic(2);
 
   /* Construct the Battle actor objects based on the persons in the parties */
   buildBattleActors(friends, foes);
@@ -2736,6 +2743,16 @@ bool Battle::setDisplayData(BattleDisplayData* battle_display_data)
   }
 
   return success;
+}
+
+bool Battle::setEventHandler(EventHandler* event_handler)
+{
+  this->event_handler = event_handler;
+
+  if(battle_menu && this->event_handler)
+    battle_menu->setEventHandler(event_handler);
+
+  return this->event_handler;
 }
 
 void Battle::setFlagCombat(CombatState flag, const bool& set_value)

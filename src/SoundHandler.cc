@@ -13,7 +13,7 @@
  *============================================================================*/
 
 /*
- * Description: Sets up a blank sound handler database. Nothing will play on 
+ * Description: Sets up a blank sound handler database. Nothing will play on
  *              initial trigger.
  *
  * Inputs: none
@@ -86,7 +86,7 @@ Sound* SoundHandler::createAudioSound(uint32_t id)
   }
   return found_chunk;
 }
-  
+
 /*
  * Description: Takes the queue before processing and provides any clean-up
  *              if required. Current state just removes play triggers on similar
@@ -107,7 +107,7 @@ void SoundHandler::queueCleanUp()
     {
       /* If a later entry is stopping an entry in the same queue that's playing,
        * remove play entry */
-      if(queue[i].channel == queue[j].channel && 
+      if(queue[i].channel == queue[j].channel &&
          !queue[i].stop && queue[j].stop)
       {
         valid = false;
@@ -369,7 +369,7 @@ bool SoundHandler::load(XmlData data, int index, std::string base_path)
 
   return success;
 }
-  
+
 /*
  * Description: Process the queue of sound and music triggers.
  *
@@ -393,7 +393,7 @@ void SoundHandler::process()
       /* Channel selector - music or weather */
       SoundChannels channel1 = SoundChannels::MUSIC1;
       SoundChannels channel2 = SoundChannels::MUSIC2;
-      if(queue[i].channel == SoundChannels::WEATHER1 || 
+      if(queue[i].channel == SoundChannels::WEATHER1 ||
          queue[i].channel == SoundChannels::WEATHER2)
       {
         channel1 = SoundChannels::WEATHER1;

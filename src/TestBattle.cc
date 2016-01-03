@@ -28,7 +28,7 @@ const uint8_t TestBattle::kNUM_MENU_ITEMS = 16;
 /* ------------------------------------------------------------------------- */
 /* Constructor function */
 /* ------------------------------------------------------------------------- */
-TestBattle::TestBattle(Options* running_config)
+TestBattle::TestBattle(Options* running_config, EventHandler* event_handler)
     : display_data{nullptr},
       plep_sullen_sting{nullptr},
       plep_befuddling_sting{nullptr},
@@ -75,6 +75,7 @@ TestBattle::TestBattle(Options* running_config)
   battle_logic = new Battle();
 
   setConfiguration(running_config);
+  setEventHandler(event_handler);
 
   battle_logic->setDisplayData(display_data);
   create();
@@ -1596,6 +1597,7 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
       base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
 
   battle_logic->setRenderer(renderer);
+  battle_logic->setEventHandler(event_handler);
   display_data->setRenderer(renderer);
 
   if(!display_data->isDataBuilt())
@@ -1787,11 +1789,16 @@ bool TestBattle::setConfiguration(Options* running_config)
     /* Text setup */
     deleteMenu();
     createMenu();
-
-    return true;
   }
 
-  return false;
+  return running_config;
+}
+
+bool TestBattle::setEventHandler(EventHandler* event_handler)
+{
+  this->event_handler = event_handler;
+
+  return this->event_handler;
 }
 
 /* ------------------------------------------------------------------------- */

@@ -18,25 +18,40 @@ const short Sound::kINFINITE_LOOP = -1;
 const int Sound::kSTOP_FADE = 1500;
 /* Public Constant Implementation */
 const int Sound::kDEFAULT_FREQUENCY = 22050;
+
 /* -- */
-const uint32_t Sound::kID_MUSIC_BATTLE = 2;
-const uint32_t Sound::kID_MUSIC_LOADING = 1;
 const uint32_t Sound::kID_MUSIC_TITLE = 0;
+const uint32_t Sound::kID_MUSIC_LOADING = 1;
+const uint32_t Sound::kID_MUSIC_BATTLE = 2;
 /* -- */
-const uint32_t Sound::kID_SOUND_BTL_CONFUSE = 3;
-const uint32_t Sound::kID_SOUND_BTL_DEATH = 4;
-const uint32_t Sound::kID_SOUND_BTL_FIRE = 5;
-const uint32_t Sound::kID_SOUND_BTL_HIBERNATE = 6;
-const uint32_t Sound::kID_SOUND_BTL_LOWER = 7;
-const uint32_t Sound::kID_SOUND_BTL_PARALYSIS = 8;
-const uint32_t Sound::kID_SOUND_BTL_PLEP = 9;
-const uint32_t Sound::kID_SOUND_BTL_RAISE = 10;
-const uint32_t Sound::kID_SOUND_BTL_SILENCE = 11;
+
+
+/* Reserved IDS
+ *    System Sounds  0 - 49
+ *    Map Sounds    50 - 99
+ *   Battle Sounds 100 - 199
+ *   Custom Sounds 1000+ */
+
+/* System Sounds */
 const uint32_t Sound::kID_SOUND_MENU_CHG = 0;
 const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
 const uint32_t Sound::kID_SOUND_MENU_PREV = 2;
+
+/* Map Sounds*/
 const uint32_t Sound::kID_SOUND_PICK_COIN = 12;
 const uint32_t Sound::kID_SOUND_PICK_ITEM = 13;
+
+/* Battle Sounds */
+const uint32_t Sound::kID_SOUND_BTL_CONFUSE = 111;
+const uint32_t Sound::kID_SOUND_BTL_DEATH = 112;
+const uint32_t Sound::kID_SOUND_BTL_FIRE = 113;
+const uint32_t Sound::kID_SOUND_BTL_HIBERNATE = 114;
+const uint32_t Sound::kID_SOUND_BTL_LOWER = 115;
+const uint32_t Sound::kID_SOUND_BTL_PARALYSIS = 116;
+const uint32_t Sound::kID_SOUND_BTL_PLEP = 117;
+const uint32_t Sound::kID_SOUND_BTL_RAISE = 118;
+const uint32_t Sound::kID_SOUND_BTL_SILENCE = 119;
+
 /* -- */
 const int Sound::kUNSET_ID = -1;
 
@@ -88,7 +103,7 @@ Sound::~Sound()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-  
+
 /* Copy function, to be called by a copy or equal operator constructor */
 void Sound::copySelf(const Sound &source)
 {
@@ -98,7 +113,7 @@ void Sound::copySelf(const Sound &source)
   id = source.id;
   loop_count = source.loop_count;
   volume = source.volume;
-  
+
   /* Sound data - unable to be copied */
   raw_data = nullptr;
   length = 0;
@@ -181,7 +196,7 @@ int Sound::getChannelInt()
 {
   return getChannelInt(channel);
 }
-  
+
 /* Returns the fade status */
 Mix_Fading Sound::getFadeStatus()
 {

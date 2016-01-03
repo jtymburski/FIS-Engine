@@ -88,6 +88,14 @@ public:
   const static uint32_t kID_MUSIC_BATTLE;
   const static uint32_t kID_MUSIC_LOADING;
   const static uint32_t kID_MUSIC_TITLE;
+
+  const static uint32_t kID_SOUND_PICK_COIN;
+  const static uint32_t kID_SOUND_PICK_ITEM;
+
+  const static uint32_t kID_SOUND_MENU_CHG;
+  const static uint32_t kID_SOUND_MENU_NEXT;
+  const static uint32_t kID_SOUND_MENU_PREV;
+
   const static uint32_t kID_SOUND_BTL_CONFUSE;
   const static uint32_t kID_SOUND_BTL_DEATH;
   const static uint32_t kID_SOUND_BTL_FIRE;
@@ -97,11 +105,7 @@ public:
   const static uint32_t kID_SOUND_BTL_PLEP;
   const static uint32_t kID_SOUND_BTL_RAISE;
   const static uint32_t kID_SOUND_BTL_SILENCE;
-  const static uint32_t kID_SOUND_MENU_CHG;
-  const static uint32_t kID_SOUND_MENU_NEXT;
-  const static uint32_t kID_SOUND_MENU_PREV;
-  const static uint32_t kID_SOUND_PICK_COIN;
-  const static uint32_t kID_SOUND_PICK_ITEM;
+
   const static int kUNSET_ID; /* The placeholder unset ID */
 
 /*============================================================================

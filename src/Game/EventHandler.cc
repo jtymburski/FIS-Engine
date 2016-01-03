@@ -138,7 +138,7 @@ void EventHandler::executeEventRef(Event* event, MapPerson* initiator,
   executeEventRef(event, nullptr, initiator, source);
 }
 
-/* Execute the given event reference */ 
+/* Execute the given event reference */
 void EventHandler::executeEventRef(Event* event, Event* event_inst,
                                    MapPerson* initiator, MapThing* source)
 {
@@ -435,9 +435,9 @@ bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source,
     if(getEventPair(pair, true))
     {
       BattleFlags inst_flags;
-      if(EventSet::dataEventStartBattle(pair.base, flags, 
-                                        event_win.base, event_lose.base) && 
-         EventSet::dataEventStartBattle(pair.inst, inst_flags, 
+      if(EventSet::dataEventStartBattle(pair.base, flags,
+                                        event_win.base, event_lose.base) &&
+         EventSet::dataEventStartBattle(pair.inst, inst_flags,
                                         event_win.inst, event_lose.inst))
       {
         *person = event_queue[queue_index].initiator;

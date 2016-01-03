@@ -499,6 +499,7 @@ bool Application::updateViews(int cycle_time)
       }
       else if(action_item == TitleScreen::BATTLE)
       {
+        test_battle.setEventHandler(&game_handler->getHandler());
         changeMode(TESTBATTLE);
       }
     }

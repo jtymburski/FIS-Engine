@@ -2,8 +2,8 @@
  * Class Name: TitleScreen
  * Date Created: Dec 02 2012
  * Inheritance: none
- * Description: Is the view for the main control display of the game. Will 
- *              mostly just be a menu but this allows for the safe passage 
+ * Description: Is the view for the main control display of the game. Will
+ *              mostly just be a menu but this allows for the safe passage
  *              between classes as interactions with Application occur.
  *
  * TODO:
@@ -29,7 +29,7 @@ const uint16_t TitleScreen::kTEXT_MARGIN = 75;
 TitleScreen::TitleScreen(Options* running_config)
 {
   /* Initial parameter setup */
-  action = NONE; 
+  action = NONE;
   base_path = "";
   cursor_index = 0;
   font = nullptr;
@@ -39,7 +39,7 @@ TitleScreen::TitleScreen(Options* running_config)
   render_index = 0;
   sound_handler = nullptr;
   system_options = nullptr;
- 
+
   // TODO: TESTING - FIX
   rotate1 = 0;
   rotate2 = 0;
@@ -72,7 +72,7 @@ void TitleScreen::decrementSelected()
 
   /* Play sound */
   if(sound_handler != nullptr)
-    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG, 
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
                                   SoundChannels::MENUS);
 }
 
@@ -103,15 +103,15 @@ bool TitleScreen::setMenu(SDL_Renderer* renderer)
   {
     SDL_Color tinted_color = {20, 153, 78, 255};
     SDL_Color plain_color = {255, 255, 255, 255};
-    TTF_Font* new_font = Text::createFont(system_options->getFont(), 
+    TTF_Font* new_font = Text::createFont(system_options->getFont(),
                                           kFONT_SIZE, TTF_STYLE_BOLD);
     if(new_font != NULL)
     {
       unsetMenu();
-      
+
       /* Set the class font */
       font = new_font;
-      
+
       /* Set up the labels */
       for(int i = 0; i < kNUM_MENU_ITEMS; i++)
       {
@@ -119,22 +119,22 @@ bool TitleScreen::setMenu(SDL_Renderer* renderer)
         Text* selected = new Text(font);
         selected->setText(renderer, kMENU_ITEMS[i], tinted_color);
         selected_options.push_back(selected);
-        
+
         /* The unselected text */
         Text* unselected = new Text(font);
         unselected->setText(renderer, kMENU_ITEMS[i], plain_color);
         unselected_options.push_back(unselected);
       }
-      
+
       /* Proceed to update the render index */
       render_index = kTEXT_MARGIN + kTEXT_GAP*(kNUM_MENU_ITEMS - 1) +
                      selected_options[kNUM_MENU_ITEMS - 1]->getHeight();
       render_index = system_options->getScreenHeight() - render_index;
-      
+
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -144,12 +144,12 @@ void TitleScreen::unsetMenu()
   for(uint8_t i = 0; i < selected_options.size(); i++)
     delete selected_options[i];
   selected_options.clear();
-  
+
   /* Clears unselected labels */
   for(uint8_t i = 0; i < unselected_options.size(); i++)
     delete unselected_options[i];
   unselected_options.clear();
-  
+
   /* Destroy the font */
   TTF_CloseFont(font);
   font = NULL;
@@ -172,7 +172,7 @@ void TitleScreen::enableView(bool enable)
   else
   {}
 }
-  
+
 /* First update call each time the view changes - must be called */
 void TitleScreen::firstUpdate()
 {
@@ -181,7 +181,7 @@ void TitleScreen::firstUpdate()
   {
     Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
     if(title_music != nullptr)
-      sound_handler->addPlayToQueue(Sound::kID_MUSIC_TITLE, 
+      sound_handler->addPlayToQueue(Sound::kID_MUSIC_TITLE,
                                     SoundChannels::MUSIC1);
     else
       sound_handler->addStopToQueue(SoundChannels::MUSIC1);
@@ -200,7 +200,7 @@ TitleScreen::MenuItems TitleScreen::getAction()
 
   return action;
 }
-  
+
 /* The key up and down events to be handled by the class */
 /* The key down event handler */
 void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
@@ -287,7 +287,7 @@ bool TitleScreen::render(SDL_Renderer* renderer)
     /* The flash and bangs */
     background4.render(renderer, 153, 314);
     background5.render(renderer, 153, 314);
-	
+
     /* Render atmosphere */
     background3.render(renderer, 153, 314);
 
@@ -299,16 +299,16 @@ bool TitleScreen::render(SDL_Renderer* renderer)
     for(uint8_t i = 0; i < selected_options.size(); i++)
     {
       if(i == cursor_index)
-        selected_options[i]->render(renderer, kTEXT_MARGIN, 
+        selected_options[i]->render(renderer, kTEXT_MARGIN,
                                     render_index + kTEXT_GAP*i);
       else
-        unselected_options[i]->render(renderer, kTEXT_MARGIN, 
+        unselected_options[i]->render(renderer, kTEXT_MARGIN,
                                       render_index + kTEXT_GAP*i);
     }
-    
+
     return true;
   }
-  
+
   return false;
 }
 
@@ -318,8 +318,8 @@ bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
   return background.insertFirst(base_path + path, renderer);
 #else
   (void)path;
-  
-  background.insertFirst(base_path + "sprites/Title/title-backdrop.png", 
+
+  background.insertFirst(base_path + "sprites/Title/title-backdrop.png",
                          renderer);
   background2.insertFirst(base_path + "sprites/Title/title-dynaton.png", renderer);
   background4.insertFirst(base_path + "sprites/Title/title-dynatonbooms1.png", renderer);
@@ -346,7 +346,7 @@ bool TitleScreen::setConfiguration(Options* running_config)
     base_path = system_options->getBasePath();
     return true;
   }
-  
+
   return false;
 }
 
@@ -462,4 +462,4 @@ bool TitleScreen::update(int cycle_time)
 
   return (action != NONE);
 }
- 
+

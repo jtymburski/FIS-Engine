@@ -374,6 +374,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
     if(battle_ctrl)
     {
       battle_ctrl->setRenderer(active_renderer);
+      battle_ctrl->setEventHandler(&event_handler);
       battle_display_data->setRenderer(active_renderer);
 
       if(!battle_display_data->isDataBuilt())
@@ -854,7 +855,7 @@ void Game::pollEvents()
         BattleFlags flags;
         MapPerson* person;
         MapThing* source;
-        if(event_handler.pollStartBattle(&person, &source, flags, 
+        if(event_handler.pollStartBattle(&person, &source, flags,
                                          event_win, event_lose))
         {
           if(person != nullptr && getParty(Party::kID_SLEUTH) != nullptr &&
@@ -1578,10 +1579,10 @@ bool Game::update(int32_t cycle_time)
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
   // event_handler.getKeyHandler().print(true);
-  
+
   /* Mode next handling */
   updateMode(cycle_time);
-  
+
   /* MAP MODE */
   if(mode == MAP)
   {
@@ -1603,7 +1604,7 @@ bool Game::update(int32_t cycle_time)
       /* Check if health or qd should be restored */
       bool restore_health = map_ctrl.isBattleRestoreHealth();
       bool restore_qd = map_ctrl.isBattleRestoreQD();
-      
+
       /* Check the status of the battle result */
       if(battle_ctrl->getOutcomeType() == OutcomeType::VICTORY)
       {
@@ -1623,7 +1624,7 @@ bool Game::update(int32_t cycle_time)
 
       /* End the battle */
       battle_ctrl->stopBattle();
-      
+
       /* Restore conditions */
       if(restore_health || restore_qd)
       {

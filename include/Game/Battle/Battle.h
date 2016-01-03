@@ -23,6 +23,7 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
+#include "Game/EventHandler.h"
 #include "Game/Battle/BattleEvent.h"
 #include "Game/Battle/Buffer.h"
 #include "Game/Battle/BattleMenu.h"
@@ -90,6 +91,9 @@ private:
 
   /* The current battle event */
   BattleEvent* event;
+
+  /* The event handler for the game */
+  EventHandler* event_handler;
 
   /* Flags related to the combat state */
   CombatState flags_combat;
@@ -487,6 +491,9 @@ public:
 
   /* Assigns the DisplayData (various constructed frames) for display */
   bool setDisplayData(BattleDisplayData* battle_display_data);
+
+  /* Assigns the event handler to the battle */
+  bool setEventHandler(EventHandler* event_handler);
 
   /* Sets a CombatState flag */
   void setFlagCombat(CombatState test_flag, const bool& set_value = true);

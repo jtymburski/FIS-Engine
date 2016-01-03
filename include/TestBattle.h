@@ -11,6 +11,7 @@
 #include <chrono>
 #include <memory>
 
+#include "Game/EventHandler.h"
 #include "Game/Battle/BattleDisplayData.h"
 #include "Game/Battle/Battle.h"
 #include "Game/Player/Player.h"
@@ -20,7 +21,8 @@ class TestBattle
 {
 public:
   /* Constructor function */
-  TestBattle(Options* running_config = nullptr);
+  TestBattle(Options* running_config = nullptr,
+             EventHandler* event_handler = nullptr);
 
   /* Destructor function */
   ~TestBattle();
@@ -28,20 +30,20 @@ public:
   /* Enumerator: Test battle selection items */
   enum MenuItems
   {
-    AC = 0, /* Arcadius */
-    AA = 1, /* Aurora Agent */
-    AAx2 = 2, /* Aurora Agent x 2 */
-    AAx5 = 3, /* Aurora Agent x 5 */
-    AAnAH = 4, /* Aurora Agent and Heavy */
-    AH = 5, /* Aurora Heavy */
-    AEnAD = 6, /* Aurora Engineer and Drone */
-    AEnADx4 = 7, /* Aurora Engineer and Drone x 4 */
+    AC = 0,          /* Arcadius */
+    AA = 1,          /* Aurora Agent */
+    AAx2 = 2,        /* Aurora Agent x 2 */
+    AAx5 = 3,        /* Aurora Agent x 5 */
+    AAnAH = 4,       /* Aurora Agent and Heavy */
+    AH = 5,          /* Aurora Heavy */
+    AEnAD = 6,       /* Aurora Engineer and Drone */
+    AEnADx4 = 7,     /* Aurora Engineer and Drone x 4 */
     AAnAHnADnAE = 8, /* Aurora Agent, Engg, Heavy, and Drone */
-    REnRG = 9, /* Reverdile and Reverdling */
-    REnRGx2 = 10, /* Reverdile and Reverdling x 2 */
-    REnRGx4 = 11, /* Reverdile and Reverdling x 4 */
-    RG = 12, /* Reverdling */
-    RGx2 = 13, /* Reverdling x 2 */
+    REnRG = 9,       /* Reverdile and Reverdling */
+    REnRGx2 = 10,    /* Reverdile and Reverdling x 2 */
+    REnRGx4 = 11,    /* Reverdile and Reverdling x 4 */
+    RG = 12,         /* Reverdling */
+    RGx2 = 13,       /* Reverdling x 2 */
     RGx5 = 14
   }; /* Reverdling x 5 */
 
@@ -127,6 +129,8 @@ private:
   /* The configuration for the display of the game */
   Options* game_config;
 
+  EventHandler* event_handler;
+
   /* Inventories for the dudes */
   Inventory* inventory_allies;
   Inventory* inventory_foes;
@@ -199,11 +203,11 @@ private:
   AttributeSet stats_player_max;
 
   /* ------------ Constants --------------- */
-  const static uint8_t kLVL_MAX; /* Max level for person */
+  const static uint8_t kLVL_MAX;          /* Max level for person */
   const static std::string kMENU_ITEMS[]; /* The stored menu items */
-  const static std::string kMENU_FOE; /* Foe preface text */
-  const static std::string kMENU_FRIEND; /* Friend preface text */
-  const static uint8_t kNUM_MENU_ITEMS; /* Number of menu items in screen */
+  const static std::string kMENU_FOE;     /* Foe preface text */
+  const static std::string kMENU_FRIEND;  /* Friend preface text */
+  const static uint8_t kNUM_MENU_ITEMS;   /* Number of menu items in screen */
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -261,6 +265,8 @@ public:
 
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
+
+  bool setEventHandler(EventHandler* event_handler);
 
   /* Updates the game state */
   bool update(int cycle_time);
