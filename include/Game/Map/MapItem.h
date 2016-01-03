@@ -91,7 +91,7 @@ public:
   bool isWalkover();
   
   /* Sets if the item is active */
-  virtual bool setActive(bool active);
+  virtual bool setActive(bool active, bool set_tiles = true);
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);

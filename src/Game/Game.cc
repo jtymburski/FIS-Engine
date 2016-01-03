@@ -1625,10 +1625,17 @@ bool Game::update(int32_t cycle_time)
       battle_ctrl->stopBattle();
       
       /* Restore conditions */
-      if(restore_health)
-        std::cout << "TODO: Restore player health" << std::endl;
-      if(restore_qd)
-        std::cout << "TODO: Restore player QD" << std::endl;
+      if(restore_health || restore_qd)
+      {
+        Party* sleuth = getParty(Party::kID_SLEUTH);
+        if(sleuth != nullptr)
+        {
+          if(restore_health)
+            sleuth->restorePartyVita();
+          if(restore_qd)
+            sleuth->restorePartyQtdr();
+        }
+      }
     }
     else if(battle_ctrl->getTurnState() == TurnState::STOPPED)
     {

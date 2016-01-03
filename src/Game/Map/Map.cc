@@ -1077,7 +1077,7 @@ bool Map::setSectionIndexMode(int index_next)
       if(real_move)
       {
         audioUpdate(true);
-        map_dialog.clearAll();
+        map_dialog.clearAll(true);
       }
 
       map_index_next = -1;
@@ -1521,6 +1521,7 @@ void Map::enableView(bool enable)
   else
   {
     changeMode(DISABLED);
+    map_dialog.clearAll(true);
     audioStop();
   }
 }
@@ -1591,8 +1592,9 @@ bool Map::initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
 /* Initiates a conversation, within the map */
 bool Map::initConversation(ConvoPair convo_pair, MapThing* source)
 {
-  if(player != nullptr && player->getTarget() == nullptr
-                    && map_dialog.initConversation(convo_pair, player, source))
+  if(player != nullptr && 
+     (player->getTarget() == nullptr || player->getTarget() == source) &&
+     map_dialog.initConversation(convo_pair, player, source))
   {
     /* Finalize conversation setup */
     std::vector<int> list = map_dialog.getConversationIDs();

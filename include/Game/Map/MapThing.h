@@ -205,7 +205,7 @@ public:
   void clearTarget();
 
   /* Returns the respawn active time */
-  int getActiveRespawn();
+  int getActiveRespawn() const;
 
   /* Returns the base class */
   MapThing* getBase();
@@ -303,7 +303,7 @@ public:
   virtual bool interact(MapPerson* initiator);
 
   /* Check if the thing is active */
-  virtual bool isActive();
+  virtual bool isActive() const;
 
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
@@ -334,7 +334,7 @@ public:
   virtual void resetLocation();
 
   /* Sets if the thing is active */
-  virtual bool setActive(bool active);
+  virtual bool setActive(bool active, bool set_tiles = true);
   void setActiveRespawn(int time);
 
   /* Sets the base class */

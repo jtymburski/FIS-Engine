@@ -958,7 +958,7 @@ void MapThing::clearTarget()
  * Inputs: none
  * Output: int - the time in milliseconds
  */
-int MapThing::getActiveRespawn()
+int MapThing::getActiveRespawn() const
 {
   return active_time;
 }
@@ -1660,7 +1660,7 @@ bool MapThing::interact(MapPerson* initiator)
  * Inputs: none
  * Output: bool - true if the thing is active within the game
  */
-bool MapThing::isActive()
+bool MapThing::isActive() const
 {
   return active;
 }
@@ -1891,21 +1891,25 @@ void MapThing::resetLocation()
  * Description: Sets if the thing is active and usable within the space
  *
  * Inputs: bool active - true if the thing should be active. false otherwise
+ *         bool set_tiles - true to set/unset tiles as well. default true.
  * Output: bool - returns if the thing is active
  */
-bool MapThing::setActive(bool active)
+bool MapThing::setActive(bool active, bool set_tiles)
 {
   this->active = active;
   active_lapsed = 0;
 
   /* Update thing placement */
-  if(active)  // TODO: Implement fade instead of instant
+  if(set_tiles)
   {
-    this->active = setStartingTiles(starting_tiles, starting_section, true);
-  }
-  else
-  {
-    unsetTiles(true);
+    if(active)  // TODO: Implement fade instead of instant
+    {
+      this->active = setStartingTiles(starting_tiles, starting_section, true);
+    }
+    else
+    {
+      unsetTiles(true);
+    }
   }
 
   return this->active;

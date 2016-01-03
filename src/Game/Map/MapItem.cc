@@ -313,12 +313,13 @@ bool MapItem::isWalkover()
  * Description: Sets if the item is active and usable within the space
  *
  * Inputs: bool active - true if the item should be active. false otherwise
+ *         bool set_tiles - true to set/unset tiles as well. default true.
  * Output: bool - returns if the item is active
  */
-bool MapItem::setActive(bool active)
+bool MapItem::setActive(bool active, bool set_tiles)
 {
   bool previous = this->active;
-  bool next = MapThing::setActive(active);
+  bool next = MapThing::setActive(active, set_tiles);
 
   /* Checks if status changed from false to true, update count */
   if(!previous && next)
