@@ -123,7 +123,8 @@ protected:
                                        bool skip_head = false);
 
   /* Check if the tile can be set with the thing */
-  virtual bool canSetTile(Tile* tile, TileSprite* frames);
+  virtual bool canSetTile(Tile* tile, TileSprite* frames, 
+                          bool avoid_player = false);
 
   /* Returns the tile index as a decimal to indicate what percentage of the
    * next tile it resides in */
@@ -381,7 +382,7 @@ public:
    * defining a starting point.*/
   bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
                         uint16_t section, bool no_events = true,
-                        bool just_store = false);
+                        bool just_store = false, bool avoid_player = false);
 
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);

@@ -46,7 +46,8 @@ private:
  *===========================================================================*/
 protected:
   /* Check if the tile can be set with the item */
-  virtual bool canSetTile(Tile* tile, TileSprite* frames);
+  virtual bool canSetTile(Tile* tile, TileSprite* frames, 
+                          bool avoid_player = false);
 
   /* Sets the tile of the selected with the corresponding frames */
   virtual bool setTile(Tile* tile, TileSprite* frames,

@@ -198,12 +198,26 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
  *
  * Inputs: Tile* tile - the tile pointer to set the frame
  *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool avoid_player - true that canSet will return false if 0 render
+ *                             player is on location. default false
  * Output: bool - true if the set was successful
  */
-bool MapThing::canSetTile(Tile* tile, TileSprite* frames)
+bool MapThing::canSetTile(Tile* tile, TileSprite* frames, bool avoid_player)
 {
   if(tile != nullptr)
-    return !tile->isThingSet(frames->getRenderDepth());
+  {
+    /* Check if player is there */
+    bool player = false;
+    if(avoid_player && frames->getRenderDepth() == 0)
+    {
+      MapThing* person = (MapThing*)tile->getPerson(frames->getRenderDepth());
+      if(person != nullptr && person->getID() == kPLAYER_ID)
+        player = true;
+    }
+    
+    /* Final return */
+    return (!tile->isThingSet(frames->getRenderDepth()) && !player);
+  }
   return false;
 }
 
@@ -1904,7 +1918,8 @@ bool MapThing::setActive(bool active, bool set_tiles)
   {
     if(active)  // TODO: Implement fade instead of instant
     {
-      this->active = setStartingTiles(starting_tiles, starting_section, true);
+      this->active = setStartingTiles(starting_tiles, starting_section, true,
+                                      false, true);
     }
     else
     {
@@ -2189,11 +2204,12 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
  *         bool no_events - if no events should occur from setting the thing
  *         bool just_store - true to just store it as the starting tiles and
  *                           not call setTile(). Default false
+ *         bool avoid_player - do not place if player is on location
  * Output: bool - true if the tiles are set
  */
 bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
                                 uint16_t section, bool no_events,
-                                bool just_store)
+                                bool just_store, bool avoid_player)
 {
   SpriteMatrix* sprite_set = getMatrix();
   bool success = true;
@@ -2213,7 +2229,8 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
         for(uint32_t j = 0; j < sprite_set->height(); j++)
           if(sprite_set->at(i, j) != NULL && 
              sprite_set->at(i, j)->getSize() > 0)
-            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j));
+            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j), 
+                                  avoid_player);
 
     /* Attempt to set the new tiles */
     if(!just_store)

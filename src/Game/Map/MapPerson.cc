@@ -214,12 +214,26 @@ void MapPerson::addDirection(Direction direction)
  *
  * Inputs: Tile* tile - the tile pointer to set the frame
  *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool avoid_player - true that canSet will return false if 0 render
+ *                             player is on location. default false
  * Output: bool - true if the set was successful
  */
-bool MapPerson::canSetTile(Tile* tile, TileSprite* frames)
+bool MapPerson::canSetTile(Tile* tile, TileSprite* frames, bool avoid_player)
 {
   if(tile != nullptr)
-    return !tile->isPersonSet(frames->getRenderDepth());
+  {
+    /* Check if player is there */
+    bool player = false;
+    if(avoid_player && frames->getRenderDepth() == 0)
+    {
+      MapPerson* person = tile->getPerson(frames->getRenderDepth());
+      if(person != nullptr && person->getID() == kPLAYER_ID)
+        player = true;
+    }
+
+    /* Final return */
+    return (!tile->isPersonSet(frames->getRenderDepth()) && !player);
+  }
   return false;
 }
 

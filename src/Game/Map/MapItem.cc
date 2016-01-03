@@ -71,10 +71,13 @@ MapItem::~MapItem()
  *
  * Inputs: Tile* tile - the tile pointer to set the frame
  *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool avoid_player - true that canSet will return false if 0 render
+ *                             player is on location. default false
  * Output: bool - true if the set was successful
  */
-bool MapItem::canSetTile(Tile* tile, TileSprite* frames)
+bool MapItem::canSetTile(Tile* tile, TileSprite* frames, bool avoid_player)
 {
+  (void)avoid_player;
   (void)frames;
 
   if(tile != nullptr)

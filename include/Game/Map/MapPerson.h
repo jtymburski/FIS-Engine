@@ -88,7 +88,8 @@ protected:
   void addDirection(Direction direction);
   
   /* Check if the tile can be set with the person */
-  virtual bool canSetTile(Tile* tile, TileSprite* frames);
+  virtual bool canSetTile(Tile* tile, TileSprite* frames,
+                          bool avoid_player = false);
   
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t

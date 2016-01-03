@@ -92,7 +92,8 @@ private:
  *===========================================================================*/
 protected:
   /* Check if the tile can be set with the thing */
-  virtual bool canSetTile(Tile* tile, TileSprite* frames);
+  virtual bool canSetTile(Tile* tile, TileSprite* frames, 
+                          bool avoid_player = false);
 
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next,
