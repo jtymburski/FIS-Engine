@@ -218,7 +218,7 @@ void EventHandler::executePickup(MapItem* item, bool walkover)
 {
   /* Create the event and identify */
   Event new_event = EventSet::createBlankEvent();
-  new_event.classification = EventClassifier::PICKUPITEM;
+  new_event.classification = EventClassifier::ITEMPICKUP;
   new_event.ints.push_back(walkover);
 
   /* Now execute the pickup event (throw it on the queue) */
@@ -248,7 +248,7 @@ void EventHandler::pollClear()
 /* Poll a conversation event. Only true if this event is next on queue */
 bool EventHandler::pollConversation(ConvoPair& convo_pair, MapThing** source)
 {
-  if(pollEventType() == EventClassifier::STARTCONVO && source != nullptr)
+  if(pollEventType() == EventClassifier::CONVERSATION && source != nullptr)
   {
     EventPair pair;
     if(getEventPair(pair, true) && pair.base->convo != nullptr &&
@@ -398,7 +398,7 @@ bool EventHandler::pollNotification(std::string* notification)
 /* Poll a pickup item event */
 bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 {
-  if(pollEventType() == EventClassifier::PICKUPITEM && item != NULL &&
+  if(pollEventType() == EventClassifier::ITEMPICKUP && item != NULL &&
      walkover != NULL && event_queue[queue_index].event.ints.size() == 1)
   {
     *item = event_queue[queue_index].item;
@@ -414,7 +414,7 @@ bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 bool EventHandler::pollSound()
 {
   Event event;
-  if(pollEventType() == EventClassifier::JUSTSOUND &&
+  if(pollEventType() == EventClassifier::SOUNDONLY &&
      getEvent(event, true))
   {
     triggerQueueSound(event);
@@ -428,7 +428,7 @@ bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source,
                                    BattleFlags& flags, EventPair& event_win,
                                    EventPair& event_lose)
 {
-  if(pollEventType() == EventClassifier::RUNBATTLE &&
+  if(pollEventType() == EventClassifier::BATTLESTART &&
      person != nullptr && source != nullptr)
   {
     EventPair pair;

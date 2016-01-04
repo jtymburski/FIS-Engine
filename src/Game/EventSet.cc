@@ -939,6 +939,80 @@ EventSet& EventSet::operator=(const EventSet& source)
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+  
+/*
+ * Description: Returns the enum form a given EventClassifier string
+ *
+ * Inputs: std::string classifier - the string version of the classifier
+ * Output: EventClassifier - enum of classifier corresponding to string
+ */
+EventClassifier EventSet::classifierFromStr(const std::string& classifier)
+{
+  std::string class_up = classifier;
+  std::transform(class_up.begin(), class_up.end(), class_up.begin(), toupper);
+
+  /* Parse */
+  if(class_up == "BATTLE START")
+    return EventClassifier::BATTLESTART;
+  else if(class_up == "CONVERSATION")
+    return EventClassifier::CONVERSATION;
+  else if(class_up == "ITEM: GIVE")
+    return EventClassifier::ITEMGIVE;
+  else if(class_up == "ITEM: TAKE")
+    return EventClassifier::ITEMTAKE;
+  else if(class_up == "MAP SWITCH")
+    return EventClassifier::MAPSWITCH;
+  else if(class_up == "NOTIFICATION")
+    return EventClassifier::NOTIFICATION;
+  else if(class_up == "PROPERTY MOD")
+    return EventClassifier::PROPERTY;
+  else if(class_up == "SOUND ONLY")
+    return EventClassifier::SOUNDONLY;
+  else if(class_up == "TELEPORT THING")
+    return EventClassifier::TELEPORTTHING;
+  else if(class_up == "UNLOCK: IO")
+    return EventClassifier::UNLOCKIO;
+  else if(class_up == "UNLOCK: THING")
+    return EventClassifier::UNLOCKTHING;
+  else if(class_up == "UNLOCK: TILE")
+    return EventClassifier::UNLOCKTILE;
+  return EventClassifier::NOEVENT;
+}
+
+/*
+ * Description: Returns the string form a given EventClassifier enum
+ *
+ * Inputs: EventClassifier classifier - enum of the event classification
+ * Output: std::string - string corresponding to the EventClassifier
+ */
+std::string EventSet::classifierToStr(const EventClassifier& classifier)
+{
+  if(classifier == EventClassifier::BATTLESTART)
+    return "Battle Start";
+  else if(classifier == EventClassifier::CONVERSATION)
+    return "Conversation";
+  else if(classifier == EventClassifier::ITEMGIVE)
+    return "Item: Give";
+  else if(classifier == EventClassifier::ITEMTAKE)
+    return "Item: Take";
+  else if(classifier == EventClassifier::MAPSWITCH)
+    return "Map Switch";
+  else if(classifier == EventClassifier::NOTIFICATION)
+    return "Notification";
+  else if(classifier == EventClassifier::PROPERTY)
+    return "Property Mod";
+  else if(classifier == EventClassifier::SOUNDONLY)
+    return "Sound Only";
+  else if(classifier == EventClassifier::TELEPORTTHING)
+    return "Teleport Thing";
+  else if(classifier == EventClassifier::UNLOCKIO)
+    return "Unlock: IO";
+  else if(classifier == EventClassifier::UNLOCKTHING)
+    return "Unlock: Thing";
+  else if(classifier == EventClassifier::UNLOCKTILE)
+    return "Unlock: Tile";
+  return "None";
+}
 
 /*
  * Description: Public static. Copies a past in event and returns the copied
@@ -975,7 +1049,7 @@ Event EventSet::copyEvent(Event source, bool skeleton)
   }
 
   /* If convo, do the proper copy */
-  if(event.classification == EventClassifier::STARTCONVO &&
+  if(event.classification == EventClassifier::CONVERSATION &&
      source.convo != nullptr)
   {
     event.convo = new Conversation;
@@ -1197,7 +1271,7 @@ Event EventSet::createEventConversation(Conversation* new_conversation,
 {
   /* Create the event and identify */
   Event new_event = createBlankEvent();
-  new_event.classification = EventClassifier::STARTCONVO;
+  new_event.classification = EventClassifier::CONVERSATION;
   if(sound_id >= 0)
     new_event.sound_id = sound_id;
 
@@ -1230,7 +1304,7 @@ Event EventSet::createEventGiveItem(int id, int count, int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createBlankEvent();
-  new_event.classification = EventClassifier::GIVEITEM;
+  new_event.classification = EventClassifier::ITEMGIVE;
   if(sound_id >= 0)
     new_event.sound_id = sound_id;
 
@@ -1275,7 +1349,7 @@ Event EventSet::createEventSound(int sound_id)
 {
   /* Create the new event and identify */
   Event new_event = createBlankEvent();
-  new_event.classification = EventClassifier::JUSTSOUND;
+  new_event.classification = EventClassifier::SOUNDONLY;
   if(sound_id >= 0)
     new_event.sound_id = sound_id;
 
@@ -1293,7 +1367,7 @@ Event EventSet::createEventStartBattle(int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createBlankEvent();
-  new_event.classification = EventClassifier::RUNBATTLE;
+  new_event.classification = EventClassifier::BATTLESTART;
   if(sound_id >= 0)
     new_event.sound_id = sound_id;
 
@@ -1351,7 +1425,7 @@ Event EventSet::createEventStartMap(int id, int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createBlankEvent();
-  new_event.classification = EventClassifier::RUNMAP;
+  new_event.classification = EventClassifier::MAPSWITCH;
   if(sound_id >= 0)
     new_event.sound_id = sound_id;
 
@@ -1374,7 +1448,7 @@ Event EventSet::createEventTakeItem(int id, int count, int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createBlankEvent();
-  new_event.classification = EventClassifier::TAKEITEM;
+  new_event.classification = EventClassifier::ITEMTAKE;
   if(sound_id >= 0)
     new_event.sound_id = sound_id;
 
@@ -1681,7 +1755,7 @@ void EventSet::dataEnumView(UnlockView view_enum, bool& view, bool& scroll)
  */
 bool EventSet::dataEventGiveItem(Event event, int& item_id, int& count)
 {
-  if(event.classification == EventClassifier::GIVEITEM &&
+  if(event.classification == EventClassifier::ITEMGIVE &&
      event.ints.size() > kGIVE_ITEM_COUNT)
   {
     item_id = event.ints[kGIVE_ITEM_ID];
@@ -1724,7 +1798,8 @@ bool EventSet::dataEventNotification(Event event, std::string& notification)
 bool EventSet::dataEventStartBattle(Event* event, BattleFlags& flags,
                                     Event*& event_win, Event*& event_lose)
 {
-  if(event != nullptr && event->classification == EventClassifier::RUNBATTLE &&
+  if(event != nullptr && 
+     event->classification == EventClassifier::BATTLESTART &&
      event->ints.size() > 0 && event->events.size() > kBATTLE_EVENT_LOSE)
   {
     flags = static_cast<BattleFlags>(event->ints[kBATTLE_FLAGS]);
@@ -1745,7 +1820,7 @@ bool EventSet::dataEventStartBattle(Event* event, BattleFlags& flags,
  */
 bool EventSet::dataEventStartMap(Event event, int& map_id)
 {
-  if(event.classification == EventClassifier::RUNMAP &&
+  if(event.classification == EventClassifier::MAPSWITCH &&
      event.ints.size() > kMAP_ID)
   {
     map_id = event.ints[kMAP_ID];
@@ -1765,7 +1840,7 @@ bool EventSet::dataEventStartMap(Event event, int& map_id)
  */
 bool EventSet::dataEventTakeItem(Event event, int& item_id, int& count)
 {
-  if(event.classification == EventClassifier::TAKEITEM &&
+  if(event.classification == EventClassifier::ITEMTAKE &&
      event.ints.size() > kTAKE_ITEM_COUNT)
   {
     item_id = event.ints[kTAKE_ITEM_ID];
@@ -2094,20 +2169,20 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   bool read_success;
 
   /* Determine the category of the event that is being updated */
-  if(category_str == "conversation")
-    category = EventClassifier::STARTCONVO;
+  if(category_str == "startbattle")
+    category = EventClassifier::BATTLESTART;
+  else if(category_str == "conversation")
+    category = EventClassifier::CONVERSATION;
   else if(category_str == "giveitem")
-    category = EventClassifier::GIVEITEM;
-  else if(category_str == "justsound")
-    category = EventClassifier::JUSTSOUND;
+    category = EventClassifier::ITEMGIVE;
+  else if(category_str == "takeitem")
+    category = EventClassifier::ITEMTAKE;
+  else if(category_str == "startmap")
+    category = EventClassifier::MAPSWITCH;
   else if(category_str == "notification")
     category = EventClassifier::NOTIFICATION;
-  else if(category_str == "startbattle")
-    category = EventClassifier::RUNBATTLE;
-  else if(category_str == "startmap")
-    category = EventClassifier::RUNMAP;
-  else if(category_str == "takeitem")
-    category = EventClassifier::TAKEITEM;
+  else if(category_str == "justsound")
+    category = EventClassifier::SOUNDONLY;
   else if(category_str == "teleportthing")
     category = EventClassifier::TELEPORTTHING;
   else if(category_str == "unlockio")
@@ -2122,20 +2197,20 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   {
     event = deleteEvent(event);
 
-    if(category == EventClassifier::GIVEITEM)
+    if(category == EventClassifier::BATTLESTART)
+      event = createEventStartBattle();
+    else if(category == EventClassifier::CONVERSATION)
+      event = createEventConversation();
+    if(category == EventClassifier::ITEMGIVE)
       event = createEventGiveItem();
-    else if(category == EventClassifier::JUSTSOUND)
-      event = createEventSound();
+    else if(category == EventClassifier::ITEMTAKE)
+      event = createEventTakeItem();
+    else if(category == EventClassifier::MAPSWITCH)
+      event = createEventStartMap();
     else if(category == EventClassifier::NOTIFICATION)
       event = createEventNotification();
-    else if(category == EventClassifier::RUNBATTLE)
-      event = createEventStartBattle();
-    else if(category == EventClassifier::RUNMAP)
-      event = createEventStartMap();
-    else if(category == EventClassifier::STARTCONVO)
-      event = createEventConversation();
-    else if(category == EventClassifier::TAKEITEM)
-      event = createEventTakeItem();
+    else if(category == EventClassifier::SOUNDONLY)
+      event = createEventSound();
     else if(category == EventClassifier::TELEPORTTHING)
       event = createEventTeleport();
     else if(category == EventClassifier::UNLOCKIO)
@@ -2153,34 +2228,16 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     if(read_success)
       event.one_shot = one_shot;
   }
-  /* -- SOUND -- */
+  /* -- SOUND ONLY -- */
   else if(data.getElement(file_index + 1) == "sound_id" ||
-          category == EventClassifier::JUSTSOUND)
+          category == EventClassifier::SOUNDONLY)
   {
     int32_t sound_id = data.getDataInteger(&read_success);
     if(read_success && sound_id >= 0)
       event.sound_id = sound_id;
   }
-  /* -- GIVE ITEM -- */
-  else if(category == EventClassifier::GIVEITEM)
-  {
-    std::string give_item_element = data.getElement(file_index + 1);
-    if(give_item_element == "id")
-      event.ints.at(kGIVE_ITEM_ID) = data.getDataInteger();
-    else if(give_item_element == "count")
-      event.ints.at(kGIVE_ITEM_COUNT) = data.getDataInteger();
-  }
-  /* -- NOTIFICATION -- */
-  else if(category == EventClassifier::NOTIFICATION)
-  {
-    if(data.getTailElements(file_index).size() == 1 ||
-       data.getElement(file_index + 1) == "text")
-    {
-      event.strings.at(0) = data.getDataString();
-    }
-  }
-  /* -- START BATTLE -- */
-  else if(category == EventClassifier::RUNBATTLE)
+  /* -- BATTLE START -- */
+  else if(category == EventClassifier::BATTLESTART)
   {
     /* Get the existing data */
     Event *event_win, *event_lose;
@@ -2224,15 +2281,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       }
     }
   }
-  /* -- CHANGE MAPS -- */
-  else if(category == EventClassifier::RUNMAP)
-  {
-    std::string element = data.getElement(file_index + 1);
-    if(element == "id")
-      event.ints.at(kMAP_ID) = data.getDataInteger();
-  }
-  /* -- START CONVERSATION -- */
-  else if(category == EventClassifier::STARTCONVO)
+  /* -- CONVERSATION -- */
+  else if(category == EventClassifier::CONVERSATION)
   {
     /* Split the key value for conversation (Eg. index="1.2.1.1") */
     std::vector<std::string> index_list =
@@ -2250,14 +2300,39 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       updateConversation(edited_convo, data, file_index + 1, section_index);
     }
   }
-  /* -- TAKE ITEM -- */
-  else if(category == EventClassifier::TAKEITEM)
+  /* -- ITEM GIVE -- */
+  else if(category == EventClassifier::ITEMGIVE)
+  {
+    std::string give_item_element = data.getElement(file_index + 1);
+    if(give_item_element == "id")
+      event.ints.at(kGIVE_ITEM_ID) = data.getDataInteger();
+    else if(give_item_element == "count")
+      event.ints.at(kGIVE_ITEM_COUNT) = data.getDataInteger();
+  }
+  /* -- ITEM TAKE -- */
+  else if(category == EventClassifier::ITEMTAKE)
   {
     std::string take_item_element = data.getElement(file_index + 1);
     if(take_item_element == "id")
       event.ints.at(kTAKE_ITEM_ID) = data.getDataInteger();
     else if(take_item_element == "count")
       event.ints.at(kTAKE_ITEM_COUNT) = data.getDataInteger();
+  }
+  /* -- MAP SWITCH -- */
+  else if(category == EventClassifier::MAPSWITCH)
+  {
+    std::string element = data.getElement(file_index + 1);
+    if(element == "id")
+      event.ints.at(kMAP_ID) = data.getDataInteger();
+  }
+  /* -- NOTIFICATION -- */
+  else if(category == EventClassifier::NOTIFICATION)
+  {
+    if(data.getTailElements(file_index).size() == 1 ||
+       data.getElement(file_index + 1) == "text")
+    {
+      event.strings.at(0) = data.getDataString();
+    }
   }
   /* -- TELEPORT THING -- */
   else if(category == EventClassifier::TELEPORTTHING)

@@ -824,31 +824,8 @@ void Game::pollEvents()
 
       /* Poll classification */
       EventClassifier classification = event_handler.pollEventType();
-      if(classification == EventClassifier::GIVEITEM)
-      {
-        int id;
-        int count;
-        event_handler.pollGiveItem(&id, &count);
-        eventGiveItem(id, count);
-      }
-      else if(classification == EventClassifier::JUSTSOUND)
-      {
-        event_handler.pollSound();
-      }
-      else if(classification == EventClassifier::NOTIFICATION)
-      {
-        std::string notification;
-        event_handler.pollNotification(&notification);
-        eventInitNotification(notification);
-      }
-      else if(classification == EventClassifier::PICKUPITEM)
-      {
-        MapItem* item;
-        bool walkover;
-        event_handler.pollPickupItem(&item, &walkover);
-        eventPickupItem(item, walkover);
-      }
-      else if(classification == EventClassifier::RUNBATTLE)
+      /* -- BATTLE START -- */
+      if(classification == EventClassifier::BATTLESTART)
       {
         /* Get the reference objects and check if valid */
         EventPair event_win, event_lose;
@@ -865,32 +842,65 @@ void Game::pollEvents()
           }
         }
       }
-      else if(classification == EventClassifier::RUNMAP)
-      {
-        int id;
-        event_handler.pollStartMap(&id);
-        eventSwitchMap(id);
-      }
-      else if(classification == EventClassifier::STARTCONVO)
+      /* -- CONVERSATION -- */
+      else if(classification == EventClassifier::CONVERSATION)
       {
         ConvoPair convo_pair;
         MapThing* source;
         event_handler.pollConversation(convo_pair, &source);
         eventInitConversation(convo_pair, source);
       }
-      else if(classification == EventClassifier::TAKEITEM)
+      /* -- ITEM GIVE -- */
+      else if(classification == EventClassifier::ITEMGIVE)
+      {
+        int id;
+        int count;
+        event_handler.pollGiveItem(&id, &count);
+        eventGiveItem(id, count);
+      }
+      /* -- ITEM PICKUP -- */
+      else if(classification == EventClassifier::ITEMPICKUP)
+      {
+        MapItem* item;
+        bool walkover;
+        event_handler.pollPickupItem(&item, &walkover);
+        eventPickupItem(item, walkover);
+      }
+      /* -- ITEM TAKE -- */
+      else if(classification == EventClassifier::ITEMTAKE)
       {
         int id;
         int count;
         event_handler.pollTakeItem(&id, &count);
         eventTakeItem(id, count);
       }
+      /* -- MAP SWITCH -- */
+      else if(classification == EventClassifier::MAPSWITCH)
+      {
+        int id;
+        event_handler.pollStartMap(&id);
+        eventSwitchMap(id);
+      }
+      /* -- NOTIFICATION -- */
+      else if(classification == EventClassifier::NOTIFICATION)
+      {
+        std::string notification;
+        event_handler.pollNotification(&notification);
+        eventInitNotification(notification);
+      }
+      /* -- SOUND ONLY -- */
+      else if(classification == EventClassifier::SOUNDONLY)
+      {
+        event_handler.pollSound();
+      }
+      /* -- TELEPORT THING -- */
       else if(classification == EventClassifier::TELEPORTTHING)
       {
         int thing_id, x, y, section_id;
         event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
         eventTeleportThing(thing_id, x, y, section_id);
       }
+      /* -- TRIGGER IO -- */
       else if(classification == EventClassifier::TRIGGERIO)
       {
         MapPerson* initiator;
@@ -899,6 +909,7 @@ void Game::pollEvents()
         event_handler.pollTriggerIO(&source, &interaction_state, &initiator);
         eventTriggerIO(source, interaction_state, initiator);
       }
+      /* -- UNLOCK IO -- */
       else if(classification == EventClassifier::UNLOCKIO)
       {
         int io_id, state_num, view_time;
@@ -910,6 +921,7 @@ void Game::pollEvents()
           eventUnlockIO(io_id, mode, state_num, mode_events, mode_view,
                         view_time);
       }
+      /* -- UNLOCK THING -- */
       else if(classification == EventClassifier::UNLOCKTHING)
       {
         int thing_id, view_time;
@@ -917,6 +929,7 @@ void Game::pollEvents()
         if(event_handler.pollUnlockThing(&thing_id, &mode_view, &view_time))
           eventUnlockThing(thing_id, mode_view, view_time);
       }
+      /* -- UNLOCK TILE -- */
       else if(classification == EventClassifier::UNLOCKTILE)
       {
         int section_id, tile_x, tile_y, view_time;

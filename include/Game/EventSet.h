@@ -36,22 +36,24 @@ enum class BattleFlags
 /*
  * Description: The event classifier identification. Fully inclusive to events
  */
-enum class EventClassifier
+enum class EventClassifier : std::uint32_t
 {
-  NOEVENT        = 0,
-  GIVEITEM       = 1,
-  NOTIFICATION   = 2,
-  RUNBATTLE      = 3,
-  RUNMAP         = 4,
-  TELEPORTTHING  = 5,
-  JUSTSOUND      = 6,
-  TAKEITEM       = 7,
-  UNLOCKTHING    = 8,
-  UNLOCKTILE     = 9,
-  UNLOCKIO       = 10,
-  STARTCONVO     = 11, /* Needs to be the last before the non-editor points */
-  PICKUPITEM     = 12, /* All categories here and lower are not from Editor. */
-  TRIGGERIO      = 13
+  NOEVENT         = 0,
+  BATTLESTART     = 1 << 0,
+  CONVERSATION    = 1 << 1,
+  ITEMGIVE        = 1 << 2,
+  ITEMTAKE        = 1 << 3,
+  MAPSWITCH       = 1 << 4,
+  NOTIFICATION    = 1 << 5,
+  PROPERTY        = 1 << 6,
+  SOUNDONLY       = 1 << 7,
+  TELEPORTTHING   = 1 << 8,
+  UNLOCKIO        = 1 << 9,
+  UNLOCKTHING     = 1 << 10,
+  UNLOCKTILE      = 1 << 11, /* Used in Editor to define last in combo */
+  /* Separator: All categories lower are not editable by game designer */
+  ITEMPICKUP      = 1 << 12,
+  TRIGGERIO       = 1 << 13,
 };
 
 /*
@@ -162,7 +164,7 @@ struct Conversation
   std::vector<Conversation> next;
 };
 
-/* 
+/*
  * Description: Pairs for handling within the conversation/event space
  */
 struct EventPair
@@ -341,6 +343,10 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Classification enumerator to and from string */
+  static EventClassifier classifierFromStr(const std::string& classifier);
+  static std::string classifierToStr(const EventClassifier& classifier);
+
   /* Copies a passed in event */
   static Event copyEvent(Event source, bool skeleton = false);
 
