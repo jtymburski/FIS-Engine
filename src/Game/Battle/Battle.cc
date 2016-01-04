@@ -148,6 +148,8 @@ Battle::Battle()
       flags_combat{static_cast<CombatState>(0)},
       flags_render{static_cast<RenderState>(0)},
       frame_enemy_backdrop{nullptr},
+      party_allies{nullptr},
+      party_enemies{nullptr},
       outcome{OutcomeType::NONE},
       renderer{nullptr},
       turn_state{TurnState::STOPPED},
@@ -614,9 +616,9 @@ bool Battle::loadMenuForActor(BattleActor* actor)
   bool success = (actor != nullptr);
   success &= (battle_menu != nullptr);
 
-  if(success)
+  if(success && party_allies)
   {
-    success &= actor->buildBattleItems(actors);
+    success &= actor->buildBattleItems(party_allies->getInventory(), actors);
     success &= actor->buildBattleSkills(actors);
 
     if(success)
@@ -829,9 +831,10 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
   success &= (next_actor != nullptr);
   success &= (curr_module != nullptr);
 
-  if(success)
+  if(success && party_enemies)
   {
-    success &= next_actor->buildBattleItems(actors);
+    success &=
+        next_actor->buildBattleItems(party_enemies->getInventory(), actors);
     success &= next_actor->buildBattleSkills(actors);
 
     std::cout << "----- Enemy Valid Battle Skills ----- " << std::endl;
@@ -844,6 +847,10 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
     curr_module->setSkills(next_actor->getBattleSkills());
     curr_module->calculateAction();
     curr_module->calculateTargets();
+  }
+  else
+  {
+    success = false;
   }
 
   return success;
@@ -2637,6 +2644,12 @@ int32_t Battle::getActorY(BattleActor* actor)
 
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
+  if(event.keysym.sym == SDLK_INSERT)
+  {
+    if(party_allies && party_allies->getInventory())
+      party_allies->getInventory()->print(false);
+  }
+
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     battle_menu->keyDownEvent();
   else
@@ -2659,6 +2672,9 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
   assert(renderer);
   assert(friends);
   assert(foes);
+
+  party_allies = friends;
+  party_enemies = foes;
 
   event_handler->triggerMusic(2);
 
@@ -2709,6 +2725,8 @@ void Battle::stopBattle()
   turn_state = TurnState::STOPPED;
   time_elapsed = 0;
   turns_elapsed = 0;
+  party_allies = nullptr;
+  party_enemies = nullptr;
   upkeep_actor = nullptr;
   upkeep_ailment = nullptr;
 }

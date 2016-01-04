@@ -104,6 +104,10 @@ private:
   /* The enemy backdrop frame */
   Frame* frame_enemy_backdrop;
 
+  /* Party pointers */
+  Party* party_allies;
+  Party* party_enemies;
+
   /* Enumerated outcome type of the battle */
   OutcomeType outcome;
 
@@ -126,9 +130,9 @@ private:
   BattleActor* upkeep_actor;
   Ailment* upkeep_ailment;
 
-  /*=============================================================================
-   * CONSTANTS - Battle Operations
-   *============================================================================*/
+/*=============================================================================
+ * CONSTANTS - Battle Operations
+ *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
   static const float kBASE_RUN_CHANCE;

@@ -442,11 +442,47 @@ void BattleActor::addAilment(Infliction type, int32_t min_turns,
   ailments.push_back(new_ailment);
 }
 
-// TODO: Build battle Items [09-07-15]
-bool BattleActor::buildBattleItems(std::vector<BattleActor*> all_targets)
+bool BattleActor::buildBattleItems(Inventory* inv,
+                                   std::vector<BattleActor*> a_targets)
 {
-  (void)all_targets;
-  bool success = person_base;
+  bool success = true;
+  clearBattleItems();
+
+  if(inv && person_base)
+  {
+    auto items = inv->getItems();
+
+    for(auto& item : items)
+    {
+      if(item.first)
+      {;
+        auto skill = item.first->getUseSkill();
+
+        if(skill && item.second > 0)
+        {
+          auto targets =
+              getTargetsFromScope(this, skill->getScope(), a_targets);
+          auto battle_item = new BattleItem();
+
+          battle_item->valid_status = ValidStatus::VALID;
+          battle_item->item = item.first;
+          battle_item->amount = item.second;
+          battle_item->targets = targets;
+          battle_items.push_back(battle_item);
+
+          success &= true;
+        }
+        else if(!skill)
+        {
+          success = false;
+        }
+      }
+      else
+      {
+        success = false;
+      }
+    }
+  }
 
   return success;
 }
@@ -1169,7 +1205,7 @@ int32_t BattleActor::calcTurnRegen(Attribute attr, int32_t outnumbered_val)
     reg_fac = getRegenFactor(person_base->getQDRegenRate());
 
   if(attr == Attribute::VITA && outnumbered_val != 0)
-      reg_fac += (0.007 * outnumbered_val);
+    reg_fac += (0.007 * outnumbered_val);
 
   int32_t max_attr_val = 0;
   int32_t amount = 0;

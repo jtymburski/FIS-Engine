@@ -15,7 +15,7 @@
 
 /*=============================================================================
  * CONSTANTS - See implementation for details
- *============================================================================*/
+ *================================================+============================*/
 
 uint32_t Inventory::id       = 0;
 uint32_t Inventory::money_id = 0;
@@ -612,7 +612,7 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
     {
       n = 0;
     }
-   
+
     /* Check individual stack limit */
     if(key_item)
     {
@@ -646,11 +646,11 @@ void Inventory::print(bool simple)
   std::cout << "ID: " << id << " M: " << getMass() << " / " << mass_limit;
   std::cout << "\n# Unique Items: " << items.size() << "\n";
   std::cout << "# Unique Bubbies: " << bubbies.size()  << "\n";
-  std::cout << "# Unique Bubbies: " << getBubbyTotalCount() << "/" 
+  std::cout << "# Unique Bubbies: " << getBubbyTotalCount() << "/"
             << bubby_limit << "\n";
-  std::cout << "# Unique Equips:  " << equipments.size()    << "/" 
+  std::cout << "# Unique Equips:  " << equipments.size()    << "/"
             << equip_limit << "\n";
-  std::cout << "Item Stacks: " << getItemStackCount()  << "/" << item_limit 
+  std::cout << "Item Stacks: " << getItemStackCount()  << "/" << item_limit
             << "\n";
   std::cout << "Item Stacks (+ keys): " << getItemStackCount(true) << std::endl;
   std::cout << "Items: " << getItemTotalCount() << std::endl;
@@ -688,13 +688,13 @@ void Inventory::print(bool simple)
       {
         if(item.first->getFlag(ItemFlags::KEY_ITEM))
           std::cout << "[K] ";
-        std::cout << item.first->getGameID() << ": " << item.first->getName() 
+        std::cout << item.first->getGameID() << ": " << item.first->getName()
                   << " " << static_cast<int>(item.second) << "\n";
       }
     }
   }
 
-  std::cout << "--- / Inventory ---\n\n";
+  std::cout << "--- / Inventory ---" << std::endl << std::endl;
 }
 
 /*
@@ -714,10 +714,10 @@ bool Inventory::removeID(const uint32_t &game_id, const uint16_t &amount)
 
   if(!removed)
     removed |= removeEquipID(game_id, amount);
-  
+
   if(!removed)
     removed |= removeItemID(game_id, amount);
-  
+
   return removed;
 }
 
@@ -923,7 +923,7 @@ bool Inventory::removeItemIndex(const uint32_t &index,
     if (items.at(index).first != nullptr)
     {
       auto count = items[index].second;
-      
+
       if (count > 1 && count > amount)
       {
         decreaseCount(items.at(index).first->getGameID(), amount);
@@ -1403,7 +1403,7 @@ std::vector<Item*> Inventory::getUniqueItems()
   std::vector<Item*> temps;
 
   for (auto item : items)
-    if (item.first != nullptr)
+    if (item.first)
       temps.push_back(item.first);
 
   return temps;

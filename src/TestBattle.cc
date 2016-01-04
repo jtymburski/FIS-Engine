@@ -51,13 +51,18 @@ TestBattle::TestBattle(Options* running_config, EventHandler* event_handler)
       plep_ensnare{nullptr},
       plep_enrich{nullptr},
       plep_upgrade{nullptr},
+      plep_rock{nullptr},
+      plep_medkit{nullptr},
       font_normal{nullptr},
-      inventory_allies{nullptr},
-      inventory_foes{nullptr},
       party_foes{nullptr},
       party_friends{nullptr}
 
 {
+  rock = nullptr;
+  medkit = nullptr;
+  non_base_rock = nullptr;
+  non_base_medkit = nullptr;
+
   base_path = "";
   battle_logic = nullptr;
   battle_start = false;
@@ -224,6 +229,12 @@ void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
                             16, ".png", renderer);
   plep_upgrade->setAnimationTime(80);
 
+  plep_rock = new Sprite(base_path + "sprites/Battle/Pleps/upgradeplep_AA_A",
+                         16, ".png", renderer);
+
+  plep_medkit = new Sprite(base_path + "sprites/Battle/Pleps/healplep_AA_A", 12,
+                           ".png", renderer);
+
   getSkill(222)->setAnimation(plep_chlorophoria);
   getSkill(240)->setAnimation(plep_numbing_sting);
   getSkill(241)->setAnimation(plep_sullen_sting);
@@ -245,6 +256,8 @@ void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
   getSkill(1022)->setAnimation(plep_multi_strike);
   getSkill(1040)->setAnimation(plep_ensnare);
   getSkill(1041)->setAnimation(plep_enrich);
+  getSkill(1042)->setAnimation(plep_rock);
+  getSkill(1043)->setAnimation(plep_medkit);
 
   /* Background and bar */
   Sprite* background = new Sprite(
@@ -493,17 +506,9 @@ void TestBattle::create()
   /* Actions */
   createActions();
   createSkills();
-  // createInventories();
   createSkillSets();
   createClasses();
   createRaces();
-
-  // createItems();
-  // Alpha Items:
-  // Med Kit
-  // Rock
-  // Rotten Fish
-  // Nanite Spray
 }
 
 /* ------------------------------------------------------------------------- */
@@ -563,12 +568,10 @@ void TestBattle::createActions()
   act_inf.push_back(new Action("500,INFLICT,3.6,,,POISON,AMOUNT.30,,VITA,90"));
 
   /* Confusion */
-  act_inf.push_back(
-      new Action("501,INFLICT,2.5,,,CONFUSE,AMOUNT.30,,VITA,75"));
+  act_inf.push_back(new Action("501,INFLICT,2.5,,,CONFUSE,AMOUNT.30,,VITA,75"));
 
   /* Silence */
-  act_inf.push_back(
-      new Action("502,INFLICT,3.5,,,SILENCE,AMOUNT.30,,VITA,80"));
+  act_inf.push_back(new Action("502,INFLICT,3.5,,,SILENCE,AMOUNT.30,,VITA,80"));
 
   /* All Attack Buff */
   act_inf.push_back(
@@ -586,7 +589,8 @@ void TestBattle::createActions()
       new Action("506,INFLICT,2.5,,,PARALYSIS,AMOUNT.30,,VITA,80"));
 
   /* Hibernation */
-  act_inf.push_back(new Action("507,INFLICT,3.5,,,HIBERNATION,AMOUNT.10,,VITA,100"));
+  act_inf.push_back(
+      new Action("507,INFLICT,3.5,,,HIBERNATION,AMOUNT.10,,VITA,100"));
 
   /* Check to check all the actions are checked [checkingly] */
   // for(const auto& action : act_alt)
@@ -930,8 +934,8 @@ void TestBattle::createSkills()
   skills.push_back(shatter_shot);
 
   /* Engineer Upgrade */
-  Skill* eng_upgrade = new Skill(160, "Upgrade", ActionScope::ONE_ALLY,
-                                 act_inf[4], 100, 5);
+  Skill* eng_upgrade =
+      new Skill(160, "Upgrade", ActionScope::ONE_ALLY, act_inf[4], 100, 5);
   eng_upgrade->addAction(act_inf[5]);
   eng_upgrade->setDescription("Team upgrade to ally for defense and speed");
   eng_upgrade->setPrimary(Element::ELECTRIC);
@@ -1100,21 +1104,78 @@ void TestBattle::createSkills()
   enrich->setFlag(SkillFlags::DEFENSIVE);
   enrich->setFlag(SkillFlags::HEALING);
   skills.push_back(enrich);
+
+  Skill* rock_skill = new Skill(1042, "Rock Skill", ActionScope::ONE_TARGET,
+                                act_dmg[8], 100, 5);
+  skills.push_back(rock_skill);
+
+  Skill* medkit_skill =
+      new Skill(1043, "Medkit Skill", ActionScope::USER, act_alt[0], 100, 5);
+  skills.push_back(medkit_skill);
+
 }
 
-// void TestBattle::createInventories()
-// {
-//   /* Clears the inventories */
-//   deleteInventories();
+void TestBattle::createItems()
+{
+  auto a_inv = party_friends->getInventory();
+  // auto e_inv = party_foes->getInventory();
 
-//   /* Allied Inventory */
-//   inventory_allies = new Inventory(1337);
-//   inventory_foes = new Inventory(1338);
+  rock = new Item(5001, "Rock", 100, nullptr, 0.0);
+  rock->setDescription("Destroy your enemies with a magical rock.");
 
-//   /* Allied Items */
+  if(!getSkill(1043))
+    std::cout << "Medkit skill 1043 invalid" << std::endl;
 
-//   /* Foes Items */
-// }
+  rock->setUseSkill(getSkill(1042));
+  rock->setFlag(ItemFlags::CONSUMED, true);
+
+  medkit = new Item(5002, "Medkit", 150, nullptr, 0.0);
+  medkit->setDescription("HEALS ALL OF YOUR HEALTH WOOHOO.");
+
+
+
+  medkit->setUseSkill(getSkill(1043));
+  medkit->setFlag(ItemFlags::CONSUMED, true);
+  medkit->setFlag(ItemFlags::HEALING_ITEM, true);
+
+  non_base_rock = new Item(rock);
+  non_base_medkit = new Item(medkit);
+
+  a_inv->add(non_base_rock, 5);
+  a_inv->add(non_base_medkit, 5);
+}
+
+void TestBattle::deleteItems()
+{
+  // if(party_friends && party_friends->getInventory())
+  //   party_friends->getInventory()->clear();
+  // if(party_foes && party_foes->getInventory())
+  //   party_foes->getInventory()->clear();
+
+  if(non_base_rock)
+  {
+    delete non_base_rock;
+    non_base_rock = nullptr;
+  }
+
+  if(non_base_medkit)
+  {
+    delete non_base_medkit;
+    non_base_medkit = nullptr;
+  }
+
+  if(rock)
+  {
+    delete rock;
+    rock = nullptr;
+  }
+
+  if(medkit)
+  {
+    delete medkit;
+    medkit = nullptr;
+  }
+}
 
 /* ------------------------------------------------------------------------- */
 /* Create Skill Sets */
@@ -1268,17 +1329,6 @@ void TestBattle::deleteClasses()
   class_reverdling = nullptr;
 }
 
-// void TestBattle::deleteInventories()
-// {
-//   if(inventory_allies)
-//     delete inventory_allies;
-//   if(inventory_foes)
-//     delete inventory_foes;
-
-//   inventory_allies = nullptr;
-//   inventory_foes = nullptr;
-// }
-
 /* ------------------------------------------------------------------------- */
 /* Delete menu */
 /* ------------------------------------------------------------------------- */
@@ -1289,6 +1339,7 @@ void TestBattle::deleteMenu()
     delete menu_items[i];
     delete menu_items_sel[i];
   }
+
   menu_items.clear();
   menu_items_sel.clear();
 }
@@ -1342,40 +1393,19 @@ void TestBattle::destroy()
   mode = NONE;
 
   // /* Delete battle and information */
+  // deleteItems();
   destroyBattle();
 
   // /* Delete skill information */
   // deleteClasses();
-  // deleteInventories();
   // deleteRaces();
   // deleteSkillSets();
   // deleteSkills();
+
   // deleteActions();
 
   // /* Delete fonts and menus */
   // deleteMenu();
-
-  // delete plep_sullen_sting;
-  // delete plep_befuddling_sting;
-  // delete plep_chlorophoria;
-  // delete plep_canopy;
-  // delete plep_numbing_sting;
-  // delete plep_toxic_sting;
-  // delete plep_updraft;
-  // delete plep_light_push;
-  // delete plep_light_shot;
-  // delete plep_prismatic_shot;
-  // delete plep_rail_shot;
-  // delete plep_shatter_shot;
-  // delete plep_static_shot;
-  // delete plep_locked_shot;
-  // delete plep_strike;
-  // delete plep_paw_strike;
-  // delete plep_maul;
-  // delete plep_multi_strike;
-  // delete plep_upgrade;
-  // delete plep_ensnare;
-  // delete plep_enrich;
 }
 
 /* Battle destruction */
@@ -1603,6 +1633,7 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   if(!display_data->isDataBuilt())
     display_data->buildData();
 
+  createItems();
   battle_logic->startBattle(party_friends, party_foes, background);
 }
 
@@ -1811,7 +1842,10 @@ bool TestBattle::update(int cycle_time)
     battle_logic->update(cycle_time);
 
     if(battle_logic->getTurnState() == TurnState::FINISHED)
+    {
       battle_logic->stopBattle();
+      deleteItems();
+    }
     if(battle_logic->getTurnState() == TurnState::STOPPED)
       mode = SCENARIO;
   }

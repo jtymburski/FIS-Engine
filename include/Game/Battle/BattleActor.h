@@ -33,6 +33,7 @@ class BattleItem;
 #include "Game/Battle/BattleItem.h"
 #include "Game/Battle/BattleStats.h"
 #include "Game/Player/Ailment.h"
+#include "Game/Player/Inventory.h"
 #include "Game/Player/Person.h"
 #include "EnumFlags.h"
 
@@ -314,7 +315,7 @@ public:
                   double chance);
 
   /* Constructs BattleItem objects of the BattleActor */
-  bool buildBattleItems(std::vector<BattleActor*> all_targets);
+  bool buildBattleItems(Inventory* inv, std::vector<BattleActor*> all_targets);
 
   /* Constructs BattleSkill objects of the BattleActor */
   bool buildBattleSkills(std::vector<BattleActor*> all_targets);

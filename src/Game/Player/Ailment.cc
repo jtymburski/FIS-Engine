@@ -39,7 +39,7 @@ const float Ailment::kPC_ALL_ATK_BUFF{1.280};
 const float Ailment::kPC_ALL_DEF_BUFF{1.2800};
 const float Ailment::kPC_PHYS_BUFF{1.30};
 const float Ailment::kPC_ELEMENTAL_BUFF{1.30};
-const float Ailment::kPC_LIMB_BUFF{1.40};
+const float Ailment::kPC_LIMB_BUFF{1.35};
 const float Ailment::kPC_UNBR_BUFF{1.40};
 const float Ailment::kPC_VITA_BUFF{1.25};
 const float Ailment::kPC_QTDR_BUFF{1.25};
@@ -271,6 +271,7 @@ bool Ailment::applyBuffs()
   {
     value = kPC_LIMB_BUFF;
     stats_to_buff.push_back(Attribute::LIMB);
+    stats_to_buff.push_back(Attribute::MMNT);
   }
   else if(type == Infliction::UNBBUFF)
   {

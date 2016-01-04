@@ -1385,11 +1385,11 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       if(map_ctrl.keyDownEvent(event))
         changeMode(DISABLED);
     }
-    /* -- TODO: TEMP - just for dev mode so you can escape battle -- */
-    else if(event.keysym.sym == SDLK_BACKSPACE)
-    {
-      changeMode(DISABLED);
-    }
+    // /* -- TODO: TEMP - just for dev mode so you can escape battle -- */
+    // else if(event.keysym.sym == SDLK_ESCAPE)
+    // {
+    //   changeMode(DISABLED);
+    // }
     /* -- BATTLE MODE -- */
     else if(mode == BATTLE)
     {

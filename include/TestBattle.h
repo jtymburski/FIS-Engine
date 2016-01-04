@@ -119,6 +119,8 @@ private:
   Sprite* plep_ensnare;
   Sprite* plep_enrich;
   Sprite* plep_upgrade;
+  Sprite* plep_rock;
+  Sprite* plep_medkit;
 
   /* First run trigger */
   bool first_run;
@@ -128,12 +130,13 @@ private:
 
   /* The configuration for the display of the game */
   Options* game_config;
-
   EventHandler* event_handler;
 
   /* Inventories for the dudes */
-  Inventory* inventory_allies;
-  Inventory* inventory_foes;
+  Item* rock;
+  Item* medkit;
+  Item* non_base_rock;
+  Item* non_base_medkit;
 
   /* Levels */
   uint8_t lvl_foe;
@@ -222,7 +225,7 @@ private:
   /* Create sub calls */
   void createActions();
   void createClasses();
-  void createInventories();
+  void createItems();
   void createMenu();
   Person* createPerson(int id, TestPerson type, SDL_Renderer* renderer,
                        uint8_t level = 1);
@@ -233,7 +236,7 @@ private:
   /* Delete sub calls */
   void deleteActions();
   void deleteClasses();
-  void deleteInventories();
+  void deleteItems();
   void deleteMenu();
   void deleteRaces();
   void deleteSkills();
@@ -266,6 +269,7 @@ public:
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 
+  /* Assigns an event handler */
   bool setEventHandler(EventHandler* event_handler);
 
   /* Updates the game state */
