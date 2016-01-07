@@ -15,6 +15,14 @@ const uint8_t EventSet::kBATTLE_FLAGS = 0;
 const uint8_t EventSet::kGIVE_ITEM_COUNT = 1;
 const uint8_t EventSet::kGIVE_ITEM_ID = 0;
 const uint8_t EventSet::kMAP_ID = 0;
+const uint8_t EventSet::kPROP_BOOLS = 3;
+const uint8_t EventSet::kPROP_ID = 1;
+const uint8_t EventSet::kPROP_INACTIVE = 7;
+const uint8_t EventSet::kPROP_MODS = 2;
+const uint8_t EventSet::kPROP_RESPAWN = 4;
+const uint8_t EventSet::kPROP_SPEED = 5;
+const uint8_t EventSet::kPROP_TRACK = 6;
+const uint8_t EventSet::kPROP_TYPE = 0;
 const uint8_t EventSet::kTAKE_ITEM_COUNT = 1;
 const uint8_t EventSet::kTAKE_ITEM_ID = 0;
 const uint8_t EventSet::kTELEPORT_ID = 0;
@@ -939,7 +947,7 @@ EventSet& EventSet::operator=(const EventSet& source)
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-  
+
 /*
  * Description: Returns the enum form a given EventClassifier string
  *
@@ -1212,6 +1220,51 @@ UnlockIOMode EventSet::createEnumIOMode(bool lock, bool events)
 }
 
 /*
+ * Description: Public static. Creates the ThingProperty enum using the
+ *              numerous boolean options.
+ *
+ * Inputs: bool active - modify the thing active bit (thing+)
+ *         bool forced - modify the thing if interaction is forced (npc)
+ *         bool inactive - modify the thing inactive time (io)
+ *         bool move - modify the thing if it is able to move (person+)
+ *         bool reset - modify the thing back to its original location (person+)
+ *         bool respawn - modify the thing respawn time (thing+)
+ *         bool speed - modify the thing speed (person+)
+ *         bool track - modify the thing tracking (npc)
+ *         bool visible - modify if the thing is visible (thing+)
+ * Output: ThingProperty - the resulting enum from the combination of bits
+ */
+ThingProperty EventSet::createEnumProperties(bool active, bool forced,
+                           bool inactive, bool move, bool reset, bool respawn,
+                           bool speed, bool track, bool visible)
+{
+  int thing_prop_enum = 0;
+
+  /* Parse bools */
+  if(active)
+    thing_prop_enum |= static_cast<int>(ThingProperty::ACTIVE);
+  if(forced)
+    thing_prop_enum |= static_cast<int>(ThingProperty::FORCED_INTERACT);
+  if(inactive)
+    thing_prop_enum |= static_cast<int>(ThingProperty::INACTIVE_TIME);
+  if(move)
+    thing_prop_enum |= static_cast<int>(ThingProperty::MOVE_DISABLE);
+  if(reset)
+    thing_prop_enum |= static_cast<int>(ThingProperty::RESET_LOCATION);
+  if(respawn)
+    thing_prop_enum |= static_cast<int>(ThingProperty::RESPAWN_TIME);
+  if(speed)
+    thing_prop_enum |= static_cast<int>(ThingProperty::SPEED);
+  if(track)
+    thing_prop_enum |= static_cast<int>(ThingProperty::TRACKING);
+  if(visible)
+    thing_prop_enum |= static_cast<int>(ThingProperty::VISIBLE);
+
+  /* Return the created enum */
+  return static_cast<ThingProperty>(thing_prop_enum);
+}
+
+/*
  * Description: Public static. Creates the UnlockTileMode enum using the 2
  *              boolean options.
  *
@@ -1339,6 +1392,48 @@ Event EventSet::createEventNotification(std::string notification,
 }
 
 /*
+ * Description: Public static. Creates a new property modifier event with the
+ *              passed in various properties (as defined by inputs) and an
+ *              optional sound ID.
+ *
+ * Inputs: ThingBase type - the type of thing modified by the event
+ *         int id - the id of the thing
+ *         ThingProperty props - which properties are being modified by the call
+ *         ThingProperty bools - the bool values of the properties being modded
+ *         int respawn - the modified respawn time (thing+)
+ *         int speed - the modified speed (person+)
+ *         TrackingState track - the modification of what tracking (npc)
+ *         int inactive - modify the time before going inactive (io)
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the notification event to utilize
+ */
+Event EventSet::createEventPropMod(ThingBase type, int id, ThingProperty props,
+                              ThingProperty bools, int respawn, int speed,
+                              TrackingState track, int inactive, int sound_id)
+{
+  /* Create the event and check validity */
+  Event new_event = createBlankEvent();
+  if(type != ThingBase::ISBASE)
+  {
+    /* Identify the event */
+    new_event.classification = EventClassifier::PROPERTY;
+    if(sound_id >= 0)
+      new_event.sound_id = sound_id;
+
+    /* Set up the rest of the event */
+    new_event.ints.push_back(static_cast<int>(type));
+    new_event.ints.push_back(id);
+    new_event.ints.push_back(static_cast<int>(props));
+    new_event.ints.push_back(static_cast<int>(bools));
+    new_event.ints.push_back(respawn);
+    new_event.ints.push_back(speed);
+    new_event.ints.push_back(static_cast<int>(track));
+    new_event.ints.push_back(inactive);
+  }
+  return new_event;
+}
+
+/*
  * Description: Public static. Creates a new sound only event with the passed
  *              sound ID.
  *
@@ -1375,12 +1470,6 @@ Event EventSet::createEventStartBattle(int sound_id)
   new_event.ints.push_back(static_cast<int>(BattleFlags::NONE));
   new_event.events.push_back(createBlankEvent());
   new_event.events.push_back(createBlankEvent());
-  //Event* event_ptr = new Event();
-  //*event_ptr = createBlankEvent();
-  //new_event.events.push_back(event_ptr);
-  //Event* event_ptr2 = new Event();
-  //*event_ptr2 = createBlankEvent();
-  //new_event.events.push_back(event_ptr2);
 
   return new_event;
 }
@@ -1708,6 +1797,40 @@ void EventSet::dataEnumIOMode(UnlockIOMode io_enum, bool& lock, bool& events)
 }
 
 /*
+ * Description: Extracts data from the ThingProperty enum, as defined by the
+ *              inputs.
+ *
+ * Inputs: ThingProperty props - the enum to extract bitwise data from
+ *         bool& active - modify the thing active bit (thing+)
+ *         bool& forced - modify the thing if interaction is forced (npc)
+ *         bool& inactive - modify the thing inactive time (io)
+ *         bool& move - modify the thing if it is able to move (person+)
+ *         bool& reset - modify the thing back to its start location (person+)
+ *         bool& respawn - modify the thing respawn time (thing+)
+ *         bool& speed - modify the thing speed (person+)
+ *         bool& track - modify the thing tracking (npc)
+ *         bool& visible - modify if the thing is visible (thing+)
+ * Output: none
+ */
+void EventSet::dataEnumProperties(ThingProperty props, bool& active,
+                       bool& forced, bool& inactive, bool& move, bool& reset,
+                       bool& respawn, bool& speed, bool& track, bool& visible)
+{
+  int enum_int = static_cast<int>(props);
+
+  /* Extract data */
+  active = ((enum_int & static_cast<int>(ThingProperty::ACTIVE)) > 0);
+  forced = ((enum_int & static_cast<int>(ThingProperty::FORCED_INTERACT)) > 0);
+  inactive = ((enum_int & static_cast<int>(ThingProperty::INACTIVE_TIME)) > 0);
+  move = ((enum_int & static_cast<int>(ThingProperty::MOVE_DISABLE)) > 0);
+  reset = ((enum_int & static_cast<int>(ThingProperty::RESET_LOCATION)) > 0);
+  respawn = ((enum_int & static_cast<int>(ThingProperty::RESPAWN_TIME)) > 0);
+  speed = ((enum_int & static_cast<int>(ThingProperty::SPEED)) > 0);
+  track = ((enum_int & static_cast<int>(ThingProperty::TRACKING)) > 0);
+  visible = ((enum_int & static_cast<int>(ThingProperty::VISIBLE)) > 0);
+}
+
+/*
  * Description: Extracts data from the UnlockTileMode enum, as defined by the
  *              inputs.
  *
@@ -1786,6 +1909,44 @@ bool EventSet::dataEventNotification(Event event, std::string& notification)
 }
 
 /*
+ * Description: Public static. Extracts data from the passed in property
+ *              modifier event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         ThingBase type - the type of thing modified by the event
+ *         int id - the id of the thing
+ *         ThingProperty props - which properties are being modified by the call
+ *         ThingProperty bools - the bool values of the properties being modded
+ *         int respawn - the modified respawn time (thing+)
+ *         int speed - the modified speed (person+)
+ *         TrackingState track - the modification of what tracking (npc)
+ *         int inactive - modify the time before going inactive (io)
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventPropMod(Event event, ThingBase& type, int& id,
+                                ThingProperty& props, ThingProperty& bools,
+                                int& respawn, int& speed, TrackingState& track,
+                                int& inactive)
+{
+  if(event.classification == EventClassifier::PROPERTY &&
+     event.ints.size() > kPROP_INACTIVE)
+  {
+    type = static_cast<ThingBase>(event.ints[kPROP_TYPE]);
+    id = event.ints[kPROP_ID];
+    props = static_cast<ThingProperty>(event.ints[kPROP_MODS]);
+    bools = static_cast<ThingProperty>(event.ints[kPROP_BOOLS]);
+    respawn = event.ints[kPROP_RESPAWN];
+    speed = event.ints[kPROP_SPEED];
+    track = static_cast<TrackingState>(event.ints[kPROP_TRACK]);
+    inactive = event.ints[kPROP_INACTIVE];
+
+    return true;
+  }
+  return false;
+}
+
+/*
  * Description: Public static. Extracts data from the passed in event if it's
  *              a start battle event.
  *
@@ -1798,7 +1959,7 @@ bool EventSet::dataEventNotification(Event event, std::string& notification)
 bool EventSet::dataEventStartBattle(Event* event, BattleFlags& flags,
                                     Event*& event_win, Event*& event_lose)
 {
-  if(event != nullptr && 
+  if(event != nullptr &&
      event->classification == EventClassifier::BATTLESTART &&
      event->ints.size() > 0 && event->events.size() > kBATTLE_EVENT_LOSE)
   {
@@ -2181,6 +2342,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     category = EventClassifier::MAPSWITCH;
   else if(category_str == "notification")
     category = EventClassifier::NOTIFICATION;
+  else if(category_str == "propertymod")
+    category = EventClassifier::PROPERTY;
   else if(category_str == "justsound")
     category = EventClassifier::SOUNDONLY;
   else if(category_str == "teleportthing")
@@ -2209,6 +2372,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event = createEventStartMap();
     else if(category == EventClassifier::NOTIFICATION)
       event = createEventNotification();
+    else if(category == EventClassifier::PROPERTY)
+      event = createEventPropMod();
     else if(category == EventClassifier::SOUNDONLY)
       event = createEventSound();
     else if(category == EventClassifier::TELEPORTTHING)
@@ -2333,6 +2498,115 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     {
       event.strings.at(0) = data.getDataString();
     }
+  }
+  /* -- PROPERTY MODIFIER -- */
+  else if(category == EventClassifier::PROPERTY)
+  {
+    /* Baseline modifier */
+    ThingProperty mods_curr = 
+                        static_cast<ThingProperty>(event.ints.at(kPROP_MODS));
+    bool active, forced, inactive, move, reset, 
+         respawn, speed, track, visible;
+    dataEnumProperties(mods_curr, active, forced, inactive, move, reset,
+                       respawn, speed, track, visible);
+
+    /* Parse the element */
+    std::string prop_element = data.getElement(file_index + 1);
+    if(prop_element == "class")
+    {
+      ThingBase class_def = ThingBase::ISBASE;
+      std::string class_str = data.getDataString();
+      if(class_str == "thing")
+        class_def = ThingBase::THING;
+      else if(class_str == "item")
+        class_def = ThingBase::ITEM;
+      else if(class_str == "person")
+        class_def = ThingBase::PERSON;
+      else if(class_str == "npc")
+        class_def = ThingBase::NPC;
+      else if(class_str == "io")
+        class_def = ThingBase::INTERACTIVE;
+
+      event.ints.at(kPROP_TYPE) = static_cast<int>(class_def);
+    }
+    else if(prop_element == "id")
+    {
+      event.ints.at(kPROP_ID) = data.getDataInteger();
+    }
+    else if(prop_element == "inactive")
+    {
+      event.ints.at(kPROP_INACTIVE) = data.getDataInteger();
+      inactive = true;
+    }
+    else if(prop_element == "respawn")
+    {
+      event.ints.at(kPROP_RESPAWN) = data.getDataInteger();
+      respawn = true;
+    }
+    else if(prop_element == "speed")
+    {
+      event.ints.at(kPROP_SPEED) = data.getDataInteger();
+      speed = true;
+    }
+    else if(prop_element == "tracking")
+    {
+      TrackingState track_def = TrackingState::NOTRACK;
+      std::string track_str = data.getDataString();
+      if(track_str == "toplayer")
+        track_def = TrackingState::TOPLAYER;
+      else if(track_str == "avoidplayer")
+        track_def = TrackingState::AVOIDPLAYER;
+
+      event.ints.at(kPROP_TRACK) = static_cast<int>(track_def);
+      track = true;
+    }
+    else /* Bools */
+    {
+      /* Get start point */
+      ThingProperty prop_curr = 
+                        static_cast<ThingProperty>(event.ints.at(kPROP_BOOLS));
+      bool active_b, forced_b, inactive_b, move_b, reset_b, 
+           respawn_b, speed_b, track_b, visible_b;
+      dataEnumProperties(prop_curr, active_b, forced_b, inactive_b, move_b, 
+                         reset_b, respawn_b, speed_b, track_b, visible_b);
+
+      /* Parse new data */
+      if(prop_element == "active")
+      {
+        active_b = data.getDataBool();
+        active = true;
+      }
+      else if(prop_element == "forceinteract")
+      {
+        forced_b = data.getDataBool();
+        forced = true;
+      }
+      else if(prop_element == "movedisable")
+      {
+        move_b = data.getDataBool();
+        move = true;
+      }
+      else if(prop_element == "resetlocation")
+      {
+        reset_b = data.getDataBool();
+        reset = true;
+      }
+      else if(prop_element == "visible")
+      {
+        visible_b = data.getDataBool();
+        visible = true;
+      }
+
+      /* Set new data */
+      ThingProperty prop_new = createEnumProperties(active_b, forced_b, 
+          inactive_b, move_b, reset_b, respawn_b, speed_b, track_b, visible_b);
+      event.ints.at(kPROP_BOOLS) = static_cast<int>(prop_new);
+    }
+
+    /* Finalize modifier flags */
+    ThingProperty mods_new = createEnumProperties(active, forced, inactive,
+                                  move, reset, respawn, speed, track, visible);
+    event.ints.at(kPROP_MODS) = static_cast<int>(mods_new);
   }
   /* -- TELEPORT THING -- */
   else if(category == EventClassifier::TELEPORTTHING)

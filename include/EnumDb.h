@@ -576,8 +576,24 @@ enum class ThingBase : std::uint8_t
   NPC = 4,
   INTERACTIVE = 5
 };
+  
+/* 
+ * Description: Tracking state for npc node based movement
+ *
+ * NOTRACK - maintains normal movement (path or random)
+ * AVOIDPLAYER - if player comes near, the NPC will try and stay away
+ * TOPLAYER - if the player comes near, the NPC will try and reach it
+ */
+enum class TrackingState
+{
+  NOTRACK,
+  AVOIDPLAYER, 
+  TOPLAYER
+};
 
-/* Enumerated values for turn state */
+/* 
+ * Description: Enumerated values for turn state
+ */
 enum class TurnState
 {
   BEGIN, /* Setup of the battle */

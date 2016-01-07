@@ -39,11 +39,6 @@ public:
    * LOCKED - Halts movement once the next node is reached */
   enum NodeState{LOOPED, BACKANDFORTH, RANDOMRANGE, RANDOM, LOCKED};
 
-  /* AVOIDPLAYER - if player comes near, the NPC will try and stay away
-   * TOPLAYER - if the player comes near, the NPC will try and reach it
-   * NOTRACK - maintains normal movement (path or random) */
-  enum TrackingState{AVOIDPLAYER, TOPLAYER, NOTRACK};
-
   /* -------------------------- Constants ------------------------- */
   const static uint16_t kFORCED_FREEZE; /* Time before moving after triggering
                                            a forced. In ms */

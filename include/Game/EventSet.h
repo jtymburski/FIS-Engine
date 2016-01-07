@@ -67,6 +67,23 @@ enum class LockedState
 };
 
 /*
+ * Description: The thing properties that can be modified by the mod event
+ */
+enum class ThingProperty
+{
+  NONE            = 0,
+  ACTIVE          = 1 << 0, /* bool */
+  FORCED_INTERACT = 1 << 1, /* bool */
+  INACTIVE_TIME   = 1 << 2, /* int */
+  MOVE_DISABLE    = 1 << 3, /* bool */
+  RESET_LOCATION  = 1 << 4, /* bool */
+  RESPAWN_TIME    = 1 << 5, /* int */
+  SPEED           = 1 << 6, /* int */
+  TRACKING        = 1 << 7, /* int */
+  VISIBLE         = 1 << 8  /* bool */
+};
+
+/*
  * Description: The state of the set of unlocked events.
  */
 enum class UnlockedState
@@ -198,6 +215,14 @@ public:
   const static uint8_t kGIVE_ITEM_COUNT; /* Give item count index */
   const static uint8_t kGIVE_ITEM_ID; /* Give item ID index */
   const static uint8_t kMAP_ID; /* The map ID location for the run event */
+  const static uint8_t kPROP_BOOLS; /* Property bools index */
+  const static uint8_t kPROP_ID; /* Property thing id index */
+  const static uint8_t kPROP_INACTIVE; /* Property inactive time index */
+  const static uint8_t kPROP_MODS; /* Property which to modify index */
+  const static uint8_t kPROP_RESPAWN; /* Property respawn time index */
+  const static uint8_t kPROP_SPEED; /* Property speed index */
+  const static uint8_t kPROP_TRACK; /* Property tracking definition index */
+  const static uint8_t kPROP_TYPE; /* Property thing type definition */
   const static uint8_t kTAKE_ITEM_COUNT; /* Take item count index */
   const static uint8_t kTAKE_ITEM_ID; /* Take item ID index */
   const static uint8_t kTELEPORT_ID; /* Teleport thing ID index */
@@ -367,6 +392,10 @@ public:
   static UnlockIOEvent createEnumIOEvent(bool enter = false, bool exit = false,
                                       bool use = false, bool walkover = false);
   static UnlockIOMode createEnumIOMode(bool lock = false, bool events = false);
+  static ThingProperty createEnumProperties(bool active = false,
+                bool forced = false, bool inactive = false, bool move = false,
+                bool reset = false, bool respawn = false, bool speed = false,
+                bool track = false, bool visible = false);
   static UnlockTileMode createEnumTileEvent(bool enter = false,
                                             bool exit = false);
   static UnlockView createEnumView(bool view = false, bool scroll = false);
@@ -382,6 +411,13 @@ public:
   /* Creates a notification event, that can fire and result in visible text */
   static Event createEventNotification(std::string notification = "",
                                        int sound_id = kUNSET_ID);
+
+  /* Creates a property modifier event */
+  static Event createEventPropMod(ThingBase type = ThingBase::ISBASE, 
+                int id = kUNSET_ID, ThingProperty props = ThingProperty::NONE,
+                ThingProperty bools = ThingProperty::NONE, int respawn = 0, 
+                int speed = 0, TrackingState track = TrackingState::NOTRACK, 
+                int inactive = 0, int sound_id = kUNSET_ID);
 
   /* Creates a sound event */
   static Event createEventSound(int sound_id = kUNSET_ID);
@@ -434,6 +470,9 @@ public:
   static void dataEnumIOEvent(UnlockIOEvent io_enum, bool& enter, bool& exit,
                               bool& use, bool& walkover);
   static void dataEnumIOMode(UnlockIOMode io_enum, bool& lock, bool& events);
+  static void dataEnumProperties(ThingProperty props, bool& active,
+                      bool& forced, bool& inactive, bool& move, bool& reset,
+                      bool& respawn, bool& speed, bool& track, bool& visible);
   static void dataEnumTileEvent(UnlockTileMode tile_enum,
                                 bool& enter, bool& exit);
   static void dataEnumView(UnlockView view_enum, bool& view, bool& scroll);
@@ -441,6 +480,10 @@ public:
   /* Extract data from event(s) */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
   static bool dataEventNotification(Event event, std::string& notification);
+  static bool dataEventPropMod(Event event, ThingBase& type, int& id,
+                               ThingProperty& props, ThingProperty& bools,
+                               int& respawn, int& speed, TrackingState& track,
+                               int& inactive);
   static bool dataEventStartBattle(Event* event, BattleFlags& flags,
                                    Event*& event_win, Event*& event_lose);
   static bool dataEventStartMap(Event event, int& map_id);

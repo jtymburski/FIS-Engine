@@ -193,7 +193,7 @@ void MapNPC::initializeClass()
   track_dist_run = kTRACK_DIST_RUN;
   track_initial = false;
   track_recent = false;
-  track_state = NOTRACK;
+  track_state = TrackingState::NOTRACK;
   tracking = false;
 
   /* Set the path player node to blank state */
@@ -827,11 +827,11 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     if(success)
     {
       if(state == "none")
-        setTrackingState(MapNPC::NOTRACK);
+        setTrackingState(TrackingState::NOTRACK);
       else if(state == "toplayer")
-        setTrackingState(MapNPC::TOPLAYER);
+        setTrackingState(TrackingState::TOPLAYER);
       else if(state == "avoidplayer")
-        setTrackingState(MapNPC::AVOIDPLAYER);
+        setTrackingState(TrackingState::AVOIDPLAYER);
       else
         success = false;
     }
@@ -1043,7 +1043,7 @@ int MapNPC::getTrackDistRun()
  * Inputs: none
  * Output: MapNPC::TrackingState - the tracking state enum
  */
-MapNPC::TrackingState MapNPC::getTrackingState()
+TrackingState MapNPC::getTrackingState()
 {
   //if(base != nullptr)
   //{
@@ -1157,7 +1157,7 @@ bool MapNPC::isForcedInteraction(bool false_if_active)
  */
 bool MapNPC::isTracking()
 {
-  return (getTrackingState() != MapNPC::NOTRACK);
+  return (getTrackingState() != TrackingState::NOTRACK);
 }
 
 /*
@@ -1485,7 +1485,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       else
       {
         /* Handle tracking */
-        if(track_state != NOTRACK && player != nullptr)
+        if(track_state != TrackingState::NOTRACK && player != nullptr)
         {
           /* Delta X/Y distances */
           int delta_x = 0;
@@ -1549,7 +1549,8 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
             /* Check if tracking should be disabled */
             if(delta > track_dist_max || delta_range > track_dist_max ||
                forced_recent || getTarget() != nullptr ||
-               (track_state == AVOIDPLAYER && delta_range == track_dist_max &&
+               (track_state == TrackingState::AVOIDPLAYER && 
+                delta_range == track_dist_max &&
                 trackOutOfRange(player) >= delta_range))
             {
               tracking = false;
@@ -1566,7 +1567,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         if(tracking)// && getTarget() == nullptr)
         {
           /* Track to the player location */
-          if(track_state == TOPLAYER)
+          if(track_state == TrackingState::TOPLAYER)
           {
             node_player.x = player->getTileX();
             node_player.y = player->getTileY();
@@ -1713,11 +1714,11 @@ std::string MapNPC::getTrackingString(TrackingState state)
 {
   std::string node = "";
 
-  if(state == NOTRACK)
+  if(state == TrackingState::NOTRACK)
     node = "none";
-  else if(state == TOPLAYER)
+  else if(state == TrackingState::TOPLAYER)
     node = "toplayer";
-  else if(state == AVOIDPLAYER)
+  else if(state == TrackingState::AVOIDPLAYER)
     node = "avoidplayer";
 
   return node;
