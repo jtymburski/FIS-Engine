@@ -53,7 +53,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   this->event_handler = NULL;
   fade_alpha = 255;
   fade_status = BLACK;
-  lay_offset = 0;
+  lay_offset = 128;
   lay_offset2 = 0;
   //lay_over = nullptr;
   //lay_under = nullptr;
@@ -2053,14 +2053,12 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
     lay_over.push_back(new Sprite(
           "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", renderer));
     lay_over.push_back(new Sprite(
-          "sprites/Map/EnviromentEffects/Overlays/smokeoverlay_AA_A", 4, 
-          ".png", renderer));
-    lay_over.back()->setAnimationTime(128);
+          "sprites/Map/EnviromentEffects/Overlays/fog_underlay", renderer));
   }
   if(lay_under.size() == 0)
   {
     lay_under.push_back(new Sprite(
-          "sprites/Map/Tiles/00_Generic/Floors/Ground/RockyTile01_AA_A00.png", 
+          "sprites/Map/EnviromentEffects/Overlays/forest_underlay.png", 
           renderer));
   }
 #endif
