@@ -53,6 +53,10 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   this->event_handler = NULL;
   fade_alpha = 255;
   fade_status = BLACK;
+  lay_offset = 0;
+  lay_offset2 = 0;
+  //lay_over = nullptr;
+  //lay_under = nullptr;
   loaded = false;
   map_index = 0;
   map_index_next = -1;
@@ -2042,6 +2046,25 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
     }
   }
 
+  /* TODO: TESTING - REMOVE AND PROPERLY IMPLEMENT */
+#ifdef MAP_LAY
+  if(lay_over.size() == 0)
+  {
+    lay_over.push_back(new Sprite(
+          "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", renderer));
+    lay_over.push_back(new Sprite(
+          "sprites/Map/EnviromentEffects/Overlays/smokeoverlay_AA_A", 4, 
+          ".png", renderer));
+    lay_over.back()->setAnimationTime(128);
+  }
+  if(lay_under.size() == 0)
+  {
+    lay_under.push_back(new Sprite(
+          "sprites/Map/Tiles/00_Generic/Floors/Ground/RockyTile01_AA_A00.png", 
+          renderer));
+  }
+#endif
+
   return success;
 }
 
@@ -2233,6 +2256,11 @@ bool Map::render(SDL_Renderer* renderer)
     uint16_t tile_y_end = viewport.getYTileEnd();
     float x_offset = viewport.getX();
     float y_offset = viewport.getY();
+    
+    /* Underlay for map - testing: TODO revise */
+    for(uint16_t i = 0; i < lay_under.size(); i++)
+      if(lay_under[i] != nullptr)
+        lay_under[i]->render(renderer, 0, 0, 1216, 704);
 
     /* Render the lower tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
@@ -2354,6 +2382,28 @@ bool Map::render(SDL_Renderer* renderer)
       {
         sub_map[map_index].tiles[i][j]->renderUpper(renderer,
                                                     x_offset, y_offset);
+      }
+    }
+
+    /* Overlay for map - testing: TODO revise */
+    for(uint16_t i = 0; i < lay_over.size(); i++)
+    {
+      if(lay_over[i] != nullptr)
+      {
+        if(i == 0)
+        {
+          lay_over[i]->render(renderer, lay_offset, 0, 1216, 704);
+          lay_over[i]->render(renderer, lay_offset - 1216, 0, 1216, 704);
+        }
+        else if(i == 1)
+        {
+          lay_over[i]->render(renderer, lay_offset2, 0, 1216, 704);
+          lay_over[i]->render(renderer, lay_offset2 - 1216, 0, 1216, 704);
+        }
+        else
+        {
+          lay_over[i]->render(renderer, 0, 0, 1216, 704);
+        }
       }
     }
 
@@ -2717,6 +2767,22 @@ bool Map::update(int cycle_time)
   /* If conversation is active, confirm that player is not moving */
   if(map_dialog.isConversationActive() || !isModeNormal())
     unfocus();
+    
+  /* Overlay for map - testing: TODO revise */
+  for(uint16_t i = 0; i < lay_over.size(); i++)
+    if(lay_over[i] != nullptr)
+      lay_over[i]->update(cycle_time);
+
+  /* Offset for overlay */
+  if(lay_over.size() > 0)
+  {
+    lay_offset += cycle_time / 8;
+    if(lay_offset >= 1216)
+      lay_offset -= 1216;
+    lay_offset2 += cycle_time / 4;
+    if(lay_offset2 >= 1216)
+      lay_offset2 -= 1216;
+  }
 
   /* Finally, update the viewport and dialogs */
   item_menu.update(cycle_time);

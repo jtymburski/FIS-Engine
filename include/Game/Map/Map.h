@@ -31,6 +31,9 @@
 #include "Options.h"
 #include "Sprite.h"
 
+// TODO: FOR OVERLAY/UNDERLAY - TESTING ONLY - UNCOMMENT TO ENABLE
+#define MAP_LAY
+
 /* Sub map structure - contains all data related only to each sub */
 // TODO: Move thing instances into this struct
 struct SubMap
@@ -99,6 +102,12 @@ private:
 
   /* The item store menu */
   ItemStore item_menu;
+
+  /* Map lays */
+  uint16_t lay_offset;
+  uint16_t lay_offset2;
+  std::vector<Sprite*> lay_over;
+  std::vector<Sprite*> lay_under;
 
   /* Indication if the map has been loaded */
   bool loaded;
