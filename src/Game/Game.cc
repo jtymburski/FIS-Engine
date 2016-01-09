@@ -529,6 +529,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   std::cout << "--" << std::endl << "Game Load: " << fh.getDate() << type
             << std::endl << "--" << std::endl;
 
+  Timer t;
   /* If file open was successful, move forward */
   if(success)
   {
@@ -555,6 +556,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
       }
     } while(!done); // && success); // TODO: Success in loop??
   }
+  std::cout << t.elapsed() << std::endl;
 
   success &= fh.stop();
 
@@ -605,7 +607,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     addAction(data.getDataString());
   }
   /* ---- CLASSES ---- */
-  else if(data.getElement(index) == "class")
+  if(data.getElement(index) == "class")
   {
     Category* edit_class = getClass(id);
     if(edit_class == nullptr)
@@ -630,7 +632,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     else
       success &= edit_item->loadData(data, index + 1, renderer, base_path);
   }
-  /* ---- PARTIES ---- */
+  // /* ---- PARTIES ---- */
   else if(data.getElement(index) == "party")
   {
     Party* edit_party = getParty(id);
@@ -725,7 +727,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       success &= edit_race->loadData(data, index + 1, renderer);
   }
   /* ---- SKILLS ---- */
-  else if(data.getElement(index) == "skill")
+  if(data.getElement(index) == "skill")
   {
     Skill* edit_skill = getSkill(id);
     if(edit_skill == nullptr)

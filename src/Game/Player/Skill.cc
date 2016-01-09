@@ -313,7 +313,7 @@ bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
       animation = new Sprite();
 
     /* Add data */
-    success &= animation->addFileInformation(data, index + 1, 
+    success &= animation->addFileInformation(data, index + 1,
                                              renderer, base_path);
   }
   /* ---- CHANCE ---- */
@@ -382,7 +382,7 @@ bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
       thumbnail = new Frame();
 
     /* Add data */
-    success &= thumbnail->setTexture(base_path + 
+    success &= thumbnail->setTexture(base_path +
                                      data.getDataString(&success), renderer);
   }
   /* ---- VALUE ---- */

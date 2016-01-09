@@ -34,32 +34,55 @@ const int32_t Sprite::kUNSET_SOUND_ID = -1;
  * Input: none
  */
 Sprite::Sprite()
+    : animation_time{kDEFAULT_ANIMATE_TIME},
+      elapsed_time{0},
+      brightness{kDEFAULT_BRIGHTNESS},
+      temp_red{kDEFAULT_COLOR},
+      temp_green{kDEFAULT_COLOR},
+      temp_blue{kDEFAULT_COLOR},
+      color_red{kDEFAULT_COLOR},
+      color_green{kDEFAULT_COLOR},
+      color_blue{kDEFAULT_COLOR},
+      current{nullptr},
+      grey_scale_alpha{kDEFAULT_OPACITY},
+      grey_scale_update{false},
+      head{nullptr},
+      id{0},
+      loops{0},
+      opacity{kDEFAULT_OPACITY},
+      non_unique{false},
+      rotation_angle{0.0},
+      size{0},
+      sequence{FORWARD},
+      sound_id{kUNSET_SOUND_ID},
+      texture{nullptr},
+      texture_update{false}
 {
   /* Reset the class parameters */
-  animation_time = kDEFAULT_ANIMATE_TIME;
-  elapsed_time = 0;
-  brightness = kDEFAULT_BRIGHTNESS;
-  color_red = kDEFAULT_COLOR;
-  color_green = kDEFAULT_COLOR;
-  color_blue = kDEFAULT_COLOR;
-  temp_red = kDEFAULT_COLOR;
-  temp_green = kDEFAULT_COLOR;
-  temp_blue = kDEFAULT_COLOR;
-  current = NULL;
-  elapsed_time = 0;
-  grey_scale_alpha = kDEFAULT_OPACITY;
-  grey_scale_update = false;
-  head = NULL;
-  id = 0;
-  loops = 0;
-  opacity = kDEFAULT_OPACITY;
-  non_unique = false;
-  rotation_angle = 0.0;
-  size = 0;
-  sequence = FORWARD;
-  sound_id = kUNSET_SOUND_ID;
-  texture = NULL;
-  texture_update = false;
+  // animation_time = kDEFAULT_ANIMATE_TIME;
+  // elapsed_time = 0;
+  // brightness = kDEFAULT_BRIGHTNESS;
+  // color_red = kDEFAULT_COLOR;
+  // color_green = kDEFAULT_COLOR;
+  // color_blue = kDEFAULT_COLOR;
+  // temp_red = kDEFAULT_COLOR;
+  // temp_green = kDEFAULT_COLOR;
+  // temp_blue = kDEFAULT_COLOR;
+  // current = NULL;
+  // elapsed_time = 0;
+  // grey_scale_alpha = kDEFAULT_OPACITY;
+  // grey_scale_update = false;
+  // head = NULL;
+  // id = 0;
+  // loops = 0;
+  // opacity = kDEFAULT_OPACITY;
+  // non_unique = false;
+  // rotation_angle = 0.0;
+  // size = 0;
+  // sequence = FORWARD;
+  // sound_id = kUNSET_SOUND_ID;
+  // texture = NULL;
+  // texture_update = false;
 }
 
 /*

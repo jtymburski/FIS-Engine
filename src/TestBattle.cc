@@ -697,14 +697,9 @@ void TestBattle::createMenu()
 /* ------------------------------------------------------------------------- */
 /* Create person of type */
 /* ------------------------------------------------------------------------- */
-Person* TestBattle::createPerson(int id, TestPerson type,
-                                 SDL_Renderer* renderer, uint8_t level)
+Person* TestBattle::createPerson(int id, TestPerson type, uint8_t level)
 {
   Person* new_person = nullptr;
-  Sprite* as = nullptr;
-  Sprite* ds = nullptr;
-  Sprite* fp = nullptr;
-  Sprite* tp = nullptr;
 
   /* Create person based on enum - custom logic based on type */
   if(type == ARCADIUS)
@@ -713,10 +708,10 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::FOREST, ElementCurve::S, Element::PHYSICAL,
                           ElementCurve::S, true);
 
-    tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/arcadius.png",
-                    renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/arcadius.png",
-                    renderer);
+    new_person->setThirdPersonPath(
+        base_path + "sprites/Battle/Battle_Persons/arcadius.png");
+    new_person->setDialogSpritePath(
+        base_path + "sprites/Overlay/DialogChar/arcadius.png");
   }
   else if(type == AURORAAGENT)
   {
@@ -731,10 +726,10 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::ELECTRIC, ElementCurve::C, Element::PHYSICAL,
                           ElementCurve::C, true);
 
-    tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/auroraagent.png",
-                    renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/auroraagent.png",
-                    renderer);
+    new_person->setThirdPersonPath(
+        base_path + "sprites/Battle/Battle_Persons/auroraagent.png");
+    new_person->setDialogSpritePath(
+        base_path + "sprites/Overlay/DialogChar/auroraagent.png");
   }
   else if(type == AURORAHEAVY)
   {
@@ -742,10 +737,10 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::ELECTRIC, ElementCurve::A, Element::PHYSICAL,
                           ElementCurve::A, true);
 
-    tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/auroraheavy.png",
-                    renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/auroraheavy.png",
-                    renderer);
+    new_person->setThirdPersonPath(
+        base_path + "sprites/Battle/Battle_Persons/auroraheavy.png");
+    new_person->setDialogSpritePath(
+        base_path + "sprites/Overlay/DialogChar/auroraheavy.png");
   }
   else if(type == AURORAENGG)
   {
@@ -753,11 +748,10 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::ELECTRIC, ElementCurve::B, Element::PHYSICAL,
                           ElementCurve::B, true);
 
-    tp = new Sprite(base_path +
-                        "sprites/Battle/Battle_Persons/auroraengineer.png",
-                    renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/auroraengineer.png",
-                    renderer);
+    new_person->setThirdPersonPath(
+        base_path + "sprites/Battle/Battle_Persons/auroraengineer.png");
+    new_person->setDialogSpritePath(
+        base_path + "sprites/Overlay/DialogChar/auroraengineer.png");
   }
   else if(type == AURORADRONE)
   {
@@ -772,10 +766,10 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::ELECTRIC, ElementCurve::D, Element::PHYSICAL,
                           ElementCurve::D, true);
 
-    tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/auroradrone.png",
-                    renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/auroradrone.png",
-                    renderer);
+    new_person->setThirdPersonPath(
+        base_path + "sprites/Battle/Battle_Persons/auroradrone.png");
+    new_person->setDialogSpritePath(
+        base_path + "sprites/Overlay/DialogChar/auroradrone.png");
   }
   else if(type == REVERDILE)
   {
@@ -783,10 +777,10 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::FOREST, ElementCurve::C, Element::PHYSICAL,
                           ElementCurve::C, true);
 
-    tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/reverdile.png",
-                    renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/treething.png",
-                    renderer);
+    new_person->setThirdPersonPath(
+        base_path + "sprites/Battle/Battle_Persons/reverdile.png");
+    new_person->setDialogSpritePath(
+        base_path + "sprites/Overlay/DialogChar/treething.png");
   }
   else if(type == REVERDLING)
   {
@@ -805,10 +799,10 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::FOREST, ElementCurve::D, Element::PHYSICAL,
                           ElementCurve::D, true);
 
-    tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/reverdling.png",
-                    renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/reverdling.png",
-                    renderer);
+    new_person->setThirdPersonPath(
+        base_path + "sprites/Battle/Battle_Persons/reverdling.png");
+    new_person->setDialogSpritePath(base_path +
+                                    "sprites/Overlay/DialogChar/reverdling.png");
   }
   else if(type == PLAYER)
   {
@@ -816,10 +810,12 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     new_person->setCurves(Element::FOREST, ElementCurve::C, Element::PHYSICAL,
                           ElementCurve::C, true);
 
-    fp = new Sprite(base_path + "sprites/Battle/Backs/player0.png", renderer);
-    ds = new Sprite(base_path + "sprites/Overlay/DialogChar/player.png",
-                    renderer);
-    as = new Sprite(base_path + "sprites/Battle/Backs/player1.png", renderer);
+    new_person->setFirstPersonPath(
+        base_path + "sprites/Battle/Backs/player0.png");
+    new_person->setDialogSpritePath(
+        base_path + "sprites/Overlay/DialogChar/player.png");
+    new_person->setActionSpritePath(
+        base_path + "sprites/Battle/Backs/player1.png");
   }
 
   /* Common person logic */
@@ -827,7 +823,6 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   {
     new_person->loseExp(new_person->getTotalExp());
     new_person->addExp(new_person->getExpAt(level));
-    new_person->setSprites(fp, tp, ds, as);
   }
 
   return new_person;
@@ -1479,33 +1474,33 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   MenuItems ref = (MenuItems)menu_index;
 
   /* Set up FRIEND party */
-  Person* player = createPerson(100, PLAYER, renderer, lvl_friend);
+  Person* player = createPerson(100, PLAYER, lvl_friend);
   party_friends = new Party(200, player, PartyType::SLEUTH, 5);
 
   /* Set up FOE party based on menu index */
   if(ref == AC)
   {
-    Person* arc = createPerson(300, ARCADIUS, renderer, lvl_foe);
+    Person* arc = createPerson(300, ARCADIUS, lvl_foe);
     party_foes = new Party(400, arc, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AA)
   {
-    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
+    Person* aa = createPerson(300, AURORAAGENT, lvl_foe);
     party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AAx2)
   {
-    Person* aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
+    Person* aa1 = createPerson(300, AURORAAGENT, lvl_foe);
+    Person* aa2 = createPerson(301, AURORAAGENT, lvl_foe);
 
     party_foes = new Party(400, aa1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(aa2);
   }
   else if(ref == AAx5)
   {
-    Person* aa1 = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* aa2 = createPerson(301, AURORAAGENT, renderer, lvl_foe);
-    Person* aa3 = createPerson(302, AURORAAGENT, renderer, lvl_foe);
+    Person* aa1 = createPerson(300, AURORAAGENT, lvl_foe);
+    Person* aa2 = createPerson(301, AURORAAGENT, lvl_foe);
+    Person* aa3 = createPerson(302, AURORAAGENT, lvl_foe);
     // Person *aa4 = createPerson(303, AURORAAGENT, renderer, lvl_foe);
     // Person *aa5 = createPerson(304, AURORAAGENT, renderer, lvl_foe);
 
@@ -1517,31 +1512,31 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == AAnAH)
   {
-    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
+    Person* aa = createPerson(300, AURORAAGENT, lvl_foe);
+    Person* ah = createPerson(301, AURORAHEAVY, lvl_foe);
 
     party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ah);
   }
   else if(ref == AH)
   {
-    Person* ah = createPerson(300, AURORAHEAVY, renderer, lvl_foe);
+    Person* ah = createPerson(300, AURORAHEAVY, lvl_foe);
     party_foes = new Party(400, ah, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == AEnAD)
   {
-    Person* ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
-    Person* ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
+    Person* ae = createPerson(300, AURORAENGG, lvl_foe);
+    Person* ad = createPerson(400, AURORADRONE, lvl_foe);
 
     party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ad);
   }
   else if(ref == AEnADx4)
   {
-    Person* ae = createPerson(300, AURORAENGG, renderer, lvl_foe);
-    Person* ad1 = createPerson(400, AURORADRONE, renderer, lvl_foe);
-    Person* ad2 = createPerson(401, AURORADRONE, renderer, lvl_foe);
-    Person* ad3 = createPerson(402, AURORADRONE, renderer, lvl_foe);
+    Person* ae = createPerson(300, AURORAENGG, lvl_foe);
+    Person* ad1 = createPerson(400, AURORADRONE, lvl_foe);
+    Person* ad2 = createPerson(401, AURORADRONE, lvl_foe);
+    Person* ad3 = createPerson(402, AURORADRONE, lvl_foe);
     // Person *ad4 = createPerson(304, AURORADRONE, renderer, lvl_foe);
 
     party_foes = new Party(400, ae, PartyType::REGULAR_FOE, 5);
@@ -1552,10 +1547,10 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == AAnAHnADnAE)
   {
-    Person* aa = createPerson(300, AURORAAGENT, renderer, lvl_foe);
-    Person* ah = createPerson(301, AURORAHEAVY, renderer, lvl_foe);
-    Person* ad = createPerson(400, AURORADRONE, renderer, lvl_foe);
-    Person* ae = createPerson(303, AURORAENGG, renderer, lvl_foe);
+    Person* aa = createPerson(300, AURORAAGENT, lvl_foe);
+    Person* ah = createPerson(301, AURORAHEAVY, lvl_foe);
+    Person* ad = createPerson(400, AURORADRONE, lvl_foe);
+    Person* ae = createPerson(303, AURORAENGG, lvl_foe);
 
     party_foes = new Party(400, aa, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(ah);
@@ -1564,17 +1559,17 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == REnRG)
   {
-    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person* rg = createPerson(500, REVERDLING, renderer, lvl_foe);
+    Person* re = createPerson(300, REVERDILE, lvl_foe);
+    Person* rg = createPerson(500, REVERDLING, lvl_foe);
 
     party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg);
   }
   else if(ref == REnRGx2)
   {
-    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person* re = createPerson(300, REVERDILE, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, lvl_foe);
 
     party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg1);
@@ -1582,10 +1577,10 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == REnRGx4)
   {
-    Person* re = createPerson(300, REVERDILE, renderer, lvl_foe);
-    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
-    Person* rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
+    Person* re = createPerson(300, REVERDILE, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, lvl_foe);
+    Person* rg3 = createPerson(502, REVERDLING, lvl_foe);
     // Person *rg4 = createPerson(304, REVERDLING, renderer, lvl_foe);
 
     party_foes = new Party(400, re, PartyType::REGULAR_FOE, 5);
@@ -1596,24 +1591,24 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
   else if(ref == RG)
   {
-    Person* rg = createPerson(300, REVERDLING, renderer, lvl_foe);
+    Person* rg = createPerson(300, REVERDLING, lvl_foe);
     party_foes = new Party(400, rg, PartyType::REGULAR_FOE, 5);
   }
   else if(ref == RGx2)
   {
-    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, lvl_foe);
 
     party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg2);
   }
   else if(ref == RGx5)
   {
-    Person* rg1 = createPerson(500, REVERDLING, renderer, lvl_foe);
-    Person* rg2 = createPerson(501, REVERDLING, renderer, lvl_foe);
-    Person* rg3 = createPerson(502, REVERDLING, renderer, lvl_foe);
-    Person* rg4 = createPerson(503, REVERDLING, renderer, lvl_foe);
-    Person* rg5 = createPerson(504, REVERDLING, renderer, lvl_foe);
+    Person* rg1 = createPerson(500, REVERDLING, lvl_foe);
+    Person* rg2 = createPerson(501, REVERDLING, lvl_foe);
+    Person* rg3 = createPerson(502, REVERDLING, lvl_foe);
+    Person* rg4 = createPerson(503, REVERDLING, lvl_foe);
+    Person* rg5 = createPerson(504, REVERDLING, lvl_foe);
 
     party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
     party_foes->addMember(rg2);

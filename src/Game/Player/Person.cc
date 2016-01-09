@@ -164,6 +164,11 @@ void Person::copySelf(const Person &source)
 
   level = source.level;
   total_exp = source.total_exp;
+
+  path_action_sprite = source.path_action_sprite;
+  path_dialog_sprite = source.path_dialog_sprite;
+  path_first_person  = source.path_first_person;
+  path_third_person  = source.path_third_person;
 }
 
 /*
@@ -224,9 +229,11 @@ void Person::loadDefaults()
   credit_drop = 0;
   exp_drop = 0;
 
-  action_sprite = nullptr;
-  first_person = nullptr;
-  third_person = nullptr;
+  path_action_sprite = "";
+  path_dialog_sprite = "";
+  path_first_person = "";
+  path_third_person = "";
+
   dialog_sprite = nullptr;
 }
 
@@ -299,11 +306,13 @@ void Person::setupClass()
     level = base_person->level;
     total_exp = base_person->total_exp;
 
+    path_action_sprite = base_person->path_action_sprite;
+    path_dialog_sprite = base_person->path_dialog_sprite;
+    path_first_person  = base_person->path_first_person;
+    path_third_person  = base_person->path_third_person;
+
     /* Comes from base person, if not null */
-    first_person = base_person->first_person;
-    third_person = base_person->third_person;
-    dialog_sprite = base_person->dialog_sprite;
-    action_sprite = base_person->action_sprite;
+    dialog_sprite = nullptr;
 
     updateBaseStats();
     curr_stats = base_stats;
@@ -357,25 +366,10 @@ void Person::unsetAll(const bool &clear)
 
 void Person::unsetSprites()
 {
-  if(action_sprite != nullptr)
-    if(base_person == nullptr || base_person->action_sprite != action_sprite)
-      delete action_sprite;
-
-  if(first_person != nullptr)
-    if(base_person == nullptr || base_person->first_person != first_person)
-      delete first_person;
-
-  if(third_person != nullptr)
-    if(base_person == nullptr || base_person->third_person != third_person)
-      delete third_person;
-
   if(dialog_sprite != nullptr)
     if(base_person == nullptr || base_person->dialog_sprite != dialog_sprite)
       delete dialog_sprite;
 
-  action_sprite = nullptr;
-  first_person = nullptr;
-  third_person = nullptr;
   dialog_sprite = nullptr;
 }
 
@@ -922,13 +916,7 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer *renderer,
   /* ---- SPRITE ACTION ---- */
   else if(data.getElement(index) == "sprite_action")
   {
-    /* If null, create */
-    if(action_sprite == nullptr)
-      action_sprite = new Sprite();
-
-    /* Add data */
-    success &=
-        action_sprite->addFileInformation(data, index + 1, renderer, base_path);
+    path_action_sprite = base_path + data.getDataString(&success);
   }
   /* ---- SPRITE ACTION X ---- */
   else if(data.getElement(index) == "sprite_action_x")
@@ -943,6 +931,7 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer *renderer,
   /* ---- SPRITE DIALOG ---- */
   else if(data.getElement(index) == "sprite_dialog")
   {
+    //TODO, have Dialog & Battle create this sprite as needed?
     /* If null, create */
     if(dialog_sprite == nullptr)
       dialog_sprite = new Sprite();
@@ -950,28 +939,19 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer *renderer,
     /* Add data */
     success &=
         dialog_sprite->addFileInformation(data, index + 1, renderer, base_path);
+
+    //TODO: Keep this after
+    path_dialog_sprite = data.getDataString(&success);
   }
   /* ---- SPRITE FIRST PERSON ---- */
   else if(data.getElement(index) == "sprite_fp")
   {
-    /* If null, create */
-    if(first_person == nullptr)
-      first_person = new Sprite();
-
-    /* Add data */
-    success &=
-        first_person->addFileInformation(data, index + 1, renderer, base_path);
+    path_first_person = base_path + data.getDataString(&success);
   }
   /* ---- SPRITE THIRD PERSON ---- */
   else if(data.getElement(index) == "sprite_tp")
   {
-    /* If null, create */
-    if(third_person == nullptr)
-      third_person = new Sprite();
-
-    /* Add data */
-    success &=
-        third_person->addFileInformation(data, index + 1, renderer, base_path);
+    path_third_person = base_path + data.getDataString(&success);
   }
 
   return success;
@@ -1087,9 +1067,9 @@ void Person::restoreQtdr()
   curr_stats.setStat(Attribute::QTDR, curr_max_stats.getStat(Attribute::QTDR));
 }
 
-Sprite *Person::getActionSprite()
+std::string Person::getActionSpritePath()
 {
-  return action_sprite;
+  return path_action_sprite;
 }
 
 /*
@@ -1483,11 +1463,9 @@ float Person::getVitaPercent()
  * Inputs: none
  * Output: Sprite* - pointer to the correct current first person sprite
  */
-Sprite *Person::getFirstPerson()
+std::string Person::getFirstPersonPath()
 {
-  if(base_person != nullptr)
-    return base_person->first_person;
-  return first_person;
+  return path_first_person;
 }
 
 /*
@@ -1497,11 +1475,14 @@ Sprite *Person::getFirstPerson()
  * Inputs: none
  * Output: Sprite* - pointer to the correct current third person sprite
  */
-Sprite *Person::getThirdPerson()
+std::string Person::getThirdPersonPath()
 {
-  if(base_person != nullptr)
-    return base_person->third_person;
-  return third_person;
+  return path_third_person;
+}
+
+std::string Person::getDialogSpritePath()
+{
+  return path_dialog_sprite;
 }
 
 /*
@@ -1796,6 +1777,26 @@ bool Person::setEquip(const EquipSlots &slot, Equipment *new_equip)
   return true;
 }
 
+void Person::setFirstPersonPath(std::string new_path)
+{
+  path_first_person = new_path;
+}
+
+void Person::setThirdPersonPath(std::string new_path)
+{
+  path_third_person = new_path;
+}
+
+void Person::setActionSpritePath(std::string new_path)
+{
+  path_action_sprite = new_path;
+}
+
+void Person::setDialogSpritePath(std::string new_path)
+{
+  path_dialog_sprite = new_path;
+}
+
 /*
  * Description: Sets the game ID for the person.
  *
@@ -1885,17 +1886,13 @@ void Person::setRace(Category *const category)
  *         new_action - pointer to an action frame sprite
  * Output: none
  */
-void Person::setSprites(Sprite *new_fp, Sprite *new_tp, Sprite *new_dialog,
-                        Sprite *new_action)
+void Person::setSprites(Sprite *new_dialog_sprite)
 {
   /* Unset the current sprites */
   unsetSprites();
 
   /* Assign the new sprite pointers */
-  action_sprite = new_action;
-  first_person = new_fp;
-  third_person = new_tp;
-  dialog_sprite = new_dialog;
+  dialog_sprite = new_dialog_sprite;
 }
 
 /*============================================================================

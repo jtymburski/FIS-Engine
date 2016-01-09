@@ -227,8 +227,7 @@ private:
   void createClasses();
   void createItems();
   void createMenu();
-  Person* createPerson(int id, TestPerson type, SDL_Renderer* renderer,
-                       uint8_t level = 1);
+  Person* createPerson(int id, TestPerson type, uint8_t level = 1);
   void createRaces();
   void createSkills();
   void createSkillSets();

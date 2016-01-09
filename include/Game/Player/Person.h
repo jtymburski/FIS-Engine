@@ -141,11 +141,14 @@ private:
   uint16_t level;
   uint32_t total_exp;
 
-  /* Frames for a Person */
-  Sprite* action_sprite;
+  /* Path to sprites */
+  std::string path_action_sprite;
+  std::string path_dialog_sprite;
+  std::string path_first_person;
+  std::string path_third_person;
+
+  //TODO: Have map dialog destroy
   Sprite* dialog_sprite;
-  Sprite* first_person;
-  Sprite* third_person;
 
   /* ------------ Static Private Members --------------- */
   static int id; /* Person unique ID counter */
@@ -279,9 +282,6 @@ public:
   /* Recalculates the Base skills based on categories */
   void updateBaseSkills();
 
-  /* Returns a pointer to the action sprite */
-  Sprite* getActionSprite();
-
   /* Returns the action frames */
   Sprite* getDialogSprite();
 
@@ -378,11 +378,11 @@ public:
   /* Returns the total experience earned */
   uint32_t getTotalExp();
 
-  /* Grabs the curr first person frame (based on BUBBIFIED flags) */
-  Sprite* getFirstPerson();
-
-  /* Grabs the curr third person frame (based on BUBBIFIED flags) */
-  Sprite* getThirdPerson();
+  /* Methods to grab the sprite paths */
+  std::string getActionSpritePath();
+  std::string getDialogSpritePath();
+  std::string getFirstPersonPath();
+  std::string getThirdPersonPath();
 
   /* Grabs the vector of item IDs the person can drop */
   std::vector<uint32_t> getItemDrops();
@@ -429,6 +429,12 @@ public:
   /* Attempts to assign a given equipment slot a given equipment pointer */
   bool setEquip(const EquipSlots& equip_slot, Equipment* new_equipment);
 
+  /* Methods to assign sprite paths */
+  void setDialogSpritePath(std::string new_path);
+  void setFirstPersonPath(std::string new_path);
+  void setThirdPersonPath(std::string new_path);
+  void setActionSpritePath(std::string new_path);
+
   /* Assigns the game ID for the person */
   void setGameID(int id);
 
@@ -443,9 +449,7 @@ public:
   void setRace(Category* const category);
 
   /* Assigns the sprite pointers for the person */
-  void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr,
-                  Sprite* new_dialog_sprite = nullptr,
-                  Sprite* new_action_sprite = nullptr);
+  void setSprites(Sprite* new_dialog_sprite = nullptr);
 
   /*============================================================================
    * OPERATOR FUNCTIONS
