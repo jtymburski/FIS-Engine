@@ -9,3 +9,22 @@ BattleItem::BattleItem()
 {
 
 }
+
+void BattleItem::print()
+{
+  std::cout << "-- Battle Skill --" << std::endl;
+  std::cout << "ValidStatus: " << Helpers::validStatusToStr(valid_status);
+
+  if(item)
+    std::cout << "\nItem: "<< item->getName() << std::endl;
+
+  std::cout << "Items Available: " << amount << std::endl;
+
+  std::cout << "Targets: ";
+
+  for(auto& target : targets)
+    if(target && target->getBasePerson())
+      std::cout << target->getBasePerson()->getName() << ", ";
+
+  std::cout << std::endl;
+}

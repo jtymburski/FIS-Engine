@@ -626,6 +626,12 @@ bool Battle::loadMenuForActor(BattleActor* actor)
   if(success && party_allies)
   {
     success &= actor->buildBattleItems(party_allies->getInventory(), actors);
+
+    for(auto& battle_item : actor->getBattleItems())
+    {
+      battle_item->print();
+    }
+
     success &= actor->buildBattleSkills(actors);
 
     if(success)

@@ -25,6 +25,10 @@ public:
 
   /* The valid targets for the valid item */
   std::vector<BattleActor*> targets;
+
+public:
+  /* Print out the BattleItem information */
+  void print();
 };
 
 #endif

@@ -1137,8 +1137,43 @@ void BattleMenu::setWindowStatus(WindowStatus status_window)
 
 bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
 {
-  (void)width_left;
-  (void)width_right;
+  assert(renderer && config);
+
+  // SDL_Color color{255, 255, 255, 255};
+  // SDL_Color invalid_color{100, 100, 100, 255};
+  // SDL_Color unaffordable_color{200, 100, 100, 255};
+  // SDL_Color no_targets_color{255, 255, 255, 255};
+  // bool success{true};
+  // uint32_t text_height{0};
+  // uint32_t text_width{width_left - kTYPE_MARGIN * 8};
+  // Text t = Text(config->getFontTTF(FontName::BATTLE_HEADER));
+  // Text t2 = Text(config->getFontTTF(FontName::BATTLE_HEADER));
+
+
+  // uint32_t count_x{text_width};
+
+  // clearItemFrames();
+
+  // for(auto& battle_item : valid_battle_items)
+  // {
+  //   assert(battle_item && && battle_item->item && battle_item->item->getUseSkill());
+
+  //   auto use_skill = item->getUseSkill();
+
+  //   frames_item_name.push_back(new Frame());
+  //   frames_item_info.push_back(new Frame());
+
+  //    ValidStatus of the Battle skill -> reflects the color of skil.frm
+  //   if(skill->valid_status == ValidStatus::VALID)
+  //     success &= t.setText(renderer, skill->skill->getName(), color);
+
+  //   else if(skill->valid_status == ValidStatus::NO_TARGETS)
+  //     success &= t.setText(renderer, skill->skill->getName(), no_targets_color);
+  //   else if(item->valid_status == ValidStatus::NO_COUNT)
+  //     success &= t.setText(renderer, item->item
+
+  // }
+
   return true;
 }
 
@@ -1174,7 +1209,6 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
     frames_skill_info.push_back(new Frame());
 
     /* ValidStatus of the Battle skill -> reflects the color of skil.frm */
-    // TODO: Alternate ValidStatus colours depending on Skill condition?
     if(skill->valid_status == ValidStatus::VALID)
       success &= t.setText(renderer, skill->skill->getName(), color);
     else if(skill->valid_status == ValidStatus::NOT_AFFORDABLE)

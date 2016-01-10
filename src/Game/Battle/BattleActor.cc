@@ -234,6 +234,7 @@ void BattleActor::createSprites(SDL_Renderer *renderer)
       if(sprite_action)
       {
         sprite_action->setNonUnique(true, 1);
+
         sprite_action->createTexture(renderer);
       }
     }
@@ -457,7 +458,7 @@ bool BattleActor::buildBattleItems(Inventory *inv,
         ;
         auto skill = item.first->getUseSkill();
 
-        if(skill && item.second > 0)
+        if(skill)
         {
           auto targets =
               getTargetsFromScope(this, skill->getScope(), a_targets);
@@ -467,6 +468,10 @@ bool BattleActor::buildBattleItems(Inventory *inv,
           battle_item->item = item.first;
           battle_item->amount = item.second;
           battle_item->targets = targets;
+
+          if(item.second == 0)
+            battle_item->valid_status = ValidStatus::ZERO_COUNT;
+
           battle_items.push_back(battle_item);
 
           success &= true;
@@ -809,6 +814,7 @@ std::vector<ActionType> BattleActor::getValidActionTypes()
   std::vector<ActionType> valid_types;
 
   valid_types.push_back(ActionType::SKILL);
+  valid_types.push_back(ActionType::ITEM);
 
   if(getFlag(ActorState::PAS_ENABLED))
     valid_types.push_back(ActionType::PASS);

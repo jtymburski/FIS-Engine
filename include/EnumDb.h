@@ -616,6 +616,7 @@ enum class ValidStatus
   NOT_AFFORDABLE,
   SILENCED,
   NO_TARGETS,
+  ZERO_COUNT,
   INVALID
 };
 

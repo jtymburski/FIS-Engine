@@ -330,7 +330,8 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
     {
       status = RenderStatus::TIMED_OUT;
     }
-    else
+    else if(render_type == RenderType::MIDLAY ||
+            render_type == RenderType::OVERLAY)
     {
       element_sprite->setOpacity(alpha);
       velocity.x += (acceleration.x * cycle_time);
@@ -355,8 +356,8 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
         delta.y -= neg_delta_y;
       }
 
-      //TODO: Require resolution/size
-      //TODO: Overlay --> into class
+      // TODO: Require resolution/size
+      // TODO: Overlay --> into class
       if(location.point.x > 2432)
         location.point.x -= 2432;
       // if(location.point.y > 704)
