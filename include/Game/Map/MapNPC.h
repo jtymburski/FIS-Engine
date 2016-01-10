@@ -108,7 +108,7 @@ private:
 private:
   /* Appends an empty node onto the back of the movement stack */
   void appendEmptyNode();
-  
+
   /* Returns if the XY movement is flipped for the direction to move */
   bool getXYFlip();
 
@@ -127,7 +127,7 @@ private:
   /* Tracking functions - called by update */
   void trackAvoidPlayer(int cycle_time, bool stopped);
   int trackOutOfRange(MapPerson* ref = nullptr);
-  
+
   /* update the node bounding rect */
   void updateBound();
 
@@ -174,7 +174,7 @@ public:
   int getTrackDistMax();
   int getTrackDistMin();
   int getTrackDistRun();
-  
+
   /* Returns the tracking state - how the NPC reacts to others */
   TrackingState getTrackingState();
 
@@ -196,6 +196,9 @@ public:
   bool removeNode(uint16_t index);
   bool removeNodeAtTail();
 
+  /* Resets the tile position */
+  bool resetPosition();
+
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
 
@@ -212,7 +215,7 @@ public:
   void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
 
   /* Sets the tracking distance setpoints */
-  void setTrackingDist(int trigger = kTRACK_DIST_MIN, 
+  void setTrackingDist(int trigger = kTRACK_DIST_MIN,
                        int max = kTRACK_DIST_MAX, int run = kTRACK_DIST_RUN);
 
   /* Sets the tracking state - how the NPC reacts */

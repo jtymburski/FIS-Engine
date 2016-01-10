@@ -37,6 +37,9 @@ protected:
   SurfaceClassifier surface;
 
 private:
+  /* Movement freeze */
+  bool move_freeze;
+
   /* The current movement direction */
   std::vector<Direction> movement_stack;
 
@@ -79,18 +82,18 @@ private:
 
   /* Initializes the states stack to an empty set */
   void initializeStates();
-  
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
-  
+
   /* Check if the tile can be set with the person */
   virtual bool canSetTile(Tile* tile, TileSprite* frames,
                           bool avoid_player = false);
-  
+
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t
                                  render_depth, Direction move_request);
@@ -169,10 +172,13 @@ public:
 
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
-  
+
   /* Returns if the NPC will force interaction - always false for player */
   virtual bool isForcedInteraction(bool false_if_active = true);
-  
+
+  /* Determines if the persons movement is frozen */
+  bool isMoveFrozen();
+
   /* Determines if there is an active move request (virtual reimplemented) */
   bool isMoveRequested();
 
@@ -185,10 +191,13 @@ public:
   void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Resets the tile position */
-  bool resetPosition();
+  virtual bool resetPosition();
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
+
+  /* Sets if the person movement is frozen at the current tile */
+  void setMoveFreeze(bool freeze); // TODO
 
   /* Sets if the person is running */
   void setRunning(bool running);

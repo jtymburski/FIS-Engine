@@ -366,10 +366,21 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
   }
 }
 
+/* The property modifier event */
+void Game::eventPropMod(MapThing* source, ThingBase type, int id, 
+                        ThingProperty props, ThingProperty bools,
+                        int respawn, int speed, TrackingState track,
+                        int inactive)
+{
+  map_ctrl.modifyThing(source, type, id, props, bools, respawn, speed, track,
+                       inactive);
+}
+
 /* Starts a battle event. Using the given information */
 bool Game::eventStartBattle(int person_id, int source_id)
 {
-  if(person_id >= 0 && source_id >= 0 && mode == BATTLE)//MAP && mode_next == NONE)
+  if(person_id >= 0 && source_id >= 0 && mode == BATTLE)
+     //MAP && mode_next == NONE)
   {
     if(battle_ctrl)
     {
@@ -849,46 +860,59 @@ void Game::pollEvents()
       {
         ConvoPair convo_pair;
         MapThing* source;
-        event_handler.pollConversation(convo_pair, &source);
-        eventInitConversation(convo_pair, source);
+        if(event_handler.pollConversation(convo_pair, &source))
+          eventInitConversation(convo_pair, source);
       }
       /* -- ITEM GIVE -- */
       else if(classification == EventClassifier::ITEMGIVE)
       {
         int id;
         int count;
-        event_handler.pollGiveItem(&id, &count);
-        eventGiveItem(id, count);
+        if(event_handler.pollGiveItem(&id, &count))
+          eventGiveItem(id, count);
       }
       /* -- ITEM PICKUP -- */
       else if(classification == EventClassifier::ITEMPICKUP)
       {
         MapItem* item;
         bool walkover;
-        event_handler.pollPickupItem(&item, &walkover);
-        eventPickupItem(item, walkover);
+        if(event_handler.pollPickupItem(&item, &walkover))
+          eventPickupItem(item, walkover);
       }
       /* -- ITEM TAKE -- */
       else if(classification == EventClassifier::ITEMTAKE)
       {
         int id;
         int count;
-        event_handler.pollTakeItem(&id, &count);
-        eventTakeItem(id, count);
+        if(event_handler.pollTakeItem(&id, &count))
+          eventTakeItem(id, count);
       }
       /* -- MAP SWITCH -- */
       else if(classification == EventClassifier::MAPSWITCH)
       {
         int id;
-        event_handler.pollStartMap(&id);
-        eventSwitchMap(id);
+        if(event_handler.pollStartMap(&id))
+          eventSwitchMap(id);
       }
       /* -- NOTIFICATION -- */
       else if(classification == EventClassifier::NOTIFICATION)
       {
         std::string notification;
-        event_handler.pollNotification(&notification);
-        eventInitNotification(notification);
+        if(event_handler.pollNotification(&notification))
+          eventInitNotification(notification);
+      }
+      /* -- PROPERTY MODIFIER -- */
+      else if(classification == EventClassifier::PROPERTY)
+      {
+        int id, inactive, respawn, speed;
+        MapThing* source;
+        ThingBase type;
+        ThingProperty bools, props;
+        TrackingState track;
+        if(event_handler.pollPropMod(source, type, id, props, bools, respawn,
+                                     speed, track, inactive))
+          eventPropMod(source, type, id, props, bools, respawn, speed, track,
+                       inactive);
       }
       /* -- SOUND ONLY -- */
       else if(classification == EventClassifier::SOUNDONLY)
@@ -899,8 +923,8 @@ void Game::pollEvents()
       else if(classification == EventClassifier::TELEPORTTHING)
       {
         int thing_id, x, y, section_id;
-        event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
-        eventTeleportThing(thing_id, x, y, section_id);
+        if(event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id))
+          eventTeleportThing(thing_id, x, y, section_id);
       }
       /* -- TRIGGER IO -- */
       else if(classification == EventClassifier::TRIGGERIO)
@@ -908,8 +932,8 @@ void Game::pollEvents()
         MapPerson* initiator;
         int interaction_state;
         MapInteractiveObject* source;
-        event_handler.pollTriggerIO(&source, &interaction_state, &initiator);
-        eventTriggerIO(source, interaction_state, initiator);
+        if(event_handler.pollTriggerIO(&source, &interaction_state, &initiator))
+          eventTriggerIO(source, interaction_state, initiator);
       }
       /* -- UNLOCK IO -- */
       else if(classification == EventClassifier::UNLOCKIO)

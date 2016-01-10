@@ -63,36 +63,55 @@ void MapViewport::clearLocation()
   y = 0.0;
 }
 
+/* Gets the size of the viewport and related information */
 uint16_t MapViewport::getHeight()
 {
   return height;
 }
+ 
+/* Returns the lock on thing. Null if not locked on thing */
+MapThing* MapViewport::getLockThing()
+{
+  return lock_on_thing;
+}
 
+/* Returns the lock on tile. Null if not locked on tile */
+Tile* MapViewport::getLockTile()
+{
+  return lock_on_tile;
+}
+
+/* Gets the size of the viewport and related information */
 int MapViewport::getMapHeight()
 {
   return map_height;
 }
 
+/* Gets the size of the viewport and related information */
 int MapViewport::getMapWidth()
 {
   return map_width;
 }
 
+/* Gets the size of the viewport and related information */
 uint16_t MapViewport::getTileHeight()
 {
   return tile_height;
 }
 
+/* Gets the size of the viewport and related information */
 uint16_t MapViewport::getTileWidth()
 {
   return tile_width;
 }
 
+/* Gets the size of the viewport and related information */
 uint16_t MapViewport::getWidth()
 {
   return width;
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 float MapViewport::getX()
 {
   //int x_rounded = x * 10;
@@ -100,6 +119,7 @@ float MapViewport::getX()
   return x;
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 int MapViewport::getXEnd()
 {
   /* Perform the end x coordinate calculation */
@@ -114,6 +134,7 @@ int MapViewport::getXEnd()
   return end_x;
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 int MapViewport::getXStart()
 {
   int start_x = (((int)x / tile_width) * tile_width) - tile_width;
@@ -125,16 +146,19 @@ int MapViewport::getXStart()
   return start_x;
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 uint16_t MapViewport::getXTileEnd()
 {
   return (getXEnd() / tile_width);
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 uint16_t MapViewport::getXTileStart()
 {
   return (getXStart() / tile_width);
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 float MapViewport::getY()
 {
   //int y_rounded = y * 10;
@@ -142,6 +166,7 @@ float MapViewport::getY()
   return y;
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 int MapViewport::getYEnd()
 {
   /* Perform the end y coordinate calculation */
@@ -156,6 +181,7 @@ int MapViewport::getYEnd()
   return end_y;
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 int MapViewport::getYStart()
 {
   int start_y = (((int)y / tile_height) * tile_height) - tile_height;
@@ -167,11 +193,13 @@ int MapViewport::getYStart()
   return start_y;
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 uint16_t MapViewport::getYTileEnd()
 {
   return (getYEnd() / tile_height);
 }
 
+/* Gets the ranges for the map of the valid visible range and the offset */
 uint16_t MapViewport::getYTileStart()
 {
   return (getYStart() / tile_height);

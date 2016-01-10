@@ -413,7 +413,7 @@ public:
                                        int sound_id = kUNSET_ID);
 
   /* Creates a property modifier event */
-  static Event createEventPropMod(ThingBase type = ThingBase::ISBASE, 
+  static Event createEventPropMod(ThingBase type = ThingBase::THING, 
                 int id = kUNSET_ID, ThingProperty props = ThingProperty::NONE,
                 ThingProperty bools = ThingProperty::NONE, int respawn = 0, 
                 int speed = 0, TrackingState track = TrackingState::NOTRACK, 

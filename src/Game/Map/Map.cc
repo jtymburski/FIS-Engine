@@ -53,10 +53,8 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   this->event_handler = NULL;
   fade_alpha = 255;
   fade_status = BLACK;
-  delta_lay_offset = 0;
-  delta_lay_offset2 = 0;
-  lay_offset  = 0;
-  lay_offset2 = 0;
+  lay_offset = 0.0;
+  lay_offset2 = 0.0;
   //lay_over = nullptr;
   //lay_under = nullptr;
   loaded = false;
@@ -632,6 +630,23 @@ MapThing* Map::getThing(uint16_t id)
     if(things[i]->getID() == id)
       return things[i];
   return NULL;
+}
+
+/* Returns the thing, based on the ID and the type */
+MapThing* Map::getThing(uint16_t id, ThingBase type)
+{
+  MapThing* found = nullptr;
+
+  if(type == ThingBase::THING)
+    found = getThing(id);
+  else if(type == ThingBase::ITEM)
+    found = getItem(id);
+  else if(type == ThingBase::PERSON || type == ThingBase::NPC)
+    found = getPerson(id);
+  else if(type == ThingBase::INTERACTIVE)
+    found = getIO(id);
+
+  return found;
 }
 
 /* Returns the base thing, based on the ID */
@@ -2055,7 +2070,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
     lay_over.push_back(new Sprite(
           "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", renderer));
     lay_over.push_back(new Sprite(
-          "sprites/Map/EnviromentEffects/Overlays/fog_underlay", renderer));
+          "sprites/Map/EnviromentEffects/Overlays/fog_underlay.png", renderer));
   }
   if(lay_under.size() == 0)
   {
@@ -2207,6 +2222,108 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   }
 }
 
+/* Modify thing properties based on passed in properties */
+void Map::modifyThing(MapThing* source, ThingBase type, int id,
+                      ThingProperty props, ThingProperty bools,
+                      int respawn_int, int speed_int, TrackingState track_enum,
+                      int inactive_int)
+{
+  /* Get the thing */
+  MapThing* found_thing = nullptr;
+  if(id >= 0)
+    found_thing = getThing(id, type);
+  else
+    found_thing = source;
+
+  /* Apply the modification properties */
+  if(found_thing != nullptr)
+  {
+    /* Edited properties */
+    bool active, forced, inactive, move, reset, respawn, speed, track, visible;
+    EventSet::dataEnumProperties(props, active, forced, inactive, move, reset,
+                                 respawn, speed, track, visible);
+
+    /* Bool values of edited properties */
+    bool active_v, forced_v, inactive_v, move_v, reset_v, respawn_v, speed_v,
+         track_v, visible_v;
+    EventSet::dataEnumProperties(bools, active_v, forced_v, inactive_v, move_v,
+                              reset_v, respawn_v, speed_v, track_v, visible_v);
+
+    /* -- Thing Properties -- */
+    /* Active */
+    if(active)
+    {
+      found_thing->setActive(active_v);
+    }
+    /* Respawn */
+    if(respawn)
+    {
+      found_thing->setActiveRespawn(respawn_int);
+    }
+    /* Visible */
+    if(visible)
+    {
+      found_thing->setVisibility(visible_v);
+    }
+
+    /* -- Person Properties -- */
+    if(type == ThingBase::PERSON || type == ThingBase::NPC)
+    {
+      MapPerson* found_person = static_cast<MapPerson*>(found_thing);
+
+      /* Halt movement */
+      if(move)
+      {
+        found_person->setMoveFreeze(move_v);
+      }
+      /* Reset location */
+      if(reset)
+      {
+        found_person->resetPosition();
+        if(viewport.getLockThing() == found_person &&
+           found_person->getStartingSection() != map_index)
+        {
+          setSectionIndex(found_person->getStartingSection());
+        }
+      }
+      /* Speed */
+      if(speed && speed_int > 0)
+      {
+        found_person->setSpeed(speed_int);
+      }
+    }
+
+    /* -- NPC Properties -- */
+    if(type == ThingBase::NPC)
+    {
+      MapNPC* found_npc = static_cast<MapNPC*>(found_thing);
+
+      /* Forced */
+      if(forced)
+      {
+        found_npc->setForcedInteraction(forced_v);
+      }
+      /* Tracking */
+      if(track)
+      {
+        found_npc->setTrackingState(track_enum);
+      }
+    }
+
+    /* -- IO Properties -- */
+    if(type == ThingBase::INTERACTIVE)
+    {
+      MapInteractiveObject* found_io =
+                               static_cast<MapInteractiveObject*>(found_thing);
+      /* Inactive time */
+      if(inactive)
+      {
+        found_io->setInactiveTime(inactive_int);
+      }
+    }
+  }
+}
+
 /* Proceeds to pickup the total number of this marked item
  * Default is invalid parameter which picks up all */
 bool Map::pickupItem(MapItem* item, int count)
@@ -2258,9 +2375,12 @@ bool Map::render(SDL_Renderer* renderer)
     float y_offset = viewport.getY();
 
     /* Underlay for map - testing: TODO revise */
-    for(uint16_t i = 0; i < lay_under.size(); i++)
-      if(lay_under[i] != nullptr)
-        lay_under[i]->render(renderer, 0, 0, 1216, 704);
+    if(map_index == 0)
+    {
+      for(uint16_t i = 0; i < lay_under.size(); i++)
+        if(lay_under[i] != nullptr)
+          lay_under[i]->render(renderer, 0, 0, 1216, 704);
+    }
 
     /* Render the lower tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
@@ -2386,23 +2506,28 @@ bool Map::render(SDL_Renderer* renderer)
     }
 
     /* Overlay for map - testing: TODO revise */
-    for(uint16_t i = 0; i < lay_over.size(); i++)
+    if(map_index == 0 || map_index == 15)
     {
-      if(lay_over[i] != nullptr)
+      for(uint16_t i = 0; i < lay_over.size(); i++)
       {
-        if(i == 0)
+        if(lay_over[i] != nullptr)
         {
-          lay_over[i]->render(renderer, lay_offset, 0, 1216, 704);
-          lay_over[i]->render(renderer, lay_offset - 1216, 0, 1216, 704);
-        }
-        else if(i == 1)
-        {
-          lay_over[i]->render(renderer, lay_offset2, 0, 1216, 704);
-          lay_over[i]->render(renderer, lay_offset2 - 1216, 0, 1216, 704);
-        }
-        else
-        {
-          lay_over[i]->render(renderer, 0, 0, 1216, 704);
+          if(i == 0)
+          {
+            int offset = static_cast<int>(lay_offset);
+            lay_over[i]->render(renderer, offset - 1216, 0, 1216, 704);
+            lay_over[i]->render(renderer, offset, 0, 1216, 704);
+          }
+          else if(i == 1)
+          {
+            int offset = static_cast<int>(lay_offset2);
+            lay_over[i]->render(renderer, offset - 1216, 0, 1216, 704);
+            lay_over[i]->render(renderer, offset, 0, 1216, 704);
+          }
+          else
+          {
+            lay_over[i]->render(renderer, 0, 0, 1216, 704);
+          }
         }
       }
     }
@@ -2776,25 +2901,12 @@ bool Map::update(int cycle_time)
   /* Offset for overlay */
   if(lay_over.size() > 0)
   {
-    delta_lay_offset = (float)cycle_time / 8.00;
-
-    if(delta_lay_offset >= 1.00)
-    {
-      lay_offset += 1;
-      delta_lay_offset -= 1;
-    }
-    if(lay_offset >= 1216)
-      lay_offset -= 1216;
-
-    delta_lay_offset2 = (float)cycle_time / 8.00;
-
-    if(delta_lay_offset2 >= 1.00)
-    {
-      lay_offset2 += 1;
-      delta_lay_offset -= 1;
-    }
-    if(lay_offset2 >= 1216)
-      lay_offset2 -= 1216;
+    lay_offset += (cycle_time / 16.0);
+    if(lay_offset >= 1216.0)
+      lay_offset -= 1216.0;
+    lay_offset2 += (cycle_time / 8.0);
+    if(lay_offset2 >= 1216.0)
+      lay_offset2 -= 1216.0;
   }
 
   /* Finally, update the viewport and dialogs */

@@ -409,6 +409,24 @@ bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 
   return false;
 }
+  
+/* Poll a property event */
+bool EventHandler::pollPropMod(MapThing*& source, ThingBase& type, int& id, 
+                               ThingProperty& props, ThingProperty& bools,
+                               int& respawn, int& speed, TrackingState& track,
+                               int& inactive)
+{
+  Event event;
+  if(getEvent(event, true) &&
+     EventSet::dataEventPropMod(event, type, id, props, bools, respawn, speed,
+                                track, inactive))
+  {
+    source = event_queue[queue_index].source;
+    triggerQueueSound(event);
+    return true;
+  }
+  return false;
+}
 
 /* Poll a sound event */
 bool EventHandler::pollSound()

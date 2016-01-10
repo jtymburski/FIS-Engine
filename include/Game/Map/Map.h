@@ -104,10 +104,8 @@ private:
   ItemStore item_menu;
 
   /* Map lays */
-  uint16_t lay_offset;
-  uint16_t lay_offset2;
-  float delta_lay_offset;
-  float delta_lay_offset2;
+  float lay_offset;
+  float lay_offset2;
   std::vector<Sprite*> lay_over;
   std::vector<Sprite*> lay_under;
 
@@ -231,6 +229,7 @@ private:
 
   /* Returns the thing, based on the ID */
   MapThing* getThing(uint16_t id);
+  MapThing* getThing(uint16_t id, ThingBase type);
   MapThing* getThingBase(uint16_t id);
 
   /* Returns a stack of map things that correspond to the ID stack */
@@ -343,6 +342,12 @@ public:
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 std::string base_path);
   void loadDataFinish(SDL_Renderer* renderer);
+  
+  /* Modify thing properties based on passed in properties */
+  void modifyThing(MapThing* source, ThingBase type, int id, 
+                   ThingProperty props, ThingProperty bools,
+                   int respawn_int, int speed_int, TrackingState track_enum,
+                   int inactive_int);
 
   /* Picks up the total number of the item */
   bool pickupItem(MapItem* item, int count = -1);

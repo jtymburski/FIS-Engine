@@ -1241,6 +1241,26 @@ bool MapNPC::removeNodeAtTail()
   return false;
 }
 
+/* Resets the tile position */
+/*
+ * Description: Resets the position of the npc back to the initial starting
+ *              point. This is the position that was set when the last
+ *              setStartingTile() was called.
+ *
+ * Inputs: none
+ * Output: bool - status if successful
+ */
+bool MapNPC::resetPosition()
+{
+  if(MapPerson::resetPosition())
+  {
+    forced_recent = false;
+    track_recent = false;
+    return true;
+  }
+  return false;
+}
+
 /*
  * Description: Sets the base thing class. If set, the primary data will be set
  *              from this with only location and movement handled by this class.
@@ -1549,7 +1569,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
             /* Check if tracking should be disabled */
             if(delta > track_dist_max || delta_range > track_dist_max ||
                forced_recent || getTarget() != nullptr ||
-               (track_state == TrackingState::AVOIDPLAYER && 
+               (track_state == TrackingState::AVOIDPLAYER &&
                 delta_range == track_dist_max &&
                 trackOutOfRange(player) >= delta_range))
             {

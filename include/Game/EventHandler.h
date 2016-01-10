@@ -144,6 +144,12 @@ public:
   /* Poll a pickup item event */
   bool pollPickupItem(MapItem** item, bool* walkover);
 
+  /* Poll a property event */
+  bool pollPropMod(MapThing*& source, ThingBase& type, int& id, 
+                   ThingProperty& props, ThingProperty& bools,
+                   int& respawn, int& speed, TrackingState& track,
+                   int& inactive);
+
   /* Poll a sound event */
   bool pollSound();
 

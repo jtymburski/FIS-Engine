@@ -41,6 +41,7 @@ const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
  */
 MapPerson::MapPerson() : MapThing()
 {
+  move_freeze = false;
   running = false;
   sound_delay = -1;
   starting_dir = Direction::NORTH;
@@ -182,7 +183,7 @@ void MapPerson::initializeStates()
   /* Set the initial frames in the thing */
   setMatrix(getState(surface, direction));
 }
-  
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -255,7 +256,7 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
   bool move_allowed = true;
 
   /* If the next tile is NULL, move isn't allowed */
-  if(next == NULL)
+  if(next == NULL || move_freeze)
     move_allowed = false;
 
   /* Check if the thing can move there */
@@ -827,7 +828,7 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
 {
   return surface;
 }
-  
+
 /*
  * Description: Returns if the NPC will force interaction - always false when
  *              called on parent MapPerson class.
@@ -841,6 +842,18 @@ bool MapPerson::isForcedInteraction(bool false_if_active)
 {
   (void)false_if_active;
   return false;
+}
+
+/*
+ * Description: Determines if the person's movement is frozen in place. This
+ *              restricts if the person will ever leave the given tile.
+ *
+ * Inputs: none
+ * Output: bool - true if the movement is frozen
+ */
+bool MapPerson::isMoveFrozen()
+{
+  return move_freeze;
 }
 
 /*
@@ -970,6 +983,19 @@ bool MapPerson::setBase(MapThing* base)
 }
 
 /*
+ * Description: Sets if the person movement is frozen at the current (main)
+ *              tile. If it is mid movement, it will finish the move sequence
+ *              to the next tile and then freeze.
+ *
+ * Inputs: bool freeze - should movement be frozen?
+ * Output: none
+ */
+void MapPerson::setMoveFreeze(bool freeze)
+{
+  move_freeze = freeze;
+}
+
+/*
  * Description: Sets the person to either running or not. Running is defined
  *              as twice the normal speed.
  *
@@ -1094,7 +1120,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         tileMoveFinish(getID() != kPLAYER_ID);
       if(getMovementPaused())
       {
-        if(getTarget() != nullptr || 
+        if(getTarget() != nullptr ||
            (isForcedInteraction(false) && getPlayer() != nullptr))
         {
           int delta_x = 0;

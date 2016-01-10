@@ -72,13 +72,15 @@ public:
 
   /* Gets the size of the viewport and related information */
   uint16_t getHeight();
+  MapThing* getLockThing();
+  Tile* getLockTile();
   int getMapHeight();
   int getMapWidth();
   uint16_t getTileHeight();
   uint16_t getTileWidth();
   uint16_t getWidth();
   
-  /* Gets the painting ranges for the map of the valid visible range and the offset */
+  /* Gets the ranges for the map of the valid visible range and the offset */
   float getX();
   int getXEnd();
   int getXStart();

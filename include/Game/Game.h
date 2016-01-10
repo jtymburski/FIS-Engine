@@ -151,6 +151,12 @@ private:
   /* The pickup item event - from walking over or triggering from action key */
   void eventPickupItem(MapItem* item, bool walkover);
 
+  /* The property modifier event */
+  void eventPropMod(MapThing* source, ThingBase type, int id, 
+                    ThingProperty props, ThingProperty bools,
+                    int respawn, int speed, TrackingState track,
+                    int inactive);
+
   /* Starts a battle event. Using the given information */
   bool eventStartBattle(int person_id, int source_id);
 
