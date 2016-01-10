@@ -2342,10 +2342,12 @@ bool Battle::renderMenu()
 
   if(to_render_menu)
   {
-    if(battle_menu->getFlag(BattleMenuState::READY) &&
-       !battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
+    if(battle_menu->getFlag(BattleMenuState::READY))
     {
-      battle_menu->createSkillFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
+      if(!battle_menu->getFlag(BattleMenuState::SKILL_FRAMES_BUILT))
+        battle_menu->createSkillFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
+      if(!battle_menu->getFlag(BattleMenuState::ITEM_FRAMES_BUILT))
+        battle_menu->createItemFrames(width * kBIGBAR_M2, width * kBIGBAR_R);
     }
 
     /* Render the selecting person info */

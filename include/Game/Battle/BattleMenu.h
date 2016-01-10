@@ -36,7 +36,8 @@ enum class BattleMenuState
 {
   READY = 1 << 0,
   SELECTION_COMPLETE = 1 << 1,
-  SKILL_FRAMES_BUILT = 1 << 2
+  SKILL_FRAMES_BUILT = 1 << 2,
+  ITEM_FRAMES_BUILT  = 1 << 3
 };
 
 class BattleMenu
@@ -145,6 +146,13 @@ private:
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
   const static uint16_t kINFO_W;     /* Width of enemy info bar */
 
+  /* Text Colors */
+  const static SDL_Color kTEXT_STANDARD;
+  const static SDL_Color kTEXT_INVALID;
+  const static SDL_Color kTEXT_PRICEY;
+  const static SDL_Color kTEXT_NO_TARGETS;
+
+
   /*=============================================================================
    * PRIVATE FUNCTIONS - RENDERING
    *============================================================================*/
@@ -225,6 +233,7 @@ private:
 
   /* Rendering functions */
   bool renderActionTypes(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+  bool renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
   bool renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
   /*=============================================================================

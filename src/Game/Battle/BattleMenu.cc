@@ -53,6 +53,11 @@ const uint8_t BattleMenu::kTYPE_SELECT{3};
 
 const uint16_t BattleMenu::kINFO_W{180};
 
+const SDL_Color BattleMenu::kTEXT_STANDARD{255, 255, 255, 255};
+const SDL_Color BattleMenu::kTEXT_INVALID{100, 100, 100, 255};
+const SDL_Color BattleMenu::kTEXT_PRICEY{200, 100, 100, 255};
+const SDL_Color BattleMenu::kTEXT_NO_TARGETS{255, 255, 255, 255};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -571,12 +576,11 @@ SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
 SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
                                           uint32_t width, uint32_t height)
 {
+  assert(battle_display_data->getFrameQD() && config);
+
   /* Grab the skill pointer, and QD frame from display data */
   auto frame_qd = battle_display_data->getFrameQD();
   auto skill = battle_skill->skill;
-
-  assert(skill && frame_qd && config);
-  SDL_Color color{255, 255, 255, 255};
 
   /* Fonts */
   auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
@@ -588,10 +592,10 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
   Text t4(font_subheader);
   Text t5(font_subheader);
 
-  t1.setText(renderer, std::to_string(skill->getCost()), color);
-  t2.setText(renderer, skill->getName(), color);
-  t3.setText(renderer, std::to_string(skill->getCooldown()), color);
-  t4.setText(renderer, std::to_string((int)skill->getChance()), color);
+  t1.setText(renderer, std::to_string(skill->getCost()), kTEXT_STANDARD);
+  t2.setText(renderer, skill->getName(), kTEXT_STANDARD);
+  t3.setText(renderer, std::to_string(skill->getCooldown()), kTEXT_STANDARD);
+  t4.setText(renderer, std::to_string((int)skill->getChance()), kTEXT_STANDARD);
 
   /* Create rendering texture */
   SDL_Texture* texture =
@@ -682,9 +686,9 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
       t5.setText(renderer, Text::splitLine(font_subheader,
                                            desc_set[i] + " " + desc_set[i + 1],
                                            line_width, true).front(),
-                 color);
+                 kTEXT_STANDARD);
     else
-      t5.setText(renderer, desc_set[i], color);
+      t5.setText(renderer, desc_set[i], kTEXT_STANDARD);
     t5.render(renderer, text_x,
               text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
   }
@@ -702,14 +706,13 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
   auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
 
   /* Variable Construction */
-  SDL_Color color{255, 255, 255, 255};
   bool success{true};
   Text* t{new Text(font_header)};
   uint32_t valid_size{(uint32_t)valid_action_types.size()};
 
   /* Calculate starting Y co-ordinate */
   int32_t start_y{0};
-  t->setText(renderer, "Test", color);
+  t->setText(renderer, "Test", kTEXT_STANDARD);
 
   if(valid_size >= kTYPE_MAX)
   {
@@ -727,7 +730,7 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
     auto type = valid_action_types.at(i);
 
     std::string text_str = Helpers::actionTypeToStr(type);
-    success &= t->setText(renderer, text_str, color);
+    success &= t->setText(renderer, text_str, kTEXT_STANDARD);
 
     /* Calculate X/Y locations */
     int32_t text_x = x + kTYPE_MARGIN * 2;
@@ -804,13 +807,60 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
   return success;
 }
 
-bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
   bool success{true};
+  int64_t text_x{x + kTYPE_MARGIN * 2};
+  int32_t text_y{0};
 
-  /* Start X/Y  */
-  int32_t text_x = x + kTYPE_MARGIN * 2;
-  int32_t text_y = 0;
+  if(frames_item_name.size() >= kTYPE_MAX)
+  {
+    text_y = y + kTYPE_MARGIN;
+  }
+  else
+  {
+    for(const auto& frame_item_name : frames_item_name)
+      text_y += frame_item_name->getHeight();
+
+    text_y = y + (h - text_y) / 2;
+  }
+
+  for(uint32_t i = 0; i < frames_item_name.size() && i < kTYPE_MAX; i++)
+  {
+    int32_t index = i;
+
+    if(index == element_index)
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+      SDL_Rect text_rect;
+      text_rect.x = text_x - kTYPE_SELECT;
+      text_rect.y = text_y;
+      text_rect.w = frames_item_name[index]->getWidth() + kTYPE_SELECT * 2;
+      text_rect.h = frames_item_name[index]->getHeight();
+      SDL_RenderFillRect(renderer, &text_rect);
+    }
+
+    success &= frames_item_name[index]->render(renderer, text_x, text_y);
+
+    if(frames_skill_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+      uint16_t center_x = x + w - kTYPE_MARGIN * 2;
+      uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
+    }
+
+    text_y += frames_item_name[index]->getHeight();
+  }
+
+  return success;
+}
+
+bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+{
+  /* Success, Start X/Y  */
+  bool success{true};
+  int32_t text_x{x + kTYPE_MARGIN * 2};
+  int32_t text_y{0};
 
   if(frames_skill_name.size() >= kTYPE_MAX)
   {
@@ -901,6 +951,7 @@ void BattleMenu::clear()
   setFlag(BattleMenuState::READY, false);
   setFlag(BattleMenuState::SELECTION_COMPLETE, false);
   setFlag(BattleMenuState::SKILL_FRAMES_BUILT, false);
+  setFlag(BattleMenuState::ITEM_FRAMES_BUILT, false);
   menu_layer = BattleMenuLayer::ZEROTH_LAYER;
   selected_action_scope = ActionScope::NO_SCOPE;
   selected_action_type = ActionType::NONE;
@@ -1139,40 +1190,79 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
 {
   assert(renderer && config);
 
-  // SDL_Color color{255, 255, 255, 255};
-  // SDL_Color invalid_color{100, 100, 100, 255};
-  // SDL_Color unaffordable_color{200, 100, 100, 255};
-  // SDL_Color no_targets_color{255, 255, 255, 255};
-  // bool success{true};
-  // uint32_t text_height{0};
-  // uint32_t text_width{width_left - kTYPE_MARGIN * 8};
-  // Text t = Text(config->getFontTTF(FontName::BATTLE_HEADER));
-  // Text t2 = Text(config->getFontTTF(FontName::BATTLE_HEADER));
+  bool success{true};
+  uint32_t text_height{0};
+  uint32_t text_width{width_left - kTYPE_MARGIN * 8};
+  Text t = Text(config->getFontTTF(FontName::BATTLE_HEADER));
+  Text t2 = Text(config->getFontTTF(FontName::BATTLE_HEADER));
+  uint32_t count_x{text_width};
 
+  clearItemFrames();
 
-  // uint32_t count_x{text_width};
+  for(auto& battle_item : valid_battle_items)
+  {
+    auto item = battle_item->item;
+    auto use_skill = item->getUseSkill();
 
-  // clearItemFrames();
+    frames_item_name.push_back(new Frame());
+    frames_item_info.push_back(new Frame());
 
-  // for(auto& battle_item : valid_battle_items)
-  // {
-  //   assert(battle_item && && battle_item->item && battle_item->item->getUseSkill());
+    /* Set up the name colours for the item name display */
+    if(battle_item->valid_status == ValidStatus::VALID)
+      success &= t.setText(renderer, item->getName(), kTEXT_STANDARD);
+    else if(battle_item->valid_status == ValidStatus::NO_TARGETS)
+      success &= t.setText(renderer, item->getName(), kTEXT_NO_TARGETS);
+    else if(battle_item->valid_status == ValidStatus::ZERO_COUNT)
+      success &= t.setText(renderer, item->getName(), kTEXT_PRICEY);
 
-  //   auto use_skill = item->getUseSkill();
+    /* Set up the count for render */
+    if(battle_item->valid_status == ValidStatus::VALID)
+    {
+      success &= t2.setText(renderer, std::to_string(battle_item->amount),
+                            kTEXT_STANDARD);
+    }
+    else
+    {
+      success &= t2.setText(renderer, std::to_string(battle_item->amount),
+                            kTEXT_INVALID);
+    }
 
-  //   frames_item_name.push_back(new Frame());
-  //   frames_item_info.push_back(new Frame());
+    /* Text height */
+    if(text_height == 0)
+      text_height = t.getHeight() + kTYPE_MARGIN * 2;
 
-  //    ValidStatus of the Battle skill -> reflects the color of skil.frm
-  //   if(skill->valid_status == ValidStatus::VALID)
-  //     success &= t.setText(renderer, skill->skill->getName(), color);
+    /* Create rendering texture */
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, text_width, text_height);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
 
-  //   else if(skill->valid_status == ValidStatus::NO_TARGETS)
-  //     success &= t.setText(renderer, skill->skill->getName(), no_targets_color);
-  //   else if(item->valid_status == ValidStatus::NO_COUNT)
-  //     success &= t.setText(renderer, item->item
+    /* Render the text */
+    success &= t.render(renderer, 0, kTYPE_MARGIN);
+    success &= t2.render(renderer, count_x - t2.getWidth() - kSKILL_SEP, kTYPE_MARGIN);
 
-  // }
+    /* Set texture and clear render target back to main */
+    frames_item_name.back()->setTexture(texture);
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    //TODO: create item information
+    /* Create the detailed skill information for this skill */
+    // auto info_texture = createSkillFrame(
+    //     skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
+    //     kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
+    //         kMENU_SEPARATOR_B);
+
+    // frames_skill_info.back()->setTexture(info_texture);
+  }
+
+  if(success)
+  {
+    std::cout << "Item frames built!" << std::endl;
+    setFlag(BattleMenuState::ITEM_FRAMES_BUILT, true);
+  }
 
   return true;
 }
@@ -1183,18 +1273,12 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
   /* A renderer and configuration must be assigned */
   assert(renderer && config);
 
-  SDL_Color color{255, 255, 255, 255};
-  SDL_Color invalid_color{100, 100, 100, 255};
-  SDL_Color unaffordable_color{200, 100, 100, 255};
-  SDL_Color no_targets_color{255, 255, 255, 255};
   bool success{true};
   uint32_t text_height{0};
   uint32_t text_width{width_left - kTYPE_MARGIN * 8};
   Text t = Text(config->getFontTTF(FontName::BATTLE_HEADER));
   Text t2 = Text(config->getFontTTF(FontName::BATTLE_HEADER));
-
   auto frame_qd = battle_display_data->getFrameQD();
-
   uint32_t qd_x{text_width - frame_qd->getWidth()};
 
   /* Delete frames for skills if skills are already rendered */
@@ -1202,33 +1286,29 @@ bool BattleMenu::createSkillFrames(uint32_t width_left, uint32_t width_right)
 
   for(auto& skill : valid_battle_skills)
   {
-    /* Skill must have (a) valid pointer(s) */
-    assert(skill && skill->skill);
-
     frames_skill_name.push_back(new Frame());
     frames_skill_info.push_back(new Frame());
 
     /* ValidStatus of the Battle skill -> reflects the color of skil.frm */
     if(skill->valid_status == ValidStatus::VALID)
-      success &= t.setText(renderer, skill->skill->getName(), color);
+      success &= t.setText(renderer, skill->skill->getName(), kTEXT_STANDARD);
     else if(skill->valid_status == ValidStatus::NOT_AFFORDABLE)
-      success &=
-          t.setText(renderer, skill->skill->getName(), unaffordable_color);
+      success &= t.setText(renderer, skill->skill->getName(), kTEXT_PRICEY);
     else if(skill->valid_status == ValidStatus::SILENCED)
-      success &= t.setText(renderer, skill->skill->getName(), invalid_color);
+      success &= t.setText(renderer, skill->skill->getName(), kTEXT_INVALID);
     else if(skill->valid_status == ValidStatus::NO_TARGETS)
-      success &= t.setText(renderer, skill->skill->getName(), no_targets_color);
+      success &= t.setText(renderer, skill->skill->getName(), kTEXT_NO_TARGETS);
 
     /* Render cost */
     if(skill->valid_status == ValidStatus::VALID)
     {
-      success &=
-          t2.setText(renderer, std::to_string(skill->skill->getCost()), color);
+      success &= t2.setText(renderer, std::to_string(skill->skill->getCost()),
+                            kTEXT_STANDARD);
     }
     else
     {
       success &= t2.setText(renderer, std::to_string(skill->skill->getCost()),
-                            invalid_color);
+                            kTEXT_INVALID);
     }
 
     /* Text height */
@@ -1336,7 +1416,15 @@ bool BattleMenu::render()
       }
       if(selected_action_type == ActionType::ITEM)
       {
-        // TODO: Render Items magically [07-13-15]
+        success &= renderItems(rect2.x, rect2.y, section3_w, rect3.h);
+
+        if((uint32_t)element_index < frames_item_info.size())
+        {
+          //Render the item info.
+        }
+      }
+      else
+      {
         success = false;
       }
     }
