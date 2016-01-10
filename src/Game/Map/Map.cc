@@ -53,7 +53,9 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   this->event_handler = NULL;
   fade_alpha = 255;
   fade_status = BLACK;
-  lay_offset = 128;
+  delta_lay_offset = 0;
+  delta_lay_offset2 = 0;
+  lay_offset  = 0;
   lay_offset2 = 0;
   //lay_over = nullptr;
   //lay_under = nullptr;
@@ -2058,7 +2060,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
   if(lay_under.size() == 0)
   {
     lay_under.push_back(new Sprite(
-          "sprites/Map/EnviromentEffects/Overlays/forest_underlay.png", 
+          "sprites/Map/EnviromentEffects/Overlays/forest_underlay.png",
           renderer));
   }
 #endif
@@ -2254,7 +2256,7 @@ bool Map::render(SDL_Renderer* renderer)
     uint16_t tile_y_end = viewport.getYTileEnd();
     float x_offset = viewport.getX();
     float y_offset = viewport.getY();
-    
+
     /* Underlay for map - testing: TODO revise */
     for(uint16_t i = 0; i < lay_under.size(); i++)
       if(lay_under[i] != nullptr)
@@ -2765,7 +2767,7 @@ bool Map::update(int cycle_time)
   /* If conversation is active, confirm that player is not moving */
   if(map_dialog.isConversationActive() || !isModeNormal())
     unfocus();
-    
+
   /* Overlay for map - testing: TODO revise */
   for(uint16_t i = 0; i < lay_over.size(); i++)
     if(lay_over[i] != nullptr)
@@ -2774,10 +2776,23 @@ bool Map::update(int cycle_time)
   /* Offset for overlay */
   if(lay_over.size() > 0)
   {
-    lay_offset += cycle_time / 8;
+    delta_lay_offset = (float)cycle_time / 8.00;
+
+    if(delta_lay_offset >= 1.00)
+    {
+      lay_offset += 1;
+      delta_lay_offset -= 1;
+    }
     if(lay_offset >= 1216)
       lay_offset -= 1216;
-    lay_offset2 += cycle_time / 4;
+
+    delta_lay_offset2 = (float)cycle_time / 8.00;
+
+    if(delta_lay_offset2 >= 1.00)
+    {
+      lay_offset2 += 1;
+      delta_lay_offset -= 1;
+    }
     if(lay_offset2 >= 1216)
       lay_offset2 -= 1216;
   }

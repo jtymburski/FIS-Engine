@@ -80,6 +80,21 @@ RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite,
   location.point.y = y;
 }
 
+RenderElement::RenderElement(SDL_Renderer* renderer, std::string lay_path,
+                             Box location, RenderType render_type,
+                             Floatinate velocity, uint8_t alpha)
+    : RenderElement()
+{
+  this->alpha = alpha;
+  this->renderer = renderer;
+  this->render_type = render_type;
+
+  buildSprite(lay_path);
+
+  this->location = location;
+  setVelocity(velocity.x, velocity.y);
+}
+
 RenderElement::~RenderElement()
 {
   if(element_sprite)
@@ -105,6 +120,20 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
 
       return true;
     }
+  }
+
+  return false;
+}
+
+bool RenderElement::buildSprite(std::string path)
+{
+  if(renderer && path != "" && !element_sprite)
+  {
+    element_sprite = new Sprite(path, renderer);
+    element_sprite->setNonUnique(true, 1);
+    element_sprite->createTexture(renderer);
+
+    return true;
   }
 
   return false;
@@ -210,8 +239,7 @@ void RenderElement::createAsRGBOverlay(SDL_Color color, int32_t overlay_time,
   render_type = RenderType::RGB_OVERLAY;
 }
 
-void RenderElement::createAsSpriteDeath(SDL_Color color,
-                                        int32_t death_time,
+void RenderElement::createAsSpriteDeath(SDL_Color color, int32_t death_time,
                                         int32_t fade_in_time,
                                         int32_t fade_out_time)
 {
@@ -221,8 +249,7 @@ void RenderElement::createAsSpriteDeath(SDL_Color color,
   render_type = RenderType::RGB_SPRITE_DEATH;
 }
 
-void RenderElement::createAsSpriteFlash(SDL_Color color,
-                                        int32_t flash_time)
+void RenderElement::createAsSpriteFlash(SDL_Color color, int32_t flash_time)
 {
   auto fade_time = std::floor(flash_time * 3.00 / 7.00);
   setTimes(flash_time, fade_time, fade_time);
@@ -279,10 +306,15 @@ bool RenderElement::update(int32_t cycle_time)
 {
   time_left -= cycle_time;
 
-  if(render_type == RenderType::PLEP)
+  if(render_type == RenderType::PLEP || render_type == RenderType::OVERLAY ||
+     render_type == RenderType::MIDLAY)
+  {
     updateStatusPlep(cycle_time);
+  }
   else
+  {
     updateStatusFade(cycle_time);
+  }
 
   return false;
 }
@@ -293,8 +325,43 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
   {
     element_sprite->update(cycle_time);
 
-    if(element_sprite->getLoops() >= loops_to_do)
+    if(render_type == RenderType::PLEP &&
+       element_sprite->getLoops() >= loops_to_do)
+    {
       status = RenderStatus::TIMED_OUT;
+    }
+    else
+    {
+      element_sprite->setOpacity(alpha);
+      velocity.x += (acceleration.x * cycle_time);
+      velocity.y += (acceleration.y * cycle_time);
+
+      delta.x += velocity.x * cycle_time;
+      delta.y += velocity.y * cycle_time;
+
+      if(std::abs(delta.x) >= 1.00)
+      {
+        auto neg_delta_x = std::floor(delta.x);
+
+        location.point.x += neg_delta_x;
+        delta.x -= neg_delta_x;
+      }
+
+      if(std::abs(delta.y) >= 1.00)
+      {
+        auto neg_delta_y = std::floor(delta.y);
+
+        location.point.y += neg_delta_y;
+        delta.y -= neg_delta_y;
+      }
+
+      //TODO: Require resolution/size
+      //TODO: Overlay --> into class
+      if(location.point.x > 2432)
+        location.point.x -= 2432;
+      // if(location.point.y > 704)
+      //   location.point.y -= 704;
+    }
   }
 }
 

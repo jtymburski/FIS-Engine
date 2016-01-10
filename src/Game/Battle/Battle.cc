@@ -1837,6 +1837,7 @@ void Battle::clearBackground()
 {
   if(background)
     delete background;
+
   background = nullptr;
 }
 
@@ -1906,6 +1907,51 @@ void Battle::playInflictionSound(Infliction type)
   }
 }
 
+void Battle::createOverlay(std::string path, float velocity_x, float velocity_y)
+{
+  if(path != "" && config)
+  {
+    Box location;
+    location.point.x = 0;
+    location.point.y = 0;
+    location.width = config->getScreenWidth();
+    location.height = config->getScreenHeight();
+
+    Floatinate velocity(velocity_x, velocity_y);
+
+    auto element = new RenderElement(renderer, path, location,
+                                     RenderType::OVERLAY, velocity, 245);
+
+    render_elements.push_back(element);
+  }
+}
+
+void Battle::createMidlay(std::string path, float velocity_x, float velocity_y)
+{
+  if(path != "" && config)
+  {
+    Box location;
+    location.point.x = 0;
+    location.point.y = 704;
+    location.width = config->getScreenWidth();
+    location.height = config->getScreenHeight();
+
+    Floatinate velocity(velocity_x, velocity_y);
+
+    auto element = new RenderElement(renderer, path, location,
+                                     RenderType::MIDLAY, velocity, 245);
+
+    render_elements.push_back(element);
+
+    location.point.x = 1216;
+    location.point.y = 704;
+
+    element = new RenderElement(renderer, path, location, RenderType::MIDLAY,
+                                velocity, 245);
+    render_elements.push_back(element);
+  }
+}
+
 // NOTE: On menu rendering, render the friend info of the selected ally
 // ex. //
 /* Render the selecting person info */
@@ -1914,8 +1960,6 @@ void Battle::playInflictionSound(Infliction type)
 //   success &= renderFriendInfo(screen_height, x, y, true);
 
 // Other todos:
-// -- Midlays
-// -- Overlays
 bool Battle::render()
 {
   auto success = false;
@@ -1937,7 +1981,8 @@ bool Battle::render()
     success &= renderEnemies();
     success &= renderEnemiesInfo();
 
-    // FUTURE - Midlays go over the enemies, but under the allies
+    /* Render the midlays */
+    renderMidlays();
 
     /* Render the allies in their present states */
     success &= renderAllies();
@@ -1948,6 +1993,9 @@ bool Battle::render()
 
     /* Render battle bar (on bottom) */
     success &= renderBattleBar();
+
+    /* Render the overlays */
+    renderOverlays();
 
     /* Render the menu (if needed) */
     success &= renderMenu();
@@ -2246,6 +2294,21 @@ bool Battle::renderEnemiesInfo()
   return success;
 }
 
+void Battle::renderMidlays()
+{
+  for(auto& element : render_elements)
+  {
+    if(element && element->render_type == RenderType::MIDLAY &&
+       element->element_sprite)
+    {
+      auto point = element->location.point;
+      element->element_sprite->render(renderer,
+                                      point.x - config->getScreenWidth(),
+                                      point.y - config->getScreenHeight());
+    }
+  }
+}
+
 bool Battle::renderMenu()
 {
   auto width = config->getScreenWidth();
@@ -2278,6 +2341,19 @@ bool Battle::renderMenu()
   }
 
   return success;
+}
+
+void Battle::renderOverlays()
+{
+  for(auto& element : render_elements)
+  {
+    if(element && element->render_type == RenderType::OVERLAY &&
+       element->element_sprite)
+    {
+      auto point = element->location.point;
+      element->element_sprite->render(renderer, point.x, point.y);
+    }
+  }
 }
 
 // TODO: Comment
@@ -2663,7 +2739,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
   return false;
 }
 
-bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
+bool Battle::startBattle(Party* friends, Party* foes, std::string bg_path)
 {
   /* Assert  all essentials are not nullptr. We want Battle to fail */
   assert(battle_display_data);
@@ -2692,8 +2768,16 @@ bool Battle::startBattle(Party* friends, Party* foes, Sprite* background)
       buildInfoEnemy(actor);
   }
 
-  /* Set the sprite for the Battle background */
-  setBackground(background);
+  /* `et the sprite for the Battle background */
+  // setBackground(bg_path);
+
+  // TODO: [01-09-2015]: Temporary background building
+  setBackground(bg_path + "sprites/Battle/Backdrop/battlebg06.png");
+
+  // Create an midlay
+  auto path =
+      bg_path + "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png";
+  createMidlay(path, 0.10, 0.000);
 
   /* Construct the enemy backdrop */
   buildEnemyBackdrop();
@@ -2841,14 +2925,15 @@ bool Battle::setRenderer(SDL_Renderer* renderer)
   return success;
 }
 
-bool Battle::setBackground(Sprite* background)
+bool Battle::setBackground(std::string bg_path)
 {
-  if(background && background->isFramesSet())
-  {
-    clearBackground();
-    this->background = background;
+  clearBackground();
 
-    return true;
+  if(bg_path != "")
+  {
+    background = new Sprite(bg_path, renderer);
+    background->setNonUnique(true, 1);
+    background->createTexture(renderer);
   }
 
   return false;

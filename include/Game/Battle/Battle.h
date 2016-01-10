@@ -442,8 +442,14 @@ private:
   bool renderEnemies();
   bool renderEnemiesInfo();
 
+  /* Render midlays */
+  void renderMidlays();
+
   /* Renders the Battle Menu */
   bool renderMenu();
+
+  /* Render overlays */
+  void renderOverlays();
 
   /* Basic setup for health drawing */
   bool setupHealthDraw(BattleActor* actor, float health_pc);
@@ -467,7 +473,7 @@ public:
   bool keyDownEvent(SDL_KeyboardEvent event);
 
   /* Method to start a Battle */
-  bool startBattle(Party* friends, Party* allies, Sprite* background = nullptr);
+  bool startBattle(Party* friends, Party* allies, std::string bg_path = "");
 
   /* Stops a running Battle */
   void stopBattle();
@@ -512,6 +518,9 @@ public:
    * PUBLIC FUNCTIONS - Battle Display
    *============================================================================*/
 public:
+  void createOverlay(std::string path, float velocity_x, float velocity_y);
+  void createMidlay(std::string path, float velocity_x, float velocity_y);
+
   /* Renders the Battle */
   bool render();
 
@@ -526,7 +535,7 @@ public:
   bool setRenderer(SDL_Renderer* renderer);
 
   /* Sets the background sprite */
-  bool setBackground(Sprite* background);
+  bool setBackground(std::string bg_path);
 };
 
 #endif // BATTLE_H

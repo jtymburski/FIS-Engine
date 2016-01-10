@@ -38,7 +38,7 @@
 class Timer
 {
 public:
-    Timer() : beg_(clock_::now()) {}
+    Timer() : beg_(clock_::now()) {};
     void reset() { beg_ = clock_::now(); }
     double elapsed() const {
         return std::chrono::duration_cast<second_>
@@ -55,12 +55,7 @@ private:
 struct Coordinate
 {
   Coordinate() : x{0}, y{0} {};
-
-  Coordinate(int32_t x, int32_t y) : Coordinate()
-  {
-    this->x = x;
-    this->y = y;
-  }
+  Coordinate(int32_t x, int32_t y) : x{x}, y{y} {};
 
   int32_t x;
   int32_t y;
@@ -70,6 +65,7 @@ struct Coordinate
 struct Floatinate
 {
   Floatinate() : x{0}, y{0} {};
+  Floatinate(float x, float y) : x{x}, y{y} {};
 
   float x;
   float y;

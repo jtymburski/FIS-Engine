@@ -260,9 +260,9 @@ void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
   getSkill(1043)->setAnimation(plep_medkit);
 
   /* Background and bar */
-  Sprite* background = new Sprite(
-      base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
-  battle_logic->setBackground(background);
+  // Sprite* background = new Sprite(
+  //     , renderer);
+  // battle_logic->setBackground(background);
 
   /* Skill Images (lol) */
   for(uint32_t i = 0; i < skills.size(); i++)
@@ -1618,8 +1618,8 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
 
   /* Set up battle */
-  auto background = new Sprite(
-      base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
+  // auto background = new Sprite(
+  //     base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
 
   battle_logic->setRenderer(renderer);
   battle_logic->setEventHandler(event_handler);
@@ -1629,7 +1629,9 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
     display_data->buildData();
 
   createItems();
-  battle_logic->startBattle(party_friends, party_foes, background);
+
+  //TODO: base_path instead of background (temporary)
+  battle_logic->startBattle(party_friends, party_foes, base_path);
 }
 
 /*============================================================================

@@ -106,6 +106,8 @@ private:
   /* Map lays */
   uint16_t lay_offset;
   uint16_t lay_offset2;
+  float delta_lay_offset;
+  float delta_lay_offset2;
   std::vector<Sprite*> lay_over;
   std::vector<Sprite*> lay_under;
 

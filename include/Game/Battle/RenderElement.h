@@ -37,6 +37,8 @@ enum class RenderType
   RGB_OVERLAY,
   RGB_SPRITE_FLASH,
   RGB_SPRITE_DEATH,
+  MIDLAY,
+  OVERLAY,
   NONE
 };
 
@@ -52,6 +54,10 @@ public:
   /* Spriteish element constructor */
   RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite, int32_t num_loops,
                 int32_t x, int32_t y);
+
+  /* Overlay and Midlay constructor */
+  RenderElement(SDL_Renderer* renderer, std::string lay_path, Box location,
+                RenderType type, Floatinate velocity, uint8_t alpha);
 
   /* Elemental annihilator */
   ~RenderElement();
@@ -128,6 +134,7 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  bool buildSprite(std::string sprite_path);
   bool buildSprite(Sprite* sprite);
 
 /*=============================================================================
