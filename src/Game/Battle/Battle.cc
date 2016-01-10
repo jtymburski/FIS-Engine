@@ -232,9 +232,15 @@ void Battle::actionStateSwitchSprite()
   event->action_state = ActionState::ACTION_START;
 
   if(skill_hit_status == SkillHitStatus::HIT)
+  {
+    std::cout << "SkillHit is a HIT!" << std::endl;
     processEventSkill();
+  }
   else
+  {
+    std::cout << "SkillHit is NOT a hit." << std::endl;
     event->action_state = ActionState::SKILL_MISS;
+  }
 
   addDelay(200);
 }
@@ -280,7 +286,8 @@ void Battle::actionStateActionStart()
   if(done)
   {
     if(event->setNextAction())
-      event->action_state = ActionState::SWITCH_SPRITE;
+      processEventSkill();
+      //event->action_state = ActionState::SWITCH_SPRITE;
     else
       event->action_state = ActionState::DONE;
 
@@ -1098,14 +1105,21 @@ void Battle::updateOutcome()
             auto equip_stats = base->calcEquipStats();
             auto max_health =
                 (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
+
+
             auto curr_health = ally->getStats().getBaseValue(Attribute::VITA);
             auto max_qtdr =
                 (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
             auto curr_qtdr = ally->getStats().getBaseValue(Attribute::QTDR);
 
-            if(curr_health < max_health)
+            std::cout << "Max Person Health: " << max_health << std::endl;
+            std::cout << "Curr Health: " << curr_health << std::endl;
+            std::cout << "Max Person Qtdr: " << max_qtdr << std::endl;
+            std::cout << "Curr qtdr: " << curr_qtdr << std::endl;
+
+            if(curr_health <= max_health)
               base->getCurr().setStat(Attribute::VITA, curr_health);
-            if(curr_qtdr < max_qtdr)
+            if(curr_qtdr <= max_qtdr)
               base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
           }
         }

@@ -251,7 +251,7 @@ void AIModule::calculateActionTypeChances()
   /* First check if Skills or Items can be chosen */
   auto can_choose_skill = canSelectSkill();
   auto can_choose_item = canSelectItem();
-  auto can_select_guard = false;//canSelectGuard();
+  auto can_select_guard = false; // canSelectGuard();
 
   /* Compute the factors for choosing each available action type
    *
@@ -679,12 +679,10 @@ bool AIModule::selectPriorityAction()
   return action_index_selected;
 }
 
-
 bool AIModule::selectPriorityTargets()
 {
   return true;
 }
-
 
 void AIModule::loadDefaults()
 {

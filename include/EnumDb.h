@@ -576,8 +576,8 @@ enum class ThingBase : std::uint8_t
   NPC = 4,
   INTERACTIVE = 5
 };
-  
-/* 
+
+/*
  * Description: Tracking state for npc node based movement
  *
  * NOTRACK - maintains normal movement (path or random)
@@ -587,11 +587,11 @@ enum class ThingBase : std::uint8_t
 enum class TrackingState
 {
   NOTRACK,
-  AVOIDPLAYER, 
+  AVOIDPLAYER,
   TOPLAYER
 };
 
-/* 
+/*
  * Description: Enumerated values for turn state
  */
 enum class TurnState

@@ -511,8 +511,10 @@ SkillHitStatus BattleEvent::doesSkillHit()
         std::cout << "[Skill Hit Status: MISS] " << std::endl;
         status = SkillHitStatus::MISS;
       }
-
-      std::cout << "[Skill Hit Status: HIT]" << std::endl;
+      else
+      {
+        std::cout << "[Skill Hit Status: HIT]" << std::endl;
+      }
     }
   }
 

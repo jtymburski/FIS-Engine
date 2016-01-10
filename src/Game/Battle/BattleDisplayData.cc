@@ -57,7 +57,7 @@ BattleDisplayData::~BattleDisplayData()
       delete ailment.second;
   frames_ailments.clear();
 
-  //TODO: THIS STILL FAILS -- WHY??
+  // TODO: THIS STILL FAILS -- WHY??
   // for(auto& ailment_plep : pleps_ailments)
   //   if(ailment_plep.second)
   //     delete ailment_plep.second;
@@ -361,19 +361,22 @@ void BattleDisplayData::buildPlepsEvents()
   // assert(renderer);
 
   // auto sprite_defend_start =
-  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
+  //     new Sprite(config->getBasePath() +
+  //     "sprites/Battle/Pleps/defendplep_AA_A",
   //                7, ".png", renderer);
   // sprite_defend_start->setAnimationTime(375);
   // sprite_defend_start->switchDirection();
 
   // auto sprite_defend_break =
-  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
+  //     new Sprite(config->getBasePath() +
+  //     "sprites/Battle/Pleps/defendplep_AA_A",
   //                7, ".png", renderer);
   // sprite_defend_break->setAnimationTime(90);
   // // sprite_defend_break->switchDirection();
 
   // auto sprite_defend_persist =
-  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/defendplep_AA_A",
+  //     new Sprite(config->getBasePath() +
+  //     "sprites/Battle/Pleps/defendplep_AA_A",
   //                7, ".png", renderer);
   // sprite_defend_persist->setAnimationTime(90);
 
