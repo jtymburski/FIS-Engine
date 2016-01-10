@@ -1242,13 +1242,14 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
 
     /* Render the text */
     success &= t.render(renderer, 0, kTYPE_MARGIN);
-    success &= t2.render(renderer, count_x - t2.getWidth() - kSKILL_SEP, kTYPE_MARGIN);
+    success &=
+        t2.render(renderer, count_x - t2.getWidth() - kSKILL_SEP, kTYPE_MARGIN);
 
     /* Set texture and clear render target back to main */
     frames_item_name.back()->setTexture(texture);
     SDL_SetRenderTarget(renderer, nullptr);
 
-    //TODO: create item information
+    // TODO: create item information
     /* Create the detailed skill information for this skill */
     // auto info_texture = createSkillFrame(
     //     skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
@@ -1420,7 +1421,7 @@ bool BattleMenu::render()
 
         if((uint32_t)element_index < frames_item_info.size())
         {
-          //Render the item info.
+          // Render the item info.
         }
       }
       else

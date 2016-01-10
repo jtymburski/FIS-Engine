@@ -130,9 +130,9 @@ private:
   BattleActor* upkeep_actor;
   Ailment* upkeep_ailment;
 
-/*=============================================================================
- * CONSTANTS - Battle Operations
- *============================================================================*/
+  /*=============================================================================
+   * CONSTANTS - Battle Operations
+   *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
   static const float kBASE_RUN_CHANCE;
@@ -274,7 +274,8 @@ private:
   void clearEvent();
 
   /* Creates a DamageElement RenderElement type on th given actor */
-  void createDamageElement(BattleActor* actor, DamageType damage_type, uint32_t amount);
+  void createDamageElement(BattleActor* actor, DamageType damage_type,
+                           uint32_t amount);
 
   /* Returns true if the given actor needs to select a menu option */
   bool doesActorNeedToSelect(BattleActor* actor);

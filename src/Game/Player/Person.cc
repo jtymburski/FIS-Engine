@@ -40,8 +40,8 @@ const uint32_t Person::kID_PLAYER{0};
 const size_t Person::kNUM_LEVELS{15};
 const size_t Person::kNUM_EQUIP_SLOTS{5};
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */
-const uint32_t Person::kMAX_EXP{1000000000};      /* 1 billion */
-const uint32_t Person::kMAX_EXP_DROP{1000000};    /* 1 million */
+const uint32_t Person::kMAX_EXP{1000000000}; /* 1 billion */
+const uint32_t Person::kMAX_EXP_DROP{1000000}; /* 1 million */
 const size_t Person::kMAX_ITEM_DROPS{25};
 const uint32_t Person::kMAX_LVL_EXP{5000}; /* 100 million */
 const uint32_t Person::kMIN_EXP{30};
@@ -483,13 +483,13 @@ void Person::updateBaseSkills()
  */
 AttributeSet Person::calcEquipStats()
 {
-  auto equip_bonus = AttributeSet();
+  // auto equip_bonus = AttributeSet();
 
-  for(auto it = begin(equipments); it != end(equipments); ++it)
-    if((*it) != nullptr)
-      equip_bonus += (*it)->getStats();
+  // for(auto it = begin(equipments); it != end(equipments); ++it)
+  //   if((*it) != nullptr)
+  //     equip_bonus += (*it)->getStats();
 
-  return (curr_max_stats + equip_bonus);
+  // return (curr_max_stats + equip_bonus);
 
   return curr_max_stats;
 }

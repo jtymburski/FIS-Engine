@@ -67,7 +67,9 @@ public:
 
 private:
   /* Pointer to the animation played by the Skill during Battle */
-  Sprite* animation;
+  std::string animation_path;
+  uint32_t animation_frames;
+  uint32_t animation_time;
 
   /* Chance the skill has overall to hit (100 = always hit) */
   float chance;
@@ -106,7 +108,7 @@ private:
   Element secondary;
 
   /* Pointer to the sound effect on use of the Skill */
-  Sound* sound_effect;
+  uint32_t sound_id;
 
   /* Pointer to the thumbnail of the Skill */
   Frame* thumbnail;
@@ -163,7 +165,9 @@ public:
   bool removeAction(const uint32_t &index);
 
   /* Returns a pointer to the animation sprite */
-  Sprite* getAnimation();
+  std::string getAnimationPath();
+  uint32_t getAnimationFrames();
+  uint32_t getAnimationTime();
 
   /* Returns the chance of a given effect */
   float getChance();
@@ -205,7 +209,7 @@ public:
   Element getSecondary();
 
   /* Returns the sound effect */
-  Sound* getSoundEffect();
+  uint32_t getSoundID();
 
   /* Returns the thumbnail */
   Frame* getThumbnail();
@@ -214,7 +218,9 @@ public:
   uint32_t getValue();
 
   /* Assigns a new using animation */
-  bool setAnimation(Sprite* new_animation);
+  void setAnimationPath(std::string new_animation_path);
+  void setAnimationFrames(uint32_t new_animation_frames);
+  void setAnimationTime(uint32_t new_animation_time);
 
   /* Assigns a new chance to the skill */
   bool setChance(const float &new_chance);
@@ -250,7 +256,7 @@ public:
   void setSecondary(const Element &new_element);
 
   /* Assigns a new sound effect */
-  bool setSoundEffect(Sound* new_sound_effect);
+  void setSoundID(uint32_t new_sound_id);
 
   /* Assigns a new thumbnail */
   void setThumbnail(Frame* new_thumbnail);

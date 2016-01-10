@@ -55,6 +55,11 @@ public:
   RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite, int32_t num_loops,
                 int32_t x, int32_t y);
 
+  /* Plep constructor with sprite path */
+   RenderElement(SDL_Renderer *renderer, std::string sprite_path,
+                int32_t num_frames, int32_t animation_time, int32_t num_loops,
+                Coordinate point);
+
   /* Overlay and Midlay constructor */
   RenderElement(SDL_Renderer* renderer, std::string lay_path, Box location,
                 RenderType type, Floatinate velocity, uint8_t alpha);
@@ -134,7 +139,7 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  bool buildSprite(std::string sprite_path);
+  bool buildSprite(std::string sprite_path, int32_t num_frames = 1);
   bool buildSprite(Sprite* sprite);
 
 /*=============================================================================

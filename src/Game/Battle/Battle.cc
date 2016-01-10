@@ -287,7 +287,7 @@ void Battle::actionStateActionStart()
   {
     if(event->setNextAction())
       processEventSkill();
-      //event->action_state = ActionState::SWITCH_SPRITE;
+    // event->action_state = ActionState::SWITCH_SPRITE;
     else
       event->action_state = ActionState::DONE;
 
@@ -665,35 +665,41 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
 
 void Battle::outcomeStatePlep(ActorOutcome& outcome)
 {
-  Sprite* animation = nullptr;
   auto x = getActorX(outcome.actor);
   auto y = getActorY(outcome.actor);
 
-  render_elements.push_back(new RenderElement(renderer, animation, 1, x, y));
-
-  if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE))
+  /* Create the render element sprite */
+  if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE) ||
+     event->getCurrAction()->actionFlag(ActionFlags::ALTER))
   {
-    animation = event->event_skill->skill->getAnimation();
+    auto skill = event->event_skill->skill;
+    auto element = new RenderElement(renderer, skill->getAnimationPath(),
+                                     skill->getAnimationFrames(),
+                                     skill->getAnimationTime(), 1, {x, y});
+
+    render_elements.push_back(element);
     event_handler->triggerSound(Sound::kID_SOUND_BTL_PLEP,
                                 SoundChannels::TRIGGERS);
-    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
   }
   else if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
   {
     auto type = event->getCurrAction()->getAilment();
+    auto animation = battle_display_data->getPlepAilment(type);
+    auto element = new RenderElement(renderer, animation, 1, x, y);
+
     playInflictionSound(type);
-
-    animation = battle_display_data->getPlepAilment(type);
-
+    render_elements.push_back(element);
     outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
   }
-  else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
-  {
-    animation = event->event_skill->skill->getAnimation();
-    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
-  }
 
-  render_elements.push_back(new RenderElement(renderer, animation, 1, x, y));
+  /* Set the next state based on the action flag */
+  if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE))
+    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+  if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
+    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+  if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
+    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+
   addDelay(150);
 }
 
@@ -1111,7 +1117,6 @@ void Battle::updateOutcome()
             auto equip_stats = base->calcEquipStats();
             auto max_health =
                 (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
-
 
             auto curr_health = ally->getStats().getBaseValue(Attribute::VITA);
             auto max_qtdr =

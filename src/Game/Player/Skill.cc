@@ -20,16 +20,16 @@
 /*==============================================================================
  * CONSTANTS
  *============================================================================*/
-const uint16_t Skill::kDEFAULT_VALUE     =      1;
-const size_t   Skill::kMAX_ACTIONS       =   1000;
-const float    Skill::kMAX_CHANCE        =    100;
-const uint16_t Skill::kMAX_COOLDOWN      =     10;
-const uint32_t Skill::kMAX_COST          =   5000;
-const size_t   Skill::kMAX_MESG_LENGTH   =     70;
-const size_t   Skill::kMAX_NAME_LENGTH   =     60;
-const size_t   Skill::kMAX_DESC_LENGTH   =    500;
-const uint16_t Skill::kMAX_VALUE         =     10;
-const int32_t  Skill::kUNSET_ID          =     -1;
+const uint16_t Skill::kDEFAULT_VALUE = 1;
+const size_t Skill::kMAX_ACTIONS = 1000;
+const float Skill::kMAX_CHANCE = 100;
+const uint16_t Skill::kMAX_COOLDOWN = 10;
+const uint32_t Skill::kMAX_COST = 5000;
+const size_t Skill::kMAX_MESG_LENGTH = 70;
+const size_t Skill::kMAX_NAME_LENGTH = 60;
+const size_t Skill::kMAX_DESC_LENGTH = 500;
+const uint16_t Skill::kMAX_VALUE = 10;
+const int32_t Skill::kUNSET_ID = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -41,29 +41,31 @@ const int32_t  Skill::kUNSET_ID          =     -1;
  * Inputs: none
  */
 Skill::Skill()
-    : animation{nullptr}
-    , chance{0}
-    , cooldown{0}
-    , cost{0}
-    , description{""}
-    , flags{static_cast<SkillFlags>(0)}
-    , id{kUNSET_ID}
-    , message{""}
-    , primary{Element::NONE}
-    , scope{ActionScope::NO_SCOPE}
-    , secondary{Element::NONE}
-    , sound_effect{nullptr}
-    , thumbnail{nullptr}
-    , value{0}
-{}
+    : animation_path{""},
+      animation_frames{0},
+      animation_time{0},
+      chance{0},
+      cooldown{0},
+      cost{0},
+      description{""},
+      flags{static_cast<SkillFlags>(0)},
+      id{kUNSET_ID},
+      message{""},
+      primary{Element::NONE},
+      scope{ActionScope::NO_SCOPE},
+      secondary{Element::NONE},
+      sound_id{0},
+      thumbnail{nullptr},
+      value{0}
+{
+}
 
 /*
  * Description: Constructs a basic empty Skill given a name.
  *
  * Inputs: name - string name for the Skill
  */
-Skill::Skill(const std::string &name)
-    : Skill::Skill()
+Skill::Skill(const std::string& name) : Skill::Skill()
 {
   setName(name);
 }
@@ -79,9 +81,9 @@ Skill::Skill(const std::string &name)
  *         chance - float chance for the action to take place.
  *         cost - the cost of the skill in QD
  */
-Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
-    Action* effect, const float &chance, const uint32_t &cost)
-      : Skill::Skill()
+Skill::Skill(const int& id, const std::string& name, const ActionScope& scope,
+             Action* effect, const float& chance, const uint32_t& cost)
+    : Skill::Skill()
 {
   setID(id);
   setName(name);
@@ -105,10 +107,10 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
  *         chance - chance of all the effects happening
  *         cost - the cost of the skill in QD
  */
-Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
-    const std::vector<Action*> &effects,
-    const float &chance, const uint32_t &cost)
-      : Skill::Skill()
+Skill::Skill(const int& id, const std::string& name, const ActionScope& scope,
+             const std::vector<Action*>& effects, const float& chance,
+             const uint32_t& cost)
+    : Skill::Skill()
 {
   setID(id);
   setName(name);
@@ -128,7 +130,6 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
  */
 Skill::~Skill()
 {
-  unsetAnimation();
   unsetThumbnail();
 }
 
@@ -148,13 +149,13 @@ Skill::~Skill()
  *         single - boolean whether to call flagSetup (only needs one call)
  * Output: bool - true if the effect can and was added
  */
-bool Skill::addAction(Action* new_action, const bool &single)
+bool Skill::addAction(Action* new_action, const bool& single)
 {
-  if (new_action != nullptr && effects.size() < kMAX_ACTIONS)
+  if(new_action != nullptr && effects.size() < kMAX_ACTIONS)
   {
     effects.push_back(new_action);
 
-    if (single)
+    if(single)
       flagSetup();
 
     return true;
@@ -170,21 +171,21 @@ bool Skill::addAction(Action* new_action, const bool &single)
  * Inputs: new_actions - vector of pointers to effects to be added
  * Output: bool - true if all the actions were successfully added
  */
-bool Skill::addActions(const std::vector<Action*> &new_actions)
+bool Skill::addActions(const std::vector<Action*>& new_actions)
 {
   bool valid = true;
 
-  if (new_actions.size() > 0)
+  if(new_actions.size() > 0)
   {
     /* Temporarily store the effects */
     auto temp_effects = effects;
 
-    for (auto it_e = begin(new_actions); it_e != end(new_actions); ++it_e)
-      if (!addAction((*it_e), false))
+    for(auto it_e = begin(new_actions); it_e != end(new_actions); ++it_e)
+      if(!addAction((*it_e), false))
         valid = false;
 
     /* Undo the additions if they were not valid */
-    if (!valid)
+    if(!valid)
       effects = temp_effects;
   }
 
@@ -212,36 +213,36 @@ void Skill::flagSetup()
   setFlag(SkillFlags::VALID, false);
 
   /* Set flags */
-  for (auto it = effects.begin(); it != effects.end(); ++it)
+  for(auto it = effects.begin(); it != effects.end(); ++it)
   {
-    if ((*it)->actionFlag(ActionFlags::ALTER))
+    if((*it)->actionFlag(ActionFlags::ALTER))
     {
       setFlag(SkillFlags::ALTERING);
 
-      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+      if((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
         setFlag(SkillFlags::HEALING);
     }
 
-    else if ((*it)->actionFlag(ActionFlags::DAMAGE))
+    else if((*it)->actionFlag(ActionFlags::DAMAGE))
       setFlag(SkillFlags::DAMAGING);
 
-    else if ((*it)->actionFlag(ActionFlags::INFLICT))
+    else if((*it)->actionFlag(ActionFlags::INFLICT))
       setFlag(SkillFlags::INFLICTING);
 
-    else if ((*it)->actionFlag(ActionFlags::RELIEVE))
+    else if((*it)->actionFlag(ActionFlags::RELIEVE))
       setFlag(SkillFlags::RELIEVING);
 
-    else if ((*it)->actionFlag(ActionFlags::REVIVE))
+    else if((*it)->actionFlag(ActionFlags::REVIVE))
     {
       setFlag(SkillFlags::REVIVING);
       setFlag(SkillFlags::HEALING);
     }
 
-    else if ((*it)->actionFlag(ActionFlags::ASSIGN))
+    else if((*it)->actionFlag(ActionFlags::ASSIGN))
     {
       setFlag(SkillFlags::ASSIGNING);
 
-      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+      if((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
         setFlag(SkillFlags::HEALING);
     }
   }
@@ -267,7 +268,7 @@ bool Skill::isBerserkSkill()
   has_bad_effect &= getFlag(SkillFlags::REVIVING);
   has_bad_effect &= getFlag(SkillFlags::ASSIGNING);
 
-  if (has_bad_effect)
+  if(has_bad_effect)
     return false;
 
   return getFlag(SkillFlags::DAMAGING);
@@ -283,7 +284,7 @@ bool Skill::isValid()
 {
   bool valid = true;
 
-  for (auto it = effects.begin(); it != effects.end(); ++it)
+  for(auto it = effects.begin(); it != effects.end(); ++it)
     valid &= (*it)->actionFlag(ActionFlags::VALID);
 
   valid &= (id != kUNSET_ID);
@@ -308,13 +309,22 @@ bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- ANIMATION ---- */
   if(data.getElement(index) == "animation")
   {
-    /* If null, create */
-    if(animation == nullptr)
-      animation = new Sprite();
+    auto element = data.getElement(index + 1);
+    auto split_elements = Helpers::split(element, '_');
 
-    /* Add data */
-    success &= animation->addFileInformation(data, index + 1,
-                                             renderer, base_path);
+    if(element == "animation")
+      animation_time = data.getDataInteger();
+    else if(split_elements.at(0) == "path")
+    {
+      auto path = base_path + data.getDataString();
+      auto split_path = Helpers::split(path, '|');
+
+      if(split_path.size() == 3)
+      {
+        animation_path = split_path[0];
+        animation_frames = std::stoi(split_path[1]);
+      }
+    }
   }
   /* ---- CHANCE ---- */
   else if(data.getElement(index) == "chance")
@@ -382,8 +392,8 @@ bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
       thumbnail = new Frame();
 
     /* Add data */
-    success &= thumbnail->setTexture(base_path +
-                                     data.getDataString(&success), renderer);
+    success &= thumbnail->setTexture(base_path + data.getDataString(&success),
+                                     renderer);
   }
   /* ---- VALUE ---- */
   else if(data.getElement(index) == "value")
@@ -406,9 +416,6 @@ void Skill::print(bool flags)
   std::cout << "Skill ID: " << id << std::endl;
   std::cout << "\nAction Scope: " << Helpers::actionScopeToStr(scope);
   std::cout << "\nName: " << name << std::endl;
-  std::cout << "Animation: " << animation << std::endl;
-  if(animation != nullptr)
-    std::cout << "  > " << animation->getSize() << std::endl;
   std::cout << "Chance: " << chance << std::endl;
   std::cout << "Cooldown: " << cooldown << std::endl;
   std::cout << "Cost: " << cost << std::endl;
@@ -419,13 +426,13 @@ void Skill::print(bool flags)
   std::cout << "\nThumbnail: " << thumbnail << std::endl;
   if(thumbnail != nullptr)
     std::cout << "  > " << thumbnail->isTextureSet() << std::endl;
-  std::cout << std::endl << "Effect Chances: " << std::endl;
-  std::cout << "\nSound effect set? " << sound_effect << std::endl;
+  std::cout << std::endl
+            << "Effect Chances: " << std::endl;
 
-  for (const auto& effect : effects)
+  for(const auto& effect : effects)
     std::cout << "Action Chance: " << effect->getChance() << "\n";
 
-  if (flags)
+  if(flags)
   {
     std::cout << "OFFENSIVE: " << getFlag(SkillFlags::OFFENSIVE) << std::endl;
     std::cout << "DEFENSIVE: " << getFlag(SkillFlags::DEFENSIVE) << std::endl;
@@ -448,9 +455,9 @@ void Skill::print(bool flags)
  * Inputs: index - the index of the skill to be removed
  * Output: bool - true if the skill was removed
  */
-bool Skill::removeAction(const uint32_t &index)
+bool Skill::removeAction(const uint32_t& index)
 {
-  if (index < effects.size())
+  if(index < effects.size())
   {
     effects.erase(effects.begin() + index);
 
@@ -460,15 +467,19 @@ bool Skill::removeAction(const uint32_t &index)
   return false;
 }
 
-/*
- * Description: Returns a pointer to the using animation of the Skill.
- *
- * Inputs: none
- * Output: Sprite*
- */
-Sprite* Skill::getAnimation()
+std::string Skill::getAnimationPath()
 {
-  return animation;
+  return animation_path;
+}
+
+uint32_t Skill::getAnimationFrames()
+{
+  return animation_frames;
+}
+
+uint32_t Skill::getAnimationTime()
+{
+  return animation_time;
 }
 
 /*
@@ -521,9 +532,9 @@ std::string Skill::getDescription()
  * Inputs: uint32_t - index of effect to be checked
  * Output: Action* - ptr to the effect at the index, or nullptr
  */
-Action* Skill::getEffect(const uint32_t &index)
+Action* Skill::getEffect(const uint32_t& index)
 {
-  if (index < effects.size())
+  if(index < effects.size())
     return effects[index];
 
   return nullptr;
@@ -573,7 +584,6 @@ std::string Skill::getMessage()
 {
   return message;
 }
-
 
 /*
  * Description: Returns the string name of the Skill
@@ -625,9 +635,9 @@ Element Skill::getSecondary()
  * Inputs: none
  * Output: Sound* - pointer to the sound effect
  */
-Sound* Skill::getSoundEffect()
+uint32_t Skill::getSoundID()
 {
-  return sound_effect;
+  return sound_id;
 }
 
 /*
@@ -652,22 +662,19 @@ uint32_t Skill::getValue()
   return value;
 }
 
-/*
- * Description: Assigns a new animation to the Skill. This class takes control
- *              of memory manipulation upon set.
- *
- * Inputs: Sprite* - pointer to the new animation
- * Output: bool - true if the new animation is not nullptr
- */
-bool Skill::setAnimation(Sprite* new_animation)
+void Skill::setAnimationPath(std::string new_animation_path)
 {
-  if(new_animation != nullptr)
-  {
-    unsetAnimation();
-    animation = new_animation;
-    return true;
-  }
-  return false;
+  animation_path = new_animation_path;
+}
+
+void Skill::setAnimationFrames(uint32_t new_animation_frames)
+{
+  animation_frames = new_animation_frames;
+}
+
+void Skill::setAnimationTime(uint32_t new_animation_time)
+{
+  animation_time = new_animation_time;
 }
 
 /*
@@ -677,15 +684,15 @@ bool Skill::setAnimation(Sprite* new_animation)
  * Inputs: new_chance - new chance for the Skill to occur
  * Output: bool - true if the chance was assigned without altering.
  */
-bool Skill::setChance(const float &new_chance)
+bool Skill::setChance(const float& new_chance)
 {
-  if (new_chance <= kMAX_CHANCE && new_chance > 0)
+  if(new_chance <= kMAX_CHANCE && new_chance > 0)
   {
     chance = new_chance;
 
     return true;
   }
-  else if (new_chance > 0)
+  else if(new_chance > 0)
   {
     chance = kMAX_CHANCE;
   }
@@ -701,9 +708,9 @@ bool Skill::setChance(const float &new_chance)
  * Inputs: uint32_t - new value for the cooldown.
  * Output: bool - true if the new cooldown value is within range.
  */
-bool Skill::setCooldown(const uint32_t &new_value)
+bool Skill::setCooldown(const uint32_t& new_value)
 {
-  if (new_value < kMAX_COOLDOWN)
+  if(new_value < kMAX_COOLDOWN)
   {
     cooldown = new_value;
 
@@ -722,9 +729,9 @@ bool Skill::setCooldown(const uint32_t &new_value)
  * Inputs: new_value - the new cost for the Skill
  * Output: bool - true if the cost was assigned without altering
  */
-bool Skill::setCost(const uint32_t &new_cost)
+bool Skill::setCost(const uint32_t& new_cost)
 {
-  if (new_cost <= kMAX_COST)
+  if(new_cost <= kMAX_COST)
   {
     cost = new_cost;
 
@@ -742,9 +749,9 @@ bool Skill::setCost(const uint32_t &new_cost)
  * Inputs: new_description - new string description for the Skill
  * Output: bool - true if the new description was in range
  */
-bool Skill::setDescription(const std::string &new_description)
+bool Skill::setDescription(const std::string& new_description)
 {
-  if (new_description.size() < kMAX_DESC_LENGTH)
+  if(new_description.size() < kMAX_DESC_LENGTH)
   {
     description = new_description;
     return true;
@@ -760,7 +767,7 @@ bool Skill::setDescription(const std::string &new_description)
  *         set_value - value to change the flag to
  * Output: none
  */
-void Skill::setFlag(const SkillFlags &flag, const bool &set_value)
+void Skill::setFlag(const SkillFlags& flag, const bool& set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
@@ -771,9 +778,9 @@ void Skill::setFlag(const SkillFlags &flag, const bool &set_value)
  * Inputs: new_name - new name to be assigned
  * Output: bool - true if the new name size was within range
  */
-bool Skill::setName(const std::string &new_name)
+bool Skill::setName(const std::string& new_name)
 {
-  if (new_name.size() < kMAX_NAME_LENGTH)
+  if(new_name.size() < kMAX_NAME_LENGTH)
   {
     name = new_name;
 
@@ -791,9 +798,9 @@ bool Skill::setName(const std::string &new_name)
  * Inputs: new_id - the ID to assign the skill to
  * Output: bool - true if the ID was assigned (can't reassign a set ID)
  */
-bool Skill::setID(const int32_t &new_id)
+bool Skill::setID(const int32_t& new_id)
 {
-  if (new_id == kUNSET_ID || id != kUNSET_ID)
+  if(new_id == kUNSET_ID || id != kUNSET_ID)
     return false;
 
   id = new_id;
@@ -807,9 +814,9 @@ bool Skill::setID(const int32_t &new_id)
  * Inputs: new_message - new using message string
  * Output: bool - true if the new message was within range
  */
-bool Skill::setMessage(const std::string &new_message)
+bool Skill::setMessage(const std::string& new_message)
 {
-  if (new_message.size() < kMAX_MESG_LENGTH)
+  if(new_message.size() < kMAX_MESG_LENGTH)
   {
     message = new_message;
 
@@ -825,7 +832,7 @@ bool Skill::setMessage(const std::string &new_message)
  * Inputs: Element new_element - enumerated element to assign
  * Output: none
  */
-void Skill::setPrimary(const Element &new_element)
+void Skill::setPrimary(const Element& new_element)
 {
   primary = new_element;
 }
@@ -836,7 +843,7 @@ void Skill::setPrimary(const Element &new_element)
  * Inputs: new_scope - new enumerated scope of use for the Skill
  * Output: none
  */
-void Skill::setScope(const ActionScope &new_scope)
+void Skill::setScope(const ActionScope& new_scope)
 {
   scope = new_scope;
 }
@@ -847,7 +854,7 @@ void Skill::setScope(const ActionScope &new_scope)
  * Inputs: Element new_element - enumerated element to assign
  * Output: none
  */
-void Skill::setSecondary(const Element & new_element)
+void Skill::setSecondary(const Element& new_element)
 {
   secondary = new_element;
 }
@@ -858,11 +865,9 @@ void Skill::setSecondary(const Element & new_element)
  * Inputs: new_sound_effect - new sound effect for the use of the Skill
  * Output: bool - true if the new sound effect is not nullptr
  */
-bool Skill::setSoundEffect(Sound* new_sound_effect)
+void Skill::setSoundID(uint32_t new_sound_id)
 {
-  sound_effect = new_sound_effect;
-
-  return (sound_effect != nullptr);
+  sound_id = new_sound_id;
 }
 
 /*
@@ -874,7 +879,7 @@ bool Skill::setSoundEffect(Sound* new_sound_effect)
  */
 void Skill::setThumbnail(Frame* new_thumbnail)
 {
-  if (new_thumbnail != nullptr)
+  if(new_thumbnail != nullptr)
   {
     unsetThumbnail();
     thumbnail = new_thumbnail;
@@ -887,9 +892,9 @@ void Skill::setThumbnail(Frame* new_thumbnail)
  * Inputs: new_value - new point value for the skill
  * Output: bool - true if the point value is within range
  */
-bool Skill::setValue(const uint32_t &new_value)
+bool Skill::setValue(const uint32_t& new_value)
 {
-  if (new_value < kMAX_VALUE)
+  if(new_value < kMAX_VALUE)
   {
     value = new_value;
 
@@ -897,13 +902,6 @@ bool Skill::setValue(const uint32_t &new_value)
   }
 
   return false;
-}
-
-void Skill::unsetAnimation()
-{
-  if(animation != nullptr)
-    delete animation;
-  animation = nullptr;
 }
 
 /*

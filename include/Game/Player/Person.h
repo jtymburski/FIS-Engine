@@ -147,7 +147,7 @@ private:
   std::string path_first_person;
   std::string path_third_person;
 
-  //TODO: Have map dialog destroy
+  // TODO: Have map dialog destroy
   Sprite* dialog_sprite;
 
   /* ------------ Static Private Members --------------- */
@@ -273,7 +273,7 @@ public:
   /* Recalculates Curr skills based on flags */
   void updateSkills();
 
-    /* Recalculates the Person's base and base_max stats based on categories */
+  /* Recalculates the Person's base and base_max stats based on categories */
   void updateBaseStats();
 
   /* Updates the current stats of the Person based on their current level */

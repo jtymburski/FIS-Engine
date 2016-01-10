@@ -72,12 +72,31 @@ RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite,
     element_sprite->resetLoops();
 
   loops_to_do = num_loops;
-
   status = initialStatusFade();
   render_type = RenderType::PLEP;
-
   location.point.x = x;
   location.point.y = y;
+}
+
+RenderElement::RenderElement(SDL_Renderer* renderer, std::string sprite_path,
+                             int32_t num_frames, int32_t animation_time,
+                             int32_t num_loops, Coordinate point)
+    : RenderElement()
+{
+  this->renderer = renderer;
+  buildSprite(sprite_path, num_frames);
+
+  if(element_sprite)
+  {
+    element_sprite->resetLoops();
+    element_sprite->setAnimationTime(animation_time);
+  }
+
+  loops_to_do = num_loops;
+  status = initialStatusFade();
+  render_type = RenderType::PLEP;
+  location.point.x = point.x;
+  location.point.y = point.y;
 }
 
 RenderElement::RenderElement(SDL_Renderer* renderer, std::string lay_path,
@@ -125,12 +144,16 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
   return false;
 }
 
-bool RenderElement::buildSprite(std::string path)
+bool RenderElement::buildSprite(std::string path, int32_t num_frames)
 {
   if(renderer && path != "" && !element_sprite)
   {
-    element_sprite = new Sprite(path, renderer);
-    element_sprite->setNonUnique(true, 1);
+    if(num_frames > 1)
+      element_sprite = new Sprite(path, num_frames, ".png", renderer);
+    else
+      element_sprite = new Sprite(path, renderer);
+
+    element_sprite->setNonUnique(true, num_frames);
     element_sprite->createTexture(renderer);
 
     return true;

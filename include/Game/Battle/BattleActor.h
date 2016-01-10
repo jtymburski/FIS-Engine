@@ -172,8 +172,8 @@ class BattleActor
 {
 public:
   /* Constructs the Battle object by a given base person */
-  BattleActor(Person* person_base, int32_t battle_index, int32_t menu_index, bool is_ally,
-              bool can_run, SDL_Renderer* renderer);
+  BattleActor(Person* person_base, int32_t battle_index, int32_t menu_index,
+              bool is_ally, bool can_run, SDL_Renderer* renderer);
 
   /* Default BattleActors may not be created */
   BattleActor() = delete;
