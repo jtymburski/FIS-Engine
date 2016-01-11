@@ -2514,19 +2514,7 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     std::string prop_element = data.getElement(file_index + 1);
     if(prop_element == "class")
     {
-      ThingBase class_def = ThingBase::ISBASE;
-      std::string class_str = data.getDataString();
-      if(class_str == "thing")
-        class_def = ThingBase::THING;
-      else if(class_str == "item")
-        class_def = ThingBase::ITEM;
-      else if(class_str == "person")
-        class_def = ThingBase::PERSON;
-      else if(class_str == "npc")
-        class_def = ThingBase::NPC;
-      else if(class_str == "io")
-        class_def = ThingBase::INTERACTIVE;
-
+      ThingBase class_def = Helpers::typeFromStr(data.getDataString());
       event.ints.at(kPROP_TYPE) = static_cast<int>(class_def);
     }
     else if(prop_element == "id")

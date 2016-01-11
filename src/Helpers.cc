@@ -1228,6 +1228,86 @@ std::string Helpers::tierToStr(const ItemTier& tier)
     return "LEGENDARY";
   return "";
 }
+  
+/*
+ * Description: Returns the enum form of a tracking state (string)
+ *
+ * Inputs: std::string track - string representation of the tracking state
+ * Output: TrackingState - the enumeration from a string
+ */
+TrackingState Helpers::trackingFromStr(const std::string& track)
+{
+  std::string track_up = track;
+  std::transform(track_up.begin(), track_up.end(), track_up.begin(), toupper);
+
+  /* Parse */
+  if(track_up == "AVOID THE PLAYER")
+    return TrackingState::AVOIDPLAYER;
+  else if(track_up == "TO THE PLAYER")
+    return TrackingState::TOPLAYER;
+  return TrackingState::NOTRACK;
+}
+
+/*
+ * Description: Returns the string form of a tracking state (enum)
+ *
+ * Inputs: TrackingState track - enum representation of the tracking state
+ * Output: std::string - the enumeration to a string
+ */
+std::string Helpers::trackingToStr(const TrackingState& track)
+{
+  if(track == TrackingState::AVOIDPLAYER)
+    return "Avoid the Player";
+  else if(track == TrackingState::TOPLAYER)
+    return "To the Player";
+  return "None";
+}
+  
+/*
+ * Description: Returns the enum form of a thing type (string)
+ *
+ * Inputs: std::string type - string representation of the thing type
+ * Output: ThingBase - the enumeration from a string
+ */
+ThingBase Helpers::typeFromStr(const std::string& type)
+{
+  std::string type_up = type;
+  std::transform(type_up.begin(), type_up.end(), type_up.begin(), toupper);
+
+  /* Parse */
+  if(type_up == "THING")
+    return ThingBase::THING;
+  else if(type_up == "ITEM")
+    return ThingBase::ITEM;
+  else if(type_up == "PERSON")
+    return ThingBase::PERSON;
+  else if(type_up == "NPC")
+    return ThingBase::NPC;
+  else if(type_up == "INTERACTIVE")
+    return ThingBase::INTERACTIVE;
+  return ThingBase::ISBASE;
+}
+
+/*
+ * Description: Returns the string form of a thing type (enum)
+ *
+ * Inputs: ThingBase type - enum representation of the thing type
+ * Output: std::string - the enumeration to a string
+ */
+std::string Helpers::typeToStr(const ThingBase& type)
+{
+  if(type == ThingBase::THING)
+    return "Thing";
+  else if(type == ThingBase::ITEM)
+    return "Item";
+  else if(type == ThingBase::PERSON)
+    return "Person";
+  else if(type == ThingBase::NPC)
+    return "NPC";
+  else if(type == ThingBase::INTERACTIVE)
+    return "Interactive";
+  return "None";
+}
 
 std::string Helpers::turnStateToStr(const TurnState& turn_state)
 {

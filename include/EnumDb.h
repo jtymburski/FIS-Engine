@@ -586,9 +586,9 @@ enum class ThingBase : std::uint8_t
  */
 enum class TrackingState
 {
-  NOTRACK,
-  AVOIDPLAYER,
-  TOPLAYER
+  NOTRACK     = 0,
+  AVOIDPLAYER = 1,
+  TOPLAYER    = 2
 };
 
 /*

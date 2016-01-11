@@ -129,9 +129,9 @@ public:
   /* Rolls an X-Sided die S times */
   static int rollXS(const int& x_sides, const int& s_times);
 
-  /*=============================================================================
-   * GRAMMAR FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * GRAMMAR FUNCTIONS
+ *============================================================================*/
 public:
   /* Decides between "a" or "an" */
   static std::string a_An(const std::string& noun);
@@ -200,13 +200,23 @@ public:
   static ItemTier tierFromStr(const std::string& tier);
   static std::string tierToStr(const ItemTier& tier);
 
+  /* Returns the enumerated tracking state to/from string form */
+  static TrackingState trackingFromStr(const std::string& track);
+  static std::string trackingToStr(const TrackingState& track);
+
+  /* Returns the enumerated thing type to/from string form */
+  static ThingBase typeFromStr(const std::string& type);
+  static std::string typeToStr(const ThingBase& type);
+
+  /* Returns the enumerated turn state to string form */
   static std::string turnStateToStr(const TurnState& turn_state);
 
+  /* Returns the enumerated valid status to string form */
   static std::string validStatusToStr(const ValidStatus& valid_status);
 
-  /*=============================================================================
-   * PLAYER / BATTLE HELPER FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PLAYER / BATTLE HELPER FUNCTIONS
+ *============================================================================*/
 public:
   /* Returns the pair of off/def attributes corresponding to an element */
   static std::pair<Attribute, Attribute> elementToStats(const Element& element);
@@ -217,9 +227,9 @@ public:
   /* Returns the elemental weakness to a given element */
   static Element getWeakness(const Element& element);
 
-  /*=============================================================================
-   * GENERAL HELPER FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * GENERAL HELPER FUNCTIONS
+ *============================================================================*/
 public:
   /* Builds an exponentially growing table from min to max with iter
    * iterations */
@@ -260,9 +270,9 @@ public:
   /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string& s);
 
-  /*=============================================================================
-   * GRAPHICAL HELPER FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * GRAPHICAL HELPER FUNCTIONS
+ *============================================================================*/
 public:
   /* Color getting functions for various alpha states */
   static uint8_t calcColorRed(SDL_Color color, uint8_t alpha);
