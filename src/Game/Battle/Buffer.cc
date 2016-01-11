@@ -21,7 +21,7 @@ Buffer::Buffer() : index{0}, sorted{false}, action_buffer{}
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-BufferAction &Buffer::getIndex(const uint32_t &index)
+BufferAction& Buffer::getIndex(const uint32_t& index)
 {
   if(index < action_buffer.size())
     return action_buffer.at(index);
@@ -48,7 +48,7 @@ std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-void Buffer::addDefend(BattleActor *user)
+void Buffer::addDefend(BattleActor* user)
 {
   BufferAction defend_action;
   defend_action.user = user;
@@ -57,19 +57,19 @@ void Buffer::addDefend(BattleActor *user)
 }
 
 /* Adds a guard element to the buffer */
-void Buffer::addGuard(BattleActor *user, BattleActor *target)
+void Buffer::addGuard(BattleActor* user, BattleActor* target)
 {
   BufferAction guard_action;
   guard_action.user = user;
   guard_action.type = ActionType::GUARD;
 
-  std::vector<BattleActor *> target_vec{target};
+  std::vector<BattleActor*> target_vec{target};
   guard_action.targets = target_vec;
   action_buffer.push_back(guard_action);
 }
 
 /* Add an imploding element to the buffer */
-void Buffer::addImplode(BattleActor *user)
+void Buffer::addImplode(BattleActor* user)
 {
   BufferAction implode_action;
   implode_action.user = user;
@@ -78,21 +78,22 @@ void Buffer::addImplode(BattleActor *user)
 }
 
 /* Adds an Item element to the buffer */
-void Buffer::addItem(BattleActor *user, BattleItem *used_item,
-                     std::vector<BattleActor *> targets)
+void Buffer::addItem(BattleActor* user, BattleItem* used_item,
+                     std::vector<BattleActor*> targets)
 {
   BufferAction item_action;
+  item_action.cooldown = 0;
   item_action.user = user;
   item_action.used_item = used_item;
   item_action.type = ActionType::ITEM;
 
-  std::vector<BattleActor *> target_vec{targets};
+  std::vector<BattleActor*> target_vec{targets};
   item_action.targets = target_vec;
   action_buffer.push_back(item_action);
 }
 
 /* Adds a Pass event to the Battle */
-void Buffer::addPass(BattleActor *user, int32_t initial_turn)
+void Buffer::addPass(BattleActor* user, int32_t initial_turn)
 {
   BufferAction pass_action;
   pass_action.user = user;
@@ -102,7 +103,7 @@ void Buffer::addPass(BattleActor *user, int32_t initial_turn)
 }
 
 /* Adds a run element to the buffer */
-void Buffer::addRun(BattleActor *user)
+void Buffer::addRun(BattleActor* user)
 {
   BufferAction run_action;
   run_action.user = user;
@@ -111,8 +112,8 @@ void Buffer::addRun(BattleActor *user)
 }
 
 /* Adds a skill use to the buffer */
-void Buffer::addSkill(BattleActor *user, BattleSkill *used_skill,
-                      std::vector<BattleActor *> targets, uint32_t cooldown,
+void Buffer::addSkill(BattleActor* user, BattleSkill* used_skill,
+                      std::vector<BattleActor*> targets, uint32_t cooldown,
                       uint32_t initial_turn)
 {
   BufferAction skill_action;
@@ -138,10 +139,17 @@ void Buffer::clearForTurn(uint32_t turn_number)
 
   /* Erase remove for all elem's with initial turn matching the given turn # */
   action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
-                                     [&](const BufferAction a) -> bool
+                                     [&](const BufferAction& a) -> bool
                                      {
                                        return (a.initial_turn == turn_number) &&
                                               (a.cooldown < 1);
+                                     }),
+                      end(action_buffer));
+
+  action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
+                                     [&](const BufferAction& a) -> bool
+                                     {
+                                       return a.used_item != nullptr;
                                      }),
                       end(action_buffer));
 
@@ -150,7 +158,7 @@ void Buffer::clearForTurn(uint32_t turn_number)
   sorted = false;
 }
 
-bool Buffer::hasCoolingSkill(BattleActor *check_person)
+bool Buffer::hasCoolingSkill(BattleActor* check_person)
 {
   for(auto element : action_buffer)
     if(element.user == check_person &&
@@ -189,7 +197,7 @@ void Buffer::print(bool simple)
 
   if(!simple)
   {
-    for(const auto &element : action_buffer)
+    for(const auto& element : action_buffer)
     {
       std::cout << "  -- Element -- \n";
       std::cout << "Type: " << Helpers::actionTypeToStr(element.type) << "\n";
@@ -204,7 +212,8 @@ void Buffer::print(bool simple)
         std::cout << "Cooldown: " << element.cooldown << "\n";
         std::cout << "Initial Turn: " << element.initial_turn << "\n";
       }
-      else if(element.type == ActionType::ITEM && element.used_item)
+      else if(element.type == ActionType::ITEM && element.used_item &&
+              element.used_item->item)
       {
         std::cout << "Item: " << element.used_item->item->getName() << "\n";
 
@@ -228,7 +237,7 @@ void Buffer::print(bool simple)
                   << element.user->getStats().getValue(Attribute::MMNT) << "\n";
       }
 
-      for(const auto &target : element.targets)
+      for(const auto& target : element.targets)
         if(target && target->getBasePerson())
           std::cout << "Target: " << target->getBasePerson()->getName() << "\n";
     }
@@ -237,7 +246,7 @@ void Buffer::print(bool simple)
   std::cout << std::endl;
 }
 
-void Buffer::removeAllByUser(BattleActor *user)
+void Buffer::removeAllByUser(BattleActor* user)
 {
   action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
                                      [&](BufferAction x) -> bool
@@ -255,7 +264,7 @@ void Buffer::removeAllByUser(BattleActor *user)
 
 void Buffer::updateCooldowns()
 {
-  for(auto &element : action_buffer)
+  for(auto& element : action_buffer)
     if(element.cooldown != 0)
       --element.cooldown;
 }
@@ -276,7 +285,7 @@ int32_t Buffer::getCooldown()
   return -1;
 }
 
-BattleActor *Buffer::getUser()
+BattleActor* Buffer::getUser()
 {
   if(index < action_buffer.size())
     return getIndex(index).user;
@@ -284,7 +293,7 @@ BattleActor *Buffer::getUser()
   return nullptr;
 }
 
-BattleSkill *Buffer::getSkill()
+BattleSkill* Buffer::getSkill()
 {
   if(index < action_buffer.size())
     return getIndex(index).used_skill;
@@ -292,7 +301,7 @@ BattleSkill *Buffer::getSkill()
   return nullptr;
 }
 
-BattleItem *Buffer::getItem()
+BattleItem* Buffer::getItem()
 {
   if(index < action_buffer.size())
     return getIndex(index).used_item;
@@ -308,7 +317,7 @@ int32_t Buffer::getInitialTurn()
   return -1;
 }
 
-std::vector<BattleActor *> Buffer::getTargets()
+std::vector<BattleActor*> Buffer::getTargets()
 {
   if(index < action_buffer.size())
     return getIndex(index).targets;
@@ -353,14 +362,14 @@ void Buffer::reorder()
    * Sorting takes place by the value of the integer equiv. ActionType enum
    */
   std::sort(begin(action_buffer), end(action_buffer),
-            [&](const BufferAction &a, const BufferAction &b) -> bool
+            [&](const BufferAction& a, const BufferAction& b) -> bool
             {
               return (static_cast<uint16_t>(a.type) <
                       static_cast<uint16_t>(b.type));
             });
 
   std::sort(begin(action_buffer), end(action_buffer),
-            [&](const BufferAction &a, const BufferAction &b) -> bool
+            [&](const BufferAction& a, const BufferAction& b) -> bool
             {
 
               return (a.user->getStats().getValue(Attribute::MMNT) >=

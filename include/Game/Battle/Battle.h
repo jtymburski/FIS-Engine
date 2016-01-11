@@ -236,10 +236,6 @@ private:
   void actionStateSkillMiss();
   void actionStateActionStart();
 
-  /* Pass methods for ActionState of outer BattleEvent loop */
-  void actionStatePassBob();
-  void actionStateEndBob();
-
   /* Adds a delay amount for processing relative to the current speed setting */
   void addDelay(int32_t delay_amount);
 
@@ -308,7 +304,17 @@ private:
 
   /* Process Event methods -> ex. DAMAGE actions for a Skill etc. */
   void processEvent();
+
+  /* Processes an action against a target */
+  void processEventAction(Action* curr_action, BattleActor* target);
+
+  /* Processes an item on the buffer */
+  void processEventItem();
+
+  /* Processes a Skill on the buffer */
   void processEventSkill();
+
+  /* Processes a given infliction onto the given BattleActor */
   void processInfliction(BattleActor* target, Infliction type);
 
   /* Update the begin step of the Battle */

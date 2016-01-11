@@ -18,14 +18,13 @@
 *
 * TODO
 * ----
-* [08-13-14] Skill construction from XML Data
 *******************************************************************************/
 #ifndef SKILL_H
 #define SKILL_H
 
 #include "Game/Player/Action.h"
-#include "Sound.h"
-#include "Sprite.h"
+#include "XmlData.h"
+#include "Frame.h"
 
 /* SkillFlags enumerated flags for classification of skill types */
 ENUM_FLAGS(SkillFlags)

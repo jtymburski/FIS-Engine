@@ -29,12 +29,9 @@ const float BattleMenu::kBIGBAR_M1{0.1};
 const float BattleMenu::kBIGBAR_M2{0.3};
 const uint16_t BattleMenu::kBIGBAR_OFFSET{88};
 const uint16_t BattleMenu::kBIGBAR_R_OFFSET{25};
-
 const uint8_t BattleMenu::kMENU_SEPARATOR_B{8};
 const uint8_t BattleMenu::kMENU_SEPARATOR_T{12};
-
 const uint8_t BattleMenu::kSCROLL_R{2};
-
 const uint8_t BattleMenu::kSKILL_BORDER{10};
 const uint8_t BattleMenu::kSKILL_BORDER_WIDTH{1};
 const uint8_t BattleMenu::kSKILL_DESC_GAP{10};
@@ -46,13 +43,12 @@ const uint8_t BattleMenu::kSKILL_QD_GAP{15};
 const uint8_t BattleMenu::kSKILL_SEP{5};
 const uint8_t BattleMenu::kSKILL_SUCCESS{20};
 const uint8_t BattleMenu::kSKILL_TIME_GAP{18};
-
 const uint8_t BattleMenu::kTYPE_MARGIN{7};
 const uint8_t BattleMenu::kTYPE_MAX{5};
 const uint8_t BattleMenu::kTYPE_SELECT{3};
-
 const uint16_t BattleMenu::kINFO_W{180};
 
+/* Text Colors */
 const SDL_Color BattleMenu::kTEXT_STANDARD{255, 255, 255, 255};
 const SDL_Color BattleMenu::kTEXT_INVALID{100, 100, 100, 255};
 const SDL_Color BattleMenu::kTEXT_PRICEY{200, 100, 100, 255};
@@ -1202,7 +1198,7 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
   for(auto& battle_item : valid_battle_items)
   {
     auto item = battle_item->item;
-    auto use_skill = item->getUseSkill();
+    //TODO auto use_skill = item->getUseSkill();
 
     frames_item_name.push_back(new Frame());
     frames_item_info.push_back(new Frame());

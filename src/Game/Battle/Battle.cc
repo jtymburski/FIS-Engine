@@ -214,7 +214,7 @@ void Battle::actionStateFadeInText()
     event->action_state = ActionState::SLIDE_OUT;
   }
 
-  addDelay(350);
+  addDelay(400);
 }
 
 void Battle::actionStateSlideOut()
@@ -228,21 +228,16 @@ void Battle::actionStateSlideOut()
 
 void Battle::actionStateSwitchSprite()
 {
-  auto skill_hit_status = event->doesSkillHit();
-  event->action_state = ActionState::ACTION_START;
+    auto skill_hit_status = event->doesSkillHit();
 
-  if(skill_hit_status == SkillHitStatus::HIT)
-  {
-    std::cout << "SkillHit is a HIT!" << std::endl;
-    processEventSkill();
-  }
-  else
-  {
-    std::cout << "SkillHit is NOT a hit." << std::endl;
-    event->action_state = ActionState::SKILL_MISS;
-  }
+    if(skill_hit_status == SkillHitStatus::HIT)
+      processEventSkill();
+    else
+      event->action_state = ActionState::SKILL_MISS;
 
-  addDelay(200);
+    event->action_state = ActionState::ACTION_START;
+
+    addDelay(200);
 }
 
 /* Create the fading-in action text */
@@ -295,20 +290,6 @@ void Battle::actionStateActionStart()
   }
 }
 
-void Battle::actionStatePassBob()
-{
-  std::cout << "Starting pass" << std::endl;
-  addDelay(400);
-
-  event->action_state = ActionState::END_BOB;
-}
-
-void Battle::actionStateEndBob()
-{
-  std::cout << "Ending pass" << std::endl;
-  addDelay(300);
-}
-
 void Battle::addDelay(int32_t delay_amount)
 {
   if(delay_amount > 0)
@@ -336,9 +317,30 @@ bool Battle::bufferMenuSelection()
       auto true_cost = skill->true_cost;
       auto curr_qd = actor->getStats().getValue(Attribute::QTDR);
 
+      /* Have the actor pay the required QD */
       actor->getStats().setBaseValue(Attribute::QTDR, curr_qd - true_cost);
+
+      /* Buffer the skill selection */
       battle_buffer->addSkill(actor, skill, targets, cooldown, turns_elapsed);
     }
+  }
+  else if(success && action_type == ActionType::ITEM)
+  {
+    auto battle_item = battle_menu->getSelectedBattleItem();
+
+    if(battle_item && battle_item->item)
+    {
+      /* Grab the item and the item's Game ID */
+      auto item = battle_item->item;
+      auto item_id = item->getGameID();
+
+      /* Remove an item from the inventory */
+      success &= party_allies->getInventory()->removeID(item_id);
+
+      /* Buffer the Item selection */
+      battle_buffer->addItem(actor, battle_item, targets);
+    }
+
   }
   else if(success && action_type == ActionType::PASS)
   {
@@ -615,6 +617,7 @@ void Battle::loadBattleEvent()
       event->event_item = battle_buffer->getItem();
 
     battle_buffer->setStarted();
+
   }
 }
 
@@ -672,7 +675,7 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE) ||
      event->getCurrAction()->actionFlag(ActionFlags::ALTER))
   {
-    auto skill = event->event_skill->skill;
+    auto skill = event->getCurrSkill();
     auto element = new RenderElement(renderer, skill->getAnimationPath(),
                                      skill->getAnimationFrames(),
                                      skill->getAnimationTime(), 1, {x, y});
@@ -914,7 +917,7 @@ void Battle::updateDelay(int32_t decrement_delay)
 /* Update the current Buffer element */
 void Battle::updateEvent()
 {
-  if(event->action_type == ActionType::SKILL)
+  if(event->action_type == ActionType::SKILL || event->action_type == ActionType::ITEM)
   {
     if(event->action_state == ActionState::BEGIN)
       actionStateBegin();
@@ -933,14 +936,14 @@ void Battle::updateEvent()
   }
   else if(event->action_type == ActionType::PASS)
   {
-    if(event->action_state == ActionState::BEGIN)
-      actionStatePassBob();
-    else if(event->action_state == ActionState::END_BOB)
-    {
-      actionStateEndBob();
       event->action_state = ActionState::DONE;
-    }
   }
+}
+
+void Battle::processEventItem()
+{
+  //TODO: Do the same thing?
+  processEventSkill();
 }
 
 void Battle::processEventSkill()
@@ -950,63 +953,64 @@ void Battle::processEventSkill()
 
   if(curr_action)
   {
-
     for(auto& target : event->actor_targets)
+      processEventAction(curr_action, target);
+  }
+}
+
+void Battle::processEventAction(Action* curr_action, BattleActor* target)
+{
+  ActorOutcome outcome;
+  outcome.actor = target;
+
+  auto action_hits = event->doesActionHit(target);
+
+  if(action_hits)
+  {
+    // std::cout << "Action Hits!" << std::endl;
+    if(curr_action->actionFlag(ActionFlags::DAMAGE))
     {
-      assert(target);
-      ActorOutcome outcome;
-      outcome.actor = target;
+      outcome.critical = event->doesActionCrit(target);
 
-      auto action_hits = event->doesActionHit(target);
+      float crit_factor = 1.00;
 
-      if(action_hits)
-      {
-        // std::cout << "Action Hits!" << std::endl;
-        if(curr_action->actionFlag(ActionFlags::DAMAGE))
-        {
-          outcome.critical = event->doesActionCrit(target);
+      if(outcome.critical)
+        crit_factor = event->calcCritFactor(target);
 
-          float crit_factor = 1.00;
+      outcome.damage = event->calcDamage(target, crit_factor);
+      outcome.actor_outcome_state = ActionState::PLEP;
+    }
+    else if(curr_action->actionFlag(ActionFlags::INFLICT))
+    {
+      auto type = curr_action->getAilment();
 
-          if(outcome.critical)
-            crit_factor = event->calcCritFactor(target);
+      outcome.infliction_type = curr_action->getAilment();
 
-          outcome.damage = event->calcDamage(target, crit_factor);
-          outcome.actor_outcome_state = ActionState::PLEP;
-        }
-        else if(curr_action->actionFlag(ActionFlags::INFLICT))
-        {
-          auto type = curr_action->getAilment();
+      if(outcome.actor->isInflicted(type))
+        outcome.infliction_status = InflictionStatus::ALREADY_INFLICTED;
+      else if(outcome.actor->isImmune(type))
+        outcome.infliction_status = InflictionStatus::IMMUNE;
 
-          outcome.infliction_type = curr_action->getAilment();
-
-          if(outcome.actor->isInflicted(type))
-            outcome.infliction_status = InflictionStatus::ALREADY_INFLICTED;
-          else if(outcome.actor->isImmune(type))
-            outcome.infliction_status = InflictionStatus::IMMUNE;
-
-          outcome.infliction_status = InflictionStatus::INFLICTION;
-          outcome.actor_outcome_state = ActionState::PLEP;
-        }
-        else if(curr_action->actionFlag(ActionFlags::ALTER))
-        {
-          std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
-          outcome.damage = event->calcAltering(target);
-          outcome.actor_outcome_state = ActionState::PLEP;
-        }
-      }
-      else
-      {
-        outcome.damage = 0;
-        outcome.actor_outcome_state = ActionState::ACTION_MISS;
-
-        if(curr_action->actionFlag(ActionFlags::INFLICT))
-          outcome.actor_outcome_state = ActionState::INFLICTION_MISS;
-      }
-
-      event->actor_outcomes.push_back(outcome);
+      outcome.infliction_status = InflictionStatus::INFLICTION;
+      outcome.actor_outcome_state = ActionState::PLEP;
+    }
+    else if(curr_action->actionFlag(ActionFlags::ALTER))
+    {
+      std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
+      outcome.damage = event->calcAltering(target);
+      outcome.actor_outcome_state = ActionState::PLEP;
     }
   }
+  else
+  {
+    outcome.damage = 0;
+    outcome.actor_outcome_state = ActionState::ACTION_MISS;
+
+    if(curr_action->actionFlag(ActionFlags::INFLICT))
+      outcome.actor_outcome_state = ActionState::INFLICTION_MISS;
+  }
+
+  event->actor_outcomes.push_back(outcome);
 }
 
 void Battle::processInfliction(BattleActor* target, Infliction type)
@@ -1055,7 +1059,27 @@ void Battle::updateFadeInText()
   auto font = config->getFontTTF(FontName::BATTLE_TURN);
   auto element = new RenderElement(renderer, font);
 
-  element->createAsEnterText("Only Hit The Bad Guys", config->getScreenHeight(),
+  std::string turn_text = "";
+  uint32_t random = Helpers::randU(1, 100);
+
+  if(random == 2)
+    turn_text = "Just Run Away";
+  else if(random == 3)
+    turn_text = "Did You Turn The Oven Off";
+  else if(random == 4)
+    turn_text = "Choose Your Fate";
+  else if(random == 5)
+    turn_text = "Pick Your Fate";
+  else if(random == 6)
+    turn_text = "Embrace Your Fate";
+  else if(random == 7)
+    turn_text = "Destroy";
+  else if(random == 8)
+    turn_text = "Where Is Mr. Boopster";
+  else
+    turn_text = "Decide Your Fate";
+
+  element->createAsEnterText(turn_text, config->getScreenHeight(),
                              config->getScreenWidth());
   render_elements.push_back(element);
   addDelay(1700);
@@ -1122,11 +1146,6 @@ void Battle::updateOutcome()
             auto max_qtdr =
                 (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
             auto curr_qtdr = ally->getStats().getBaseValue(Attribute::QTDR);
-
-            std::cout << "Max Person Health: " << max_health << std::endl;
-            std::cout << "Curr Health: " << curr_health << std::endl;
-            std::cout << "Max Person Qtdr: " << max_qtdr << std::endl;
-            std::cout << "Curr qtdr: " << curr_qtdr << std::endl;
 
             if(curr_health <= max_health)
               base->getCurr().setStat(Attribute::VITA, curr_health);
@@ -1270,7 +1289,6 @@ void Battle::updateProcessing()
   /* Check if the current event is finished processing */
   if(event && event->action_state == ActionState::DONE)
   {
-    std::cout << "Setting the Buffer index to be processed" << std::endl;
     battle_buffer->setProcessed();
 
     if(event->actor && event->actor->getFlag(ActorState::ALLY))
@@ -1360,8 +1378,8 @@ void Battle::updateUserSelection()
       /* If confused -> put in a random selection, else allow selection */
       if(next_actor->getFlag(ActorState::SELECTION_RANDOM))
       {
-        std::cout << " Attempting to choose a a random action for actor: "
-                  << next_actor->getBasePerson()->getName() << "." << std::endl;
+        // std::cout << " Attempting to choose a a random action for actor: "
+        //           << next_actor->getBasePerson()->getName() << "." << std::endl;
 
         auto next_module = getModuleOfActor(next_actor);
         next_module->resetForNewTurn(next_actor);
@@ -1921,7 +1939,6 @@ void Battle::playInflictionSound(Infliction type)
   }
   else if(type == Infliction::SILENCE)
   {
-    std::cout << "Playing silence sound. " << std::endl;
     event_handler->triggerSound(Sound::kID_SOUND_BTL_SILENCE,
                                 SoundChannels::TRIGGERS);
   }

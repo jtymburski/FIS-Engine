@@ -398,8 +398,10 @@ void BattleEvent::updateStats()
 
 std::string BattleEvent::getActionName()
 {
-  if(action_type == ActionType::SKILL && event_skill)
-    return event_skill->skill->getName();
+  auto curr_skill = getCurrSkill();
+
+  if(curr_skill)
+    return curr_skill->getName();
 
   return "";
 }

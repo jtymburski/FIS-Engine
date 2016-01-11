@@ -221,8 +221,8 @@ void TestBattle::buildBattleDisplay(SDL_Renderer *renderer)
   getSkill(1041)->setAnimationTime(60);
 
   getSkill(1042)
-      ->setAnimationPath(base_path + "sprites/Battle/Pleps/upgradeplep_AA_A");
-  getSkill(1042)->setAnimationFrames(16);
+      ->setAnimationPath(base_path + "sprites/Battle/Pleps/basicplep_AA_A");
+  getSkill(1042)->setAnimationFrames(3);
   getSkill(1042)->setAnimationTime(70);
 
   getSkill(1043)
@@ -1069,12 +1069,15 @@ void TestBattle::createSkills()
   enrich->setFlag(SkillFlags::HEALING);
   skills.push_back(enrich);
 
-  Skill *rock_skill = new Skill(1042, "Rock Skill", ActionScope::ONE_TARGET,
+  Skill *rock_skill = new Skill(1042, "Rock", ActionScope::ONE_TARGET,
                                 act_dmg[8], 100, 5);
+  rock_skill->setPrimary(Element::PHYSICAL);
+  rock_skill->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(rock_skill);
 
+
   Skill *medkit_skill =
-      new Skill(1043, "Medkit Skill", ActionScope::USER, act_alt[0], 100, 5);
+      new Skill(1043, "Medkit", ActionScope::USER, act_alt[0], 100, 5);
   skills.push_back(medkit_skill);
 }
 
