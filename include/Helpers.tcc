@@ -97,7 +97,7 @@ struct CompItemFirst
   template<class T>
   bool operator()(const T &a, const T &b) const
   {
-    return (a.used_item != nullptr && b.used_item == nullptr);
+    return (a.owned_item != nullptr && b.owned_item == nullptr);
   }
 };
 

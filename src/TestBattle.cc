@@ -1070,7 +1070,7 @@ void TestBattle::createSkills()
   skills.push_back(enrich);
 
   Skill *rock_skill = new Skill(1042, "Rock", ActionScope::ONE_TARGET,
-                                act_dmg[8], 100, 5);
+                                act_dmg[5], 100, 5);
   rock_skill->setPrimary(Element::PHYSICAL);
   rock_skill->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(rock_skill);
@@ -1088,6 +1088,7 @@ void TestBattle::createItems()
 
   rock = new Item(5001, "Rock", 100, nullptr, 0.0);
   rock->setDescription("Destroy your enemies with a magical rock.");
+  rock->setOccasion(ActionOccasion::BATTLE);
 
   if(!getSkill(1043))
     std::cout << "Medkit skill 1043 invalid" << std::endl;
@@ -1097,7 +1098,7 @@ void TestBattle::createItems()
 
   medkit = new Item(5002, "Medkit", 150, nullptr, 0.0);
   medkit->setDescription("HEALS ALL OF YOUR HEALTH WOOHOO.");
-
+  medkit->setOccasion(ActionOccasion::BATTLE);
   medkit->setUseSkill(getSkill(1043));
   medkit->setFlag(ItemFlags::CONSUMED, true);
   medkit->setFlag(ItemFlags::HEALING_ITEM, true);
@@ -1105,8 +1106,8 @@ void TestBattle::createItems()
   non_base_rock = new Item(rock);
   non_base_medkit = new Item(medkit);
 
-  a_inv->add(non_base_rock, 5);
-  a_inv->add(non_base_medkit, 5);
+  a_inv->add(non_base_rock, 3);
+  a_inv->add(non_base_medkit, 1);
 }
 
 void TestBattle::deleteItems()

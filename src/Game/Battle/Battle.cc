@@ -334,13 +334,13 @@ bool Battle::bufferMenuSelection()
       auto item = battle_item->item;
       auto item_id = item->getGameID();
 
-      /* Remove an item from the inventory */
+      /* Buffer the Item selection and transfer ownership of Item memory */
+      battle_buffer->addItem(actor, battle_item, targets);
+
+      /* Remove the item from the inventory after use */
       success &= party_allies->getInventory()->removeID(item_id);
 
-      /* Buffer the Item selection */
-      battle_buffer->addItem(actor, battle_item, targets);
     }
-
   }
   else if(success && action_type == ActionType::PASS)
   {
@@ -570,8 +570,8 @@ bool Battle::isBufferElementValid()
 
         if(skill && skill->skill)
           buffer_scope = skill->skill->getScope();
-        else if(item && item->item && item->item->getUseSkill())
-          buffer_scope = item->item->getUseSkill()->getScope();
+        else if(item && item->getUseSkill())
+          buffer_scope = item->getUseSkill()->getScope();
 
         if(buffer_scope == ActionScope::ALL_ALLIES_KO ||
            buffer_scope == ActionScope::ONE_ALLY_KO)
@@ -617,7 +617,6 @@ void Battle::loadBattleEvent()
       event->event_item = battle_buffer->getItem();
 
     battle_buffer->setStarted();
-
   }
 }
 
@@ -628,6 +627,7 @@ bool Battle::loadMenuForActor(BattleActor* actor)
 
   if(success && party_allies)
   {
+    std::cout << "Building battle items for player!" << std::endl;
     success &= actor->buildBattleItems(party_allies->getInventory(), actors);
 
     for(auto& battle_item : actor->getBattleItems())
@@ -639,6 +639,7 @@ bool Battle::loadMenuForActor(BattleActor* actor)
 
     if(success)
     {
+      std::cout << "Clearing the menu for a new actor." << std::endl;
       battle_menu->clear();
 
       success &= battle_menu->setActor(actor);
@@ -855,8 +856,9 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
 
   if(success && party_enemies)
   {
-    success &=
-        next_actor->buildBattleItems(party_enemies->getInventory(), actors);
+    //TODO: Enemy items probably broken.
+    // success &=
+    //     next_actor->buildBattleItems(party_enemies->getInventory(), actors);
     success &= next_actor->buildBattleSkills(actors);
 
     std::cout << "----- Enemy Valid Battle Skills ----- " << std::endl;
@@ -865,7 +867,7 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
     for(auto battle_skill : battle_skills)
       battle_skill->print();
 
-    curr_module->setItems(next_actor->getBattleItems());
+    // curr_module->setItems(next_actor->getBattleItems());
     curr_module->setSkills(next_actor->getBattleSkills());
     curr_module->calculateAction();
     curr_module->calculateTargets();
@@ -1076,6 +1078,10 @@ void Battle::updateFadeInText()
     turn_text = "Destroy";
   else if(random == 8)
     turn_text = "Where Is Mr. Boopster";
+  else if(random == 9)
+    turn_text = "Bearly Even Difficult";
+  else if(random == 10)
+    turn_text = "Eat Your Fate Cookies";
   else
     turn_text = "Decide Your Fate";
 
@@ -1289,6 +1295,10 @@ void Battle::updateProcessing()
   /* Check if the current event is finished processing */
   if(event && event->action_state == ActionState::DONE)
   {
+    /* Clear the item memory if the action type completed was an item */
+    if(battle_buffer->getActionType() == ActionType::ITEM)
+      battle_buffer->clearItem();
+
     battle_buffer->setProcessed();
 
     if(event->actor && event->actor->getFlag(ActorState::ALLY))
@@ -3151,81 +3161,6 @@ bool Battle::update(int32_t cycle_time)
 //   }
 
 //   return run_happens;
-// }
-
-//     else if(event->type == EventType::ALTERATION)
-//     {
-//       auto target_attr = event->action_use->getTargetAttribute();
-//       auto amount = event->amount;
-
-//       /* Perform the alteration on the target */
-//       event->targets.at(0)->getCurr().alterStat(target_attr, amount);
-//     }
-//     else if(event->type == EventType::ASSIGNMENT)
-//     {
-//       /* Assign event takes the attribute of the action use of the event
-//       and
-//        * assigns it the value of the event's amount */
-//       auto assign_attr = event->action_use->getTargetAttribute();
-//       auto amount = event->amount;
-
-//       // TODO: Why change temp/curr stats assignment?
-//       //  if (base_pc)
-//       // ction_target->getCurr().setStat(targ_attr, set_value);
-//       // else
-//       //   action_target->getTemp().setStat(targ_attr, set_value);
-//       event->targets.at(0)->getCurr().setStat(assign_attr, amount);
-//     }
-//     else if(event->type == EventType::REVIVAL)
-//     {
-//       /* A revive event contains a target to be revived (which needs their
-//        * alive flag to be reset) and an amount of VITA to assign their curr
-//        * VITA to */
-//       event->targets.at(0)->setBFlag(BState::ALIVE, true);
-//       curr_target->getCurr().setStat(Attribute::VITA, event->amount);
-//     }
-//     else if(event->type == EventType::HEAL_HEALTH)
-//     {
-//       if(event->targets.size() > 0 && event->targets.at(0))
-//       {
-//         auto new_val =
-//             event->targets.at(0)->getCurr().getStat(Attribute::VITA) +
-//             event->amount;
-
-//         event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
-//       }
-//     }
-//     else if(event->type == EventType::REGEN_VITA ||
-//             event->type == EventType::HIBERNATION)
-//     {
-//       auto new_val =
-//       event->targets.at(0)->getCurr().getStat(Attribute::VITA)
-//       +
-//                      event->amount;
-
-//       event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
-//     }
-//     else if(event->type == EventType::REGEN_QTDR)
-//     {
-//       auto new_val =
-//       event->targets.at(0)->getCurr().getStat(Attribute::QTDR)
-//       +
-//                      event->amount;
-
-//       event->targets.at(0)->getCurr().setStat(Attribute::QTDR, new_val);
-//     }
-//     /* Deathtimer death -> the countdown has reached zero and the target
-//     will
-//      * instantly be killed */
-//     else if(event->type == EventType::DEATHTIMER_DEATH)
-//     {
-//       event->targets.at(0)->getCurr().setStat(Attribute::VITA, 0);
-//       event->targets.at(0)->setBFlag(BState::ALIVE, false);
-//     }
-
-//     event_buffer->setPerformed(index);
-//     valid_next = event_buffer->setNextIndex();
-//   }
 // }
 
 // bool Battle::processAlterAction(BattleEvent* alter_event, Person*

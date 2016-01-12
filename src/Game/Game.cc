@@ -49,8 +49,8 @@
  * CONSTANTS
  *============================================================================*/
 
-//const uint32_t Game::kSTARTING_MAP = 0;
-//const std::string Game::kSTARTING_PATH = "maps/Univursa.ugv";
+// const uint32_t Game::kSTARTING_MAP = 0;
+// const std::string Game::kSTARTING_PATH = "maps/Univursa.ugv";
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -367,10 +367,9 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 }
 
 /* The property modifier event */
-void Game::eventPropMod(MapThing* source, ThingBase type, int id, 
-                        ThingProperty props, ThingProperty bools,
-                        int respawn, int speed, TrackingState track,
-                        int inactive)
+void Game::eventPropMod(MapThing* source, ThingBase type, int id,
+                        ThingProperty props, ThingProperty bools, int respawn,
+                        int speed, TrackingState track, int inactive)
 {
   map_ctrl.modifyThing(source, type, id, props, bools, respawn, speed, track,
                        inactive);
@@ -380,7 +379,7 @@ void Game::eventPropMod(MapThing* source, ThingBase type, int id,
 bool Game::eventStartBattle(int person_id, int source_id)
 {
   if(person_id >= 0 && source_id >= 0 && mode == BATTLE)
-     //MAP && mode_next == NONE)
+  // MAP && mode_next == NONE)
   {
     if(battle_ctrl)
     {
@@ -394,7 +393,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
       // TODO: Why is it seg faulting?
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
 
-      //changeMode(BATTLE);
+      // changeMode(BATTLE);
       return true;
     }
   }
@@ -446,7 +445,7 @@ int Game::eventTakeItem(int id, int count)
         /* Notify about removal */
         Item* found_item = getItem(id);
         if(found_item != nullptr)
-           map_ctrl.initNotification(found_item->getThumb(), -remove_count);
+          map_ctrl.initNotification(found_item->getThumb(), -remove_count);
       }
       else
       {
@@ -522,7 +521,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   unload(full_load);
 
   /* Loading trigger */
-  //changeMode(LOADING); // TODO: Keep or Remove
+  // changeMode(LOADING); // TODO: Keep or Remove
 
   /* Initial set-up */
   if(full_load)
@@ -537,8 +536,9 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   std::string type = " - SUB";
   if(full_load)
     type = " - FULL";
-  std::cout << "--" << std::endl << "Game Load: " << fh.getDate() << type
-            << std::endl << "--" << std::endl;
+  std::cout << "--" << std::endl
+            << "Game Load: " << fh.getDate() << type << std::endl
+            << "--" << std::endl;
 
   Timer t;
   /* If file open was successful, move forward */
@@ -845,8 +845,8 @@ void Game::pollEvents()
         BattleFlags flags;
         MapPerson* person;
         MapThing* source;
-        if(event_handler.pollStartBattle(&person, &source, flags,
-                                         event_win, event_lose))
+        if(event_handler.pollStartBattle(&person, &source, flags, event_win,
+                                         event_lose))
         {
           if(person != nullptr && getParty(Party::kID_SLEUTH) != nullptr &&
              source != nullptr && getParty(source->getGameID()) != nullptr)
@@ -1120,9 +1120,9 @@ void Game::enableView(bool enable)
   else
     changeMode(DISABLED);
 
-  //if(enable && isLoadedCore() && isLoadedSub())
+  // if(enable && isLoadedCore() && isLoadedSub())
   //  changeMode(MAP);
-  //else
+  // else
   //  changeMode(DISABLED);
 }
 
@@ -1349,7 +1349,7 @@ Game::GameMode Game::getMode()
 }
 
 /* Is the game loaded */
-//bool Game::isLoaded()
+// bool Game::isLoaded()
 //{
 //  return loaded;
 //}
@@ -1415,6 +1415,42 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     //                      cost_modifiers, "Kevin's Store", false);
     //}
   }
+  /* Level Up Key */
+  else if(event.keysym.sym == SDLK_F7)
+  {
+    if(player_main && player_main->getSleuth())
+    {
+      auto player_person = player_main->getSleuth()->getMember(0);
+
+      if(player_person && player_person->getLevel() > 1)
+      {
+        auto new_level = player_person->getLevel() - 1;
+        player_person->loseExp(player_person->getTotalExp());
+        player_person->addExp(player_person->getExpAt(new_level));
+        std::cout << "[DEBUG] Setting player level to: "
+                  << player_person->getLevel() << std::endl;
+      }
+    }
+  }
+  /* Level Up Key */
+  else if(event.keysym.sym == SDLK_F8)
+  {
+    if(player_main && player_main->getSleuth())
+    {
+      auto player_person = player_main->getSleuth()->getMember(0);
+
+      if(player_person)
+      {
+        auto new_level = player_person->getLevel() + 1;
+        player_person->loseExp(player_person->getTotalExp());
+        player_person->addExp(
+            player_person->getExpAt(new_level));
+        std::cout << "[DEBUG] Setting player level to: "
+                  << player_person->getLevel() << std::endl;
+      }
+    }
+  }
+
   /* Otherwise, send keys to the active view */
   else
   {
@@ -1581,7 +1617,7 @@ void Game::setSoundHandler(SoundHandler* new_handler)
 /* Unload the game - full unload = false will only unload map*/
 void Game::unload(bool full_unload)
 {
-  //changeMode(DISABLED);
+  // changeMode(DISABLED);
 
   /* Unload map */
   event_handler.pollClear();
@@ -1613,7 +1649,7 @@ bool Game::update(int32_t cycle_time)
   ++ticks_total;
 
   /* Poll System Events */
-  //pollEvents();
+  // pollEvents();
 
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
@@ -1632,7 +1668,7 @@ bool Game::update(int32_t cycle_time)
     if(map_ctrl.isBattleReady())
       changeMode(BATTLE);
 
-    //eventStartBattle(Party::kID_SLEUTH, map_ctrl.getBattleThingID());
+    // eventStartBattle(Party::kID_SLEUTH, map_ctrl.getBattleThingID());
     return map_ctrl.update(cycle_time);
   }
   /* BATTLE MODE */

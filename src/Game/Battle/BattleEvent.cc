@@ -420,8 +420,8 @@ Skill* BattleEvent::getCurrSkill()
 {
   if(action_type == ActionType::SKILL && event_skill)
     return event_skill->skill;
-  if(action_type == ActionType::ITEM && event_item && event_item->item)
-    return event_item->item->getUseSkill();
+  if(action_type == ActionType::ITEM && event_item)
+    return event_item->getUseSkill();
 
   return nullptr;
 }
@@ -920,15 +920,15 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
 
   base_damage = 0.75 * (attack_power * (1 - defense_modifier));
 
-#ifdef UDEBUG
-  std::cout << "=========== Damage Calculations ============" << std::endl;
-  std::cout << "Base User Pow: " << base_user_pow << std::endl;
-  std::cout << "Base User Def: " << base_targ_def << std::endl;
-  std::cout << "Attack Mod: " << attack_modifier << std::endl;
-  std::cout << "Attack Pow: " << action_power << std::endl;
-  std::cout << "Defens Mod: " << defense_modifier << std::endl;
-  std::cout << "Bas Damage: " << base_damage << std::endl;
-#endif
+// #ifdef UDEBUG
+//   std::cout << "=========== Damage Calculations ============" << std::endl;
+//   std::cout << "Base User Pow: " << base_user_pow << std::endl;
+//   std::cout << "Base User Def: " << base_targ_def << std::endl;
+//   std::cout << "Attack Mod: " << attack_modifier << std::endl;
+//   std::cout << "Attack Pow: " << action_power << std::endl;
+//   std::cout << "Defens Mod: " << defense_modifier << std::endl;
+//   std::cout << "Bas Damage: " << base_damage << std::endl;
+// #endif
 
   // TODO[11-03-15] Other guarding state factors
   if(curr_target->getGuardingState() == GuardingState::DEFENDING)

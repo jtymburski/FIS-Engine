@@ -84,8 +84,14 @@ void Buffer::addItem(BattleActor* user, BattleItem* used_item,
   BufferAction item_action;
   item_action.cooldown = 0;
   item_action.user = user;
-  item_action.used_item = used_item;
   item_action.type = ActionType::ITEM;
+
+  /* Create a copy of the item since it'll be removed from the inventory */
+  if(used_item && used_item->item)
+  {
+    std::cout << "Creating a new owned item." << std::endl;
+    item_action.owned_item = new Item(used_item->item);
+  }
 
   std::vector<BattleActor*> target_vec{targets};
   item_action.targets = target_vec;
@@ -133,10 +139,22 @@ void Buffer::clear()
   index = 0;
 }
 
+void Buffer::clearItem()
+{
+  if(index < action_buffer.size())
+  {
+    if(getIndex(index).owned_item)
+    {
+      auto owned_item = getIndex(index).owned_item;
+      std::cout << "Deleting an owned item. " << std::endl;
+      delete owned_item;
+      owned_item = nullptr;
+    }
+  }
+}
+
 void Buffer::clearForTurn(uint32_t turn_number)
 {
-  // TODO: This should remove all elements which have been performed?
-
   /* Erase remove for all elem's with initial turn matching the given turn # */
   action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
                                      [&](const BufferAction& a) -> bool
@@ -149,7 +167,7 @@ void Buffer::clearForTurn(uint32_t turn_number)
   action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
                                      [&](const BufferAction& a) -> bool
                                      {
-                                       return a.used_item != nullptr;
+                                       return a.type == ActionType::ITEM;
                                      }),
                       end(action_buffer));
 
@@ -212,19 +230,17 @@ void Buffer::print(bool simple)
         std::cout << "Cooldown: " << element.cooldown << "\n";
         std::cout << "Initial Turn: " << element.initial_turn << "\n";
       }
-      else if(element.type == ActionType::ITEM && element.used_item &&
-              element.used_item->item)
+      else if(element.type == ActionType::ITEM && element.owned_item)
       {
-        std::cout << "Item: " << element.used_item->item->getName() << "\n";
+        std::cout << "Item: " << element.owned_item->getName() << "\n";
 
-        if(element.used_item->item->getUseSkill())
+        if(element.owned_item->getUseSkill())
         {
           std::cout << "Item Skill: "
-                    << element.used_item->item->getUseSkill()->getName()
-                    << "\n";
+                    << element.owned_item->getUseSkill()->getName() << "\n";
           std::cout << "Scope: "
                     << Helpers::actionScopeToStr(
-                           element.used_item->item->getUseSkill()->getScope())
+                           element.owned_item->getUseSkill()->getScope())
                     << "\n";
         }
       }
@@ -301,10 +317,10 @@ BattleSkill* Buffer::getSkill()
   return nullptr;
 }
 
-BattleItem* Buffer::getItem()
+Item* Buffer::getItem()
 {
   if(index < action_buffer.size())
-    return getIndex(index).used_item;
+    return getIndex(index).owned_item;
 
   return nullptr;
 }

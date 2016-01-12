@@ -80,12 +80,12 @@ AIModule::AIModule()
   loadDefaults();
 }
 
-// /*
-//  * Description: Constructs an AI object given a difficulty and a personality.
-//  *
-//  * Inputs: diff - the difficulty of the new AI
-//  *         prim_personality - the personality to make the AI
-//  */
+/*
+ * Description: Constructs an AI object given a difficulty and a personality.
+ *
+ * Inputs: diff - the difficulty of the new AI
+ *         prim_personality - the personality to make the AI
+ */
 AIModule::AIModule(const AIDifficulty& diff,
                    const AIPersonality& prim_personality)
 {
@@ -95,14 +95,14 @@ AIModule::AIModule(const AIDifficulty& diff,
   this->prim_personality = prim_personality;
 }
 
-// /*
-//  * Description: Constructs an AI object given a difficulty and a primary and
-//  *              secondary personality.
-//  *
-//  * Inputs: diff - the difficulty of the new AI
-//  *         prim_personality - the personality to make the AI
-//  *         secd_personality - minor personality effects for secd personality
-//  */
+/*
+ * Description: Constructs an AI object given a difficulty and a primary and
+ *              secondary personality.
+ *
+ * Inputs: diff - the difficulty of the new AI
+ *         prim_personality - the personality to make the AI
+ *         secd_personality - minor personality effects for secd personality
+ */
 AIModule::AIModule(const AIDifficulty& diff,
                    const AIPersonality& prim_personality,
                    const AIPersonality& secd_personality)
@@ -111,18 +111,18 @@ AIModule::AIModule(const AIDifficulty& diff,
   this->secd_personality = secd_personality;
 }
 
-// /*=============================================================================
-//  * PRIVATE FUNCTIONS
-//  *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
 
-// /*
-//  * Description: Adds a random target from a given vector of available targets
-//  *              to the chosen target vector and returns a ptr to the chosen
-//  *              target
-//  *
-//  * Inputs: std::vector<Person*> available_targets
-//  * Output: Person* - the chosen target which was added
-//  */
+/*
+ * Description: Adds a random target from a given vector of available targets
+ *              to the chosen target vector and returns a ptr to the chosen
+ *              target
+ *
+ * Inputs: std::vector<Person*> available_targets
+ * Output: Person* - the chosen target which was added
+ */
 BattleActor*
 AIModule::addRandomTarget(std::vector<BattleActor*> available_targets)
 {

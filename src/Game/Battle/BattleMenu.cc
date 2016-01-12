@@ -1198,7 +1198,7 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
   for(auto& battle_item : valid_battle_items)
   {
     auto item = battle_item->item;
-    //TODO auto use_skill = item->getUseSkill();
+    // TODO auto use_skill = item->getUseSkill();
 
     frames_item_name.push_back(new Frame());
     frames_item_info.push_back(new Frame());
@@ -1435,7 +1435,16 @@ void BattleMenu::keyDownSelect()
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
   {
     if(element_index <= getMaxIndex())
+    {
       selected_action_type = valid_action_types.at(element_index);
+
+      if(selected_action_type == ActionType::ITEM &&
+         valid_battle_items.size() == 0)
+      {
+        // TODO: Fire error sound.
+        selected_action_type = ActionType::NONE;
+      }
+    }
 
     if(selected_action_type == ActionType::PASS)
     {

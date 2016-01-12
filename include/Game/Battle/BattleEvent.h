@@ -142,7 +142,7 @@ public:
   std::vector<ActorOutcome> actor_outcomes;
 
   /* The item of this event, if it's an item event */
-  BattleItem* event_item;
+  Item* event_item;
 
   /* Skill of this event, if it's a skill event */
   BattleSkill* event_skill;

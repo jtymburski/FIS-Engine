@@ -455,10 +455,10 @@ bool BattleActor::buildBattleItems(Inventory* inv,
     {
       if(item.first)
       {
-        ;
         auto skill = item.first->getUseSkill();
 
-        if(skill)
+        if(skill && (item.first->getOccasion() == ActionOccasion::BATTLE ||
+                     item.first->getOccasion() == ActionOccasion::ALWAYS))
         {
           auto targets =
               getTargetsFromScope(this, skill->getScope(), a_targets);
@@ -475,10 +475,6 @@ bool BattleActor::buildBattleItems(Inventory* inv,
           battle_items.push_back(battle_item);
 
           success &= true;
-        }
-        else if(!skill)
-        {
-          success = false;
         }
       }
       else

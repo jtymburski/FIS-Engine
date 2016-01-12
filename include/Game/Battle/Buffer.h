@@ -39,8 +39,8 @@ struct BufferAction
         processed{false},
         user{nullptr},
         used_skill{nullptr},
-        used_item{nullptr},
         targets{},
+        owned_item{nullptr},
         type{ActionType::NONE}
   {
   }
@@ -62,10 +62,12 @@ struct BufferAction
 
   /* The Skill OR Item which the action will perform - only oe will be set */
   BattleSkill* used_skill;
-  BattleItem* used_item;
 
   /* The vector of targets the action will target */
   std::vector<BattleActor*> targets;
+
+  /* Owned item */
+  Item* owned_item;
 
   /* Enumerated type of buffer (SKILL or ITEM or NONE) */
   ActionType type;
@@ -129,6 +131,9 @@ public:
   /* Clears all elements from the Buffer */
   void clear();
 
+  /* Clear the currently owned item */
+  void clearItem();
+
   /* Clears all BufferAction elements from the Buffer */
   void clearForTurn(uint32_t turn_number);
 
@@ -166,7 +171,7 @@ public:
   BattleSkill* getSkill();
 
   /* Obtains the Item ptr for the current element index */
-  BattleItem* getItem();
+  Item* getItem();
 
   /* Returns the initial turn assigned to the current element index */
   int32_t getInitialTurn();

@@ -314,7 +314,8 @@ bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
 
     if(element == "animation")
       animation_time = data.getDataInteger();
-    else if(split_elements.at(0) == "path")
+
+    if(split_elements.at(0) == "path")
     {
       auto path = base_path + data.getDataString();
       auto split_path = Helpers::split(path, '|');
@@ -479,6 +480,9 @@ uint32_t Skill::getAnimationFrames()
 
 uint32_t Skill::getAnimationTime()
 {
+  if(animation_time == 0)
+    return 1;
+
   return animation_time;
 }
 

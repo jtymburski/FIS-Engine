@@ -197,7 +197,7 @@ void Application::handleEvents()
         }
       }
       /* -- Pause toggle -- */
-      else if(press_event.keysym.sym == SDLK_F9)
+      else if(press_event.keysym.sym == SDLK_F6)
       {
         if(mode == PAUSED)
         {
@@ -534,8 +534,6 @@ bool Application::updateViews(int cycle_time)
   return quit;
 }
 
-
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -748,7 +746,7 @@ bool Application::run(bool skip_title)
       {
         cycle_time = 200 / count;
 
-        //TODO: Cycle fix hack!
+        // TODO: Cycle fix hack!
         // if(cycle_time > 33)
         //   cycle_time = 16;
 
