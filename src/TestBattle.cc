@@ -1110,12 +1110,9 @@ void TestBattle::createItems()
   a_inv->add(non_base_medkit, 1);
 }
 
-void TestBattle::deleteItems()
+void TestBattle::clearItems()
 {
-  // if(party_friends && party_friends->getInventory())
-  //   party_friends->getInventory()->clear();
-  // if(party_foes && party_foes->getInventory())
-  //   party_foes->getInventory()->clear();
+  deleteItems();
 
   if(non_base_rock)
   {
@@ -1128,6 +1125,14 @@ void TestBattle::deleteItems()
     delete non_base_medkit;
     non_base_medkit = nullptr;
   }
+
+}
+void TestBattle::deleteItems()
+{
+  // if(party_friends && party_friends->getInventory())
+  //   party_friends->getInventory()->clear();
+  // if(party_foes && party_foes->getInventory())
+  //   party_foes->getInventory()->clear();
 
   if(rock)
   {
@@ -1358,7 +1363,7 @@ void TestBattle::destroy()
   mode = NONE;
 
   // /* Delete battle and information */
-  // deleteItems();
+  // clearItems();
   destroyBattle();
 
   // /* Delete skill information */

@@ -1416,7 +1416,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     //}
   }
   /* Level Up Key */
-  else if(event.keysym.sym == SDLK_F7)
+  else if(event.keysym.sym == SDLK_F7 && mode != BATTLE)
   {
     if(player_main && player_main->getSleuth())
     {
@@ -1433,7 +1433,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     }
   }
   /* Level Up Key */
-  else if(event.keysym.sym == SDLK_F8)
+  else if(event.keysym.sym == SDLK_F8 && mode != BATTLE)
   {
     if(player_main && player_main->getSleuth())
     {
@@ -1447,6 +1447,54 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
             player_person->getExpAt(new_level));
         std::cout << "[DEBUG] Setting player level to: "
                   << player_person->getLevel() << std::endl;
+      }
+    }
+  }
+  /* Give Rock Event */
+  else if(event.keysym.sym == SDLK_LEFTBRACKET && mode != BATTLE)
+  {
+    if(getItem(2, true) && player_main && player_main->getSleuth())
+    {
+      auto inventory = player_main->getSleuth()->getInventory();
+
+      if(inventory)
+      {
+        auto new_item = new Item(getItem(2, true));
+        if(inventory->add(new_item, 1) != AddStatus::FAIL)
+        {
+          std::cout << "[DEBUG] Giving Player x1 Rock." << std::endl;
+        }
+        else
+        {
+          delete new_item;
+          new_item = nullptr;
+
+          std::cout << "[DEBUG] Player Inventory Full" << std::endl;
+        }
+      }
+    }
+  }
+  /* Given Rotten Fish Event */
+  else if(event.keysym.sym == SDLK_RIGHTBRACKET && mode != BATTLE)
+  {
+    if(getItem(2, true) && player_main && player_main->getSleuth())
+    {
+      auto inventory = player_main->getSleuth()->getInventory();
+
+      if(inventory)
+      {
+        auto new_item = new Item(getItem(3, true));
+        if(inventory->add(new_item, 1) != AddStatus::FAIL)
+        {
+          std::cout << "[DEBUG] Giving Player x1 Medkit." << std::endl;
+        }
+        else
+        {
+          delete new_item;
+          new_item = nullptr;
+
+          std::cout << "[DEBUG] Player Inventory Full" << std::endl;
+        }
       }
     }
   }

@@ -235,6 +235,7 @@ private:
   /* Delete sub calls */
   void deleteActions();
   void deleteClasses();
+  void clearItems();
   void deleteItems();
   void deleteMenu();
   void deleteRaces();

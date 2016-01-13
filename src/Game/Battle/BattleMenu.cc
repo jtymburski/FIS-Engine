@@ -841,8 +841,8 @@ bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
     if(frames_skill_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
     {
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-      uint16_t center_x = x + w - kTYPE_MARGIN * 2;
-      uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
+      //TODO uint16_t center_x = x + w - kTYPE_MARGIN * 2;
+      //TODO uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
     }
 
     text_y += frames_item_name[index]->getHeight();
@@ -855,8 +855,8 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
   /* Success, Start X/Y  */
   bool success{true};
-  int32_t text_x{x + kTYPE_MARGIN * 2};
-  int32_t text_y{0};
+  int64_t text_x{x + kTYPE_MARGIN * 2};
+  int64_t text_y{0};
 
   if(frames_skill_name.size() >= kTYPE_MAX)
   {
@@ -1184,6 +1184,9 @@ void BattleMenu::setWindowStatus(WindowStatus status_window)
 
 bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
 {
+  (void)width_left; //TODO warning
+  (void)width_right; //TODO warning
+
   assert(renderer && config);
 
   bool success{true};
