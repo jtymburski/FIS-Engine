@@ -1255,6 +1255,9 @@ bool MapNPC::resetPosition()
   if(MapPerson::resetPosition())
   {
     forced_recent = false;
+    node_current = &node_start;
+    starting = true;
+    stuck_flip = false;
     track_recent = false;
     return true;
   }

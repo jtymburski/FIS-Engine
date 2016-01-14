@@ -39,6 +39,7 @@ MapInteractiveObject::MapInteractiveObject() : MapThing()
   shifting_forward = true;
   time_elapsed = 0;
   time_return = kRETURN_TIME_UNUSED;
+  time_valid = false;
 }
 
 /*
@@ -806,7 +807,7 @@ void MapInteractiveObject::clear()
  */
 int MapInteractiveObject::getInactiveTime() const
 {
-  if(base != NULL)
+  if(base != NULL && !time_valid)
     return static_cast<MapInteractiveObject*>(base)->time_return;
   return time_return;
 }
@@ -1040,6 +1041,7 @@ void MapInteractiveObject::setInactiveTime(int time)
     time_return = kRETURN_TIME_UNUSED;
   else
     time_return = time;
+  time_valid = true;
 
   time_elapsed = 0;
 }

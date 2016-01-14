@@ -48,6 +48,7 @@ private:
    * activity */
   int time_elapsed;
   int time_return;
+  bool time_valid;
 
   /* -------------------------- Constants ------------------------- */
   const static short kRETURN_TIME_UNUSED; /* The unused time inidicator */
