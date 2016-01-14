@@ -241,6 +241,8 @@ BattleActor* BattleMenu::targetOfOrderedIndex(std::vector<BattleActor*> actors,
 
 void BattleMenu::keyDownCancel()
 {
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV, SoundChannels::MENUS);
+
   if(menu_layer == BattleMenuLayer::ACTION_SELECTION)
   {
     menu_layer = BattleMenuLayer::TYPE_SELECTION;
@@ -263,6 +265,8 @@ void BattleMenu::keyDownCancel()
 
 void BattleMenu::keyDownDecrement()
 {
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG, SoundChannels::MENUS);
+
   if(selected_action_scope != ActionScope::USER)
     element_index = validPrevious();
 
@@ -272,6 +276,8 @@ void BattleMenu::keyDownDecrement()
 
 void BattleMenu::keyDownIncrement()
 {
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG, SoundChannels::MENUS);
+
   if(selected_action_scope != ActionScope::USER)
     element_index = validNext();
 
@@ -563,10 +569,91 @@ void BattleMenu::clearSkillFrames()
 SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
                                          uint32_t width, uint32_t height)
 {
-  (void)width;
-  (void)battle_item;
-  (void)height;
-  return nullptr;
+  assert(config);
+
+  /* Grab the skill pointer, and QD frame from display data */
+  auto use_item = battle_item->item;
+  auto skill = use_item->getUseSkill();
+
+  /* Fonts */
+  auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);
+
+  Text t2(font_subheader);
+  Text t5(font_subheader);
+  t2.setText(renderer, skill->getName(), kTEXT_STANDARD);
+
+  /* Create rendering texture */
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
+
+  /* Render the skill box */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_Rect rect_top;
+  setRectTop(rect_top);
+  if(skill->getThumbnail())
+    skill->getThumbnail()->render(renderer, rect_top.x, rect_top.y);
+
+  Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
+
+  /* Render the action scope */
+  auto scope_frame = battle_display_data->getFrameScope(skill->getScope());
+
+  SDL_Rect rect_bot;
+  setRectBot(rect_bot, height);
+
+  if(scope_frame)
+    scope_frame->render(renderer, rect_bot.x, rect_bot.y);
+
+  /* Render the primary element */
+  auto primary_frame =
+      battle_display_data->getFrameElement(skill->getPrimary());
+
+  rect_bot.x += rect_bot.w + kSKILL_BORDER;
+  rect_bot.w = kSKILL_FRAME_S;
+  if(primary_frame)
+    primary_frame->render(renderer, rect_bot.x, rect_bot.y);
+
+  /* Render the secondary element */
+  auto secondary_frame =
+      battle_display_data->getFrameElement(skill->getSecondary());
+  rect_bot.x += rect_bot.w + kSKILL_BORDER;
+
+  if(secondary_frame)
+    secondary_frame->render(renderer, rect_bot.x, rect_bot.y);
+
+  /* Render the name */
+  uint16_t text_x = rect_top.x + rect_top.w + kSKILL_BORDER;
+  uint16_t text_y = 3;
+  t2.render(renderer, text_x, text_y);
+
+  /* Render the description */
+  uint16_t line_width = width - text_x;
+  std::vector<std::string> desc_set =
+      Text::splitLine(font_subheader, use_item->getDescription(), line_width);
+
+  text_y += t2.getHeight() + kSKILL_DESC_GAP;
+  for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
+  {
+    if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
+      t5.setText(renderer, Text::splitLine(font_subheader,
+                                           desc_set[i] + " " + desc_set[i + 1],
+                                           line_width, true).front(),
+                 kTEXT_STANDARD);
+    else
+      t5.setText(renderer, desc_set[i], kTEXT_STANDARD);
+    t5.render(renderer, text_x,
+              text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
+  }
+
+  /* Return the new texture */
+  SDL_SetRenderTarget(renderer, nullptr);
+
+  return texture;
 }
 
 SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
@@ -841,8 +928,8 @@ bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
     if(frames_skill_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
     {
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-      //TODO uint16_t center_x = x + w - kTYPE_MARGIN * 2;
-      //TODO uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
+      // TODO uint16_t center_x = x + w - kTYPE_MARGIN * 2;
+      // TODO uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
     }
 
     text_y += frames_item_name[index]->getHeight();
@@ -971,50 +1058,43 @@ void BattleMenu::ready()
 
 bool BattleMenu::keyDownEvent()
 {
-  auto key_handler = event_handler->getKeyHandler();
+  auto& key_handler = event_handler->getKeyHandler();
 
   key_handler.update(0);
 
-  if(menu_layer != BattleMenuLayer::TARGET_SELECTION)
+  if(key_handler.isDepressed(GameKey::MOVE_UP))
   {
-    if(key_handler.isDepressed(GameKey::MOVE_UP) ||
-       key_handler.isDepressed(GameKey::MOVE_DOWN))
-    {
-      event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
-                                  SoundChannels::MENUS);
-    }
-
-    if(key_handler.isDepressed(GameKey::MOVE_UP))
+    if(menu_layer != BattleMenuLayer::TARGET_SELECTION)
       keyDownDecrement();
-    else if(key_handler.isDepressed(GameKey::MOVE_DOWN))
-      keyDownIncrement();
+    key_handler.setHeld(GameKey::MOVE_UP);
   }
-  else
+  else if(key_handler.isDepressed(GameKey::MOVE_DOWN))
   {
-    if(key_handler.isDepressed(GameKey::MOVE_LEFT) ||
-       key_handler.isDepressed(GameKey::MOVE_RIGHT))
-    {
-      event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
-                                  SoundChannels::MENUS);
-    }
-
-    if(key_handler.isDepressed(GameKey::MOVE_LEFT))
+    if(menu_layer != BattleMenuLayer::TARGET_SELECTION)
+      keyDownIncrement();
+    key_handler.setHeld(GameKey::MOVE_DOWN);
+  }
+  else if(key_handler.isDepressed(GameKey::MOVE_LEFT))
+  {
+    if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
       keyDownDecrement();
-    else if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
-      keyDownIncrement();
+    key_handler.setHeld(GameKey::MOVE_LEFT);
   }
-
-  if(key_handler.isDepressed(GameKey::ACTION))
+  else if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
   {
-    event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
-                                SoundChannels::MENUS);
+    if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
+      keyDownIncrement();
+    key_handler.setHeld(GameKey::MOVE_RIGHT);
+  }
+  else if(key_handler.isDepressed(GameKey::ACTION))
+  {
     keyDownSelect();
+    key_handler.setHeld(GameKey::ACTION);
   }
   else if(key_handler.isDepressed(GameKey::CANCEL))
   {
-    event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV,
-                                SoundChannels::MENUS);
     keyDownCancel();
+    key_handler.setHeld(GameKey::CANCEL);
   }
 
   return false;
@@ -1184,9 +1264,6 @@ void BattleMenu::setWindowStatus(WindowStatus status_window)
 
 bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
 {
-  (void)width_left; //TODO warning
-  (void)width_right; //TODO warning
-
   assert(renderer && config);
 
   bool success{true};
@@ -1201,7 +1278,7 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
   for(auto& battle_item : valid_battle_items)
   {
     auto item = battle_item->item;
-    // TODO auto use_skill = item->getUseSkill();
+    auto use_skill = item->getUseSkill();
 
     frames_item_name.push_back(new Frame());
     frames_item_info.push_back(new Frame());
@@ -1248,14 +1325,13 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
     frames_item_name.back()->setTexture(texture);
     SDL_SetRenderTarget(renderer, nullptr);
 
-    // TODO: create item information
     /* Create the detailed skill information for this skill */
-    // auto info_texture = createSkillFrame(
-    //     skill, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
-    //     kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
-    //         kMENU_SEPARATOR_B);
+    auto info_texture = createItemFrame(
+        battle_item, width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET,
+        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
+            kMENU_SEPARATOR_B);
 
-    // frames_skill_info.back()->setTexture(info_texture);
+    frames_skill_info.back()->setTexture(info_texture);
   }
 
   if(success)
@@ -1420,7 +1496,8 @@ bool BattleMenu::render()
 
         if((uint32_t)element_index < frames_item_info.size())
         {
-          // Render the item info.
+          success &= frames_item_info[element_index]->render(
+              renderer, rect3.x + kTYPE_MARGIN, rect3.y);
         }
       }
       else
@@ -1435,6 +1512,8 @@ bool BattleMenu::render()
 
 void BattleMenu::keyDownSelect()
 {
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
+
   if(menu_layer == BattleMenuLayer::TYPE_SELECTION)
   {
     if(element_index <= getMaxIndex())

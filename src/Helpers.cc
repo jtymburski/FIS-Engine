@@ -1027,6 +1027,8 @@ std::string Helpers::gameKeyToStr(const GameKey& game_key)
     return "Run";
   if(game_key == GameKey::DEBUG)
     return "Debug";
+  if(game_key == GameKey::PAUSE)
+    return "Pause";
 
   return "None";
 }
@@ -1228,7 +1230,7 @@ std::string Helpers::tierToStr(const ItemTier& tier)
     return "LEGENDARY";
   return "";
 }
-  
+
 /*
  * Description: Returns the enum form of a tracking state (string)
  *
@@ -1262,7 +1264,7 @@ std::string Helpers::trackingToStr(const TrackingState& track)
     return "To the Player";
   return "None";
 }
-  
+
 /*
  * Description: Returns the enum form of a thing type (string)
  *

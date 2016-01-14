@@ -14,6 +14,7 @@
 #include <SDL2/SDL.h>
 
 #include "Game/Player/Action.h"
+#include "Game/KeyHandler.h"
 #include "Game/Game.h"
 #include "Helpers.h"
 #include "Options.h"

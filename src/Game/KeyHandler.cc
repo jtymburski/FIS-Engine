@@ -407,6 +407,27 @@ bool KeyHandler::setEnabled(SDL_Keycode keycode, bool enabled)
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool KeyHandler::setHeld(GameKey key)
+{
+  for(auto& element : keys)
+  {
+    if(element.game_key == key)
+    {
+      element.time_depressed += kMIN_HELD_TIME;
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/

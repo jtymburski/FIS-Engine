@@ -1701,7 +1701,7 @@ bool Game::update(int32_t cycle_time)
 
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
-  // event_handler.getKeyHandler().print(true);
+  //event_handler.getKeyHandler().print(false, true);
 
   /* Mode next handling */
   updateMode(cycle_time);

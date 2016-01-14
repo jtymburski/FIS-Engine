@@ -159,7 +159,7 @@ void Application::handleEvents()
     //   revertMode();
     // }
 
-    /* Otherwise, pass the key down events on to the active view */
+  /* Otherwise, pass the key down events on to the active view */
     else if(event.type == SDL_KEYDOWN)
     {
       SDL_KeyboardEvent press_event = event.key;

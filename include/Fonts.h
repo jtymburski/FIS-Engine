@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: RenderElement
+* Class Name: Fonts
 * Date Created: June 22, 2015
 * Inheritance: None
 * Description:
@@ -36,8 +36,10 @@ enum class FontName
 class Fonts
 {
 public:
+  /* Default fonts constructor */
   Fonts(Options* system_options = nullptr);
 
+  /* Annihilate the fonts object */
   ~Fonts();
 
 private:
@@ -48,6 +50,7 @@ private:
    * PRIVATE FUNCTIONS
    *============================================================================*/
 private:
+  /* Create fonts, linking to the parent configuration */
   bool createFonts(Options* config);
 
   /*=============================================================================

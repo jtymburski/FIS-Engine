@@ -62,16 +62,16 @@ private:
   std::vector<Key> keys;
 
   /* ------------ Constants --------------- */
-  static const SDL_Keycode kMOVE_LEFT_DEFAULT;  /* Default moving left key */
+  static const SDL_Keycode kMOVE_LEFT_DEFAULT; /* Default moving left key */
   static const SDL_Keycode kMOVE_RIGHT_DEFAULT; /* Default moving right key */
-  static const SDL_Keycode kMOVE_UP_DEFAULT;    /* Default moving up key */
-  static const SDL_Keycode kMOVE_DOWN_DEFAULT;  /* Default moving down key */
-  static const SDL_Keycode kMENU_DEFAULT;       /* Default menu open key */
-  static const SDL_Keycode kACTION_DEFAULT;     /* Default action key */
-  static const SDL_Keycode kCANCEL_DEFAULT;     /* Default cancel/close key */
-  static const SDL_Keycode kRUN_DEFAULT;        /* Default run key */
-  static const SDL_Keycode kDEBUG_DEFAULT;      /* Default debug key */
-  static const SDL_Keycode kPAUSE_DEFAULT;      /* Default pause key */
+  static const SDL_Keycode kMOVE_UP_DEFAULT; /* Default moving up key */
+  static const SDL_Keycode kMOVE_DOWN_DEFAULT; /* Default moving down key */
+  static const SDL_Keycode kMENU_DEFAULT; /* Default menu open key */
+  static const SDL_Keycode kACTION_DEFAULT; /* Default action key */
+  static const SDL_Keycode kCANCEL_DEFAULT; /* Default cancel/close key */
+  static const SDL_Keycode kRUN_DEFAULT; /* Default run key */
+  static const SDL_Keycode kDEBUG_DEFAULT; /* Default debug key */
+  static const SDL_Keycode kPAUSE_DEFAULT; /* Default pause key */
 
   static const int32_t kMIN_HELD_TIME; /* Amount of time for key to be 'Held' */
   static const bool kMULTIPLE_MAPPINGS; /* Can GameKeys be multi-mapped? */
@@ -102,6 +102,10 @@ public:
   /* Checks to see if a given keycode has already been mapped */
   bool isKeycodeMapped(SDL_Keycode keycode);
 
+  /* Checks if a key has been depressed and not held (sets to held) */
+  bool isStruck(GameKey game_key);
+  bool isStruck(SDL_Keycode keycode, bool* found);
+
   /* Load a default set of Keys */
   void loadDefaults();
 
@@ -121,6 +125,9 @@ public:
   /* Sets a Key to be enabled/disabled */
   void setEnabled(GameKey game_key, bool enabled = true);
   bool setEnabled(SDL_Keycode keycode, bool enabled = true);
+
+  /* Set a given GameKey to be held */
+  bool setHeld(GameKey key);
 
   /*=============================================================================
    * PUBLIC STATIC FUNCTIONS
