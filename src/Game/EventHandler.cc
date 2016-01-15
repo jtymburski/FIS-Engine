@@ -536,7 +536,8 @@ bool EventHandler::pollTriggerIO(MapInteractiveObject** io, int* state,
 }
 
 /* Poll the unlock event(s) */
-bool EventHandler::pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,
+bool EventHandler::pollUnlockIO(MapThing*& source, int* io_id,
+                                UnlockIOMode* mode, int* state_num,
                                 UnlockIOEvent* mode_events,
                                 UnlockView* mode_view, int* view_time)
 {
@@ -548,6 +549,7 @@ bool EventHandler::pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,
        EventSet::dataEventUnlockIO(event, *io_id, *mode, *state_num,
                                    *mode_events, *mode_view, *view_time))
     {
+      source = event_queue[queue_index].source;
       triggerQueueSound(event);
       return true;
     }
@@ -556,8 +558,8 @@ bool EventHandler::pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,
 }
 
 /* Poll the unlock event(s) */
-bool EventHandler::pollUnlockThing(int* thing_id, UnlockView* mode_view,
-                                   int* view_time)
+bool EventHandler::pollUnlockThing(MapThing*& source, int* thing_id,
+                                   UnlockView* mode_view, int* view_time)
 {
   if(thing_id != nullptr && mode_view != nullptr && view_time != nullptr)
   {
@@ -565,6 +567,7 @@ bool EventHandler::pollUnlockThing(int* thing_id, UnlockView* mode_view,
     if(getEvent(event, true) &&
        EventSet::dataEventUnlockThing(event, *thing_id, *mode_view, *view_time))
     {
+      source = event_queue[queue_index].source;
       triggerQueueSound(event);
       return true;
     }

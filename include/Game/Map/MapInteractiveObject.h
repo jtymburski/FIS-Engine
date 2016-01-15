@@ -123,7 +123,7 @@ public:
                                    std::string base_path = "");
 
   /* Returns the class descriptor, useful for casting */
-  virtual std::string classDescriptor();
+  virtual ThingBase classDescriptor();
 
   /* Shrink the frame matrix to the valid size and removes all null and void
    * pointers.  */

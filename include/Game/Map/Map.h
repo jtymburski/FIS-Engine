@@ -371,9 +371,10 @@ public:
   void unloadMap();
 
   /* Unlock triggers, based on parameter information */
-  void unlockIO(int io_id, UnlockIOMode mode, int state_num,
+  void unlockIO(MapThing* source, int io_id, UnlockIOMode mode, int state_num,
                 UnlockIOEvent mode_events, UnlockView mode_view, int view_time);
-  void unlockThing(int thing_id, UnlockView mode_view, int view_time);
+  void unlockThing(MapThing* source, int thing_id, UnlockView mode_view,
+                   int view_time);
   void unlockTile(int section_id, int tile_x, int tile_y, UnlockTileMode mode,
                   UnlockView mode_view, int view_time);
 

@@ -172,10 +172,11 @@ public:
                      MapPerson** initiator);
 
   /* Poll the unlock event(s) */
-  bool pollUnlockIO(int* io_id, UnlockIOMode* mode, int* state_num,
-                    UnlockIOEvent* mode_events, UnlockView* mode_view,
-                    int* view_time);
-  bool pollUnlockThing(int* thing_id, UnlockView* mode_view, int* view_time);
+  bool pollUnlockIO(MapThing*& source, int* io_id, UnlockIOMode* mode, 
+                    int* state_num, UnlockIOEvent* mode_events, 
+                    UnlockView* mode_view, int* view_time);
+  bool pollUnlockThing(MapThing*& source, int* thing_id, UnlockView* mode_view,
+                       int* view_time);
   bool pollUnlockTile(int* section_id, int* tile_x, int* tile_y,
                       UnlockTileMode* mode, UnlockView* mode_view,
                       int* view_time);

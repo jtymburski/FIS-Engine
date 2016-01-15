@@ -174,10 +174,11 @@ private:
                       MapPerson* initiator);
 
   /* Unlock events, based on parameter information */
-  void eventUnlockIO(int io_id, UnlockIOMode mode, int state_num,
-                     UnlockIOEvent mode_events, UnlockView mode_view,
-                     int view_time);
-  void eventUnlockThing(int thing_id, UnlockView mode_view, int view_time);
+  void eventUnlockIO(MapThing* source, int io_id, UnlockIOMode mode,
+                     int state_num, UnlockIOEvent mode_events,
+                     UnlockView mode_view, int view_time);
+  void eventUnlockThing(MapThing* source, int thing_id, UnlockView mode_view,
+                        int view_time);
   void eventUnlockTile(int section_id, int tile_x, int tile_y,
                        UnlockTileMode mode, UnlockView mode_view,
                        int view_time);

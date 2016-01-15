@@ -480,17 +480,19 @@ void Game::eventTriggerIO(MapInteractiveObject* io, int interaction_state,
 }
 
 /* Unlock events, based on parameter information */
-void Game::eventUnlockIO(int io_id, UnlockIOMode mode, int state_num,
-                         UnlockIOEvent mode_events, UnlockView mode_view,
-                         int view_time)
+void Game::eventUnlockIO(MapThing* source, int io_id, UnlockIOMode mode,
+                         int state_num, UnlockIOEvent mode_events,
+                         UnlockView mode_view, int view_time)
 {
-  map_ctrl.unlockIO(io_id, mode, state_num, mode_events, mode_view, view_time);
+  map_ctrl.unlockIO(source, io_id, mode, state_num, mode_events, mode_view,
+                    view_time);
 }
 
 /* Unlock events, based on parameter information */
-void Game::eventUnlockThing(int thing_id, UnlockView mode_view, int view_time)
+void Game::eventUnlockThing(MapThing* source, int thing_id,
+                            UnlockView mode_view, int view_time)
 {
-  map_ctrl.unlockThing(thing_id, mode_view, view_time);
+  map_ctrl.unlockThing(source, thing_id, mode_view, view_time);
 }
 
 /* Unlock events, based on parameter information */
@@ -939,21 +941,28 @@ void Game::pollEvents()
       else if(classification == EventClassifier::UNLOCKIO)
       {
         int io_id, state_num, view_time;
+        MapThing* source;
         UnlockIOMode mode;
         UnlockIOEvent mode_events;
         UnlockView mode_view;
-        if(event_handler.pollUnlockIO(&io_id, &mode, &state_num, &mode_events,
-                                      &mode_view, &view_time))
-          eventUnlockIO(io_id, mode, state_num, mode_events, mode_view,
+        if(event_handler.pollUnlockIO(source, &io_id, &mode, &state_num,
+                                      &mode_events, &mode_view, &view_time))
+        {
+          eventUnlockIO(source, io_id, mode, state_num, mode_events, mode_view,
                         view_time);
+        }
       }
       /* -- UNLOCK THING -- */
       else if(classification == EventClassifier::UNLOCKTHING)
       {
         int thing_id, view_time;
+        MapThing* source;
         UnlockView mode_view;
-        if(event_handler.pollUnlockThing(&thing_id, &mode_view, &view_time))
-          eventUnlockThing(thing_id, mode_view, view_time);
+        if(event_handler.pollUnlockThing(source, &thing_id, &mode_view,
+                                         &view_time))
+        {
+          eventUnlockThing(source, thing_id, mode_view, view_time);
+        }
       }
       /* -- UNLOCK TILE -- */
       else if(classification == EventClassifier::UNLOCKTILE)

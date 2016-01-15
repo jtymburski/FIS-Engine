@@ -149,7 +149,7 @@ public:
                                    std::string base_path = "");
 
   /* Returns the class descriptor, useful for casting */
-  virtual std::string classDescriptor();
+  virtual ThingBase classDescriptor();
 
   /* Clears out the NPC construct, void of painting */
   void clear();

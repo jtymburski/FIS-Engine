@@ -195,12 +195,12 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
  *              This is the virtual re-do of the parent class function.
  *
  * Inputs: none
- * Output: std::string - the string descriptor, it will be the same as the class
- *                       name. For example, "MapThing", "MapPerson", etc.
+ * Output: ThingBase - the thing description enum defining the type to cast
  */
-std::string MapItem::classDescriptor()
+ThingBase MapItem::classDescriptor()
 {
-  return "MapItem";
+  //return "MapItem";
+  return ThingBase::ITEM;
 }
 
 /*
@@ -342,9 +342,9 @@ bool MapItem::setBase(MapThing* base)
 {
   bool success = false;
 
-  if(classDescriptor() == "MapItem")
+  if(classDescriptor() == ThingBase::ITEM)
   {
-    if(base != NULL && base->classDescriptor() == "MapItem")
+    if(base != NULL && base->classDescriptor() == ThingBase::ITEM)
     {
       this->base = base;
       base_category = ThingBase::ITEM;

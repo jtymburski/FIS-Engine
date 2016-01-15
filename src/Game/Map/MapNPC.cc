@@ -859,12 +859,12 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
  *              to determine which class to cast it to for specific parameters.
  *
  * Inputs: none
- * Output: std::string - the string descriptor, it will be the same as the class
- *                       name. For example, "MapThing", "MapPerson", etc.
+ * Output: ThingBase - the thing description enum defining the type to cast
  */
-std::string MapNPC::classDescriptor()
+ThingBase MapNPC::classDescriptor()
 {
-  return "MapNPC";
+  //return "MapNPC";
+  return ThingBase::NPC;
 }
 
 /*
@@ -1275,10 +1275,10 @@ bool MapNPC::setBase(MapThing* base)
 {
   bool success = false;
 
-  if(classDescriptor() == "MapNPC")
+  if(classDescriptor() == ThingBase::NPC)
   {
     /* Set the base with the new ptr */
-    if(base != NULL && base->classDescriptor() == "MapNPC")
+    if(base != NULL && base->classDescriptor() == ThingBase::NPC)
     {
       this->base = base;
       base_category = ThingBase::NPC;

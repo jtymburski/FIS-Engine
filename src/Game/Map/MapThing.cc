@@ -871,12 +871,12 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
  *              to determine which class to cast it to for specific parameters.
  *
  * Inputs: none
- * Output: std::string - the string descriptor, it will be the same as the class
- *                       name. For example, "MapThing", "MapPerson", etc.
+ * Output: ThingBase - the thing description enum defining the type to cast
  */
-std::string MapThing::classDescriptor()
+ThingBase MapThing::classDescriptor()
 {
-  return "MapThing";
+  //return "MapThing";
+  return ThingBase::THING;
 }
 
 /*
@@ -1957,9 +1957,9 @@ bool MapThing::setBase(MapThing* base)
 {
   bool success = false;
 
-  if(classDescriptor() == "MapThing")
+  if(classDescriptor() == ThingBase::THING)
   {
-    if(base != NULL && base->classDescriptor() == "MapThing")
+    if(base != NULL && base->classDescriptor() == ThingBase::THING)
     {
       this->base = base;
       base_category = ThingBase::THING;

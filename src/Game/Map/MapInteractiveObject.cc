@@ -715,12 +715,12 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
  *              to determine which class to cast it to for specific parameters.
  *
  * Inputs: none
- * Output: std::string - the string descriptor, it will be the same as the class
- *                       name. For example, "MapThing", "MapPerson", etc.
+ * Output: ThingBase - the thing description enum defining the type to cast
  */
-std::string MapInteractiveObject::classDescriptor()
+ThingBase MapInteractiveObject::classDescriptor()
 {
-  return "MapInteractiveObject";
+  //return "MapInteractiveObject";
+  return ThingBase::INTERACTIVE;
 }
 
 /*
@@ -960,9 +960,9 @@ bool MapInteractiveObject::setBase(MapThing* base)
 {
   bool success = false;
 
-  if(classDescriptor() == "MapInteractiveObject")
+  if(classDescriptor() == ThingBase::INTERACTIVE)
   {
-    if(base != NULL && base->classDescriptor() == "MapInteractiveObject")
+    if(base != NULL && base->classDescriptor() == ThingBase::INTERACTIVE)
     {
       /* Status */
       this->base = base;

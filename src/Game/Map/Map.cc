@@ -2167,7 +2167,7 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
   /* Person clean-up and tile set-up */
   for(uint16_t i = 0; i < persons.size(); i++)
   {
-    if((persons[i]->getBase() != NULL &&
+    if((persons[i]->getBase() != nullptr &&
         persons[i]->getBase()->cleanMatrix(false))  ||
        persons[i]->cleanMatrix())
     {
@@ -2177,7 +2177,7 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
         persons[i]->setStartingTiles(tile_set,
                                      persons[i]->getStartingSection(), true,
                                      !persons[i]->isActive());
-        if(persons[i]->classDescriptor() == "MapNPC")
+        if(persons[i]->classDescriptor() == ThingBase::NPC)
           ((MapNPC*)persons[i])->setPlayer(player);
       }
       else
@@ -2238,6 +2238,8 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
   /* Apply the modification properties */
   if(found_thing != nullptr)
   {
+    ThingBase found_type = found_thing->classDescriptor();
+
     /* Edited properties */
     bool active, forced, inactive, move, reset, respawn, speed, track, visible;
     EventSet::dataEnumProperties(props, active, forced, inactive, move, reset,
@@ -2267,7 +2269,8 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
     }
 
     /* -- Person Properties -- */
-    if(type == ThingBase::PERSON || type == ThingBase::NPC)
+    if((type == ThingBase::PERSON || type == ThingBase::NPC) &&
+       (found_type == ThingBase::PERSON || found_type == ThingBase::NPC))
     {
       MapPerson* found_person = static_cast<MapPerson*>(found_thing);
 
@@ -2294,7 +2297,7 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
     }
 
     /* -- NPC Properties -- */
-    if(type == ThingBase::NPC)
+    if(type == ThingBase::NPC && found_type == ThingBase::NPC)
     {
       MapNPC* found_npc = static_cast<MapNPC*>(found_thing);
 
@@ -2311,7 +2314,7 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
     }
 
     /* -- IO Properties -- */
-    if(type == ThingBase::INTERACTIVE)
+    if(type == ThingBase::INTERACTIVE && found_type == ThingBase::INTERACTIVE)
     {
       MapInteractiveObject* found_io =
                                static_cast<MapInteractiveObject*>(found_thing);
@@ -2757,12 +2760,21 @@ void Map::unloadMap()
 }
 
 /* Unlock triggers, based on parameter information */
-void Map::unlockIO(int io_id, UnlockIOMode mode, int state_num,
-                   UnlockIOEvent mode_events, UnlockView mode_view,
-                   int view_time)
+void Map::unlockIO(MapThing* source, int io_id, UnlockIOMode mode, 
+                   int state_num, UnlockIOEvent mode_events,
+                   UnlockView mode_view, int view_time)
 {
   /* Find io ptr */
-  MapInteractiveObject* found = getIO(io_id);
+  MapInteractiveObject* found = nullptr;
+  if(io_id < 0 && source != nullptr && 
+     source->classDescriptor() == ThingBase::INTERACTIVE)
+  {
+    found = static_cast<MapInteractiveObject*>(source);
+  }
+  else
+  {
+    found = getIO(io_id);
+  }
 
   /* Parse and attempt unlock, if found and check view */
   if(found != nullptr && found->unlockTrigger(mode, state_num, mode_events))
@@ -2770,12 +2782,21 @@ void Map::unlockIO(int io_id, UnlockIOMode mode, int state_num,
 }
 
 /* Unlock triggers, based on parameter information */
-void Map::unlockThing(int thing_id, UnlockView mode_view, int view_time)
+void Map::unlockThing(MapThing* source, int thing_id, UnlockView mode_view,
+                      int view_time)
 {
   /* Find thing (or person or npc) ptr */
-  MapThing* found = getThing(thing_id);
-  if(found == nullptr)
-    found = getPerson(thing_id);
+  MapThing* found;
+  if(thing_id < 0 && source != nullptr)
+  {
+    found = source;
+  }
+  else
+  {
+    found = getThing(thing_id);
+    if(found == nullptr)
+      found = getPerson(thing_id);
+  }
 
   /* Unlock, if found */
   if(found != nullptr)
