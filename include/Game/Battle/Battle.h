@@ -17,12 +17,14 @@
 *
 * KNOWN BUGS
 * ----------
-* [Dec. 2015 Battle Processing] - Player Missed may still involve a hit? How?
-* [Dec. 2015 Battle Processing] - Sometimes Turn 1 Moves Do Not Occur [5%?]
-*****************************************************************************/
+* - Confusion with silence skills case
+* - Scroll bar
+* - Black frames
+*******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
 
+#include "Game/Battle/Victory.h"
 #include "Game/EventHandler.h"
 #include "Game/Battle/BattleEvent.h"
 #include "Game/Battle/Buffer.h"
@@ -130,9 +132,9 @@ private:
   BattleActor* upkeep_actor;
   Ailment* upkeep_ailment;
 
-  /*=============================================================================
-   * CONSTANTS - Battle Operations
-   *============================================================================*/
+/*=============================================================================
+ * CONSTANTS - Battle Operations
+ *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
   static const float kBASE_RUN_CHANCE;
@@ -147,9 +149,9 @@ private:
   static const int16_t kENEMY_RUN_EXP_PC;
   static const int16_t kRUN_PC_EXP_PENALTY;
 
-  /*=============================================================================
-   * CONSTANTS - Battle Display
-   *============================================================================*/
+/*=============================================================================
+ * CONSTANTS - Battle Display
+ *============================================================================*/
 
   const static uint16_t kACTION_BORDER; /* Border width on action slideout */
 
@@ -223,9 +225,9 @@ private:
 public:
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS - Battle Operations
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS - Battle Operations
+ *============================================================================*/
 private:
   /* Organized Skill methods for ActionStates of the outer BattleEvent loop */
   void actionStateBegin();

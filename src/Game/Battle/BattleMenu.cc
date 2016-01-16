@@ -580,7 +580,7 @@ SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
 
   Text t2(font_subheader);
   Text t5(font_subheader);
-  t2.setText(renderer, skill->getName(), kTEXT_STANDARD);
+  t2.setText(renderer, use_item->getName(), kTEXT_STANDARD);
 
   /* Create rendering texture */
   SDL_Texture* texture =
@@ -925,11 +925,13 @@ bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
     success &= frames_item_name[index]->render(renderer, text_x, text_y);
 
-    if(frames_skill_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    if(frames_item_name.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
     {
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
-      // TODO uint16_t center_x = x + w - kTYPE_MARGIN * 2;
-      // TODO uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
+      uint16_t center_x = x + w - kTYPE_MARGIN * 2;
+      uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
+      (void)center_x;
+      (void)center_y;
     }
 
     text_y += frames_item_name[index]->getHeight();
@@ -1278,7 +1280,6 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
   for(auto& battle_item : valid_battle_items)
   {
     auto item = battle_item->item;
-    auto use_skill = item->getUseSkill();
 
     frames_item_name.push_back(new Frame());
     frames_item_info.push_back(new Frame());
@@ -1331,7 +1332,7 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
         kBIGBAR_OFFSET + kBIGBAR_CHOOSE - kMENU_SEPARATOR_T -
             kMENU_SEPARATOR_B);
 
-    frames_skill_info.back()->setTexture(info_texture);
+    frames_item_info.back()->setTexture(info_texture);
   }
 
   if(success)
@@ -1496,6 +1497,7 @@ bool BattleMenu::render()
 
         if((uint32_t)element_index < frames_item_info.size())
         {
+          std::cout << "Rendering an item info frame!" << std::endl;
           success &= frames_item_info[element_index]->render(
               renderer, rect3.x + kTYPE_MARGIN, rect3.y);
         }

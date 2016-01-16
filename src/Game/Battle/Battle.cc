@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: Battle
+* Class Name: Battle [Declaration]
 * Date Created: June 22, 2014
 * Date Redesigned: September 5, 2015
 * Inheritance: None
@@ -1077,7 +1077,7 @@ void Battle::updateFadeInText()
   else if(random == 7)
     turn_text = "Destroy";
   else if(random == 8)
-    turn_text = "Where Is Mr. Boopster";
+    turn_text = "Where Is Boopster";
   else if(random == 9)
     turn_text = "Bearly Even Difficult";
   else if(random == 10)
@@ -1096,10 +1096,6 @@ void Battle::updateOutcome()
 {
   if(outcome == OutcomeType::VICTORY)
   {
-    std::cout << "==================" << std::endl;
-    std::cout << "   VICTORIOUS     " << std::endl;
-    std::cout << "==================" << std::endl;
-
     auto total_exp_drop = 0;
 
     for(auto& enemy : getEnemies())
@@ -3085,194 +3081,3 @@ bool Battle::update(int32_t cycle_time)
 
   return false;
 }
-
-/*=============================================================================
- * TO REFACTOR
- *============================================================================*/
-
-// void Battle::battleWon()
-//   // TODO [04-03-15]
-//   // Update the personal record for each member, including battle counts
-//   // and what battles they have won
-//   // Future: Bestiary index
-//   // For each living member in friends
-//   // Add experience to the member (event loop processing?)
-//   // Find out if a level up occurs
-//   // Find out how many level ups occur
-//   // Append each as a level up event
-//   // Find out differences in skill gains
-//   // Append skill differences to a skill differences vector
-//   // Show total skill difference with current skills at end
-//   // For each equipment
-//   // For each Bubby
-//   // Add exp to the bubby -> will level up
-//   // For the loot
-//   // Find out what items will be received -> add to inventory
-//   // Refuse gain of items?
-//   // Findo out how much money will be received -> add to inventory
-
-// bool Battle::doesCurrPersonRun()
-// {
-//   auto can_run_happen = true;
-//   auto run_happens = false;
-
-//   /* First, determine if a run is possible */
-//   can_run_happen &= (foes->getPartyType() == PartyType::REGULAR_FOE);
-//   can_run_happen &= curr_user->getBFlag(BState::ALIVE);
-//   can_run_happen &= curr_user->getBFlag(BState::RUN_ENABLED);
-
-//   if(can_run_happen)
-//   {
-//     /* Next, determine the chance for a run to occur. Users with higher
-//      * momentum will have a higher chance of running. Parties with higher
-//      * momentum will have a higher chance of running. Enemies with higher
-//      * momentum will decrease the chance of a successful run */
-//     std::vector<Person*> other_allies;
-//     Party* other_enemies;
-//     double mmnt_p = 0;
-
-//     if(person_index < 0)
-//     {
-//       other_allies = foes->findMembersExcept(curr_user, true);
-//       other_enemies = friends;
-//     }
-//     else
-//     {
-//       other_allies = friends->findMembersExcept(curr_user, true);
-//       other_enemies = foes;
-//     }
-
-//     mmnt_p +=
-//         curr_user->getCurr().getStat(Attribute::MMNT) * kUSER_RUN_MODIFIER;
-
-//     /* Add each other allies momentum by the factor of ally run modifier */
-//     for(const auto& ally : other_allies)
-//       mmnt_p += ally->getCurr().getStat(Attribute::MMNT) *
-//       kALLY_RUN_MODIFIER;
-
-//     /* Add each enemies momentum by the factor of enemy run modifier */
-//     mmnt_p += other_enemies->getTotalSpeed() * kENEMY_RUN_MODIFIER;
-
-//     /* Determine the percent change based on run mmnt pc modifier */
-//     auto pc_change = kRUN_PC_PER_POINT * mmnt_p;
-//     auto run_chance = (int32_t)(pc_change * 100) + (kBASE_RUN_CHANCE *
-//     100);
-//     run_happens = Helpers::chanceHappens(run_chance, 100);
-//   }
-
-//   return run_happens;
-// }
-
-// bool Battle::processAlterAction(BattleEvent* alter_event, Person*
-// action_target,
-//                                 Person* factor_target)
-// {
-//   auto ally_target = friends->isInParty(curr_target);
-//   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
-//   auto vari_pc = curr_action->actionFlag(ActionFlags::VARI_PC);
-//   int32_t base = curr_action->getBase();
-//   int32_t vari = curr_action->getVariance();
-
-//   int32_t cur_value = 0;
-//   int32_t set_value = 0;
-//   int32_t var_value = 0;
-//   float one_pc = 0.0;
-//   auto party_death = false;
-
-//   auto max_value = action_target->getTemp().getStat(targ_attr);
-//   cur_value = action_target->getCurr().getStat(targ_attr);
-
-//   one_pc = static_cast<float>(factor_target->getTemp().getStat(user_attr));
-//   one_pc /= 100;
-
-//   set_value =
-//       (base_pc) ? (std::floor(static_cast<int32_t>(one_pc * base))) :
-//       (base);
-//   var_value =
-//       (vari_pc) ? (std::floor(static_cast<int32_t>(one_pc * vari))) :
-//       (vari);
-
-//   var_value = Helpers::randU(-var_value, var_value);
-//   auto alt_value = set_value + var_value;
-
-//   /* The altered amount cannot be > the dif between max and current */
-//   if(alt_value > 0 && (alt_value + cur_value) > max_value)
-//   {
-//     alt_value = max_value - cur_value;
-//   }
-
-//   /* Assign the alteration amount to the alter event */
-//   if(alt_value > 0 && event_buffer->getLastEvent())
-//     event_buffer->getLastEvent()->type = EventType::HEAL_HEALTH;
-
-//   /* The altered amount cannot be such that it would decrease a stat to neg
-//   */
-//   else if(alt_value < 0 && alt_value < -cur_value)
-//   {
-//     alt_value = -cur_value;
-
-//     /* If the altered attribute is VITA, a death will occur here */
-//     if(targ_attr == Attribute::VITA)
-//     {
-//       event_buffer->createDeathEvent(EventType::DEATH, curr_target,
-//                                      ally_target);
-
-//       /* If a death occurs, processing needs to end after here */
-//       setBattleFlag(CombatState::CURR_TARG_DEAD, true);
-
-//       party_death = processPersonDeath(ally_target);
-//     }
-//   }
-
-//   alter_event->amount = alt_value;
-//   alter_event->happens = true;
-
-//   return party_death;
-// }
-
-// bool Battle::processAssignAction(BattleEvent* assign_event,
-//                                  Person* action_target, Person*
-//                                  factor_target)
-// {
-//   auto ally_target = friends->isInParty(action_target);
-//   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
-//   auto vari_pc = curr_action->actionFlag(ActionFlags::VARI_PC);
-//   int32_t base = curr_action->getBase();
-//   int32_t vari = curr_action->getVariance();
-//   int32_t set_value = 0;
-//   int32_t var_value = 0;
-//   float one_pc = 0.0;
-//   auto party_death = false;
-//   auto max_value = factor_target->getTemp().getStat(targ_attr);
-
-//   /* Find one percent of the given attribute */
-//   one_pc = static_cast<float>(factor_target->getCurr().getStat(user_attr));
-//   one_pc /= 100;
-
-//   /* Find percentages of base and variance values of the attributes */
-//   set_value =
-//       (base_pc) ? (std::floor(static_cast<int32_t>(one_pc * base))) :
-//       (base);
-//   var_value =
-//       (vari_pc) ? (std::floor(static_cast<int32_t>(one_pc * vari))) :
-//       (vari);
-
-//   set_value += Helpers::randU(-var_value, var_value);
-//   set_value = Helpers::setInRange(set_value, 0, max_value);
-
-//   assign_event->amount = set_value;
-//   assign_event->happens = true;
-
-//   /* If the set value is 0? What if not setting VITA? //TODO [02-01-15] */
-//   if(set_value == 0)
-//   {
-//     event_buffer->createDeathEvent(EventType::DEATH, action_target,
-//                                    ally_target);
-
-//     setBattleFlag(CombatState::CURR_TARG_DEAD, true);
-
-//     party_death = processPersonDeath(ally_target);
-//   }
-
-//   return party_death;
-// }
