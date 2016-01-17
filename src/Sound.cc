@@ -19,14 +19,14 @@ const int Sound::kSTOP_FADE = 1500;
 /* Public Constant Implementation */
 const int Sound::kDEFAULT_FREQUENCY = 22050;
 
-/* -- */
+/* Reserved Music IDs */
 const uint32_t Sound::kID_MUSIC_TITLE = 0;
 const uint32_t Sound::kID_MUSIC_LOADING = 1;
 const uint32_t Sound::kID_MUSIC_BATTLE = 2;
-/* -- */
+const uint32_t Sound::kID_MUSIC_VICTORY = 3;
+const uint32_t Sound::kID_MUSIC_DEFEAT = 4;
 
-
-/* Reserved IDS`
+/* Reserved Sound IDs
  *    System Sounds  0 - 49
  *    Map Sounds    50 - 99
  *   Battle Sounds 100 - 199
@@ -107,7 +107,7 @@ Sound::~Sound()
  *===========================================================================*/
 
 /* Copy function, to be called by a copy or equal operator constructor */
-void Sound::copySelf(const Sound &source)
+void Sound::copySelf(const Sound& source)
 {
   /* Core data */
   channel = source.channel;
@@ -293,8 +293,7 @@ bool Sound::isPlaying()
   {
     int channel_id = getChannelInt();
 
-    if(Mix_Playing(channel_id) > 0 &&
-       Mix_GetChunk(channel_id) == raw_data)
+    if(Mix_Playing(channel_id) > 0 && Mix_GetChunk(channel_id) == raw_data)
     {
       return true;
     }
@@ -322,8 +321,8 @@ bool Sound::play(bool stop_channel, bool skip_fade)
   bool success = false;
 
   /* Only proceed if the sound chunk is set and if the stop was successful */
-  if(raw_data != NULL && channel != SoundChannels::UNASSIGNED
-                      && stop(skip_fade))
+  if(raw_data != NULL && channel != SoundChannels::UNASSIGNED &&
+     stop(skip_fade))
   {
     int channel_int = getChannelInt();
 
@@ -335,7 +334,7 @@ bool Sound::play(bool stop_channel, bool skip_fade)
     int play_channel = -1;
     if(fade_time > 0 && !skip_fade)
       play_channel =
-            Mix_FadeInChannel(channel_int, raw_data, loop_count, fade_time);
+          Mix_FadeInChannel(channel_int, raw_data, loop_count, fade_time);
     else
       play_channel = Mix_PlayChannel(channel_int, raw_data, loop_count);
 
@@ -447,7 +446,7 @@ bool Sound::setSoundFile(std::string path)
     if(sound == NULL)
     {
       std::cerr << "[WARNING] Unable to load WAV file: " << path << std::endl;
-                //<< Mix_GetError() << std::endl;
+      //<< Mix_GetError() << std::endl;
       return false;
     }
 
@@ -552,7 +551,7 @@ void Sound::unsetSoundFile()
  * Inputs: const Sound &source - the source class constructor
  * Output: Sound& - pointer to the copied class
  */
-Sound& Sound::operator= (const Sound &source)
+Sound& Sound::operator=(const Sound& source)
 {
   /* Check for self assignment */
   if(this == &source)
@@ -692,7 +691,7 @@ int Sound::setAudioVolumes(int new_volume)
  */
 int Sound::setMasterVolume(int new_volume)
 {
-    /* Error checking on input */
+  /* Error checking on input */
   if(new_volume < 0)
     new_volume = 0;
   if(new_volume > MIX_MAX_VOLUME)

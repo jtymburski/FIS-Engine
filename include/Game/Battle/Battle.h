@@ -132,6 +132,9 @@ private:
   BattleActor* upkeep_actor;
   Ailment* upkeep_ailment;
 
+  /* The victory screen */
+  Victory* victory_screen;
+
 /*=============================================================================
  * CONSTANTS - Battle Operations
  *============================================================================*/
@@ -344,7 +347,7 @@ private:
   void updateFadeInText();
 
   /* Updates the outcome state of the battle */
-  void updateOutcome();
+  void updateOutcome(int32_t cycle_time);
 
   /* Updates the personal upkeep step */
   void updatePersonalUpkeep();

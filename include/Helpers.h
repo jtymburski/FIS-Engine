@@ -214,6 +214,9 @@ public:
   /* Returns the enumerated valid status to string form */
   static std::string validStatusToStr(const ValidStatus& valid_status);
 
+  /* Renders the string equivalent of a VictoryState enum */
+  static std::string victoryStateToStr(VictoryState victory_state);
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

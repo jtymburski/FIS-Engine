@@ -156,7 +156,8 @@ Battle::Battle()
       time_elapsed{0},
       turns_elapsed{0},
       upkeep_actor{nullptr},
-      upkeep_ailment{nullptr}
+      upkeep_ailment{nullptr},
+      victory_screen{nullptr}
 {
   /* Create a new action buffer and a menu object */
   battle_buffer = new Buffer();
@@ -228,16 +229,16 @@ void Battle::actionStateSlideOut()
 
 void Battle::actionStateSwitchSprite()
 {
-    auto skill_hit_status = event->doesSkillHit();
+  auto skill_hit_status = event->doesSkillHit();
 
-    if(skill_hit_status == SkillHitStatus::HIT)
-      processEventSkill();
-    else
-      event->action_state = ActionState::SKILL_MISS;
+  if(skill_hit_status == SkillHitStatus::HIT)
+    processEventSkill();
+  else
+    event->action_state = ActionState::SKILL_MISS;
 
-    event->action_state = ActionState::ACTION_START;
+  event->action_state = ActionState::ACTION_START;
 
-    addDelay(200);
+  addDelay(200);
 }
 
 /* Create the fading-in action text */
@@ -339,7 +340,6 @@ bool Battle::bufferMenuSelection()
 
       /* Remove the item from the inventory after use */
       success &= party_allies->getInventory()->removeID(item_id);
-
     }
   }
   else if(success && action_type == ActionType::PASS)
@@ -856,7 +856,7 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
 
   if(success && party_enemies)
   {
-    //TODO: Enemy items probably broken.
+    // TODO: Enemy items probably broken.
     // success &=
     //     next_actor->buildBattleItems(party_enemies->getInventory(), actors);
     success &= next_actor->buildBattleSkills(actors);
@@ -919,7 +919,8 @@ void Battle::updateDelay(int32_t decrement_delay)
 /* Update the current Buffer element */
 void Battle::updateEvent()
 {
-  if(event->action_type == ActionType::SKILL || event->action_type == ActionType::ITEM)
+  if(event->action_type == ActionType::SKILL ||
+     event->action_type == ActionType::ITEM)
   {
     if(event->action_state == ActionState::BEGIN)
       actionStateBegin();
@@ -938,13 +939,13 @@ void Battle::updateEvent()
   }
   else if(event->action_type == ActionType::PASS)
   {
-      event->action_state = ActionState::DONE;
+    event->action_state = ActionState::DONE;
   }
 }
 
 void Battle::processEventItem()
 {
-  //TODO: Do the same thing?
+  // TODO: Do the same thing?
   processEventSkill();
 }
 
@@ -1092,67 +1093,77 @@ void Battle::updateFadeInText()
   setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
-void Battle::updateOutcome()
+void Battle::updateOutcome(int32_t cycle_time)
 {
   if(outcome == OutcomeType::VICTORY)
   {
-    auto total_exp_drop = 0;
-
-    for(auto& enemy : getEnemies())
+    if(victory_screen)
     {
-      if(enemy && enemy->getBasePerson())
-      {
-        auto xp = enemy->getBasePerson()->getExpDrop();
-        auto lv = enemy->getBasePerson()->getLevel();
-
-        total_exp_drop += (xp + ((lv - 1) * xp * 0.60));
-      }
+      victory_screen->update(cycle_time);
     }
-
-    for(auto& ally : getAllies())
+    else
     {
-      auto level_up_occured = false;
+      victory_screen = new Victory(config, renderer, getAllies(), getEnemies());
 
-      if(ally && ally->getBasePerson())
+      // TODO - BRING INTO VICTORY SCREEN
+      auto total_exp_drop = 0;
+
+      for(auto& enemy : getEnemies())
       {
-        for(auto& ailment : ally->getAilments())
-          ally->removeAilment(ailment);
-
-        auto name = ally->getBasePerson()->getName();
-        std::cout << name << " has gained: " << total_exp_drop << " experience!"
-                  << std::endl;
-
-        auto old_level = ally->getBasePerson()->getLevel();
-        ally->getBasePerson()->addExp(total_exp_drop);
-        auto new_level = ally->getBasePerson()->getLevel();
-
-        if(new_level != old_level)
-          level_up_occured = true;
-
-        for(int i = (new_level - old_level); i > 0; i--)
-          std::cout << name << " has leveled up!" << std::endl;
-
-        /* If no level up happened -> set the base person's health and qtdr to
-         *   the value in the actual stats */
-        if(!level_up_occured)
+        if(enemy && enemy->getBasePerson())
         {
-          auto base = ally->getBasePerson();
+          auto xp = enemy->getBasePerson()->getExpDrop();
+          auto lv = enemy->getBasePerson()->getLevel();
 
-          if(base)
+          total_exp_drop += (xp + ((lv - 1) * xp * 0.60));
+        }
+      }
+
+      for(auto& ally : getAllies())
+      {
+        auto level_up_occured = false;
+
+        if(ally && ally->getBasePerson())
+        {
+          for(auto& ailment : ally->getAilments())
+            ally->removeAilment(ailment);
+
+          auto name = ally->getBasePerson()->getName();
+          std::cout << name << " has gained: " << total_exp_drop
+                    << " experience!" << std::endl;
+
+          auto old_level = ally->getBasePerson()->getLevel();
+          ally->getBasePerson()->addExp(total_exp_drop);
+          auto new_level = ally->getBasePerson()->getLevel();
+
+          if(new_level != old_level)
+            level_up_occured = true;
+
+          for(int i = (new_level - old_level); i > 0; i--)
+            std::cout << name << " has leveled up!" << std::endl;
+
+          /* If no level up happened -> set the base person's health and qtdr to
+           *   the value in the actual stats */
+          if(!level_up_occured)
           {
-            auto equip_stats = base->calcEquipStats();
-            auto max_health =
-                (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
+            auto base = ally->getBasePerson();
 
-            auto curr_health = ally->getStats().getBaseValue(Attribute::VITA);
-            auto max_qtdr =
-                (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
-            auto curr_qtdr = ally->getStats().getBaseValue(Attribute::QTDR);
+            if(base)
+            {
+              auto equip_stats = base->calcEquipStats();
+              auto max_health =
+                  (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
 
-            if(curr_health <= max_health)
-              base->getCurr().setStat(Attribute::VITA, curr_health);
-            if(curr_qtdr <= max_qtdr)
-              base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
+              auto curr_health = ally->getStats().getBaseValue(Attribute::VITA);
+              auto max_qtdr =
+                  (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
+              auto curr_qtdr = ally->getStats().getBaseValue(Attribute::QTDR);
+
+              if(curr_health <= max_health)
+                base->getCurr().setStat(Attribute::VITA, curr_health);
+              if(curr_qtdr <= max_qtdr)
+                base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
+            }
           }
         }
       }
@@ -1385,7 +1396,8 @@ void Battle::updateUserSelection()
       if(next_actor->getFlag(ActorState::SELECTION_RANDOM))
       {
         // std::cout << " Attempting to choose a a random action for actor: "
-        //           << next_actor->getBasePerson()->getName() << "." << std::endl;
+        //           << next_actor->getBasePerson()->getName() << "." <<
+        //           std::endl;
 
         auto next_module = getModuleOfActor(next_actor);
         next_module->resetForNewTurn(next_actor);
@@ -2863,6 +2875,7 @@ void Battle::stopBattle()
   party_enemies = nullptr;
   upkeep_actor = nullptr;
   upkeep_ailment = nullptr;
+  victory_screen = nullptr;
 }
 
 std::vector<BattleActor*> Battle::getAllies()
@@ -3073,7 +3086,7 @@ bool Battle::update(int32_t cycle_time)
       else if(turn_state == TurnState::CLEAN_UP)
         cleanUpTurn();
       else if(turn_state == TurnState::OUTCOME)
-        updateOutcome();
+        updateOutcome(cycle_time);
     }
   }
 

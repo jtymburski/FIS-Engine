@@ -30,6 +30,7 @@ enum class FontName
   BATTLE_HEADER,
   BATTLE_SUBHEADER,
   BATTLE_TURN,
+  BATTLE_VICTORY_HEADER,
   REGULAR_FONT
 };
 
@@ -57,6 +58,7 @@ private:
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
+  /* Destroy the fonts */
   void deleteFonts();
 
   /* Return the pointer to the font of a given FontName enumerated key */

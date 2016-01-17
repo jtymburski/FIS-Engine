@@ -29,6 +29,7 @@ Fonts::Fonts(Options* config)
 }
 
 /*
+
  * Description:
  */
 Fonts::~Fonts()
@@ -57,10 +58,10 @@ bool Fonts::createFonts(Options* config)
     /* Create the fonts */
     fonts.emplace(FontName::BATTLE_ACTION,
                   Text::createFont(config->getBasePath() + config->getFont(1),
-                                   60, TTF_STYLE_NORMAL));
+                                   15, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::BATTLE_DAMAGE,
                   Text::createFont(config->getBasePath() + config->getFont(),
-                                   28, TTF_STYLE_BOLD));
+                                   98, TTF_STYLE_BOLD));
     fonts.emplace(FontName::BATTLE_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    16, TTF_STYLE_BOLD));
@@ -73,8 +74,10 @@ bool Fonts::createFonts(Options* config)
     fonts.emplace(FontName::REGULAR_FONT,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    18, TTF_STYLE_NORMAL));
+    fonts.emplace(FontName::REGULAR_FONT,
+                  Text::createFont(config->getBasePath() + config->getFont(),
+                                   60, TTF_STYLE_NORMAL));
 
-   std::cout << "Built da fonts" << std::endl;
     /* Assert all fonts are not nullptr */
     for(auto& map_font : fonts)
       success &= (map_font.second != nullptr);
@@ -103,8 +106,6 @@ void Fonts::deleteFonts()
     TTF_CloseFont(map_font.second);
     map_font.second = nullptr;
   }
-
-  fonts.clear();
 }
 
 TTF_Font* Fonts::getFont(FontName font_name)
@@ -116,11 +117,3 @@ TTF_Font* Fonts::getFont(FontName font_name)
 
   return nullptr;
 }
-
-/*=============================================================================
-* PUBLIC STATIC FUNCTIONS
-*============================================================================*/
-
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/

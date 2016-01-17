@@ -131,7 +131,6 @@ enum class AIDifficulty
 
 /*
  * Description: Enumerated types of personality an AI may have
- *
  */
 enum class AIPersonality
 {
@@ -161,6 +160,9 @@ enum class AITarget
   STRONGEST_FIRST = 1 << 2
 };
 
+/*
+ * Description:
+ */
 enum class AilmentClass
 {
   DAMAGING,
@@ -170,6 +172,9 @@ enum class AilmentClass
   UNSET
 };
 
+/*
+ * Description:
+ */
 enum class AilmentStatus
 {
   INCOMPLETE,
@@ -257,14 +262,6 @@ enum class CellState : std::uint32_t
   CLOSED,
   BLOCKED,
   LINK
-};
-
-enum class DamageState
-{
-  DAMAGE,
-  PERSON_DEATH_CHECK,
-  PARTY_DEATH_CHECK,
-  COMPLETE
 };
 
 /*
@@ -370,7 +367,9 @@ enum class EquipSlots : std::uint8_t
   LEGS = 4
 };
 
-// TODO - Conventions
+/*
+ * Description:
+ */
 enum class GameKey
 {
   MOVE_LEFT,
@@ -386,6 +385,9 @@ enum class GameKey
   NONE
 };
 
+/*
+ * Description:
+ */
 enum class FadeState
 {
   FADING_IN,
@@ -457,6 +459,9 @@ enum class ItemTier : std::uint8_t
   NONE = 6
 };
 
+/*
+ * Description:
+ */
 enum class OutcomeType
 {
   VICTORY,
@@ -465,13 +470,6 @@ enum class OutcomeType
   ENEMIES_RUN,
   RETURN,
   NONE
-};
-
-enum class PartyTarget : std::uint8_t
-{
-  NONE = 0,
-  FRIENDS = 1,
-  FOES = 2
 };
 
 /*
@@ -491,7 +489,7 @@ enum class PartyType : std::uint8_t
 };
 
 /*
- * Description: The ranks a Person may hold
+ * Description:
  */
 enum class Ranks : std::uint16_t
 {
@@ -511,6 +509,9 @@ enum class Ranks : std::uint16_t
   NONE
 };
 
+/*
+ * Description:
+ */
 enum class RenderStatus
 {
   FADING_IN,
@@ -519,6 +520,9 @@ enum class RenderStatus
   TIMED_OUT
 };
 
+/*
+ * Description:
+ */
 enum class RegenRate : std::uint16_t
 {
   ZERO = 0,
@@ -528,6 +532,9 @@ enum class RegenRate : std::uint16_t
   GRAND = 4
 };
 
+/*
+ * Description:
+ */
 enum class SkillSorts : std::uint32_t
 {
   COOLDOWN,
@@ -541,6 +548,9 @@ enum class SkillSorts : std::uint32_t
   ENABLED
 };
 
+/*
+ * Description:
+ */
 enum class SortObjects : std::uint32_t
 {
   ZERO_BUBBIES,
@@ -610,6 +620,9 @@ enum class TurnState
   STOPPED /* Battle should be stopped */
 };
 
+/*
+ * Description:
+ */
 enum class ValidStatus
 {
   VALID,
@@ -618,6 +631,20 @@ enum class ValidStatus
   NO_TARGETS,
   ZERO_COUNT,
   INVALID
+};
+
+/*
+ * Description:
+ */
+enum class VictoryState
+{
+  DIM_BATTLE,
+  SLIDE_IN_LOOT,
+  SLIDE_IN_CARD,
+  SLIDE_OUT_CARD,
+  SLIDE_OUT_LOOT,
+  FADE_OUT,
+  FINISHED
 };
 
 /*

@@ -83,19 +83,27 @@ private:
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
   const static int kSTOP_FADE; /* Stop fade time on channel */
+
 public:
   const static int kDEFAULT_FREQUENCY; /* Sound frequency - DO NOT CHANGE */
+
+  /* Reserved Music IDs */
   const static uint32_t kID_MUSIC_BATTLE;
   const static uint32_t kID_MUSIC_LOADING;
   const static uint32_t kID_MUSIC_TITLE;
+  const static uint32_t kID_MUSIC_VICTORY;
+  const static uint32_t kID_MUSIC_DEFEAT;
 
+  /* Reserved Sound Map IDs */
   const static uint32_t kID_SOUND_PICK_COIN;
   const static uint32_t kID_SOUND_PICK_ITEM;
 
+  /* Reserved Sound Menu IDs */
   const static uint32_t kID_SOUND_MENU_CHG;
   const static uint32_t kID_SOUND_MENU_NEXT;
   const static uint32_t kID_SOUND_MENU_PREV;
 
+  /* Reserved Sound Battle IDs */
   const static uint32_t kID_SOUND_BTL_CONFUSE;
   const static uint32_t kID_SOUND_BTL_DEATH;
   const static uint32_t kID_SOUND_BTL_FIRE;

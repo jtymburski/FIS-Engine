@@ -1311,6 +1311,12 @@ std::string Helpers::typeToStr(const ThingBase& type)
   return "None";
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::string Helpers::turnStateToStr(const TurnState& turn_state)
 {
   if(turn_state == TurnState::BEGIN)
@@ -1339,6 +1345,12 @@ std::string Helpers::turnStateToStr(const TurnState& turn_state)
   return "FINISHED";
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::string Helpers::validStatusToStr(const ValidStatus& valid_status)
 {
   if(valid_status == ValidStatus::VALID)
@@ -1352,6 +1364,33 @@ std::string Helpers::validStatusToStr(const ValidStatus& valid_status)
 
   return "INVALID";
 }
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+std::string Helpers::victoryStateToStr(VictoryState victory_state)
+{
+  if(victory_state == VictoryState::DIM_BATTLE)
+    return "DIM_BATTLE";
+  if(victory_state == VictoryState::SLIDE_IN_LOOT)
+    return "SLIDE_IN_LOOT";
+  if(victory_state == VictoryState::SLIDE_IN_CARD)
+    return "SLIDE_IN_CARD";
+  if(victory_state == VictoryState::SLIDE_OUT_CARD)
+    return "SLIDE_OUT_CARD";
+  if(victory_state == VictoryState::SLIDE_OUT_LOOT)
+    return "SLIDE_OUT_LOOT";
+  if(victory_state == VictoryState::FADE_OUT)
+    return "FADE_OUT";
+  if(victory_state == VictoryState::FINISHED)
+    return "FINISHED";
+
+  return "";
+}
+
 
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
