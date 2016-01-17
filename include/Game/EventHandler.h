@@ -135,6 +135,10 @@ public:
   bool pollLockGetData(Locked& lock);
   bool pollLockSetData(Locked lock);
 
+  /* Poll a multiple event */
+  bool pollMultiple(MapPerson*& person, MapThing*& source, 
+                    std::vector<EventPair>& events);
+
   /* Poll the empty event */
   bool pollNone();
 

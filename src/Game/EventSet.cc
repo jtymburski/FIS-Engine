@@ -970,6 +970,8 @@ EventClassifier EventSet::classifierFromStr(const std::string& classifier)
     return EventClassifier::ITEMTAKE;
   else if(class_up == "MAP SWITCH")
     return EventClassifier::MAPSWITCH;
+  else if(class_up == "MULTIPLE")
+    return EventClassifier::MULTIPLE;
   else if(class_up == "NOTIFICATION")
     return EventClassifier::NOTIFICATION;
   else if(class_up == "PROPERTY MOD")
@@ -1005,6 +1007,8 @@ std::string EventSet::classifierToStr(const EventClassifier& classifier)
     return "Item: Take";
   else if(classifier == EventClassifier::MAPSWITCH)
     return "Map Switch";
+  else if(classifier == EventClassifier::MULTIPLE)
+    return "Multiple";
   else if(classifier == EventClassifier::NOTIFICATION)
     return "Notification";
   else if(classifier == EventClassifier::PROPERTY)
@@ -1051,9 +1055,6 @@ Event EventSet::copyEvent(Event source, bool skeleton)
   for(uint32_t i = 0; i < source.events.size(); i++)
   {
     event.events.push_back(copyEvent(source.events[i], skeleton));
-    //Event* event_ptr = new Event();
-    //*event_ptr = copyEvent(*(source.events[i]));
-    //event.events.push_back(event_ptr);
   }
 
   /* If convo, do the proper copy */
@@ -1364,6 +1365,29 @@ Event EventSet::createEventGiveItem(int id, int count, int sound_id)
   /* Fill in the event specific information */
   new_event.ints.push_back(id);
   new_event.ints.push_back(count);
+
+  return new_event;
+}
+  
+/*
+ * Description: Public static. Creates a new multi event with the passed in set
+ *              of sub events, and an optional connected sound ID. 
+ *
+ * Inputs: std::vector<Event> event - set of events to trigger within the
+ *                                    multiple. Default to blank
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the multi event to utilize
+ */
+Event EventSet::createEventMultiple(std::vector<Event> events, int sound_id)
+{
+  /* Create the new event and identify */
+  Event new_event = createBlankEvent();
+  new_event.classification = EventClassifier::MULTIPLE;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
+
+  /* Fill in the event specific information */
+  new_event.events = events;
 
   return new_event;
 }
@@ -1889,6 +1913,31 @@ bool EventSet::dataEventGiveItem(Event event, int& item_id, int& count)
 }
 
 /*
+ * Description: Extracts data from the passed in event if its a multiple event.
+ *
+ * Inputs: Event* event - the event ref to extract the data from
+ *         std::vector<Event*>& event_list - set of event list references 
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventMultiple(Event* event, 
+                                 std::vector<Event*>& event_list)
+{
+  if(event != nullptr && event->classification == EventClassifier::MULTIPLE)
+  {
+    /* First clear in passed array in case events were in it prior */
+    event_list.clear();
+
+    /* Parse through events and add reference to stack */
+    for(uint32_t i = 0; i < event->events.size(); i++)
+      event_list.push_back(&(event->events[i]));
+
+    return true;
+  }
+  return false;
+}
+
+/*
  * Description: Extracts data from the passed in event if its a notification
  *              event.
  *
@@ -2169,9 +2218,6 @@ Event EventSet::deleteEvent(Event event)
   for(uint32_t i = 0; i < event.events.size(); i++)
   {
     deleteEvent(event.events[i]);
-    //deleteEvent(*event.events[i]);
-    //delete event.events[i];
-    //event.events[i] = nullptr;
   }
   event.events.clear();
 
@@ -2340,6 +2386,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     category = EventClassifier::ITEMTAKE;
   else if(category_str == "startmap")
     category = EventClassifier::MAPSWITCH;
+  else if(category_str == "multiple")
+    category = EventClassifier::MULTIPLE;
   else if(category_str == "notification")
     category = EventClassifier::NOTIFICATION;
   else if(category_str == "propertymod")
@@ -2370,6 +2418,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event = createEventTakeItem();
     else if(category == EventClassifier::MAPSWITCH)
       event = createEventStartMap();
+    else if(category == EventClassifier::MULTIPLE)
+      event = createEventMultiple();
     else if(category == EventClassifier::NOTIFICATION)
       event = createEventNotification();
     else if(category == EventClassifier::PROPERTY)
@@ -2386,16 +2436,18 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event = createEventUnlockTile();
   }
 
+  /* Element */
+  std::string element = data.getElement(file_index + 1);
+
   /* Proceed to set up the event with the marked changes */
-  if(data.getElement(file_index + 1) == "one_shot")
+  if(element == "one_shot")
   {
     bool one_shot = data.getDataBool(&read_success);
     if(read_success)
       event.one_shot = one_shot;
   }
   /* -- SOUND ONLY -- */
-  else if(data.getElement(file_index + 1) == "sound_id" ||
-          category == EventClassifier::SOUNDONLY)
+  else if(element == "sound_id" || category == EventClassifier::SOUNDONLY)
   {
     int32_t sound_id = data.getDataInteger(&read_success);
     if(read_success && sound_id >= 0)
@@ -2410,7 +2462,6 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     if(dataEventStartBattle(&event, flags, event_win, event_lose))
     {
       /* Parse new data */
-      std::string element = data.getElement(file_index + 1);
       if(element == "windisappear" || element == "losegg" ||
          element == "restorehealth" || element == "restoreqd")
       {
@@ -2468,33 +2519,46 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   /* -- ITEM GIVE -- */
   else if(category == EventClassifier::ITEMGIVE)
   {
-    std::string give_item_element = data.getElement(file_index + 1);
-    if(give_item_element == "id")
+    if(element == "id")
       event.ints.at(kGIVE_ITEM_ID) = data.getDataInteger();
-    else if(give_item_element == "count")
+    else if(element == "count")
       event.ints.at(kGIVE_ITEM_COUNT) = data.getDataInteger();
   }
   /* -- ITEM TAKE -- */
   else if(category == EventClassifier::ITEMTAKE)
   {
-    std::string take_item_element = data.getElement(file_index + 1);
-    if(take_item_element == "id")
+    if(element == "id")
       event.ints.at(kTAKE_ITEM_ID) = data.getDataInteger();
-    else if(take_item_element == "count")
+    else if(element == "count")
       event.ints.at(kTAKE_ITEM_COUNT) = data.getDataInteger();
   }
   /* -- MAP SWITCH -- */
   else if(category == EventClassifier::MAPSWITCH)
   {
-    std::string element = data.getElement(file_index + 1);
     if(element == "id")
       event.ints.at(kMAP_ID) = data.getDataInteger();
+  }
+  /* -- MULTIPLE -- */
+  else if(category == EventClassifier::MULTIPLE)
+  {
+    if(element == "event")
+    {
+      int id = std::stoi(data.getKeyValue(file_index + 1));
+
+      /* Increase size to accomodate new ID index */
+      while(static_cast<int>(event.events.size()) <= id)
+        event.events.push_back(createBlankEvent());
+
+      /* Load the information into the new index event */
+      event.events[id] = updateEvent(event.events[id], data, file_index + 2,
+                                     section_index);
+    }
   }
   /* -- NOTIFICATION -- */
   else if(category == EventClassifier::NOTIFICATION)
   {
     if(data.getTailElements(file_index).size() == 1 ||
-       data.getElement(file_index + 1) == "text")
+       element == "text")
     {
       event.strings.at(0) = data.getDataString();
     }
@@ -2511,32 +2575,31 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
                        respawn, speed, track, visible);
 
     /* Parse the element */
-    std::string prop_element = data.getElement(file_index + 1);
-    if(prop_element == "class")
+    if(element == "class")
     {
       ThingBase class_def = Helpers::typeFromStr(data.getDataString());
       event.ints.at(kPROP_TYPE) = static_cast<int>(class_def);
     }
-    else if(prop_element == "id")
+    else if(element == "id")
     {
       event.ints.at(kPROP_ID) = data.getDataInteger();
     }
-    else if(prop_element == "inactive")
+    else if(element == "inactive")
     {
       event.ints.at(kPROP_INACTIVE) = data.getDataInteger();
       inactive = true;
     }
-    else if(prop_element == "respawn")
+    else if(element == "respawn")
     {
       event.ints.at(kPROP_RESPAWN) = data.getDataInteger();
       respawn = true;
     }
-    else if(prop_element == "speed")
+    else if(element == "speed")
     {
       event.ints.at(kPROP_SPEED) = data.getDataInteger();
       speed = true;
     }
-    else if(prop_element == "tracking")
+    else if(element == "tracking")
     {
       TrackingState track_def = TrackingState::NOTRACK;
       std::string track_str = data.getDataString();
@@ -2559,27 +2622,27 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
                          reset_b, respawn_b, speed_b, track_b, visible_b);
 
       /* Parse new data */
-      if(prop_element == "active")
+      if(element == "active")
       {
         active_b = data.getDataBool();
         active = true;
       }
-      else if(prop_element == "forceinteract")
+      else if(element == "forceinteract")
       {
         forced_b = data.getDataBool();
         forced = true;
       }
-      else if(prop_element == "movedisable")
+      else if(element == "movedisable")
       {
         move_b = data.getDataBool();
         move = true;
       }
-      else if(prop_element == "resetlocation")
+      else if(element == "resetlocation")
       {
         reset_b = data.getDataBool();
         reset = true;
       }
-      else if(prop_element == "visible")
+      else if(element == "visible")
       {
         visible_b = data.getDataBool();
         visible = true;
@@ -2599,14 +2662,13 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   /* -- TELEPORT THING -- */
   else if(category == EventClassifier::TELEPORTTHING)
   {
-    std::string teleport_element = data.getElement(file_index + 1);
-    if(teleport_element == "id")
+    if(element == "id")
       event.ints.at(kTELEPORT_ID) = data.getDataInteger();
-    if(teleport_element == "x")
+    if(element == "x")
       event.ints.at(kTELEPORT_X) = data.getDataInteger();
-    else if(teleport_element == "y")
+    else if(element == "y")
       event.ints.at(kTELEPORT_Y) = data.getDataInteger();
-    else if(teleport_element == "section")
+    else if(element == "section")
       event.ints.at(kTELEPORT_SECTION) = data.getDataInteger();
   }
   /* -- UNLOCK IO -- */
@@ -2621,7 +2683,6 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
                          mode_view, view_time))
     {
       /* Parse new data */
-      std::string element = data.getElement(file_index + 1);
       if(element == "evententer" || element == "eventexit" ||
          element == "eventuse" || element == "eventwalkover" ||
          element == "eventall")
@@ -2700,7 +2761,6 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     if(dataEventUnlockThing(event, thing_id, mode_view, view_time))
     {
       /* Parse new data */
-      std::string element = data.getElement(file_index + 1);
       if(element == "id")
       {
         thing_id = data.getDataInteger();
@@ -2741,7 +2801,6 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
                            mode_view, view_time))
     {
       /* Parse new data */
-      std::string element = data.getElement(file_index + 1);
       if(element == "evententer" || element == "eventexit" ||
          element == "eventall")
       {

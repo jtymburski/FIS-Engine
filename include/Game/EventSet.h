@@ -44,16 +44,17 @@ enum class EventClassifier : std::uint32_t
   ITEMGIVE        = 1 << 2,
   ITEMTAKE        = 1 << 3,
   MAPSWITCH       = 1 << 4,
-  NOTIFICATION    = 1 << 5,
-  PROPERTY        = 1 << 6,
-  SOUNDONLY       = 1 << 7,
-  TELEPORTTHING   = 1 << 8,
-  UNLOCKIO        = 1 << 9,
-  UNLOCKTHING     = 1 << 10,
-  UNLOCKTILE      = 1 << 11, /* Used in Editor to define last in combo */
+  MULTIPLE        = 1 << 5,
+  NOTIFICATION    = 1 << 6,
+  PROPERTY        = 1 << 7,
+  SOUNDONLY       = 1 << 8,
+  TELEPORTTHING   = 1 << 9,
+  UNLOCKIO        = 1 << 10,
+  UNLOCKTHING     = 1 << 11,
+  UNLOCKTILE      = 1 << 12, /* Used in Editor to define last in combo */
   /* Separator: All categories lower are not editable by game designer */
-  ITEMPICKUP      = 1 << 12,
-  TRIGGERIO       = 1 << 13,
+  ITEMPICKUP      = 1 << 13,
+  TRIGGERIO       = 1 << 14,
 };
 
 /*
@@ -408,6 +409,11 @@ public:
   static Event createEventGiveItem(int id = kUNSET_ID, int count = 0,
                                    int sound_id = kUNSET_ID);
 
+  /* Creates a multiple event with a set of events */
+  static Event createEventMultiple(
+                             std::vector<Event> events = std::vector<Event>(),
+                             int sound_id = kUNSET_ID);
+
   /* Creates a notification event, that can fire and result in visible text */
   static Event createEventNotification(std::string notification = "",
                                        int sound_id = kUNSET_ID);
@@ -479,6 +485,8 @@ public:
 
   /* Extract data from event(s) */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
+  static bool dataEventMultiple(Event* event, 
+                                std::vector<Event*>& event_list);
   static bool dataEventNotification(Event event, std::string& notification);
   static bool dataEventPropMod(Event event, ThingBase& type, int& id,
                                ThingProperty& props, ThingProperty& bools,

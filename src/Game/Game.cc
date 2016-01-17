@@ -896,6 +896,19 @@ void Game::pollEvents()
         if(event_handler.pollStartMap(&id))
           eventSwitchMap(id);
       }
+      /* -- MULTIPLE -- */
+      else if(classification == EventClassifier::MULTIPLE)
+      {
+        MapThing* source;
+        MapPerson* person;
+        std::vector<EventPair> events;
+        if(event_handler.pollMultiple(person, source, events))
+        {
+          for(uint16_t i = 0; i < events.size(); i++)
+            event_handler.executeEventRef(events[i].base, events[i].inst,
+                                          person, source);
+        }
+      }
       /* -- NOTIFICATION -- */
       else if(classification == EventClassifier::NOTIFICATION)
       {

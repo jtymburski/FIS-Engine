@@ -365,6 +365,36 @@ bool EventHandler::pollLockSetData(Locked lock)
   }
   return false;
 }
+  
+/* Poll a multiple event */
+bool EventHandler::pollMultiple(MapPerson*& person, MapThing*& source, 
+                                std::vector<EventPair>& events)
+{
+  if(pollEventType() == EventClassifier::MULTIPLE)
+  {
+    EventPair pair;
+    std::vector<Event*> events_base;
+    std::vector<Event*> events_inst;
+
+    /* Access the event data */
+    if(getEventPair(pair, true) &&
+       EventSet::dataEventMultiple(pair.base, events_base) &&
+       EventSet::dataEventMultiple(pair.inst, events_inst))
+    {
+      /* Add the event pairs */
+      events.clear();
+      for(uint32_t i = 0; i < events_base.size() && i < events_inst.size(); i++)
+        events.push_back({events_base[i], events_inst[i]});
+
+      /* Set up the remaining data and trigger the sound */
+      person = event_queue[queue_index].initiator;
+      source = event_queue[queue_index].source;
+      triggerQueueSound(*pair.base);
+      return true; 
+    }
+  }
+  return false;
+}
 
 /* Poll the empty event */
 bool EventHandler::pollNone()
