@@ -916,7 +916,8 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- SPRITE ACTION ---- */
   else if(data.getElement(index) == "sprite_action")
   {
-    path_action_sprite = base_path + data.getDataString(&success);
+    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
+      path_action_sprite = base_path + data.getDataString(&success);
   }
   /* ---- SPRITE ACTION X ---- */
   else if(data.getElement(index) == "sprite_action_x")
@@ -941,17 +942,20 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
         dialog_sprite->addFileInformation(data, index + 1, renderer, base_path);
 
     // TODO: Keep this after
-    path_dialog_sprite = data.getDataString(&success);
+    if(data.getElement(index + 1) == "path")
+      path_dialog_sprite = data.getDataString(&success);
   }
   /* ---- SPRITE FIRST PERSON ---- */
   else if(data.getElement(index) == "sprite_fp")
   {
-    path_first_person = base_path + data.getDataString(&success);
+    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
+      path_first_person = base_path + data.getDataString(&success);
   }
   /* ---- SPRITE THIRD PERSON ---- */
   else if(data.getElement(index) == "sprite_tp")
   {
-    path_third_person = base_path + data.getDataString(&success);
+    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
+      path_third_person = base_path + data.getDataString(&success);
   }
 
   return success;

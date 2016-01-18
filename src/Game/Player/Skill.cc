@@ -315,6 +315,7 @@ bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(element == "animation")
       animation_time = data.getDataInteger();
 
+    // TODO: Negates all properties..
     if(split_elements.at(0) == "path")
     {
       auto path = base_path + data.getDataString();
