@@ -485,6 +485,7 @@ public:
 
   /* Extract data from event(s) */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
+  static bool dataEventMultiple(Event event, std::vector<Event>& event_list);
   static bool dataEventMultiple(Event* event, 
                                 std::vector<Event*>& event_list);
   static bool dataEventNotification(Event event, std::string& notification);

@@ -2760,13 +2760,13 @@ void Map::unloadMap()
 }
 
 /* Unlock triggers, based on parameter information */
-void Map::unlockIO(MapThing* source, int io_id, UnlockIOMode mode, 
+void Map::unlockIO(MapThing* source, int io_id, UnlockIOMode mode,
                    int state_num, UnlockIOEvent mode_events,
                    UnlockView mode_view, int view_time)
 {
   /* Find io ptr */
   MapInteractiveObject* found = nullptr;
-  if(io_id < 0 && source != nullptr && 
+  if(io_id < 0 && source != nullptr &&
      source->classDescriptor() == ThingBase::INTERACTIVE)
   {
     found = static_cast<MapInteractiveObject*>(source);

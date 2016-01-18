@@ -905,8 +905,10 @@ void Game::pollEvents()
         if(event_handler.pollMultiple(person, source, events))
         {
           for(uint16_t i = 0; i < events.size(); i++)
+          {
             event_handler.executeEventRef(events[i].base, events[i].inst,
                                           person, source);
+          }
         }
       }
       /* -- NOTIFICATION -- */

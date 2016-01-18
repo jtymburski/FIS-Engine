@@ -50,7 +50,12 @@ bool EventHandler::getEvent(Event& event, bool trigger)
     {
       event = *(event_queue[queue_index].event_ref);
       if(trigger)
-        event_queue[queue_index].event_ref->has_exec = true;
+      {
+        if(event_queue[queue_index].event_ref_inst != nullptr)
+          event_queue[queue_index].event_ref_inst->has_exec = true;
+        else
+          event_queue[queue_index].event_ref->has_exec = true;
+      }
     }
     else
     {

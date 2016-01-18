@@ -1914,6 +1914,26 @@ bool EventSet::dataEventGiveItem(Event event, int& item_id, int& count)
 
 /*
  * Description: Extracts data from the passed in event if its a multiple event.
+ *              This only pulls the data as is by value; not a reference.
+ *
+ * Inputs: Event event - the event val to extract the data from
+ *         std::vector<Event>& event_list - set of event list structs
+ * Output: bool - true if the data was extracted. Fails if the event is the
+ *                wrong category
+ */
+bool EventSet::dataEventMultiple(Event event, std::vector<Event>& event_list)
+{
+  if(event.classification == EventClassifier::MULTIPLE)
+  {
+    event_list = event.events;
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Extracts data from the passed in event if its a multiple event.
+ *              This only pulls the data as is by reference; not a value.
  *
  * Inputs: Event* event - the event ref to extract the data from
  *         std::vector<Event*>& event_list - set of event list references 
