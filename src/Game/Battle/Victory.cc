@@ -19,6 +19,7 @@ const double Victory::kEXP_FACTOR{0.60};
 
 Victory::Victory()
     : config{nullptr},
+      dim_time{0},
       index{0},
       renderer{nullptr},
       victory_state{VictoryState::DIM_BATTLE}
@@ -34,6 +35,18 @@ Victory::Victory(Options* config, SDL_Renderer* renderer,
   this->renderer = renderer;
   this->victors = victors;
   this->losers = losers;
+
+
+  test_render = new Sprite(
+      config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
+}
+
+Victory::~Victory()
+{
+  if(test_render)
+    delete test_render;
+
+  test_render = nullptr;
 }
 
 /*=============================================================================
@@ -103,15 +116,37 @@ VictoryState Victory::getStateVictory()
 // TODO
 void Victory::render()
 {
-  if(victory_state != VictoryState::FINISHED &&
-     victory_state != VictoryState::DIM_BATTLE)
-  {
-  }
+  // if(victory_state != VictoryState::FINISHED &&
+  //    victory_state != VictoryState::DIM_BATTLE)
+  // {
+    auto frame_x = test_render->getFirstFrame()->getWidth();
+    auto frame_y = test_render->getFirstFrame()->getHeight();
+
+    auto x = (config->getScreenWidth() -
+              (frame_x * (config->getScreenWidth() / 1216))) /
+             2;
+    auto y = (config->getScreenHeight() -
+              (frame_y * (config->getScreenHeight() / 704))) /
+             2;
+
+    std::cout << "x: " << x << "y: " << y << std::endl;
+    std::cout << "Frame x: " << frame_x << "frame y: " << frame_y << std::endl;
+
+    test_render->render(renderer, x, y, frame_x, frame_y);
+  // }
 }
 
 bool Victory::update(int32_t cycle_time)
 {
-  (void)cycle_time;
+  if(dim_time > 0)
+  {
+    dim_time -= (uint32_t)cycle_time;
+
+    if(dim_time <= 0 && victory_state == VictoryState::DIM_BATTLE)
+      victory_state = VictoryState::FADE_IN_HEADER;
+    else if(dim_time <= 0 && victory_state == VictoryState::FADE_IN_HEADER)
+      victory_state = VictoryState::SLIDE_IN_CARD;
+  }
 
   return false;
 }
@@ -121,6 +156,12 @@ bool Victory::setConfiguration(Options* new_config)
   config = new_config;
 
   return (config != nullptr);
+}
+
+void Victory::setDimTime(int32_t new_dim_time)
+{
+  std::cout << "Setting dim time to be : " << new_dim_time << std::endl;
+  this->dim_time = new_dim_time;
 }
 
 bool Victory::setRenderer(SDL_Renderer* new_renderer)

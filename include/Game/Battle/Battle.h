@@ -43,7 +43,8 @@ enum class CombatState
 {
   PHASE_DONE = 1 << 0,
   EVENT_READY = 1 << 1,
-  AILMENT_CLEARS = 1 << 2
+  AILMENT_CLEARS = 1 << 2,
+  CREATED_VICTORY_TEXT = 1 << 3
 };
 
 ENUM_FLAGS(RenderState)

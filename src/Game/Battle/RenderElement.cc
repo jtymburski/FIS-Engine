@@ -35,6 +35,7 @@ const uint16_t RenderElement::kACTION_CENTER = 381;
 
 RenderElement::RenderElement()
     : has_shadow{false},
+      timeable{true},
       text_string{""},
       time_fade_in{0},
       time_fade_out{0},
@@ -281,6 +282,29 @@ void RenderElement::createAsSpriteFlash(SDL_Color color, int32_t flash_time)
   render_type = RenderType::RGB_SPRITE_FLASH;
 }
 
+void RenderElement::createAsVictoryText(std::string victory_text,
+                                        int32_t sc_height, int32_t sc_width)
+{
+  text_string = victory_text;
+  color = {0, 0, 0, 255};
+  setShadow({0, 128, 196, 255}, kACTION_SHADOW, kACTION_SHADOW);
+  setTimes(1000, 1, 1000);
+  setTimeable(false);
+  status = initialStatusFade();
+  render_type = RenderType::VICTORY_TEXT;
+
+  if(element_font && renderer)
+  {
+    element_text = Text(element_font);
+    element_text.setText(renderer, victory_text, color);
+    location.point.x = (sc_width - element_text.getWidth()) / 2;
+    location.point.y = (sc_height / 8) - (element_text.getHeight() / 2);// + (sc_height / 32);
+
+    std::cout << "Created text at: " << location.point.x << ", "
+              << location.point.y << std::endl;
+  }
+}
+
 void RenderElement::setShadow(SDL_Color shadow_color, int32_t offset_x,
                               int32_t offset_y)
 {
@@ -311,6 +335,11 @@ bool RenderElement::setTimes(int32_t time_begin, int32_t time_fade_in,
   status = initialStatusFade();
 
   return valid;
+}
+
+void RenderElement::setTimeable(bool new_timeable_value)
+{
+  timeable = new_timeable_value;
 }
 
 void RenderElement::setVelocity(float velocity_x, float velocity_y)
@@ -391,7 +420,7 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
 
 void RenderElement::updateStatusFade(int32_t cycle_time)
 {
-  if(time_left <= 0)
+  if(time_left <= 0 && timeable)
   {
     status = RenderStatus::TIMED_OUT;
   }
@@ -399,7 +428,7 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
   {
     if((time_begin - time_left) >= time_fade_in)
       status = RenderStatus::DISPLAYING;
-    if(time_left < time_fade_out)
+    if(time_left < time_fade_out && timeable)
       status = RenderStatus::FADING_OUT;
 
     velocity.x += (acceleration.x * cycle_time);

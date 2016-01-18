@@ -68,7 +68,7 @@ public:
           std::vector<BattleActor*> victors, std::vector<BattleActor*> losers);
 
   /* Annihilate a victory object */
-  ~Victory() = default;
+  ~Victory();
 
 
   /* ----- Constants ----- */
@@ -77,6 +77,9 @@ public:
 private:
   /* Active configuration */
   Options* config;
+
+  /* Remaining time the Battle needs to dim */
+  int32_t dim_time;
 
   /* The active card index */
   uint32_t index;
@@ -95,6 +98,8 @@ private:
 
   /* The VictoryCards to render */
   std::vector<VictoryCard> victory_cards;
+
+  Sprite* test_render;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -126,6 +131,9 @@ public:
 
   /* Assigns a new configuration to the Victory Screen */
   bool setConfiguration(Options* new_config);
+
+  /* Assigns a dim time from Battle */
+  void setDimTime(int32_t new_dim_time);
 
   /* Assigns a new renderer to the Victory Screen */
   bool setRenderer(SDL_Renderer* new_renderer);

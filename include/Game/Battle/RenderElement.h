@@ -22,7 +22,7 @@
 
 /* Forward declare for Battle constants */
 class Battle;
-//class BattleActor;
+// class BattleActor;
 
 #include "Sprite.h"
 #include "Text.h"
@@ -33,6 +33,7 @@ enum class RenderType
   ACTION_TEXT,
   DAMAGE_TEXT,
   ENTER_TEXT,
+  VICTORY_TEXT,
   DAMAGE_VALUE,
   RGB_OVERLAY,
   RGB_SPRITE_FLASH,
@@ -56,7 +57,7 @@ public:
                 int32_t x, int32_t y);
 
   /* Plep constructor with sprite path */
-   RenderElement(SDL_Renderer *renderer, std::string sprite_path,
+  RenderElement(SDL_Renderer* renderer, std::string sprite_path,
                 int32_t num_frames, int32_t animation_time, int32_t num_loops,
                 Coordinate point);
 
@@ -69,6 +70,9 @@ public:
 
   /* Does the render element have a shadow? */
   bool has_shadow;
+
+  /* The render element does not time out */
+  bool timeable;
 
   /* The boxed location */
   Box location;
@@ -130,21 +134,21 @@ private:
   const static SDL_Color kMISS_TEXT_COLOR;
 
   const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
-  const static uint16_t kACTION_SHADOW; /* Shadow offset of middle text */
+  const static uint16_t kACTION_SHADOW;  /* Shadow offset of middle text */
   const static uint16_t kDAMAGE_SHADOW;
   const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
   const static uint16_t kACTION_CENTER;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE FUNCTIONS
+   *============================================================================*/
 private:
   bool buildSprite(std::string sprite_path, int32_t num_frames = 1);
   bool buildSprite(Sprite* sprite);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Creates the render element as an action text*/
   void createAsActionText(std::string text);
@@ -170,13 +174,15 @@ public:
                           int32_t sc_height, int32_t sc_width);
 
   /* Creates the render element as a sprite death */
-  void createAsSpriteDeath(SDL_Color color,
-                           int32_t death_time, int32_t fade_in_time,
-                           int32_t fade_out_time);
+  void createAsSpriteDeath(SDL_Color color, int32_t death_time,
+                           int32_t fade_in_time, int32_t fade_out_time);
+
+  /* Victorious Text */
+  void createAsVictoryText(std::string victory_text, int32_t sc_height,
+                           int32_t sc_width);
 
   /* Creates the render element as a sprite flash */
-  void createAsSpriteFlash(SDL_Color color,
-                           int32_t flash_time);
+  void createAsSpriteFlash(SDL_Color color, int32_t flash_time);
 
   /* Assigns floatinate acceleration coordinate point */
   void setAcceleration(float acceleration_x, float acceleration_y);
@@ -187,6 +193,9 @@ public:
   /* Assigns the time values (life time, fade in) for the elment */
   bool setTimes(int32_t time_begin, int32_t time_fade_in = 0,
                 int32_t time_fade_out = 0);
+
+  /* Sete the render element to not time out */
+  void setTimeable(bool new_timeable_value);
 
   /* Assigns velocity floatinate coordinate point */
   void setVelocity(float velocity_x, float velocity_y);

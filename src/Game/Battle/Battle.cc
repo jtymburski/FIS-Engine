@@ -1063,16 +1063,16 @@ void Battle::updateFadeInText()
   auto element = new RenderElement(renderer, font);
 
   std::string turn_text = "";
-  uint32_t random = Helpers::randU(1, 100);
+  uint32_t random = Helpers::randU(1, 85);
 
   if(random == 2)
     turn_text = "Just Run Away";
   else if(random == 3)
     turn_text = "Did You Turn The Oven Off";
   else if(random == 4)
-    turn_text = "Choose Your Fate";
+    turn_text = "Why Even Try";
   else if(random == 5)
-    turn_text = "Pick Your Fate";
+    turn_text = "Never Go Backwards";
   else if(random == 6)
     turn_text = "Embrace Your Fate";
   else if(random == 7)
@@ -1097,80 +1097,95 @@ void Battle::updateOutcome(int32_t cycle_time)
 {
   if(outcome == OutcomeType::VICTORY)
   {
+    /* If victory screen is set, update it */
     if(victory_screen)
     {
       victory_screen->update(cycle_time);
+
+      if(victory_screen->getStateVictory() == VictoryState::FADE_IN_HEADER)
+      {
+        if(!getFlagCombat(CombatState::CREATED_VICTORY_TEXT))
+        {
+          auto header_font =
+              config->getFontTTF(FontName::BATTLE_VICTORY_HEADER);
+          auto header_text = new RenderElement(renderer, header_font);
+          header_text->createAsVictoryText("VICTORIOUS",
+                                           config->getScreenHeight(),
+                                           config->getScreenWidth());
+          render_elements.push_back(header_text);
+          victory_screen->setDimTime(10000 * 0.75);
+          setFlagCombat(CombatState::CREATED_VICTORY_TEXT, true);
+        }
+      }
+      else if(victory_screen->getStateVictory() == VictoryState::SLIDE_IN_CARD)
+      {
+        setFlagCombat(CombatState::PHASE_DONE, true);
+      }
     }
     else
     {
+      /* If victory screen is not set, create it */
       victory_screen = new Victory(config, renderer, getAllies(), getEnemies());
 
-      // TODO - BRING INTO VICTORY SCREEN
-      auto total_exp_drop = 0;
+      /* Dim the Battle a little - infinite render element */
+      auto dim_element = new RenderElement();
+      auto dim_time = 2000;
 
-      for(auto& enemy : getEnemies())
-      {
-        if(enemy && enemy->getBasePerson())
-        {
-          auto xp = enemy->getBasePerson()->getExpDrop();
-          auto lv = enemy->getBasePerson()->getLevel();
+      dim_element->createAsRGBOverlay({0, 0, 0, 150}, dim_time, dim_time,
+                                      2 * dim_time, config->getScreenHeight(),
+                                      config->getScreenWidth());
+      dim_element->setTimeable(false);
+      render_elements.push_back(dim_element);
+      victory_screen->setDimTime(dim_time * 0.75);
 
-          total_exp_drop += (xp + ((lv - 1) * xp * 0.60));
-        }
-      }
+      // for(auto& ally : getAllies())
+      // {
+      //   auto level_up_occured = false;
 
-      for(auto& ally : getAllies())
-      {
-        auto level_up_occured = false;
+      //   if(ally && ally->getBasePerson())
+      //   {
+      //     for(auto& ailment : ally->getAilments())
+      //       ally->removeAilment(ailment);
 
-        if(ally && ally->getBasePerson())
-        {
-          for(auto& ailment : ally->getAilments())
-            ally->removeAilment(ailment);
+      //     auto name = ally->getBasePerson()->getName();
 
-          auto name = ally->getBasePerson()->getName();
-          std::cout << name << " has gained: " << total_exp_drop
-                    << " experience!" << std::endl;
+      //     auto old_level = ally->getBasePerson()->getLevel();
+      //     ally->getBasePerson()->addExp(total_exp_drop);
+      //     auto new_level = ally->getBasePerson()->getLevel();
 
-          auto old_level = ally->getBasePerson()->getLevel();
-          ally->getBasePerson()->addExp(total_exp_drop);
-          auto new_level = ally->getBasePerson()->getLevel();
+      //     if(new_level != old_level)
+      //       level_up_occured = true;
 
-          if(new_level != old_level)
-            level_up_occured = true;
+      //     for(int i = (new_level - old_level); i > 0; i--)
+      //       std::cout << name << " has leveled up!" << std::endl;
 
-          for(int i = (new_level - old_level); i > 0; i--)
-            std::cout << name << " has leveled up!" << std::endl;
+      //     if(!level_up_occured)
+      //     {
+      //       auto base = ally->getBasePerson();
 
-          /* If no level up happened -> set the base person's health and qtdr to
-           *   the value in the actual stats */
-          if(!level_up_occured)
-          {
-            auto base = ally->getBasePerson();
+      //       if(base)
+      //       {
+      //         auto equip_stats = base->calcEquipStats();
+      //         auto max_health =
+      //             (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
 
-            if(base)
-            {
-              auto equip_stats = base->calcEquipStats();
-              auto max_health =
-                  (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
+      //         auto curr_health =
+      //         ally->getStats().getBaseValue(Attribute::VITA);
+      //         auto max_qtdr =
+      //             (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
+      //         auto curr_qtdr =
+      //         ally->getStats().getBaseValue(Attribute::QTDR);
 
-              auto curr_health = ally->getStats().getBaseValue(Attribute::VITA);
-              auto max_qtdr =
-                  (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
-              auto curr_qtdr = ally->getStats().getBaseValue(Attribute::QTDR);
-
-              if(curr_health <= max_health)
-                base->getCurr().setStat(Attribute::VITA, curr_health);
-              if(curr_qtdr <= max_qtdr)
-                base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
-            }
-          }
-        }
-      }
+      //         if(curr_health <= max_health)
+      //           base->getCurr().setStat(Attribute::VITA, curr_health);
+      //         if(curr_qtdr <= max_qtdr)
+      //           base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
+      //       }
+      //     }
+      //   }
+      // }
     }
   }
-
-  setFlagCombat(CombatState::PHASE_DONE, true);
 }
 
 void Battle::updatePersonalUpkeep()
@@ -2062,6 +2077,9 @@ bool Battle::render()
 
     /* Render the render elements (damage text values) etc. */
     success &= renderElements();
+
+    if(victory_screen)
+      victory_screen->render();
   }
 
   return success;
@@ -2212,8 +2230,11 @@ bool Battle::renderElements()
   }
 
   for(auto& element : render_elements)
-    if(element->render_type == RenderType::ENTER_TEXT)
+  {
+    if(element->render_type == RenderType::ENTER_TEXT ||
+       element->render_type == RenderType::VICTORY_TEXT)
       renderElementText(element);
+  }
 
   return false;
 }
@@ -3049,9 +3070,6 @@ bool Battle::update(int32_t cycle_time)
   {
     if(outcome == OutcomeType::NONE && delay == 0)
       checkIfOutcome();
-
-    if(outcome != OutcomeType::NONE)
-      setFlagCombat(CombatState::PHASE_DONE);
 
     bool allow_set_next = true;
 

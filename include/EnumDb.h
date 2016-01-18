@@ -639,6 +639,7 @@ enum class ValidStatus
 enum class VictoryState
 {
   DIM_BATTLE,
+  FADE_IN_HEADER,
   SLIDE_IN_LOOT,
   SLIDE_IN_CARD,
   SLIDE_OUT_CARD,
