@@ -1042,7 +1042,7 @@ bool FileHandler::xmlWriteEnd()
     std::vector<std::string> output_lines = Helpers::split(xml_output, '\n');
 
     /* Write each line to the file */
-    for(uint16_t i = 0; i < output_lines.size(); i++)
+    for(uint32_t i = 0; i < output_lines.size(); i++)
       success &= writeLine(output_lines[i]);
 
     return success;
