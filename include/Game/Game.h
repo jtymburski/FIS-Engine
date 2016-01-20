@@ -82,6 +82,7 @@ private:
 
   /* List of objects */
   std::vector<Action*> list_action;
+  std::vector<BattleScene> list_battles;
   std::vector<Category*> list_class;
   std::vector<Flavour*> list_flavour;
   std::vector<Item*> list_item;
@@ -125,6 +126,7 @@ public:
 private:
   /* Add functions for game objects */
   Action* addAction(const std::string &raw);
+  BattleScene* addBattleScene(const int32_t &id);
   Category* addClass(const int32_t &id);
   Flavour* addFlavour(const int32_t &id);
   Item* addItem(const int32_t &id, SortObjects type = SortObjects::ITEMS);
@@ -201,6 +203,7 @@ private:
   /* Remove functions for game objects */
   void removeActions();
   void removeAll(); /* Properly staged remove all call */
+  void removeBattleScenes();
   void removeClasses();
   void removeFlavours();
   void removeItems();
@@ -223,6 +226,7 @@ public:
 
   /* Getter functions for game objects */
   Action* getAction(const int32_t &index, const bool &by_id = true);
+  BattleScene* getBattleScene(const int32_t &index, const bool &by_id = true);
   Category* getClass(const int32_t &index, const bool &by_id = true);
   Flavour* getFlavour(const int32_t &index, const bool &by_id = true);
   Inventory* getInventory(const int32_t &id);

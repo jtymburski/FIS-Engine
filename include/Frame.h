@@ -17,6 +17,15 @@
 #include <string>
 #include <vector>
 
+/* Structure for large lay over frames */
+struct LayOver
+{
+  std::string path;
+  int velocity_x;
+  int velocity_y;
+};
+
+/* Class for frame handling */
 class Frame
 {
 public:

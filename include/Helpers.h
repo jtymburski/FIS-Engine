@@ -61,7 +61,7 @@ struct Coordinate
   int32_t y;
 };
 
-/* Coodinate with floats */
+/* Coordinate with floats */
 struct Floatinate
 {
   Floatinate() : x{0}, y{0} {};

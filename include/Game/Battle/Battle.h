@@ -37,6 +37,17 @@ class RenderElement;
 using std::begin;
 using std::end;
 
+/* Structure for battle scene information */
+struct BattleScene
+{
+  int id;
+  std::string background;
+  int music_id;
+  std::vector<LayOver> underlays; /* LayOver def in Frame.h */
+  std::vector<LayOver> midlays; /* LayOver def in Frame.h */
+  std::vector<LayOver> overlays; /* LayOver def in Frame.h */
+};
+
 /* CombatState flags */
 ENUM_FLAGS(CombatState)
 enum class CombatState
@@ -53,6 +64,7 @@ enum class RenderState
 
 };
 
+/* Class for battle information */
 class Battle
 {
 public:

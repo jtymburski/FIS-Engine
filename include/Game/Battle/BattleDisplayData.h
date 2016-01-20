@@ -25,6 +25,7 @@
 using std::begin;
 using std::end;
 
+/* Class for battle display information and rendering */
 class BattleDisplayData
 {
 public:

@@ -122,6 +122,22 @@ Action* Game::addAction(const std::string& raw)
 }
 
 /* Add functions for game objects */
+BattleScene* Game::addBattleScene(const int32_t &id)
+{
+  /* Create scene */
+  BattleScene scene;
+  scene.id = id;
+  scene.background = "";
+  scene.music_id = Sound::kID_MUSIC_BATTLE;
+  scene.underlays.clear();
+  scene.overlays.clear();
+
+  /* Push back and return reference */
+  list_battles.push_back(scene);
+  return &list_battles[list_battles.size() - 1];
+}
+
+/* Add functions for game objects */
 Category* Game::addClass(const int32_t& id)
 {
   Category* new_category = new Category();
@@ -1017,6 +1033,9 @@ void Game::removeAll()
   delete player_main;
   player_main = nullptr;
 
+  /* Delete unconnected lists */
+  removeBattleScenes();
+
   /* Delete parties and persons */
   removeParties();
   removePersonInstances();
@@ -1032,6 +1051,12 @@ void Game::removeAll()
   removeFlavours();
   removeSkills();
   removeActions();
+}
+
+/* Remove functions for game objects */
+void Game::removeBattleScenes()
+{
+  list_battles.clear();
 }
 
 /* Remove functions for game objects */
@@ -1162,6 +1187,23 @@ Action* Game::getAction(const int32_t& index, const bool& by_id)
   else if(static_cast<uint32_t>(index) < list_action.size())
   {
     return list_action.at(index);
+  }
+
+  return nullptr;
+}
+
+/* Returns a pointer to a battle scene by index or by ID */
+BattleScene* Game::getBattleScene(const int32_t &index, const bool &by_id)
+{
+  if(by_id)
+  {
+    for(uint32_t i = 0; i < list_battles.size(); i++)
+      if(list_battles[i].id == index)
+        return &list_battles[i];
+  }
+  else if(static_cast<uint32_t>(index) < list_battles.size())
+  {
+    return &list_battles[index];
   }
 
   return nullptr;
