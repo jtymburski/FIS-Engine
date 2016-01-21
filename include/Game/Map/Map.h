@@ -42,6 +42,7 @@ struct SubMap
   std::vector<std::vector<Tile*>> tiles;
 
   /* Sound data */
+  std::vector<uint32_t> battles;
   std::vector<uint32_t> music;
   int32_t weather;
 };
@@ -90,6 +91,7 @@ private:
   EventPair battle_eventwin;
   BattleFlags battle_flags;
   MapPerson* battle_person;
+  std::vector<uint32_t> battle_scenes;
   MapThing* battle_thing;
   bool battle_trigger;
 
@@ -300,6 +302,7 @@ public:
   EventPair getBattleEventWin();
   BattleFlags getBattleFlags();
   int getBattlePersonID();
+  int getBattleScene();
   int getBattleThingID();
 
   /* Initiates a battle, within the map */

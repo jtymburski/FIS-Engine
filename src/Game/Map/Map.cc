@@ -1573,6 +1573,29 @@ int Map::getBattlePersonID()
   return -1;
 }
 
+/* Accesses the current map to get the battle scene */
+int Map::getBattleScene()
+{
+  int id = -1;
+
+  if(sub_map.size() > map_index)
+  {
+    /* Determine if sub-map scenes are used or core */
+    if(sub_map[map_index].battles.size() > 0)
+    {
+      int index = Helpers::randInt(sub_map[map_index].battles.size() - 1);
+      id = sub_map[map_index].battles[index];
+    }
+    else if(battle_scenes.size() > 0)
+    {
+      int index = Helpers::randInt(battle_scenes.size() - 1);
+      id = battle_scenes[index];
+    }
+  }
+
+  return id;
+}
+
 /* Returns the battle information */
 int Map::getBattleThingID()
 {
@@ -1967,35 +1990,41 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 {
   (void)base_path;
   bool success = true;
+  std::string element = data.getElement(index);
 
   /* ---- BASE SPRITES ---- */
-  if(data.getElement(index) == "sprite" && !data.getKeyValue(index).empty())
+  if(element == "sprite" && !data.getKeyValue(index).empty())
   {
     success &= addSpriteData(data, data.getKeyValue(index),
                              index + 1, renderer);
   }
   /* ---- BASE THINGS ---- */
-  else if((data.getElement(index) == "mapthing" ||
-           data.getElement(index) == "mapperson" ||
-           data.getElement(index) == "mapnpc" ||
-           data.getElement(index) == "mapitem" ||
-           data.getElement(index) == "mapio") &&
+  else if((element == "mapthing" || element == "mapperson" ||
+           element == "mapnpc" || element == "mapitem" || element == "mapio") &&
           !data.getKeyValue(index).empty())
   {
     success &= addThingBaseData(data, index, renderer);
   }
+  /* ---- BATTLE SCENES ---- */
+  else if(element == "battlescene")
+  {
+    int id = data.getDataInteger(&success);
+    if(success && id >= 0)
+      battle_scenes.push_back(id);
+  }
   /* ---- SUB MAPS ---- */
-  else if(data.getElement(index) == "main" ||
-          data.getElement(index) == "section")
+  else if(element == "main" ||
+          element == "section")
   {
     int map_index = -1;
     int height = -1;
     int width = -1;
+    std::string element2 = data.getElement(index + 1);
 
     /* Determine section */
-    if(data.getElement(index) == "main")
+    if(element == "main")
       map_index = 0;
-    else if(data.getElement(index) == "section")
+    else if(element == "section")
       map_index = std::stoi(data.getKeyValue(index));
 
     if(map_index >= 0)
@@ -2015,48 +2044,51 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
       }
 
       /* -- SECTION WIDTH -- */
-      if(data.getElement(index + 1) == "width")
+      if(element2 == "width")
       {
         width = data.getDataInteger(&success);
         if(success)
           initiateMapSection(map_index, width, height);
       }
       /* -- SECTION HEIGHT -- */
-      else if(data.getElement(index + 1) == "height")
+      else if(element2 == "height")
       {
         height = data.getDataInteger(&success);
         if(success)
           initiateMapSection(map_index, width, height);
       }
+      /* -- BATTLE SCENE -- */
+      else if(element2 == "battlescene")
+      {
+        int id = data.getDataInteger(&success);
+        if(success && id >= 0)
+          sub_map[map_index].battles.push_back(id); 
+      }
       /* -- MUSIC -- */
-      else if(data.getElement(index + 1) == "music")
+      else if(element2 == "music")
       {
         int32_t music_id = data.getDataInteger(&success);
         if(music_id >= 0)
           sub_map[map_index].music.push_back(music_id);
       }
       /* -- WEATHER -- */
-      else if(data.getElement(index + 1) == "weather")
+      else if(element2 == "weather")
       {
         int32_t weather_id = data.getDataInteger(&success);
         if(weather_id >= 0)
           sub_map[map_index].weather = weather_id;
       }
       /* -- TILE SPRITES/EVENTS -- */
-      else if(data.getElement(index + 1) == "base" ||
-              data.getElement(index + 1) == "enhancer" ||
-              data.getElement(index + 1) == "lower" ||
-              data.getElement(index + 1) == "upper" ||
-              data.getElement(index + 1) == "tileevent")
+      else if(element2 == "base" || element2 == "enhancer" ||
+              element2 == "lower" || element2 == "upper" ||
+              element2 == "tileevent")
       {
         success &= addTileData(data, map_index);
       }
       /* -- TILE THINGS -- */
-      else if(data.getElement(index + 1) == "mapthing" ||
-              data.getElement(index + 1) == "mapperson" ||
-              data.getElement(index + 1) == "mapnpc" ||
-              data.getElement(index + 1) == "mapitem" ||
-              data.getElement(index + 1) == "mapio")
+      else if(element2 == "mapthing" || element2 == "mapperson" ||
+              element2 == "mapnpc" || element2 == "mapitem" ||
+              element2 == "mapio")
       {
         success &= addThingData(data, map_index, renderer);
       }
@@ -2650,6 +2682,7 @@ void Map::unloadMap()
   battle_eventwin = {nullptr, nullptr};
   battle_flags = BattleFlags::NONE;
   battle_person = nullptr;
+  battle_scenes.clear();
   battle_thing = nullptr;
   battle_trigger = false;
   map_index = 0;

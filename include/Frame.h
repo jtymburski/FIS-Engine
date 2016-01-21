@@ -21,8 +21,8 @@
 struct LayOver
 {
   std::string path;
-  int velocity_x;
-  int velocity_y;
+  float velocity_x; /* velocity x cycle_time */
+  float velocity_y; /* velocity x cycle_time */
 };
 
 /* Class for frame handling */
@@ -169,6 +169,9 @@ private:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Creates a blank lay over structure */
+  static LayOver createBlankLayOver();
+
   /* Creates a bar, given the parameters and a renderer */
   static bool renderBar(uint16_t x, uint16_t y, uint16_t length,
                         uint16_t height, float slope, SDL_Renderer* renderer);

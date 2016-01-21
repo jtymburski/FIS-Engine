@@ -599,6 +599,30 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
       player_main->setBearacks(getParty(Party::kID_BEARACKS));
     }
 
+    /* Test scenes */
+    std::cout << "--SCENES--" << std::endl;
+    for(uint32_t i = 0; i < list_battles.size(); i++)
+    {
+      std::cout << list_battles[i].id << ": " << list_battles[i].background
+                << " , " << list_battles[i].music_id << std::endl;
+      std::cout << " underlays:" << std::endl;
+      for(uint32_t j = 0; j < list_battles[i].underlays.size(); j++)
+        std::cout << "  " << list_battles[i].underlays[j].path << " , "
+                  << list_battles[i].underlays[j].velocity_x << " , "
+                  << list_battles[i].underlays[j].velocity_y << std::endl;
+      std::cout << " midlays:" << std::endl;
+      for(uint32_t j = 0; j < list_battles[i].midlays.size(); j++)
+        std::cout << "  " << list_battles[i].midlays[j].path << " , "
+                  << list_battles[i].midlays[j].velocity_x << " , "
+                  << list_battles[i].midlays[j].velocity_y << std::endl;
+      std::cout << " overlays:" << std::endl;
+      for(uint32_t j = 0; j < list_battles[i].overlays.size(); j++)
+        std::cout << "  " << list_battles[i].overlays[j].path << " , "
+                  << list_battles[i].overlays[j].velocity_x << " , "
+                  << list_battles[i].overlays[j].velocity_y << std::endl;
+    }
+    std::cout << "--END SCENES--" << std::endl;
+
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
     changeMode(MAP);
@@ -623,6 +647,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
 {
   bool success = true;
+  std::string element = data.getElement(index);
 
   /* ID index */
   int id = -1;
@@ -631,12 +656,77 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     id = std::stoi(id_str);
 
   /* ---- ACTIONS ---- */
-  if(data.getElement(index) == "action")
+  if(element == "action")
   {
     addAction(data.getDataString());
   }
+  /* ---- BATTLE SCENES ---- */
+  else if(element == "battlescene")
+  {
+    /* Get edit scene */
+    BattleScene* edit_scene = getBattleScene(id);
+    if(edit_scene == nullptr)
+      edit_scene = addBattleScene(id);
+
+    /* Modify */
+    std::string element2 = data.getElement(index + 1);
+    /* -- BACKGROUND PATH -- */
+    if(element2 == "background")
+    {
+      edit_scene->background = data.getDataString(&success);
+    }
+    /* -- MUSIC INTEGER -- */
+    else if(element2 == "music")
+    {
+      edit_scene->music_id = data.getDataInteger(&success);
+    }
+    /* -- UNDERLAY/MIDLAY/OVERLAY INFO -- */
+    else if(element2 == "underlay" || element2 == "midlay" || 
+            element2 == "overlay")
+    {
+      /* Get index */
+      int index_ref = -1;
+      std::string index_str = data.getKeyValue(index + 1);
+      if(!index_str.empty())
+        index_ref = std::stoi(index_str);
+
+      /* Proceed if index is valid */
+      if(index_ref >= 0)
+      {
+        /* Get referenced layer */
+        LayOver* lay_ref = nullptr;
+        if(element2 == "underlay")
+        {
+          while(static_cast<int>(edit_scene->underlays.size()) <= index_ref)
+            edit_scene->underlays.push_back(Frame::createBlankLayOver());
+          lay_ref = &edit_scene->underlays[index_ref];
+        }
+        else if(element2 == "midlay")
+        {
+          while(static_cast<int>(edit_scene->midlays.size()) <= index_ref)
+            edit_scene->midlays.push_back(Frame::createBlankLayOver());
+          lay_ref = &edit_scene->midlays[index_ref];
+        }
+        else
+        {
+          while(static_cast<int>(edit_scene->overlays.size()) <= index_ref)
+            edit_scene->overlays.push_back(Frame::createBlankLayOver());
+          lay_ref = &edit_scene->overlays[index_ref];
+        }
+
+        /* Modify referenced layer */
+        std::string element3 = data.getElement(index + 2);
+        if(element3 == "path")
+          lay_ref->path = data.getDataString(&success);
+        else if(element3 == "velx")
+          lay_ref->velocity_x = data.getDataFloat(&success);
+        else if(element3 == "vely")
+          lay_ref->velocity_y = data.getDataFloat(&success);
+      }
+    }
+  }
   /* ---- CLASSES ---- */
-  if(data.getElement(index) == "class")
+  else if(element == "class")
   {
     Category* edit_class = getClass(id);
     if(edit_class == nullptr)
@@ -649,7 +739,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       success &= edit_class->loadData(data, index + 1, renderer);
   }
   /* ---- ITEMS ---- */
-  else if(data.getElement(index) == "item")
+  else if(element == "item")
   {
     Item* edit_item = getItem(id);
     if(edit_item == nullptr)
@@ -661,8 +751,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     else
       success &= edit_item->loadData(data, index + 1, renderer, base_path);
   }
-  // /* ---- PARTIES ---- */
-  else if(data.getElement(index) == "party")
+  /* ---- PARTIES ---- */
+  else if(element == "party")
   {
     Party* edit_party = getParty(id);
     if(edit_party == nullptr)
@@ -719,7 +809,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     }
   }
   /* ---- PERSONS ---- */
-  else if(data.getElement(index) == "person")
+  else if(element == "person")
   {
     Person* edit_person = getPersonBase(id);
     if(edit_person == nullptr)
@@ -734,7 +824,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       success &= edit_person->loadData(data, index + 1, renderer, base_path);
   }
   /* ---- PLAYER ---- */
-  else if(data.getElement(index) == "player")
+  else if(element == "player")
   {
     /* Data for player */
     if(data.getElement(index + 1) == "credits")
@@ -743,7 +833,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     }
   }
   /* ---- RACES ---- */
-  else if(data.getElement(index) == "race")
+  else if(element == "race")
   {
     Category* edit_race = getRace(id);
     if(edit_race == nullptr)
@@ -756,7 +846,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       success &= edit_race->loadData(data, index + 1, renderer);
   }
   /* ---- SKILLS ---- */
-  if(data.getElement(index) == "skill")
+  else if(element == "skill")
   {
     Skill* edit_skill = getSkill(id);
     if(edit_skill == nullptr)
@@ -772,7 +862,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     edit_skill->flagSetup();
   }
   /* ---- SKILLSETS ---- */
-  else if(data.getElement(index) == "skillset")
+  else if(element == "skillset")
   {
     SkillSet* edit_set = getSkillSet(id);
     if(edit_set == nullptr)
