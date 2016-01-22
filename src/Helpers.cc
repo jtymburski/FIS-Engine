@@ -1538,6 +1538,40 @@ std::string Helpers::combine(std::string s, char c, bool before)
 }
 
 /*
+ * Description: Creates a blank lay over structure with cleared data.
+ *
+ * Inputs: none
+ * Output: LayOver - the lay coverage structure defining the sprite
+ */
+LayOver Helpers::createBlankLayOver()
+{
+  LayOver new_layover;
+  new_layover.path = "";
+  new_layover.anim_time = 250;
+  new_layover.velocity_x = 0.0;
+  new_layover.velocity_y = 0.0;
+  return new_layover;
+}
+
+/*
+ * Description: Creates a blank battle scene structure with cleared data.
+ *
+ * Inputs: none
+ * Output: BattleScene - the scene structure defining pertinent information
+ */
+BattleScene Helpers::createBlankScene()
+{
+  BattleScene scene;
+  scene.id = -1;
+  scene.background = "";
+  scene.music_id = -1;
+  scene.underlays.clear();
+  scene.midlays.clear();
+  scene.overlays.clear();
+  return scene;
+}
+
+/*
  * Description: Takes a string in the designed format for sprite handling and
  *              separates it via the letter range.
  *

@@ -37,17 +37,6 @@ class RenderElement;
 using std::begin;
 using std::end;
 
-/* Structure for battle scene information */
-struct BattleScene
-{
-  int id;
-  std::string background;
-  int music_id;
-  std::vector<LayOver> underlays; /* LayOver def in Frame.h */
-  std::vector<LayOver> midlays; /* LayOver def in Frame.h */
-  std::vector<LayOver> overlays; /* LayOver def in Frame.h */
-};
-
 /* CombatState flags */
 ENUM_FLAGS(CombatState)
 enum class CombatState
@@ -118,6 +107,9 @@ private:
 
   /* The enemy backdrop frame */
   Frame* frame_enemy_backdrop;
+
+  /* Music reference ID */
+  int music_id;
 
   /* Party pointers */
   Party* party_allies;
@@ -543,8 +535,10 @@ public:
    * PUBLIC FUNCTIONS - Battle Display
    *============================================================================*/
 public:
-  void createOverlay(std::string path, float velocity_x, float velocity_y);
-  void createMidlay(std::string path, float velocity_x, float velocity_y);
+  void createOverlay(std::string path, int anim_time, 
+                     float velocity_x, float velocity_y);
+  void createMidlay(std::string path, int anim_time, 
+                    float velocity_x, float velocity_y);
 
   /* Renders the Battle */
   bool render();
@@ -555,6 +549,9 @@ public:
   /* Assigns scope frames */
   bool setFrameScope(ActionScope scope, std::string path,
                      SDL_Renderer* renderer);
+
+  /* Assigns the music trigger ID */
+  void setMusicID(int id);
 
   /* Assigns a new renderer to the Battle */
   bool setRenderer(SDL_Renderer* renderer);

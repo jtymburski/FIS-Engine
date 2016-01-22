@@ -148,6 +148,7 @@ Battle::Battle()
       flags_combat{static_cast<CombatState>(0)},
       flags_render{static_cast<RenderState>(0)},
       frame_enemy_backdrop{nullptr},
+      music_id{static_cast<int>(Sound::kID_MUSIC_BATTLE)},
       party_allies{nullptr},
       party_enemies{nullptr},
       outcome{OutcomeType::NONE},
@@ -1982,7 +1983,8 @@ void Battle::playInflictionSound(Infliction type)
   }
 }
 
-void Battle::createOverlay(std::string path, float velocity_x, float velocity_y)
+void Battle::createOverlay(std::string path, int anim_time, 
+                           float velocity_x, float velocity_y)
 {
   if(path != "" && config)
   {
@@ -1994,6 +1996,9 @@ void Battle::createOverlay(std::string path, float velocity_x, float velocity_y)
 
     Floatinate velocity(velocity_x, velocity_y);
 
+    // TODO: NEED TO REVISE FOR ANIMATION BASED SPRITE OVERLAY
+    // "sprites/Battle/Midlays/rain|5|.png" with 175ms time and same location,
+    // velocity for example
     auto element = new RenderElement(renderer, path, location,
                                      RenderType::OVERLAY, velocity, 245);
 
@@ -2001,7 +2006,8 @@ void Battle::createOverlay(std::string path, float velocity_x, float velocity_y)
   }
 }
 
-void Battle::createMidlay(std::string path, float velocity_x, float velocity_y)
+void Battle::createMidlay(std::string path, int anim_time, 
+                          float velocity_x, float velocity_y)
 {
   if(path != "" && config)
   {
@@ -2012,7 +2018,10 @@ void Battle::createMidlay(std::string path, float velocity_x, float velocity_y)
     location.height = config->getScreenHeight();
 
     Floatinate velocity(velocity_x, velocity_y);
-
+    
+    // TODO: NEED TO REVISE FOR ANIMATION BASED SPRITE MIDLAY
+    // "sprites/Battle/Midlays/rain|5|.png" with 175ms time and same location,
+    // velocity for example
     auto element = new RenderElement(renderer, path, location,
                                      RenderType::MIDLAY, velocity, 245);
 
@@ -2065,12 +2074,12 @@ bool Battle::render()
     /* Render the action frame */
     if(turn_state == TurnState::PROCESS_ACTIONS)
       success &= renderActionFrame();
+    
+    /* Render the overlays */
+    renderOverlays();
 
     /* Render battle bar (on bottom) */
     success &= renderBattleBar();
-
-    /* Render the overlays */
-    renderOverlays();
 
     /* Render the menu (if needed) */
     success &= renderMenu();
@@ -2835,7 +2844,11 @@ bool Battle::startBattle(Party* friends, Party* foes, std::string bg_path)
   party_allies = friends;
   party_enemies = foes;
 
-  event_handler->triggerMusic(2);
+  /* Music trigger */
+  if(music_id >= 0)
+    event_handler->triggerMusic(music_id);
+  else
+    event_handler->triggerAudioStop(SoundChannels::MUSIC1);
 
   /* Construct the Battle actor objects based on the persons in the parties */
   buildBattleActors(friends, foes);
@@ -2855,12 +2868,12 @@ bool Battle::startBattle(Party* friends, Party* foes, std::string bg_path)
   // setBackground(bg_path);
 
   // TODO: [01-09-2015]: Temporary background building
-  setBackground(bg_path + "sprites/Battle/Backdrop/battlebg06.png");
+  //setBackground(bg_path + "sprites/Battle/Backdrop/battlebg06.png");
 
   // Create an midlay
-  auto path =
-      bg_path + "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png";
-  createMidlay(path, 0.10, 0.000);
+  //auto path =
+  //    bg_path + "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png";
+  //createMidlay(path, 0.10, 0.000);
 
   /* Construct the enemy backdrop */
   buildEnemyBackdrop();
@@ -2888,6 +2901,7 @@ void Battle::stopBattle()
 
   flags_combat = static_cast<CombatState>(0);
   delay = 0;
+  music_id = Sound::kID_MUSIC_BATTLE;
   outcome = OutcomeType::NONE;
   turn_state = TurnState::STOPPED;
   time_elapsed = 0;
@@ -3021,6 +3035,12 @@ bool Battle::setBackground(std::string bg_path)
   }
 
   return false;
+}
+
+/* Assigns the music trigger ID */
+void Battle::setMusicID(int id)
+{
+  music_id = id;
 }
 
 void Battle::setNextTurnState()

@@ -124,13 +124,9 @@ Action* Game::addAction(const std::string& raw)
 /* Add functions for game objects */
 BattleScene* Game::addBattleScene(const int32_t &id)
 {
-  /* Create scene */
-  BattleScene scene;
+  BattleScene scene = Helpers::createBlankScene();
   scene.id = id;
-  scene.background = "";
   scene.music_id = Sound::kID_MUSIC_BATTLE;
-  scene.underlays.clear();
-  scene.overlays.clear();
 
   /* Push back and return reference */
   list_battles.push_back(scene);
@@ -403,10 +399,35 @@ bool Game::eventStartBattle(int person_id, int source_id)
       battle_ctrl->setEventHandler(&event_handler);
       battle_display_data->setRenderer(active_renderer);
 
+      /* Access battle scene information and apply */
+      BattleScene* scene = nullptr;
+      int id = map_ctrl.getBattleScene();
+      if(id >= 0)
+        scene = getBattleScene(id);
+      if(scene != nullptr)
+      {
+        battle_ctrl->setBackground(scene->background);
+        battle_ctrl->setMusicID(scene->music_id);
+        // TODO: UNDERLAYS
+        for(uint16_t i = 0; i < scene->midlays.size(); i++)
+          if(!scene->midlays[i].path.empty())
+            battle_ctrl->createMidlay(scene->midlays[i].path,
+                                      scene->midlays[i].anim_time,
+                                      scene->midlays[i].velocity_x,
+                                      scene->midlays[i].velocity_y);
+        for(uint16_t i = 0; i < scene->overlays.size(); i++)
+          if(!scene->overlays[i].path.empty())
+            battle_ctrl->createOverlay(scene->overlays[i].path,
+                                       scene->overlays[i].anim_time,
+                                       scene->overlays[i].velocity_x,
+                                       scene->overlays[i].velocity_y);
+      }
+
+      /* Build display data */
       if(!battle_display_data->isDataBuilt())
         battle_display_data->buildData();
 
-      // TODO: Why is it seg faulting?
+      /* Start battle */
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
 
       // changeMode(BATTLE);
@@ -681,7 +702,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       edit_scene->music_id = data.getDataInteger(&success);
     }
     /* -- UNDERLAY/MIDLAY/OVERLAY INFO -- */
-    else if(element2 == "underlay" || element2 == "midlay" || 
+    else if(element2 == "underlay" || element2 == "midlay" ||
             element2 == "overlay")
     {
       /* Get index */
@@ -698,25 +719,27 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
         if(element2 == "underlay")
         {
           while(static_cast<int>(edit_scene->underlays.size()) <= index_ref)
-            edit_scene->underlays.push_back(Frame::createBlankLayOver());
+            edit_scene->underlays.push_back(Helpers::createBlankLayOver());
           lay_ref = &edit_scene->underlays[index_ref];
         }
         else if(element2 == "midlay")
         {
           while(static_cast<int>(edit_scene->midlays.size()) <= index_ref)
-            edit_scene->midlays.push_back(Frame::createBlankLayOver());
+            edit_scene->midlays.push_back(Helpers::createBlankLayOver());
           lay_ref = &edit_scene->midlays[index_ref];
         }
         else
         {
           while(static_cast<int>(edit_scene->overlays.size()) <= index_ref)
-            edit_scene->overlays.push_back(Frame::createBlankLayOver());
+            edit_scene->overlays.push_back(Helpers::createBlankLayOver());
           lay_ref = &edit_scene->overlays[index_ref];
         }
 
         /* Modify referenced layer */
         std::string element3 = data.getElement(index + 2);
-        if(element3 == "path")
+        if(element3 == "animation")
+          lay_ref->anim_time = data.getDataInteger(&success);
+        else if(element3 == "path")
           lay_ref->path = data.getDataString(&success);
         else if(element3 == "velx")
           lay_ref->velocity_x = data.getDataFloat(&success);

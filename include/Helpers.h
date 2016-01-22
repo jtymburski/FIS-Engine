@@ -81,6 +81,26 @@ struct Box
   int32_t height;
 };
 
+/* Structure for large lay over frames */
+struct LayOver
+{
+  std::string path;
+  int anim_time;
+  float velocity_x; /* velocity x cycle_time */
+  float velocity_y; /* velocity x cycle_time */
+};
+
+/* Structure for battle scene information */
+struct BattleScene
+{
+  int id;
+  std::string background;
+  int music_id;
+  std::vector<LayOver> underlays;
+  std::vector<LayOver> midlays;
+  std::vector<LayOver> overlays;
+};
+
 class Helpers
 {
 public:
@@ -241,6 +261,10 @@ public:
 
   /* Appends char and string together */
   static std::string combine(std::string s, char c, bool before = false);
+
+  /* Creates a blank lay over and scene structures */
+  static LayOver createBlankLayOver();
+  static BattleScene createBlankScene();
 
   /* Splites the string into a grid based on the frame naming convention */
   static std::vector<std::vector<std::string>> frameSeparator(std::string path);

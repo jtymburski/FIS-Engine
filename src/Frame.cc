@@ -894,21 +894,6 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-  
-/*
- * Description: Creates a blank lay over structure with cleared data.
- *
- * Inputs: none
- * Output: LayOver - the lay coverage structure defining the sprite
- */
-LayOver Frame::createBlankLayOver()
-{
-  LayOver new_layover;
-  new_layover.path = "";
-  new_layover.velocity_x = 0.0;
-  new_layover.velocity_y = 0.0;
-  return new_layover;
-}
 
 /*
  * Description: Renders a shifted rectangle bar. This allows for a slope to be
