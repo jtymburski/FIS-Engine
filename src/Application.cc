@@ -302,6 +302,9 @@ bool Application::load()
     /* First unload */
     unload();
 
+    /* Declare timer for application load time */
+    Timer t;
+
     do
     {
       /* Read set of XML data */
@@ -319,6 +322,9 @@ bool Application::load()
         }
       }
     } while(!done && success);
+
+    /* Print out the time to create all the music/sounds */
+    std::cout << "App Load Time: " << t.elapsed() << "s" << std::endl;
   }
 
   /* Stop the file read */

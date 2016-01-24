@@ -185,6 +185,14 @@ bool RenderElement::buildSpriteLay(std::string path)
 
       return true;
     }
+    else if(split.size() == 1)
+    {
+      element_sprite = new Sprite(path, renderer);
+      element_sprite->setNonUnique(true, 1);
+      element_sprite->createTexture(renderer);
+
+      return true;
+    }
   }
 
   return false;

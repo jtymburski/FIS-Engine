@@ -13,33 +13,7 @@
  *  2. Talk to Mike about Battle and how we should keep it constructed and then
  *     just change the player and foes when it switches. This is primarily
  *     for dealing with the stacked widget.
- *
- *     - Construct Battle object empty.
- *     - after battle transition, map sends:
- *     - eventStartBattle()
- *          -> battle prep friends -> load into Battle
- *          -> battle prep foes -> load into battle
- *          -> assert ai check
- *          -> battle->begin()
- *               -  setup class, determine turn mode, load flags, create objects
- *          -> swap display/updating to battle
- *     - victory conditions->
- *        - battle sends victory "signal"
- *        - allies clean-up
- *        - foes, delete if created as copies of base persons from map
- *     - run conditions->
- *        - battle sends run "signal"
- *        - allies clean up
- *        - turn back to map
- *     - defeat
- *       - battle sends defeat "signal"
- *       - back to Title.
- *
  *  3. Add victory screen logic
- *
- *     -- I wanted to do this just inside of Battle while all the info is
- *        available, and event handler just has to handle post-victory screen.
- *
  *  4. Add speed up button to allow the game to accelerate movement and
  *     everything else. Do it by multiplying the time elapsed.
  ******************************************************************************/
@@ -408,13 +382,17 @@ bool Game::eventStartBattle(int person_id, int source_id)
       {
         battle_ctrl->setBackground(scene->background);
         battle_ctrl->setMusicID(scene->music_id);
+
         // TODO: UNDERLAYS
         for(uint16_t i = 0; i < scene->midlays.size(); i++)
           if(!scene->midlays[i].path.empty())
+          {
+            std::cout << "Path: " << scene->midlays[i].path << std::endl;
             battle_ctrl->createMidlay(scene->midlays[i].path,
                                       scene->midlays[i].anim_time,
                                       scene->midlays[i].velocity_x,
                                       scene->midlays[i].velocity_y);
+          }
         for(uint16_t i = 0; i < scene->overlays.size(); i++)
           if(!scene->overlays[i].path.empty())
             battle_ctrl->createOverlay(scene->overlays[i].path,
@@ -579,7 +557,9 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
             << "Game Load: " << fh.getDate() << type << std::endl
             << "--" << std::endl;
 
+  /* Timer to calculate Core Game load time */
   Timer t;
+
   /* If file open was successful, move forward */
   if(success)
   {
@@ -606,7 +586,9 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
       }
     } while(!done); // && success); // TODO: Success in loop??
   }
-  std::cout << t.elapsed() << std::endl;
+
+  /* Print the time to load out */
+  std::cout << "Game Load Time: " << t.elapsed() << "s" << std::endl;
 
   success &= fh.stop();
 
