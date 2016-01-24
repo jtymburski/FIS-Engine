@@ -1976,6 +1976,111 @@ std::string& Helpers::trim(std::string& s)
   return ltrim(rtrim(s));
 }
 
+/*
+ * Description: Updates the lay over structure passed in with the load data
+ *              as defined by XmlData with the associated index
+ *
+ * Inputs: LayOver lay_over - the lay over to modify with the new data
+ *         XmlData data - the load data element
+ *         int file_index - the current index within the data set
+ * Output: LayOver - the updated lay over with the load data. No changes if the
+ *                   load failed.
+ */
+LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index)
+{
+  bool success = true;
+  LayOver new_layover = lay_over;
+
+  /* Modify */
+  std::string element3 = data.getElement(file_index);
+  if(element3 == "animation")
+    new_layover.anim_time = data.getDataInteger(&success);
+  else if(element3 == "path")
+    new_layover.path = data.getDataString(&success);
+  else if(element3 == "velx")
+    new_layover.velocity_x = data.getDataFloat(&success);
+  else if(element3 == "vely")
+    new_layover.velocity_y = data.getDataFloat(&success);
+
+  /* Return the appropriate set */
+  if(success)
+    return new_layover;
+  return lay_over;
+}
+
+/*
+ * Description: Updates the battle scene structure passed in with the load data
+ *              as defined by XmlData with the associated index
+ *
+ * Inputs: BattleScene scene - the battle scene to modify with the new data
+ *         XmlData data - the load data element
+ *         int file_index - the current index within the data set
+ * Output: BattleScene - the updated scene with the load data. No changes if
+ *                       the load failed.
+ */
+BattleScene Helpers::updateScene(BattleScene scene, XmlData data,
+                                 int file_index)
+{
+  bool success = true;
+  BattleScene new_scene = scene;
+
+  /* Modify */
+  std::string element = data.getElement(file_index);
+  /* -- BACKGROUND PATH -- */
+  if(element == "background")
+  {
+    new_scene.background = data.getDataString(&success);
+  }
+  /* -- MUSIC INTEGER -- */
+  else if(element == "music")
+  {
+    new_scene.music_id = data.getDataInteger(&success);
+  }
+  /* -- UNDERLAY/MIDLAY/OVERLAY INFO -- */
+  else if(element == "underlay" || element == "midlay" ||
+          element == "overlay")
+  {
+    /* Get index */
+    int index_ref = -1;
+    std::string index_str = data.getKeyValue(file_index);
+    if(!index_str.empty())
+      index_ref = std::stoi(index_str);
+
+    /* Proceed if index is valid */
+    if(index_ref >= 0)
+    {
+      /* Get referenced layer */
+      LayOver* lay_ref = nullptr;
+      if(element == "underlay")
+      {
+        while(static_cast<int>(new_scene.underlays.size()) <= index_ref)
+          new_scene.underlays.push_back(createBlankLayOver());
+        lay_ref = &new_scene.underlays[index_ref];
+      }
+      else if(element == "midlay")
+      {
+        while(static_cast<int>(new_scene.midlays.size()) <= index_ref)
+          new_scene.midlays.push_back(createBlankLayOver());
+        lay_ref = &new_scene.midlays[index_ref];
+      }
+      else /* overlay */
+      {
+        while(static_cast<int>(new_scene.overlays.size()) <= index_ref)
+          new_scene.overlays.push_back(createBlankLayOver());
+        lay_ref = &new_scene.overlays[index_ref];
+      }
+
+      /* Modify referenced layer */
+      *lay_ref = updateLayOver(*lay_ref, data, file_index + 1);
+    }
+  }
+
+  /* Return the appropriate set */
+  if(success)
+    return new_scene;
+  return scene;
+}
+
 /*=============================================================================
  * GRAPHICAL HELPER FUNCTIONS
  *============================================================================*/

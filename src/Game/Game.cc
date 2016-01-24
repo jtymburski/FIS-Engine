@@ -690,63 +690,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       edit_scene = addBattleScene(id);
 
     /* Modify */
-    std::string element2 = data.getElement(index + 1);
-    /* -- BACKGROUND PATH -- */
-    if(element2 == "background")
-    {
-      edit_scene->background = data.getDataString(&success);
-    }
-    /* -- MUSIC INTEGER -- */
-    else if(element2 == "music")
-    {
-      edit_scene->music_id = data.getDataInteger(&success);
-    }
-    /* -- UNDERLAY/MIDLAY/OVERLAY INFO -- */
-    else if(element2 == "underlay" || element2 == "midlay" ||
-            element2 == "overlay")
-    {
-      /* Get index */
-      int index_ref = -1;
-      std::string index_str = data.getKeyValue(index + 1);
-      if(!index_str.empty())
-        index_ref = std::stoi(index_str);
-
-      /* Proceed if index is valid */
-      if(index_ref >= 0)
-      {
-        /* Get referenced layer */
-        LayOver* lay_ref = nullptr;
-        if(element2 == "underlay")
-        {
-          while(static_cast<int>(edit_scene->underlays.size()) <= index_ref)
-            edit_scene->underlays.push_back(Helpers::createBlankLayOver());
-          lay_ref = &edit_scene->underlays[index_ref];
-        }
-        else if(element2 == "midlay")
-        {
-          while(static_cast<int>(edit_scene->midlays.size()) <= index_ref)
-            edit_scene->midlays.push_back(Helpers::createBlankLayOver());
-          lay_ref = &edit_scene->midlays[index_ref];
-        }
-        else
-        {
-          while(static_cast<int>(edit_scene->overlays.size()) <= index_ref)
-            edit_scene->overlays.push_back(Helpers::createBlankLayOver());
-          lay_ref = &edit_scene->overlays[index_ref];
-        }
-
-        /* Modify referenced layer */
-        std::string element3 = data.getElement(index + 2);
-        if(element3 == "animation")
-          lay_ref->anim_time = data.getDataInteger(&success);
-        else if(element3 == "path")
-          lay_ref->path = data.getDataString(&success);
-        else if(element3 == "velx")
-          lay_ref->velocity_x = data.getDataFloat(&success);
-        else if(element3 == "vely")
-          lay_ref->velocity_y = data.getDataFloat(&success);
-      }
-    }
+    *edit_scene = Helpers::updateScene(*edit_scene, data, index + 1);
   }
   /* ---- CLASSES ---- */
   else if(element == "class")

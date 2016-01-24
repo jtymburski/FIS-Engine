@@ -14,7 +14,7 @@
 /* Constant Implementation - see header file for descriptions */
 const int MapViewport::kMIN_HEIGHT = 1;
 const int MapViewport::kMIN_WIDTH = 1;
-const int MapViewport::kTRAVEL_DIFF = 30;
+const int MapViewport::kTRAVEL_DIFF = 40;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS

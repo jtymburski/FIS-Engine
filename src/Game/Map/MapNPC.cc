@@ -1321,6 +1321,7 @@ bool MapNPC::setBase(MapThing* base)
 void MapNPC::setForcedInteraction(bool forced)
 {
   forced_interaction = forced;
+  forced_recent = false;
 }
 
 /*
@@ -1415,6 +1416,7 @@ void MapNPC::setTrackingDist(int trigger, int max, int run)
 void MapNPC::setTrackingState(TrackingState state)
 {
   track_state = state;
+  track_recent = false;
 }
 
 /*

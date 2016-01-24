@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "EnumDb.h"
+#include "XmlData.h"
 
 class Timer
 {
@@ -296,6 +297,11 @@ public:
 
   /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string& s);
+
+  /* Update load calls for global structs */
+  static LayOver updateLayOver(LayOver lay_over, XmlData data, int file_index);
+  static BattleScene updateScene(BattleScene scene, XmlData data,
+                                 int file_index);
 
 /*=============================================================================
  * GRAPHICAL HELPER FUNCTIONS
