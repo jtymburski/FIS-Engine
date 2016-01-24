@@ -100,18 +100,17 @@ RenderElement::RenderElement(SDL_Renderer* renderer, std::string sprite_path,
   location.point.y = point.y;
 }
 
-RenderElement::RenderElement(SDL_Renderer* renderer, std::string lay_path,
-                             Box location, RenderType render_type,
-                             Floatinate velocity, uint8_t alpha)
+RenderElement::RenderElement(SDL_Renderer* renderer, Box location,
+                             RenderType render_type, Floatinate velocity,
+                             uint8_t alpha, int32_t animation_time)
     : RenderElement()
 {
   this->alpha = alpha;
   this->renderer = renderer;
   this->render_type = render_type;
-
-  buildSprite(lay_path);
-
   this->location = location;
+  this->time_left = animation_time;
+
   setVelocity(velocity.x, velocity.y);
 }
 
@@ -166,6 +165,30 @@ bool RenderElement::buildSprite(std::string path, int32_t num_frames)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+bool RenderElement::buildSpriteLay(std::string path)
+{
+  if(renderer && path != "" && !element_sprite)
+  {
+    auto split = Helpers::split(path, '|');
+
+    if(split.size() == 3)
+    {
+      auto num_frames = std::stoi(split.at(1));
+      element_sprite =
+          new Sprite(split.at(0), num_frames, split.at(2), renderer);
+      if(this->time_left != 0)
+        element_sprite->setAnimationTime(this->time_left);
+
+      element_sprite->setNonUnique(true, num_frames);
+      element_sprite->createTexture(renderer);
+
+      return true;
+    }
+  }
+
+  return false;
+}
 
 void RenderElement::createAsActionText(std::string action_name)
 {
@@ -298,7 +321,8 @@ void RenderElement::createAsVictoryText(std::string victory_text,
     element_text = Text(element_font);
     element_text.setText(renderer, victory_text, color);
     location.point.x = (sc_width - element_text.getWidth()) / 2;
-    location.point.y = (sc_height / 8) - (element_text.getHeight() / 2);// + (sc_height / 32);
+    location.point.y =
+        (sc_height / 8) - (element_text.getHeight() / 2); // + (sc_height / 32);
 
     std::cout << "Created text at: " << location.point.x << ", "
               << location.point.y << std::endl;

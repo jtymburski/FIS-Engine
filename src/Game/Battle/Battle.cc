@@ -1757,7 +1757,6 @@ void Battle::buildEnemyBackdrop()
   frame_enemy_backdrop = rendered_frame;
 }
 
-// TODO: grab fonts
 void Battle::buildInfoAlly(BattleActor* ally)
 {
   /* Sizing variables */
@@ -1983,33 +1982,10 @@ void Battle::playInflictionSound(Infliction type)
   }
 }
 
-void Battle::createOverlay(std::string path, int anim_time, 
-                           float velocity_x, float velocity_y)
+void Battle::createOverlay(std::string path, int anim_time, float velocity_x,
+                           float velocity_y)
 {
-  if(path != "" && config)
-  {
-    Box location;
-    location.point.x = 0;
-    location.point.y = 0;
-    location.width = config->getScreenWidth();
-    location.height = config->getScreenHeight();
-
-    Floatinate velocity(velocity_x, velocity_y);
-
-    // TODO: NEED TO REVISE FOR ANIMATION BASED SPRITE OVERLAY
-    // "sprites/Battle/Midlays/rain|5|.png" with 175ms time and same location,
-    // velocity for example
-    auto element = new RenderElement(renderer, path, location,
-                                     RenderType::OVERLAY, velocity, 245);
-
-    render_elements.push_back(element);
-  }
-}
-
-void Battle::createMidlay(std::string path, int anim_time, 
-                          float velocity_x, float velocity_y)
-{
-  if(path != "" && config)
+    if(path != "" && config)
   {
     Box location;
     location.point.x = 0;
@@ -2018,30 +1994,58 @@ void Battle::createMidlay(std::string path, int anim_time,
     location.height = config->getScreenHeight();
 
     Floatinate velocity(velocity_x, velocity_y);
-    
-    // TODO: NEED TO REVISE FOR ANIMATION BASED SPRITE MIDLAY
-    // "sprites/Battle/Midlays/rain|5|.png" with 175ms time and same location,
-    // velocity for example
-    auto element = new RenderElement(renderer, path, location,
-                                     RenderType::MIDLAY, velocity, 245);
+
+    auto element = new RenderElement(renderer, location, RenderType::OVERLAY,
+                                     velocity, 245, anim_time);
+    element->buildSpriteLay(path);
 
     render_elements.push_back(element);
 
     location.point.x = 1216;
     location.point.y = 704;
 
-    element = new RenderElement(renderer, path, location, RenderType::MIDLAY,
-                                velocity, 245);
+    element = new RenderElement(renderer, location, RenderType::OVERLAY,
+                                velocity, 245, anim_time);
+    element->buildSpriteLay(path);
+
     render_elements.push_back(element);
   }
 }
 
-// NOTE: On menu rendering, render the friend info of the selected ally
-// ex. //
-/* Render the selecting person info */
-// uint16_t x = (section1_w - kINFO_W) / 2;
-// uint16_t y = screen_height - bar_height + (bar_height - kALLY_HEIGHT) / 2;
-//   success &= renderFriendInfo(screen_height, x, y, true);
+void Battle::createMidlay(std::string path, int anim_time, float velocity_x,
+                          float velocity_y)
+{
+  std::cout << "Creating midlay with path: " << path << std::endl;
+  std::cout << "Animation time: " << anim_time << std::endl;
+  std::cout << "Velocity x: " << velocity_x << std::endl;
+  std::cout << "Velocity y: " << velocity_y << std::endl;
+
+  if(path != "" && config)
+  {
+    Box location;
+    location.point.x = 0;
+    location.point.y = 704;
+    location.width = config->getScreenWidth();
+    location.height = config->getScreenHeight();
+
+    Floatinate velocity(velocity_x, velocity_y);
+
+    auto element = new RenderElement(renderer, location, RenderType::MIDLAY,
+                                     velocity, 245, anim_time);
+    element->buildSpriteLay(path);
+
+    render_elements.push_back(element);
+
+    location.point.x = 1216;
+    location.point.y = 704;
+
+    element = new RenderElement(renderer, location, RenderType::MIDLAY,
+                                velocity, 245, anim_time);
+    element->buildSpriteLay(path);
+
+    render_elements.push_back(element);
+  }
+}
 
 // Other todos:
 bool Battle::render()
@@ -2074,7 +2078,7 @@ bool Battle::render()
     /* Render the action frame */
     if(turn_state == TurnState::PROCESS_ACTIONS)
       success &= renderActionFrame();
-    
+
     /* Render the overlays */
     renderOverlays();
 
@@ -2867,13 +2871,13 @@ bool Battle::startBattle(Party* friends, Party* foes, std::string bg_path)
   /* `et the sprite for the Battle background */
   // setBackground(bg_path);
 
-  // TODO: [01-09-2015]: Temporary background building
-  //setBackground(bg_path + "sprites/Battle/Backdrop/battlebg06.png");
+  // TODO: Temporary background building
+  // setBackground(bg_path + "sprites/Battle/Backdrop/battlebg06.png");
 
   // Create an midlay
-  //auto path =
+  // auto path =
   //    bg_path + "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png";
-  //createMidlay(path, 0.10, 0.000);
+  // createMidlay(path, 0.10, 0.000);
 
   /* Construct the enemy backdrop */
   buildEnemyBackdrop();

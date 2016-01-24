@@ -56,6 +56,17 @@ Victory::~Victory()
 bool Victory::buildCard(BattleActor* actor)
 {
   assert(actor);
+
+  auto base_person = actor->getBasePerson();
+
+  /* Victory Card */
+  auto card = VictoryCard();
+
+  card.card_actor = actor;
+  card.sprite_actor = base_person->getDialogSprite();
+
+
+
   auto success = true;
 
   return success;

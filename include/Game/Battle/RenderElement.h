@@ -16,13 +16,8 @@
 #ifndef RENDER_ELEMENT_H
 #define RENDER_ELEMENT_H
 
-//#include "Game/Battle/BattleActor.h"
-#include "Sprite.h"
-#include "Text.h"
-
 /* Forward declare for Battle constants */
 class Battle;
-// class BattleActor;
 
 #include "Sprite.h"
 #include "Text.h"
@@ -62,8 +57,8 @@ public:
                 Coordinate point);
 
   /* Overlay and Midlay constructor */
-  RenderElement(SDL_Renderer* renderer, std::string lay_path, Box location,
-                RenderType type, Floatinate velocity, uint8_t alpha);
+  RenderElement(SDL_Renderer* renderer, Box location, RenderType type,
+                Floatinate velocity, uint8_t alpha, int32_t animation_time);
 
   /* Elemental annihilator */
   ~RenderElement();
@@ -143,13 +138,15 @@ private:
    * PRIVATE FUNCTIONS
    *============================================================================*/
 private:
-  bool buildSprite(std::string sprite_path, int32_t num_frames = 1);
   bool buildSprite(Sprite* sprite);
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
+  bool buildSprite(std::string sprite_path, int32_t num_frames = 1);
+  bool buildSpriteLay(std::string sprite_path);
+
   /* Creates the render element as an action text*/
   void createAsActionText(std::string text);
 
@@ -207,9 +204,9 @@ public:
 
   RenderStatus initialStatusFade();
 
-  /*=============================================================================
-   * PRIVATE STATIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
 private:
   static SDL_Color colorFromDamageType(DamageType type);
 };
