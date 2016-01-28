@@ -383,19 +383,24 @@ bool Game::eventStartBattle(int person_id, int source_id)
         battle_ctrl->setBackground(scene->background);
         battle_ctrl->setMusicID(scene->music_id);
 
-        // TODO: UNDERLAYS
+        /* Underlays */
+        for(uint16_t i = 0; i < scene->underlays.size(); i++)
+          if(!scene->underlays[i].path.empty())
+            battle_ctrl->createUnderlay(base_path + scene->underlays[i].path,
+                                        scene->underlays[i].anim_time,
+                                        scene->underlays[i].velocity_x,
+                                        scene->underlays[i].velocity_y);
+        /* Midlays */
         for(uint16_t i = 0; i < scene->midlays.size(); i++)
           if(!scene->midlays[i].path.empty())
-          {
-            std::cout << "Path: " << scene->midlays[i].path << std::endl;
-            battle_ctrl->createMidlay(scene->midlays[i].path,
+            battle_ctrl->createMidlay(base_path + scene->midlays[i].path,
                                       scene->midlays[i].anim_time,
                                       scene->midlays[i].velocity_x,
                                       scene->midlays[i].velocity_y);
-          }
+        /* Overlays */
         for(uint16_t i = 0; i < scene->overlays.size(); i++)
           if(!scene->overlays[i].path.empty())
-            battle_ctrl->createOverlay(scene->overlays[i].path,
+            battle_ctrl->createOverlay(base_path + scene->overlays[i].path,
                                        scene->overlays[i].anim_time,
                                        scene->overlays[i].velocity_x,
                                        scene->overlays[i].velocity_y);

@@ -468,6 +468,9 @@ private:
   /* Render overlays */
   void renderOverlays();
 
+  /* Render underlays */
+  void renderUnderlays();
+
   /* Basic setup for health drawing */
   bool setupHealthDraw(BattleActor* actor, float health_pc);
 
@@ -531,14 +534,16 @@ public:
   /* Set a RenderState flag */
   void setFlagRender(RenderState test_flag, const bool& set_value = true);
 
-  /*============================================================================
-   * PUBLIC FUNCTIONS - Battle Display
-   *============================================================================*/
+/*============================================================================
+ * PUBLIC FUNCTIONS - Battle Display
+ *============================================================================*/
 public:
-  void createOverlay(std::string path, int anim_time, 
-                     float velocity_x, float velocity_y);
   void createMidlay(std::string path, int anim_time, 
                     float velocity_x, float velocity_y);
+  void createOverlay(std::string path, int anim_time, 
+                     float velocity_x, float velocity_y);
+  void createUnderlay(std::string path, int anim_time,
+                      float velocity_x, float velocity_y); // TODO
 
   /* Renders the Battle */
   bool render();

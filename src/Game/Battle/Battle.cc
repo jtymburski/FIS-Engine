@@ -1982,46 +1982,18 @@ void Battle::playInflictionSound(Infliction type)
   }
 }
 
-void Battle::createOverlay(std::string path, int anim_time, float velocity_x,
-                           float velocity_y)
-{
-    if(path != "" && config)
-  {
-    Box location;
-    location.point.x = 0;
-    location.point.y = 704;
-    location.width = config->getScreenWidth();
-    location.height = config->getScreenHeight();
-
-    Floatinate velocity(velocity_x, velocity_y);
-
-    auto element = new RenderElement(renderer, location, RenderType::OVERLAY,
-                                     velocity, 245, anim_time);
-    element->buildSpriteLay(path);
-
-    render_elements.push_back(element);
-
-    location.point.x = 1216;
-    location.point.y = 704;
-
-    element = new RenderElement(renderer, location, RenderType::OVERLAY,
-                                velocity, 245, anim_time);
-    element->buildSpriteLay(path);
-
-    render_elements.push_back(element);
-  }
-}
-
 void Battle::createMidlay(std::string path, int anim_time, float velocity_x,
                           float velocity_y)
 {
-  std::cout << "Creating midlay with path: " << path << std::endl;
-  std::cout << "Animation time: " << anim_time << std::endl;
-  std::cout << "Velocity x: " << velocity_x << std::endl;
-  std::cout << "Velocity y: " << velocity_y << std::endl;
+
 
   if(path != "" && config)
   {
+    std::cout << "Creating midlay with path: " << path << std::endl;
+    std::cout << "Animation time: " << anim_time << std::endl;
+    std::cout << "Velocity x: " << velocity_x << std::endl;
+    std::cout << "Velocity y: " << velocity_y << std::endl;
+
     Box location;
     location.point.x = 0;
     location.point.y = 704;
@@ -2047,6 +2019,76 @@ void Battle::createMidlay(std::string path, int anim_time, float velocity_x,
   }
 }
 
+void Battle::createOverlay(std::string path, int anim_time, float velocity_x,
+                           float velocity_y)
+{
+  if(path != "" && config)
+  {
+    std::cout << "Creating overlay with path: " << path << std::endl;
+    std::cout << "Animation time: " << anim_time << std::endl;
+    std::cout << "Velocity x: " << velocity_x << std::endl;
+    std::cout << "Velocity y: " << velocity_y << std::endl;
+  
+    Box location;
+    location.point.x = 0;
+    location.point.y = 704;
+    location.width = config->getScreenWidth();
+    location.height = config->getScreenHeight();
+
+    Floatinate velocity(velocity_x, velocity_y);
+
+    auto element = new RenderElement(renderer, location, RenderType::OVERLAY,
+                                     velocity, 245, anim_time);
+    element->buildSpriteLay(path);
+
+    render_elements.push_back(element);
+
+    location.point.x = 1216;
+    location.point.y = 704;
+
+    element = new RenderElement(renderer, location, RenderType::OVERLAY,
+                                velocity, 245, anim_time);
+    element->buildSpriteLay(path);
+
+    render_elements.push_back(element);
+  }
+}
+
+void Battle::createUnderlay(std::string path, int anim_time,
+                            float velocity_x, float velocity_y)
+{
+  if(path != "" && config)
+  {
+    std::cout << "Creating underlay with path: " << path << std::endl;
+    std::cout << "Animation time: " << anim_time << std::endl;
+    std::cout << "Velocity x: " << velocity_x << std::endl;
+    std::cout << "Velocity y: " << velocity_y << std::endl;
+  
+    Box location;
+    location.point.x = 0;
+    location.point.y = 704;
+    location.width = config->getScreenWidth();
+    location.height = config->getScreenHeight();
+
+    Floatinate velocity(velocity_x, velocity_y);
+
+    auto element = new RenderElement(renderer, location, RenderType::UNDERLAY,
+                                     velocity, 245, anim_time);
+    element->buildSpriteLay(path);
+
+    render_elements.push_back(element);
+
+    location.point.x = 1216;
+    location.point.y = 704;
+
+    element = new RenderElement(renderer, location, RenderType::UNDERLAY,
+                                velocity, 245, anim_time);
+    element->buildSpriteLay(path);
+
+    render_elements.push_back(element);
+  }
+}
+
 // Other todos:
 bool Battle::render()
 {
@@ -2063,7 +2105,8 @@ bool Battle::render()
     if(background)
       success &= background->render(renderer, 0, 0, width, height);
 
-    // FUTURE - Render overlays here.
+    /* Render the underlays */
+    renderUnderlays();
 
     /* Render the enemies in their present state */
     success &= renderEnemies();
@@ -2081,7 +2124,7 @@ bool Battle::render()
 
     /* Render the overlays */
     renderOverlays();
-
+    
     /* Render battle bar (on bottom) */
     success &= renderBattleBar();
 
@@ -2388,6 +2431,7 @@ bool Battle::renderEnemiesInfo()
   return success;
 }
 
+/* Render midlays */
 void Battle::renderMidlays()
 {
   for(auto& element : render_elements)
@@ -2439,6 +2483,7 @@ bool Battle::renderMenu()
   return success;
 }
 
+/* Render overlays */
 void Battle::renderOverlays()
 {
   for(auto& element : render_elements)
@@ -2447,7 +2492,25 @@ void Battle::renderOverlays()
        element->element_sprite)
     {
       auto point = element->location.point;
-      element->element_sprite->render(renderer, point.x, point.y);
+      element->element_sprite->render(renderer, 
+                                      point.x - config->getScreenWidth(),
+                                      point.y - config->getScreenHeight());
+    }
+  }
+}
+
+/* Render underlays */
+void Battle::renderUnderlays()
+{
+  for(auto& element : render_elements)
+  {
+    if(element && element->render_type == RenderType::UNDERLAY &&
+       element->element_sprite)
+    {
+      auto point = element->location.point;
+      element->element_sprite->render(renderer, 
+                                      point.x - config->getScreenWidth(),
+                                      point.y - config->getScreenHeight());
     }
   }
 }

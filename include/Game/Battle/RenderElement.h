@@ -33,6 +33,7 @@ enum class RenderType
   RGB_OVERLAY,
   RGB_SPRITE_FLASH,
   RGB_SPRITE_DEATH,
+  UNDERLAY,
   MIDLAY,
   OVERLAY,
   NONE

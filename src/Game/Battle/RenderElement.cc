@@ -391,7 +391,7 @@ bool RenderElement::update(int32_t cycle_time)
   time_left -= cycle_time;
 
   if(render_type == RenderType::PLEP || render_type == RenderType::OVERLAY ||
-     render_type == RenderType::MIDLAY)
+     render_type == RenderType::MIDLAY || render_type == RenderType::UNDERLAY)
   {
     updateStatusPlep(cycle_time);
   }
@@ -414,7 +414,8 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
     {
       status = RenderStatus::TIMED_OUT;
     }
-    else if(render_type == RenderType::MIDLAY ||
+    else if(render_type == RenderType::UNDERLAY || 
+            render_type == RenderType::MIDLAY ||
             render_type == RenderType::OVERLAY)
     {
       element_sprite->setOpacity(alpha);
