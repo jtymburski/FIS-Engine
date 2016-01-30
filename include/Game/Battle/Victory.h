@@ -29,14 +29,15 @@ struct VictoryCard
         sprite_feet{nullptr},
         sprite_larm{nullptr},
         sprite_rarm{nullptr},
-        frame_backdrop{nullptr}
-        {};
+        frame_backdrop{nullptr} {};
 
   /* The actor the card is built for */
   BattleActor* card_actor;
 
   /* Card Sprites */
   Sprite* sprite_actor;
+  Box sprite_actor_location;
+
   Sprite* sprite_head;
   Sprite* sprite_body;
   Sprite* sprite_feet;
@@ -50,6 +51,7 @@ struct VictoryCard
 
   /* Backdrop Location and State */
   Box location;
+  Box end_location;
   SpriteState state_backdrop;
 };
 
@@ -71,7 +73,6 @@ public:
   /* Annihilate a victory object */
   ~Victory();
 
-
   /* ----- Constants ----- */
   static const double kEXP_FACTOR;
 
@@ -88,7 +89,7 @@ private:
   /* Vector of Battle actors to calculate experience/loot with */
   std::vector<BattleActor*> losers;
 
-  /* The active Victory screen renderer */
+  /* The active Victory screen `er */
   SDL_Renderer* renderer;
 
   /* Vector of Actors to build the victory screen for */
@@ -105,6 +106,10 @@ private:
   /*=============================================================================
    * PRIVATE FUNCTIONS
    *============================================================================*/
+private:
+  /* Constructs a sprite for the VictoryCard given a path */
+  Sprite* buildActorSprite(std::string path);
+
   /* Constructs the VictoryCard for the given BattleActor */
   bool buildCard(BattleActor* actor);
 
@@ -123,6 +128,9 @@ public:
 
   /* Render the victory screen in its current state */
   void render();
+
+  /* Renders a given card an all its information */
+  void renderCard(VictoryCard& card);
 
   /* Update the Victory Screen */
   bool update(int32_t cycle_time);

@@ -213,6 +213,9 @@ public:
   static PartyType partyTypeFromStr(const std::string& type);
   static std::string partyTypeToStr(const PartyType& type);
 
+  /* Returns a string form of a given rank enumerators */
+  static std::string rankToStr(const Rank& rank_level);
+
   /* Returns the enumerated regen rate in string form */
   static RegenRate regenRateFromStr(const std::string& regen_rate);
   static std::string regenRateToStr(const RegenRate& regen_rate);

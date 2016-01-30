@@ -491,9 +491,9 @@ enum class PartyType : std::uint8_t
 /*
  * Description:
  */
-enum class Ranks : std::uint16_t
+enum class Rank : std::uint16_t
 {
-  NUBEAR,
+   NUBEAR,
   CUB,
   RECRUIT,
   SLEUTHLING,

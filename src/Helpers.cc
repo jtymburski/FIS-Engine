@@ -1125,15 +1125,47 @@ std::string Helpers::partyTypeToStr(const PartyType& type)
 {
   if(type == PartyType::SLEUTH)
     return "SLEUTH";
-  else if(type == PartyType::BEARACKS)
+  if(type == PartyType::BEARACKS)
     return "BEARACKS";
-  else if(type == PartyType::MINI_BOSS)
+  if(type == PartyType::MINI_BOSS)
     return "MINI_BOSS";
-  else if(type == PartyType::BOSS)
+  if(type == PartyType::BOSS)
     return "BOSS";
-  else if(type == PartyType::FINAL_BOSS)
+  if(type == PartyType::FINAL_BOSS)
     return "FINAL_BOSS";
   return "REGULAR_FOE";
+}
+
+std::string Helpers::rankToStr(const Rank& rank_level)
+{
+  if(rank_level == Rank::NUBEAR)
+    return "NUBEAR";
+  if(rank_level == Rank::CUB)
+    return "CUB";
+  if(rank_level == Rank::RECRUIT)
+    return "RECRUIT";
+  if(rank_level == Rank::SLEUTHLING)
+    return "SLEUTHLING";
+  if(rank_level == Rank::SERGEANT)
+    return "SERGEANT";
+  if(rank_level == Rank::SLEUTHMASTER)
+    return "SLEUTHMASTER";
+  if(rank_level == Rank::OFFICER)
+    return "OFFICER";
+  if(rank_level == Rank::URSAMINOR)
+    return "URSA MINOR";
+  if(rank_level == Rank::ADMIRAL)
+    return "ADMIRAL";
+  if(rank_level == Rank::URSAMAJOR)
+    return "URSA MAJOR";
+  if(rank_level == Rank::FOREBEAR)
+    return "FOREBEAR";
+  if(rank_level == Rank::ALPHABEAR)
+    return "ALPHABEAR";
+  if(rank_level == Rank::BOAT)
+    return "BEAR OF ANCIENT TIMES";
+
+  return "NONE";
 }
 
 /*
@@ -1390,7 +1422,6 @@ std::string Helpers::victoryStateToStr(VictoryState victory_state)
 
   return "";
 }
-
 
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
@@ -2037,8 +2068,7 @@ BattleScene Helpers::updateScene(BattleScene scene, XmlData data,
     new_scene.music_id = data.getDataInteger(&success);
   }
   /* -- UNDERLAY/MIDLAY/OVERLAY INFO -- */
-  else if(element == "underlay" || element == "midlay" ||
-          element == "overlay")
+  else if(element == "underlay" || element == "midlay" || element == "overlay")
   {
     /* Get index */
     int index_ref = -1;

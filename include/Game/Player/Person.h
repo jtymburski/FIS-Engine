@@ -101,7 +101,7 @@ private:
   std::string name;
 
   /* Rank of the Person */
-  Ranks rank;
+  Rank rank;
 
   /* Elemental affiliations and curves of stat development */
   Element primary;
@@ -319,7 +319,7 @@ public:
   std::string getName() const;
 
   /* Returns the enumerated rank of the Person */
-  Ranks getRank();
+  Rank getRank();
 
   /* Returns the primary elemental affiliation */
   Element getPrimary();

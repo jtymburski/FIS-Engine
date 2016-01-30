@@ -414,7 +414,7 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
     {
       status = RenderStatus::TIMED_OUT;
     }
-    else if(render_type == RenderType::UNDERLAY || 
+    else if(render_type == RenderType::UNDERLAY ||
             render_type == RenderType::MIDLAY ||
             render_type == RenderType::OVERLAY)
     {

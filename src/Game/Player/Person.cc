@@ -1197,7 +1197,7 @@ std::string Person::getName() const
  * Inputs: none
  * Output: Ranks - enumerated rank of the Person
  */
-Ranks Person::getRank()
+Rank Person::getRank()
 {
   return rank;
 }

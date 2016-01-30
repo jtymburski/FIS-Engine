@@ -1079,10 +1079,8 @@ void Battle::updateFadeInText()
   else if(random == 7)
     turn_text = "Destroy";
   else if(random == 8)
-    turn_text = "Where Is Boopster";
-  else if(random == 9)
     turn_text = "Bearly Even Difficult";
-  else if(random == 10)
+  else if(random == 9)
     turn_text = "Eat Your Fate Cookies";
   else
     turn_text = "Decide Your Fate";
@@ -1114,11 +1112,11 @@ void Battle::updateOutcome(int32_t cycle_time)
                                            config->getScreenHeight(),
                                            config->getScreenWidth());
           render_elements.push_back(header_text);
-          victory_screen->setDimTime(2000 * 0.75);
+          victory_screen->setDimTime(200);
           setFlagCombat(CombatState::CREATED_VICTORY_TEXT, true);
         }
       }
-      else if(victory_screen->getStateVictory() == VictoryState::SLIDE_IN_CARD)
+      else if(victory_screen->getStateVictory() == VictoryState::PROCESS_CARD)
       {
         setFlagCombat(CombatState::PHASE_DONE, true);
       }

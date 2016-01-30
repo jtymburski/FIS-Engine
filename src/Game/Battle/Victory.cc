@@ -52,30 +52,72 @@ Victory::~Victory()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+Sprite* Victory::buildActorSprite(std::string path)
+{
+  if(path != "" && renderer)
+  {
+    auto new_sprite = new Sprite(path, renderer);
+    new_sprite->setNonUnique(true, 1);
+    new_sprite->createTexture(renderer);
+
+    return new_sprite;
+  }
+
+  return nullptr;
+}
+
 bool Victory::buildCard(BattleActor* actor)
 {
-  assert(actor);
+  assert(actor && actor->getBasePerson());
+  assert(renderer);
+
   auto success = true;
   auto base_person = actor->getBasePerson();
-
-  /* Victory Card */
   auto card = VictoryCard();
+  auto path = base_person->getThirdPersonPath();
+  auto card_sprite = buildActorSprite(path);
 
-  card.card_actor = actor;
-  card.sprite_actor = base_person->getDialogSprite();
-  card.frame_backdrop = new Frame(
-      config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
+  success &= (card_sprite != nullptr);
 
-  auto frame_x = card.frame_backdrop->getWidth();
-  auto frame_y = card.frame_backdrop->getHeight();
-  frame_x = frame_x * config->getScreenWidth() / Options::kDEF_SCREEN_WIDTH;
-  frame_y = frame_y * config->getScreenHeight() / Options::kDEF_SCREEN_HEIGHT;
+  if(success)
+  {
+    card.card_actor = actor;
+    card.sprite_actor = card_sprite;
 
-  card.location.point.x = config->getScreenWidth();
-  card.location.point.y = (config->getScreenHeight() - frame_y) / 2;
-  card.location.width = frame_x;
-  card.location.height = frame_y;
-  card.state_backdrop = SpriteState::HIDDEN;
+    card.frame_backdrop = new Frame(
+        config->getBasePath() + "sprites/Overlay/victory_card90.png", renderer);
+
+    auto frame_x = card.frame_backdrop->getWidth();
+    auto frame_y = card.frame_backdrop->getHeight();
+
+    frame_x = (float)frame_x * (float)config->getScreenWidth() /
+              (float)Options::kDEF_SCREEN_WIDTH;
+    frame_y = (float)frame_y * (float)config->getScreenHeight() /
+              (float)Options::kDEF_SCREEN_HEIGHT;
+
+    card.location.point.x = config->getScreenWidth();
+    card.location.point.y = (config->getScreenHeight() - frame_y) / 2;
+    card.location.width = frame_x;
+    card.location.height = frame_y;
+    card.state_backdrop = SpriteState::HIDDEN;
+
+    // TODO: End locations for layered cards? */
+    card.end_location.point.x =
+        (config->getScreenWidth() - frame_x) / 2;
+    card.end_location.point.y = card.location.point.y;
+
+    /* Sprite Actor Location */
+    card.sprite_actor_location.point.x = std::floor(0.05 * (float)frame_x);
+    card.sprite_actor_location.point.y = std::floor(0.05 * (float)frame_y);
+    card.sprite_actor_location.width = std::floor(0.5 * (float)frame_x);
+    card.sprite_actor_location.height = std::floor(0.65 * (float)frame_y);
+
+    victory_cards.push_back(card);
+  }
+  else
+  {
+    std::cout << "[Error] Creating card" << std::endl;
+  }
 
   return success;
 }
@@ -135,16 +177,29 @@ VictoryState Victory::getStateVictory()
 // TODO
 void Victory::render()
 {
-  // if(victory_state != VictoryState::FINISHED &&
-  //    victory_state != VictoryState::DIM_BATTLE)
-  // {
-
-  if(index < victory_cards.size())
+  for(auto& card : victory_cards)
   {
-    auto card = victory_cards.at(index);
+    renderCard(card);
+  }
+}
 
-    test_render->render(renderer, card.location.point.x, card.location.point.y,
-                        card.location.width, card.location.height);
+void Victory::renderCard(VictoryCard& card)
+{
+  auto x = card.location.point.x;
+  auto y = card.location.point.y;
+  auto width = card.location.width;
+  auto height = card.location.height;
+
+  /* Render the base frame */
+  test_render->render(renderer, x, y, width, height);
+
+  /* Render the Actor sprite */
+  if(card.sprite_actor)
+  {
+    card.sprite_actor->render(renderer, x + card.sprite_actor_location.point.x,
+                              y + card.sprite_actor_location.point.y,
+                              card.sprite_actor_location.width,
+                              card.sprite_actor_location.height);
   }
 }
 
@@ -166,6 +221,32 @@ bool Victory::update(int32_t cycle_time)
   /* Slide the card(s) towards their locations */
   if(victory_state == VictoryState::SLIDE_IN_CARD)
   {
+    if(index < victory_cards.size())
+    {
+      auto& card = victory_cards.at(index);
+
+      if(card.location.point.x != card.end_location.point.x)
+      {
+        auto distance =
+            std::abs(card.location.point.x - card.end_location.point.x);
+
+        if(distance == 1)
+          card.location.point.x = card.end_location.point.x;
+        else
+        {
+          auto travel = std::min(cycle_time * 2, distance);
+
+          if(travel > 1)
+            card.location.point.x -= travel;
+          else
+            card.location.point.x -= 1;
+        }
+      }
+      else
+      {
+        victory_state = VictoryState::PROCESS_CARD;
+      }
+    }
   }
 
   return false;
@@ -180,7 +261,6 @@ bool Victory::setConfiguration(Options* new_config)
 
 void Victory::setDimTime(int32_t new_dim_time)
 {
-  std::cout << "Setting dim time to be : " << new_dim_time << std::endl;
   this->dim_time = new_dim_time;
 }
 
