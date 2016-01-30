@@ -575,6 +575,29 @@ enum class SortType : std::uint8_t
 };
 
 /*
+ * Description: State of a sprite
+ */
+enum class SpriteState
+{
+  HIDDEN,
+  SLIDING_IN,
+  SLID_IN,
+  SLIDING_OUT,
+  SLID_OUT,
+  ATTEMPT_RUNNING,
+  PASS_BOBBING,
+  CYCLING_FADE,
+  RUNNING,
+  BOBBING,
+  FLASHING,
+  KOING,
+  DYING,
+  KOED,
+  DEAD
+};
+
+
+/*
  * Description: Defines what the map thing base class is
  */
 enum class ThingBase : std::uint8_t
@@ -642,6 +665,7 @@ enum class VictoryState
   FADE_IN_HEADER,
   SLIDE_IN_LOOT,
   SLIDE_IN_CARD,
+  PROCESS_CARD,
   SLIDE_OUT_CARD,
   SLIDE_OUT_LOOT,
   FADE_OUT,

@@ -27,6 +27,10 @@ const uint8_t  Options::kNUM_RESOLUTIONS = 6;
 const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920, 2560, 4480};
 const uint16_t Options::kRESOLUTIONS_Y[] = {704, 705, 768, 1080, 1080, 4480};
 
+/* Default Screen Width and Height */
+const std::uint32_t Options::kDEF_SCREEN_WIDTH{1216};
+const std::uint32_t Options::kDEF_SCREEN_HEIGHT{704};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/

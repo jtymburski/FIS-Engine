@@ -99,6 +99,11 @@ private:
   const static uint16_t kRESOLUTIONS_X[]; /* X Resolution sizes available */
   const static uint16_t kRESOLUTIONS_Y[]; /* Y Resolution sizes available */
 
+public:
+  /*--------------------- Constants --------------------*/
+  const static std::uint32_t kDEF_SCREEN_WIDTH;
+  const static std::uint32_t kDEF_SCREEN_HEIGHT;
+
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/

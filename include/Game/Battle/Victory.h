@@ -48,8 +48,9 @@ struct VictoryCard
   uint32_t exp_rendered;
   uint32_t exp_left;
 
-  /* Coordinates */
-  Coordinate box;
+  /* Backdrop Location and State */
+  Box location;
+  SpriteState state_backdrop;
 };
 
 /* The loot information */

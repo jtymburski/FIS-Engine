@@ -36,7 +36,6 @@ Victory::Victory(Options* config, SDL_Renderer* renderer,
   this->victors = victors;
   this->losers = losers;
 
-
   test_render = new Sprite(
       config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
 }
@@ -56,7 +55,7 @@ Victory::~Victory()
 bool Victory::buildCard(BattleActor* actor)
 {
   assert(actor);
-
+  auto success = true;
   auto base_person = actor->getBasePerson();
 
   /* Victory Card */
@@ -64,10 +63,19 @@ bool Victory::buildCard(BattleActor* actor)
 
   card.card_actor = actor;
   card.sprite_actor = base_person->getDialogSprite();
+  card.frame_backdrop = new Frame(
+      config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
 
+  auto frame_x = card.frame_backdrop->getWidth();
+  auto frame_y = card.frame_backdrop->getHeight();
+  frame_x = frame_x * config->getScreenWidth() / Options::kDEF_SCREEN_WIDTH;
+  frame_y = frame_y * config->getScreenHeight() / Options::kDEF_SCREEN_HEIGHT;
 
-
-  auto success = true;
+  card.location.point.x = config->getScreenWidth();
+  card.location.point.y = (config->getScreenHeight() - frame_y) / 2;
+  card.location.width = frame_x;
+  card.location.height = frame_y;
+  card.state_backdrop = SpriteState::HIDDEN;
 
   return success;
 }
@@ -130,21 +138,14 @@ void Victory::render()
   // if(victory_state != VictoryState::FINISHED &&
   //    victory_state != VictoryState::DIM_BATTLE)
   // {
-    auto frame_x = test_render->getFirstFrame()->getWidth();
-    auto frame_y = test_render->getFirstFrame()->getHeight();
 
-    auto x = (config->getScreenWidth() -
-              (frame_x * (config->getScreenWidth() / 1216))) /
-             2;
-    auto y = (config->getScreenHeight() -
-              (frame_y * (config->getScreenHeight() / 704))) /
-             2;
+  if(index < victory_cards.size())
+  {
+    auto card = victory_cards.at(index);
 
-    std::cout << "x: " << x << "y: " << y << std::endl;
-    std::cout << "Frame x: " << frame_x << "frame y: " << frame_y << std::endl;
-
-    test_render->render(renderer, x, y, frame_x, frame_y);
-  // }
+    test_render->render(renderer, card.location.point.x, card.location.point.y,
+                        card.location.width, card.location.height);
+  }
 }
 
 bool Victory::update(int32_t cycle_time)
@@ -156,7 +157,15 @@ bool Victory::update(int32_t cycle_time)
     if(dim_time <= 0 && victory_state == VictoryState::DIM_BATTLE)
       victory_state = VictoryState::FADE_IN_HEADER;
     else if(dim_time <= 0 && victory_state == VictoryState::FADE_IN_HEADER)
+    {
       victory_state = VictoryState::SLIDE_IN_CARD;
+      index = 0;
+    }
+  }
+
+  /* Slide the card(s) towards their locations */
+  if(victory_state == VictoryState::SLIDE_IN_CARD)
+  {
   }
 
   return false;

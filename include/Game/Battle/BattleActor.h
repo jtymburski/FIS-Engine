@@ -101,25 +101,6 @@ enum class SelectionState
   NONE
 };
 
-enum class SpriteState
-{
-  HIDDEN,
-  SLIDING_IN,
-  SLID_IN,
-  SLIDING_OUT,
-  SLID_OUT,
-  ATTEMPT_RUNNING,
-  PASS_BOBBING,
-  CYCLING_FADE,
-  RUNNING,
-  BOBBING,
-  FLASHING,
-  KOING,
-  DYING,
-  KOED,
-  DEAD
-};
-
 enum class GuardingState
 {
   NONE, /* This person is not guarding nor being guarded or shielded */

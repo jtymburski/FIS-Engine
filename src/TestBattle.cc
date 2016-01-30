@@ -1572,10 +1572,8 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   else if(ref == RGx2)
   {
     Person *rg1 = createPerson(500, REVERDLING, lvl_foe);
-    Person *rg2 = createPerson(501, REVERDLING, lvl_foe);
-
     party_foes = new Party(400, rg1, PartyType::REGULAR_FOE, 5);
-    party_foes->addMember(rg2);
+    party_foes->addMember(rg1);
   }
   else if(ref == RGx5)
   {
@@ -1593,9 +1591,6 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   }
 
   /* Set up battle */
-  // auto background = new Sprite(
-  //     base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
-
   battle_logic->setRenderer(renderer);
   battle_logic->setEventHandler(event_handler);
   display_data->setRenderer(renderer);
@@ -1606,7 +1601,7 @@ void TestBattle::initBattle(SDL_Renderer *renderer)
   createItems();
 
   // TODO: base_path instead of background (temporary)
-  battle_logic->startBattle(party_friends, party_foes, base_path);
+  battle_logic->startBattle(party_friends, party_foes);
 }
 
 /*============================================================================
