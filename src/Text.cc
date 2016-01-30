@@ -49,11 +49,11 @@ Text::Text(TTF_Font* font) : Text()
  *              well. This will allow the texture to be created right away,
  *              unless the font creation failed.
  *
- * Inputs: std::string font_path - the path to the font
+ * Inputs: string font_path - the path to the font
  *         int font_size - the DPI size of the font
  *         int font_style - the TTF styles, such as BOLD, ITALIC, etc.
  */
-Text::Text(std::string font_path, int font_size, int font_style) : Text()
+Text::Text(string font_path, int font_size, int font_style) : Text()
 {
   setFont(font_path, font_size, font_style);
 }
@@ -176,13 +176,13 @@ void Text::setAlpha(uint8_t alpha)
  *              relevant. The font created from this path will be deleted by
  *              this class when it's destroyed or when unsetFont() is called.
  *
- * Inputs: std::string font_path - the path to the font
+ * Inputs: string font_path - the path to the font
  *         int font_size - the DPI size of font
  *         int font_style - the TTF styles, such as BOLD, ITALIC, etc.
  *                        - these are from SDL TTF. See documentation
  * Output: bool - returns if the font was created
  */
-bool Text::setFont(std::string font_path, int font_size, int font_style)
+bool Text::setFont(string font_path, int font_size, int font_style)
 {
   TTF_Font* new_font = createFont(font_path, font_size, font_style);
   bool success = setFont(new_font);
@@ -223,12 +223,11 @@ bool Text::setFont(TTF_Font* font)
  *              creating the text.
  *
  * Inputs: SDL_Renderer* renderer - the rendering context
- *         std::string text - the text to create the texture from
+ *         string text - the text to create the texture from
  *         SDL_Color text_color - the color of the text
  * Output: bool - returns if the text is created
  */
-bool Text::setText(SDL_Renderer* renderer, std::string text,
-                                           SDL_Color text_color)
+bool Text::setText(SDL_Renderer* renderer, string text, SDL_Color text_color)
 {
   bool success = false;
 
@@ -298,13 +297,12 @@ void Text::unsetTexture()
  *              styles if you want). The font styles are part of the
  *              TTF_STYLE_* enumerators.
  *
- * Inputs: std::string font_path - the path to the font to open
+ * Inputs: string font_path - the path to the font to open
  *         int font_size - the point size, based on 72DPI
  *         int font_style - the set of styles for the font
  * Output: TTF_Font* - a new font pointer (deleted by caller). NULL if fails
  */
-TTF_Font* Text::createFont(std::string font_path, int font_size,
-                                                  int font_style)
+TTF_Font* Text::createFont(string font_path, int font_size, int font_style)
 {
   TTF_Font* new_font = TTF_OpenFont(font_path.c_str(), font_size);
 
@@ -315,9 +313,66 @@ TTF_Font* Text::createFont(std::string font_path, int font_size,
   return new_font;
 }
 
-std::string Text::formatNum(int32_t number)
+/*
+ * Description: Defines the property structure with the input data.
+ *
+ * Inputs: bool bold, italic, underline - text style properties
+ *         uint8_t red, green, blue - the RGB values to define the color
+ * Output: TextProperty - the returned property structure
+ */
+TextProperty Text::createProperty(bool bold, bool italic, bool underline,
+                                  uint8_t red, uint8_t green, uint8_t blue)
 {
-  std::string str_num;
+  /* Font Style */
+  int text_style = TTF_STYLE_NORMAL;
+  if(bold)
+    text_style |= TTF_STYLE_BOLD;
+  if(italic)
+    text_style |= TTF_STYLE_ITALIC;
+  if(underline)
+    text_style |= TTF_STYLE_UNDERLINE;
+
+  /* Color */
+  SDL_Color text_color = {red, green, blue, kDEFAULT_ALPHA};
+
+  /* Create structure */
+  TextProperty text_property;
+  text_property.color = text_color;
+  text_property.style = text_style;
+
+  return text_property;
+}
+
+/*
+ * Description: Accesses the data from the property structure.
+ *
+ * Inputs: TextProperty property - the property structure to access
+ *         bool bold, italic, underline - text style properties
+ *         uint8_t red, green, blue - the RGB values of the rendering text
+ * Output: none
+ */
+void Text::dataProperty(TextProperty property, bool& bold, bool& italic,
+                        bool& underline, uint8_t& red, uint8_t& green,
+                        uint8_t& blue)
+{
+  bold = ((property.style & TTF_STYLE_BOLD) > 0);
+  italic = ((property.style & TTF_STYLE_ITALIC) > 0);
+  underline = ((property.style & TTF_STYLE_UNDERLINE) > 0);
+
+  red = property.color.r;
+  green = property.color.g;
+  blue = property.color.b;
+}
+/*
+ * Description: Takes an integer and properly formats it with thousand
+ *              delimiters as per the north american standard.
+ *
+ * Inputs: int32_t number - the integer value to format
+ * Output: string - the resulting string in the delimited format
+ */
+string Text::formatNum(int32_t number)
+{
+  string str_num;
   int index = 0;
 
   /* Handle 0 case */
@@ -325,7 +380,7 @@ std::string Text::formatNum(int32_t number)
     return "0";
 
   /* If negative, remove negative sign and note */
-  std::string prefix = "";
+  string prefix = "";
   if(number < 0)
   {
     prefix = "-";
@@ -340,7 +395,7 @@ std::string Text::formatNum(int32_t number)
       str_num = "," + str_num;
 
     int digit = number % 10;
-    str_num = std::to_string(digit) + str_num;
+    str_num = to_string(digit) + str_num;
     number /= 10;
     index++;
   }
@@ -349,6 +404,114 @@ std::string Text::formatNum(int32_t number)
   str_num = prefix + str_num;
 
   return str_num;
+}
+
+/*
+ * Description: Parse the html information within passed in text string and
+ *              returns the vector set of strings and the properties. This will
+ *              separate based on adjacent unique properties.
+ * Notes: Input - <b>Test Text</b> Normal Text <i>Italic T<u>e</u>xt</i>
+ *        Returns - "Test Text", Bold
+ *                  " Normal Text ", No mods
+ *                  "Italic T", Italic
+ *                  "e", Italic, Underline
+ *                  "xt", Italic
+ *
+ * Inputs: string text - the input string of text to parse
+ * Output: vector<pair<string, TextProperty>> - the stack. See Notes above
+ */
+vector<pair<string, TextProperty>> Text::parseHtml(string text)
+{
+  vector<pair<string, TextProperty>> result;
+  vector<string> first = Helpers::split(text, '<');
+  TextProperty prop = createProperty();
+
+  /* Create list of property working data */
+  int bold = 0;
+  int italic = 0;
+  int underline = 0;
+  vector<SDL_Color> color_set;
+
+  /* If size is 1, do nothing and just return result */
+  if(first.size() <= 1)
+  {
+    result.push_back(pair<string, TextProperty>(text, prop));
+  }
+  /* Size is greater than 1, thus a split occurred */
+  else
+  {
+    /* Loop through first split set */
+    for(uint32_t i = 0; i < first.size(); i++)
+    {
+      vector<string> second = Helpers::split(first[i], '>');
+
+      /* If size is 2, this is a valid case for an XML element */
+      if(second.size() == 2)
+      {
+        /* Parse property */ // TODO: Review QTextEdit prior...
+        if(second.front() == "b")
+        {
+          bold++;
+        }
+        else if(second.front() == "i")
+        {
+          italic++;
+        }
+        else if(second.front() == "u")
+        {
+          underline++;
+        }
+        else if(second.front() == "/b")
+        {
+          bold--;
+          if(bold < 0)
+            bold = 0;
+        }
+        else if(second.front() == "/i")
+        {
+          italic--;
+          if(italic < 0)
+            italic = 0;
+        }
+        else if(second.front() == "/u")
+        {
+          underline--;
+          if(underline < 0)
+            underline = 0;
+        }
+        else if(second.front() == "/font")
+        {
+          if(color_set.size() > 0)
+            color_set.erase(color_set.begin() + color_set.size() - 1);
+        }
+        /* Remaining must be font which is handled differently */
+        else
+        {
+          vector<string> font_split = Helpers::split(second.front(), ' ');
+          if(font_split.size() == 2 && font_split.front() == "font")
+          {
+            vector<string> color_split = Helpers::split(font_split.back(), '=');
+            if(color_split.size() == 2 && color_split.front() == "color")
+            {
+              /* Confirm color in question */
+              //string new_color = color_split.back();
+              //if(new_color.size() == 
+              // TODO: color_split.back() is "#ff0000". Process and add stack
+            }
+          }
+        }
+
+        // TODO: Process results
+      }
+      /* Otherwise, invalid: just return the original string */
+      else
+      {
+        result.push_back(pair<string, TextProperty>(first[i], prop));
+      }
+    }
+  }
+
+  return result;
 }
 
 /*
@@ -361,22 +524,22 @@ std::string Text::formatNum(int32_t number)
  *              with the same font.
  *
  * Inputs: TTF_Font* font - the rendering font (must be non-NULL)
- *         std::string text - the sequence of characters to split
+ *         string text - the sequence of characters to split
  *         int line_width - the limited length of line to delimit to
  *         bool elided - if the line should be cut off at a single line. If
  *                       cut shorter then text, add ...
- * Output: std::vector<std::string> - stack of lines, as per line_width
+ * Output: vector<string> - stack of lines, as per line_width
  */
-std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
-                                         int line_width, bool elided)
+vector<string> Text::splitLine(TTF_Font* font, string text,
+                               int line_width, bool elided)
 {
   int dot_width = 0;
-  std::vector<std::string> line_stack;
+  vector<string> line_stack;
   int space_width = 0;
   bool success = true;
   int width = 0;
-  std::vector<std::string> words = Helpers::split(text, ' ');
-  std::vector<int> word_widths;
+  vector<string> words = Helpers::split(text, ' ');
+  vector<int> word_widths;
 
   /* Get the widths of all words */
   for(uint16_t i = 0; i < words.size(); i++)
@@ -392,7 +555,7 @@ std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text,
   {
     bool done = false;
     uint16_t index = 0;
-    std::string line = "";
+    string line = "";
     width = 0;
 
     /* If elided, it sets the line to the under line length. If it's greater,

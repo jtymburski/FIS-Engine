@@ -787,8 +787,8 @@ bool Application::run(bool skip_title)
         render(cycle_time);
 
         // Font testing - TODO: Remove
-        // text2.render(renderer, 48, 48);
-        // text1.render(renderer, 50, 50);
+        text2.render(renderer, 48, 48);
+        text1.render(renderer, 50, 50);
 
         /* Update screen */
         SDL_RenderPresent(renderer);
