@@ -36,7 +36,6 @@ struct VictoryCard
 
   /* Card Sprites */
   Sprite* sprite_actor;
-  Box sprite_actor_location;
 
   Sprite* sprite_head;
   Sprite* sprite_body;
@@ -46,7 +45,6 @@ struct VictoryCard
   Frame* frame_backdrop;
 
   /* The rendered experience value (for the Bar) */
-  uint32_t exp_rendered;
   uint32_t exp_left;
 
   /* Backdrop Location and State */

@@ -599,6 +599,7 @@ void Person::updateSkills()
  */
 void Person::updateRank()
 {
+  rank = Rank::NUBEAR;
   // rank = person_record.getRank();
 }
 

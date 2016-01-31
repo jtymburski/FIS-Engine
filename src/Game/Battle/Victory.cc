@@ -81,11 +81,12 @@ bool Victory::buildCard(BattleActor* actor)
 
   if(success)
   {
+    card.exp_left = calcActorExp(actor);
     card.card_actor = actor;
     card.sprite_actor = card_sprite;
 
     card.frame_backdrop = new Frame(
-        config->getBasePath() + "sprites/Overlay/victory_card90.png", renderer);
+        config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
 
     auto frame_x = card.frame_backdrop->getWidth();
     auto frame_y = card.frame_backdrop->getHeight();
@@ -102,15 +103,8 @@ bool Victory::buildCard(BattleActor* actor)
     card.state_backdrop = SpriteState::HIDDEN;
 
     // TODO: End locations for layered cards? */
-    card.end_location.point.x =
-        (config->getScreenWidth() - frame_x) / 2;
+    card.end_location.point.x = (config->getScreenWidth() - frame_x) / 2;
     card.end_location.point.y = card.location.point.y;
-
-    /* Sprite Actor Location */
-    card.sprite_actor_location.point.x = std::floor(0.05 * (float)frame_x);
-    card.sprite_actor_location.point.y = std::floor(0.05 * (float)frame_y);
-    card.sprite_actor_location.width = std::floor(0.5 * (float)frame_x);
-    card.sprite_actor_location.height = std::floor(0.65 * (float)frame_y);
 
     victory_cards.push_back(card);
   }
@@ -169,6 +163,53 @@ uint32_t Victory::calcActorExp(BattleActor* actor)
   return exp_drop;
 }
 
+// for(auto& ally : getAllies())
+// {
+//   auto level_up_occured = false;
+
+//   if(ally && ally->getBasePerson())
+//   {
+//     for(auto& ailment : ally->getAilments())
+//       ally->removeAilment(ailment);
+
+//     auto name = ally->getBasePerson()->getName();
+
+//     auto old_level = ally->getBasePerson()->getLevel();
+//     ally->getBasePerson()->addExp(total_exp_drop);
+//     auto new_level = ally->getBasePerson()->getLevel();
+
+//     if(new_level != old_level)
+//       level_up_occured = true;
+
+//     for(int i = (new_level - old_level); i > 0; i--)
+//       std::cout << name << " has leveled up!" << std::endl;
+
+//     if(!level_up_occured)
+//     {
+//       auto base = ally->getBasePerson();
+
+//       if(base)
+//       {
+//         auto equip_stats = base->calcEquipStats();
+//         auto max_health =
+//             (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
+
+//         auto curr_health =
+//         ally->getStats().getBaseValue(Attribute::VITA);
+//         auto max_qtdr =
+//             (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
+//         auto curr_qtdr =
+//         ally->getStats().getBaseValue(Attribute::QTDR);
+
+//         if(curr_health <= max_health)
+//           base->getCurr().setStat(Attribute::VITA, curr_health);
+//         if(curr_qtdr <= max_qtdr)
+//           base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
+//       }
+//     }
+//   }
+// }
+
 VictoryState Victory::getStateVictory()
 {
   return victory_state;
@@ -185,21 +226,93 @@ void Victory::render()
 
 void Victory::renderCard(VictoryCard& card)
 {
-  auto x = card.location.point.x;
-  auto y = card.location.point.y;
-  auto width = card.location.width;
-  auto height = card.location.height;
-
-  /* Render the base frame */
-  test_render->render(renderer, x, y, width, height);
-
-  /* Render the Actor sprite */
-  if(card.sprite_actor)
+  if(config)
   {
-    card.sprite_actor->render(renderer, x + card.sprite_actor_location.point.x,
-                              y + card.sprite_actor_location.point.y,
-                              card.sprite_actor_location.width,
-                              card.sprite_actor_location.height);
+    SDL_Color color = {255, 255, 255, 255};
+    SDL_Color exp_color = {200, 200, 200, 255};
+
+    auto victory_font = config->getFontTTF(FontName::BATTLE_HEADER);
+    auto small_font = config->getFontTTF(FontName::BATTLE_SMALL);
+    auto x = card.location.point.x;
+    auto y = card.location.point.y;
+    auto width = card.location.width;
+    auto height = card.location.height;
+
+    auto col1_x = x + std::floor(0.13 * (float)width);
+    auto col1_y = y + std::floor(0.05 * (float)height);
+
+    auto sprite_x = x;
+    auto sprite_y = 0;
+    auto sprite_width = std::floor(0.55 * (float)width);
+    auto sprite_height = std::floor(0.65 * (float)height);
+
+    auto col2_x = x + std::floor(0.43 * (float)width);
+    // auto col2_y = y + std::floor(0.05 * (float)height);
+
+    Text t_name(victory_font);
+    Text t_level(victory_font);
+    Text t_rank(victory_font);
+    Text t_exp(victory_font);
+    Text t_next(victory_font);
+    Text t_exp_val(small_font);
+    Text t_next_val(small_font);
+
+    /* Render the base frame */
+    std::cout << " Frame height : " << height << std::endl;
+    test_render->render(renderer, x, y, width, height);
+
+    /* Render the Actor sprite */
+    if(card.sprite_actor && card.card_actor)
+    {
+      auto base_person = card.card_actor->getBasePerson();
+
+      if(base_person)
+      {
+        auto rank_str = "RANK :" + Helpers::rankToStr(base_person->getRank());
+        auto level_str = "Level " + std::to_string(base_person->getLevel());
+        t_name.setText(renderer, base_person->getName(), color);
+        t_level.setText(renderer, level_str, color);
+        t_rank.setText(renderer, rank_str, color);
+        t_next.setText(renderer, "NEXT", color);
+
+        auto total_exp = base_person->getTotalExp();
+
+        auto next_exp =
+            base_person->getExpAt(base_person->getLevel() + 1) - total_exp;
+
+        auto total_exp_str = "EXP  " + std::to_string(total_exp);
+        auto next_exp_str = "NEXT " + std::to_string(next_exp);
+        // std::to_string(static_cast<int>(base_person->getExpMod() * 100))
+
+        t_exp_val.setText(renderer, total_exp_str, exp_color);
+        t_next_val.setText(renderer, next_exp_str, exp_color);
+
+        /* Render Column 1 */
+        auto t_level_y =
+            col1_y + t_name.getHeight() + std::floor(0.01 * height);
+        sprite_y = t_level_y + t_level.getHeight() + std::floor(0.01 * height);
+
+        t_name.render(renderer, col1_x, col1_y);
+        t_level.render(renderer, col1_x, t_level_y);
+
+        card.sprite_actor->render(renderer, sprite_x, sprite_y, sprite_width,
+                                  sprite_height);
+
+        auto t_rank_y = sprite_y + sprite_height + std::floor(0.01 * height);
+
+        t_rank.render(renderer, col1_x - std::floor(0.03 * width), t_rank_y);
+
+        /* Render Column 2 */
+        t_exp_val.render(renderer, col2_x, col1_y);
+
+        auto t_next_y =
+            col1_y + t_exp_val.getHeight() + std::floor(0.01 * height);
+
+        t_next_val.render(renderer, col2_x, t_next_y);
+
+        /* Render Column 3 */
+      }
+    }
   }
 }
 
@@ -216,6 +329,8 @@ bool Victory::update(int32_t cycle_time)
       victory_state = VictoryState::SLIDE_IN_CARD;
       index = 0;
     }
+    else if(dim_time <= 0 && victory_state == VictoryState::SLIDE_OUT_CARD)
+      victory_state = VictoryState::FINISHED;
   }
 
   /* Slide the card(s) towards their locations */
@@ -245,6 +360,28 @@ bool Victory::update(int32_t cycle_time)
       else
       {
         victory_state = VictoryState::PROCESS_CARD;
+      }
+    }
+  }
+  /* Update the actual state of victory */
+  else if(victory_state == VictoryState::PROCESS_CARD)
+  {
+    if(index < victory_cards.size())
+    {
+      auto& card = victory_cards.at(index);
+
+      if(card.exp_left > 0 && card.card_actor &&
+         card.card_actor->getBasePerson())
+      {
+        card.card_actor->getBasePerson()->addExp(1, true);
+        card.exp_left -= 1;
+
+        if(card.exp_left == 0)
+          dim_time += 2000;
+      }
+      else
+      {
+        victory_state = VictoryState::SLIDE_OUT_CARD;
       }
     }
   }

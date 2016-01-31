@@ -1112,11 +1112,11 @@ void Battle::updateOutcome(int32_t cycle_time)
                                            config->getScreenHeight(),
                                            config->getScreenWidth());
           render_elements.push_back(header_text);
-          victory_screen->setDimTime(200);
+          victory_screen->setDimTime(100);
           setFlagCombat(CombatState::CREATED_VICTORY_TEXT, true);
         }
       }
-      else if(victory_screen->getStateVictory() == VictoryState::PROCESS_CARD)
+      else if(victory_screen->getStateVictory() == VictoryState::FINISHED)
       {
         setFlagCombat(CombatState::PHASE_DONE, true);
       }
@@ -1129,7 +1129,7 @@ void Battle::updateOutcome(int32_t cycle_time)
 
       /* Dim the Battle a little - infinite render element */
       auto dim_element = new RenderElement();
-      auto dim_time = 2000;
+      auto dim_time = 1500;
 
       dim_element->createAsRGBOverlay({0, 0, 0, 150}, dim_time, dim_time,
                                       2 * dim_time, config->getScreenHeight(),
@@ -1137,53 +1137,6 @@ void Battle::updateOutcome(int32_t cycle_time)
       dim_element->setTimeable(false);
       render_elements.push_back(dim_element);
       victory_screen->setDimTime(dim_time * 0.75);
-
-      // for(auto& ally : getAllies())
-      // {
-      //   auto level_up_occured = false;
-
-      //   if(ally && ally->getBasePerson())
-      //   {
-      //     for(auto& ailment : ally->getAilments())
-      //       ally->removeAilment(ailment);
-
-      //     auto name = ally->getBasePerson()->getName();
-
-      //     auto old_level = ally->getBasePerson()->getLevel();
-      //     ally->getBasePerson()->addExp(total_exp_drop);
-      //     auto new_level = ally->getBasePerson()->getLevel();
-
-      //     if(new_level != old_level)
-      //       level_up_occured = true;
-
-      //     for(int i = (new_level - old_level); i > 0; i--)
-      //       std::cout << name << " has leveled up!" << std::endl;
-
-      //     if(!level_up_occured)
-      //     {
-      //       auto base = ally->getBasePerson();
-
-      //       if(base)
-      //       {
-      //         auto equip_stats = base->calcEquipStats();
-      //         auto max_health =
-      //             (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
-
-      //         auto curr_health =
-      //         ally->getStats().getBaseValue(Attribute::VITA);
-      //         auto max_qtdr =
-      //             (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
-      //         auto curr_qtdr =
-      //         ally->getStats().getBaseValue(Attribute::QTDR);
-
-      //         if(curr_health <= max_health)
-      //           base->getCurr().setStat(Attribute::VITA, curr_health);
-      //         if(curr_qtdr <= max_qtdr)
-      //           base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
-      //       }
-      //     }
-      //   }
-      // }
     }
   }
 }
