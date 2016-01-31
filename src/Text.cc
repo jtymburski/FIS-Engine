@@ -410,7 +410,7 @@ string Text::formatNum(int32_t number)
  * Description: Parse the html information within passed in text string and
  *              returns the vector set of strings and the properties. This will
  *              separate based on adjacent unique properties.
- * Notes: Input - <b>Test Text</b> Normal Text <i>Italic T<u>e</u>xt</i>
+ * Notes: Input - [b]Test Text[/b] Normal Text [i]Italic T[u]e[/u]xt[/i]
  *        Returns - "Test Text", Bold
  *                  " Normal Text ", No mods
  *                  "Italic T", Italic
@@ -423,7 +423,7 @@ string Text::formatNum(int32_t number)
 vector<pair<string, TextProperty>> Text::parseHtml(string text)
 {
   vector<pair<string, TextProperty>> result;
-  vector<string> first = Helpers::split(text, '<');
+  vector<string> first = Helpers::split(text, '[');
   TextProperty prop = createProperty();
 
   /* Create list of property working data */
@@ -443,65 +443,88 @@ vector<pair<string, TextProperty>> Text::parseHtml(string text)
     /* Loop through first split set */
     for(uint32_t i = 0; i < first.size(); i++)
     {
-      vector<string> second = Helpers::split(first[i], '>');
+      vector<string> second = Helpers::split(first[i], ']');
 
       /* If size is 2, this is a valid case for an XML element */
-      if(second.size() == 2)
+      if(second.size() > 0)
       {
-        /* Parse property */ // TODO: Review QTextEdit prior...
+        /* Bold starting delimiter */
         if(second.front() == "b")
         {
           bold++;
         }
+        /* Italic starting delimiter */
         else if(second.front() == "i")
         {
           italic++;
         }
+        /* Underline starting delimiter */
         else if(second.front() == "u")
         {
           underline++;
         }
+        /* Bold ending delimiter */
         else if(second.front() == "/b")
         {
           bold--;
           if(bold < 0)
             bold = 0;
         }
+        /* Italic ending delimiter */
         else if(second.front() == "/i")
         {
           italic--;
           if(italic < 0)
             italic = 0;
         }
+        /* Underline ending delimiter */
         else if(second.front() == "/u")
         {
           underline--;
           if(underline < 0)
             underline = 0;
         }
-        else if(second.front() == "/font")
+        /* Font ending delimiter */
+        else if(second.front().size() == 7 && second.front().front() == '/')
         {
           if(color_set.size() > 0)
-            color_set.erase(color_set.begin() + color_set.size() - 1);
-        }
-        /* Remaining must be font which is handled differently */
-        else
-        {
-          vector<string> font_split = Helpers::split(second.front(), ' ');
-          if(font_split.size() == 2 && font_split.front() == "font")
           {
-            vector<string> color_split = Helpers::split(font_split.back(), '=');
-            if(color_split.size() == 2 && color_split.front() == "color")
+            std::string hex_color = second.front();
+            hex_color.erase(0, 1);
+
+            /* Convert */
+            SDL_Color color_struct = Helpers::colorFromHex(hex_color);
+
+            /* Process */
+            bool finished = false;
+            for(int i = color_set.size() - 1; !finished && i >= 0; i--)
             {
-              /* Confirm color in question */
-              //string new_color = color_split.back();
-              //if(new_color.size() == 
-              // TODO: color_split.back() is "#ff0000". Process and add stack
+              if(color_set[i].r == color_struct.r &&
+                 color_set[i].g == color_struct.g &&
+                 color_set[i].b == color_struct.b)
+              {
+                finished = true;
+                color_set.erase(color_set.begin() + i);
+              }
             }
           }
         }
+        /* Font starting delimiter */
+        else if(second.front().size() == 6)
+        {
+          SDL_Color color_struct = Helpers::colorFromHex(second.front());
+          color_set.push_back(color_struct);
+        }
 
-        // TODO: Process results
+        /* Add results and proceed */
+        if(color_set.size() > 0)
+          prop = createProperty(bold > 0, italic > 0, underline > 0,
+                                color_set.back().r, color_set.back().g,
+                                color_set.back().b);
+        else
+          prop = createProperty(bold > 0, italic > 0, underline > 0);
+        if(second.size() == 2)
+          result.push_back(pair<string, TextProperty>(second.back(), prop));
       }
       /* Otherwise, invalid: just return the original string */
       else
@@ -637,4 +660,113 @@ vector<string> Text::splitLine(TTF_Font* font, string text,
   }
 
   return line_stack;
+}
+
+/* Takes a string of characters processed by parseHtml() and splits it to fit
+ * a line after it is rendered by the given font */
+vector<vector<pair<string, TextProperty>>> 
+         Text::splitLineProperty(TTF_Font* font, int line_width, 
+                                 vector<pair<string, TextProperty>> text_set)
+{
+  vector<vector<pair<string, TextProperty>>> line_all;
+  vector<vector<pair<string, TextProperty>>> line_stack;
+  int orig_style = TTF_GetFontStyle(font);
+  int space_width = 0;
+  bool success = true;
+  int width = 0;
+  vector<pair<string, TextProperty>> words;
+  vector<int> word_widths;
+
+  /* Get the split and width of all words */
+  for(uint32_t i = 0; i < text_set.size(); i++)
+  {
+    vector<string> word_split = Helpers::split(text_set[i].first, ' ');
+    for(uint32_t j = 0; j < word_split.size(); j++)
+    {
+      words.push_back(pair<string, TextProperty>(word_split[j], 
+                                                 text_set[i].second));
+      TTF_SetFontStyle(font, text_set[i].second.style);
+      success &= 
+            (TTF_SizeText(font, word_split[j].c_str(), &width, nullptr) == 0);
+      word_widths.push_back(width);
+    }
+  }
+  success &= (TTF_SizeText(font, " ", &space_width, NULL) == 0);
+  TTF_SetFontStyle(font, orig_style);
+
+  /* Proceed if font sizing was successful */
+  if(success)
+  {
+    bool first_word = true;
+    uint16_t index = 0;
+    vector<pair<string, TextProperty>> line;
+    width = 0;
+
+    /* Loop through all the words */
+    while(index < words.size())
+    {
+      /* If it's the first word, force it onto the stack */
+      if(first_word)
+      {
+        line.push_back(words[index]);
+        width += word_widths[index];
+        first_word = false;
+        index++;
+      }
+      /* Otherwise, check if the new word will make the line too long
+       * If so, push the previous line and clear to make way for the new
+       * word */
+      else if((width + space_width + word_widths[index]) > line_width)
+      {
+        line_stack.push_back(line);
+        line.clear();
+        width = 0;
+        first_word = true;
+      }
+      /* Otherwise, the word can be appended. Do so, and shift the index */
+      else
+      {
+        line.push_back(words[index]);
+        width += space_width + word_widths[index];
+        index++;
+      }
+    }
+
+    /* Append the final line if not null */
+    if(!line.empty())
+      line_stack.push_back(line);
+
+    /* Once complete, go through processing lines that could be combined */
+    for(uint32_t i = 0; i < line_stack.size(); i++)
+    {
+      vector<pair<string, TextProperty>> line_row;
+      string line_str = "";
+      TextProperty prop;
+
+      for(uint32_t j = 0; j < line_stack[i].size(); j++)
+      {
+        if(j == 0)
+        {
+          line_str = line_stack[i][j].first;
+          prop = line_stack[i][j].second;
+        }
+        else if(line_stack[i][j].second == prop)
+        {
+          line_str += " " + line_stack[i][j].first;
+        }
+        else
+        {
+          line_row.push_back(pair<string, TextProperty>(line_str, prop));
+          line_str = line_stack[i][j].first;
+          prop = line_stack[i][j].second;
+        }
+      }
+
+      if(!line_str.empty())
+        line_row.push_back(pair<string, TextProperty>(line_str, prop));
+      line_all.push_back(line_row);
+    }
+  }
+
+  return line_all;
 }

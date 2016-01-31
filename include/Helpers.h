@@ -263,6 +263,10 @@ public:
   static std::vector<uint32_t>
   buildExpTable(const uint32_t& min, const uint32_t& max, const uint32_t& iter);
 
+  /* Color conversion helpers */
+  static SDL_Color colorFromHex(std::string hex_color);
+  static std::string colorToHex(SDL_Color color, bool alpha = false);
+
   /* Appends char and string together */
   static std::string combine(std::string s, char c, bool before = false);
 
@@ -276,11 +280,15 @@ public:
   /* Returns the distance between two Coordinates */
   static uint32_t getDistance(Coordinate a, Coordinate b);
 
+  /* Get render depth for thing stacks */
+  static uint8_t getRenderDepth();
+
   /* Get render tile size */
   static uint16_t getTileSize();
 
-  /* Get render depth for thing stacks */
-  static uint8_t getRenderDepth();
+  /* Hex conversions */
+  static std::string hexFromBaseTen(uint32_t base_ten);
+  static uint32_t hexToBaseTen(std::string base_sixteen);
 
   /* Methods for trimming white space from left of string ends */
   static std::string& ltrim(std::string& s);

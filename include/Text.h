@@ -26,6 +26,13 @@ struct TextProperty
 {
   SDL_Color color;
   int style;
+
+  bool operator==(const TextProperty& prop) const
+  {
+    return (prop.color.r == color.r && prop.color.g == color.g &&
+            prop.color.b == color.b && prop.color.a == color.a &&
+            prop.style == style);
+  }
 };
 
 /* Text Class */
@@ -127,6 +134,12 @@ public:
    * rendered by the given font. */
   static vector<string> splitLine(TTF_Font* font, std::string text,
                                   int line_width, bool elided = false);
+
+  /* Takes a string of characters processed by parseHtml() and splits it to fit
+   * a line after it is rendered by the given font */
+  static vector<vector<pair<string, TextProperty>>> splitLineProperty(
+                                   TTF_Font* font, int line_width,
+                                   vector<pair<string, TextProperty>> text_set);
 };
 
 #endif // TEXT_H

@@ -735,6 +735,31 @@ bool Application::run(bool skip_title)
   text2.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
   TTF_SetFontOutline(text2.getFont(), 2);
   text2.setText(renderer, "341", {0, 0, 0, 255});
+  TTF_Font* test_font = Text::createFont("fonts/colab_light.otf", 20);
+
+  /* PARSING TESTING - TODO: REMOVE */
+  std::string test = "[b]Bold Text[/b] sep [i]Italic Text[/i] sep [u]Underline Text[/u] sep [ff0000]Colored Text[/ff0000] test and the road goes on an on like a never ending train pulling up to a [u]station[/u] which does not exist but it is ok because [00ffbb]the beginning can n[/00ffbb]ot be deciphered from the end. Proceed my friend and ask the [b]que[i]stion y[/b]ou s[/i]eek.";
+  std::vector<pair<string,TextProperty>> set = Text::parseHtml(test);
+  for(uint32_t i = 0; i < set.size(); i++)
+  {
+    std::cout << "\"" << set[i].first << "\"" << std::endl;
+    std::cout << " - " << set[i].second.style << ","
+              << (int)set[i].second.color.r << ","
+              << (int)set[i].second.color.g << ","
+              << (int)set[i].second.color.b << std::endl;
+  }
+  std::vector<std::vector<std::pair<std::string, TextProperty>>> output = 
+                                   Text::splitLineProperty(test_font, 51, set);
+  //std::cout << "------------------" << std::endl;
+  //for(uint32_t i = 0; i < output.size(); i++)
+  //{
+  //  for(uint32_t j = 0; j < output[i].size(); j++)
+  //  {
+  //    std::cout << output[i][j].first << std::endl;
+  //  }
+  //  std::cout << "--" << std::endl;
+  //}
+  //std::cout << "------------------" << std::endl;
 
   if(isInitialized())
   {

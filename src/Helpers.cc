@@ -1540,6 +1540,63 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t& min,
 }
 
 /*
+ * Description: Takes a hex color, in the form of aabbcc or aabbccdd, and
+ *              returns the integers within the SDL_Color set. The format is
+ *              {rr}{gg}{bb}{aa} for red, green, blue, alpha
+ *
+ * Inputs: std::string hex_color - the color in base 16 (hex)
+ * Output: SDL_Color - the returned integer color struct
+ */
+SDL_Color Helpers::colorFromHex(std::string hex_color)
+{
+  SDL_Color color = {255, 255, 255, 255};
+  if(hex_color.size() >= 6)
+  {
+    std::string red_str = "";
+    red_str.push_back(hex_color.at(0));
+    red_str.push_back(hex_color.at(1));
+    color.r = hexToBaseTen(red_str);
+
+    std::string green_str = "";
+    green_str.push_back(hex_color.at(2));
+    green_str.push_back(hex_color.at(3));
+    color.g = hexToBaseTen(green_str);
+
+    std::string blue_str = "";
+    blue_str.push_back(hex_color.at(4));
+    blue_str.push_back(hex_color.at(5));
+    color.b = hexToBaseTen(blue_str);
+
+    if(hex_color.size() >= 8)
+    {
+      std::string alpha_str = "";
+      alpha_str.push_back(hex_color.at(6));
+      alpha_str.push_back(hex_color.at(7));
+      color.a = hexToBaseTen(alpha_str);
+    }
+  }
+
+  return color;
+}
+
+/*
+ * Description: Takes the color structure and returns it in the form of aabbcc
+ *              or aabbccdd, depending on 'alpha' input, in the hex format
+ *
+ * Inputs: SDL_Color color - the color structure integer of information
+ *         bool alpha - include the alpha. If false, will be 6 digits. else 8
+ * Output: std::string - the color in base 16 (hex)
+ */
+std::string Helpers::colorToHex(SDL_Color color, bool alpha)
+{
+  std::string result = hexFromBaseTen(color.r) + hexFromBaseTen(color.g) +
+                       hexFromBaseTen(color.b);
+  if(alpha)
+    result += hexFromBaseTen(color.a);
+  return result;
+}
+
+/*
  * Description: Combines a string and char together with toggle on before or
  *              after. This was implemented since the compiler seems to take
  *              a string literal plus a char and it becomes a char and does
@@ -1790,6 +1847,23 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(std::string path)
 }
 
 /*
+ * Description: Returns the distance between two coordinates
+ *
+ * Inputs: Coordinate a - first  coordinate
+ *         Coordinate b - second coordinate
+ * Output; uint32_t - distance between the two points
+ */
+uint32_t Helpers::getDistance(Coordinate a, Coordinate b)
+{
+  auto x = a.x - b.x;
+  auto y = a.y - b.y;
+
+  auto distance = std::sqrt(float(x * x) + float(y * y));
+
+  return std::round(distance);
+}
+
+/*
  * Description: Returns the render depth of the count of things that can be
  *              stacked on top of each other. Relevant for thing motion control
  *              and rendering.
@@ -1802,16 +1876,6 @@ uint8_t Helpers::getRenderDepth()
   return kMAX_RENDER_DEPTH;
 }
 
-uint32_t Helpers::getDistance(Coordinate a, Coordinate b)
-{
-  auto x = a.x - b.x;
-  auto y = a.y - b.y;
-
-  auto distance = std::sqrt(float(x * x) + float(y * y));
-
-  return std::round(distance);
-}
-
 /*
  * Description: Returns the tile size for rendering, as defined by the stored
  *              constants.
@@ -1822,6 +1886,40 @@ uint32_t Helpers::getDistance(Coordinate a, Coordinate b)
 uint16_t Helpers::getTileSize()
 {
   return kTILE_SIZE;
+}
+
+/*
+ * Description: Takes a base ten unsigned integer and converts it to a string
+ *              base sixteen representation.
+ *
+ * Inputs: uint32_t base_ten - the base 10 number to convert
+ * Output: std::string - the resulting base 16 num
+ */
+std::string Helpers::hexFromBaseTen(uint32_t base_ten)
+{
+  std::stringstream stream;
+  stream << std::hex << base_ten;
+  return stream.str();
+}
+
+/*
+ * Description: Takes a base sixteen string number and converts it to an
+ *              unsigned base ten representation.
+ *
+ * Inputs: std::string base_sixteen - the base 16 number to convert
+ * Output: uint32_t - the resulting base 10 num
+ */
+uint32_t Helpers::hexToBaseTen(std::string base_sixteen)
+{
+  uint32_t value = 0;
+  try
+  {
+    value = std::stoul(base_sixteen, nullptr, 16);
+  }
+  catch(std::exception)
+  {}
+
+  return value;
 }
 
 /*
