@@ -1139,6 +1139,8 @@ void Battle::updateOutcome(int32_t cycle_time)
       victory_screen->setDimTime(dim_time * 0.75);
     }
   }
+  else
+    setFlagCombat(CombatState::PHASE_DONE);
 }
 
 void Battle::updatePersonalUpkeep()
