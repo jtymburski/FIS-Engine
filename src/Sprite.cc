@@ -279,6 +279,12 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
   return success;
 }
 
+/*
+ * Description: Generates the baseline texture for all handling.
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering engine
+ * Output: none
+ */
 void Sprite::createTexture(SDL_Renderer* renderer)
 {
   if(head->isTextureSet() && texture == nullptr)

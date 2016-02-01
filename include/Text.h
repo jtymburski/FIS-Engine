@@ -88,6 +88,7 @@ public:
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0);
+  bool render(SDL_Renderer* renderer, int x, int y, int src_w, int src_h);
 
   /* Sets the alpha rating of the texture */
   void setAlpha(uint8_t alpha);
@@ -101,6 +102,8 @@ public:
 
   /* Sets the text, stored in the internal texture */
   bool setText(SDL_Renderer* renderer, string text, SDL_Color text_color);
+  bool setText(SDL_Renderer* renderer,
+               vector<vector<pair<string, TextProperty>>> text);
 
   /* Clean up functions for the data stored in the class */
   void unsetFont();
@@ -137,7 +140,9 @@ public:
 
   /* Takes a string of characters processed by parseHtml() and splits it to fit
    * a line after it is rendered by the given font */
-  static vector<vector<pair<string, TextProperty>>> splitLineProperty(
+  static vector<vector<vector<pair<string, TextProperty>>>> splitLineProperty(
+                                   TTF_Font* font, int line_width, string text);
+  static vector<vector<vector<pair<string, TextProperty>>>> splitLineProperty(
                                    TTF_Font* font, int line_width,
                                    vector<pair<string, TextProperty>> text_set);
 };

@@ -277,8 +277,8 @@ void MapDialog::deleteFonts()
  */
 void MapDialog::executeEvent()
 {
-  if(event_handler != nullptr && conversation_info != nullptr && 
-     conversation_inst != nullptr && 
+  if(event_handler != nullptr && conversation_info != nullptr &&
+     conversation_inst != nullptr &&
      conversation_info->action_event.classification != EventClassifier::NOEVENT)
   {
     EventPair pair;
@@ -445,8 +445,8 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
       int textbox_height = img_name_l.getHeight();
       img_name_l.render(renderer, kNAME_BOX_OFFSET, convo_y - textbox_height);
       img_name_r.render(renderer,
-                  kNAME_BOX_OFFSET + img_name_l.getWidth() + name_text.getWidth(),
-                  convo_y - textbox_height);
+                kNAME_BOX_OFFSET + img_name_l.getWidth() + name_text.getWidth(),
+                convo_y - textbox_height);
 
       /* Draw top white bar encapsulating text */
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, kOPACITY_MAX);
@@ -458,7 +458,8 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
       SDL_RenderFillRect(renderer, &src_rect);
 
       /* Draw opaque fill under text */
-      SDL_SetRenderDrawColor(renderer, 0, 0, 0, kOPACITY_MAX * kOPACITY_BACKEND);
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0,
+                             kOPACITY_MAX * kOPACITY_BACKEND);
       src_rect.y += src_rect.h;
       src_rect.h = textbox_height - src_rect.h;
       SDL_RenderFillRect(renderer, &src_rect);
@@ -485,11 +486,11 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
         int options_length = txt_length - kOPTION_OFFSET;
         std::vector<std::string> options_text;
 
-        
+
         for(auto i = conversation_info->next.begin();
                  i != conversation_info->next.end(); i++)
         {
-          options_text.push_back(Text::splitLine(font_normal, (*i).text, 
+          options_text.push_back(Text::splitLine(font_normal, (*i).text,
                                                    options_length, true).at(0));
         }
         renderOptions(renderer, options_text);
@@ -746,7 +747,7 @@ void MapDialog::setupRenderText(std::vector<std::string> lines, bool delete_old)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
-  
+
 /*
  * Description: Clears all queues of conversation items, notifications, and
  *              pickups from the dialog stack. Called on map changes or any
@@ -828,7 +829,7 @@ std::vector<int> MapDialog::getConversationIDs()
 bool MapDialog::initConversation(ConvoPair convo_pair, MapPerson* target,
                                  MapThing* source)
 {
-  if(convo_pair.base != nullptr && convo_pair.inst != nullptr && 
+  if(convo_pair.base != nullptr && convo_pair.inst != nullptr &&
      dialog_mode != CONVERSATION && target != nullptr && isImagesSet())
   {
     conversation_info = convo_pair.base;
@@ -923,7 +924,7 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
     for(uint16_t i = 0; i < pickup_queue.size(); i++)
     {
       if(!notification_found && pickup_queue[i].thing_image == thing_image &&
-         ((pickup_queue[i].thing_count < 0 && thing_count < 0) || 
+         ((pickup_queue[i].thing_count < 0 && thing_count < 0) ||
           (pickup_queue[i].thing_count > 0 && thing_count > 0)))
       {
         notification_index = i;
@@ -1092,7 +1093,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
                           * (kTEXT_LINES - 1);
         }
         /* Otherwise, if end of conversation is reached, start hiding it */
-        else if(conversation_info->next.size() == 0 || 
+        else if(conversation_info->next.size() == 0 ||
                 conversation_inst->next.size() == 0)
         {
           dialog_status = WindowStatus::HIDING;

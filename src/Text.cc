@@ -153,7 +153,27 @@ bool Text::render(SDL_Renderer* renderer, int x, int y)
 
     return (SDL_RenderCopy(renderer, texture, NULL, &rect) == 0);
   }
+  return false;
+}
 
+
+bool Text::render(SDL_Renderer* renderer, int x, int y, int src_w, int src_h)
+{
+  if(texture != nullptr && renderer != nullptr)
+  {
+    /* Source rect */
+    SDL_Rect src_rect = {0, 0, src_w, src_h};
+    if(src_rect.w < 0 || src_rect.w > width)
+      src_rect.w = width;
+    if(src_rect.h < 0 || src_rect.h > height)
+      src_rect.h = height;
+
+    /* Destination rect */
+    SDL_Rect dst_rect = {x, y, src_rect.w, src_rect.h};
+
+    /* Render */
+    return (SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect) == 0);
+  }
   return false;
 }
 
@@ -235,12 +255,12 @@ bool Text::setText(SDL_Renderer* renderer, string text, SDL_Color text_color)
   {
     /* Create the text surface */
     SDL_Surface* text_surface =
-                 TTF_RenderText_Blended(render_font, text.c_str(), text_color );
+                 TTF_RenderText_Blended(render_font, text.c_str(), text_color);
     if(text_surface != NULL)
     {
       /* Create the texture */
       SDL_Texture* text_texture =
-                          SDL_CreateTextureFromSurface(renderer, text_surface );
+                          SDL_CreateTextureFromSurface(renderer, text_surface);
       if(text_texture != NULL)
       {
         /* Set the internal class texture */
@@ -255,6 +275,104 @@ bool Text::setText(SDL_Renderer* renderer, string text, SDL_Color text_color)
 
       /* Free the surface */
       SDL_FreeSurface(text_surface);
+    }
+  }
+
+  return success;
+}
+
+/*
+ * Description: Sets the text that is stored in the class and will be used for
+ *              rendering. It is necessary that first the font is set up before
+ *              creating the text. This text includes properties for how they
+ *              are rendered which includes bold, italic, underline, and colors
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering context
+ *         vector<vector<pair<string, TextProperty>>> text - the set of text to
+ *                                                           render on the line
+ *         SDL_Color text_color - the color of the text
+ * Output: bool - returns if the text is created
+ */
+bool Text::setText(SDL_Renderer* renderer,
+                   vector<vector<pair<string, TextProperty>>> text)
+{
+  bool success = false;
+
+  if(renderer != nullptr && render_font != nullptr)
+  {
+    int orig_style = TTF_GetFontStyle(render_font);
+
+    /* Process the text stack */
+    vector<SDL_Surface*> text_surfaces;
+    for(uint32_t i = 0; i < text.size(); i++)
+    {
+      for(uint32_t j = 0; j < text[i].size(); j++)
+      {
+        /* Determine string additions, if required */
+        std::string str = text[i][j].first;
+        if((i != (text.size() - 1)) && (j == (text[i].size() - 1)))
+          str += " ";
+
+        /* Create surface from string */
+        TTF_SetFontStyle(render_font, text[i][j].second.style);
+        SDL_Surface* text_surface = TTF_RenderText_Blended(render_font,
+                                         str.c_str(), text[i][j].second.color);
+        if(text_surface != nullptr)
+          text_surfaces.push_back(text_surface);
+      }
+    }
+
+    /* Restore the font style */
+    TTF_SetFontStyle(render_font, orig_style);
+
+    /* Process the surface stack */
+    int max_height = 0;
+    vector<pair<SDL_Texture*, SDL_Point>> text_textures;
+    int total_width = 0;
+    for(uint32_t i = 0; i < text_surfaces.size(); i++)
+    {
+      SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer,
+                                                          text_surfaces[i]);
+      if(texture != nullptr)
+      {
+        text_textures.push_back(pair<SDL_Texture*, SDL_Point>(
+                         texture, {text_surfaces[i]->w, text_surfaces[i]->h}));
+        total_width += text_surfaces[i]->w;
+        if(text_surfaces[i]->h > max_height)
+          max_height = text_surfaces[i]->h;
+      }
+    }
+
+    if(total_width > 0)
+    {
+      /* Combine into one large texture */
+      SDL_Texture* orig_render = SDL_GetRenderTarget(renderer);
+      SDL_Texture* texture = SDL_CreateTexture(renderer,
+                                               SDL_PIXELFORMAT_RGBA8888,
+                                               SDL_TEXTUREACCESS_TARGET,
+                                               total_width, max_height);
+      int x_ref = 0;
+      SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+      SDL_SetRenderTarget(renderer, texture);
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+      SDL_RenderClear(renderer);
+      for(uint32_t i = 0; i < text_textures.size(); i++)
+      {
+        SDL_Rect rect{x_ref, 0, text_textures[i].second.x,
+                      text_textures[i].second.y};
+        SDL_RenderCopy(renderer, text_textures[i].first, nullptr, &rect);
+        x_ref += text_textures[i].second.x;
+      }
+      SDL_SetRenderTarget(renderer, orig_render);
+
+      /* Assign the new texture */
+      unsetTexture();
+      alpha = kDEFAULT_ALPHA;
+      this->texture = texture;
+      height = max_height;
+      width = total_width;
+      setAlpha(alpha);
+      success = true;
     }
   }
 
@@ -435,7 +553,8 @@ vector<pair<string, TextProperty>> Text::parseHtml(string text)
   /* If size is 1, do nothing and just return result */
   if(first.size() <= 1)
   {
-    result.push_back(pair<string, TextProperty>(text, prop));
+    if(!text.empty())
+      result.push_back(pair<string, TextProperty>(text, prop));
   }
   /* Size is greater than 1, thus a split occurred */
   else
@@ -443,93 +562,105 @@ vector<pair<string, TextProperty>> Text::parseHtml(string text)
     /* Loop through first split set */
     for(uint32_t i = 0; i < first.size(); i++)
     {
-      vector<string> second = Helpers::split(first[i], ']');
-
-      /* If size is 2, this is a valid case for an XML element */
-      if(second.size() > 0)
+      /* Check if the string contains the second delimiter */
+      size_t found = first[i].find(']');
+      if(found != string::npos)
       {
-        /* Bold starting delimiter */
-        if(second.front() == "b")
+        vector<string> second = Helpers::split(first[i], ']');
+
+        /* If size is 2, this is a valid case for an XML element */
+        if(second.size() > 0)
         {
-          bold++;
-        }
-        /* Italic starting delimiter */
-        else if(second.front() == "i")
-        {
-          italic++;
-        }
-        /* Underline starting delimiter */
-        else if(second.front() == "u")
-        {
-          underline++;
-        }
-        /* Bold ending delimiter */
-        else if(second.front() == "/b")
-        {
-          bold--;
-          if(bold < 0)
-            bold = 0;
-        }
-        /* Italic ending delimiter */
-        else if(second.front() == "/i")
-        {
-          italic--;
-          if(italic < 0)
-            italic = 0;
-        }
-        /* Underline ending delimiter */
-        else if(second.front() == "/u")
-        {
-          underline--;
-          if(underline < 0)
-            underline = 0;
-        }
-        /* Font ending delimiter */
-        else if(second.front().size() == 7 && second.front().front() == '/')
-        {
-          if(color_set.size() > 0)
+          /* Bold starting delimiter */
+          if(second.front() == "b")
           {
-            std::string hex_color = second.front();
-            hex_color.erase(0, 1);
-
-            /* Convert */
-            SDL_Color color_struct = Helpers::colorFromHex(hex_color);
-
-            /* Process */
-            bool finished = false;
-            for(int i = color_set.size() - 1; !finished && i >= 0; i--)
+            bold++;
+          }
+          /* Italic starting delimiter */
+          else if(second.front() == "i")
+          {
+            italic++;
+          }
+          /* Underline starting delimiter */
+          else if(second.front() == "u")
+          {
+            underline++;
+          }
+          /* Bold ending delimiter */
+          else if(second.front() == "/b")
+          {
+            bold--;
+            if(bold < 0)
+              bold = 0;
+          }
+          /* Italic ending delimiter */
+          else if(second.front() == "/i")
+          {
+            italic--;
+            if(italic < 0)
+              italic = 0;
+          }
+          /* Underline ending delimiter */
+          else if(second.front() == "/u")
+          {
+            underline--;
+            if(underline < 0)
+              underline = 0;
+          }
+          /* Font ending delimiter */
+          else if(second.front().size() == 7 && second.front().front() == '/')
+          {
+            if(color_set.size() > 0)
             {
-              if(color_set[i].r == color_struct.r &&
-                 color_set[i].g == color_struct.g &&
-                 color_set[i].b == color_struct.b)
+              std::string hex_color = second.front();
+              hex_color.erase(0, 1);
+
+              /* Convert */
+              SDL_Color color_struct = Helpers::colorFromHex(hex_color);
+
+              /* Process */
+              bool finished = false;
+              for(int i = color_set.size() - 1; !finished && i >= 0; i--)
               {
-                finished = true;
-                color_set.erase(color_set.begin() + i);
+                if(color_set[i].r == color_struct.r &&
+                   color_set[i].g == color_struct.g &&
+                   color_set[i].b == color_struct.b)
+                {
+                  finished = true;
+                  color_set.erase(color_set.begin() + i);
+                }
               }
             }
           }
-        }
-        /* Font starting delimiter */
-        else if(second.front().size() == 6)
-        {
-          SDL_Color color_struct = Helpers::colorFromHex(second.front());
-          color_set.push_back(color_struct);
-        }
+          /* Font starting delimiter */
+          else if(second.front().size() == 6)
+          {
+            SDL_Color color_struct = Helpers::colorFromHex(second.front());
+            color_set.push_back(color_struct);
+          }
 
-        /* Add results and proceed */
-        if(color_set.size() > 0)
-          prop = createProperty(bold > 0, italic > 0, underline > 0,
-                                color_set.back().r, color_set.back().g,
-                                color_set.back().b);
+          /* Add results and proceed */
+          if(color_set.size() > 0)
+            prop = createProperty(bold > 0, italic > 0, underline > 0,
+                                  color_set.back().r, color_set.back().g,
+                                  color_set.back().b);
+          else
+            prop = createProperty(bold > 0, italic > 0, underline > 0);
+          if(second.size() == 2)
+            result.push_back(pair<string, TextProperty>(second.back(), prop));
+        }
+        /* Otherwise, invalid: just return the original string */
         else
-          prop = createProperty(bold > 0, italic > 0, underline > 0);
-        if(second.size() == 2)
-          result.push_back(pair<string, TextProperty>(second.back(), prop));
+        {
+          if(!first[i].empty())
+            result.push_back(pair<string, TextProperty>(first[i], prop));
+        }
       }
-      /* Otherwise, invalid: just return the original string */
+      /* If not, just return the first string */
       else
       {
-        result.push_back(pair<string, TextProperty>(first[i], prop));
+        if(!first[i].empty())
+          result.push_back(pair<string, TextProperty>(first[i], prop));
       }
     }
   }
@@ -662,36 +793,108 @@ vector<string> Text::splitLine(TTF_Font* font, string text,
   return line_stack;
 }
 
-/* Takes a string of characters processed by parseHtml() and splits it to fit
- * a line after it is rendered by the given font */
-vector<vector<pair<string, TextProperty>>> 
-         Text::splitLineProperty(TTF_Font* font, int line_width, 
+/*
+ * Description: Takes a string of characters that may or may not have html
+ *              esc delimiters, similar to parseHtml(), and returns the lines
+ *              separated by words with styles.
+ *
+ * Inputs: TTF_Font* font - the font reference pointer
+ *         int line_width - the maximum number of characters in one line
+ *         string text - the text to process and split apart
+ * Output: vector<vector<vector<pair<string, TextProperty>>>> - this is
+ *                 <lines<words<sub-words<pair<text of word,
+ *                                             style property of word>>>>
+ */
+vector<vector<vector<pair<string, TextProperty>>>>
+         Text::splitLineProperty(TTF_Font* font, int line_width, string text)
+{
+  return splitLineProperty(font, line_width, parseHtml(text));
+}
+
+/*
+ * Description: Takes a string of characters that have been handled by
+ *              parseHtml(), and returns the lines separated by words
+ *              with styles.
+ *
+ * Inputs: TTF_Font* font - the font reference pointer
+ *         int line_width - the maximum number of characters in one line
+ *         string text - the text to process and split apart
+ *         vector<pair<string, TextProperty>> text_set - this is the processed
+ *                       text separated by the different rendering styles
+ *                       (defined by html)
+ * Output: vector<vector<vector<pair<string, TextProperty>>>> - this is
+ *                 <lines<words<sub-words<pair<text of word,
+ *                                             style property of word>>>>
+ */
+vector<vector<vector<pair<string, TextProperty>>>>
+         Text::splitLineProperty(TTF_Font* font, int line_width,
                                  vector<pair<string, TextProperty>> text_set)
 {
-  vector<vector<pair<string, TextProperty>>> line_all;
-  vector<vector<pair<string, TextProperty>>> line_stack;
-  int orig_style = TTF_GetFontStyle(font);
+  vector<vector<vector<pair<string, TextProperty>>>> line_all;
+  vector<vector<vector<pair<string, TextProperty>>>> line_stack;
   int space_width = 0;
   bool success = true;
-  int width = 0;
-  vector<pair<string, TextProperty>> words;
-  vector<int> word_widths;
+
+  /* Space width */
+  success &= (TTF_SizeText(font, " ", &space_width, NULL) == 0);
 
   /* Get the split and width of all words */
+  int orig_style = TTF_GetFontStyle(font);
+  int width = 0;
+  int width_total = 0;
+  vector<pair<string, TextProperty>> word;
+  vector<int> word_widths;
+  vector<vector<pair<string, TextProperty>>> words;
   for(uint32_t i = 0; i < text_set.size(); i++)
   {
-    vector<string> word_split = Helpers::split(text_set[i].first, ' ');
-    for(uint32_t j = 0; j < word_split.size(); j++)
+    if(!text_set[i].first.empty())
     {
-      words.push_back(pair<string, TextProperty>(word_split[j], 
-                                                 text_set[i].second));
-      TTF_SetFontStyle(font, text_set[i].second.style);
-      success &= 
+      /* If start with space, append word barring not empty */
+      if(text_set[i].first.front() == ' ' && word.size() > 0)
+      {
+        words.push_back(word);
+        word.clear();
+        word_widths.push_back(width_total);
+        width_total = 0;
+      }
+
+      /* Parse words within set */
+      vector<string> word_split = Helpers::split(text_set[i].first, ' ');
+      for(uint32_t j = 0; j < word_split.size(); j++)
+      {
+        if(word_split[j].size() > 0)
+        {
+          /* Process word and width */
+          word.push_back(pair<string, TextProperty>(word_split[j],
+                                                    text_set[i].second));
+          TTF_SetFontStyle(font, text_set[i].second.style);
+          success &=
             (TTF_SizeText(font, word_split[j].c_str(), &width, nullptr) == 0);
-      word_widths.push_back(width);
+          width_total += width;
+
+          /* If there are words remaining, append the current */
+          if(j != (word_split.size() - 1) && word.size() > 0)
+          {
+            words.push_back(word);
+            word.clear();
+            word_widths.push_back(width_total);
+            width_total = 0;
+          }
+        }
+      }
+
+      /* If end with space, append word barring not empty */
+      if(text_set[i].first.back() == ' ' && word.size() > 0)
+      {
+        words.push_back(word);
+        word.clear();
+        word_widths.push_back(width_total);
+        width_total = 0;
+      }
     }
   }
-  success &= (TTF_SizeText(font, " ", &space_width, NULL) == 0);
+  if(word.size() > 0)
+    words.push_back(word);
   TTF_SetFontStyle(font, orig_style);
 
   /* Proceed if font sizing was successful */
@@ -699,7 +902,7 @@ vector<vector<pair<string, TextProperty>>>
   {
     bool first_word = true;
     uint16_t index = 0;
-    vector<pair<string, TextProperty>> line;
+    vector<vector<pair<string, TextProperty>>> line;
     width = 0;
 
     /* Loop through all the words */
@@ -739,31 +942,57 @@ vector<vector<pair<string, TextProperty>>>
     /* Once complete, go through processing lines that could be combined */
     for(uint32_t i = 0; i < line_stack.size(); i++)
     {
-      vector<pair<string, TextProperty>> line_row;
+      vector<vector<pair<string, TextProperty>>> line_row;
       string line_str = "";
       TextProperty prop;
+      bool reload = true;
+      vector<pair<string, TextProperty>> word_row;
 
+      /* Loop through all words in line */
       for(uint32_t j = 0; j < line_stack[i].size(); j++)
       {
-        if(j == 0)
+        /* If there is more than one piece for the word, all stand as one */
+        if(line_stack[i][j].size() > 1)
         {
-          line_str = line_stack[i][j].first;
-          prop = line_stack[i][j].second;
+          if(!line_str.empty())
+          {
+            word_row.clear();
+            word_row.push_back(pair<string, TextProperty>(line_str, prop));
+            line_row.push_back(word_row);
+          }
+          line_row.push_back(line_stack[i][j]);
+          reload = true;
         }
-        else if(line_stack[i][j].second == prop)
+        /* Otherwise, if reload, set up as first element */
+        else if(reload)
         {
-          line_str += " " + line_stack[i][j].first;
+          line_str = line_stack[i][j].front().first;
+          prop = line_stack[i][j].front().second;
+          reload = false;
         }
+        /* Otherwise, equal properties: append string */
+        else if(line_stack[i][j].front().second == prop)
+        {
+          line_str += " " + line_stack[i][j].front().first;
+        }
+        /* Finally, if not equal, push current and add new separate */
         else
         {
-          line_row.push_back(pair<string, TextProperty>(line_str, prop));
-          line_str = line_stack[i][j].first;
-          prop = line_stack[i][j].second;
+          word_row.clear();
+          word_row.push_back(pair<string, TextProperty>(line_str, prop));
+          line_row.push_back(word_row);
+          line_str = line_stack[i][j].front().first;
+          prop = line_stack[i][j].front().second;
         }
       }
 
+      /* Final processing if any remain */
       if(!line_str.empty())
-        line_row.push_back(pair<string, TextProperty>(line_str, prop));
+      {
+        word_row.clear();
+        word_row.push_back(pair<string, TextProperty>(line_str, prop));
+        line_row.push_back(word_row);
+      }
       line_all.push_back(line_row);
     }
   }
