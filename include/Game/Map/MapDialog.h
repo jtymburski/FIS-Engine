@@ -21,10 +21,12 @@
 #include "Sound.h"
 #include "Text.h"
 
+using namespace std;
+
 /* Notification queue structure */
 struct Notification
 {
-  std::string text;
+  string text;
   Frame* thing_image;
   int32_t thing_count;
   uint16_t time_visible;
@@ -98,7 +100,7 @@ private:
   Frame img_pick_t; /* Top pickup display corner */
 
   /* The queue that holds all bottom notifications that need to be displayed */
-  std::vector<Notification> notification_queue;
+  vector<Notification> notification_queue;
   uint16_t notification_time;
 
   /* The paused control settings */
@@ -106,7 +108,7 @@ private:
 
   /* The pickup notification queue (right hand side) */
   float pickup_offset;
-  std::vector<Notification> pickup_queue;
+  vector<Notification> pickup_queue;
   WindowStatus pickup_status;
   uint16_t pickup_time;
   bool pickup_update;
@@ -118,16 +120,17 @@ private:
   MapThing* source;
   MapPerson* target;
   MapThing* thing_active;
-  std::vector<MapThing*> thing_data;
+  vector<MapThing*> thing_data;
 
   /* Text rendering pointers */
   float text_index;
   uint16_t text_index_max;
-  std::vector<Text*> text_lines;
+  vector<Text*> text_lines;
   float text_offset;
   uint16_t text_offset_max;
-  std::vector<Text*> text_options;
-  std::vector<std::string> text_strings;
+  vector<Text*> text_options;
+  vector<vector<vector<pair<string, TextProperty>>>> text_strings;
+
   uint16_t text_top;
   bool text_update;
 
@@ -166,7 +169,8 @@ private:
  *============================================================================*/
 private:
   /* Computes all IDs that are needed for displaying the conversation */
-  std::vector<int> calculateThingList(Conversation* convo);
+  vector<int> calculateThingList(Conversation* convo);
+  vector<int> calculateThingList(string text);
 
   /* Clears the vector conversation data */
   //void clearConversation(Conversation* convo);
@@ -184,11 +188,12 @@ private:
   void executeEvent();
 
   /* Functions to acquire thing data, for painting to the screen */
+  string getThingName(int id);
   MapThing* getThingReference(int id);
 
   /* Render the options. Deletes previous options, if they exist */
   void renderOptions(SDL_Renderer* renderer,
-                     std::vector<std::string> options = {});
+              vector<vector<vector<pair<string, TextProperty>>>> options = {});
 
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
@@ -203,8 +208,9 @@ private:
   void setupPickup(SDL_Renderer* renderer, bool update = false);
 
   /* Setup the render text display. Also manages deletion of Text pointers */
-  void setupRenderText(std::vector<std::string> lines = {},
-                       bool delete_old = false);
+  void setupRenderText(
+               vector<vector<vector<pair<string, TextProperty>>>> lines = {},
+               bool delete_old = false);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -215,14 +221,14 @@ public:
 
   /* Returns the thing IDs from the waiting conversation - return nothing if
    * the conversation isn't waiting */
-  std::vector<int> getConversationIDs();
+  vector<int> getConversationIDs();
 
   /* Initializes a conversation with the two given people. */
   bool initConversation(ConvoPair convo_pair, MapPerson* target,
                         MapThing* source);
 
   /* Initializes a notification, using a string to be printed */
-  bool initNotification(std::string notification, bool single_line = false,
+  bool initNotification(string notification, bool single_line = false,
                                                   int time_visible = -1);
 
   /* Initiailizes a pickup notification. These show up isolated from the
@@ -251,13 +257,13 @@ public:
   void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Loads all appropriate image data for rendering */
-  bool loadImageConversation(std::string path, SDL_Renderer* renderer);
-  bool loadImageDialogShifts(std::string path_next, std::string path_more,
+  bool loadImageConversation(string path, SDL_Renderer* renderer);
+  bool loadImageDialogShifts(string path_next, string path_more,
                              SDL_Renderer* renderer);
-  bool loadImageNameLeftRight(std::string path, SDL_Renderer* renderer);
-  bool loadImageOptions(std::string path_circle, std::string path_triangle,
+  bool loadImageNameLeftRight(string path, SDL_Renderer* renderer);
+  bool loadImageOptions(string path_circle, string path_triangle,
                         SDL_Renderer* renderer);
-  bool loadImagePickupTopBottom(std::string path, SDL_Renderer* renderer);
+  bool loadImagePickupTopBottom(string path, SDL_Renderer* renderer);
 
   /* Renders the Map Dialog */
   bool render(SDL_Renderer* renderer);
@@ -266,7 +272,7 @@ public:
   bool setConfiguration(Options* running_config);
 
   /* Set the conversation things as per to IDs from getConversationIDs() */
-  bool setConversationThings(std::vector<MapThing*> things);
+  bool setConversationThings(vector<MapThing*> things);
 
   /* Sets the event handler */
   void setEventHandler(EventHandler* event_handler);

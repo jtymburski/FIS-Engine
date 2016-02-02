@@ -290,28 +290,30 @@ bool Text::setText(SDL_Renderer* renderer, string text, SDL_Color text_color)
  * Inputs: SDL_Renderer* renderer - the rendering context
  *         vector<vector<pair<string, TextProperty>>> text - the set of text to
  *                                                           render on the line
- *         SDL_Color text_color - the color of the text
+ *         int length - the number of characters to render
  * Output: bool - returns if the text is created
  */
 bool Text::setText(SDL_Renderer* renderer,
-                   vector<vector<pair<string, TextProperty>>> text)
+                   vector<vector<pair<string, TextProperty>>> text, int length)
 {
   bool success = false;
 
   if(renderer != nullptr && render_font != nullptr)
   {
     int orig_style = TTF_GetFontStyle(render_font);
+    int space_width = 0;
+    TTF_SizeText(render_font, " ", &space_width, nullptr);
+    if(length < 0)
+      length = Text::countLength(text);
 
     /* Process the text stack */
     vector<SDL_Surface*> text_surfaces;
-    for(uint32_t i = 0; i < text.size(); i++)
+    for(uint32_t i = 0; length > 0 && i < text.size(); i++)
     {
-      for(uint32_t j = 0; j < text[i].size(); j++)
+      for(uint32_t j = 0; length > 0 && j < text[i].size(); j++)
       {
-        /* Determine string additions, if required */
-        std::string str = text[i][j].first;
-        if((i != (text.size() - 1)) && (j == (text[i].size() - 1)))
-          str += " ";
+        std::string str = text[i][j].first.substr(0, length);
+        length -= str.size();
 
         /* Create surface from string */
         TTF_SetFontStyle(render_font, text[i][j].second.style);
@@ -319,6 +321,14 @@ bool Text::setText(SDL_Renderer* renderer,
                                          str.c_str(), text[i][j].second.color);
         if(text_surface != nullptr)
           text_surfaces.push_back(text_surface);
+
+        /* Append space if relevant */
+        if((i != (text.size() - 1)) && (j == (text[i].size() - 1)) && 
+           length > 0)
+        {
+          text_surfaces.push_back(nullptr);
+          length--;
+        }
       }
     }
 
@@ -331,18 +341,30 @@ bool Text::setText(SDL_Renderer* renderer,
     int total_width = 0;
     for(uint32_t i = 0; i < text_surfaces.size(); i++)
     {
-      SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer,
+      /* -- Valid surface: convert to texture -- */
+      if(text_surfaces[i] != nullptr)
+      {
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer,
                                                           text_surfaces[i]);
-      if(texture != nullptr)
+        if(texture != nullptr)
+        {
+          text_textures.push_back(pair<SDL_Texture*, SDL_Point>(
+                         texture, {text_surfaces[i]->w, text_surfaces[i]->h}));
+          total_width += text_surfaces[i]->w;
+          if(text_surfaces[i]->h > max_height)
+            max_height = text_surfaces[i]->h;
+        }
+      }
+      /* -- Invalid surface: convert to space -- */
+      else
       {
         text_textures.push_back(pair<SDL_Texture*, SDL_Point>(
-                         texture, {text_surfaces[i]->w, text_surfaces[i]->h}));
-        total_width += text_surfaces[i]->w;
-        if(text_surfaces[i]->h > max_height)
-          max_height = text_surfaces[i]->h;
+                                                 nullptr, {space_width, 1}));
+        total_width += space_width;
       }
     }
 
+    /* If valid width, proceed with creation of one texture */
     if(total_width > 0)
     {
       /* Combine into one large texture */
@@ -358,9 +380,12 @@ bool Text::setText(SDL_Renderer* renderer,
       SDL_RenderClear(renderer);
       for(uint32_t i = 0; i < text_textures.size(); i++)
       {
-        SDL_Rect rect{x_ref, 0, text_textures[i].second.x,
-                      text_textures[i].second.y};
-        SDL_RenderCopy(renderer, text_textures[i].first, nullptr, &rect);
+        if(text_textures[i].first != nullptr)
+        {
+          SDL_Rect rect{x_ref, 0, text_textures[i].second.x,
+                        text_textures[i].second.y};
+          SDL_RenderCopy(renderer, text_textures[i].first, nullptr, &rect);
+        }
         x_ref += text_textures[i].second.x;
       }
       SDL_SetRenderTarget(renderer, orig_render);
@@ -374,6 +399,16 @@ bool Text::setText(SDL_Renderer* renderer,
       setAlpha(alpha);
       success = true;
     }
+
+    /* Clean-up surfaces and textures created */
+    for(uint32_t i = 0; i < text_textures.size(); i++)
+      if(text_textures[i].first != nullptr)
+        SDL_DestroyTexture(text_textures[i].first);
+    text_textures.clear();
+    for(uint32_t i = 0; i < text_surfaces.size(); i++)
+      if(text_surfaces[i] != nullptr)
+        SDL_FreeSurface(text_surfaces[i]);
+    text_surfaces.clear();
   }
 
   return success;
@@ -408,6 +443,31 @@ void Text::unsetTexture()
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
+  
+/*
+ * Description: Returns the number of characters in the passed in line of text.
+ *
+ * Inputs: vector<vector<pair<string, TextProperty>>> text - the line of text
+ * Output: int - the total number of characters in the line
+ */
+int Text::countLength(vector<vector<pair<string, TextProperty>>> text)
+{
+  int count = 0;
+
+  /* Determine set count */
+  for(uint32_t i = 0; i < text.size(); i++)
+  {
+    for(uint32_t j = 0; j < text[i].size(); j++)
+    {
+      count += text[i][j].first.size();
+    }
+    count++;
+  }
+  if(count > 0)
+    count--;
+
+  return count;
+}
 
 /*
  * Description: Creates a font given a font path string and size. Will add
@@ -799,16 +859,18 @@ vector<string> Text::splitLine(TTF_Font* font, string text,
  *              separated by words with styles.
  *
  * Inputs: TTF_Font* font - the font reference pointer
- *         int line_width - the maximum number of characters in one line
  *         string text - the text to process and split apart
+ *         int line_width - the maximum number of characters in one line
+ *         bool elided - true to elide the text with ... and only one line
  * Output: vector<vector<vector<pair<string, TextProperty>>>> - this is
  *                 <lines<words<sub-words<pair<text of word,
  *                                             style property of word>>>>
  */
 vector<vector<vector<pair<string, TextProperty>>>>
-         Text::splitLineProperty(TTF_Font* font, int line_width, string text)
+         Text::splitLineProperty(TTF_Font* font, string text, int line_width,
+                                 bool elided)
 {
-  return splitLineProperty(font, line_width, parseHtml(text));
+  return splitLineProperty(font, line_width, parseHtml(text), elided);
 }
 
 /*
@@ -822,20 +884,28 @@ vector<vector<vector<pair<string, TextProperty>>>>
  *         vector<pair<string, TextProperty>> text_set - this is the processed
  *                       text separated by the different rendering styles
  *                       (defined by html)
+ *         bool elided - true to elide the text with ... and only one line
  * Output: vector<vector<vector<pair<string, TextProperty>>>> - this is
  *                 <lines<words<sub-words<pair<text of word,
  *                                             style property of word>>>>
  */
 vector<vector<vector<pair<string, TextProperty>>>>
          Text::splitLineProperty(TTF_Font* font, int line_width,
-                                 vector<pair<string, TextProperty>> text_set)
+                                 vector<pair<string, TextProperty>> text_set,
+                                 bool elided)
 {
+  int elide_width = 0;
   vector<vector<vector<pair<string, TextProperty>>>> line_all;
   vector<vector<vector<pair<string, TextProperty>>>> line_stack;
   int space_width = 0;
   bool success = true;
 
   /* Space width */
+  if(elided)
+  {
+    success &= (TTF_SizeText(font, ".", &elide_width, NULL) == 0);
+    elide_width *= 3;
+  }
   success &= (TTF_SizeText(font, " ", &space_width, NULL) == 0);
 
   /* Get the split and width of all words */
@@ -894,7 +964,10 @@ vector<vector<vector<pair<string, TextProperty>>>>
     }
   }
   if(word.size() > 0)
+  {
     words.push_back(word);
+    word_widths.push_back(width_total);
+  }
   TTF_SetFontStyle(font, orig_style);
 
   /* Proceed if font sizing was successful */
@@ -903,7 +976,7 @@ vector<vector<vector<pair<string, TextProperty>>>>
     bool first_word = true;
     uint16_t index = 0;
     vector<vector<pair<string, TextProperty>>> line;
-    width = 0;
+    width = elide_width;
 
     /* Loop through all the words */
     while(index < words.size())
@@ -921,6 +994,8 @@ vector<vector<vector<pair<string, TextProperty>>>>
        * word */
       else if((width + space_width + word_widths[index]) > line_width)
       {
+        if(elided)
+          line.back().back().first += "...";
         line_stack.push_back(line);
         line.clear();
         width = 0;
@@ -937,7 +1012,14 @@ vector<vector<vector<pair<string, TextProperty>>>>
 
     /* Append the final line if not null */
     if(!line.empty())
+    {
+      if(elided)
+        line.back().back().first += "...";
       line_stack.push_back(line);
+    }
+    if(elided)
+      if(line_stack.size() > 1)
+        line_stack.erase(line_stack.begin() + 1, line_stack.end());
 
     /* Once complete, go through processing lines that could be combined */
     for(uint32_t i = 0; i < line_stack.size(); i++)

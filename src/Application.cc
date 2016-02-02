@@ -735,48 +735,6 @@ bool Application::run(bool skip_title)
   text2.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
   TTF_SetFontOutline(text2.getFont(), 2);
   text2.setText(renderer, "341", {0, 0, 0, 255});
-  TTF_Font* test_font = Text::createFont("fonts/colab_light.otf", 20);
-  Text text3;
-  text3.setFont(test_font);
-  int text3_width = 0;
-
-  /* PARSING TESTING - TODO: REMOVE */
-  /*std::string test = "[b]Bold Text[/b] sep [i]Italic Text[/i] sep [u]Underline Text[/u] sep [ff0000]Colored Text[/ff0000] test and the road goes on an on like a never ending train pulling up to a [u]station[/u] which does not exist but it is ok because [00ffbb]the beginning can n[/00ffbb]ot be deciphered from the end. Proceed my friend and ask the [b]que[i]stion y[/b]ou s[/i]eek.";
-  //test = "I am writing this song to be the first ever to proclaim the name of Jesus across the streets. You [b]all will follow as to his mighty and[/b] righteous power that will envelope you with purpose and dignity in these trying times. This is a time of great anguish as the world becomes more manipulated by the hand of the devil.";
-  //test = "[b]I[/b] am writing this song to be the first ever to proclaim the name of Jesus across the streets. You all will follow as to his mighty and righteous power that will envelope you with purpose and dignity in these trying times. This is a time of great anguish as the world becomes more manipulated by the [u]hand [i]of the devil.[/u][/i]";
-  std::cout << "------" << std::endl;
-  std::cout << "START TEXT: " << test << std::endl;
-  std::cout << "------" << std::endl;
-  std::vector<pair<string,TextProperty>> set = Text::parseHtml(test);
-  for(uint32_t i = 0; i < set.size(); i++)
-  {
-    std::cout << "\"" << set[i].first << "\"" << std::endl;
-    std::cout << " - " << set[i].second.style << ","
-              << (int)set[i].second.color.r << ","
-              << (int)set[i].second.color.g << ","
-              << (int)set[i].second.color.b << std::endl;
-  }
-  std::vector<std::vector<std::vector<std::pair<std::string, TextProperty>>>>
-        output = Text::splitLineProperty(test_font, 742, set);
-  std::cout << "------------------" << std::endl;
-  for(uint32_t i = 0; i < output.size(); i++)
-  {
-    for(uint32_t j = 0; j < output[i].size(); j++)
-    {
-      for(uint32_t k = 0; k < output[i][j].size(); k++)
-      {
-        std::cout << "\"" << output[i][j][k].first << "\""
-                  << " - " << output[i][j][k].second.style << ","
-                  << (int)output[i][j][k].second.color.r << ","
-                  << (int)output[i][j][k].second.color.g << ","
-                  << (int)output[i][j][k].second.color.b << std::endl;
-      }
-      std::cout << "--" << std::endl;
-    }
-    std::cout << "----" << std::endl;
-  }
-  std::cout << "------------------" << std::endl;
-  text3.setText(renderer, output.front());*/
 
   if(isInitialized())
   {
@@ -831,10 +789,6 @@ bool Application::run(bool skip_title)
         // Font testing - TODO: Remove
         text2.render(renderer, 48, 48);
         text1.render(renderer, 50, 50);
-        text3.render(renderer, 100, 250, text3_width, -1);
-        text3_width += 4;
-        if(text3_width > text3.getWidth())
-          text3_width = 0;
 
         /* Update screen */
         SDL_RenderPresent(renderer);

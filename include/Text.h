@@ -103,7 +103,8 @@ public:
   /* Sets the text, stored in the internal texture */
   bool setText(SDL_Renderer* renderer, string text, SDL_Color text_color);
   bool setText(SDL_Renderer* renderer,
-               vector<vector<pair<string, TextProperty>>> text);
+               vector<vector<pair<string, TextProperty>>> text, 
+               int length = -1);
 
   /* Clean up functions for the data stored in the class */
   void unsetFont();
@@ -113,6 +114,9 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns the length of the text passed in */
+  static int countLength(vector<vector<pair<string, TextProperty>>> text);
+
   /* Create a font, based on the font parameters. Null if fails */
   static TTF_Font* createFont(string font_path, int font_size,
                               int font_style = TTF_STYLE_NORMAL);
@@ -141,10 +145,12 @@ public:
   /* Takes a string of characters processed by parseHtml() and splits it to fit
    * a line after it is rendered by the given font */
   static vector<vector<vector<pair<string, TextProperty>>>> splitLineProperty(
-                                   TTF_Font* font, int line_width, string text);
+                                   TTF_Font* font, string text, int line_width,
+                                   bool elided = false);
   static vector<vector<vector<pair<string, TextProperty>>>> splitLineProperty(
                                    TTF_Font* font, int line_width,
-                                   vector<pair<string, TextProperty>> text_set);
+                                   vector<pair<string, TextProperty>> text_set,
+                                   bool elided = false);
 };
 
 #endif // TEXT_H

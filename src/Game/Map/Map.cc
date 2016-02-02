@@ -1862,15 +1862,15 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       test3.category = DialogCategory::TEXT;
       test3.action_event = EventSet::createEventStartBattle();
       test3.text = "Back to finish off with a clean case with a couple of ";
-      test3.text += "lines. So this requires me to write a bunch of BS to try ";
-      test3.text += "and fill these lines.";
+      test3.text += "lines. So this [i][b]requires me to write a bu[/i][/b]";
+      test3.text += "nch of BS to try and fill these lines.";
       test3.text += test3.text;
       test3.text += test3.text;
       test3.thing_id = 1003;
       test3.next.push_back(test2);
       test4.category = DialogCategory::TEXT;
       test4.action_event = blank_event;
-      test4.text = "Option 1 - This goes on and on and on and on and on and ";
+      test4.text = "Option 1 - This goes [b]o[ff0000]n and[/ff0000] o[/b]n and on and on and on and ";
       test4.text += "lorem ipsum. This is way too long to be an option. Loser";
       test4.thing_id = -1;
       test4.next.push_back(test2);

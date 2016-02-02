@@ -11,13 +11,12 @@
  * TODO:
  *  - Number entry, text entry. Shop mode? Also, built into conversation
  *
- * Want List:
- *  - Text HTML like response to allow for color changes
- *    - <b> - bold
- *    - <u> - underline
- *    - <i> - italic
- *    - <color r g b> - color change
- *    - <id 12> - id to text name reference change
+ * Text HTML like response for manipulation description:
+ *  - [b] - bold
+ *  - [u] - underline
+ *  - [i] - italic
+ *  - [ff0000] - color change in hex rrggbb
+ *  - {12} - id to text name reference change
  ******************************************************************************/
 #include "Game/Map/MapDialog.h"
 
@@ -74,10 +73,6 @@ MapDialog::MapDialog(Options* running_config)
  * Description: The destructor function. Deletes all dynamic memory and cleans
  *              up the class.
  */
-// TODO: There's an issue with deletion where it seg faults. I think the
-// fault is when a delete gets called after SDL engine is shut down which
-// seg faults. We will need to make all frames in this deleted by game with
-// a pointer of sorts??
 MapDialog::~MapDialog()
 {
   renderOptions(NULL);
@@ -97,31 +92,77 @@ MapDialog::~MapDialog()
  *              This function does NOT gaurantee no duplicates.
  *
  * Inputs: Conversation convo - the conversation to parse for IDs
- * Output: std::vector<int> - vector array of all thing IDs
+ * Output: vector<int> - vector array of all thing IDs
  */
-std::vector<int> MapDialog::calculateThingList(Conversation* convo)
+vector<int> MapDialog::calculateThingList(Conversation* convo)
 {
-  std::vector<int> list;
+  vector<int> list;
 
   if(convo != nullptr)
   {
     /* Recursively get all other IDs from embedded conversations */
     for(uint32_t i = 0; i < convo->next.size(); i++)
     {
-      std::vector<int> computed_list = calculateThingList(&(convo->next[i]));
+      vector<int> computed_list = calculateThingList(&(convo->next[i]));
       list.insert(list.end(), computed_list.begin(), computed_list.end());
     }
     //for(auto i = convo->next.begin(); i != convo->next.end(); i++)
     //{
-    //  std::vector<int> computed_list = calculateThingList(i);
+    //  vector<int> computed_list = calculateThingList(i);
     //  list.insert(list.end(), computed_list.begin(), computed_list.end());
     //}
+
+    /* Determine if any IDs within the text */
+    vector<int> text_list = calculateThingList(convo->text);
+    if(text_list.size() > 0)
+      list.insert(list.end(), text_list.begin(), text_list.end());
 
     /* Append final ID for the current conversation */
     list.push_back(convo->thing_id);
   }
 
   return list;
+}
+
+/*
+ * Description: Determines the thing references stored within the set of text.
+ *              These are delimited by {ID} within. If none are found, returns
+ *              empty vector.
+ *
+ * Inputs: string text - the text to search for ID delimiters
+ * Output: vector<int> - vector array of all thing IDs within text
+ */ // TODO: HERE - need to test
+vector<int> MapDialog::calculateThingList(string text)
+{
+  vector<int> ids;
+
+  /* Perform first split on '{' delimiter */
+  size_t found = text.find('{');
+  if(found != string::npos)
+  {
+    vector<string> first_split = Helpers::split(text, '{');
+    for(uint32_t i = 0; i < first_split.size(); i++)
+    {
+      /* Perform second split on '}' delimiter */
+      size_t found2 = first_split[i].find('}');
+      if(found2 != string::npos)
+      {
+        vector<string> second_split = Helpers::split(first_split[i], '}');
+        if(second_split.size() > 0)
+        {
+          try
+          {
+            int id = stoi(second_split.front());
+            ids.push_back(id);
+          }
+          catch(exception)
+          {}
+        }
+      }
+    }
+  }
+
+  return ids;
 }
 
 /*
@@ -292,6 +333,24 @@ void MapDialog::executeEvent()
 /*
  * Description: This takes a thing ID and back checks it with stored stack of
  *              thing pointers that were acquired when the conversation was
+ *              created in the attempt to find a name of the ID. Returns "" if
+ *              not found.
+ *
+ * Inputs: int id - the reference id (-1 is source, < -1 is invalid)
+ * Output: string - the string name of the ID
+ */
+string MapDialog::getThingName(int id)
+{
+  string name = "";
+  MapThing* thing_reference = getThingReference(id);
+  if(thing_reference != nullptr)
+    name = thing_reference->getName();
+  return name;
+}
+
+/*
+ * Description: This takes a thing ID and back checks it with stored stack of
+ *              thing pointers that were acquired when the conversation was
  *              created. Returns NULL if not found.
  *
  * Inputs: int id - the reference id (<0  invalid)
@@ -322,11 +381,12 @@ MapThing* MapDialog::getThingReference(int id)
  *              of options in the Text container, rendered.
  *
  * Inputs: SDL_Renderer* renderer - the graphical engine rendering pointer
- *         std::vector<std::string> options - vector array of string options
+ *         vector<vector<vector<pair<string, TextProperty>>>> options - vector
+ *                                                     array of string options
  * Output: none
  */
 void MapDialog::renderOptions(SDL_Renderer* renderer,
-                              std::vector<std::string> options)
+                    vector<vector<vector<pair<string, TextProperty>>>> options)
 {
   /* Clear the options stack */
   for(auto i = text_options.begin(); i != text_options.end(); i++)
@@ -338,7 +398,8 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
   {
     Text* t = new Text(font_normal);
     t->setFont(font_normal);
-    t->setText(renderer, *i, {255, 255, 255, dialog_alpha});
+    t->setText(renderer, *i);
+    t->setAlpha(dialog_alpha);
     text_options.push_back(t);
   }
 }
@@ -409,7 +470,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     }
 
     /* Create the name information */
-    std::string name = "";
+    string name = "";
     Text name_text;
     if(thing_active != NULL)
      name = thing_active->getName();
@@ -475,29 +536,30 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     frame_bottom.setTexture(texture);
 
     /* Determine the length of the viewing area and split text lines */
-    std::string txt_line = conversation_info->text;
+    string txt_line = conversation_info->text;
     if(font_normal != NULL)
     {
       if(conversation_info->next.size() > 1)
       {
-        text_strings = Text::splitLine(font_normal, txt_line, txt_length, true);
+        text_strings = Text::splitLineProperty(font_normal, txt_line,
+                                               txt_length, true);
 
         /* Fill the options */
         int options_length = txt_length - kOPTION_OFFSET;
-        std::vector<std::string> options_text;
-
+        vector<vector<vector<pair<string, TextProperty>>>> options_text;
 
         for(auto i = conversation_info->next.begin();
                  i != conversation_info->next.end(); i++)
         {
-          options_text.push_back(Text::splitLine(font_normal, (*i).text,
-                                                   options_length, true).at(0));
+          options_text.push_back(Text::splitLineProperty(font_normal, (*i).text,
+                                                 options_length, true).front());
         }
         renderOptions(renderer, options_text);
       }
       else
       {
-        text_strings = Text::splitLine(font_normal, txt_line, txt_length);
+        text_strings = Text::splitLineProperty(font_normal, txt_line,
+                                               txt_length);
         renderOptions(NULL);
       }
 
@@ -530,9 +592,9 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
   Notification to_display = notification_queue.front();
 
   /* Split text and create text */
-  std::vector<std::string> line_set = Text::splitLine(
+  vector<string> line_set = Text::splitLine(
                              font_normal, to_display.text, line_width, false);
-  std::vector<Text*> rendered_lines;
+  vector<Text*> rendered_lines;
   for(auto i = line_set.begin(); i != line_set.end(); i++)
   {
     Text* single_line = new Text(font_normal);
@@ -619,7 +681,7 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
                                                + kPICKUP_TEXT_MARGIN;
 
   /* Add or remove determination */
-  std::string chg_sep = "+";
+  string chg_sep = "+";
   if(pickup.thing_count < 0)
     chg_sep = "";
 
@@ -711,11 +773,14 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
  *              lettering. Can also be used to just update the text max if text
  *              top is changed by setting delete old to false.
  *
- * Inputs: std::vector<std::string> lines - the string lines to be rendered
+ * Inputs: vector<vector<vector<pair<string, TextProperty>>>> lines - the
+ *                           string lines to be rendered
  *         bool delete_old - if true, delete previous lines and setup new ones
  * Output: none
  */
-void MapDialog::setupRenderText(std::vector<std::string> lines, bool delete_old)
+void MapDialog::setupRenderText(
+                     vector<vector<vector<pair<string, TextProperty>>>> lines,
+                     bool delete_old)
 {
   /* Delete if line count of 0 is passed in */
   if(delete_old)
@@ -740,7 +805,7 @@ void MapDialog::setupRenderText(std::vector<std::string> lines, bool delete_old)
   for(uint16_t i = text_top; i < (text_top + kTEXT_LINES); i++)
   {
     if(i < lines.size())
-      text_index_max += lines[i].size();
+      text_index_max += Text::countLength(lines[i]);
   }
 }
 
@@ -798,11 +863,11 @@ void MapDialog::clearAll(bool include_convo)
  *              setConversationThings() corresponding to these IDs.
  *
  * Inputs: none
- * Output: std::vector<int> - vector array of unique thing IDs from convo.
+ * Output: vector<int> - vector array of unique thing IDs from convo.
  */
-std::vector<int> MapDialog::getConversationIDs()
+vector<int> MapDialog::getConversationIDs()
 {
-  std::vector<int> thing_ids;
+  vector<int> thing_ids;
 
   if(isConversationWaiting())
   {
@@ -855,13 +920,13 @@ bool MapDialog::initConversation(ConvoPair convo_pair, MapPerson* target,
  *              computes the time to display from the number of words in the
  *              notification.
  *
- * Inputs: std::string notification - string data to display
+ * Inputs: string notification - string data to display
  *         bool single_line - if it should be at max one line
  *         int time_visible - length of time the notification is visible.
  * Output: bool - status if notification could be pushed onto queue.
  */
-bool MapDialog::initNotification(std::string notification, bool single_line,
-                                                           int time_visible)
+bool MapDialog::initNotification(string notification, bool single_line,
+                                                      int time_visible)
 {
   if(img_convo.isTextureSet() && !notification.empty())
   {
@@ -878,7 +943,7 @@ bool MapDialog::initNotification(std::string notification, bool single_line,
     /* Calculate the display time if invalid */
     if(time_visible <= 0)
     {
-      std::vector<std::string> words = Helpers::split(notification, ' ');
+      vector<string> words = Helpers::split(notification, ' ');
       time_visible = (words.size() * kMSEC_PER_WORD) + kMSEC_PER_WORD;
     }
 
@@ -1187,13 +1252,13 @@ void MapDialog::keyUpEvent(SDL_KeyboardEvent event)
  *              holds the text information. Needs to be set for conversations
  *              or notifications to work.
  *
- * Inputs: std::string path - path to the image for the conversation
+ * Inputs: string path - path to the image for the conversation
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if set was successful
  */
-bool MapDialog::loadImageConversation(std::string path, SDL_Renderer* renderer)
+bool MapDialog::loadImageConversation(string path, SDL_Renderer* renderer)
 {
-  std::string base_path = "";
+  string base_path = "";
   if(system_options != NULL)
     base_path = system_options->getBasePath();
 
@@ -1206,18 +1271,18 @@ bool MapDialog::loadImageConversation(std::string path, SDL_Renderer* renderer)
  *              for talking. The more is the indicator for that more text needs
  *              to be displayed.
  *
- * Inputs: std::string path_next - the path to the next indicator image
- *         std::string path_more - the path to the more text indicator image
+ * Inputs: string path_next - the path to the next indicator image
+ *         string path_more - the path to the more text indicator image
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if set was successful (false if either fails)
  */
-bool MapDialog::loadImageDialogShifts(std::string path_next,
-                                      std::string path_more,
+bool MapDialog::loadImageDialogShifts(string path_next,
+                                      string path_more,
                                       SDL_Renderer* renderer)
 {
   bool success = true;
 
-  std::string base_path = "";
+  string base_path = "";
   if(system_options != NULL)
     base_path = system_options->getBasePath();
 
@@ -1234,15 +1299,15 @@ bool MapDialog::loadImageDialogShifts(std::string path_next,
  *              code). The right one is conjured by flipping the image from the
  *              path given while the left one just uses the path directly.
  *
- * Inputs: std::string path - image path for the left (and right) delimiter
+ * Inputs: string path - image path for the left (and right) delimiter
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if the set was successful on both
  */
-bool MapDialog::loadImageNameLeftRight(std::string path, SDL_Renderer* renderer)
+bool MapDialog::loadImageNameLeftRight(string path, SDL_Renderer* renderer)
 {
   bool success = true;
 
-  std::string base_path = "";
+  string base_path = "";
   if(system_options != NULL)
     base_path = system_options->getBasePath();
 
@@ -1258,18 +1323,18 @@ bool MapDialog::loadImageNameLeftRight(std::string path, SDL_Renderer* renderer)
  *              available. This triangle needs to be point up, since the down
  *              one is conjured by vertically flipping the path.
  *
- * Inputs: std::string path_circle - path to the circle image
- *         std::string path_triangle - path to the triangle image (point up)
+ * Inputs: string path_circle - path to the circle image
+ *         string path_triangle - path to the triangle image (point up)
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if the set was successful on all 3
  */
-bool MapDialog::loadImageOptions(std::string path_circle,
-                                 std::string path_triangle,
+bool MapDialog::loadImageOptions(string path_circle,
+                                 string path_triangle,
                                  SDL_Renderer* renderer)
 {
   bool success = true;
 
-  std::string base_path = "";
+  string base_path = "";
   if(system_options != NULL)
     base_path = system_options->getBasePath();
 
@@ -1287,16 +1352,15 @@ bool MapDialog::loadImageOptions(std::string path_circle,
  *              rectangle cleanly. Ensure that the path is the top right hand
  *              triangle as the other one is conjured by flipping it.
  *
- * Inputs: std::string path - path to the triangle image
+ * Inputs: string path - path to the triangle image
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if the images were both set successfully
  */
-bool MapDialog::loadImagePickupTopBottom(std::string path,
-                                         SDL_Renderer* renderer)
+bool MapDialog::loadImagePickupTopBottom(string path, SDL_Renderer* renderer)
 {
   bool success = true;
 
-  std::string base_path = "";
+  string base_path = "";
   if(system_options != NULL)
     base_path = system_options->getBasePath();
 
@@ -1358,17 +1422,17 @@ bool MapDialog::render(SDL_Renderer* renderer)
       {
         /* If length is >= string size, render whole string. Otherwise,
          * only render the portion visible */
-        if(length >= text_strings[index].size())
+        int line_length = Text::countLength(text_strings[index]);
+        if(length >= line_length)
         {
-          text_lines[index]->setText(renderer,
-                            text_strings[index], {255, 255, 255, dialog_alpha});
-          length -= text_strings[index].size();
+          text_lines[index]->setText(renderer, text_strings[index]);
+          text_lines[index]->setAlpha(dialog_alpha);
+          length -= line_length;
         }
         else
         {
-          text_lines[index]->setText(renderer,
-                                     text_strings[index].substr(0, length),
-                                     {255, 255, 255, dialog_alpha});
+          text_lines[index]->setText(renderer, text_strings[index], length);
+          text_lines[index]->setAlpha(dialog_alpha);
           length = 0;
         }
         index++;
@@ -1551,10 +1615,10 @@ bool MapDialog::setConfiguration(Options* running_config)
  *              getConversationIDs(). This call will only work if a conversation
  *              is waiting.
  *
- * Inputs: std::vector<MapThing*> things - vector array of things
+ * Inputs: vector<MapThing*> things - vector array of things
  * Output: bool - status if the set was successful
  */
-bool MapDialog::setConversationThings(std::vector<MapThing*> things)
+bool MapDialog::setConversationThings(vector<MapThing*> things)
 {
   if(conversation_waiting)
   {
@@ -1733,13 +1797,13 @@ void MapDialog::update(int cycle_time)
             /* Finally, shift the text so new fonts are rendered */
             animation_shifter = 0.0;
             text_top += (kTEXT_LINES - 1);
-            text_index = text_strings[text_top].size();
+            text_index = Text::countLength(text_strings[text_top]);
             text_index_max = 0;
 
             for(uint16_t i = text_top; i < (text_top + kTEXT_LINES); i++)
             {
               if(i < text_strings.size())
-                text_index_max += text_strings[i].size();
+                text_index_max += Text::countLength(text_strings[i]);
             }
           }
         }
