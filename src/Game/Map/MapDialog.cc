@@ -49,6 +49,7 @@ const uint8_t MapDialog::kTEXT_LINES = 4;
 const uint8_t MapDialog::kTEXT_OPTIONS = 3;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 33.33;
 const float MapDialog::kTEXT_SHIFT = 5.704;
+const string MapDialog::kTHING_COLOR = "00eaff";
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -131,7 +132,7 @@ vector<int> MapDialog::calculateThingList(Conversation* convo)
  *
  * Inputs: string text - the text to search for ID delimiters
  * Output: vector<int> - vector array of all thing IDs within text
- */ // TODO: HERE - need to test
+ */
 vector<int> MapDialog::calculateThingList(string text)
 {
   vector<int> ids;
@@ -403,6 +404,66 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
     text_options.push_back(t);
   }
 }
+  
+/*
+ * Description: Takes the text and replaces {ID} references with name if found.
+ *              If not found, blanks out.
+ *
+ * Inputs: string text - the text to process
+ * Output: string - the processed text
+ */
+string MapDialog::replaceThingReferences(string text)
+{
+  string new_text = "";
+
+  /* Perform first split on '{' delimiter */
+  size_t found = text.find('{');
+  if(found != string::npos)
+  {
+    vector<string> first_split = Helpers::split(text, '{');
+    for(uint32_t i = 0; i < first_split.size(); i++)
+    {
+      /* Perform second split */
+      size_t found2 = first_split[i].find('}');
+      if(found2 != string::npos && (i > 0 || text.front() == '{'))
+      {
+        vector<string> second_split = Helpers::split(first_split[i], '}');
+        if(second_split.size() > 0)
+        {
+          /* Process the first which would contain the relevant ID */
+          try
+          {
+            string name = getThingName(stoi(second_split.front()));
+            new_text += "[" + kTHING_COLOR + "]" + name + 
+                        "[/" + kTHING_COLOR + "]";
+          }
+          catch(exception)
+          {
+            new_text += second_split.front();
+          }
+
+          /* Append remaining */
+          for(uint32_t j = 1; j < second_split.size(); j++)
+            new_text += second_split[j];
+        }
+      }
+      else
+      {
+        string to_add = first_split[i];
+        to_add.erase(remove(to_add.begin(), to_add.end(), '}'), to_add.end());
+        new_text += to_add;
+      }
+    }
+  }
+  else
+  {
+    new_text = text;
+    new_text.erase(remove(new_text.begin(), new_text.end(), '}'), 
+                   new_text.end());
+  }
+
+  return new_text;
+}
 
 /*
  * Description: Sets all the alpha ratings for applicable painted frames and
@@ -536,7 +597,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     frame_bottom.setTexture(texture);
 
     /* Determine the length of the viewing area and split text lines */
-    string txt_line = conversation_info->text;
+    string txt_line = replaceThingReferences(conversation_info->text);
     if(font_normal != NULL)
     {
       if(conversation_info->next.size() > 1)

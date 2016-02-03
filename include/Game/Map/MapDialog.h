@@ -163,6 +163,7 @@ private:
   const static uint8_t kTEXT_OPTIONS; /* The max number of options displayed */
   const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
   const static float kTEXT_SHIFT; /* The speed at which the text shifts up */
+  const static string kTHING_COLOR; /* Hex color of thing reference in text */
 
  /*============================================================================
  * PRIVATE FUNCTIONS
@@ -194,6 +195,9 @@ private:
   /* Render the options. Deletes previous options, if they exist */
   void renderOptions(SDL_Renderer* renderer,
               vector<vector<vector<pair<string, TextProperty>>>> options = {});
+
+  /* Takes the text and replaces {ID} references with name */
+  string replaceThingReferences(string text);
 
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
