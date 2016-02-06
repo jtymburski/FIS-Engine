@@ -111,10 +111,6 @@ public:
   void restorePartyVita();
   void restorePartyQtdr();
 
-  /* Returns all the persons in the party except a given user */
-  // std::vector<Person *> findMembersExcept(Person *const member,
-  //                                         const bool &only_living = false);
-
   /* Checks if a given person is in the party */
   bool isInParty(Person *const check_person);
 
@@ -135,12 +131,6 @@ public:
   /* Attempts to remove a member of the party by a given string name */
   bool removeMember(const std::string &name);
 
-  /* Calculates and returns the average speed of the Party */
-  // int32_t getAverageSpeed();
-
-  /* Returns a vector of indexes of all KO'd party members */
-  // std::vector<uint32_t> getDeadMembers();
-
   /* Evaluates and returns a given PartyState flag */
   bool getFlag(const PartyState &test_flag);
 
@@ -149,12 +139,6 @@ public:
 
   /* Returns the pointer to the current inventory of the Party */
   Inventory *getInventory();
-
-  /* Returns a vector of the indexes of all non-KO'd party members */
-  // std::vector<uint32_t> getLivingMembers();
-
-  /* Returns a vector of pointers to the all living party members */
-  // std::vector<Person *> getLivingMemberPtrs();
 
   /* Returns the current maximum size of the party */
   uint32_t getMaxSize();
@@ -176,9 +160,6 @@ public:
 
   /* Return the size of the party */
   uint32_t getSize();
-
-  //  Calculates and returns the total speed of the Party
-  // int64_t getTotalSpeed();
 
   /* Assigns a given PartyState flag a given value */
   void setFlag(const PartyState &flag, const bool &set_value = true);

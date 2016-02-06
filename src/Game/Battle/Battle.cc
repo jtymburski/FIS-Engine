@@ -19,26 +19,9 @@
  * CONSTANTS - Battle Operations
  *============================================================================*/
 
-/* Maximum Ailments (Total)
- * Maximum Each Ailments (Per Person)
- *
- * Base Run Chance (in %)
- * User Run Modifier (Modify user value per point of momentum)
- * Ally Run Modifier (Modify user value per point of momentum)
- * Enemy Run Modifier (Modify user value per point of momentum)
- * Run PC Per Poitn (% to alter run chance by per point of momentum)
- *
- * Defend Modifier (Base Damage Mod While Defending)
- * Guard Modifier (Base Damage Mod While Being Guarded)
- */
 const uint16_t Battle::kBIGBAR_CHOOSE{100};
 const size_t Battle::kMAX_AILMENTS = 50;
 const size_t Battle::kMAX_EACH_AILMENTS = 5;
-const float Battle::kBASE_RUN_CHANCE = 0.25;
-const float Battle::kUSER_RUN_MODIFIER = 2.00;
-const float Battle::kALLY_RUN_MODIFIER = 1.00;
-const float Battle::kENEMY_RUN_MODIFIER = 1.00;
-const float Battle::kRUN_PC_PER_POINT = 0.003;
 
 /* ------------ Battle Outcome Modifiers ---------------
  * kENEMY_RUN_EXP_PC - %EXP to maintain on pyrric victory (enemies run)
@@ -937,6 +920,15 @@ void Battle::updateEvent()
       actionStateSkillMiss();
     else if(event->action_state == ActionState::ACTION_START)
       actionStateActionStart();
+  }
+  else if(event->action_type == ActionType::RUN)
+  {
+    if(event->action_state == ActionState::BEGIN)
+      runStateBegin();
+    if(event->action_state == ActionState::RUN_FAIL)
+      runStateFail();
+    if(event->action_state == ActionState::RUN_SUCCEED)
+      runStateSucceed();
   }
   else if(event->action_type == ActionType::PASS)
   {
@@ -2413,7 +2405,30 @@ void Battle::renderUnderlays()
   }
 }
 
-// TODO: Comment
+void Battle::runStateBegin()
+{
+  /* Determine whether the run occurs as per chances in BattleEvent */
+  auto run_occurs = event->doesRunOccur();
+
+  /* Alter the event's run state depending on the outcome */
+  if(run_occurs)
+    event->action_state = ActionState::RUN_FAIL;
+  else
+    event->action_state = ActionState::RUN_SUCCEED;
+
+  addDelay(50);
+}
+
+void Battle::runStateFail()
+{
+
+}
+
+void Battle::runStateSucceed()
+{
+
+}
+
 bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
 {
   auto font_subheader = config->getFontTTF(FontName::BATTLE_SUBHEADER);

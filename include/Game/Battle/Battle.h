@@ -20,6 +20,7 @@
 * - Confusion with silence skills case
 * - Scroll bar
 * - Black frames
+* - RenderElement non-existent path seg faults
 *******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -145,11 +146,6 @@ private:
    *============================================================================*/
   static const size_t kMAX_AILMENTS;
   static const size_t kMAX_EACH_AILMENTS;
-  static const float kBASE_RUN_CHANCE;
-  static const float kUSER_RUN_MODIFIER;
-  static const float kALLY_RUN_MODIFIER;
-  static const float kENEMY_RUN_MODIFIER;
-  static const float kRUN_PC_PER_POINT;
   static const uint16_t kBIGBAR_CHOOSE;
 
   /* -------- Battle Outcome Constants (See Implementation) ----------- */
@@ -474,6 +470,11 @@ private:
 
   /* Render underlays */
   void renderUnderlays();
+
+  /* Run State Processing */
+  void runStateBegin();
+  void runStateFail();
+  void runStateSucceed();
 
   /* Basic setup for health drawing */
   bool setupHealthDraw(BattleActor* actor, float health_pc);

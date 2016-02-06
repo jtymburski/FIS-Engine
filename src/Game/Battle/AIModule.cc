@@ -35,7 +35,7 @@ const float AIModule::kGAI_VARIANCE{0.05};
 const float AIModule::kGAI_BASE_GUARD_FACTOR{0.05};
 const float AIModule::kGAI_BASE_IMPLODE_FACTOR{0.95};
 const float AIModule::kGAI_BASE_DEFEND_FACTOR{0.10};
-const float AIModule::kGAI_BASE_RUN_FACTOR{0.001};
+const float AIModule::kGAI_BASE_RUN_FACTOR{0.000};
 const float AIModule::kGAI_BASE_PASS_FACTOR{0.00};
 
 /* Random AI Offensive Factor

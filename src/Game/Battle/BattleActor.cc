@@ -810,10 +810,14 @@ std::vector<ActionType> BattleActor::getValidActionTypes()
   std::vector<ActionType> valid_types;
 
   valid_types.push_back(ActionType::SKILL);
+
+  //TODO: ITM_ENABLED flag
   valid_types.push_back(ActionType::ITEM);
 
   if(getFlag(ActorState::PAS_ENABLED))
     valid_types.push_back(ActionType::PASS);
+  //if(getFlag(ActorState::RUN_ENABLED))
+  //  valid_types.push_back(ActionType::RUN);
 
   // TODO: Other action types [10-04-15]
 

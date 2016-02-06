@@ -61,6 +61,9 @@
  * Minimum Damage (Possible)
  * Maximum Damage (Possible)
  */
+const float BattleEvent::kRUN_BASE_CHANCE   = 25.0;
+const float BattleEvent::kRUN_LIMB_MODIFIER = 0.05;
+const float BattleEvent::kRUN_MMNT_MODIFIER = 0.05;
 
 const float BattleEvent::kOFF_PHYS_MODIFIER = 1.00;
 const float BattleEvent::kDEF_PHYS_MODIFIER = 1.00;
@@ -487,6 +490,46 @@ bool BattleEvent::doesActionCrit(BattleActor* curr_target)
   return false;
 }
 
+bool BattleEvent::doesRunOccur()
+{
+  bool run_occurs = canRunOccur();
+
+  if(run_occurs)
+  {
+    float run_chance = kRUN_BASE_CHANCE;
+
+    auto ally_mmnt = actor->getStats().getValue(Attribute::MMNT);
+    auto ally_limb = actor->getStats().getValue(Attribute::LIMB);
+
+    auto ally_mmnt_val = ally_mmnt * kRUN_MMNT_MODIFIER;
+    auto ally_limb_val = ally_limb * kRUN_LIMB_MODIFIER;
+
+    auto foe_mmnt = 0;
+    auto foe_limb = 0;
+
+    for(auto& enemy : actor_targets)
+    {
+      if(enemy)
+      {
+        foe_mmnt += enemy->getStats().getValue(Attribute::MMNT);
+        foe_limb += enemy->getStats().getValue(Attribute::LIMB);
+      }
+    }
+
+    auto foe_mmnt_val = foe_mmnt * kRUN_MMNT_MODIFIER;
+    auto foe_limb_val = foe_limb * kRUN_LIMB_MODIFIER;
+
+    auto diff = (ally_mmnt_val + ally_limb_val) - (foe_mmnt_val + foe_limb_val);
+
+    auto chance = static_cast<int32_t>(run_chance + diff * 100);
+
+    if(chance > 0)
+      return Helpers::chanceHappens(chance, 10000);
+  }
+
+  return run_occurs;
+}
+
 // Does the skill hit the given target vectors or entirely miss?
 SkillHitStatus BattleEvent::doesSkillHit()
 {
@@ -752,6 +795,26 @@ InflictionStatus BattleEvent::canInflictTarget(BattleActor* curr_target,
   return InflictionStatus::FIZZLE;
 }
 
+bool BattleEvent::canRunOccur()
+{
+  bool can_run_occur = true;
+
+  if(actor)
+  {
+    for(const auto& enemy : actor_targets)
+    {
+      if(enemy)
+      {
+        can_run_occur &= !enemy->getBasePerson()->getPFlag(PState::BOSS);
+        can_run_occur &= !enemy->getBasePerson()->getPFlag(PState::FINAL);
+        can_run_occur &= !enemy->getBasePerson()->getPFlag(PState::MINI_BOSS);
+      }
+    }
+  }
+
+  return can_run_occur;
+}
+
 bool BattleEvent::doesPrimMatch(Skill* skill)
 {
   if(actor && actor->getBasePerson() && skill)
@@ -833,7 +896,7 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
     int32_t amount = 0;
     int32_t variance = 0;
 
-    //TODO: Other attributes
+    // TODO: Other attributes
     int32_t health = curr_target->getStats().getValue(Attribute::VITA);
     int32_t max_health = curr_target->getStats().getValue(Attribute::MVIT);
 
@@ -920,15 +983,15 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
 
   base_damage = 0.75 * (attack_power * (1 - defense_modifier));
 
-// #ifdef UDEBUG
-//   std::cout << "=========== Damage Calculations ============" << std::endl;
-//   std::cout << "Base User Pow: " << base_user_pow << std::endl;
-//   std::cout << "Base User Def: " << base_targ_def << std::endl;
-//   std::cout << "Attack Mod: " << attack_modifier << std::endl;
-//   std::cout << "Attack Pow: " << action_power << std::endl;
-//   std::cout << "Defens Mod: " << defense_modifier << std::endl;
-//   std::cout << "Bas Damage: " << base_damage << std::endl;
-// #endif
+  // #ifdef UDEBUG
+  //   std::cout << "=========== Damage Calculations ============" << std::endl;
+  //   std::cout << "Base User Pow: " << base_user_pow << std::endl;
+  //   std::cout << "Base User Def: " << base_targ_def << std::endl;
+  //   std::cout << "Attack Mod: " << attack_modifier << std::endl;
+  //   std::cout << "Attack Pow: " << action_power << std::endl;
+  //   std::cout << "Defens Mod: " << defense_modifier << std::endl;
+  //   std::cout << "Bas Damage: " << base_damage << std::endl;
+  // #endif
 
   // TODO[11-03-15] Other guarding state factors
   if(curr_target->getGuardingState() == GuardingState::DEFENDING)
