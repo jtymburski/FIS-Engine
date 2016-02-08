@@ -39,18 +39,21 @@
 class Timer
 {
 public:
-    Timer() : beg_(clock_::now()) {};
-    void reset() { beg_ = clock_::now(); }
-    double elapsed() const {
-        return std::chrono::duration_cast<second_>
-            (clock_::now() - beg_).count(); }
+  Timer() : beg_(clock_::now()){};
+  void reset()
+  {
+    beg_ = clock_::now();
+  }
+  double elapsed() const
+  {
+    return std::chrono::duration_cast<second_>(clock_::now() - beg_).count();
+  }
 
 private:
-    typedef std::chrono::high_resolution_clock clock_;
-    typedef std::chrono::duration<double, std::ratio<1> > second_;
-    std::chrono::time_point<clock_> beg_;
+  typedef std::chrono::high_resolution_clock clock_;
+  typedef std::chrono::duration<double, std::ratio<1>> second_;
+  std::chrono::time_point<clock_> beg_;
 };
-
 
 /* Coordinate with ints */
 struct Coordinate
@@ -110,9 +113,9 @@ public:
  *============================================================================*/
 #include "Helpers.tcc" /* Template Implementation */
 
-/*=============================================================================
- * RANDOM GENERATOR FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * RANDOM GENERATOR FUNCTIONS
+   *============================================================================*/
 private:
   /* Mersenne Twister Engines */
   static const uint32_t seed_original;
@@ -150,9 +153,9 @@ public:
   /* Rolls an X-Sided die S times */
   static int rollXS(const int& x_sides, const int& s_times);
 
-/*=============================================================================
- * GRAMMAR FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * GRAMMAR FUNCTIONS
+   *============================================================================*/
 public:
   /* Decides between "a" or "an" */
   static std::string a_An(const std::string& noun);
@@ -241,9 +244,9 @@ public:
   /* Renders the string equivalent of a VictoryState enum */
   static std::string victoryStateToStr(VictoryState victory_state);
 
-/*=============================================================================
- * PLAYER / BATTLE HELPER FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PLAYER / BATTLE HELPER FUNCTIONS
+   *============================================================================*/
 public:
   /* Returns the pair of off/def attributes corresponding to an element */
   static std::pair<Attribute, Attribute> elementToStats(const Element& element);
@@ -254,9 +257,9 @@ public:
   /* Returns the elemental weakness to a given element */
   static Element getWeakness(const Element& element);
 
-/*=============================================================================
- * GENERAL HELPER FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * GENERAL HELPER FUNCTIONS
+   *============================================================================*/
 public:
   /* Builds an exponentially growing table from min to max with iter
    * iterations */
@@ -314,10 +317,14 @@ public:
   static BattleScene updateScene(BattleScene scene, XmlData data,
                                  int file_index);
 
-/*=============================================================================
- * GRAPHICAL HELPER FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * GRAPHICAL HELPER FUNCTIONS
+   *============================================================================*/
 public:
+  /* Calculate points needing to be rendered between two coordinates */
+  static std::vector<Coordinate> bresenhamPoints(Coordinate begin,
+                                                 Coordinate end);
+
   /* Color getting functions for various alpha states */
   static uint8_t calcColorRed(SDL_Color color, uint8_t alpha);
   static uint8_t calcColorGreen(SDL_Color color, uint8_t alpha);

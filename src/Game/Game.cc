@@ -96,7 +96,7 @@ Action* Game::addAction(const std::string& raw)
 }
 
 /* Add functions for game objects */
-BattleScene* Game::addBattleScene(const int32_t &id)
+BattleScene* Game::addBattleScene(const int32_t& id)
 {
   BattleScene scene = Helpers::createBlankScene();
   scene.id = id;
@@ -393,10 +393,9 @@ bool Game::eventStartBattle(int person_id, int source_id)
         /* Midlays */
         for(uint16_t i = 0; i < scene->midlays.size(); i++)
           if(!scene->midlays[i].path.empty())
-            battle_ctrl->createMidlay(base_path + scene->midlays[i].path,
-                                      scene->midlays[i].anim_time,
-                                      scene->midlays[i].velocity_x,
-                                      scene->midlays[i].velocity_y);
+            battle_ctrl->createMidlay(
+                base_path + scene->midlays[i].path, scene->midlays[i].anim_time,
+                scene->midlays[i].velocity_x, scene->midlays[i].velocity_y);
         /* Overlays */
         for(uint16_t i = 0; i < scene->overlays.size(); i++)
           if(!scene->overlays[i].path.empty())
@@ -1237,7 +1236,7 @@ Action* Game::getAction(const int32_t& index, const bool& by_id)
 }
 
 /* Returns a pointer to a battle scene by index or by ID */
-BattleScene* Game::getBattleScene(const int32_t &index, const bool &by_id)
+BattleScene* Game::getBattleScene(const int32_t& index, const bool& by_id)
 {
   if(by_id)
   {
@@ -1553,8 +1552,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       {
         auto new_level = player_person->getLevel() + 1;
         player_person->loseExp(player_person->getTotalExp());
-        player_person->addExp(
-            player_person->getExpAt(new_level));
+        player_person->addExp(player_person->getExpAt(new_level));
         std::cout << "[DEBUG] Setting player level to: "
                   << player_person->getLevel() << std::endl;
       }
@@ -1811,7 +1809,7 @@ bool Game::update(int32_t cycle_time)
 
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
-  //event_handler.getKeyHandler().print(false, true);
+  // event_handler.getKeyHandler().print(false, true);
 
   /* Mode next handling */
   updateMode(cycle_time);

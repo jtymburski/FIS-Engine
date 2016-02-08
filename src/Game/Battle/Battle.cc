@@ -2026,6 +2026,25 @@ bool Battle::render()
 
     if(victory_screen)
       victory_screen->render();
+
+    //TODO: Testing - remove
+    Frame::renderHexagon({100, 100}, 99, renderer);
+
+    Frame::renderHexagon({300, 100}, 200, renderer);
+
+    Frame::renderHexagon({200, 200}, 50, renderer);
+
+    Frame::renderHexagon({850, 300}, 19, renderer);
+
+    SDL_SetRenderDrawColor(renderer, 125, 0, 0, 125);
+
+    Frame::renderTrapezoidNormalTop({125, 125}, 75, renderer);
+    Frame::renderTrapezoidNormalBottom({125, 200}, 75, renderer);
+
+    SDL_SetRenderDrawColor(renderer, 0, 125, 0, 125);
+
+    Frame::renderTrapezoid({425, 225}, 115, 20, 100, renderer);
+    Frame::renderTrapezoid({575, 225}, 115, 100, 20, renderer);
   }
 
   return success;
@@ -2421,12 +2440,10 @@ void Battle::runStateBegin()
 
 void Battle::runStateFail()
 {
-
 }
 
 void Battle::runStateSucceed()
 {
-
 }
 
 bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
@@ -2813,6 +2830,14 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 
 bool Battle::startBattle(Party* friends, Party* foes)
 {
+
+  Coordinate a(0, 0);
+  Coordinate b(5, 3);
+  auto points = Helpers::bresenhamPoints(a, b);
+
+  for(auto& point : points)
+    std::cout << point.x << ", " << point.y << std::endl;
+
   /* Assert  all essentials are not nullptr. We want Battle to fail */
   assert(battle_display_data);
   assert(config);

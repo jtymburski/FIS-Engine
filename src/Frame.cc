@@ -48,7 +48,8 @@ Frame::Frame()
  *         Frame* next - pointer to next frame, default to NULL
  */
 Frame::Frame(std::string path, SDL_Renderer* renderer, uint16_t angle,
-             Frame* previous, Frame* next) : Frame()
+             Frame* previous, Frame* next)
+    : Frame()
 {
   setTexture(path, renderer, angle);
   setPrevious(previous);
@@ -68,7 +69,8 @@ Frame::Frame(std::string path, SDL_Renderer* renderer, uint16_t angle,
  */
 Frame::Frame(std::string path, std::vector<std::string> adjustments,
              SDL_Renderer* renderer, uint16_t angle, Frame* previous,
-             Frame* next) : Frame()
+             Frame* next)
+    : Frame()
 {
   setTexture(path, renderer, angle);
   execImageAdjustments(adjustments);
@@ -145,10 +147,10 @@ void Frame::flipHorizontal(bool flip)
   /* Enables / Disables the horizontal flip */
   if(flip)
     this->flip =
-               static_cast<SDL_RendererFlip>(this->flip |  SDL_FLIP_HORIZONTAL);
+        static_cast<SDL_RendererFlip>(this->flip | SDL_FLIP_HORIZONTAL);
   else
     this->flip =
-               static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_HORIZONTAL);
+        static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_HORIZONTAL);
 }
 
 /*
@@ -163,8 +165,7 @@ void Frame::flipVertical(bool flip)
   if(flip)
     this->flip = static_cast<SDL_RendererFlip>(this->flip | SDL_FLIP_VERTICAL);
   else
-    this->flip =
-                 static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_VERTICAL);
+    this->flip = static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_VERTICAL);
 }
 
 /*
@@ -320,8 +321,8 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
       rect.w = w;
 
     /* Render and return status */
-    return (SDL_RenderCopyEx(renderer, getTextureActive(), NULL,
-                             &rect, 0, NULL, flip) == 0);
+    return (SDL_RenderCopyEx(renderer, getTextureActive(), NULL, &rect, 0, NULL,
+                             flip) == 0);
   }
 
   return false;
@@ -342,7 +343,7 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
  * Output: bool - status if the render occurred
  */
 bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
-                                                              int w, int h)
+                       int w, int h)
 {
   if(isTextureSet() && isTextureSet(true) && renderer != NULL)
   {
@@ -426,7 +427,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
 {
   bool success = true;
 
-	/* Attempt to load the image */
+  /* Attempt to load the image */
   SDL_Surface* loaded_surface = IMG_Load(path.c_str());
 
   /* If successful, unset previous and set the new texture */
@@ -440,7 +441,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
        loaded_surface->format->BytesPerPixel == 4)
     {
       uint32_t* pixels = static_cast<uint32_t*>(loaded_surface->pixels);
-      std::vector< std::vector<uint32_t> > pixels_original;
+      std::vector<std::vector<uint32_t>> pixels_original;
 
       /* Make a copy of the original pixels */
       for(int i = 0; i < loaded_surface->h; i++)
@@ -448,7 +449,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
         std::vector<uint32_t> pixels_row;
 
         for(int j = 0; j < loaded_surface->w; j++)
-          pixels_row.push_back(pixels[i*loaded_surface->w + j]);
+          pixels_row.push_back(pixels[i * loaded_surface->w + j]);
         pixels_original.push_back(pixels_row);
       }
 
@@ -461,12 +462,12 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
 
           /* Do the shift, based on which angle to use */
           if(angle == 90)
-            index = j*loaded_surface->w + (loaded_surface->h - i - 1);
+            index = j * loaded_surface->w + (loaded_surface->h - i - 1);
           else if(angle == 180)
-            index = (loaded_surface->w - i - 1)*loaded_surface->w +
+            index = (loaded_surface->w - i - 1) * loaded_surface->w +
                     (loaded_surface->h - j - 1);
           else if(angle == 270)
-            index = (loaded_surface->w - j - 1)*loaded_surface->w + i;
+            index = (loaded_surface->w - j - 1) * loaded_surface->w + i;
 
           pixels[index] = pixels_original[i][j];
         }
@@ -481,8 +482,8 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
     /* Create the greyscale texture, if applicable */
     if(enable_greyscale && loaded_surface->format->BytesPerPixel == 4)
     {
-      SDL_Surface* grey_surface = SDL_ConvertSurface(
-                                     loaded_surface, loaded_surface->format, 0);
+      SDL_Surface* grey_surface =
+          SDL_ConvertSurface(loaded_surface, loaded_surface->format, 0);
 
       /* Change all the pixels to greyscale */
       uint32_t* grey_pixels = static_cast<uint32_t*>(grey_surface->pixels);
@@ -492,12 +493,12 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
       {
         for(int j = 0; j < grey_surface->w; j++)
         {
-          uint32_t* pixel = &grey_pixels[i*loaded_surface->w + j];
+          uint32_t* pixel = &grey_pixels[i * loaded_surface->w + j];
 
           /* Get the color data */
           SDL_Color color;
           SDL_GetRGBA(*pixel, grey_surface->format, &color.r, &color.g,
-                                                    &color.b, &color.a);
+                      &color.b, &color.a);
 
           /* Modify the color data -> to greyscale */
           color.r = 0.21 * color.r + 0.71 * color.g + 0.07 * color.b;
@@ -505,8 +506,8 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
           color.b = color.r;
 
           /* Insert the new color data */
-          *pixel = SDL_MapRGBA(grey_surface->format, color.r, color.g,
-                                                     color.b, color.a);
+          *pixel = SDL_MapRGBA(grey_surface->format, color.r, color.g, color.b,
+                               color.a);
         }
       }
 
@@ -527,7 +528,8 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
     SDL_FreeSurface(loaded_surface);
     if(!no_warnings)
       std::cerr << "[WARNING] Renderer required to set texture in frame for \""
-                << path.c_str() << "\"" << std::endl;;
+                << path.c_str() << "\"" << std::endl;
+    ;
     success = false;
   }
   /* If the surface is unset, notify the terminal with the failed surface */
@@ -559,9 +561,8 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
  * Output: bool - the success of loading the texture
  */
 bool Frame::setTexture(std::string path, std::vector<std::string> adjustments,
-                                         SDL_Renderer* renderer, uint16_t angle,
-                                         bool no_warnings,
-                                         bool enable_greyscale)
+                       SDL_Renderer* renderer, uint16_t angle, bool no_warnings,
+                       bool enable_greyscale)
 {
   bool success = true;
 
@@ -667,8 +668,7 @@ bool Frame::useGreyScale(bool enable)
  *         SDL_Renderer* renderer - the rendering pointer
  * Output: none
  */
-void Frame::drawLine(int32_t x1, int32_t x2, int32_t y,
-                     SDL_Renderer* renderer)
+void Frame::drawLine(int32_t x1, int32_t x2, int32_t y, SDL_Renderer* renderer)
 {
   SDL_Rect rect;
   rect.x = x1;
@@ -690,8 +690,7 @@ void Frame::drawLine(int32_t x1, int32_t x2, int32_t y,
  *         SDL_Renderer* renderer - the rendering pointer
  * Output: none
  */
-void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x,
-                     SDL_Renderer* renderer)
+void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x, SDL_Renderer* renderer)
 {
   SDL_Rect rect;
   rect.y = y1;
@@ -908,8 +907,8 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
  *         SDL_Renderer* renderer - the rendering graphical engine
  * Output: bool - did the object render?
  */
-bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length,
-                      uint16_t height, float slope, SDL_Renderer* renderer)
+bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length, uint16_t height,
+                      float slope, SDL_Renderer* renderer)
 {
   /* Prechecks */
   if(renderer != NULL && length > 0 && height > 0)
@@ -1042,9 +1041,9 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
     SDL_RenderDrawPoint(renderer, x0, y0);
     if(radius > 0)
     {
-      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer); /* R */
-      Frame::drawLine(x0, x0 - radius, y0, renderer); /* L */
-      Frame::drawLineY(y0, y0 - radius, x0, renderer); /* T */
+      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer);  /* R */
+      Frame::drawLine(x0, x0 - radius, y0, renderer);          /* L */
+      Frame::drawLineY(y0, y0 - radius, x0, renderer);         /* T */
       Frame::drawLineY(y0 + 1, y0 + radius + 1, x0, renderer); /* B */
     }
 
@@ -1185,8 +1184,8 @@ bool Frame::renderRHTriangle(uint32_t x, uint32_t y, uint16_t height,
 {
   if(reverse)
   {
-    return Frame::renderTriangle(x, y, x, y + height - 1, x - height, y +
-                                 height - 1, renderer);
+    return Frame::renderTriangle(x, y, x, y + height - 1, x - height,
+                                 y + height - 1, renderer);
   }
   return renderTriangle(x, y, x, y + height - 1, x + height, y + height - 1,
                         renderer);
@@ -1207,9 +1206,9 @@ bool Frame::renderRHTriangle(uint32_t x, uint32_t y, uint16_t height,
  *         bool aliasing - should aliasing be used on the edges?
  * Output: bool - was the triangle rendered?
  */
-bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2,
-                           uint16_t y2, uint16_t x3, uint16_t y3,
-                           SDL_Renderer* renderer, bool aliasing)
+bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
+                           uint16_t x3, uint16_t y3, SDL_Renderer* renderer,
+                           bool aliasing)
 {
   /* Only attempt to paint the triangle if renderer is valid */
   if(renderer != NULL)
@@ -1290,4 +1289,199 @@ bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2,
     return success;
   }
   return false;
+}
+
+/*
+ * Description: Given a vector of points representing a line A, and a vector of
+ *              points of line A, iterate through each point and render a
+ *              horizontal line drawn between the points, for every index
+ *              that exists and that the Y-values match up.
+ *
+ * Inputs: std::vector<Coordinate> start - points representing the start line
+ *         std::vector<Coordinate> end - points representing the end line
+ *         SDL_Renderer* renderer - the rendering graphical engine
+ * Output: bool - true if rendering was successful
+ *
+ * Notes: The vectors must be arranged such that each Coordinate's Y-axis are
+ *        in the same order (ascending or descending).
+ */
+bool Frame::renderFillLineToLine(std::vector<Coordinate> start,
+                                 std::vector<Coordinate> end,
+                                 SDL_Renderer* renderer)
+{
+  if(start.size() == 0 || end.size() == 0)
+    return false;
+
+  for(size_t i = 0; i < start.size() && i < end.size(); i++)
+    if(start.at(i).y == end.at(i).y)
+      Frame::drawLine(start.at(i).x, end.at(i).x, end.at(i).y, renderer);
+
+  return true;
+}
+
+/*
+ * Description: Renders a Hexagon of size h x h given a starting top left
+ *              coordinate. This uses the normalized top and bottom trapezoid
+ *              functions to compile the hexagon. See the description of those
+ *              functions for rendering details.
+ *
+ * Inputs: Coordinate start - the starting X, Y coordinate
+ *         int32_t h - the height to make the hexagon
+ *         SDL_Renderer* renderer - pointer to the renderer
+ * Output: true if the trapezoid rendered
+ *
+ * Notes:
+ */
+bool Frame::renderHexagon(Coordinate start, int32_t h, SDL_Renderer* renderer)
+{
+  if(h < 2 || renderer == nullptr)
+    return false;
+
+  /* Hexagons must be even */
+  if(h % 2 != 0)
+    h -= 1;
+
+  /* Render the top portion of the heaxagon as a normalized top trapezoid */
+  renderTrapezoidNormalTop(start, h / 2, renderer);
+
+  /* Render the bottom portion of the hexagon as a norm. bottom trapezoid */
+  renderTrapezoidNormalBottom({start.x, start.y + (h / 2)}, h / 2, renderer);
+
+  return true;
+}
+
+/*
+ * Description: Renders a normalized trapezoid with the upper base smaller
+ *              than the bottom base (the "top" trapezoid"). This is achieved
+ *              by calculating the points along the lines AB and DC, compiling
+ *              them into a vector and then for each index of the points,
+ *              rendering a line between the points in each of the vector.
+ *
+ * Inputs: Coordinate start - the starting X, Y coordinate
+ *         int32_t h - the height to make the trapezoid
+ *         SDL_Renderer* renderer - pointer to the renderer
+ * Output: true if the trapezoid rendered
+ *
+ * Notes:
+ * (x0, y0)
+ *                               Coordinates of the Points:
+ *   .   B ___________C          A(x0, y0 + h)
+ *       /            \          B(x0 + tan30 * h, y0)
+ *  h   /              \         C(x0 + tan30 * h + tan45 * h, y0)
+ *     /                \        D(x0 + 2 * tan30 * h + tan45 * h, y0 + w)
+ *    /        w         \
+ *   A------------------- D
+ */
+bool Frame::renderTrapezoidNormalTop(Coordinate start, int32_t h,
+                                     SDL_Renderer* renderer)
+{
+  if(h == 0 || renderer == nullptr)
+    return false;
+
+  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
+  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+
+  Coordinate a{start.x, start.y + h};
+  Coordinate b{start.x + tan30_h, start.y};
+  Coordinate c{start.x + tan30_h + tan45_h, start.y};
+  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y + h};
+
+  auto left_points = Helpers::bresenhamPoints(a, b);
+  auto right_points = Helpers::bresenhamPoints(d, c);
+
+  renderFillLineToLine(left_points, right_points, renderer);
+
+  return true;
+}
+
+/*
+ * Description: Renders a normalized trapezoid with the upper base larger than
+ *              the bottom base (the "tbottom" trapezoid"). This is achieved
+ *              by calculating the points along the lines AB and DC, compiling
+ *              them into a vector and then for each index of the points,
+ *              rendering a line between the points in each of the vector.
+ *
+ * Inputs: Coordinate start - the starting X, Y coordinate
+ *         int32_t h - the height to make the trapezoid
+ *         SDL_Renderer* renderer - pointer to the renderer
+ * Output: true if the trapezoid rendered
+ *
+ * Notes:
+ * (x0, y0)                        Coordinates of the points:
+ *      A------------------ D      A(x0, y0)
+ *       \                 /       B(x0 + tan30 * h, y0 + h)
+ *        \               /        C(x0 + tan30 * h + tan45 * h, y0 + h)
+ *         \             /         D(x0 + 2 * tan30 * h + tan45 * h, y0 + h)
+ *          B___________C
+ */
+bool Frame::renderTrapezoidNormalBottom(Coordinate start, int32_t h,
+                                        SDL_Renderer* renderer)
+{
+  if(h == 0 || renderer == nullptr)
+    return false;
+
+  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
+  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+
+  Coordinate a{start.x, start.y};
+  Coordinate b{start.x + tan30_h, start.y + h};
+  Coordinate c{start.x + tan30_h + tan45_h, start.y + h};
+  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y};
+
+  auto left_points = Helpers::bresenhamPoints(a, b);
+  auto right_points = Helpers::bresenhamPoints(d, c);
+
+  renderFillLineToLine(left_points, right_points, renderer);
+
+  return true;
+}
+
+/*
+ * Description: Renders any type of trapezoid with a starting coordinate, the
+ *              length of the top and bottom sides and the height. It uses the
+ *              Bresenham algorithm to determine the points along the AB and
+ *              CD lines then uses the LineToLine function to render horizontal
+ *              lines between the two lines of points.
+ *
+ * Inputs: Coordinate start - the starting X, Y coordinate
+ *         int32_t h - the height to make the trapezoid
+ *         int32_t b1 - the top width of the trapezoid
+ *         int32_t b2 - the bottom width of the trapezoid
+ *         SDL_Renderer* - pointer to the rendering graphical engine
+ * Output: true if the trapezoid rendered
+ *
+ * Notes:
+ *  (x0, y0)     b1
+ *      A------------------ D
+ *       \                 /
+ *     h  \               /
+ *         \             /
+ *          B___________C
+ *               b2
+ */
+bool Frame::renderTrapezoid(Coordinate start, int32_t h, int32_t b1, int32_t b2,
+                            SDL_Renderer* renderer)
+{
+  if(h == 0 || b1 == 0 || b2 == 0 || renderer == nullptr || b1 == b2)
+    return false;
+
+  Coordinate a{start.x, start.y};
+  Coordinate b = Coordinate{start.x + (b1 - b2) / 2, start.y + h};
+  Coordinate c = Coordinate{start.x + b2 + (b1 - b2) / 2, start.y + h};
+  Coordinate d = Coordinate{start.x + b1, start.y};
+
+  if(b1 < b2)
+  {
+    a = Coordinate{start.x, start.y + h};
+    b = Coordinate{start.x + (b2 - b1) / 2, start.y};
+    c = Coordinate{start.x + b1 + (b2 - b1) / 2, start.y};
+    d = Coordinate{start.x + b2, start.y + h};
+  }
+
+  auto left_points = Helpers::bresenhamPoints(a, b);
+  auto right_points = Helpers::bresenhamPoints(d, c);
+
+  renderFillLineToLine(left_points, right_points, renderer);
+
+  return true;
 }

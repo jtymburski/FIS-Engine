@@ -1917,7 +1917,8 @@ uint32_t Helpers::hexToBaseTen(std::string base_sixteen)
     value = std::stoul(base_sixteen, nullptr, 16);
   }
   catch(std::exception)
-  {}
+  {
+  }
 
   return value;
 }
@@ -2212,6 +2213,69 @@ BattleScene Helpers::updateScene(BattleScene scene, XmlData data,
 /*=============================================================================
  * GRAPHICAL HELPER FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Given a starting and ending coordinate, use Bresenham's
+ *              algorithm to determine which pixels should be rendered between
+ *              the two coordinates. This uses the slope of the line and an
+ *              updating error margin (floating math version).
+ *
+ * Inputs: Coordinate start - starting point of the line (X, Y)
+ *         Coordinate end - ending point of the line (X, Y)
+ * Output: std::vector<Coordinate> - coordinates of line to render
+ */
+std::vector<Coordinate> Helpers::bresenhamPoints(Coordinate begin,
+                                                 Coordinate end)
+{
+  /* The determined Bresenham points vector */
+  std::vector<Coordinate> bresenham_points;
+
+  /* Get the actual starting and ending coordinates */
+  auto x1 = begin.x;
+  auto x2 = end.x;
+  auto y1 = begin.y;
+  auto y2 = end.y;
+
+  const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
+
+  if(steep)
+  {
+    std::swap(x1, y1);
+    std::swap(x2, y2);
+  }
+
+  if(x1 > x2)
+  {
+    std::swap(x1, x2);
+    std::swap(y1, y2);
+  }
+
+  const float dx = x2 - x1;
+  const float dy = fabs(y2 - y1);
+
+  float error = dx / 2.0f;
+  const int ystep = (y1 < y2) ? 1 : -1;
+  int y = (int)y1;
+
+  const int max_x = (int)x2;
+
+  for(int x = (int)x1; x < max_x; x++)
+  {
+    if(steep)
+      bresenham_points.push_back({y, x});
+    else
+      bresenham_points.push_back({x, y});
+
+    error -= dy;
+    if(error < 0)
+    {
+      y += ystep;
+      error += dx;
+    }
+  }
+
+  return bresenham_points;
+}
 
 uint8_t Helpers::calcColorRed(SDL_Color color, uint8_t alpha)
 {

@@ -141,6 +141,9 @@ private:
   /* The victory screen */
   Victory* victory_screen;
 
+  //remove
+  Frame* test_arc;
+
   /*=============================================================================
    * CONSTANTS - Battle Operations
    *============================================================================*/

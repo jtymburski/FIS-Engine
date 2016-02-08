@@ -16,6 +16,9 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 #include <vector>
+#include <cmath>
+
+#include "Helpers.h"
 
 /* Class for frame handling */
 class Frame
@@ -65,9 +68,9 @@ private:
   /*------------------- Constants -----------------------*/
   const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Executes the necessary image adjustments, as per the file data handlers */
   bool execImageAdjustment(std::string adjustment);
@@ -106,10 +109,10 @@ public:
   bool isTextureSet(bool grey_scale = false);
 
   /* Render the texture to the given renderer with the given parameters */
-  bool render(SDL_Renderer* renderer, int x = 0, int y = 0,
-                                      int w = 0, int h = 0);
+  bool render(SDL_Renderer* renderer, int x = 0, int y = 0, int w = 0,
+              int h = 0);
   bool renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x = 0, int y = 0,
-                                                         int w = 0, int h = 0);
+                  int w = 0, int h = 0);
 
   /* Sets the alpha rating of the texture rendering */
   void setAlpha(uint8_t alpha = 255);
@@ -121,9 +124,8 @@ public:
   bool setPrevious(Frame* previous);
 
   /* Sets the frame texture */
-  bool setTexture(std::string path, SDL_Renderer* renderer,
-                  uint16_t angle = 0, bool no_warnings = false,
-                  bool enable_greyscale = true);
+  bool setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle = 0,
+                  bool no_warnings = false, bool enable_greyscale = true);
   bool setTexture(std::string path, std::vector<std::string> adjustments,
                   SDL_Renderer* renderer, uint16_t angle = 0,
                   bool no_warnings = false, bool enable_greyscale = true);
@@ -135,9 +137,9 @@ public:
   /* Sets if the greyscale texture is active and returned on getTexture() */
   bool useGreyScale(bool enable);
 
-/*=============================================================================
- * PRIVATE STATIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PRIVATE STATIC FUNCTIONS
+   *============================================================================*/
 private:
   /* Draws a line. This is needed because of SDL draw line glitch */
   static void drawLine(int32_t x1, int32_t x2, int32_t y,
@@ -157,9 +159,9 @@ private:
                                     SDL_Renderer* renderer, bool aliasing,
                                     bool flat_side = false);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PUBLIC STATIC FUNCTIONS
+   *============================================================================*/
 public:
   /* Creates a bar, given the parameters and a renderer */
   static bool renderBar(uint16_t x, uint16_t y, uint16_t length,
@@ -185,6 +187,27 @@ public:
   static bool renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
                              uint16_t x3, uint16_t y3, SDL_Renderer* renderer,
                              bool aliasing = false);
+
+  /* Fills hoziontal lines between two vectors of lines */
+  static bool renderFillLineToLine(std::vector<Coordinate> line_start,
+                                   std::vector<Coordinate> line_end,
+                                   SDL_Renderer* renderer);
+
+  /* Renders a Hexagon with origin point and a size h x eh */
+  static bool renderHexagon(Coordinate start, int32_t h,
+                            SDL_Renderer* renderer);
+
+  /* Render the top part of a normalized trapezoid (half a hexagon) */
+  static bool renderTrapezoidNormalTop(Coordinate start, int32_t h,
+                                       SDL_Renderer* renderer);
+
+  /* Render the bottom part of a normalzied trapezoid */
+  static bool renderTrapezoidNormalBottom(Coordinate start, int32_t h,
+                                          SDL_Renderer* renderer);
+
+  /*  Renders any trapezoid */
+  static bool renderTrapezoid(Coordinate start, int32_t h, int32_t b1,
+                              int32_t b2, SDL_Renderer* renderer);
 };
 
 #endif // FRAME_H
