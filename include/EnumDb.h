@@ -459,6 +459,38 @@ enum class ItemTier : std::uint8_t
   NONE = 6
 };
 
+enum class LayType
+{
+  OVERLAY = 1,
+  MIDLAY = 2,
+  UNDERLAY = 3,
+  NONE = 0
+};
+
+/*  ----------------------
+*   |      |      |      |
+*   |  NW  |  N   |  NE  |
+*   |______|______|______|
+*   |      |      |      |
+*   |  W   |  C   |  E   |
+*   |______|______|______|
+*   |      |      |      |
+*   |  SW  |  S   |  SE  |
+*   |______|______|______|
+*/
+enum class LayIndex
+{
+  NORTH_WEST = 1,
+  NORTH = 2,
+  NORTH_EAST = 3,
+  WEST = 4,
+  CENTRE = 5,
+  EAST = 6,
+  SOUTH_WEST = 7,
+  SOUTH = 8,
+  SOUTH_EAST = 9
+};
+
 /*
  * Description:
  */

@@ -158,6 +158,7 @@ Battle::~Battle()
   clearElements();
   clearEnemyBackdrop();
   clearEvent();
+  clearLays();
 
   if(battle_buffer)
     delete battle_buffer;
@@ -1884,6 +1885,20 @@ void Battle::clearEnemyBackdrop()
   frame_enemy_backdrop = nullptr;
 }
 
+void Battle::clearLays()
+{
+  for(auto& lay : lays)
+  {
+    if(lay)
+    {
+      delete lay;
+      lay = nullptr;
+    }
+  }
+
+  lays.clear();
+}
+
 void Battle::clearElementsTimedOut()
 {
   render_elements.erase(
@@ -1928,55 +1943,12 @@ void Battle::playInflictionSound(Infliction type)
   }
 }
 
-void Battle::createLay(std::string path, int32_t anim_time, float velocity_x,
-                       float velocity_y, RenderType lay_type)
+void Battle::createLay(std::string path, int32_t anim_time, Floatinate velocity,
+                       LayType lay_type)
 {
-  velocity_x = 0.0;
-  velocity_y = 0.0;
-
-  if(path != "" && config)
-  {
-    Box location;
-    location.point.x = 0;
-    location.point.y = 704;
-    location.width = config->getScreenWidth();
-    location.height = config->getScreenHeight();
-
-    Floatinate velocity(velocity_x, velocity_y);
-
-    auto element = new RenderElement(renderer, location, lay_type, velocity,
-                                     245, anim_time);
-    element->buildSpriteLay(path);
-
-    render_elements.push_back(element);
-
-    location.point.x = 1216;
-    location.point.y = 704;
-
-    element = new RenderElement(renderer, location, RenderType::MIDLAY,
-                                velocity, 245, anim_time);
-    element->buildSpriteLay(path);
-
-    render_elements.push_back(element);
-  }
-}
-
-void Battle::createMidlay(std::string path, int anim_time, float velocity_x,
-                          float velocity_y)
-{
-  createLay(path, anim_time, velocity_x, velocity_y, RenderType::MIDLAY);
-}
-
-void Battle::createOverlay(std::string path, int anim_time, float velocity_x,
-                           float velocity_y)
-{
-  createLay(path, anim_time, velocity_x, velocity_y, RenderType::OVERLAY);
-}
-
-void Battle::createUnderlay(std::string path, int anim_time, float velocity_x,
-                            float velocity_y)
-{
-  createLay(path, anim_time, velocity_x, velocity_y, RenderType::UNDERLAY);
+  std::cout << "Creating lay: " << path << std::endl;
+  std::cout << "Velocity: " << velocity.x << ", " << velocity.y << std::endl;
+  lays.push_back(new Lay(path, anim_time, velocity, lay_type, renderer, config));
 }
 
 // Other todos:
@@ -2026,25 +1998,6 @@ bool Battle::render()
 
     if(victory_screen)
       victory_screen->render();
-
-    //TODO: Testing - remove
-    Frame::renderHexagon({100, 100}, 99, renderer);
-
-    Frame::renderHexagon({300, 100}, 200, renderer);
-
-    Frame::renderHexagon({200, 200}, 50, renderer);
-
-    Frame::renderHexagon({850, 300}, 19, renderer);
-
-    SDL_SetRenderDrawColor(renderer, 125, 0, 0, 125);
-
-    Frame::renderTrapezoidNormalTop({125, 125}, 75, renderer);
-    Frame::renderTrapezoidNormalBottom({125, 200}, 75, renderer);
-
-    SDL_SetRenderDrawColor(renderer, 0, 125, 0, 125);
-
-    Frame::renderTrapezoid({425, 225}, 115, 20, 100, renderer);
-    Frame::renderTrapezoid({575, 225}, 115, 100, 20, renderer);
   }
 
   return success;
@@ -2343,17 +2296,9 @@ bool Battle::renderEnemiesInfo()
 /* Render midlays */
 void Battle::renderMidlays()
 {
-  for(auto& element : render_elements)
-  {
-    if(element && element->render_type == RenderType::MIDLAY &&
-       element->element_sprite)
-    {
-      auto point = element->location.point;
-      element->element_sprite->render(renderer,
-                                      point.x - config->getScreenWidth(),
-                                      point.y - config->getScreenHeight());
-    }
-  }
+  for(auto& lay : lays)
+    if(lay && lay->lay_type == LayType::MIDLAY)
+      lay->render();
 }
 
 bool Battle::renderMenu()
@@ -2395,33 +2340,17 @@ bool Battle::renderMenu()
 /* Render overlays */
 void Battle::renderOverlays()
 {
-  for(auto& element : render_elements)
-  {
-    if(element && element->render_type == RenderType::OVERLAY &&
-       element->element_sprite)
-    {
-      auto point = element->location.point;
-      element->element_sprite->render(renderer,
-                                      point.x - config->getScreenWidth(),
-                                      point.y - config->getScreenHeight());
-    }
-  }
+  for(auto& lay : lays)
+    if(lay && lay->lay_type == LayType::OVERLAY)
+      lay->render();
 }
 
 /* Render underlays */
 void Battle::renderUnderlays()
 {
-  for(auto& element : render_elements)
-  {
-    if(element && element->render_type == RenderType::UNDERLAY &&
-       element->element_sprite)
-    {
-      auto point = element->location.point;
-      element->element_sprite->render(renderer,
-                                      point.x - config->getScreenWidth(),
-                                      point.y - config->getScreenHeight());
-    }
-  }
+  for(auto& lay : lays)
+    if(lay && lay->lay_type == LayType::UNDERLAY)
+      lay->render();
 }
 
 void Battle::runStateBegin()
@@ -2621,6 +2550,11 @@ void Battle::updateRendering(int32_t cycle_time)
   for(auto& element : render_elements)
     if(element)
       element->update(cycle_time);
+
+  /* Update overlay / midlay / underlays */
+   for(auto& lay : lays)
+    if(lay)
+      lay->update(cycle_time);
 
   updateRenderSprites(cycle_time);
   updateBarOffset();
@@ -2830,14 +2764,6 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 
 bool Battle::startBattle(Party* friends, Party* foes)
 {
-
-  Coordinate a(0, 0);
-  Coordinate b(5, 3);
-  auto points = Helpers::bresenhamPoints(a, b);
-
-  for(auto& point : points)
-    std::cout << point.x << ", " << point.y << std::endl;
-
   /* Assert  all essentials are not nullptr. We want Battle to fail */
   assert(battle_display_data);
   assert(config);
@@ -2869,17 +2795,6 @@ bool Battle::startBattle(Party* friends, Party* foes)
       buildInfoEnemy(actor);
   }
 
-  /* `et the sprite for the Battle background */
-  // setBackground(bg_path);
-
-  // TODO: Temporary background building
-  // setBackground(bg_path + "sprites/Battle/Backdrop/battlebg06.png");
-
-  // Create an midlay
-  // auto path =
-  //    bg_path + "sprites/Map/EnviromentEffects/Overlays/smog_overlay.png";
-  // createMidlay(path, 0.10, 0.000);
-
   /* Construct the enemy backdrop */
   buildEnemyBackdrop();
 
@@ -2897,6 +2812,7 @@ void Battle::stopBattle()
   clearBackground();
   clearElements();
   clearEnemyBackdrop();
+  clearLays();
 
   if(battle_menu)
     battle_menu->clear();

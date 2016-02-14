@@ -384,31 +384,38 @@ bool Game::eventStartBattle(int person_id, int source_id)
         battle_ctrl->setMusicID(scene->music_id);
 
         /* Underlays */
-        for(uint16_t i = 0; i < scene->underlays.size(); i++)
-          if(!scene->underlays[i].path.empty())
-            battle_ctrl->createUnderlay(base_path + scene->underlays[i].path,
-                                        scene->underlays[i].anim_time,
-                                        scene->underlays[i].velocity_x,
-                                        scene->underlays[i].velocity_y);
+        for(const auto& lay : scene->underlays)
+        {
+          Floatinate velocity(lay.velocity_x, lay.velocity_y);
+
+          battle_ctrl->createLay(base_path + lay.path, lay.anim_time, velocity,
+                                 LayType::UNDERLAY);
+        }
+
         /* Midlays */
-        for(uint16_t i = 0; i < scene->midlays.size(); i++)
-          if(!scene->midlays[i].path.empty())
-            battle_ctrl->createMidlay(
-                base_path + scene->midlays[i].path, scene->midlays[i].anim_time,
-                scene->midlays[i].velocity_x, scene->midlays[i].velocity_y);
+        for(const auto& lay : scene->midlays)
+        {
+          Floatinate velocity(lay.velocity_x, lay.velocity_y);
+
+          battle_ctrl->createLay(base_path + lay.path, lay.anim_time, velocity,
+                                 LayType::MIDLAY);
+        }
+
         /* Overlays */
-        for(uint16_t i = 0; i < scene->overlays.size(); i++)
-          if(!scene->overlays[i].path.empty())
-            battle_ctrl->createOverlay(base_path + scene->overlays[i].path,
-                                       scene->overlays[i].anim_time,
-                                       scene->overlays[i].velocity_x,
-                                       scene->overlays[i].velocity_y);
+        for(const auto& lay : scene->overlays)
+        {
+          Floatinate velocity(lay.velocity_x, lay.velocity_y);
+
+          battle_ctrl->createLay(base_path + lay.path, lay.anim_time, velocity,
+                                 LayType::OVERLAY);
+        }
       }
 
       /* Build display data */
       if(!battle_display_data->isDataBuilt())
         battle_display_data->buildData();
 
+      std::cout << "Starting battle!" << std::endl;
       /* Start battle */
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
 

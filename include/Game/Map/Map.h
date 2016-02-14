@@ -345,9 +345,9 @@ public:
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 std::string base_path);
   void loadDataFinish(SDL_Renderer* renderer);
-  
+
   /* Modify thing properties based on passed in properties */
-  void modifyThing(MapThing* source, ThingBase type, int id, 
+  void modifyThing(MapThing* source, ThingBase type, int id,
                    ThingProperty props, ThingProperty bools,
                    int respawn_int, int speed_int, TrackingState track_enum,
                    int inactive_int);

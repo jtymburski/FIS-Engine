@@ -246,6 +246,8 @@ void Victory::renderCard(VictoryCard& card)
     auto sprite_width = std::floor(0.55 * (float)width);
     auto sprite_height = std::floor(0.65 * (float)height);
 
+    auto tile_size = std::floor(0.21 * (float)width);
+
     auto col2_x = x + std::floor(0.43 * (float)width);
     // auto col2_y = y + std::floor(0.05 * (float)height);
 
@@ -269,9 +271,9 @@ void Victory::renderCard(VictoryCard& card)
       if(base_person)
       {
         auto rank_str = "RANK :" + Helpers::rankToStr(base_person->getRank());
-        auto level_str = "Level " + std::to_string(base_person->getLevel());
+        // auto level_str = "Level " + std::to_string(base_person->getLevel());
         t_name.setText(renderer, base_person->getName(), color);
-        t_level.setText(renderer, level_str, color);
+        // t_level.setText(renderer, level_str, color);
         t_rank.setText(renderer, rank_str, color);
         t_next.setText(renderer, "NEXT", color);
 
@@ -302,8 +304,27 @@ void Victory::renderCard(VictoryCard& card)
 
         t_rank.render(renderer, col1_x - std::floor(0.03 * width), t_rank_y);
 
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        Frame::renderHexagon({static_cast<int32_t>(col2_x + 1), static_cast<int32_t>(col1_y + 1)}, tile_size, renderer);
+        SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
+
+        auto out_hex_x = col2_x  + 1;
+        auto out_hex_y = col1_y + 1;
+        auto out_hex_size = tile_size - 2;
+        auto border = 2;
+
+        Frame::renderHexagon({out_hex_x, out_hex_y}, out_hex_size, renderer);
+
+        auto inset = std::round(0.04 * (float)(width));
+        std::cout << "Inset: " << inset << std::endl;
+        auto in_hex_x = 5 + out_hex_x + inset / 2;
+        auto in_hex_y = out_hex_y + inset / 2;
+        auto in_hex_size = out_hex_size - inset;
+        Frame::renderHexagon({in_hex_x, in_hex_y}, in_hex_size, renderer);
+
         /* Render Column 2 */
-        t_exp_val.render(renderer, col2_x, col1_y);
+        auto t_exp_y = col1_y + tile_size;
+        t_exp_val.render(renderer, col2_x, t_exp_y);
 
         auto t_next_y =
             col1_y + t_exp_val.getHeight() + std::floor(0.01 * height);

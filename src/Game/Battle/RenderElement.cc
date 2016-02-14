@@ -166,37 +166,6 @@ bool RenderElement::buildSprite(std::string path, int32_t num_frames)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool RenderElement::buildSpriteLay(std::string path)
-{
-  if(renderer && path != "" && !element_sprite)
-  {
-    auto split = Helpers::split(path, '|');
-
-    if(split.size() == 3)
-    {
-      auto num_frames = std::stoi(split.at(1));
-      element_sprite =
-          new Sprite(split.at(0), num_frames, split.at(2), renderer);
-      if(this->time_left != 0)
-        element_sprite->setAnimationTime(this->time_left);
-
-      element_sprite->setNonUnique(true, num_frames);
-      element_sprite->createTexture(renderer);
-
-      return true;
-    }
-    else if(split.size() == 1)
-    {
-      element_sprite = new Sprite(path, renderer);
-      element_sprite->setNonUnique(true, 1);
-      element_sprite->createTexture(renderer);
-
-      return true;
-    }
-  }
-
-  return false;
-}
 
 void RenderElement::createAsActionText(std::string action_name)
 {
@@ -387,15 +356,10 @@ bool RenderElement::update(int32_t cycle_time)
 {
   time_left -= cycle_time;
 
-  if(render_type == RenderType::PLEP || render_type == RenderType::OVERLAY ||
-     render_type == RenderType::MIDLAY || render_type == RenderType::UNDERLAY)
-  {
+  if(render_type == RenderType::PLEP)
     updateStatusPlep(cycle_time);
-  }
   else
-  {
     updateStatusFade(cycle_time);
-  }
 
   return false;
 }
@@ -411,40 +375,40 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
     {
       status = RenderStatus::TIMED_OUT;
     }
-    else if(render_type == RenderType::UNDERLAY ||
-            render_type == RenderType::MIDLAY ||
-            render_type == RenderType::OVERLAY)
-    {
-      element_sprite->setOpacity(alpha);
-      velocity.x += (acceleration.x * cycle_time);
-      velocity.y += (acceleration.y * cycle_time);
+    // else if(render_type == RenderType::UNDERLAY ||
+    //         render_type == RenderType::MIDLAY ||
+    //         render_type == RenderType::OVERLAY)
+    // {
+    //   element_sprite->setOpacity(alpha);
+    //   velocity.x += (acceleration.x * cycle_time);
+    //   velocity.y += (acceleration.y * cycle_time);
 
-      delta.x += velocity.x * cycle_time;
-      delta.y += velocity.y * cycle_time;
+    //   delta.x += velocity.x * cycle_time;
+    //   delta.y += velocity.y * cycle_time;
 
-      if(std::abs(delta.x) >= 1.00)
-      {
-        auto neg_delta_x = std::floor(delta.x);
+    //   if(std::abs(delta.x) >= 1.00)
+    //   {
+    //     auto neg_delta_x = std::floor(delta.x);
 
-        location.point.x += neg_delta_x;
-        delta.x -= neg_delta_x;
-      }
+    //     location.point.x += neg_delta_x;
+    //     delta.x -= neg_delta_x;
+    //   }
 
-      if(std::abs(delta.y) >= 1.00)
-      {
-        auto neg_delta_y = std::floor(delta.y);
+    //   if(std::abs(delta.y) >= 1.00)
+    //   {
+    //     auto neg_delta_y = std::floor(delta.y);
 
-        location.point.y += neg_delta_y;
-        delta.y -= neg_delta_y;
-      }
+    //     location.point.y += neg_delta_y;
+    //     delta.y -= neg_delta_y;
+    //   }
 
-      // TODO: Require resolution/size
-      // TODO: Overlay --> into class
-      if(location.point.x > 2432)
-        location.point.x -= 2432;
-      // if(location.point.y > 704)
-      //   location.point.y -= 704;
-    }
+    //   // TODO: Require resolution/size
+    //   // TODO: Overlay --> into class
+    //   if(location.point.x > 2432)
+    //     location.point.x -= 2432;
+    //   // if(location.point.y > 704)
+    //   //   location.point.y -= 704;
+    // }
   }
 }
 

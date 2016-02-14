@@ -232,6 +232,24 @@ struct value_less
  *============================================================================*/
 
 /*
+ * Description: Calculates and returns the nearest percentage point for a given
+ *              value within a given amount.
+ *
+ * Inputs: T value - the value which is within the range of amount
+ *         T amount - the amount to check the value within
+ * Output: uint32_t - the percentage of the value, to the nearest percent
+ */
+template<typename T>
+static uint32_t getPercent(T value, T amount)
+{
+  /* Grab the % to within XX.X% and then round to the nearest percent. */
+  if(value > 0 && amount > 0 && amount >= value)
+    return static_cast<uint32_t>(std::round((value * 1000) / (amount * 1000)));
+
+  return 0;
+}
+
+/*
  * Description: Obtains a random number of elements from a vector of T and
  *              returns the elements in vector form. This function
  *              will return an empty vector unless the size of the vector

@@ -32,6 +32,7 @@
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/RenderElement.h"
 #include "Game/Player/Party.h"
+#include "Game/Lay.h"
 
 class RenderElement;
 
@@ -109,6 +110,9 @@ private:
   /* The enemy backdrop frame */
   Frame* frame_enemy_backdrop;
 
+  /* Vector of lays for the Battle */
+  std::vector<Lay*> lays;
+
   /* Music reference ID */
   int music_id;
 
@@ -141,7 +145,7 @@ private:
   /* The victory screen */
   Victory* victory_screen;
 
-  //remove
+  // remove
   Frame* test_arc;
 
   /*=============================================================================
@@ -432,9 +436,7 @@ private:
   /* Clears Enemy Backdrop */
   void clearEnemyBackdrop();
 
-  /* Creates a Lay of a given type */
-  void createLay(std::string path, int32_t anim_time, float velocity_x,
-                 float velocity_y, RenderType lay_type);
+  void clearLays();
 
   /* Plays an infliction sound */
   void playInflictionSound(Infliction type);
@@ -497,6 +499,10 @@ private:
    * PUBLIC FUNCTIONS - Battle Operations
    *============================================================================*/
 public:
+  /* Creates a Lay of a given type */
+  void createLay(std::string path, int32_t anim_time, Floatinate velocity,
+                 LayType lay_type);
+
   /* Processes a KeyDown event */
   bool keyDownEvent(SDL_KeyboardEvent event);
 
@@ -546,13 +552,6 @@ public:
    * PUBLIC FUNCTIONS - Battle Display
    *============================================================================*/
 public:
-  void createMidlay(std::string path, int anim_time, float velocity_x,
-                    float velocity_y);
-  void createOverlay(std::string path, int anim_time, float velocity_x,
-                     float velocity_y);
-  void createUnderlay(std::string path, int anim_time, float velocity_x,
-                      float velocity_y);
-
   /* Renders the Battle */
   bool render();
 
