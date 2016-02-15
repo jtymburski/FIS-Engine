@@ -2103,8 +2103,8 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 
     if(lay_overs.size() == 0)
     {
-      Floatinate velocity_smog = {3, 2};
-      Floatinate velocity_fog = {3, 3};
+      Floatinate velocity_smog = {0.3, 0.1};
+      Floatinate velocity_fog = {0.05, -0.01};
 
       lay_overs.push_back(
          new Lay("sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", 0,

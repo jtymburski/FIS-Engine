@@ -154,10 +154,13 @@ void Lay::shift(Floatinate shift)
   error.x += shift.x * velocity.x;
   error.y += shift.y * velocity.y;
 
-  updateLocations(std::floor(error.x), std::floor(error.y));
+  auto dist_x = std::floor(error.x);
+  auto dist_y = std::floor(error.y);
 
-  error.x -= std::floor(error.x);
-  error.y -= std::floor(error.y);
+  updateLocations(dist_x, dist_y);
+
+  error.x -= dist_x;
+  error.y -= dist_y;
 }
 
 /*
@@ -177,51 +180,12 @@ void Lay::update(int32_t cycle_time)
   auto dist_x = std::floor(error.x);
   auto dist_y = std::floor(error.y);
 
-  for(auto& lay_tile : lay_tiles)
-  {
-    if(lay_tile)
-    {
-      /* Wrap the left to horizontal tiles back to the beginning */
-      if(velocity.x > 0)
-      {
-        if((lay_tile->location.x + dist_x) > screen_size.x)
-          lay_tile->location.x -= screen_size.x * 2;
-
-        lay_tile->location.x += dist_x;
-      }
-
-      /* Wrap the bottom to vertical tiles back to the beginning */
-      if(velocity.y > 0)
-      {
-        if((lay_tile->location.y + dist_y) > screen_size.y)
-          lay_tile->location.y -= screen_size.y * 2;
-
-        lay_tile->location.y += dist_y;
-      }
-
-      /* Wrap the right to horizontal tiles back to the beginning */
-      if(velocity.x < 0)
-      {
-        if((lay_tile->location.x + dist_x) < -screen_size.x)
-          lay_tile->location.x += screen_size.x * 2;
-
-        lay_tile->location.x += dist_x;
-      }
-
-      /* Wrap the top to vertical tiles back to the beginning */
-      if(velocity.y < 0)
-      {
-        if((lay_tile->location.y + dist_y) < -screen_size.y)
-          lay_tile->location.y += screen_size.y * 2;
-
-        lay_tile->location.y += dist_y;
-      }
-    }
-  }
+  updateLocations(dist_x, dist_y);
 
   for(const auto& lay_tile : lay_tiles)
     if(lay_tile && lay_tile->lay_sprite)
       lay_tile->lay_sprite->update(cycle_time);
+
   error.x -= dist_x;
   error.y -= dist_y;
 }
@@ -374,4 +338,31 @@ bool Lay::createTiledLays(SDL_Renderer* renderer)
  */
 void Lay::updateLocations(int32_t dist_x, int32_t dist_y)
 {
+  for(auto& lay_tile : lay_tiles)
+  {
+    if(lay_tile)
+    {
+      /* Wrap the left to horizontal tiles back to the beginning */
+      // if(velocity.x > 0)
+      // {
+      if((lay_tile->location.x + dist_x) > screen_size.x)
+        lay_tile->location.x -= screen_size.x * 2;
+
+      /* Wrap the bottom to vertical tiles back to the beginning */
+      if((lay_tile->location.y + dist_y) > screen_size.y)
+        lay_tile->location.y -= screen_size.y * 2;
+
+      /* Wrap the right to horizontal tiles back to the beginning */
+      if((lay_tile->location.x + dist_x) < -screen_size.x)
+        lay_tile->location.x += screen_size.x * 2;
+
+      lay_tile->location.x += dist_x;
+
+      /* Wrap the top to vertical tiles back to the beginning */
+      if((lay_tile->location.y + dist_y) < -screen_size.y)
+        lay_tile->location.y += screen_size.y * 2;
+
+      lay_tile->location.y += dist_y;
+    }
+  }
 }
