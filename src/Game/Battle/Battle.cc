@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: Battle [Declaration]
+* Class Name: Battle [Implementation]
 * Date Created: June 22, 2014
 * Date Redesigned: September 5, 2015
 * Inheritance: None

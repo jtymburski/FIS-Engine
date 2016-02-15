@@ -26,10 +26,10 @@
 #include "Game/Map/MapViewport.h"
 // #include "Game/Map/Sector.h"
 #include "Game/Map/Tile.h"
-// #include "Game/Weather.h"
-#include "Helpers.h"
-#include "Options.h"
-#include "Sprite.h"
+#include "Game/Lay.h"
+// #include "Helpers.h"
+// #include "Options.h"
+// #include "Sprite.h"
 
 // TODO: FOR OVERLAY/UNDERLAY - TESTING ONLY - UNCOMMENT TO ENABLE
 #define MAP_LAY
@@ -106,10 +106,8 @@ private:
   ItemStore item_menu;
 
   /* Map lays */
-  float lay_offset;
-  float lay_offset2;
-  std::vector<Sprite*> lay_over;
-  std::vector<Sprite*> lay_under;
+  std::vector<Lay*> lay_overs;
+  std::vector<Lay*> lay_unders;
 
   /* Indication if the map has been loaded */
   bool loaded;
@@ -172,7 +170,7 @@ private:
   MapViewport viewport;
 
   // /* Weather effect on the overall map (May be pushed to the sector level at
-   // * a later time) */
+  // * a later time) */
   // Weather* weather_effect;
 
   /* Status of the zoom on the map */
@@ -180,26 +178,26 @@ private:
   bool zoom_out;
 
   /*------------------- Constants -----------------------*/
-  const static uint8_t kFADE_BLACK; /* The fully faded out screen alpha */
+  const static uint8_t kFADE_BLACK;  /* The fully faded out screen alpha */
   const static uint8_t kFADE_FACTOR; /* 1/x fade factor for ms cycle time */
-  const static uint8_t kFADE_MAX; /* The max differential to fade delta */
+  const static uint8_t kFADE_MAX;    /* The max differential to fade delta */
   const static uint8_t kFADE_VIS; /* The fully visible faded in screen alpha */
   const static uint8_t kFILE_CLASSIFIER; /* The file tile classification text */
-  const static uint8_t kFILE_GAME_TYPE; /* The game type classifier */
+  const static uint8_t kFILE_GAME_TYPE;  /* The game type classifier */
   const static uint8_t kFILE_SECTION_ID; /* The section identifier, for file */
   const static uint8_t kFILE_TILE_COLUMN; /* The tile depth in XML of column */
-  const static uint8_t kFILE_TILE_ROW; /* The tile depth in XML of row */
-  const static uint32_t kMUSIC_REPEAT; /* Milliseconds each song repeats */
-  const static uint8_t kPLAYER_ID;     /* The player ID for computer control */
-  const static uint16_t kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
+  const static uint8_t kFILE_TILE_ROW;    /* The tile depth in XML of row */
+  const static uint32_t kMUSIC_REPEAT;    /* Milliseconds each song repeats */
+  const static uint8_t kPLAYER_ID; /* The player ID for computer control */
+  const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*============================================================================
+   * PRIVATE FUNCTIONS
+   *===========================================================================*/
 private:
   /* Adds sprite data, as per data from the file */
-  bool addSpriteData(XmlData data, std::string id,
-                     int file_index, SDL_Renderer* renderer);
+  bool addSpriteData(XmlData data, std::string id, int file_index,
+                     SDL_Renderer* renderer);
 
   /* Adds tile data, as per data from the file */
   bool addTileData(XmlData data, uint16_t section_index);
@@ -238,11 +236,11 @@ private:
   std::vector<MapThing*> getThingData(std::vector<int> thing_ids);
 
   /* Returns a matrix of tiles that match the frames in the thing */
-  std::vector<std::vector<Tile*>> getTileMatrix(
-               MapThing* thing, Direction direction = Direction::DIRECTIONLESS);
-  std::vector<std::vector<Tile*>> getTileMatrix(uint16_t section,
-                                                uint16_t x, uint16_t y,
-                                                uint16_t width,
+  std::vector<std::vector<Tile*>>
+  getTileMatrix(MapThing* thing,
+                Direction direction = Direction::DIRECTIONLESS);
+  std::vector<std::vector<Tile*>> getTileMatrix(uint16_t section, uint16_t x,
+                                                uint16_t y, uint16_t width,
                                                 uint16_t height);
 
   /* Initiates a section block of map. Triggered from the file data */
@@ -269,8 +267,8 @@ private:
   bool setSectionIndexMode(int index_next = -1);
 
   /* Splits the ID into a vector of IDs */
-  std::vector< std::vector<int32_t> > splitIdString(std::string id,
-                                                    bool matrix = false);
+  std::vector<std::vector<int32_t>> splitIdString(std::string id,
+                                                  bool matrix = false);
 
   /* Triggers a view of the passed in data */
   bool triggerViewThing(MapThing* view_thing, UnlockView view_mode,
@@ -285,9 +283,9 @@ private:
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*============================================================================
+   * PUBLIC FUNCTIONS
+   *===========================================================================*/
 public:
   /* Battle won/loss/end trigger for map */
   void battleLose();
@@ -319,8 +317,8 @@ public:
   /* Initializes item store display, within the map */
   bool initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
                  std::vector<uint32_t> counts,
-                 std::vector<int32_t> cost_modifiers,
-                 std::string name = "", bool show_empty = false);
+                 std::vector<int32_t> cost_modifiers, std::string name = "",
+                 bool show_empty = false);
 
   /* Returns battle flags and properties */
   bool isBattleLoseGameOver();
@@ -348,9 +346,8 @@ public:
 
   /* Modify thing properties based on passed in properties */
   void modifyThing(MapThing* source, ThingBase type, int id,
-                   ThingProperty props, ThingProperty bools,
-                   int respawn_int, int speed_int, TrackingState track_enum,
-                   int inactive_int);
+                   ThingProperty props, ThingProperty bools, int respawn_int,
+                   int speed_int, TrackingState track_enum, int inactive_int);
 
   /* Picks up the total number of the item */
   bool pickupItem(MapItem* item, int count = -1);

@@ -18,8 +18,8 @@
 
 struct CompPairByCount
 {
-  template<class T, class U>
-  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  template <class T, class U>
+  bool operator()(const std::pair<T*, U>& a, const std::pair<T*, U>& b) const
   {
     return a.second < b.second;
   }
@@ -27,8 +27,8 @@ struct CompPairByCount
 
 struct CompPairByID
 {
-  template<class T, class U>
-  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  template <class T, class U>
+  bool operator()(const std::pair<T*, U>& a, const std::pair<T*, U>& b) const
   {
     return a.first->getID() < b.first->getID();
   }
@@ -36,8 +36,8 @@ struct CompPairByID
 
 struct CompPairByMass
 {
-  template<class T, class U>
-  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  template <class T, class U>
+  bool operator()(const std::pair<T*, U>& a, const std::pair<T*, U>& b) const
   {
     return a.first->getMass() < b.first->getMass();
   }
@@ -45,8 +45,8 @@ struct CompPairByMass
 
 struct CompPairByName
 {
-  template<class T, class U>
-  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  template <class T, class U>
+  bool operator()(const std::pair<T*, U>& a, const std::pair<T*, U>& b) const
   {
     return a.first->getName() < b.first->getName();
   }
@@ -54,8 +54,8 @@ struct CompPairByName
 
 struct CompPairByValue
 {
-  template<class T, class U>
-  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  template <class T, class U>
+  bool operator()(const std::pair<T*, U>& a, const std::pair<T*, U>& b) const
   {
     return a.first->getValue() < b.first->getValue();
   }
@@ -63,8 +63,8 @@ struct CompPairByValue
 
 struct CompPairByValueMass
 {
-  template<class T, class U>
-  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  template <class T, class U>
+  bool operator()(const std::pair<T*, U>& a, const std::pair<T*, U>& b) const
   {
     return ((static_cast<double>(a.first->getValue()) /
              static_cast<double>(a.first->getMass())) <
@@ -76,7 +76,7 @@ struct CompPairByValueMass
 struct CompProbability
 {
   template <class T, class U>
-  bool operator()(const std::pair<T, U> &a, const std::pair<T, U> &b) const
+  bool operator()(const std::pair<T, U>& a, const std::pair<T, U>& b) const
   {
     return (static_cast<double>(a.second < b.second));
   }
@@ -84,8 +84,7 @@ struct CompProbability
 
 struct CompMomentum
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.user->getStats().getValue(Attribute::MMNT) >
            b.user->getStats().getValue(Attribute::MMNT);
@@ -94,8 +93,7 @@ struct CompMomentum
 
 struct CompItemFirst
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return (a.owned_item != nullptr && b.owned_item == nullptr);
   }
@@ -103,8 +101,7 @@ struct CompItemFirst
 
 struct CompSkillFirst
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return (a.used_skill != nullptr && b.used_skill == nullptr);
   }
@@ -112,8 +109,7 @@ struct CompSkillFirst
 
 struct CompSkillCooldown
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.skill->getCooldown() < b.skill->getCooldown();
   }
@@ -121,8 +117,7 @@ struct CompSkillCooldown
 
 struct CompSkillCost
 {
-  template<class T>
-  bool operator()(const T &a, const T&b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.skill->getCost() < b.skill->getCost();
   }
@@ -130,8 +125,7 @@ struct CompSkillCost
 
 struct CompSkillID
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.skill->getID() < b.skill->getID();
   }
@@ -139,8 +133,7 @@ struct CompSkillID
 
 struct CompSkillName
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.skill->getName() < b.skill->getName();
   }
@@ -148,8 +141,7 @@ struct CompSkillName
 
 struct CompSkillPrimary
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return static_cast<uint32_t>(a.skill->getPrimary()) <
            static_cast<uint32_t>(b.skill->getPrimary());
@@ -158,8 +150,7 @@ struct CompSkillPrimary
 
 struct CompSkillSecondary
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return static_cast<uint32_t>(a.skill->getSecondary()) <
            static_cast<uint32_t>(b.skill->getSecondary());
@@ -168,8 +159,7 @@ struct CompSkillSecondary
 
 struct CompSkillPoint
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.skill->getValue() < b.skill->getValue();
   }
@@ -177,8 +167,7 @@ struct CompSkillPoint
 
 struct CompLevelRequired
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.level_available < b.level_available;
   }
@@ -186,8 +175,7 @@ struct CompLevelRequired
 
 struct CompEnabled
 {
-  template<class T>
-  bool operator()(const T &a, const T &b) const
+  template <class T> bool operator()(const T& a, const T& b) const
   {
     return a.enabled < b.enabled;
   }
@@ -205,8 +193,7 @@ struct CompEnabled
  */
 struct value_equal
 {
-  template<class T>
-  bool operator()(T const &a, T const &b) const
+  template <class T> bool operator()(T const& a, T const& b) const
   {
     return *a == *b;
   }
@@ -220,8 +207,7 @@ struct value_equal
  */
 struct value_less
 {
-  template<class T>
-  bool operator()(T const &a, T const &b) const
+  template <class T> bool operator()(T const& a, T const& b) const
   {
     return *a < *b;
   }
@@ -239,8 +225,7 @@ struct value_less
  *         T amount - the amount to check the value within
  * Output: uint32_t - the percentage of the value, to the nearest percent
  */
-template<typename T>
-static uint32_t getPercent(T value, T amount)
+template <typename T> static uint32_t getPercent(T value, T amount)
 {
   /* Grab the % to within XX.X% and then round to the nearest percent. */
   if(value > 0 && amount > 0 && amount >= value)
@@ -259,13 +244,12 @@ static uint32_t getPercent(T value, T amount)
  *         S num_elements - the number of elements to find
  * Output: std::vector<T> - the calculated random elements.
  */
-template<typename T, typename S>
+template <typename T, typename S>
 static std::vector<T> getRandElements(std::vector<T> elements, S num_elements)
 {
   std::vector<T> rand_elements;
 
-  if(elements.size() >= static_cast<uint64_t>(num_elements) &&
-      num_elements > 0)
+  if(elements.size() >= static_cast<uint64_t>(num_elements) && num_elements > 0)
   {
     for(S i = num_elements; i > 0; i--)
     {
@@ -286,14 +270,14 @@ static std::vector<T> getRandElements(std::vector<T> elements, S num_elements)
  *         enumerated_vector - a vector of type T of possible enumerated values
  * Output: bool - true if enum_to_find was found in the enumerated vector.
  */
-template<typename T>
-static bool enumVectorSearch(const T &enum_to_find,
+template <typename T>
+static bool enumVectorSearch(const T& enum_to_find,
                              std::vector<T> enumerated_vector)
 {
   auto found = false;
 
   for(auto enum_index : enumerated_vector)
-    found |=(enum_index == enum_to_find);
+    found |= (enum_index == enum_to_find);
 
   return found;
 }
@@ -306,15 +290,14 @@ static bool enumVectorSearch(const T &enum_to_find,
  *
  * Output: bool - true if the sum of the probabilities was non-zero
  */
-template <typename T>
-static bool normalize(T begin, T end)
+template <typename T> static bool normalize(T begin, T end)
 {
   auto sum = 0.0;
 
   for(auto it = begin; it != end; ++it)
     sum += (*it);
 
-  if (sum != 0)
+  if(sum != 0)
   {
     for(auto it = begin; it != end; ++it)
       (*it) /= sum;
@@ -334,15 +317,14 @@ static bool normalize(T begin, T end)
  *
  * Output: bool - true if the sum of the probabilities was non-zero
  */
-template<typename T>
-static bool normalizePair(T begin, T end)
+template <typename T> static bool normalizePair(T begin, T end)
 {
   auto sum = 0.0;
 
   for(auto it = begin; it != end; ++it)
     sum += (*it).second;
 
-  if (sum != 0)
+  if(sum != 0)
   {
     for(auto it = begin; it != end; ++it)
       (*it).second /= sum;
@@ -365,8 +347,8 @@ static bool normalizePair(T begin, T end)
  *
  * Output: T - iterator to the chosen normalized pair
  */
-template<typename T>
-static T selectNormalizedPair(const double &random, T begin, T end)
+template <typename T>
+static T selectNormalizedPair(const double& random, T begin, T end)
 {
   auto sum = 0.0;
 
@@ -375,7 +357,7 @@ static T selectNormalizedPair(const double &random, T begin, T end)
     auto current = begin;
     sum += (*current).second;
 
-    while (sum <= random)
+    while(sum <= random)
     {
       current++;
       sum += (*current).second;
@@ -396,8 +378,8 @@ static T selectNormalizedPair(const double &random, T begin, T end)
  *         r_bound - the other bound
  * Output: bool - true if the value is within the two bounds
  */
-template<typename T>
-static bool isInRange(const T &value, const T &l_bound, const T &r_bound)
+template <typename T>
+static bool isInRange(const T& value, const T& l_bound, const T& r_bound)
 {
   auto min = std::min(l_bound, r_bound);
   auto max = std::max(l_bound, r_bound);
@@ -417,8 +399,8 @@ static bool isInRange(const T &value, const T &l_bound, const T &r_bound)
  *         T &b - ref to one of the boundaries
  * Output: T - object after it has been set within the range
  */
-template<typename T, typename U>
-static T setInRange(T &value, const U &l_bound, const U &r_bound)
+template <typename T, typename U>
+static T setInRange(T& value, const U& l_bound, const U& r_bound)
 {
   auto min = std::min(l_bound, r_bound);
   auto max = std::max(l_bound, r_bound);
@@ -443,13 +425,12 @@ static T setInRange(T &value, const U &l_bound, const U &r_bound)
  *         T const end - the back iterator to the vector
  * Output: T - returns an iterator to where erase can start up to vector->end
  */
-template<typename T>
-static T uniqueSplit(T begin, T const end)
+template <typename T> static T uniqueSplit(T begin, T const end)
 {
   /* Reserve the appropriate vector size and push all iterators onto it */
   std::vector<T> v;
   v.reserve(static_cast<size_t>(std::distance(begin, end)));
-  for (T i = begin; i != end; i++)
+  for(T i = begin; i != end; i++)
   {
     v.push_back(i);
   }
@@ -465,9 +446,9 @@ static T uniqueSplit(T begin, T const end)
   /* Now go through and swap all the iterators that are unique to the front of
    * the list */
   size_t j = 0;
-  for (T i = begin; i != end && j != v.size(); i++)
+  for(T i = begin; i != end && j != v.size(); i++)
   {
-    if (i == v[j])
+    if(i == v[j])
     {
       std::iter_swap(i, begin);
       j++;
