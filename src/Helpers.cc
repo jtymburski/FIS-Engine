@@ -2277,6 +2277,12 @@ std::vector<Coordinate> Helpers::bresenhamPoints(Coordinate begin,
   return bresenham_points;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 uint8_t Helpers::calcColorRed(SDL_Color color, uint8_t alpha)
 {
   auto pc_fade = 0;
@@ -2289,6 +2295,12 @@ uint8_t Helpers::calcColorRed(SDL_Color color, uint8_t alpha)
   return std::round(red_float);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 uint8_t Helpers::calcColorBlue(SDL_Color color, uint8_t alpha)
 {
   auto pc_fade = 0;
@@ -2300,6 +2312,12 @@ uint8_t Helpers::calcColorBlue(SDL_Color color, uint8_t alpha)
   return std::round(blue_float);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 uint8_t Helpers::calcColorGreen(SDL_Color color, uint8_t alpha)
 {
   auto pc_fade = 0;
@@ -2379,6 +2397,18 @@ void Helpers::deleteMasks()
   if(mask_white != nullptr)
     SDL_DestroyTexture(mask_white);
   mask_white = NULL;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Helpers::isWithinRange(Coordinate test, Coordinate top_l, Coordinate bot_r)
+{
+  return (top_l.x <= test.x && test.x <= bot_r.x) &&
+         (top_l.y <= test.y && test.y <= bot_r.y);
 }
 
 /*

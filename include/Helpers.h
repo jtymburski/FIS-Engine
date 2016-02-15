@@ -337,6 +337,9 @@ public:
   /* Deletes the masks - when game shut down */
   static void deleteMasks();
 
+  /* Checks to see whether a given test coordiante is within a range */
+  static bool isWithinRange(Coordinate test, Coordinate top_l, Coordinate bot_r);
+
   /* Returns the static masks created. NULL if not initialized */
   static SDL_Texture* getMaskBlack();
   static SDL_Texture* getMaskWhite();

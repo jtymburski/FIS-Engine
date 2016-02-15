@@ -37,6 +37,8 @@ Lay::Lay()
       flags{static_cast<LayState>(0)},
       lay_tiles{},
       path{""},
+      range_top_left{Coordinate(0, 0)},
+      range_bot_right{Coordinate(0, 0)},
       screen_size{Coordinate(0, 0)},
       velocity{Floatinate(0, 0)},
       lay_type{LayType::NONE}
@@ -90,7 +92,6 @@ Lay::Lay(std::string path, uint32_t animation_time, Floatinate velocity,
   setVelocity(velocity);
 
   setFlag(LayState::SCREEN_SIZE, true);
-  setFlag(LayState::PLAYER_RELATIVE, false);
 
   createTiledLays(renderer);
 }
@@ -140,6 +141,29 @@ bool Lay::render(SDL_Renderer* renderer)
   }
 
   return success;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Lay::render(SDL_Renderer* renderer, Coordinate player_position)
+{
+  /* Check to see if the range is within bounds */
+  if(getFlag(LayState::RANGE_BOUND))
+  {
+    if(Helpers::isWithinRange(player_position, range_top_left, range_bot_right))
+      return render(renderer);
+  }
+  else
+  {
+    return render(renderer);
+  }
+
+  /* Return true if no rendering took place */
+  return true;
 }
 
 /*
@@ -211,6 +235,19 @@ bool Lay::getFlag(const LayState& test_flag)
 void Lay::setFlag(const LayState& flag, const bool& set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Lay::setRange(Coordinate top_left, Coordinate bot_right)
+{
+  this->range_top_left = top_left;
+  this->range_bot_right = bot_right;
+  setFlag(LayState::RANGE_BOUND, true);
 }
 
 /*
@@ -328,6 +365,25 @@ bool Lay::createTiledLays(SDL_Renderer* renderer)
 }
 
 /*
+ * Description: Determines whether a given range is valid within the lay
+ *              RANGE_BOUND context.
+ *
+ * Inputs: none
+ * Output: bool - whether the currently assigned range bounds are valid.
+ */
+bool Lay::isRangeValid()
+{
+  bool valid = range_top_left.x >= 0;
+  valid &= range_top_left.y >= 0;
+  valid &= range_bot_right.x >= 0;
+  valid &= range_bot_right.y >= 0;
+  valid &= (range_top_left.x <= range_bot_right.x &&
+            range_top_left.y <= range_bot_right.y);
+
+  return valid;
+}
+
+/*
  * Description: Updates the location of the Lay by a shift_x and shift_y.
  *              Generally called either by a cycle time update or a float
  *              shift amount.
@@ -343,8 +399,6 @@ void Lay::updateLocations(int32_t dist_x, int32_t dist_y)
     if(lay_tile)
     {
       /* Wrap the left to horizontal tiles back to the beginning */
-      // if(velocity.x > 0)
-      // {
       if((lay_tile->location.x + dist_x) > screen_size.x)
         lay_tile->location.x -= screen_size.x * 2;
 
@@ -356,12 +410,11 @@ void Lay::updateLocations(int32_t dist_x, int32_t dist_y)
       if((lay_tile->location.x + dist_x) < -screen_size.x)
         lay_tile->location.x += screen_size.x * 2;
 
-      lay_tile->location.x += dist_x;
-
       /* Wrap the top to vertical tiles back to the beginning */
       if((lay_tile->location.y + dist_y) < -screen_size.y)
         lay_tile->location.y += screen_size.y * 2;
 
+      lay_tile->location.x += dist_x;
       lay_tile->location.y += dist_y;
     }
   }

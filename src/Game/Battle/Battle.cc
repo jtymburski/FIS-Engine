@@ -1129,7 +1129,7 @@ void Battle::updateOutcome(int32_t cycle_time)
                                       config->getScreenWidth());
       dim_element->setTimeable(false);
       render_elements.push_back(dim_element);
-      victory_screen->setDimTime(dim_time * 0.75);
+      victory_screen->setDimTime(dim_time);
     }
   }
   else

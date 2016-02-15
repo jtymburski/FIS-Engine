@@ -2103,7 +2103,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 
     if(lay_overs.size() == 0)
     {
-      Floatinate velocity_smog = {0.3, 0.1};
+      Floatinate velocity_smog = {2, 0.5};
       Floatinate velocity_fog = {0.05, -0.01};
 
       lay_overs.push_back(

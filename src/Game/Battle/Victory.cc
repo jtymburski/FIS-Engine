@@ -238,8 +238,12 @@ void Victory::renderCard(VictoryCard& card)
     auto width = card.location.width;
     auto height = card.location.height;
 
-    auto col1_x = x + std::floor(0.13 * (float)width);
-    auto col1_y = y + std::floor(0.05 * (float)height);
+    double tan60 = std::tan(60.0 * 3.14159265358 / 180.0);
+    double tan45 = std::tan(45.0 * 3.14159265358 / 180.0);
+    double tan30 = std::tan(30.0 * 3.14159265358 / 180.0);
+
+    auto col1_x = static_cast<int32_t>(x + std::floor(0.13 * (float)width));
+    auto col1_y = static_cast<int32_t>(y + std::floor(0.05 * (float)height));
 
     auto sprite_x = x;
     auto sprite_y = 0;
@@ -248,7 +252,7 @@ void Victory::renderCard(VictoryCard& card)
 
     auto tile_size = std::floor(0.21 * (float)width);
 
-    auto col2_x = x + std::floor(0.43 * (float)width);
+    auto col2_x = static_cast<int32_t>(x + std::floor(0.43 * (float)width));
     // auto col2_y = y + std::floor(0.05 * (float)height);
 
     Text t_name(victory_font);
@@ -260,7 +264,6 @@ void Victory::renderCard(VictoryCard& card)
     Text t_next_val(small_font);
 
     /* Render the base frame */
-    std::cout << " Frame height : " << height << std::endl;
     test_render->render(renderer, x, y, width, height);
 
     /* Render the Actor sprite */
@@ -270,6 +273,9 @@ void Victory::renderCard(VictoryCard& card)
 
       if(base_person)
       {
+        /*----------------------------------------------------------------------
+         *  COLUMN ONE
+         *--------------------------------------------------------------------*/
         auto rank_str = "RANK :" + Helpers::rankToStr(base_person->getRank());
         // auto level_str = "Level " + std::to_string(base_person->getLevel());
         t_name.setText(renderer, base_person->getName(), color);
@@ -289,7 +295,6 @@ void Victory::renderCard(VictoryCard& card)
         t_exp_val.setText(renderer, total_exp_str, exp_color);
         t_next_val.setText(renderer, next_exp_str, exp_color);
 
-        /* Render Column 1 */
         auto t_level_y =
             col1_y + t_name.getHeight() + std::floor(0.01 * height);
         sprite_y = t_level_y + t_level.getHeight() + std::floor(0.01 * height);
@@ -304,32 +309,108 @@ void Victory::renderCard(VictoryCard& card)
 
         t_rank.render(renderer, col1_x - std::floor(0.03 * width), t_rank_y);
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        Frame::renderHexagon({static_cast<int32_t>(col2_x + 1), static_cast<int32_t>(col1_y + 1)}, tile_size, renderer);
-        SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
+        /*----------------------------------------------------------------------
+         *  COLUMN TWO (col2_x, col1_y)
+         *--------------------------------------------------------------------*/
+        auto hex_size = tile_size;
+        auto half_hex = hex_size / 2;
 
-        auto out_hex_x = col2_x  + 1;
-        auto out_hex_y = col1_y + 1;
-        auto out_hex_size = tile_size - 2;
-        auto border = 2;
+        // auto hex_width = 2 * tan30 * tile_size + tan30 * tile_size;
 
-        Frame::renderHexagon({out_hex_x, out_hex_y}, out_hex_size, renderer);
+        auto xp_pc = (float)base_person->findExpPercent() / 100.0;
+        std::cout << "XP Percent: " << xp_pc << std::endl;
 
-        auto inset = std::round(0.04 * (float)(width));
-        std::cout << "Inset: " << inset << std::endl;
-        auto in_hex_x = 5 + out_hex_x + inset / 2;
-        auto in_hex_y = out_hex_y + inset / 2;
-        auto in_hex_size = out_hex_size - inset;
-        Frame::renderHexagon({in_hex_x, in_hex_y}, in_hex_size, renderer);
+        /*  OUTER HEXAGON
+         *----------------------------------------------------*/
+        SDL_SetRenderDrawColor(renderer, 35, 35, 35, 255);
+
+        Coordinate outer_hex = {static_cast<int32_t>(col2_x) + 1,
+                                static_cast<int32_t>(col1_y) + 1};
+        Frame::renderHexagon(outer_hex, hex_size, renderer);
+
+        /* TOP TRAPEZOID
+         *----------------------------------------------------*/
+        SDL_SetRenderDrawColor(renderer, 228, 134, 0, 255);
+
+        if(xp_pc > 0.50)
+        {
+          auto height = (2 * (xp_pc - 0.5) * half_hex);
+          auto delta_x = tan30 * height;
+          auto b1 = hex_size - 2 * delta_x;
+
+          //TODO: Magic numbers
+          Coordinate d;
+          d.x = col2_x + 8;
+          d.y = col1_y + 2 + (half_hex - std::round(height));
+
+          std::cout << "Height: " << height << std::endl;
+          // std::cout << "Inset X: " << inset_x << std::endl;
+          // std::cout << "Delta Y: " << delta_y << std::endl;
+          std::cout << "Delta X: " << delta_x << std::endl;
+          std::cout << "B1: " << b1 << std::endl;
+          // std::cout << "B2: " << b2 << std::endl;
+
+          Frame::renderTrapezoid(d, height, b1, hex_size, renderer);
+        }
+
+        /* BOTTOM TRAPEZOID
+         *----------------------------------------------------*/
+        if(xp_pc > 0)
+        {
+          auto height = 2 * xp_pc * half_hex;
+
+          if(height > half_hex)
+            height = half_hex;
+
+          double inset_x = tan30 * height;
+          double delta_y = half_hex - height;
+          double delta_x = tan30 * delta_y;
+
+          // TODO: Magical 6
+          double b1 = hex_size + 6 - 2 * delta_x;
+          double b2 = b1 - 2 * inset_x;
+
+          Coordinate c;
+          c.x = col2_x + 2 + std::round(delta_x);
+          c.y = col1_y + 1 + half_hex + std::round(delta_y);
+          height = std::round(height);
+          b1 = std::round(b1);
+          b2 = std::round(b2);
+
+          Frame::renderTrapezoid(c, height, b1, b2, renderer);
+        }
+
+        /* INNER HEXAGON
+         *----------------------------------------------------*/
+
+        // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        // Frame::renderHexagon({static_cast<int32_t>(col2_x + 1),
+        //                       static_cast<int32_t>(col1_y + 1)},
+        //                      tile_size, renderer);
+        // SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
+
+        // auto out_hex_x = col2_x + 1;
+        // auto out_hex_y = col1_y + 1;
+        // auto out_hex_size = tile_size - 2;
+        // auto border = 2;
+
+        // Frame::renderHexagon({out_hex_x, out_hex_y}, out_hex_size, renderer);
+
+        // auto inset = std::round(0.04 * (float)(width));
+        // std::cout << "Inset: " << inset << std::endl;
+        // auto in_hex_x = 5 + out_hex_x + inset / 2;
+        // auto in_hex_y = out_hex_y + inset / 2;
+        // auto in_hex_size = out_hex_size - inset;
+        // Frame::renderHexagon({in_hex_x, in_hex_y}, in_hex_size, renderer);
 
         /* Render Column 2 */
-        auto t_exp_y = col1_y + tile_size;
-        t_exp_val.render(renderer, col2_x, t_exp_y);
+        // auto t_exp_y = col1_y + tile_size;
+        // t_exp_val.render(renderer, col2_x, t_exp_y);
 
-        auto t_next_y =
-            col1_y + t_exp_val.getHeight() + std::floor(0.01 * height);
+        // auto t_next_y =
+        //     col1_y + t_exp_val.getHeight() + std::floor(0.01 * height);
 
-        t_next_val.render(renderer, col2_x, t_next_y);
+        // t_next_val.render(renderer, col2_x, t_next_y);
 
         /* Render Column 3 */
       }
