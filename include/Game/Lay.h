@@ -23,7 +23,7 @@
 ENUM_FLAGS(LayState);
 enum class LayState
 {
-  SCREEN_SIZE = 1 << 0,    /* If the Lay is to be rendered as the screen size */
+  SCREEN_SIZE = 1 << 0, /* If the Lay is to be rendered as the screen size */
   PLAYER_RELATIVE = 2 << 1 /* If the Lay is relative to the player movement */
 };
 
@@ -49,11 +49,11 @@ public:
 
   /* Player Relative lay constructor */
   Lay(std::string path, Floatinate velocity, LayType lay_type,
-      SDL_Renderer* renderer, Options* config);
+      Coordinate screen_size, SDL_Renderer* renderer);
 
   /* General lay constructor */
   Lay(std::string path, uint32_t animation_time, Floatinate velocity,
-      LayType lay_type, SDL_Renderer* renderer, Options* config);
+      LayType lay_type, Coordinate screen_size, SDL_Renderer* renderer);
 
   /* Annihilate a Lay object */
   ~Lay();
@@ -61,9 +61,6 @@ public:
 private:
   /* Animation tiles for the lay sprites */
   uint32_t animation_time;
-
-  /* The lay's configuration */
-  Options* config;
 
   /* The running error margin on velocity updates */
   Floatinate error;
@@ -77,8 +74,8 @@ private:
   /* Base sprite bath */
   std::string path;
 
-  /* The renderer */
-  SDL_Renderer* renderer;
+  /* The size of the screen */
+  Coordinate screen_size;
 
   /* The velocity for the layed tiles */
   Floatinate velocity;
@@ -96,7 +93,10 @@ public:
    *============================================================================*/
 public:
   /* Renders the lay */
-  bool render();
+  bool render(SDL_Renderer* renderer);
+
+  /* Shifts the lay by a given shift amount, relative to velocity */
+  void shift(Floatinate shift);
 
   /* Updates the lay based on the cycle time of the object */
   void update(int32_t cycle_time);
@@ -104,14 +104,8 @@ public:
   /* Evaluates and returns the state of a given LayState flag */
   bool getFlag(const LayState& test_flag);
 
-  /* Assign a configuration */
-  void setConfig(Options* config);
-
   /* Assign a given enumerated flag a given value */
   void setFlag(const LayState& flag, const bool& set_value = true);
-
-  /* Assigns a new renderer */
-  void setRenderer(SDL_Renderer* renderer);
 
   /* Assigns a velocity to the way, within maximum parameters */
   void setVelocity(Floatinate new_velocity);
@@ -121,10 +115,13 @@ public:
    *============================================================================*/
 private:
   /* Create a lay at a given index */
-  bool createTiledLay(LayIndex lay_index);
+  bool createTiledLay(LayIndex lay_index, SDL_Renderer* renderer);
 
   /* Create the starting tiled lays based on the velocity */
-  bool createTiledLays();
+  bool createTiledLays(SDL_Renderer* renderer);
+
+  /* Update the tiled lays by a distance x, y */
+  void updateLocations(int32_t dist_x, int32_t dist_y);
 };
 
 #endif // LAY_H

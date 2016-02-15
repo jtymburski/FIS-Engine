@@ -216,7 +216,6 @@ void BattleEvent::calcElementalMods(BattleActor* curr_target)
   {
     prim_user_stat = attr_prio;
     secd_user_stat = attr_seco;
-    prim_targ_stat = attr_prid;
     secd_targ_stat = attr_secd;
   }
 

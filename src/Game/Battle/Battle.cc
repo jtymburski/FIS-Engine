@@ -1946,9 +1946,9 @@ void Battle::playInflictionSound(Infliction type)
 void Battle::createLay(std::string path, int32_t anim_time, Floatinate velocity,
                        LayType lay_type)
 {
-  std::cout << "Creating lay: " << path << std::endl;
-  std::cout << "Velocity: " << velocity.x << ", " << velocity.y << std::endl;
-  lays.push_back(new Lay(path, anim_time, velocity, lay_type, renderer, config));
+  Coordinate screen_size = {config->getScreenWidth(), config->getScreenHeight()};
+  lays.push_back(
+      new Lay(path, anim_time, velocity, lay_type, screen_size, renderer));
 }
 
 // Other todos:
@@ -2298,7 +2298,7 @@ void Battle::renderMidlays()
 {
   for(auto& lay : lays)
     if(lay && lay->lay_type == LayType::MIDLAY)
-      lay->render();
+      lay->render(renderer);
 }
 
 bool Battle::renderMenu()
@@ -2342,7 +2342,7 @@ void Battle::renderOverlays()
 {
   for(auto& lay : lays)
     if(lay && lay->lay_type == LayType::OVERLAY)
-      lay->render();
+      lay->render(renderer);
 }
 
 /* Render underlays */
@@ -2350,7 +2350,7 @@ void Battle::renderUnderlays()
 {
   for(auto& lay : lays)
     if(lay && lay->lay_type == LayType::UNDERLAY)
-      lay->render();
+      lay->render(renderer);
 }
 
 void Battle::runStateBegin()
@@ -2552,7 +2552,7 @@ void Battle::updateRendering(int32_t cycle_time)
       element->update(cycle_time);
 
   /* Update overlay / midlay / underlays */
-   for(auto& lay : lays)
+  for(auto& lay : lays)
     if(lay)
       lay->update(cycle_time);
 

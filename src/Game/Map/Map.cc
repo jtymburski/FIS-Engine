@@ -2096,24 +2096,30 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 
 /* TODO: TESTING - REMOVE AND PROPERLY IMPLEMENT */
 #ifdef MAP_LAY
-  if(lay_overs.size() == 0)
+  if(system_options)
   {
-    Floatinate velocity_smog = {0.015, 0.025};
-    Floatinate velocity_fog = {0.03, 0.03};
+    Coordinate scr_size = {system_options->getScreenWidth(),
+                           system_options->getScreenHeight()};
 
-    lay_overs.push_back(
-        new Lay("sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", 0,
-                velocity_smog, LayType::OVERLAY, renderer, system_options));
-    lay_overs.push_back(
-        new Lay("sprites/Map/EnviromentEffects/Overlays/fog_underlay.png", 0,
-                velocity_fog, LayType::OVERLAY, renderer, system_options));
-  }
-  if(lay_unders.size() == 0)
-  {
-    Floatinate velocity_forest = {0.50, 0.50}; /* 50% of Player Movement */
-    lay_unders.push_back(
-        new Lay("sprites/Map/EnviromentEffects/Overlays/forest_underlay.png",
-                velocity_forest, LayType::UNDERLAY, renderer, system_options));
+    if(lay_overs.size() == 0)
+    {
+      Floatinate velocity_smog = {3, 2};
+      Floatinate velocity_fog = {3, 3};
+
+      lay_overs.push_back(
+         new Lay("sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", 0,
+                 velocity_smog, LayType::OVERLAY, scr_size, renderer));
+     lay_overs.push_back(
+          new Lay("sprites/Map/EnviromentEffects/Overlays/fog_underlay.png", 0,
+                  velocity_fog, LayType::OVERLAY, scr_size, renderer));
+    }
+    if(lay_unders.size() == 0)
+    {
+      Floatinate velocity_forest = {0.50, 0.50}; /* 50% of Player Movement */
+      lay_unders.push_back(
+          new Lay("sprites/Map/EnviromentEffects/Overlays/forest_underlay.png",
+                  velocity_forest, LayType::UNDERLAY, scr_size, renderer));
+    }
   }
 #endif
 
@@ -2414,7 +2420,7 @@ bool Map::render(SDL_Renderer* renderer)
     {
       for(auto it = lay_unders.begin(); it != end(lay_unders); ++it)
         if(*it)
-          (*it)->render();
+          (*it)->render(renderer);
     }
 
     /* Render the lower tiles within the range of the viewport */
@@ -2469,7 +2475,8 @@ bool Map::render(SDL_Renderer* renderer)
           MapPerson* render_person = NULL;
           MapThing* render_thing = NULL;
 
-          /* Acquire render things and continue forward if some are not null */
+          /* Acquire render things and continue forward if some are not null
+           */
           if(sub_map[map_index].tiles[i][j]->getRenderThings(
                  index, render_person, render_thing, render_io))
           {
@@ -2543,7 +2550,7 @@ bool Map::render(SDL_Renderer* renderer)
     {
       for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
         if(*it)
-          (*it)->render();
+          (*it)->render(renderer);
 
       //   for(uint16_t i = 0; i < lay_over.size(); i++)
       //   {

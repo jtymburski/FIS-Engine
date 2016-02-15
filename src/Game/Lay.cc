@@ -19,97 +19,80 @@
  * CONSTANTS - See .h for Details
  *============================================================================*/
 
-const float Lay::kABS_MAX_VELOCITY_X{700};
-const float Lay::kABS_MAX_VELOCITY_Y{300};
+const float Lay::kABS_MAX_VELOCITY_X{3};
+const float Lay::kABS_MAX_VELOCITY_Y{2};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Default Lay constructor.
  *
- * Inputs:
+ * Inputs: none
  */
 Lay::Lay()
     : animation_time{0},
-      config{nullptr},
+      error{Floatinate(0, 0)},
       flags{static_cast<LayState>(0)},
+      lay_tiles{},
       path{""},
-      renderer{nullptr},
+      screen_size{Coordinate(0, 0)},
+      velocity{Floatinate(0, 0)},
       lay_type{LayType::NONE}
 {
 }
 
 /*
- * Description:
+ * Description: Relative Lay constructor. Constructs a Lay with a Floatinate
+ *              for velocity representing a fraction of the velocity of the
+ *              Lay from the Player's (ex. 0.50 --> 50% of the Player's
+ *              velocity).
  *
- * Inputs:
+ * Inputs: std:string path - the string path to the Lay.
+ *         Floatinate velocity - velocity relative to the player
+ *         LayType lay_type - the enumerated lay type (over, under, mid etc.)
+ *         Coordinate screen_size - the size of the screen
+ *         SDL_Renderer* renderer - pointer to the renderer
  */
 Lay::Lay(std::string path, Floatinate velocity, LayType lay_type,
-         SDL_Renderer* renderer, Options* config)
+         Coordinate screen_size, SDL_Renderer* renderer)
 {
   this->path = path;
   this->lay_type = lay_type;
-  this->velocity = velocity;
+  this->screen_size = screen_size;
+  setVelocity(velocity);
 
   setFlag(LayState::SCREEN_SIZE, true);
   setFlag(LayState::PLAYER_RELATIVE, true);
 
-  setConfig(config);
-  setRenderer(renderer);
-
-  if(this->lay_type != LayType::NONE)
-  {
-    auto success = createTiledLays();
-
-#ifdef UDEBUG
-    if(!success)
-    {
-      std::cout << "[ERROR] Creating tile overlays with path: " << path
-                << std::endl;
-    }
-#endif
-  }
+  createTiledLays(renderer);
 }
 
 /*
- * Description:
+ * Description: General Lay constructor. Constructs a normal Lay with
+ *              a floatinate velocity, animation time, and type.
  *
  * Inputs: std::string path - the path to the lay's sprite to tile
  *         Floatinate velocity - (x, y) velocity to stream the sprite
  *         LayType lay_type - enumerated type of the lay (under, over, etc.)
+ *         Coordinate screen_size - the size of the scren
  *         SDL_Renderer* renderer - pointer to the renderer
- *         Options* config - pointer to running configuration
  */
 Lay::Lay(std::string path, uint32_t animation_time, Floatinate velocity,
-         LayType lay_type, SDL_Renderer* renderer, Options* config)
+         LayType lay_type, Coordinate screen_size, SDL_Renderer* renderer)
     : Lay()
 {
   this->path = path;
   this->animation_time = animation_time;
   this->lay_type = lay_type;
-  this->velocity = velocity;
+  this->screen_size = screen_size;
+  setVelocity(velocity);
 
   setFlag(LayState::SCREEN_SIZE, true);
   setFlag(LayState::PLAYER_RELATIVE, false);
 
-  setConfig(config);
-  setRenderer(renderer);
-  setVelocity(velocity);
-
-  if(this->lay_type != LayType::NONE)
-  {
-    auto success = createTiledLays();
-
-#ifdef UDEBUG
-    if(!success)
-    {
-      std::cout << "[ERROR] Creating tile overlays with path: " << path
-                << std::endl;
-    }
-#endif
-  }
+  createTiledLays(renderer);
 }
 
 /*
@@ -141,26 +124,40 @@ Lay::~Lay()
  * Inputs: none
  * Output: bool - true if rendering was successful
  */
-bool Lay::render()
+bool Lay::render(SDL_Renderer* renderer)
 {
   bool success{true};
 
-  if(renderer)
+  for(const auto& lay_tile : lay_tiles)
   {
-
-    for(const auto& lay_tile : lay_tiles)
+    if(getFlag(LayState::SCREEN_SIZE) && lay_tile && lay_tile->lay_sprite &&
+       renderer)
     {
-      if(getFlag(LayState::SCREEN_SIZE) && lay_tile && lay_tile->lay_sprite &&
-         config)
-      {
-        success &= lay_tile->lay_sprite->render(
-            renderer, lay_tile->location.x, lay_tile->location.y,
-            config->getScreenWidth(), config->getScreenHeight());
-      }
+      success &= lay_tile->lay_sprite->render(renderer, lay_tile->location.x,
+                                              lay_tile->location.y,
+                                              screen_size.x, screen_size.y);
     }
   }
 
   return success;
+}
+
+/*
+ * Description: Shifts the tiled lays by a given floatinate shift, keeping track
+ *              of the error margin.
+ *
+ * Inputs: Floatinate shift - amount to shift the lay by
+ * Output: none
+ */
+void Lay::shift(Floatinate shift)
+{
+  error.x += shift.x * velocity.x;
+  error.y += shift.y * velocity.y;
+
+  updateLocations(std::floor(error.x), std::floor(error.y));
+
+  error.x -= std::floor(error.x);
+  error.y -= std::floor(error.y);
 }
 
 /*
@@ -174,57 +171,59 @@ bool Lay::render()
  */
 void Lay::update(int32_t cycle_time)
 {
-  assert(config);
-
   error.x += cycle_time * velocity.x;
   error.y += cycle_time * velocity.y;
 
   auto dist_x = std::floor(error.x);
   auto dist_y = std::floor(error.y);
 
-  error.x -= dist_x;
-  error.y -= dist_y;
-
   for(auto& lay_tile : lay_tiles)
   {
     if(lay_tile)
     {
+      /* Wrap the left to horizontal tiles back to the beginning */
       if(velocity.x > 0)
       {
-        if((lay_tile->location.x + dist_x) > config->getScreenWidth())
-          lay_tile->location.x -= config->getScreenWidth() * 2;
+        if((lay_tile->location.x + dist_x) > screen_size.x)
+          lay_tile->location.x -= screen_size.x * 2;
 
         lay_tile->location.x += dist_x;
       }
 
+      /* Wrap the bottom to vertical tiles back to the beginning */
       if(velocity.y > 0)
       {
-        if((lay_tile->location.y + dist_y) > config->getScreenHeight())
-          lay_tile->location.y -= config->getScreenHeight() * 2;
+        if((lay_tile->location.y + dist_y) > screen_size.y)
+          lay_tile->location.y -= screen_size.y * 2;
 
         lay_tile->location.y += dist_y;
       }
 
+      /* Wrap the right to horizontal tiles back to the beginning */
       if(velocity.x < 0)
       {
-        if((lay_tile->location.x + dist_x) < -config->getScreenWidth())
-          lay_tile->location.x += config->getScreenWidth() * 2;
+        if((lay_tile->location.x + dist_x) < -screen_size.x)
+          lay_tile->location.x += screen_size.x * 2;
 
         lay_tile->location.x += dist_x;
       }
 
+      /* Wrap the top to vertical tiles back to the beginning */
       if(velocity.y < 0)
       {
-        if((lay_tile->location.y + dist_y) < -config->getScreenHeight())
-          lay_tile->location.y += config->getScreenHeight() * 2;
+        if((lay_tile->location.y + dist_y) < -screen_size.y)
+          lay_tile->location.y += screen_size.y * 2;
 
         lay_tile->location.y += dist_y;
       }
-
-      if(lay_tile->lay_sprite)
-        lay_tile->lay_sprite->update(animation_time);
     }
   }
+
+  for(const auto& lay_tile : lay_tiles)
+    if(lay_tile && lay_tile->lay_sprite)
+      lay_tile->lay_sprite->update(cycle_time);
+  error.x -= dist_x;
+  error.y -= dist_y;
 }
 
 /*
@@ -239,17 +238,6 @@ bool Lay::getFlag(const LayState& test_flag)
 }
 
 /*
- * Description: Assigns the configuration for the Lay object.
- *
- * Inputs: Options* config - pointer to the running config
- * Output: none
- */
-void Lay::setConfig(Options* config)
-{
-  this->config = config;
-}
-
-/*
  * Description: Assigns a given LayState flag to a given boolean value.
  *
  * Inputs: const LayState& flag - enumerated flag to be assigned
@@ -259,17 +247,6 @@ void Lay::setConfig(Options* config)
 void Lay::setFlag(const LayState& flag, const bool& set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
-}
-
-/*
- * Description: Assigns the rendering pointer for the Lay object.
- *
- * Inputs: SDL_Renderer* renderer - pointer to the renderer
- * Output: none
- */
-void Lay::setRenderer(SDL_Renderer* renderer)
-{
-  this->renderer = renderer;
 }
 
 /*
@@ -296,9 +273,9 @@ void Lay::setVelocity(Floatinate new_velocity)
  * Inputs: LayIndex lay_index - enumerated index of tiled lay to create
  * Output: bool - true if the tiled lay was created successfully
  */
-bool Lay::createTiledLay(LayIndex lay_index)
+bool Lay::createTiledLay(LayIndex lay_index, SDL_Renderer* renderer)
 {
-  if(renderer && config && path != "")
+  if(renderer && path != "")
   {
     auto new_tile = new LayTile();
 
@@ -322,27 +299,24 @@ bool Lay::createTiledLay(LayIndex lay_index)
       new_tile->lay_sprite->setNonUnique(true, num_frames);
       new_tile->lay_sprite->createTexture(renderer);
 
-      auto x = config->getScreenWidth();
-      auto y = config->getScreenHeight();
-
       if(lay_index == LayIndex::NORTH_WEST)
-        new_tile->location = {-x, -y};
+        new_tile->location = {-screen_size.x, -screen_size.y};
       else if(lay_index == LayIndex::NORTH)
-        new_tile->location = {0, -y};
+        new_tile->location = {0, -screen_size.y};
       else if(lay_index == LayIndex::NORTH_EAST)
-        new_tile->location = {x, -y};
+        new_tile->location = {screen_size.x, -screen_size.y};
       else if(lay_index == LayIndex::WEST)
-        new_tile->location = {-x, 0};
+        new_tile->location = {-screen_size.x, 0};
       else if(lay_index == LayIndex::CENTRE)
         new_tile->location = {0, 0};
       else if(lay_index == LayIndex::EAST)
-        new_tile->location = {x, 0};
+        new_tile->location = {screen_size.x, 0};
       else if(lay_index == LayIndex::SOUTH_WEST)
-        new_tile->location = {-x, y};
+        new_tile->location = {-screen_size.x, screen_size.y};
       else if(lay_index == LayIndex::SOUTH)
-        new_tile->location = {0, y};
+        new_tile->location = {0, screen_size.y};
       else if(lay_index == LayIndex::SOUTH_EAST)
-        new_tile->location = {x, y};
+        new_tile->location = {screen_size.x, screen_size.y};
 
       lay_tiles.push_back(new_tile);
 
@@ -362,29 +336,42 @@ bool Lay::createTiledLay(LayIndex lay_index)
  * Inputs: none
  * Output: bool - true if the lays were created successfully
  */
-bool Lay::createTiledLays()
+bool Lay::createTiledLays(SDL_Renderer* renderer)
 {
   bool success{true};
 
-  success &= createTiledLay(LayIndex::CENTRE);
+  success &= createTiledLay(LayIndex::CENTRE, renderer);
 
   if(velocity.x < 0)
-    success &= createTiledLay(LayIndex::EAST);
+    success &= createTiledLay(LayIndex::EAST, renderer);
   if(velocity.x > 0)
-    success &= createTiledLay(LayIndex::WEST);
+    success &= createTiledLay(LayIndex::WEST, renderer);
   if(velocity.y < 0)
-    success &= createTiledLay(LayIndex::SOUTH);
+    success &= createTiledLay(LayIndex::SOUTH, renderer);
   if(velocity.y > 0)
-    success &= createTiledLay(LayIndex::NORTH);
+    success &= createTiledLay(LayIndex::NORTH, renderer);
 
   if(velocity.x > 0 && velocity.y > 0)
-    success &= createTiledLay(LayIndex::NORTH_WEST);
+    success &= createTiledLay(LayIndex::NORTH_WEST, renderer);
   else if(velocity.x > 0 && velocity.y < 0)
-    success &= createTiledLay(LayIndex::SOUTH_WEST);
+    success &= createTiledLay(LayIndex::SOUTH_WEST, renderer);
   else if(velocity.x < 0 && velocity.y > 0)
-    success &= createTiledLay(LayIndex::NORTH_EAST);
+    success &= createTiledLay(LayIndex::NORTH_EAST, renderer);
   else if(velocity.x < 0 && velocity.y < 0)
-    success &= createTiledLay(LayIndex::SOUTH_EAST);
+    success &= createTiledLay(LayIndex::SOUTH_EAST, renderer);
 
   return success;
+}
+
+/*
+ * Description: Updates the location of the Lay by a shift_x and shift_y.
+ *              Generally called either by a cycle time update or a float
+ *              shift amount.
+ *
+ * Inputs: dist_x - the x-distance to shift the lay by
+ *         disT_y - the y-distance to shift the lay by
+ * Output: none
+ */
+void Lay::updateLocations(int32_t dist_x, int32_t dist_y)
+{
 }
