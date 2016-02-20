@@ -229,7 +229,6 @@ void Battle::actionStateSwitchSprite()
 /* Create the fading-in action text */
 void Battle::actionStateSkillMiss()
 {
-  std::cout << "[Skill Miss!]" << std::endl;
   auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
   auto element = new RenderElement(renderer, action_font);
   auto action_text = event->actor->getBasePerson()->getName() + " Missed";
@@ -581,10 +580,12 @@ void Battle::loadBattleEvent()
   auto user = battle_buffer->getUser();
   auto targets = battle_buffer->getTargets();
 
+#ifdef UDEBUG
   std::cout << "Action type? " << Helpers::actionTypeToStr(action_type)
             << std::endl;
   std::cout << "User? " << battle_buffer->getUser()->getBasePerson()->getName()
             << std::endl;
+#endif
 
   auto to_build = (action_type != ActionType::NONE);
   to_build &= (user != nullptr);
@@ -612,21 +613,18 @@ bool Battle::loadMenuForActor(BattleActor* actor)
 
   if(success && party_allies)
   {
-    std::cout << "Building battle items for player!" << std::endl;
     success &= actor->buildBattleItems(party_allies->getInventory(), actors);
 
-    for(auto& battle_item : actor->getBattleItems())
-    {
-      battle_item->print();
-    }
+    // for(auto& battle_item : actor->getBattleItems())
+    // {
+    //   battle_item->print();
+    // }
 
     success &= actor->buildBattleSkills(actors);
 
     if(success)
     {
-      std::cout << "Clearing the menu for a new actor." << std::endl;
       battle_menu->clear();
-
       success &= battle_menu->setActor(actor);
       battle_menu->setSelectableTypes(actor->getValidActionTypes());
       battle_menu->setSelectableItems(actor->getBattleItems());
@@ -712,7 +710,6 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
     }
     else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
     {
-      std::cout << "[RenderElement] Alter Value Creation" << std::endl;
       // TODO: Non-VITA altering stats?
       element->createAsDamageValue(
           std::abs(outcome.damage), DamageType::HEALING,
@@ -846,11 +843,11 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
     //     next_actor->buildBattleItems(party_enemies->getInventory(), actors);
     success &= next_actor->buildBattleSkills(actors);
 
-    std::cout << "----- Enemy Valid Battle Skills ----- " << std::endl;
-    auto battle_skills = next_actor->getBattleSkills();
+    // std::cout << "----- Enemy Valid Battle Skills ----- " << std::endl;
+    // auto battle_skills = next_actor->getBattleSkills();
 
-    for(auto battle_skill : battle_skills)
-      battle_skill->print();
+    // for(auto battle_skill : battle_skills)
+    //   battle_skill->print();
 
     // curr_module->setItems(next_actor->getBattleItems());
     curr_module->setSkills(next_actor->getBattleSkills());
@@ -962,9 +959,8 @@ void Battle::processEventAction(Action* curr_action, BattleActor* target)
 
   auto action_hits = event->doesActionHit(target);
 
-  if(action_hits)
+  if(action_hits == SkillHitStatus::HIT)
   {
-    // std::cout << "Action Hits!" << std::endl;
     if(curr_action->actionFlag(ActionFlags::DAMAGE))
     {
       outcome.critical = event->doesActionCrit(target);
@@ -993,18 +989,22 @@ void Battle::processEventAction(Action* curr_action, BattleActor* target)
     }
     else if(curr_action->actionFlag(ActionFlags::ALTER))
     {
-      std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
+      //std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
       outcome.damage = event->calcAltering(target);
       outcome.actor_outcome_state = ActionState::PLEP;
     }
   }
-  else
+  else if(action_hits == SkillHitStatus::MISS)
   {
     outcome.damage = 0;
     outcome.actor_outcome_state = ActionState::ACTION_MISS;
 
     if(curr_action->actionFlag(ActionFlags::INFLICT))
       outcome.actor_outcome_state = ActionState::INFLICTION_MISS;
+  }
+  else if(action_hits == SkillHitStatus::INVALID)
+  {
+    outcome.actor_outcome_state = ActionState::ACTION_END;
   }
 
   event->actor_outcomes.push_back(outcome);
@@ -1259,7 +1259,10 @@ void Battle::updateProcessing()
   if(!battle_buffer->isSorted())
   {
     battle_buffer->reorder();
+
+#ifdef UDEBUG
     battle_buffer->print(false);
+#endif
   }
 
   /* Check if the current event is finished processing */
@@ -1358,18 +1361,16 @@ void Battle::updateUserSelection()
       /* If confused -> put in a random selection, else allow selection */
       if(next_actor->getFlag(ActorState::SELECTION_RANDOM))
       {
-        // std::cout << " Attempting to choose a a random action for actor: "
-        //           << next_actor->getBasePerson()->getName() << "." <<
-        //           std::endl;
-
         auto next_module = getModuleOfActor(next_actor);
         next_module->resetForNewTurn(next_actor);
         next_actor->buildBattleSkills(actors);
 
-        auto battle_skills = next_actor->getBattleSkills();
+// #ifdef UIDEBUG
+//         auto battle_skills = next_actor->getBattleSkills();
 
-        for(auto& battle_skill : battle_skills)
-          battle_skill->print();
+//         for(auto& battle_skill : battle_skills)
+//           battle_skill->print();
+// #endif
 
         next_module->setSkills(next_actor->getBattleSkills());
 
@@ -2745,18 +2746,22 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
   if(event.keysym.sym == SDLK_INSERT)
   {
+#ifdef UDEBUG
     if(party_allies && party_allies->getInventory())
       party_allies->getInventory()->print(false);
+#endif
   }
 
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     battle_menu->keyDownEvent();
   else
   {
+#ifdef UDEBUG
     if(event.keysym.sym == SDLK_DELETE && battle_buffer)
       battle_buffer->print(false);
     else if(event.keysym.sym == SDLK_INSERT && battle_buffer)
       battle_buffer->print(true);
+#endif
   }
 
   return false;
@@ -2997,7 +3002,9 @@ void Battle::setNextTurnState()
   else if(turn_state == TurnState::OUTCOME)
     turn_state = TurnState::FINISHED;
 
+#ifdef UDEBUG
   std::cout << "[Turn] " << Helpers::turnStateToStr(turn_state) << std::endl;
+#endif
 }
 
 bool Battle::update(int32_t cycle_time)

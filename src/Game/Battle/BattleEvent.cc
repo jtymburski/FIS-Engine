@@ -565,7 +565,7 @@ SkillHitStatus BattleEvent::doesSkillHit()
   return status;
 }
 
-bool BattleEvent::doesActionHit(BattleActor* curr_target)
+SkillHitStatus BattleEvent::doesActionHit(BattleActor* curr_target)
 {
   auto curr_action = getCurrAction();
 
@@ -590,12 +590,15 @@ bool BattleEvent::doesActionHit(BattleActor* curr_target)
 
     if(go_to_chance)
     {
-      return Helpers::chanceHappens(
-          static_cast<uint32_t>(curr_action->getChance()), 100);
+      if(Helpers::chanceHappens(
+          static_cast<uint32_t>(curr_action->getChance()), 100))
+        return SkillHitStatus::HIT;
+
+      return SkillHitStatus::MISS;
     }
   }
 
-  return false;
+  return SkillHitStatus::INVALID;
 }
 
 int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target)

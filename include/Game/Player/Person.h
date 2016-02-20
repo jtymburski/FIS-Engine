@@ -9,7 +9,7 @@
 *
 * [1]: AttributeSets outside of and during Battle:
 *
-* In & Out of Battle
+* In & Out of Battlefmna
 * -------------
 * base_stats - the level 1 stats of the Person calculated by battle_class + race
 * base_max_stats - the level max stats of the Person calc by battle_class + race

@@ -238,30 +238,31 @@ void Victory::renderCard(VictoryCard& card)
     auto width = card.location.width;
     auto height = card.location.height;
 
-    double tan60 = std::tan(60.0 * 3.14159265358 / 180.0);
+    // double tan60 = std::tan(60.0 * 3.14159265358 / 180.0);
     double tan45 = std::tan(45.0 * 3.14159265358 / 180.0);
     double tan30 = std::tan(30.0 * 3.14159265358 / 180.0);
 
     auto col1_x = static_cast<int32_t>(x + std::floor(0.13 * (float)width));
     auto col1_y = static_cast<int32_t>(y + std::floor(0.05 * (float)height));
 
-    auto sprite_x = x;
+    auto sprite_x = x - std::floor(0.02 * (float)height);
     auto sprite_y = 0;
-    auto sprite_width = std::floor(0.55 * (float)width);
-    auto sprite_height = std::floor(0.65 * (float)height);
+    auto sprite_width = std::floor(0.62 * (float)width);
+    auto sprite_height = std::floor(0.77 * (float)height);
 
     auto tile_size = std::floor(0.21 * (float)width);
 
-    auto col2_x = static_cast<int32_t>(x + std::floor(0.43 * (float)width));
+    auto col2_x = static_cast<int32_t>(x + std::floor(0.40 * (float)width));
     // auto col2_y = y + std::floor(0.05 * (float)height);
 
     Text t_name(victory_font);
     Text t_level(victory_font);
+    Text t_level_no(victory_font);
     Text t_rank(victory_font);
     Text t_exp(victory_font);
     Text t_next(victory_font);
-    Text t_exp_val(small_font);
-    Text t_next_val(small_font);
+    Text t_exp_val(victory_font);
+    Text t_next_val(victory_font);
 
     /* Render the base frame */
     test_render->render(renderer, x, y, width, height);
@@ -273,35 +274,35 @@ void Victory::renderCard(VictoryCard& card)
 
       if(base_person)
       {
-        /*----------------------------------------------------------------------
-         *  COLUMN ONE
-         *--------------------------------------------------------------------*/
-        auto rank_str = "RANK :" + Helpers::rankToStr(base_person->getRank());
-        // auto level_str = "Level " + std::to_string(base_person->getLevel());
+        auto level = base_person->getLevel();
+        auto rank_str = "RANK   " + Helpers::rankToStr(base_person->getRank());
         t_name.setText(renderer, base_person->getName(), color);
-        // t_level.setText(renderer, level_str, color);
+        t_level.setText(renderer, "Level", color);
+        t_level_no.setText(renderer, std::to_string(base_person->getLevel()),
+                           color);
         t_rank.setText(renderer, rank_str, color);
         t_next.setText(renderer, "NEXT", color);
 
         auto total_exp = base_person->getTotalExp();
+        auto exp_left = card.exp_left;
 
-        auto next_exp =
-            base_person->getExpAt(base_person->getLevel() + 1) - total_exp;
+        int32_t next_exp = 0;
+        if(level != Person::kNUM_LEVELS)
+          next_exp = base_person->getExpAt(level + 1) - total_exp;
 
-        auto total_exp_str = "EXP  " + std::to_string(total_exp);
+        auto gain_exp_str = "GAIN " + std::to_string(exp_left);
         auto next_exp_str = "NEXT " + std::to_string(next_exp);
         // std::to_string(static_cast<int>(base_person->getExpMod() * 100))
 
-        t_exp_val.setText(renderer, total_exp_str, exp_color);
+        t_exp_val.setText(renderer, gain_exp_str, exp_color);
         t_next_val.setText(renderer, next_exp_str, exp_color);
 
-        auto t_level_y =
-            col1_y + t_name.getHeight() + std::floor(0.01 * height);
-        sprite_y = t_level_y + t_level.getHeight() + std::floor(0.01 * height);
-
+        /*----------------------------------------------------------------------
+         *  COLUMN ONE
+         *--------------------------------------------------------------------*/
         t_name.render(renderer, col1_x, col1_y);
-        t_level.render(renderer, col1_x, t_level_y);
 
+        sprite_y = col1_y + t_name.getHeight() - std::floor(0.01 * height);
         card.sprite_actor->render(renderer, sprite_x, sprite_y, sprite_width,
                                   sprite_height);
 
@@ -331,7 +332,7 @@ void Victory::renderCard(VictoryCard& card)
 
         /* TOP TRAPEZOID
          *----------------------------------------------------*/
-        SDL_SetRenderDrawColor(renderer, 228, 134, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 204, 102, 0, 255);
 
         if(xp_pc > 0.50)
         {
@@ -340,7 +341,7 @@ void Victory::renderCard(VictoryCard& card)
           auto b1 = hex_width - 2 * delta_x;
 
           Coordinate d;
-          d.x = col2_x;
+          d.x = col2_x + 1;
           d.y = col1_y + half_hex - height + 2;
 
           Frame::renderTrapezoid(d, height, b1, hex_width, renderer);
@@ -360,8 +361,8 @@ void Victory::renderCard(VictoryCard& card)
           double delta_x = tan30 * delta_y;
 
           // TODO: Magical 6
-          double b1 = hex_size + 6 - 2 * delta_x;
-          double b2 = b1 - 2 * inset_x;
+          double b1 = hex_size + 8 - 2 * delta_x;
+          double b2 = b1 - 2 * inset_x + 1;
 
           Coordinate c;
           c.x = col2_x + 2 + std::round(delta_x);
@@ -370,8 +371,19 @@ void Victory::renderCard(VictoryCard& card)
           b1 = std::round(b1);
           b2 = std::round(b2);
 
-          Frame::renderTrapezoid(c, height, b1, b2, renderer);
+          Frame::renderTrapezoid(c, height + 1, b1, b2, renderer);
         }
+
+        /* HEXAGONAL BORDER
+         *----------------------------------------------------*/
+        SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
+        Frame::renderHexagonBorder(outer_hex, hex_size, renderer);
+        Frame::renderHexagonBorder({outer_hex.x - 1, outer_hex.y}, hex_size,
+                                   renderer);
+        Frame::renderHexagonBorder({outer_hex.x, outer_hex.y + 1}, hex_size,
+                                   renderer);
+        Frame::renderHexagonBorder({outer_hex.x + 1, outer_hex.y}, hex_size,
+                                   renderer);
 
         /* INNER HEXAGON
          *----------------------------------------------------*/
@@ -380,16 +392,31 @@ void Victory::renderCard(VictoryCard& card)
         Coordinate top_left = {col2_x + 1 + hex_inset, col1_y + 1 + hex_inset};
         Frame::renderHexagon(top_left, inner_hex_size, renderer);
 
+        SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
+        Frame::renderHexagonBorder(top_left, inner_hex_size, renderer);
+
+        auto inner_hex_w =
+            2 * tan30 * (inner_hex_size / 2) + tan45 * (inner_hex_size / 2);
+        auto third_of_hex = (uint32_t)(std::round(inner_hex_size / 3.0));
+        auto t_level_x = top_left.x + (inner_hex_w - t_level.getWidth()) / 2;
+        auto t_level_y = top_left.y + third_of_hex - t_level.getHeight() / 2;
+
+        t_level.render(renderer, t_level_x, t_level_y);
+
+        auto t_level_no_x =
+            top_left.x + (inner_hex_w / 2) - (t_level_no.getWidth() / 2);
+        auto t_level_no_y =
+            top_left.y + 2 * third_of_hex - t_level_no.getHeight() / 2;
+
+        t_level_no.render(renderer, t_level_no_x, t_level_no_y);
+
+        auto t_exp_val_y = col1_y + hex_size + std::floor(0.02 * height);
+        auto t_next_val_y =
+            t_exp_val_y + t_exp_val.getHeight() + std::floor(0.01 * height);
+
         /* Render Column 2 */
-        // auto t_exp_y = col1_y + tile_size;
-        // t_exp_val.render(renderer, col2_x, t_exp_y);
-
-        // auto t_next_y =
-        //     col1_y + t_exp_val.getHeight() + std::floor(0.01 * height);
-
-        // t_next_val.render(renderer, col2_x, t_next_y);
-
-        /* Render Column 3 */
+        t_exp_val.render(renderer, col2_x, t_exp_val_y);
+        t_next_val.render(renderer, col2_x, t_next_val_y);
       }
     }
   }
@@ -452,15 +479,20 @@ bool Victory::update(int32_t cycle_time)
       if(card.exp_left > 0 && card.card_actor &&
          card.card_actor->getBasePerson())
       {
-        card.card_actor->getBasePerson()->addExp(1, true);
-        card.exp_left -= 1;
+        /* Add 3% of Remaining EXP_LEFT, or 1, if possible */
+        auto add_exp = (int32_t)(std::floor(0.01 * (float)card.exp_left));
+        add_exp = std::max(1, add_exp);
+
+        card.card_actor->getBasePerson()->addExp(add_exp, true);
+        card.exp_left -= add_exp;
 
         if(card.exp_left == 0)
-          dim_time += 2000;
+          card.exp_left += 1000;
+        // dim_time += 2000;
       }
       else
       {
-        victory_state = VictoryState::SLIDE_OUT_CARD;
+        // victory_state = VictoryState::SLIDE_OUT_CARD;
       }
     }
   }

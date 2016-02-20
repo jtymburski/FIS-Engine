@@ -36,7 +36,6 @@ struct VictoryCard
 
   /* Card Sprites */
   Sprite* sprite_actor;
-
   Sprite* sprite_head;
   Sprite* sprite_body;
   Sprite* sprite_feet;
@@ -56,6 +55,8 @@ struct VictoryCard
 /* The loot information */
 struct LootCard
 {
+
+
 };
 
 class Victory

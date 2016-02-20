@@ -702,6 +702,18 @@ void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x, SDL_Renderer* renderer)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Frame::drawLine(std::vector<Coordinate> line_points, SDL_Renderer* renderer)
+{
+  for(auto& point : line_points)
+    SDL_RenderDrawPoint(renderer, point.x, point.y);
+}
+
+/*
  * Description: This renders an entire triangle but it requires that the bottom
  *              half of the triangle is horizontally flat (y2 and y3)
  *
@@ -1041,9 +1053,9 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
     SDL_RenderDrawPoint(renderer, x0, y0);
     if(radius > 0)
     {
-      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer); /* R */
-      Frame::drawLine(x0, x0 - radius, y0, renderer); /* L */
-      Frame::drawLineY(y0, y0 - radius, x0, renderer); /* T */
+      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer);  /* R */
+      Frame::drawLine(x0, x0 - radius, y0, renderer);          /* L */
+      Frame::drawLineY(y0, y0 - radius, x0, renderer);         /* T */
       Frame::drawLineY(y0 + 1, y0 + radius + 1, x0, renderer); /* B */
     }
 
@@ -1351,6 +1363,32 @@ bool Frame::renderHexagon(Coordinate start, int32_t h, SDL_Renderer* renderer)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Frame::renderHexagonBorder(Coordinate start, int32_t h,
+                                SDL_Renderer* renderer)
+{
+  if(h < 2 || renderer == nullptr)
+    return false;
+
+  /* Hexagons must be even */
+  if(h % 2 != 0)
+    h -= 1;
+
+  /* Render the top portion of the heaxagon as a normalized top trapezoid */
+  renderTrapezoidNormalTopBorder(start, h / 2, renderer, true);
+
+  /* Render the bottom portion of the hexagon as a norm. bottom trapezoid */
+  renderTrapezoidNormalBottomBorder({start.x, start.y + (h / 2)}, h / 2,
+                                    renderer, true);
+
+  return true;
+}
+
+/*
  * Description: Renders a normalized trapezoid with the upper base smaller
  *              than the bottom base (the "top" trapezoid"). This is achieved
  *              by calculating the points along the lines AB and DC, compiling
@@ -1395,6 +1433,36 @@ bool Frame::renderTrapezoidNormalTop(Coordinate start, int32_t h,
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Frame::renderTrapezoidNormalTopBorder(Coordinate start, int32_t h,
+                                           SDL_Renderer* renderer, bool hexagon)
+{
+  if(h == 0 || renderer == nullptr)
+    return false;
+
+  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
+  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+
+  Coordinate a{start.x, start.y + h};
+  Coordinate b{start.x + tan30_h, start.y};
+  Coordinate c{start.x + tan30_h + tan45_h, start.y};
+  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y + h};
+
+  drawLine(Helpers::bresenhamPoints(b, c), renderer);
+  drawLine(Helpers::bresenhamPoints(a, b), renderer);
+  drawLine(Helpers::bresenhamPoints(d, c), renderer);
+
+  if(!hexagon)
+    drawLine(Helpers::bresenhamPoints(a, d), renderer);
+
+  return true;
+}
+
+/*
  * Description: Renders a normalized trapezoid with the upper base larger than
  *              the bottom base (the "tbottom" trapezoid"). This is achieved
  *              by calculating the points along the lines AB and DC, compiling
@@ -1432,6 +1500,37 @@ bool Frame::renderTrapezoidNormalBottom(Coordinate start, int32_t h,
   auto right_points = Helpers::bresenhamPoints(d, c);
 
   renderFillLineToLine(left_points, right_points, renderer);
+
+  return true;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ * Notes:
+ */
+bool Frame::renderTrapezoidNormalBottomBorder(Coordinate start, int32_t h,
+                                        SDL_Renderer* renderer, bool hexagon)
+{
+  if(h == 0 || renderer == nullptr)
+    return false;
+
+  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
+  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+
+  Coordinate a{start.x, start.y};
+  Coordinate b{start.x + tan30_h, start.y + h};
+  Coordinate c{start.x + tan30_h + tan45_h, start.y + h};
+  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y};
+
+  drawLine(Helpers::bresenhamPoints(a, b), renderer);
+  drawLine(Helpers::bresenhamPoints(d, c), renderer);
+  drawLine(Helpers::bresenhamPoints(b, c), renderer);
+
+  if(!hexagon)
+    drawLine(Helpers::bresenhamPoints(a, d), renderer);
 
   return true;
 }

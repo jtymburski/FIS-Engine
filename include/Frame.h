@@ -147,6 +147,10 @@ private:
   static void drawLineY(int32_t y1, int32_t y2, int32_t x,
                         SDL_Renderer* renderer);
 
+  /* Draws a line given a vector of coordinates */
+  static void drawLine(std::vector<Coordinate> line_points,
+                       SDL_Renderer* renderer);
+
   /* Render bottom flat triangle - handled by renderTriangle() */
   static void renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
                                        uint16_t y1, uint16_t y23,
@@ -197,13 +201,27 @@ public:
   static bool renderHexagon(Coordinate start, int32_t h,
                             SDL_Renderer* renderer);
 
+  /* Renders a Hexagonal border */
+  static bool renderHexagonBorder(Coordinate start, int32_t h,
+                                  SDL_Renderer* renderer);
+
   /* Render the top part of a normalized trapezoid (half a hexagon) */
   static bool renderTrapezoidNormalTop(Coordinate start, int32_t h,
                                        SDL_Renderer* renderer);
 
+  /* Renders a trapezoidal normalized top border */
+  static bool renderTrapezoidNormalTopBorder(Coordinate start, int32_t h,
+                                             SDL_Renderer* renderer,
+                                             bool hexagon);
+
   /* Render the bottom part of a normalzied trapezoid */
   static bool renderTrapezoidNormalBottom(Coordinate start, int32_t h,
                                           SDL_Renderer* renderer);
+
+  /* Renders a trapezoidal normalized bottom border */
+  static bool renderTrapezoidNormalBottomBorder(Coordinate start, int32_t h,
+                                                SDL_Renderer* renderer,
+                                                bool hexagon);
 
   /*  Renders any trapezoid */
   static bool renderTrapezoid(Coordinate start, int32_t h, int32_t b1,

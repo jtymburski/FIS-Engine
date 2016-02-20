@@ -287,7 +287,7 @@ void RenderElement::createAsVictoryText(std::string victory_text,
 {
   text_string = victory_text;
   color = {0, 0, 0, 255};
-  setShadow({0, 128, 196, 255}, kACTION_SHADOW, kACTION_SHADOW);
+  setShadow({0, 128, 216, 255}, kACTION_SHADOW, kACTION_SHADOW);
   setTimes(2000, 1000, 1000);
   setTimeable(false);
   status = initialStatusFade();

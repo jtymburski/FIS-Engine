@@ -41,7 +41,8 @@ enum class SkillHitStatus
 {
   HIT,
   MISS,
-  DREAMSNARED
+  DREAMSNARED,
+  INVALID
 };
 
 enum class InflictionStatus
@@ -272,7 +273,7 @@ public:
   bool doesActionCrit(BattleActor* curr_target);
 
   /* Determines whether the action hits against the given target */
-  bool doesActionHit(BattleActor* curr_target);
+  SkillHitStatus doesActionHit(BattleActor* curr_target);
 
   /* Can the current person Run? */
   bool doesRunOccur();
