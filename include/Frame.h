@@ -208,6 +208,9 @@ public:
   /*  Renders any trapezoid */
   static bool renderTrapezoid(Coordinate start, int32_t h, int32_t b1,
                               int32_t b2, SDL_Renderer* renderer);
+
+  static bool renderFoursided(Coordinate a, Coordinate b, Coordinate c,
+                              Coordinate d);
 };
 
 #endif // FRAME_H

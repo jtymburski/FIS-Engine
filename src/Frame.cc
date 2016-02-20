@@ -1041,9 +1041,9 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
     SDL_RenderDrawPoint(renderer, x0, y0);
     if(radius > 0)
     {
-      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer);  /* R */
-      Frame::drawLine(x0, x0 - radius, y0, renderer);          /* L */
-      Frame::drawLineY(y0, y0 - radius, x0, renderer);         /* T */
+      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer); /* R */
+      Frame::drawLine(x0, x0 - radius, y0, renderer); /* L */
+      Frame::drawLineY(y0, y0 - radius, x0, renderer); /* T */
       Frame::drawLineY(y0 + 1, y0 + radius + 1, x0, renderer); /* B */
     }
 
@@ -1485,3 +1485,14 @@ bool Frame::renderTrapezoid(Coordinate start, int32_t h, int32_t b1, int32_t b2,
 
   return true;
 }
+
+// bool Frame::renderFoursided(Coordinate a, Coordinate b, Coordinate c,
+//                             Coordinate d)
+// {
+//   auto left_points = Helpers::bresenhamPoints(a, b);
+//   auto right_points = Helpers::bresenhamPoints(d, c);
+
+//   renderFillLineToLine(left_points, right_points, renderer);
+
+//   return true;
+// }
