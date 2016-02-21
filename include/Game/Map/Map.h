@@ -24,6 +24,7 @@
 // #include "Game/Map/MapStatusBar.h"
 #include "Game/Map/MapThing.h"
 #include "Game/Map/MapViewport.h"
+#include "Game/Map/Menu.h"
 // #include "Game/Map/Sector.h"
 #include "Game/Map/Tile.h"
 #include "Game/Lay.h"

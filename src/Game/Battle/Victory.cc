@@ -480,7 +480,7 @@ bool Victory::update(int32_t cycle_time)
       }
       else
       {
-        victory_state = VictoryState::SLIDE_IN_LOOT;
+        victory_state = VictoryState::PROCESS_CARD;
       }
     }
   }
