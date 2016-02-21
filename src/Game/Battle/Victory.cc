@@ -120,6 +120,23 @@ bool Victory::buildLoot()
 {
   auto success = true;
 
+  uint32_t credits;
+  std::vector<uint32_t> loot;
+
+  for(auto& enemy : losers)
+  {
+    if(enemy && enemy->getBasePerson())
+    {
+//      credits += enemy->getCreditDrop());
+  //    loot += enemy->getBasePerson()->getLoot();
+    }
+  }
+
+  loot_card.credit_drop = credits;
+  loot_card.item_drops = loot;
+  loot_card.location.point.x = config->getScreenWidth();
+  //loot_card.location.point.y = (config->getScreenHeight());
+
   return success;
 }
 
@@ -318,9 +335,7 @@ void Victory::renderCard(VictoryCard& card)
         auto hex_width = 2 * tan30 * half_hex + tan45 * half_hex;
         auto hex_inset = 15;
         auto inner_hex_size = tile_size - hex_inset * 2;
-
         auto xp_pc = (float)base_person->findExpPercent() / 100.0;
-        std::cout << "XP Percent: " << xp_pc << std::endl;
 
         /*  OUTER HEXAGON
          *----------------------------------------------------*/
@@ -465,9 +480,13 @@ bool Victory::update(int32_t cycle_time)
       }
       else
       {
-        victory_state = VictoryState::PROCESS_CARD;
+        victory_state = VictoryState::SLIDE_IN_LOOT;
       }
     }
+  }
+  else if(victory_state == VictoryState::SLIDE_IN_LOOT)
+  {
+
   }
   /* Update the actual state of victory */
   else if(victory_state == VictoryState::PROCESS_CARD)
@@ -487,12 +506,11 @@ bool Victory::update(int32_t cycle_time)
         card.exp_left -= add_exp;
 
         if(card.exp_left == 0)
-          card.exp_left += 1000;
-        // dim_time += 2000;
+          dim_time += 2000;
       }
       else
       {
-        // victory_state = VictoryState::SLIDE_OUT_CARD;
+        victory_state = VictoryState::SLIDE_OUT_CARD;
       }
     }
   }

@@ -55,8 +55,13 @@ struct VictoryCard
 /* The loot information */
 struct LootCard
 {
+  /* Actual loot of the loot card */
+  std::vector<uint32_t> item_drops;
+  uint32_t credit_drop;
 
-
+  /* Location of the loot card */
+  Box location;
+  Box end_location;
 };
 
 class Victory
@@ -87,6 +92,9 @@ private:
 
   /* Vector of Battle actors to calculate experience/loot with */
   std::vector<BattleActor*> losers;
+
+  /* The loot card */
+  LootCard loot_card;
 
   /* The active Victory screen `er */
   SDL_Renderer* renderer;
