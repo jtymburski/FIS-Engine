@@ -166,7 +166,6 @@ bool RenderElement::buildSprite(std::string path, int32_t num_frames)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-
 void RenderElement::createAsActionText(std::string action_name)
 {
   text_string = action_name;
@@ -375,40 +374,6 @@ void RenderElement::updateStatusPlep(int32_t cycle_time)
     {
       status = RenderStatus::TIMED_OUT;
     }
-    // else if(render_type == RenderType::UNDERLAY ||
-    //         render_type == RenderType::MIDLAY ||
-    //         render_type == RenderType::OVERLAY)
-    // {
-    //   element_sprite->setOpacity(alpha);
-    //   velocity.x += (acceleration.x * cycle_time);
-    //   velocity.y += (acceleration.y * cycle_time);
-
-    //   delta.x += velocity.x * cycle_time;
-    //   delta.y += velocity.y * cycle_time;
-
-    //   if(std::abs(delta.x) >= 1.00)
-    //   {
-    //     auto neg_delta_x = std::floor(delta.x);
-
-    //     location.point.x += neg_delta_x;
-    //     delta.x -= neg_delta_x;
-    //   }
-
-    //   if(std::abs(delta.y) >= 1.00)
-    //   {
-    //     auto neg_delta_y = std::floor(delta.y);
-
-    //     location.point.y += neg_delta_y;
-    //     delta.y -= neg_delta_y;
-    //   }
-
-    //   // TODO: Require resolution/size
-    //   // TODO: Overlay --> into class
-    //   if(location.point.x > 2432)
-    //     location.point.x -= 2432;
-    //   // if(location.point.y > 704)
-    //   //   location.point.y -= 704;
-    // }
   }
 }
 
@@ -449,13 +414,8 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
 
     if(status == RenderStatus::FADING_IN)
     {
-      float delta_a = color.a * 1.0 / time_fade_in * cycle_time;
-      delta_a = std::max(1.0, (double)delta_a);
-
-      if(alpha + delta_a > color.a)
-        alpha = color.a;
-      else
-        alpha += delta_a;
+      alpha =
+          Helpers::calcAlphaFadeIn(cycle_time, alpha, time_fade_in, color.a);
     }
     else if(status == RenderStatus::DISPLAYING)
     {
@@ -463,13 +423,7 @@ void RenderElement::updateStatusFade(int32_t cycle_time)
     }
     else if(status == RenderStatus::FADING_OUT && time_fade_out != 0)
     {
-      float delta_a = color.a * 1.0 / time_fade_out * cycle_time;
-      delta_a = std::max(1.0, (double)delta_a);
-
-      if(delta_a > alpha)
-        alpha = 0;
-      else if(alpha - delta_a >= 0)
-        alpha -= delta_a;
+      alpha = Helpers::calcAlphaFadeOut(cycle_time, alpha, time_fade_out);
     }
   }
 }

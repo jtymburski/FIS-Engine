@@ -63,6 +63,11 @@ struct Coordinate
 
   int32_t x;
   int32_t y;
+
+  bool operator==(const Coordinate& b)
+  {
+    return ((x == b.x) && (y == b.y));
+  }
 };
 
 /* Coordinate with floats */
@@ -325,6 +330,14 @@ public:
   static std::vector<Coordinate> bresenhamPoints(Coordinate begin,
                                                  Coordinate end);
 
+  /* Calculates the alpha fade in value given a cycle time */
+  static uint8_t calcAlphaFadeIn(int32_t cycle_time, uint8_t alpha,
+                                 uint32_t fade_time, uint8_t alpha_max = 255);
+
+  /* Calculates the alpha fade out value given a cycle time */
+  static uint8_t calcAlphaFadeOut(int32_t cycle_time, uint8_t alpha,
+                                  uint32_t fade_time, uint8_t alpha_min = 0);
+
   /* Color getting functions for various alpha states */
   static uint8_t calcColorRed(SDL_Color color, uint8_t alpha);
   static uint8_t calcColorGreen(SDL_Color color, uint8_t alpha);
@@ -338,11 +351,23 @@ public:
   static void deleteMasks();
 
   /* Checks to see whether a given test coordiante is within a range */
-  static bool isWithinRange(Coordinate test, Coordinate top_l, Coordinate bot_r);
+  static bool isWithinRange(Coordinate test, Coordinate top_l,
+                            Coordinate bot_r);
 
   /* Returns the static masks created. NULL if not initialized */
   static SDL_Texture* getMaskBlack();
   static SDL_Texture* getMaskWhite();
+
+  /* Update the position of a unit given a cycle time and velocity */
+  static int32_t updatePosition(int32_t cycle_time, int32_t curr_pos,
+                                int32_t end_pos, float velocity);
+
+  /* Update an (X, Y) coordinate given a curr position and end position */
+  static Coordinate updateCoordinate(int32_t cycle_time, Coordinate current,
+                                     Coordinate final, float velocity);
+
+  static float updateHoverBrightness(int32_t time_elapsed, float cycle_rate,
+                           float min_value, float max_value);
 };
 
 #endif // HELPERS_H

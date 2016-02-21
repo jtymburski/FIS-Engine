@@ -2580,8 +2580,9 @@ void Battle::updateRenderSprites(int32_t cycle_time)
         {
           if(battle_menu->getActor() == actor)
           {
-            brightness = 0.3 * sin((float)time_elapsed * kCYCLE_RATE);
-            brightness = 0.7 + fabs(brightness);
+            brightness = Helpers::updateHoverBrightness(time_elapsed, kCYCLE_RATE, 0.7, 1.0);
+            // brightness = 0.3 * sin((float)time_elapsed * kCYCLE_RATE);
+            // brightness = 0.7 + fabs(brightness);
           }
         }
         /* Brightness for selected targets */

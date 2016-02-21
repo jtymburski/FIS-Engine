@@ -45,19 +45,19 @@ ENUM_FLAGS(ActorState)
 enum class ActorState
 {
   // clang-format off
-  ITM_ENABLED       = 1 << 5, /* Can the person use item in battle? */
-  DEF_ENABLED       = 1 << 6, /* Can the person use 'Defend'? */
-  GRD_ENABLED       = 1 << 7, /* Can theisin person use 'Guard?' */
-  IMP_ENABLED       = 1 << 8, /* Can the person use 'Implode'? */
-  INS_ENABLED       = 1 << 9, /* Can the person use 'Inspect' ? */
-  RUN_ENABLED       = 1 << 10, /* Can the person use 'Run'? */
-  PAS_ENABLED       = 1 << 11, /* Can the person use 'Pass'? */
-  REVIVABLE         = 1 << 12, /* Can this person be revived if they are KO? */
-  ALLY              = 1 << 15, /* Is this \actor an ally */
-  SELECTION_RANDOM  = 1 << 16,
-  SELECTION_SKIP    = 1 << 17,
-  MENU_HOVERED      = 1 << 18,
-  MISS_NEXT_TARGET  = 1 << 19
+  ITM_ENABLED       = 1 << 0, /* Can the person use item in battle? */
+  DEF_ENABLED       = 1 << 1, /* Can the person use 'Defend'? */
+  GRD_ENABLED       = 1 << 2, /* Can theisin person use 'Guard?' */
+  IMP_ENABLED       = 1 << 3, /* Can the person use 'Implode'? */
+  INS_ENABLED       = 1 << 4, /* Can the person use 'Inspect' ? */
+  RUN_ENABLED       = 1 << 5, /* Can the person use 'Run'? */
+  PAS_ENABLED       = 1 << 6, /* Can the person use 'Pass'? */
+  REVIVABLE         = 1 << 7, /* Can this person be revived if they are KO? */
+  ALLY              = 1 << 8, /* Is this \actor an ally */
+  SELECTION_RANDOM  = 1 << 9,
+  SELECTION_SKIP    = 1 << 10,
+  MENU_HOVERED      = 1 << 11,
+  MISS_NEXT_TARGET  = 1 << 12
   // clang-format on
 };
 

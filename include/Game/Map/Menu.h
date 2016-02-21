@@ -15,6 +15,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "EnumFlags.h"
 #include "Helpers.h"
 #include "Game/EventHandler.h"
 #include "Options.h"
@@ -30,8 +31,15 @@ enum MenuType
 
 struct TitleElement
 {
-  TitleElement() : name{""}, enabled{false}, menu_type{MenuType::INVALID} {};
+  /* Default TitleElement Constructor */
+  TitleElement()
+      : name{""},
+        enabled{false},
+        hovered{false},
+        hover_time{0},
+        menu_type{MenuType::INVALID} {};
 
+  /* General TitleElement Constructor */
   TitleElement(std::string name, bool enabled, MenuType menu_type)
       : TitleElement()
   {
@@ -46,12 +54,21 @@ struct TitleElement
   /* Is the TitleElement selectable? */
   bool enabled;
 
+  /* Whether this TitleElement is being hovered over */
+  bool hovered;
+
+  /* Time since this TitleElement is hovered on */
+  int32_t hover_time;
+
   /* Enumerated type */
   MenuType menu_type;
 };
 
 struct Window
 {
+  /* Current alpha for rendering the window */
+  uint8_t alpha;
+
   /* Resting point for the Window */
   Coordinate point;
 
@@ -68,7 +85,8 @@ struct Window
 ENUM_FLAGS(MenuState)
 enum class MenuState
 {
-
+  ENABLED = 1 << 1, /* Is selecting the menu permissible */
+  SHOWING = 1 << 2 /* Is the menu currently rendering */
 };
 
 class Menu
@@ -86,6 +104,9 @@ private:
 
   /* Assigned Configuration */
   Options* config;
+
+  /* Enumerated flags for the Menu */
+  MenuState flags;
 
   /* Main Section (Centre) Window */
   Window main_section;
@@ -108,14 +129,45 @@ private:
   /* Construct a vector of TitleElements for the Title Section */
   void buildTitleElements();
 
+  /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
+
+  void clearTitleSection();
+
+  void renderTitleSection();
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
-  void setEventHandler(EventHandler* event_handler);
+  /* Clear the Menu State */
+  void clear();
+
+  /* Hide the Menu */
+  void hide();
+
+  /* Show the Menu */
+  void show();
+
+  /* Render the Menu in its current state */
+  void render();
+
+  /* Update the menu with the current cycle time */
+  bool update(int32_t cycle_time);
+
+  /* Returns an evaluated MenuState flag */
+  bool getFlag(const MenuState& test_flag);
+
+  /* Assign Configuration */
   void setConfig(Options* config);
+
+  /* Assign EventHandler */
+  void setEventHandler(EventHandler* event_handler);
+
+  /* Assign a given MenuState flag a given value */
+  void setFlag(MenuState set_flags, const bool &set_value = true);
+
+  /* Assign Renderer */
   void setRenderer(SDL_Renderer* renderer);
 
   /*=============================================================================

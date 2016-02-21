@@ -2278,6 +2278,130 @@ std::vector<Coordinate> Helpers::bresenhamPoints(Coordinate begin,
 }
 
 /*
+ * Description: Update the position of a value given its current position and a
+ *              velocity and cycle_time, towards its end position, by at least
+ *              one unit per function call.
+ *
+ * Inputs: int32_t cycle_time - the given time for a cycle
+ *         int32_t curr_pos - the current position of the object
+ *         int32_t end_pos - the ending position of the object
+ *         float velocity - the velocity of the object
+ * Output:
+ */
+int32_t Helpers::updatePosition(int32_t cycle_time, int32_t curr_pos,
+                                int32_t end_pos, float velocity)
+{
+  auto distance = std::abs(curr_pos - end_pos);
+
+  if(distance == 1)
+  {
+    curr_pos = end_pos;
+  }
+  else
+  {
+    auto travel = std::min(cycle_time * velocity, (float)distance);
+
+    if(travel > 1 && end_pos < curr_pos)
+      curr_pos -= travel;
+    else if(travel > 1 && end_pos > curr_pos)
+      curr_pos += travel;
+    else if(end_pos < curr_pos)
+      curr_pos -= 1;
+    else if(end_pos > curr_pos)
+      curr_pos += 1;
+  }
+
+  return curr_pos;
+}
+
+/*
+ * Description: Updates an (X, Y) coordinate given a cycle time, starting and
+ *              ending coordinates and a velocity (in units / ms). This function
+ *              will update the object by at least one pixel.
+ *
+ * Inputs: int32_t cycle_time - given time of the cycle to update object on
+ *         Coordinate current - the current position of the object
+ *         Coordinate final - the final resting position of the object
+ *         float velocity - movement of the object in pixels / ms.
+ * Output:
+ */
+Coordinate Helpers::updateCoordinate(int32_t cycle_time, Coordinate current,
+                                     Coordinate final, float velocity)
+{
+  if(current.x != final.x)
+    current.x = updatePosition(cycle_time, current.x, final.x, velocity);
+  if(current.y != final.y)
+    current.y = updatePosition(cycle_time, current.y, final.y, velocity);
+
+  return current;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+float Helpers::updateHoverBrightness(int32_t time_elapsed, float cycle_rate,
+                           float min_value, float max_value)
+{
+  auto factor = max_value - min_value;
+
+  return fabs(factor * sin((float)time_elapsed * cycle_rate)) + min_value;
+}
+
+
+/*
+ * Description: Calculates and returns a new alpha value for fading in,
+ *              determined from a given cycle time as a portion of a fade in
+ *              time. This function will increment the alpha fade in by at least
+ *              one point.
+ *
+ * Inputs: int32_t cycle_time - time for the cycle
+ *         uint8_t alpha - current alpha value for the object fading in
+ *         uint32_t fade_time - total time for the object to fade in
+ *         uint8_t alpha_max - maximum alpha achievable
+ * Output: uint8_t - the new calculated alpha value
+ */
+uint8_t Helpers::calcAlphaFadeIn(int32_t cycle_time, uint8_t alpha,
+                                 uint32_t fade_time, uint8_t alpha_max)
+{
+  float delta_a = (float)alpha_max / fade_time * cycle_time;
+  delta_a = std::max((float)1, delta_a);
+
+  if(alpha + delta_a > alpha_max)
+    return alpha_max;
+
+  return alpha + delta_a;
+}
+
+/*
+ * Description: Calculates and returns a new alpha value for an object fading
+ *              out. Determined by using cycle time as a portion of a total
+ *              fade in time. Will decrement the fade in until a minimum alpha
+ *              opacity is reached, by at least 1 alpha point per call.
+ *
+ * Inputs: int32_t cycle_time - time for the cycle
+ *         uint8_t alpha - current alpha value for the object fading out
+ *         uint32_t fade_time - total time for the object fade out
+ *         uint8_t alpha_min - minimum alpha achievable
+ * Output: uint8_t - the new calculated alpha value
+ */
+uint8_t Helpers::calcAlphaFadeOut(int32_t cycle_time, uint8_t alpha,
+                                  uint32_t fade_time, uint8_t alpha_min)
+{
+  float delta_a = (float)alpha / fade_time * cycle_time;
+  delta_a = std::max((float)1, delta_a);
+
+  if(delta_a > alpha)
+    return 0;
+  if(alpha - delta_a >= alpha_min)
+    return alpha - delta_a;
+
+  return alpha_min;
+}
+
+/*
  * Description:
  *
  * Inputs:

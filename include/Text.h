@@ -16,6 +16,7 @@
 
 #include "Helpers.h"
 
+// WHAT IS THIS ABOMINATION !!!!!!!
 using namespace std;
 
 /*
@@ -103,7 +104,7 @@ public:
   /* Sets the text, stored in the internal texture */
   bool setText(SDL_Renderer* renderer, string text, SDL_Color text_color);
   bool setText(SDL_Renderer* renderer,
-               vector<vector<pair<string, TextProperty>>> text, 
+               vector<vector<pair<string, TextProperty>>> text,
                int length = -1);
 
   /* Clean up functions for the data stored in the class */

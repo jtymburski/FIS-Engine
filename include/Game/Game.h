@@ -22,6 +22,7 @@
 #include "Game/Battle/Battle.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
+#include "Game/Map/Menu.h"
 #include "Game/Player/Player.h"
 #include "Game/Player/Bubby.h"
 #include "Game/Player/Inventory.h"
@@ -101,6 +102,9 @@ private:
   Map map_ctrl; /* Main class */
   int map_lvl; /* Active level number */
 
+  /* Map Menu */
+  Menu map_menu;
+
   /* The mode that the game is currently running at */
   GameMode mode;
   LoadMode mode_load;
@@ -111,9 +115,6 @@ private:
 
   /* Number of ticks since inception */
   uint64_t ticks_total;
-
-  /* A current victory screen pointer */
-  //VictoryScreen* victory_screen;
 
   /* ------------ Constants --------------- */
 public:
@@ -154,10 +155,14 @@ private:
   void eventPickupItem(MapItem* item, bool walkover);
 
   /* The property modifier event */
-  void eventPropMod(MapThing* source, ThingBase type, int id, 
+  void eventPropMod(MapThing* source, ThingBase type, int id,
                     ThingProperty props, ThingProperty bools,
                     int respawn, int speed, TrackingState track,
                     int inactive);
+
+  /* Show/Hide the Menu */
+  bool eventMenuShow();
+  bool eventMenuHide();
 
   /* Starts a battle event. Using the given information */
   bool eventStartBattle(int person_id, int source_id);

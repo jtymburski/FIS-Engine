@@ -127,15 +127,17 @@ bool Victory::buildLoot()
   {
     if(enemy && enemy->getBasePerson())
     {
-//      credits += enemy->getCreditDrop());
-  //    loot += enemy->getBasePerson()->getLoot();
+      //      credits += enemy->getCreditDrop());
+      //    loot += enemy->getBasePerson()->getLoot();
     }
   }
 
+  //TODO
+  credits = 0;
   loot_card.credit_drop = credits;
   loot_card.item_drops = loot;
   loot_card.location.point.x = config->getScreenWidth();
-  //loot_card.location.point.y = (config->getScreenHeight());
+  // loot_card.location.point.y = (config->getScreenHeight());
 
   return success;
 }
@@ -249,7 +251,7 @@ void Victory::renderCard(VictoryCard& card)
     SDL_Color exp_color = {200, 200, 200, 255};
 
     auto victory_font = config->getFontTTF(FontName::BATTLE_HEADER);
-    auto small_font = config->getFontTTF(FontName::BATTLE_SMALL);
+    //auto small_font = config->getFontTTF(FontName::BATTLE_SMALL);
     auto x = card.location.point.x;
     auto y = card.location.point.y;
     auto width = card.location.width;
@@ -461,32 +463,15 @@ bool Victory::update(int32_t cycle_time)
     {
       auto& card = victory_cards.at(index);
 
-      if(card.location.point.x != card.end_location.point.x)
-      {
-        auto distance =
-            std::abs(card.location.point.x - card.end_location.point.x);
+      card.location.point = Helpers::updateCoordinate(
+          cycle_time, card.location.point, card.end_location.point, 2.0);
 
-        if(distance == 1)
-          card.location.point.x = card.end_location.point.x;
-        else
-        {
-          auto travel = std::min(cycle_time * 2, distance);
-
-          if(travel > 1)
-            card.location.point.x -= travel;
-          else
-            card.location.point.x -= 1;
-        }
-      }
-      else
-      {
+      if(card.location.point.x == card.end_location.point.x)
         victory_state = VictoryState::PROCESS_CARD;
-      }
     }
   }
   else if(victory_state == VictoryState::SLIDE_IN_LOOT)
   {
-
   }
   /* Update the actual state of victory */
   else if(victory_state == VictoryState::PROCESS_CARD)

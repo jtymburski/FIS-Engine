@@ -361,6 +361,29 @@ void Game::eventPropMod(MapThing* source, ThingBase type, int id,
                        inactive);
 }
 
+/* Show the Menu */
+bool Game::eventMenuShow()
+{
+  if(active_renderer && config)
+  {
+    map_menu.setRenderer(active_renderer);
+    map_menu.setConfig(config);
+    map_menu.setEventHandler(&event_handler);
+
+    map_menu.show();
+  }
+
+  return true;
+}
+
+/* Hide the Menu */
+bool Game::eventMenuHide()
+{
+  map_menu.hide();
+
+  return true;
+}
+
 /* Starts a battle event. Using the given information */
 bool Game::eventStartBattle(int person_id, int source_id)
 {
@@ -1205,6 +1228,9 @@ void Game::updateMode(int cycle_time)
       mode_next = NONE;
     }
   }
+
+  if(map_menu.getFlag(MenuState::SHOWING))
+    map_menu.update(cycle_time);
 }
 
 /*============================================================================
@@ -1501,7 +1527,17 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
   /* TESTING section - probably remove at end */
   /* Inventory Testing */
-  if(event.keysym.sym == SDLK_3)
+  if(event.keysym.sym == SDLK_d)
+  {
+    if(!map_menu.getFlag(MenuState::SHOWING))
+      eventMenuShow();
+  }
+  else if(event.keysym.sym == SDLK_f)
+  {
+    if(map_menu.getFlag(MenuState::SHOWING))
+      eventMenuHide();
+  }
+  else if(event.keysym.sym == SDLK_3)
   {
     if(player_main != nullptr && player_main->getSleuth() != nullptr &&
        player_main->getSleuth()->getInventory() != nullptr)
@@ -1662,6 +1698,8 @@ bool Game::load(SDL_Renderer* renderer, bool full_load)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
+  bool success{true};
+
   /* -- LOADING MODE -- */
   if(mode == LOADING)
   {
@@ -1675,7 +1713,7 @@ bool Game::render(SDL_Renderer* renderer)
   /* -- MAP MODE -- */
   if(mode == MAP)
   {
-    return map_ctrl.render(renderer);
+    success = map_ctrl.render(renderer);
   }
   /* -- BATTLE MODE -- */
   else if(mode == BATTLE)
@@ -1691,11 +1729,17 @@ bool Game::render(SDL_Renderer* renderer)
       battle_ctrl->setRenderer(renderer);
 
       /* Render the battle */
-      return battle_ctrl->render();
+      success = battle_ctrl->render();
     }
   }
 
-  return true;
+  if(map_menu.getFlag(MenuState::SHOWING))
+  {
+    map_menu.setRenderer(renderer);
+    map_menu.render();
+  }
+
+  return success;
 }
 
 /* Set the running configuration, from the options class */
@@ -1708,6 +1752,7 @@ bool Game::setConfiguration(Options* running_config)
 
     /* Set in secondary classes */
     map_ctrl.setConfiguration(running_config);
+    map_menu.setConfig(running_config);
 
     /* Battle configuration setup */
     if(battle_ctrl)
