@@ -1653,6 +1653,9 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Otherwise, send keys to the active view */
   else
   {
+    if(map_menu.getFlag(MenuState::SHOWING))
+      map_menu.keyDownEvent(event);
+
     /* -- MAP MODE -- */
     if(mode == MAP)
     {

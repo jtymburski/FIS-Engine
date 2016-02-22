@@ -2,7 +2,7 @@
  * Class Name: Equipment [Declaration]
  * Date Created: December 14th, 2013
  * Inheritance: Item
- * Description: Handles the equipment specialization of items which adds 
+ * Description: Handles the equipment specialization of items which adds
  *              signature implementation to the stock item to allow for bubby
  *              addition.
  *
@@ -20,17 +20,17 @@
 #include <iostream>
 #include <memory>
 
-#include "EnumDb.h"
-#include "EnumFlags.h"
-#include "Frame.h"
+//#include "EnumDb.h"
+//#include "EnumFlags.h"
+//#include "Frame.h"
 #include "Game/Player/Item.h"
 #include "Game/Player/Signature.h"
-#include "Game/Player/SkillSet.h"
+//#include "Game/Player/SkillSet.h"
 
 /* Flags unique to equipments */
 ENUM_FLAGS(EquipState)
 enum class EquipState
-{ 
+{
   TWO_HANDED  = 1 <<  0,
   EQUIPPED    = 1 <<  1,
   STAFF       = 1 <<  2,
@@ -51,7 +51,7 @@ public:
   Equipment();
 
   /* Constructs a base equipment item */
-  Equipment(const uint32_t &game_id, const std::string &name, 
+  Equipment(const uint32_t &game_id, const std::string &name,
   	        const uint32_t &value, const uint32_t &mass, const uint32_t &dura,
   	        Frame* thumb, const size_t &x, const size_t &y);
 

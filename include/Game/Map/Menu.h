@@ -21,12 +21,18 @@
 #include "Options.h"
 #include "Sprite.h"
 
-enum MenuType
+enum class MenuType
 {
   PARTY,
   INVENTORY,
   EXIT,
   INVALID,
+};
+
+enum class MenuLayer
+{
+  TITLE,
+  INVALID
 };
 
 struct TitleElement
@@ -108,6 +114,9 @@ private:
   /* Enumerated flags for the Menu */
   MenuState flags;
 
+  /* Current menu layer */
+  MenuLayer layer;
+
   /* Main Section (Centre) Window */
   Window main_section;
 
@@ -132,19 +141,32 @@ private:
   static const float kTITLE_ELEMENT_GAP;
   static const float kTITLE_CORNER_LENGTH;
 
-
   /*=============================================================================
    * PRIVATE FUNCTIONS
    *============================================================================*/
 private:
+  /* Construct the inventory display screen */
+  void buildInventoryScreen();
+
+  /* Construct the main section backdrop */
+  void buildMainBackdrop();
+
+  /* Construct a detail Person screen */
+  void buildPersonDetailScreen();
+
+  /* Construct the Sleuth overview screen */
+  void buildSleuthScreen();
+
   /* Construct a vector of TitleElements for the Title Section */
   void buildTitleElements();
 
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
 
+  /* Clear the title section data */
   void clearTitleSection();
 
+  /* Render the title section */
   void renderTitleSection();
 
   /*=============================================================================
@@ -156,6 +178,9 @@ public:
 
   /* Hide the Menu */
   void hide();
+
+  /* Key down event */
+  bool keyDownEvent(SDL_KeyboardEvent event);
 
   /* Show the Menu */
   void show();

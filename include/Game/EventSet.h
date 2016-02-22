@@ -419,10 +419,10 @@ public:
                                        int sound_id = kUNSET_ID);
 
   /* Creates a property modifier event */
-  static Event createEventPropMod(ThingBase type = ThingBase::THING, 
+  static Event createEventPropMod(ThingBase type = ThingBase::THING,
                 int id = kUNSET_ID, ThingProperty props = ThingProperty::NONE,
-                ThingProperty bools = ThingProperty::NONE, int respawn = 0, 
-                int speed = 0, TrackingState track = TrackingState::NOTRACK, 
+                ThingProperty bools = ThingProperty::NONE, int respawn = 0,
+                int speed = 0, TrackingState track = TrackingState::NOTRACK,
                 int inactive = 0, int sound_id = kUNSET_ID);
 
   /* Creates a sound event */
@@ -486,7 +486,7 @@ public:
   /* Extract data from event(s) */
   static bool dataEventGiveItem(Event event, int& item_id, int& count);
   static bool dataEventMultiple(Event event, std::vector<Event>& event_list);
-  static bool dataEventMultiple(Event* event, 
+  static bool dataEventMultiple(Event* event,
                                 std::vector<Event*>& event_list);
   static bool dataEventNotification(Event event, std::string& notification);
   static bool dataEventPropMod(Event event, ThingBase& type, int& id,

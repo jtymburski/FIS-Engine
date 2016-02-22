@@ -37,6 +37,7 @@ Menu::Menu()
     : event_handler{nullptr},
       config{nullptr},
       flags{static_cast<MenuState>(0)},
+      layer{MenuLayer::INVALID},
       renderer{nullptr},
       title_elements{},
       title_element_index{-1}
@@ -51,6 +52,26 @@ Menu::~Menu()
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+void Menu::buildInventoryScreen()
+{
+
+}
+
+void Menu::buildMainBackdrop()
+{
+
+}
+
+void Menu::buildPersonDetailScreen()
+{
+
+}
+
+void Menu::buildSleuthScreen()
+{
+
+}
 
 void Menu::buildTitleElements()
 {
@@ -213,6 +234,28 @@ void Menu::hide()
 {
   title_section.status = WindowStatus::HIDING;
   title_element_index = -1;
+  layer = MenuLayer::INVALID;
+}
+
+bool Menu::keyDownEvent(SDL_KeyboardEvent event)
+{
+  if(event.keysym.sym == SDLK_DOWN)
+  {
+    if(layer == MenuLayer::TITLE)
+    {
+      if(title_element_index + 1 < title_elements.size())
+        title_element_index++;
+      else
+        title_element_index = 0;
+    }
+  }
+  else if(event.keysym.sym == SDLK_UP)
+  {
+    if(title_element_index > 0)
+      title_element_index--;
+    else
+      title_element_index = title_elements.size() - 1;
+  }
 }
 
 void Menu::show()
@@ -226,6 +269,7 @@ void Menu::show()
 
   title_section.status = WindowStatus::SHOWING;
   title_element_index = 0;
+  layer = MenuLayer::TITLE;
 }
 
 void Menu::render()

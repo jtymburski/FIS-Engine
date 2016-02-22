@@ -25,12 +25,12 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
+//#include "Game/EventHandler.h"
 #include "Game/Battle/Victory.h"
-#include "Game/EventHandler.h"
 #include "Game/Battle/BattleEvent.h"
 #include "Game/Battle/Buffer.h"
 #include "Game/Battle/BattleMenu.h"
-#include "Game/Battle/RenderElement.h"
+//#include "Game/Battle/RenderElement.h"
 #include "Game/Player/Party.h"
 #include "Game/Lay.h"
 
@@ -283,8 +283,8 @@ private:
   void clearEvent();
 
   /* Creates a DamageElement RenderElement type on th given actor */
-  void createDamageElement(BattleActor* actor, DamageType damage_type,
-                           uint32_t amount);
+  void createDamageElement(
+      BattleActor* actor, DamageType damage_type, uint32_t amount);
 
   /* Returns true if the given actor needs to select a menu option */
   bool doesActorNeedToSelect(BattleActor* actor);
@@ -501,7 +501,7 @@ private:
 public:
   /* Creates a Lay of a given type */
   void createLay(std::string path, int32_t anim_time, Floatinate velocity,
-                 LayType lay_type);
+      LayType lay_type);
 
   /* Processes a KeyDown event */
   bool keyDownEvent(SDL_KeyboardEvent event);
@@ -559,8 +559,8 @@ public:
   bool setBattleDisplayData(BattleDisplayData* battle_display_data);
 
   /* Assigns scope frames */
-  bool setFrameScope(ActionScope scope, std::string path,
-                     SDL_Renderer* renderer);
+  bool setFrameScope(
+      ActionScope scope, std::string path, SDL_Renderer* renderer);
 
   /* Assigns the music trigger ID */
   void setMusicID(int id);

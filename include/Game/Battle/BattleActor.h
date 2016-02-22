@@ -32,10 +32,8 @@ class BattleItem;
 #include "Game/Battle/BattleSkill.h"
 #include "Game/Battle/BattleItem.h"
 #include "Game/Battle/BattleStats.h"
-#include "Game/Player/Ailment.h"
 #include "Game/Player/Inventory.h"
 #include "Game/Player/Person.h"
-#include "EnumFlags.h"
 
 using std::begin;
 using std::end;

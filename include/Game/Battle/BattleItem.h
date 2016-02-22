@@ -3,7 +3,7 @@
 
 class BattleActor;
 
-#include "EnumDb.h"
+//#include "EnumDb.h"
 #include "Game/Battle/BattleActor.h"
 #include "Game/Player/Item.h"
 
