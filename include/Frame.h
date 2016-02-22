@@ -147,10 +147,6 @@ private:
   static void drawLineY(int32_t y1, int32_t y2, int32_t x,
                         SDL_Renderer* renderer);
 
-  /* Draws a line given a vector of coordinates */
-  static void drawLine(std::vector<Coordinate> line_points,
-                       SDL_Renderer* renderer);
-
   /* Render bottom flat triangle - handled by renderTriangle() */
   static void renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
                                        uint16_t y1, uint16_t y23,
@@ -167,6 +163,10 @@ private:
    * PUBLIC STATIC FUNCTIONS
    *============================================================================*/
 public:
+    /* Draws a line given a vector of coordinates */
+  static void drawLine(std::vector<Coordinate> line_points,
+                       SDL_Renderer* renderer);
+
   /* Creates a bar, given the parameters and a renderer */
   static bool renderBar(uint16_t x, uint16_t y, uint16_t length,
                         uint16_t height, float slope, SDL_Renderer* renderer);
@@ -195,7 +195,8 @@ public:
   /* Fills hoziontal lines between two vectors of lines */
   static bool renderFillLineToLine(std::vector<Coordinate> line_start,
                                    std::vector<Coordinate> line_end,
-                                   SDL_Renderer* renderer);
+                                   SDL_Renderer* renderer,
+                                   bool vertical = false);
 
   /* Renders a Hexagon with origin point and a size h x eh */
   static bool renderHexagon(Coordinate start, int32_t h,

@@ -707,7 +707,8 @@ void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x, SDL_Renderer* renderer)
  * Inputs:
  * Output:
  */
-void Frame::drawLine(std::vector<Coordinate> line_points, SDL_Renderer* renderer)
+void Frame::drawLine(std::vector<Coordinate> line_points,
+                     SDL_Renderer* renderer)
 {
   for(auto& point : line_points)
     SDL_RenderDrawPoint(renderer, point.x, point.y);
@@ -1053,9 +1054,9 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
     SDL_RenderDrawPoint(renderer, x0, y0);
     if(radius > 0)
     {
-      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer);  /* R */
-      Frame::drawLine(x0, x0 - radius, y0, renderer);          /* L */
-      Frame::drawLineY(y0, y0 - radius, x0, renderer);         /* T */
+      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer); /* R */
+      Frame::drawLine(x0, x0 - radius, y0, renderer); /* L */
+      Frame::drawLineY(y0, y0 - radius, x0, renderer); /* T */
       Frame::drawLineY(y0 + 1, y0 + radius + 1, x0, renderer); /* B */
     }
 
@@ -1319,14 +1320,25 @@ bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
  */
 bool Frame::renderFillLineToLine(std::vector<Coordinate> start,
                                  std::vector<Coordinate> end,
-                                 SDL_Renderer* renderer)
+                                 SDL_Renderer* renderer, bool vertical)
 {
   if(start.size() == 0 || end.size() == 0)
     return false;
 
-  for(size_t i = 0; i < start.size() && i < end.size(); i++)
-    if(start.at(i).y == end.at(i).y)
-      Frame::drawLine(start.at(i).x, end.at(i).x, end.at(i).y, renderer);
+  if(!vertical)
+  {
+    for(size_t i = 0; i < start.size() && i < end.size(); i++)
+      if(start.at(i).y == end.at(i).y)
+        Frame::drawLine(start.at(i).x, end.at(i).x, end.at(i).y, renderer);
+  }
+  else
+  {
+    for(size_t i = 0; i < start.size() && i < end.size(); i++)
+      if(start.at(i).x == end.at(i).x)
+        Frame::drawLineY(start.at(i).y, end.at(i).y, end.at(i).x, renderer);
+
+    SDL_RenderDrawPoint(renderer, end.back().x, end.back().y);
+  }
 
   return true;
 }
@@ -1512,7 +1524,8 @@ bool Frame::renderTrapezoidNormalBottom(Coordinate start, int32_t h,
  * Notes:
  */
 bool Frame::renderTrapezoidNormalBottomBorder(Coordinate start, int32_t h,
-                                        SDL_Renderer* renderer, bool hexagon)
+                                              SDL_Renderer* renderer,
+                                              bool hexagon)
 {
   if(h == 0 || renderer == nullptr)
     return false;
@@ -1584,14 +1597,3 @@ bool Frame::renderTrapezoid(Coordinate start, int32_t h, int32_t b1, int32_t b2,
 
   return true;
 }
-
-// bool Frame::renderFoursided(Coordinate a, Coordinate b, Coordinate c,
-//                             Coordinate d)
-// {
-//   auto left_points = Helpers::bresenhamPoints(a, b);
-//   auto right_points = Helpers::bresenhamPoints(d, c);
-
-//   renderFillLineToLine(left_points, right_points, renderer);
-
-//   return true;
-// }

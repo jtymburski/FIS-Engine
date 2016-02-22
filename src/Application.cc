@@ -728,13 +728,13 @@ bool Application::run(bool skip_title)
   uint32_t ticks = 0;
 
   /* Font testing - TODO: Remove */
-  Text text1;
-  text1.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
-  text1.setText(renderer, "341", {255, 255, 255, 255});
-  Text text2;
-  text2.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
-  TTF_SetFontOutline(text2.getFont(), 2);
-  text2.setText(renderer, "341", {0, 0, 0, 255});
+  // Text text1;
+  // text1.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
+  // text1.setText(renderer, "341", {255, 255, 255, 255});
+  // Text text2;
+  // text2.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
+  // TTF_SetFontOutline(text2.getFont(), 2);
+  // text2.setText(renderer, "341", {0, 0, 0, 255});
 
   if(isInitialized())
   {
@@ -787,8 +787,8 @@ bool Application::run(bool skip_title)
         render(cycle_time);
 
         // Font testing - TODO: Remove
-        text2.render(renderer, 48, 48);
-        text1.render(renderer, 50, 50);
+        // text2.render(renderer, 48, 48);
+        // text1.render(renderer, 50, 50);
 
         /* Update screen */
         SDL_RenderPresent(renderer);

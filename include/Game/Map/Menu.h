@@ -79,7 +79,7 @@ struct Window
   WindowStatus status;
 
   /* Window background */
-  Sprite* background;
+  Frame background;
 };
 
 ENUM_FLAGS(MenuState)
@@ -117,10 +117,21 @@ private:
   /* Vector of title elements */
   std::vector<TitleElement> title_elements;
 
+  /* Selected TitleElement index */
+  int32_t title_element_index;
+
   /* Title Section (Left) Window */
   Window title_section;
 
   /* ------- Constants ------- */
+  static const uint8_t kTITLE_ALPHA;
+  static const float kTITLE_HEIGHT;
+  static const float kTITLE_WIDTH;
+  static const float kTITLE_X_OFFSET;
+  static const float kTITLE_Y_OFFSET;
+  static const float kTITLE_ELEMENT_GAP;
+  static const float kTITLE_CORNER_LENGTH;
+
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
