@@ -56,7 +56,8 @@ public:
     BATTLE         = 2,
     VICTORY_SCREEN = 3,
     LOADING        = 4,
-    NONE           = 5
+    MENU           = 5, /* Processing paused for Map */
+    NONE           = 6
   };
 
 private:

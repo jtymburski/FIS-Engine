@@ -163,7 +163,7 @@ private:
    * PUBLIC STATIC FUNCTIONS
    *============================================================================*/
 public:
-    /* Draws a line given a vector of coordinates */
+  /* Draws a line given a vector of coordinates */
   static void drawLine(std::vector<Coordinate> line_points,
                        SDL_Renderer* renderer);
 

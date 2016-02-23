@@ -233,6 +233,8 @@ SkillSet* Game::addSkillSet(const int32_t& id)
 /* Change the mode that the game is running */
 bool Game::changeMode(GameMode mode)
 {
+  // mode is MENU
+
   /* Run logic to determine if mode switch is allowed - currently always true */
   bool allow = true;
 
@@ -240,7 +242,7 @@ bool Game::changeMode(GameMode mode)
   if(allow && this->mode != mode && mode_next != mode)
   {
     /* Changes to execute on the view closing */
-    if(this->mode == MAP)
+    if(this->mode == MAP && mode != MENU)
       map_ctrl.enableView(false);
 
     /* Set the next mode */
@@ -258,6 +260,8 @@ bool Game::changeMode(GameMode mode)
       std::cout << "GAME MODE: VICTORY" << std::endl;
     else if(mode == LOADING)
       std::cout << "GAME MODE: LOADING" << std::endl;
+    else if(mode == MENU)
+      std::cout << "GAME MODE: MENU" << std::endl;
 
     /* Changes to execute on the view opening */
     if(mode == MAP)
@@ -438,7 +442,6 @@ bool Game::eventStartBattle(int person_id, int source_id)
       if(!battle_display_data->isDataBuilt())
         battle_display_data->buildData();
 
-      std::cout << "Starting battle!" << std::endl;
       /* Start battle */
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));
 
@@ -1210,7 +1213,7 @@ void Game::updateMode(int cycle_time)
   (void)cycle_time;
   if(mode_next != NONE)
   {
-    if(mode == MAP)
+    if(mode == MAP && mode_next != MENU)
     {
       if(map_ctrl.isModeDisabled())
       {
@@ -1219,18 +1222,19 @@ void Game::updateMode(int cycle_time)
         {
           eventStartBattle(Party::kID_SLEUTH, map_ctrl.getBattleThingID());
         }
+
         mode_next = NONE;
       }
     }
     else
     {
+      if(mode_next == MENU)
+        eventMenuShow();
+
       mode = mode_next;
       mode_next = NONE;
     }
   }
-
-  if(map_menu.getFlag(MenuState::SHOWING))
-    map_menu.update(cycle_time);
 }
 
 /*============================================================================
@@ -1529,8 +1533,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Inventory Testing */
   if(event.keysym.sym == SDLK_d)
   {
-    if(!map_menu.getFlag(MenuState::SHOWING))
-      eventMenuShow();
+    if(mode == MAP)
+      changeMode(MENU);
   }
   else if(event.keysym.sym == SDLK_f)
   {
@@ -1735,9 +1739,9 @@ bool Game::render(SDL_Renderer* renderer)
       success = battle_ctrl->render();
     }
   }
-
-  if(map_menu.getFlag(MenuState::SHOWING))
+  else if(mode == MENU)
   {
+    map_ctrl.render(renderer);
     map_menu.setRenderer(renderer);
     map_menu.render();
   }
@@ -1942,6 +1946,13 @@ bool Game::update(int32_t cycle_time)
   else if(mode == DISABLED)
   {
     return true;
+  }
+  else if(mode == MENU)
+  {
+    map_menu.update(cycle_time);
+
+    if(!map_menu.getFlag(MenuState::SHOWING))
+      changeMode(MAP);
   }
 
   return false;

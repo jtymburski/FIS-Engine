@@ -32,6 +32,7 @@ enum class MenuType
 enum class MenuLayer
 {
   TITLE,
+  MAIN,
   INVALID
 };
 
@@ -72,6 +73,12 @@ struct TitleElement
 
 struct Window
 {
+  Window()
+      : alpha{0},
+        point{Coordinate(0, 0)},
+        status{WindowStatus::OFF},
+        backdrop{nullptr} {};
+
   /* Current alpha for rendering the window */
   uint8_t alpha;
 
@@ -85,14 +92,14 @@ struct Window
   WindowStatus status;
 
   /* Window background */
-  Frame background;
+  Frame* backdrop;
 };
 
 ENUM_FLAGS(MenuState)
 enum class MenuState
 {
   ENABLED = 1 << 1, /* Is selecting the menu permissible */
-  SHOWING = 1 << 2 /* Is the menu currently rendering */
+  SHOWING = 1 << 2, /* Is the menu currently rendering */
 };
 
 class Menu
@@ -140,6 +147,8 @@ private:
   static const float kTITLE_Y_OFFSET;
   static const float kTITLE_ELEMENT_GAP;
   static const float kTITLE_CORNER_LENGTH;
+  static const float kTITLE_SLIDE_RATE;
+  static const float kMAIN_SLIDE_RATE;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -166,8 +175,15 @@ private:
   /* Clear the title section data */
   void clearTitleSection();
 
+  /* Clear the Main Backdrop */
+  void clearMainBackdrop();
+
   /* Render the title section */
   void renderTitleSection();
+
+  void renderMainSection();
+
+  void renderMainBackdrop();
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
@@ -201,7 +217,7 @@ public:
   void setEventHandler(EventHandler* event_handler);
 
   /* Assign a given MenuState flag a given value */
-  void setFlag(MenuState set_flags, const bool &set_value = true);
+  void setFlag(MenuState set_flags, const bool& set_value = true);
 
   /* Assign Renderer */
   void setRenderer(SDL_Renderer* renderer);
