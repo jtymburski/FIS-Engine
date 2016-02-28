@@ -52,7 +52,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   battle_trigger = false;
   this->event_handler = NULL;
   fade_alpha = 255;
-  fade_status = BLACK;
+  fade_status = MapFade::BLACK;
   loaded = false;
   map_index = 0;
   map_index_next = -1;
@@ -982,7 +982,7 @@ bool Map::modeViewStart(int cycle_time, bool travel)
   /* If travel, complete fade */
   if(!proceed)
   {
-    fade_status = FADINGOUT;
+    fade_status = MapFade::FADINGOUT;
     proceed = updateFade(cycle_time);
   }
 
@@ -1007,7 +1007,7 @@ bool Map::modeViewStop(int cycle_time, bool travel)
   /* If travel, complete fade */
   if(!proceed)
   {
-    fade_status = FADINGOUT;
+    fade_status = MapFade::FADINGOUT;
     proceed = updateFade(cycle_time);
   }
 
@@ -1225,17 +1225,17 @@ bool Map::updateFade(int cycle_time)
   bool end_status = false;
 
   /* -- FADE BLACK -- */
-  if(fade_status == BLACK)
+  if(fade_status == MapFade::BLACK)
   {
     fade_alpha = kFADE_BLACK;
   }
   /* -- FADE VISIBLE -- */
-  else if(fade_status == VISIBLE)
+  else if(fade_status == MapFade::VISIBLE)
   {
     fade_alpha = kFADE_VIS;
   }
   /* -- FADING IN -- */
-  else if(fade_status == FADINGIN)
+  else if(fade_status == MapFade::FADINGIN)
   {
     int diff = cycle_time / kFADE_FACTOR;
     if(diff > kFADE_MAX)
@@ -1247,12 +1247,12 @@ bool Map::updateFade(int cycle_time)
     else
     {
       fade_alpha = kFADE_VIS;
-      fade_status = VISIBLE;
+      fade_status = MapFade::VISIBLE;
       end_status = true;
     }
   }
   /* -- FADING OUT -- */
-  else if(fade_status == FADINGOUT)
+  else if(fade_status == MapFade::FADINGOUT)
   {
     int diff = cycle_time / kFADE_FACTOR;
     if(diff > kFADE_MAX)
@@ -1264,14 +1264,14 @@ bool Map::updateFade(int cycle_time)
     else
     {
       fade_alpha = kFADE_BLACK;
-      fade_status = BLACK;
+      fade_status = MapFade::BLACK;
       end_status = true;
     }
   }
   /* -- FADING INVALID -- */
   else
   {
-    fade_status = BLACK;
+    fade_status = MapFade::BLACK;
   }
 
   return end_status;
@@ -1296,7 +1296,7 @@ void Map::updateMode(int cycle_time)
     if(mode_next != NONE)
     {
       /* Fade in */
-      fade_status = FADINGIN;
+      fade_status = MapFade::FADINGIN;
       if(updateFade(cycle_time))
       {
         mode_curr = NORMAL;
@@ -1311,7 +1311,7 @@ void Map::updateMode(int cycle_time)
     /* -- NEXT MODE DISABLED or SWITCHSUB -- */
     if(mode_next == DISABLED || mode_next == SWITCHSUB)
     {
-      fade_status = FADINGOUT;
+      fade_status = MapFade::FADINGOUT;
       if(updateFade(cycle_time))
       {
         mode_curr = mode_next;
@@ -1327,8 +1327,8 @@ void Map::updateMode(int cycle_time)
     /* NEXT MODE NONE -- */
     else if(mode_next == NONE)
     {
-      if(fade_status != VISIBLE)
-        fade_status = FADINGIN;
+      if(fade_status != MapFade::VISIBLE)
+        fade_status = MapFade::FADINGIN;
       updateFade(cycle_time);
     }
   }
@@ -1336,7 +1336,7 @@ void Map::updateMode(int cycle_time)
   else if(mode_curr == SWITCHSUB)
   {
     setSectionIndexMode();
-    fade_status = FADINGIN;
+    fade_status = MapFade::FADINGIN;
     if(updateFade(cycle_time))
     {
       mode_curr = NORMAL;
@@ -1367,7 +1367,7 @@ void Map::updateMode(int cycle_time)
       /* No time accumulated */
       if(view_acc == 0)
       {
-        fade_status = FADINGIN;
+        fade_status = MapFade::FADINGIN;
         if(updateFade(cycle_time))
           view_acc++;
       }
@@ -1755,14 +1755,14 @@ bool Map::isLoaded()
  * BLACK */
 bool Map::isModeDisabled()
 {
-  return (mode_curr == DISABLED && fade_status == BLACK);
+  return (mode_curr == DISABLED && fade_status == MapFade::BLACK);
 }
 
 /* Mode checks - only returns true if NORMAL current mode and fade status is
  * VISIBLE */
 bool Map::isModeNormal()
 {
-  return (mode_curr == NORMAL && fade_status == VISIBLE &&
+  return (mode_curr == NORMAL && fade_status == MapFade::VISIBLE &&
           !viewport.isTravelling());
 }
 
@@ -1804,11 +1804,12 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     else if(event.keysym.sym == SDLK_5)
       map_dialog.clearAll(true);
     /* Test: Pick up test. Time limit */
-    else if(event.keysym.sym == SDLK_6)
-      map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
+    //TODO: Removed as it seg faults [02-27-16]
+    // else if(event.keysym.sym == SDLK_6)
+    //   map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
     /* Test: Pick up test. No time limit */
-    else if(event.keysym.sym == SDLK_7)
-      map_dialog.initPickup(items.front()->getDialogImage(), 5);
+    // else if(event.keysym.sym == SDLK_7)
+    //   map_dialog.initPickup(items.front()->getDialogImage(), 5);
     /* Test: single line chop off notification */
     else if(event.keysym.sym == SDLK_8)
       map_dialog.initNotification("Hello sunshine, what a glorious day and "
@@ -2107,9 +2108,9 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
       Floatinate velocity_fog = {0.05, -0.01};
 
       lay_overs.push_back(
-         new Lay("sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", 0,
-                 velocity_smog, LayType::OVERLAY, scr_size, renderer));
-     lay_overs.push_back(
+          new Lay("sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", 0,
+                  velocity_smog, LayType::OVERLAY, scr_size, renderer));
+      lay_overs.push_back(
           new Lay("sprites/Map/EnviromentEffects/Overlays/fog_underlay.png", 0,
                   velocity_fog, LayType::OVERLAY, scr_size, renderer));
     }
@@ -2401,6 +2402,17 @@ bool Map::pickupItem(MapItem* item, int count)
   return false;
 }
 
+/* Enumerated state of WindowStatus of the MapDialog */
+WindowStatus Map::getDialogStatus()
+{
+  return map_dialog.getWindowStatus();
+}
+
+MapFade Map::getFadeStatus()
+{
+  return fade_status;
+}
+
 /* Renders the title screen */
 bool Map::render(SDL_Renderer* renderer)
 {
@@ -2552,6 +2564,7 @@ bool Map::render(SDL_Renderer* renderer)
         if(*it)
           (*it)->render(renderer);
 
+      // TODO: Jordan can remove since lays are properly implemented now.
       //   for(uint16_t i = 0; i < lay_over.size(); i++)
       //   {
       //     if(lay_over[i] != nullptr)
@@ -2581,7 +2594,7 @@ bool Map::render(SDL_Renderer* renderer)
     // map_dialog.render(renderer);
 
     /* Overlay (for fading */
-    if(fade_status != VISIBLE)
+    if(fade_status != MapFade::VISIBLE)
     {
       SDL_SetTextureAlphaMod(Helpers::getMaskBlack(), fade_alpha);
       SDL_RenderCopy(renderer, Helpers::getMaskBlack(), NULL, NULL);

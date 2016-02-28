@@ -404,7 +404,7 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
     text_options.push_back(t);
   }
 }
-  
+
 /*
  * Description: Takes the text and replaces {ID} references with name if found.
  *              If not found, blanks out.
@@ -434,7 +434,7 @@ string MapDialog::replaceThingReferences(string text)
           try
           {
             string name = getThingName(stoi(second_split.front()));
-            new_text += "[" + kTHING_COLOR + "]" + name + 
+            new_text += "[" + kTHING_COLOR + "]" + name +
                         "[/" + kTHING_COLOR + "]";
           }
           catch(exception)
@@ -458,7 +458,7 @@ string MapDialog::replaceThingReferences(string text)
   else
   {
     new_text = text;
-    new_text.erase(remove(new_text.begin(), new_text.end(), '}'), 
+    new_text.erase(remove(new_text.begin(), new_text.end(), '}'),
                    new_text.end());
   }
 
@@ -1647,6 +1647,17 @@ bool MapDialog::render(SDL_Renderer* renderer)
   }
 
   return true;
+}
+
+/*
+ * Description: Return the enumerated state of this dialogs WindowStatus.
+ *
+ * Inputs: none
+ * Output: WindowStatus -- enumerated state of the WindowStatus
+ */
+WindowStatus MapDialog::getWindowStatus()
+{
+  return dialog_status;
 }
 
 /*

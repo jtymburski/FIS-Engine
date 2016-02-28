@@ -35,6 +35,7 @@ Lay::Lay()
     : animation_time{0},
       error{Floatinate(0, 0)},
       flags{static_cast<LayState>(0)},
+      lay_sprite{nullptr},
       lay_tiles{},
       path{""},
       range_top_left{Coordinate(0, 0)},
@@ -102,15 +103,10 @@ Lay::Lay(std::string path, uint32_t animation_time, Floatinate velocity,
  */
 Lay::~Lay()
 {
-  for(auto& tile : lay_tiles)
-  {
-    if(tile)
-      delete tile;
+  if(lay_sprite)
+    delete lay_sprite;
 
-    tile = nullptr;
-  }
-
-  lay_tiles.clear();
+  lay_sprite = nullptr;
 }
 
 /*=============================================================================
@@ -131,12 +127,10 @@ bool Lay::render(SDL_Renderer* renderer)
 
   for(const auto& lay_tile : lay_tiles)
   {
-    if(getFlag(LayState::SCREEN_SIZE) && lay_tile && lay_tile->lay_sprite &&
-       renderer)
+    if(getFlag(LayState::SCREEN_SIZE) && lay_sprite && renderer)
     {
-      success &= lay_tile->lay_sprite->render(renderer, lay_tile->location.x,
-                                              lay_tile->location.y,
-                                              screen_size.x, screen_size.y);
+      success &= lay_sprite->render(renderer, lay_tile.x, lay_tile.y,
+                                    screen_size.x, screen_size.y);
     }
   }
 
@@ -206,9 +200,8 @@ void Lay::update(int32_t cycle_time)
 
   updateLocations(dist_x, dist_y);
 
-  for(const auto& lay_tile : lay_tiles)
-    if(lay_tile && lay_tile->lay_sprite)
-      lay_tile->lay_sprite->update(cycle_time);
+  if(lay_sprite)
+    lay_sprite->update(cycle_time);
 
   error.x -= dist_x;
   error.y -= dist_y;
@@ -274,58 +267,30 @@ void Lay::setVelocity(Floatinate new_velocity)
  * Inputs: LayIndex lay_index - enumerated index of tiled lay to create
  * Output: bool - true if the tiled lay was created successfully
  */
-bool Lay::createTiledLay(LayIndex lay_index, SDL_Renderer* renderer)
+ void Lay::createTiledLay(LayIndex lay_index)
 {
-  if(renderer && path != "")
-  {
-    auto new_tile = new LayTile();
+  Coordinate new_tile;
 
-    auto split = Helpers::split(path, '|');
-    auto num_frames = 1;
+  if(lay_index == LayIndex::NORTH_WEST)
+    new_tile = {-screen_size.x, -screen_size.y};
+  else if(lay_index == LayIndex::NORTH)
+    new_tile = {0, -screen_size.y};
+  else if(lay_index == LayIndex::NORTH_EAST)
+    new_tile = {screen_size.x, -screen_size.y};
+  else if(lay_index == LayIndex::WEST)
+    new_tile = {-screen_size.x, 0};
+  else if(lay_index == LayIndex::CENTRE)
+    new_tile = {0, 0};
+  else if(lay_index == LayIndex::EAST)
+    new_tile = {screen_size.x, 0};
+  else if(lay_index == LayIndex::SOUTH_WEST)
+    new_tile = {-screen_size.x, screen_size.y};
+  else if(lay_index == LayIndex::SOUTH)
+    new_tile = {0, screen_size.y};
+  else if(lay_index == LayIndex::SOUTH_EAST)
+    new_tile = {screen_size.x, screen_size.y};
 
-    if(split.size() == 3)
-    {
-      num_frames = std::stoi(split.at(1));
-      new_tile->lay_sprite =
-          new Sprite(split.at(0), num_frames, split.at(2), renderer);
-    }
-    else if(split.size() == 1)
-    {
-      new_tile->lay_sprite = new Sprite(path, renderer);
-    }
-
-    if((split.size() == 3 || split.size() == 1) && new_tile->lay_sprite)
-    {
-      new_tile->lay_sprite->setAnimationTime(animation_time);
-      new_tile->lay_sprite->setNonUnique(true, num_frames);
-      new_tile->lay_sprite->createTexture(renderer);
-
-      if(lay_index == LayIndex::NORTH_WEST)
-        new_tile->location = {-screen_size.x, -screen_size.y};
-      else if(lay_index == LayIndex::NORTH)
-        new_tile->location = {0, -screen_size.y};
-      else if(lay_index == LayIndex::NORTH_EAST)
-        new_tile->location = {screen_size.x, -screen_size.y};
-      else if(lay_index == LayIndex::WEST)
-        new_tile->location = {-screen_size.x, 0};
-      else if(lay_index == LayIndex::CENTRE)
-        new_tile->location = {0, 0};
-      else if(lay_index == LayIndex::EAST)
-        new_tile->location = {screen_size.x, 0};
-      else if(lay_index == LayIndex::SOUTH_WEST)
-        new_tile->location = {-screen_size.x, screen_size.y};
-      else if(lay_index == LayIndex::SOUTH)
-        new_tile->location = {0, screen_size.y};
-      else if(lay_index == LayIndex::SOUTH_EAST)
-        new_tile->location = {screen_size.x, screen_size.y};
-
-      lay_tiles.push_back(new_tile);
-
-      return true;
-    }
-  }
-
-  return false;
+  lay_tiles.push_back(new_tile);
 }
 
 /*
@@ -339,29 +304,52 @@ bool Lay::createTiledLay(LayIndex lay_index, SDL_Renderer* renderer)
  */
 bool Lay::createTiledLays(SDL_Renderer* renderer)
 {
-  bool success{true};
+  /* The sprite should not already be created */
+  if(!lay_sprite && renderer && path != "")
+  {
+    auto split = Helpers::split(path, '|');
+    auto num_frames = 1;
+    if(split.size() == 3)
+    {
+      num_frames = std::stoi(split.at(1));
+      lay_sprite = new Sprite(split.at(0), num_frames, split.at(2), renderer);
+    }
+    else if(split.size() == 1)
+    {
+      lay_sprite = new Sprite(path, renderer);
+    }
 
-  success &= createTiledLay(LayIndex::CENTRE, renderer);
+    if(split.size() == 1 || split.size() == 3)
+    {
+      lay_sprite->setAnimationTime(animation_time);
+      lay_sprite->setNonUnique(true, num_frames);
+      lay_sprite->createTexture(renderer);
+    }
 
-  if(velocity.x < 0)
-    success &= createTiledLay(LayIndex::EAST, renderer);
-  if(velocity.x > 0)
-    success &= createTiledLay(LayIndex::WEST, renderer);
-  if(velocity.y < 0)
-    success &= createTiledLay(LayIndex::SOUTH, renderer);
-  if(velocity.y > 0)
-    success &= createTiledLay(LayIndex::NORTH, renderer);
+    createTiledLay(LayIndex::CENTRE);
 
-  if(velocity.x > 0 && velocity.y > 0)
-    success &= createTiledLay(LayIndex::NORTH_WEST, renderer);
-  else if(velocity.x > 0 && velocity.y < 0)
-    success &= createTiledLay(LayIndex::SOUTH_WEST, renderer);
-  else if(velocity.x < 0 && velocity.y > 0)
-    success &= createTiledLay(LayIndex::NORTH_EAST, renderer);
-  else if(velocity.x < 0 && velocity.y < 0)
-    success &= createTiledLay(LayIndex::SOUTH_EAST, renderer);
+    if(velocity.x < 0)
+      createTiledLay(LayIndex::EAST);
+    if(velocity.x > 0)
+      createTiledLay(LayIndex::WEST);
+    if(velocity.y < 0)
+      createTiledLay(LayIndex::SOUTH);
+    if(velocity.y > 0)
+      createTiledLay(LayIndex::NORTH);
 
-  return success;
+    if(velocity.x > 0 && velocity.y > 0)
+      createTiledLay(LayIndex::NORTH_WEST);
+    else if(velocity.x > 0 && velocity.y < 0)
+      createTiledLay(LayIndex::SOUTH_WEST);
+    else if(velocity.x < 0 && velocity.y > 0)
+      createTiledLay(LayIndex::NORTH_EAST);
+    else if(velocity.x < 0 && velocity.y < 0)
+      createTiledLay(LayIndex::SOUTH_EAST);
+
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -396,26 +384,23 @@ void Lay::updateLocations(int32_t dist_x, int32_t dist_y)
 {
   for(auto& lay_tile : lay_tiles)
   {
-    if(lay_tile)
-    {
-      /* Wrap the left to horizontal tiles back to the beginning */
-      if((lay_tile->location.x + dist_x) > screen_size.x)
-        lay_tile->location.x -= screen_size.x * 2;
+    /* Wrap the left to horizontal tiles back to the beginning */
+    if((lay_tile.x + dist_x) > screen_size.x)
+      lay_tile.x -= screen_size.x * 2;
 
-      /* Wrap the bottom to vertical tiles back to the beginning */
-      if((lay_tile->location.y + dist_y) > screen_size.y)
-        lay_tile->location.y -= screen_size.y * 2;
+    /* Wrap the bottom to vertical tiles back to the beginning */
+    if((lay_tile.y + dist_y) > screen_size.y)
+      lay_tile.y -= screen_size.y * 2;
 
-      /* Wrap the right to horizontal tiles back to the beginning */
-      if((lay_tile->location.x + dist_x) < -screen_size.x)
-        lay_tile->location.x += screen_size.x * 2;
+    /* Wrap the right to horizontal tiles back to the beginning */
+    if((lay_tile.x + dist_x) < -screen_size.x)
+      lay_tile.x += screen_size.x * 2;
 
-      /* Wrap the top to vertical tiles back to the beginning */
-      if((lay_tile->location.y + dist_y) < -screen_size.y)
-        lay_tile->location.y += screen_size.y * 2;
+    /* Wrap the top to vertical tiles back to the beginning */
+    if((lay_tile.y + dist_y) < -screen_size.y)
+      lay_tile.y += screen_size.y * 2;
 
-      lay_tile->location.x += dist_x;
-      lay_tile->location.y += dist_y;
-    }
+    lay_tile.x += dist_x;
+    lay_tile.y += dist_y;
   }
 }

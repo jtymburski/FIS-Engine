@@ -172,7 +172,7 @@ void Menu::renderTitleSection()
   /* Text Color */
   SDL_Color color{235, 235, 235, kTITLE_ALPHA};
 
-  auto width = config->getScreenWidth();
+  // auto width = config->getScreenWidth();
   auto font_maintitle = config->getFontTTF(FontName::MENU_MAINTITLE);
   auto font_title = config->getFontTTF(FontName::MENU_TITLE);
   auto title_width = title_section.location.width;
@@ -275,11 +275,7 @@ void Menu::clearMainBackdrop()
 
 void Menu::hide()
 {
-  if(main_section.status != WindowStatus::OFF)
-    main_section.status = WindowStatus::HIDING;
-  else
-    title_section.status = WindowStatus::HIDING;
-
+  title_section.status = WindowStatus::HIDING;
   title_element_index = -1;
   layer = MenuLayer::INVALID;
 }
@@ -298,18 +294,45 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
   }
   else if(event.keysym.sym == SDLK_UP)
   {
-    if(title_element_index > 0)
-      title_element_index--;
-    else
-      title_element_index = title_elements.size() - 1;
+    if(layer == MenuLayer::TITLE)
+    {
+      if(title_element_index > 0)
+        title_element_index--;
+      else
+        title_element_index = title_elements.size() - 1;
+    }
   }
   else if(event.keysym.sym == SDLK_SPACE)
   {
     if(title_section.status == WindowStatus::ON &&
        main_section.status == WindowStatus::OFF)
     {
-      layer = MenuLayer::MAIN;
-      main_section.status = WindowStatus::SHOWING;
+      if(title_element_index < (int32_t)title_elements.size() &&
+         title_elements.at(title_element_index).name == "Exit")
+      {
+        hide();
+      }
+      else
+      {
+        std::cout << "Name: " << title_elements.at(title_element_index).name
+                  << std::endl;
+        layer = MenuLayer::MAIN;
+        main_section.status = WindowStatus::SHOWING;
+      }
+    }
+  }
+  else if(event.keysym.sym == SDLK_BACKSPACE)
+  {
+    if(main_section.status == WindowStatus::ON)
+    {
+      layer = MenuLayer::TITLE;
+      main_section.status = WindowStatus::HIDING;
+    }
+    else if(title_section.status == WindowStatus::ON &&
+            (main_section.status == WindowStatus::OFF ||
+             main_section.status == WindowStatus::ON))
+    {
+      hide();
     }
   }
 
@@ -346,7 +369,7 @@ void Menu::render()
 
 bool Menu::update(int32_t cycle_time)
 {
-
+  std::cout << "Updating the menu" << std::endl;
   if(title_section.status == WindowStatus::SHOWING)
   {
     /* Update the Coordinate of the TitleScreen */
@@ -355,10 +378,7 @@ bool Menu::update(int32_t cycle_time)
                                   title_section.point, kTITLE_SLIDE_RATE);
 
     if(title_section.location.point == title_section.point)
-    {
-      std::cout << "Menu slide out" << std::endl;
       title_section.status = WindowStatus::ON;
-    }
   }
   else if(title_section.status == WindowStatus::HIDING)
   {
@@ -388,12 +408,12 @@ bool Menu::update(int32_t cycle_time)
   {
     main_section.location.point = Helpers::updateCoordinate(
         cycle_time, main_section.location.point,
-        Coordinate(-1200, main_section.location.point.y), kMAIN_SLIDE_RATE);
+        Coordinate(-main_section.location.width, main_section.location.point.y),
+        kMAIN_SLIDE_RATE);
 
     if(main_section.location.point.x == -main_section.location.width)
     {
       main_section.status = WindowStatus::OFF;
-      // clear();
     }
   }
 

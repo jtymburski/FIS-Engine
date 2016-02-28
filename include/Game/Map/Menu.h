@@ -98,7 +98,6 @@ struct Window
 ENUM_FLAGS(MenuState)
 enum class MenuState
 {
-  ENABLED = 1 << 1, /* Is selecting the menu permissible */
   SHOWING = 1 << 2, /* Is the menu currently rendering */
 };
 

@@ -39,7 +39,7 @@ Key::Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled)
 }
 
 /*=============================================================================
- * CONSTANTS
+ * CONSTANTSd
  *============================================================================*/
 
 const SDL_Keycode KeyHandler::kMOVE_LEFT_DEFAULT = SDLK_LEFT;

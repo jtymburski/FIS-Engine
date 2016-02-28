@@ -14,8 +14,10 @@
 
 #include "Helpers.h"
 
-// WHAT IS THIS ABOMINATION !!!!!!!
-using namespace std;
+using std::vector;
+using std::string;
+using std::pair;
+using std::to_string;
 
 /*
  * Description: Text property. Defines the pertinent information for rendering

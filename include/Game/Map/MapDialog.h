@@ -272,6 +272,9 @@ public:
   /* Renders the Map Dialog */
   bool render(SDL_Renderer* renderer);
 
+  /* Return the Window status of the Dialog */
+  WindowStatus getWindowStatus();
+
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 

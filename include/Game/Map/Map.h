@@ -56,15 +56,6 @@ public:
   /* Destructor function */
   ~Map();
 
-  /* The map fade operator, for controlling how the screen appears */
-  enum MapFade
-  {
-    BLACK = 0,
-    VISIBLE = 1,
-    FADINGIN = 2,
-    FADINGOUT = 3
-  };
-
   /* The map mode operator, for controlling the visible widget */
   enum MapMode
   {
@@ -223,7 +214,6 @@ private:
   MapInteractiveObject* getIOBase(uint16_t id);
 
   /* Returns the person, based on the ID */
-  MapPerson* getPerson(uint16_t id);
   MapPerson* getPersonBase(uint16_t id);
 
   /* Returns the thing, based on the ID */
@@ -353,6 +343,15 @@ public:
 
   /* Renders the map */
   bool render(SDL_Renderer* renderer);
+
+  /* Returns the current enumerated WindowState of the Map dialog */
+  WindowStatus getDialogStatus();
+
+  /* The fade status of the map */
+  MapFade getFadeStatus();
+
+  /* Return a MapPerson */
+  MapPerson* getPerson(uint16_t id);
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);

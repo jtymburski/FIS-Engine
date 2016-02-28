@@ -105,6 +105,7 @@ private:
 
   /* Map Menu */
   Menu map_menu;
+  bool map_menu_enabled;
 
   /* The mode that the game is currently running at */
   GameMode mode;
@@ -222,6 +223,7 @@ private:
 
   /* Update mode */
   void updateMode(int cycle_time);
+  void updateMenuEnabledState();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

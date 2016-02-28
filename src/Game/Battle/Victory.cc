@@ -266,7 +266,7 @@ void Victory::renderCard(VictoryCard& card)
 
     auto sprite_x = x - std::floor(0.02 * (float)height);
     auto sprite_y = 0;
-    auto sprite_width = std::floor(0.62 * (float)width);
+//    auto sprite_width = std::floor(0.62 * (float)width);
     auto sprite_height = std::floor(0.77 * (float)height);
 
     auto tile_size = std::floor(0.21 * (float)width);
@@ -322,8 +322,7 @@ void Victory::renderCard(VictoryCard& card)
         t_name.render(renderer, col1_x, col1_y);
 
         sprite_y = col1_y + t_name.getHeight() - std::floor(0.01 * height);
-        card.sprite_actor->render(renderer, sprite_x, sprite_y, sprite_width,
-                                  sprite_height);
+        card.sprite_actor->render(renderer, sprite_x, sprite_y);
 
         auto t_rank_y = sprite_y + sprite_height + std::floor(0.01 * height);
 

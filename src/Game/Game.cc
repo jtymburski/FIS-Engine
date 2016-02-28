@@ -45,6 +45,7 @@ Game::Game(Options* running_config)
   loaded_core = false;
   loaded_sub = false;
   map_lvl = -1;
+  map_menu_enabled = true;
   mode = DISABLED;
   mode_load = NOLOAD;
   mode_next = NONE;
@@ -1229,7 +1230,12 @@ void Game::updateMode(int cycle_time)
     else
     {
       if(mode_next == MENU)
+      {
+        if(map_ctrl.getPerson(0))
+          map_ctrl.getPerson(0)->keyFlush();
+
         eventMenuShow();
+      }
 
       mode = mode_next;
       mode_next = NONE;
@@ -1533,13 +1539,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Inventory Testing */
   if(event.keysym.sym == SDLK_d)
   {
-    if(mode == MAP)
+    if(mode == MAP && map_menu_enabled)
       changeMode(MENU);
-  }
-  else if(event.keysym.sym == SDLK_f)
-  {
-    if(map_menu.getFlag(MenuState::SHOWING))
-      eventMenuHide();
   }
   else if(event.keysym.sym == SDLK_3)
   {
@@ -1657,11 +1658,12 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Otherwise, send keys to the active view */
   else
   {
-    if(map_menu.getFlag(MenuState::SHOWING))
+    if(mode == MENU)
+    {
       map_menu.keyDownEvent(event);
-
+    }
     /* -- MAP MODE -- */
-    if(mode == MAP)
+    else if(mode == MAP)
     {
       if(map_ctrl.keyDownEvent(event))
         changeMode(DISABLED);
@@ -1868,6 +1870,9 @@ bool Game::update(int32_t cycle_time)
 
   /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
+
+  updateMenuEnabledState();
+
   // event_handler.getKeyHandler().print(false, true);
 
   /* Mode next handling */
@@ -1956,4 +1961,18 @@ bool Game::update(int32_t cycle_time)
   }
 
   return false;
+}
+
+void Game::updateMenuEnabledState()
+{
+  map_menu_enabled = true;
+
+  /* If the higher game state allows the menu to be accessed, first check for
+   * other conditions to assert the menu can be accessed at this time */
+  if(map_ctrl.getDialogStatus() != WindowStatus::OFF)
+    map_menu_enabled = false;
+  else if(map_ctrl.getFadeStatus() != MapFade::VISIBLE)
+    map_menu_enabled = false;
+  else if(battle_ctrl && battle_ctrl->getTurnState() != TurnState::STOPPED)
+    map_menu_enabled = false;
 }

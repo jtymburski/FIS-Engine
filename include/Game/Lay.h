@@ -28,19 +28,6 @@ enum class LayState
   RANGE_BOUND = 1 << 3
 };
 
-/* LayTile Structure */
-struct LayTile
-{
-  /* Construct a LayTile object */
-  LayTile() : lay_sprite{nullptr}, location{0, 0} {};
-
-  /* Pointer to the Lay Tile's sprite */
-  Sprite* lay_sprite;
-
-  /* The current rendering coordinate */
-  Coordinate location;
-};
-
 /* Lay Class */
 class Lay
 {
@@ -69,8 +56,11 @@ private:
   /* The enumerated flags for the lay state */
   LayState flags;
 
+  /* Pointer to the Lay Tile's sprite */
+  Sprite* lay_sprite;
+
   /* The vector of lay tiles */
-  std::vector<LayTile*> lay_tiles;
+  std::vector<Coordinate> lay_tiles;
 
   /* Base sprite bath */
   std::string path;
@@ -126,7 +116,7 @@ public:
    *============================================================================*/
 private:
   /* Create a lay at a given index */
-  bool createTiledLay(LayIndex lay_index, SDL_Renderer* renderer);
+  void createTiledLay(LayIndex lay_index);
 
   /* Create the starting tiled lays based on the velocity */
   bool createTiledLays(SDL_Renderer* renderer);

@@ -125,7 +125,7 @@ enum class AddStatus : std::uint8_t
  */
 enum class AIDifficulty
 {
-  RANDOM, /* Randomly chooses action types, indexes, targets */
+  RANDOM,   /* Randomly chooses action types, indexes, targets */
   PRIORITY, /* Chooses actions based on arbitrary priority values */
 };
 
@@ -134,16 +134,16 @@ enum class AIDifficulty
  */
 enum class AIPersonality
 {
-  MODERATOR, /* Generic personality type */
-  AGGRESSOR, /* Focuses on actions damage the opposing team */
-  DEFENDER, /* Focuses actions on increasing one-self */
-  PROTECTOR, /* Focuses on actions protecting teammates (including self) */
-  RETALIATOR, /* Changes priority targeting if hit by a certain enemy */
+  MODERATOR,   /* Generic personality type */
+  AGGRESSOR,   /* Focuses on actions damage the opposing team */
+  DEFENDER,    /* Focuses actions on increasing one-self */
+  PROTECTOR,   /* Focuses on actions protecting teammates (including self) */
+  RETALIATOR,  /* Changes priority targeting if hit by a certain enemy */
   MASOCHISTIC, /* Performs self-destructive behaviour */
   ANNIHILATOR, /* Attempts to perform the most damage possible, at any cost */
-  RUNNER, /* Focuses on running or becoming able to run */
-  PASSER, /* Focuses on doing nothing */
-  NONE /* No personality type - error */
+  RUNNER,      /* Focuses on running or becoming able to run */
+  PASSER,      /* Focuses on doing nothing */
+  NONE         /* No personality type - error */
 };
 
 /*:
@@ -385,8 +385,17 @@ enum class GameKey
   NONE
 };
 
+/* The map fade operator, for controlling how the screen appears */
+enum class MapFade
+{
+  BLACK = 0,
+  VISIBLE = 1,
+  FADINGIN = 2,
+  FADINGOUT = 3
+};
+
 /*
- * Description:
+ *
  */
 enum class FadeState
 {
@@ -525,7 +534,7 @@ enum class PartyType : std::uint8_t
  */
 enum class Rank : std::uint16_t
 {
-   NUBEAR,
+  NUBEAR,
   CUB,
   RECRUIT,
   SLEUTHLING,
@@ -628,7 +637,6 @@ enum class SpriteState
   DEAD
 };
 
-
 /*
  * Description: Defines what the map thing base class is
  */
@@ -651,9 +659,9 @@ enum class ThingBase : std::uint8_t
  */
 enum class TrackingState
 {
-  NOTRACK     = 0,
+  NOTRACK = 0,
   AVOIDPLAYER = 1,
-  TOPLAYER    = 2
+  TOPLAYER = 2
 };
 
 /*
@@ -664,12 +672,12 @@ enum class TurnState
   BEGIN, /* Setup of the battle */
   ENTER_DIM,
   FADE_IN_TEXT,
-  GENERAL_UPKEEP, /* General upkeep phase - weather etc. */
-  UPKEEP, /* Personal upkeep - ailments etc. */
-  SELECT_ACTION_ALLY, /* User choice of action/skill etc. */
+  GENERAL_UPKEEP,      /* General upkeep phase - weather etc. */
+  UPKEEP,              /* Personal upkeep - ailments etc. */
+  SELECT_ACTION_ALLY,  /* User choice of action/skill etc. */
   SELECT_ACTION_ENEMY, /* Enemy choice of skill -> AI */
-  PROCESS_ACTIONS, /* Determines outcomes of skills */
-  CLEAN_UP, /* Cleanup after turn, turn incr. etc. */
+  PROCESS_ACTIONS,     /* Determines outcomes of skills */
+  CLEAN_UP,            /* Cleanup after turn, turn incr. etc. */
   OUTCOME,
   FINISHED,
   STOPPED /* Battle should be stopped */
