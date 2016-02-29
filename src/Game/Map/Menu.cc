@@ -25,7 +25,7 @@ const float Menu::kTITLE_Y_OFFSET{0.05};
 const float Menu::kTITLE_ELEMENT_GAP{0.80};
 const float Menu::kTITLE_CORNER_LENGTH{0.019};
 const float Menu::kTITLE_SLIDE_RATE{0.70};
-const float Menu::kMAIN_SLIDE_RATE{1.05};
+const float Menu::kMAIN_SLIDE_RATE{2.05};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -108,8 +108,17 @@ void Menu::buildTitleElements()
   title_elements.push_back(
       TitleElement("Inventory", true, MenuType::INVENTORY));
 
-  /* Exit TitleElement */
-  title_elements.push_back(TitleElement("Exit", true, MenuType::EXIT));
+  /* Options TitleElement */
+  title_elements.push_back(TitleElement("Options", true, MenuType::OPTIONS));
+
+  /* Save TitleElement */
+  title_elements.push_back(TitleElement("Save", true, MenuType::SAVE));
+
+  /* Load TitleElement */
+  title_elements.push_back(TitleElement("Load", true, MenuType::LOAD));
+
+  /* Quit (Return to title) TitleElement */
+  title_elements.push_back(TitleElement("Quit", true, MenuType::QUIT));
 }
 
 void Menu::buildTitleSection()
@@ -182,13 +191,13 @@ void Menu::renderTitleSection()
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, kTITLE_ALPHA);
 
   auto x_offset = (int32_t)std::round((float)config->getScreenWidth() * 0.01);
-  auto y_offset = (int32_t)std::round((float)config->getScreenHeight() * 0.03);
+  auto y_offset = (int32_t)std::round((float)config->getScreenHeight() * 0.02);
 
   Text t_main_title(font_maintitle);
   t_main_title.setText(renderer, "MENU", color);
 
-  auto y_gap = (int32_t)std::round((float)config->getScreenHeight() * 0.11);
-  auto element_offset = y + 2 * y_offset + t_main_title.getHeight() + y_gap;
+  auto y_gap = (int32_t)std::round((float)config->getScreenHeight() * 0.07);
+  auto element_offset = y + y_offset + t_main_title.getHeight() + y_gap;
   auto running_offset = element_offset;
   auto title_element_height = 0;
 
@@ -212,7 +221,7 @@ void Menu::renderTitleSection()
     auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
 
     SDL_Rect rect;
-    rect.x = x;
+    rect.x = x - 3;
     rect.y = rect_y;
     rect.h = rect_h;
     rect.w = title_width;
@@ -308,8 +317,10 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
        main_section.status == WindowStatus::OFF)
     {
       if(title_element_index < (int32_t)title_elements.size() &&
-         title_elements.at(title_element_index).name == "Exit")
+         title_elements.at(title_element_index).name == "Quit")
       {
+        // TODO: [02-27-16]
+        std::cout << "[Future] -- Return To Title" << std::endl;
         hide();
       }
       else

@@ -25,7 +25,10 @@ enum class MenuType
 {
   PARTY,
   INVENTORY,
-  EXIT,
+  OPTIONS,
+  SAVE,
+  LOAD,
+  QUIT,
   INVALID,
 };
 

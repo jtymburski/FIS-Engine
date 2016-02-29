@@ -1054,9 +1054,9 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
     SDL_RenderDrawPoint(renderer, x0, y0);
     if(radius > 0)
     {
-      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer); /* R */
-      Frame::drawLine(x0, x0 - radius, y0, renderer); /* L */
-      Frame::drawLineY(y0, y0 - radius, x0, renderer); /* T */
+      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer);  /* R */
+      Frame::drawLine(x0, x0 - radius, y0, renderer);          /* L */
+      Frame::drawLineY(y0, y0 - radius, x0, renderer);         /* T */
       Frame::drawLineY(y0 + 1, y0 + radius + 1, x0, renderer); /* B */
     }
 
@@ -1356,20 +1356,25 @@ bool Frame::renderFillLineToLine(std::vector<Coordinate> start,
  *
  * Notes:
  */
-bool Frame::renderHexagon(Coordinate start, int32_t h, SDL_Renderer* renderer)
+bool Frame::renderHexagon(Coordinate start, int32_t w, SDL_Renderer* renderer)
 {
-  if(h < 2 || renderer == nullptr)
+  if(w < 2 || renderer == nullptr)
     return false;
 
   /* Hexagons must be even */
-  if(h % 2 != 0)
-    h -= 1;
+  if(w % 2 != 0)
+    w -= 1;
+
+  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
+  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto l = (int32_t)std::round(w / (1 + 2 * cos60));
+  auto h = (int32_t)std::round(l * sin60);
 
   /* Render the top portion of the heaxagon as a normalized top trapezoid */
-  renderTrapezoidNormalTop(start, h / 2, renderer);
+  renderTrapezoidNormalTop(start, l, renderer);
 
   /* Render the bottom portion of the hexagon as a norm. bottom trapezoid */
-  renderTrapezoidNormalBottom({start.x, start.y + (h / 2)}, h / 2, renderer);
+  renderTrapezoidNormalBottom({start.x, start.y + h}, l, renderer);
 
   return true;
 }
@@ -1380,22 +1385,26 @@ bool Frame::renderHexagon(Coordinate start, int32_t h, SDL_Renderer* renderer)
  * Inputs:
  * Output:
  */
-bool Frame::renderHexagonBorder(Coordinate start, int32_t h,
+bool Frame::renderHexagonBorder(Coordinate start, int32_t w,
                                 SDL_Renderer* renderer)
 {
-  if(h < 2 || renderer == nullptr)
+  if(w < 2 || renderer == nullptr)
     return false;
 
   /* Hexagons must be even */
-  if(h % 2 != 0)
-    h -= 1;
+  if(w % 2 != 0)
+    w -= 1;
+
+  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
+  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto l = (int32_t)std::round(w / (1 + 2 * cos60));
+  auto h = (int32_t)std::round(l * sin60);
 
   /* Render the top portion of the heaxagon as a normalized top trapezoid */
-  renderTrapezoidNormalTopBorder(start, h / 2, renderer, true);
+  renderTrapezoidNormalTopBorder(start, l, renderer, true);
 
   /* Render the bottom portion of the hexagon as a norm. bottom trapezoid */
-  renderTrapezoidNormalBottomBorder({start.x, start.y + (h / 2)}, h / 2,
-                                    renderer, true);
+  renderTrapezoidNormalBottomBorder({start.x, start.y + h}, l, renderer, true);
 
   return true;
 }
@@ -1415,26 +1424,29 @@ bool Frame::renderHexagonBorder(Coordinate start, int32_t h,
  * Notes:
  * (x0, y0)
  *                               Coordinates of the Points:
- *   .   B ___________C          A(x0, y0 + h)
- *       /            \          B(x0 + tan30 * h, y0)
- *  h   /              \         C(x0 + tan30 * h + tan45 * h, y0)
- *     /                \        D(x0 + 2 * tan30 * h + tan45 * h, y0 + w)
+ *   a   B ___________C
+ *       /            \
+ *  l   /              \
+ *     /                \
  *    /        w         \
  *   A------------------- D
  */
-bool Frame::renderTrapezoidNormalTop(Coordinate start, int32_t h,
+bool Frame::renderTrapezoidNormalTop(Coordinate start, int32_t l,
                                      SDL_Renderer* renderer)
 {
-  if(h == 0 || renderer == nullptr)
+  if(l == 0 || renderer == nullptr)
     return false;
 
-  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
-  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
+  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
 
-  Coordinate a{start.x, start.y + h};
-  Coordinate b{start.x + tan30_h, start.y};
-  Coordinate c{start.x + tan30_h + tan45_h, start.y};
-  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y + h};
+  auto alpha = (int32_t)std::round(cos60 * l);
+  auto height = (int32_t)std::round(sin60 * l);
+
+  Coordinate a{start.x, start.y + height};
+  Coordinate b{start.x + alpha, start.y};
+  Coordinate c{start.x + alpha + l, start.y};
+  Coordinate d{start.x + 2 * alpha + l, start.y + height};
 
   auto left_points = Helpers::bresenhamPoints(a, b);
   auto right_points = Helpers::bresenhamPoints(d, c);
@@ -1450,19 +1462,22 @@ bool Frame::renderTrapezoidNormalTop(Coordinate start, int32_t h,
  * Inputs:
  * Output:
  */
-bool Frame::renderTrapezoidNormalTopBorder(Coordinate start, int32_t h,
+bool Frame::renderTrapezoidNormalTopBorder(Coordinate start, int32_t l,
                                            SDL_Renderer* renderer, bool hexagon)
 {
-  if(h == 0 || renderer == nullptr)
+  if(l == 0 || renderer == nullptr)
     return false;
 
-  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
-  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
+  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
 
-  Coordinate a{start.x, start.y + h};
-  Coordinate b{start.x + tan30_h, start.y};
-  Coordinate c{start.x + tan30_h + tan45_h, start.y};
-  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y + h};
+  auto alpha = (int32_t)std::round(cos60 * l);
+  auto height = (int32_t)std::round(sin60 * l);
+
+  Coordinate a{start.x, start.y + height};
+  Coordinate b{start.x + alpha, start.y};
+  Coordinate c{start.x + alpha + l, start.y};
+  Coordinate d{start.x + 2 * alpha + l, start.y + height};
 
   drawLine(Helpers::bresenhamPoints(b, c), renderer);
   drawLine(Helpers::bresenhamPoints(a, b), renderer);
@@ -1488,25 +1503,28 @@ bool Frame::renderTrapezoidNormalTopBorder(Coordinate start, int32_t h,
  *
  * Notes:
  * (x0, y0)                        Coordinates of the points:
- *      A------------------ D      A(x0, y0)
- *       \                 /       B(x0 + tan30 * h, y0 + h)
- *        \               /        C(x0 + tan30 * h + tan45 * h, y0 + h)
- *         \             /         D(x0 + 2 * tan30 * h + tan45 * h, y0 + h)
- *          B___________C
+ *      A------------------ D
+ *       \                 /
+ *   h    \               /
+ *         \             /
+ *       a   B___________C
  */
-bool Frame::renderTrapezoidNormalBottom(Coordinate start, int32_t h,
+bool Frame::renderTrapezoidNormalBottom(Coordinate start, int32_t l,
                                         SDL_Renderer* renderer)
 {
-  if(h == 0 || renderer == nullptr)
+  if(l == 0 || renderer == nullptr)
     return false;
 
-  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
-  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
+  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+
+  auto alpha = (int32_t)std::round(cos60 * l);
+  auto height = (int32_t)std::round(sin60 * l);
 
   Coordinate a{start.x, start.y};
-  Coordinate b{start.x + tan30_h, start.y + h};
-  Coordinate c{start.x + tan30_h + tan45_h, start.y + h};
-  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y};
+  Coordinate b{start.x + alpha, start.y + height};
+  Coordinate c{start.x + alpha + l, start.y + height};
+  Coordinate d{start.x + 2 * alpha + l, start.y};
 
   auto left_points = Helpers::bresenhamPoints(a, b);
   auto right_points = Helpers::bresenhamPoints(d, c);
@@ -1523,20 +1541,23 @@ bool Frame::renderTrapezoidNormalBottom(Coordinate start, int32_t h,
  * Output:
  * Notes:
  */
-bool Frame::renderTrapezoidNormalBottomBorder(Coordinate start, int32_t h,
+bool Frame::renderTrapezoidNormalBottomBorder(Coordinate start, int32_t l,
                                               SDL_Renderer* renderer,
                                               bool hexagon)
 {
-  if(h == 0 || renderer == nullptr)
+  if(l == 0 || renderer == nullptr)
     return false;
 
-  auto tan30_h = (int32_t)(std::round(std::tan(30 * 3.14159265 / 180.0) * h));
-  auto tan45_h = (int32_t)(std::round(std::tan(45 * 3.14159265 / 180.0) * h));
+  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
+  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+
+  auto alpha = (int32_t)std::round(cos60 * l);
+  auto height = (int32_t)std::round(sin60 * l);
 
   Coordinate a{start.x, start.y};
-  Coordinate b{start.x + tan30_h, start.y + h};
-  Coordinate c{start.x + tan30_h + tan45_h, start.y + h};
-  Coordinate d{start.x + 2 * tan30_h + tan45_h, start.y};
+  Coordinate b{start.x + alpha, start.y + height};
+  Coordinate c{start.x + alpha + l, start.y + height};
+  Coordinate d{start.x + 2 * alpha + l, start.y};
 
   drawLine(Helpers::bresenhamPoints(a, b), renderer);
   drawLine(Helpers::bresenhamPoints(d, c), renderer);
@@ -1594,6 +1615,120 @@ bool Frame::renderTrapezoid(Coordinate start, int32_t h, int32_t b1, int32_t b2,
   auto right_points = Helpers::bresenhamPoints(d, c);
 
   renderFillLineToLine(left_points, right_points, renderer);
+
+  return true;
+}
+
+/*
+ *
+ */
+bool Frame::renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
+                         float orig_exp_pc, uint32_t level,
+                         uint32_t orig_level, SDL_Renderer* renderer)
+{
+  orig_exp_pc = 0.25;
+
+  double cos60 = std::cos(60 * 3.14159265358 / 180.0);
+  double sin60 = std::sin(60 * 3.14159265358 / 180.0);
+  double tan30 = std::tan(30.0 * 3.14159265358 / 180.0);
+
+  auto l = (int32_t)std::round(w / (1 + 2 * cos60));
+  auto h = (int32_t)std::round(l * sin60);
+  auto inset = (int32_t)std::round(w * 0.15);
+
+  /*  OUTER HEXAGON
+   *----------------------------------------------------*/
+  SDL_SetRenderDrawColor(renderer, 35, 35, 35, 255);
+  Frame::renderHexagon(start, w, renderer);
+
+  /* TOP TRAPEZOID -- GAIN
+   *----------------------------------------------------*/
+  SDL_SetRenderDrawColor(renderer, 11, 156, 45, 255);
+
+  if(curr_exp_pc > 0.50)
+  {
+    auto trap_height = 2 * (curr_exp_pc - 0.50) * h;
+    auto delta_y = h - trap_height + 1;
+    auto delta_x = tan30 * trap_height;
+    auto b1 = w - 2 * delta_x;
+
+    std::cout << Frame::renderTrapezoid({start.x, start.y + (int32_t)delta_y},
+                                        trap_height, b1 + 1, w, renderer);
+  }
+
+  /* BOTTOM TRAPEZOID - GAIN
+   *----------------------------------------------------*/
+  if(curr_exp_pc > 0)
+  {
+    float trap_height = (2 * curr_exp_pc * h);
+    trap_height = std::min(h, (int32_t)std::round(trap_height));
+
+    float delta_y = h - trap_height;
+    float delta_x = delta_y * tan30;
+    float delta_x2 = trap_height * tan30;
+
+    int32_t b1 = l + std::round(2 * delta_x2);
+
+    Frame::renderTrapezoid({start.x + (int32_t)std::round(delta_x),
+                            start.y + (int32_t)std::round(delta_y + h)},
+                           std::round(trap_height), b1 + 1, l + 1, renderer);
+  }
+
+  /* TRAPEZOIDS - ORIGINAL
+   *----------------------------------------------------*/
+  if(orig_level == level)
+  {
+    if(curr_exp_pc + orig_exp_pc > 0.50)
+    {
+      auto trap_height = 2 * (curr_exp_pc + orig_exp_pc - 0.50) * h;
+      auto delta_y = h - trap_height + 1;
+      auto delta_x = tan30 * trap_height;
+      auto b1 = w - 2 * delta_x;
+
+      std::cout << Frame::renderTrapezoid({start.x, start.y + (int32_t)delta_y},
+                                          trap_height, b1 + 1, w, renderer);
+    }
+
+    if(curr_exp_pc + orig_exp_pc > 0.00)
+    {
+      float trap_height = (2 * (curr_exp_pc + orig_exp_pc) * h);
+      trap_height = std::min(h, (int32_t)std::round(trap_height));
+
+      float delta_y = h - trap_height;
+      float delta_x = delta_y * tan30;
+      float delta_x2 = trap_height * tan30;
+
+      int32_t b1 = l + std::round(2 * delta_x2);
+
+      Frame::renderTrapezoid({start.x + (int32_t)std::round(delta_x),
+                              start.y + (int32_t)std::round(delta_y + h)},
+                             std::round(trap_height), b1 + 1, l + 1, renderer);
+    }
+  }
+
+  /* HEXAGONAL BORDER
+   *----------------------------------------------------*/
+  SDL_SetRenderDrawColor(renderer, 180, 180, 180, 180);
+  Frame::renderHexagonBorder({start.x, start.y}, w, renderer);
+  Frame::renderHexagonBorder({start.x - 1, start.y}, w, renderer);
+  Frame::renderHexagonBorder({start.x, start.y + 1}, w, renderer);
+
+  // Frame::renderHexagonBorder({outer_hex.x, outer_hex.y + 1}, w,
+  //                            renderer);
+
+  /* INNER HEXAGON AND BORDER
+   *----------------------------------------------------*/
+  auto inner_hex_w = w - 2 * inset;
+
+  Coordinate top_left{start.x + inset, start.y + inset};
+  SDL_SetRenderDrawColor(renderer, 15, 15, 15, 255);
+  Frame::renderHexagon(top_left, inner_hex_w, renderer);
+
+  SDL_SetRenderDrawColor(renderer, 180, 180, 180, 180);
+  Frame::renderHexagonBorder(top_left, inner_hex_w, renderer);
+
+  /* LEVEL VALUE
+   *----------------------------------------------------*/
 
   return true;
 }

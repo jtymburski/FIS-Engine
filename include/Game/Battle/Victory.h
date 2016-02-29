@@ -45,6 +45,8 @@ struct VictoryCard
 
   /* The rendered experience value (for the Bar) */
   uint32_t exp_left;
+  uint32_t orig_exp;
+  uint32_t orig_lvl;
 
   /* Backdrop Location and State */
   Box location;

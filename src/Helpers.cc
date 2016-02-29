@@ -2259,7 +2259,7 @@ std::vector<Coordinate> Helpers::bresenhamPoints(Coordinate begin,
 
   const int max_x = (int)x2;
 
-  for(int x = (int)x1; x < max_x; x++)
+  for(int x = (int)x1; x <= max_x; x++)
   {
     if(steep)
       bresenham_points.push_back({y, x});

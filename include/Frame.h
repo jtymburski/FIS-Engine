@@ -199,28 +199,28 @@ public:
                                    bool vertical = false);
 
   /* Renders a Hexagon with origin point and a size h x eh */
-  static bool renderHexagon(Coordinate start, int32_t h,
+  static bool renderHexagon(Coordinate start, int32_t l,
                             SDL_Renderer* renderer);
 
   /* Renders a Hexagonal border */
-  static bool renderHexagonBorder(Coordinate start, int32_t h,
+  static bool renderHexagonBorder(Coordinate start, int32_t l,
                                   SDL_Renderer* renderer);
 
   /* Render the top part of a normalized trapezoid (half a hexagon) */
-  static bool renderTrapezoidNormalTop(Coordinate start, int32_t h,
+  static bool renderTrapezoidNormalTop(Coordinate start, int32_t l,
                                        SDL_Renderer* renderer);
 
   /* Renders a trapezoidal normalized top border */
-  static bool renderTrapezoidNormalTopBorder(Coordinate start, int32_t h,
+  static bool renderTrapezoidNormalTopBorder(Coordinate start, int32_t l,
                                              SDL_Renderer* renderer,
                                              bool hexagon);
 
   /* Render the bottom part of a normalzied trapezoid */
-  static bool renderTrapezoidNormalBottom(Coordinate start, int32_t h,
+  static bool renderTrapezoidNormalBottom(Coordinate start, int32_t l,
                                           SDL_Renderer* renderer);
 
   /* Renders a trapezoidal normalized bottom border */
-  static bool renderTrapezoidNormalBottomBorder(Coordinate start, int32_t h,
+  static bool renderTrapezoidNormalBottomBorder(Coordinate start, int32_t l,
                                                 SDL_Renderer* renderer,
                                                 bool hexagon);
 
@@ -230,6 +230,11 @@ public:
 
   static bool renderFoursided(Coordinate a, Coordinate b, Coordinate c,
                               Coordinate d);
+
+  /* Render a hexagonal experience bar given needed values */
+  static bool renderExpHex(Coordinate start, uint32_t, float curr_exp_pc,
+                           float orig_gain_pc, uint32_t level,
+                           uint32_t orig_level, SDL_Renderer* renderer);
 };
 
 #endif // FRAME_H
