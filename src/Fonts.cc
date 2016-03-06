@@ -80,6 +80,9 @@ bool Fonts::createFonts(Options* config)
     fonts.emplace(FontName::BATTLE_VICTORY_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(1),
                                    60, TTF_STYLE_NORMAL));
+    fonts.emplace(FontName::BATTLE_VICTORY_NAME,
+                  Text::createFont(config->getBasePath() + config->getFont(),
+                                   24, TTF_STYLE_BOLD));
     fonts.emplace(FontName::MENU_MAINTITLE,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    40, TTF_STYLE_BOLD));

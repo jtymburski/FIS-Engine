@@ -232,9 +232,13 @@ public:
                               Coordinate d);
 
   /* Render a hexagonal experience bar given needed values */
-  static bool renderExpHex(Coordinate start, uint32_t, float curr_exp_pc,
+  static bool renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
                            float orig_gain_pc, uint32_t level,
                            uint32_t orig_level, SDL_Renderer* renderer);
+
+  /* Renders a blank experience hex */
+  static bool renderExpHexBlank(Coordinate start, uint32_t w,
+                                SDL_Renderer* renderer);
 };
 
 #endif // FRAME_H

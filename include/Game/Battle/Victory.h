@@ -18,35 +18,35 @@
 #include "Game/Battle/BattleActor.h"
 #include "Game/Battle/RenderElement.h"
 
-/* The victory card */
-struct VictoryCard
+struct VictoryActor
 {
-  VictoryCard()
-      : card_actor{nullptr},
-        sprite_actor{nullptr},
-        sprite_head{nullptr},
-        sprite_body{nullptr},
-        sprite_feet{nullptr},
-        sprite_larm{nullptr},
-        sprite_rarm{nullptr},
-        frame_backdrop{nullptr} {};
+  VictoryActor()
+      : actor{nullptr},
+        actor_sprite{nullptr},
+        base_person{nullptr},
+        exp_left{0},
+        orig_exp{0},
+        orig_lvl{0} {};
 
-  /* The actor the card is built for */
-  BattleActor* card_actor;
+  BattleActor* actor;
+  Sprite* actor_sprite;
+  Person* base_person;
 
-  /* Card Sprites */
-  Sprite* sprite_actor;
-  Sprite* sprite_head;
-  Sprite* sprite_body;
-  Sprite* sprite_feet;
-  Sprite* sprite_larm;
-  Sprite* sprite_rarm;
-  Frame* frame_backdrop;
-
-  /* The rendered experience value (for the Bar) */
   uint32_t exp_left;
   uint32_t orig_exp;
   uint32_t orig_lvl;
+};
+
+/* The victory card */
+struct VictoryCard
+{
+  VictoryCard() : frame_backdrop{nullptr} {};
+
+  /* The actors the card is built for */
+  std::vector<VictoryActor> actors;
+
+  /* Backdrop Frame */
+  Frame* frame_backdrop;
 
   /* Backdrop Location and State */
   Box location;
@@ -60,10 +60,6 @@ struct LootCard
   /* Actual loot of the loot card */
   std::vector<uint32_t> item_drops;
   uint32_t credit_drop;
-
-  /* Location of the loot card */
-  Box location;
-  Box end_location;
 };
 
 class Victory
@@ -108,19 +104,19 @@ private:
   VictoryState victory_state;
 
   /* The VictoryCards to render */
-  std::vector<VictoryCard> victory_cards;
-
-  Sprite* test_render;
+  VictoryCard card;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
    *============================================================================*/
 private:
+  void clearCard();
+
   /* Constructs a sprite for the VictoryCard given a path */
   Sprite* buildActorSprite(std::string path);
 
   /* Constructs the VictoryCard for the given BattleActor */
-  bool buildCard(BattleActor* actor);
+  VictoryActor buildCard(BattleActor* actor);
 
   /* Constructs the loot card */
   bool buildLoot();
@@ -133,13 +129,23 @@ private:
    *============================================================================*/
 public:
   /* Builds the victory cards and the loot card */
-  bool buildCards();
+  bool buildVictory();
 
   /* Render the victory screen in its current state */
   void render();
 
   /* Renders a given card an all its information */
   void renderCard(VictoryCard& card);
+
+  /* Render the main actor data with an experience bar */
+  bool renderMainActorData(VictoryActor actor, Coordinate start,
+                           uint32_t exp_bar_size);
+
+  /* Render the blank actor data */
+  bool renderBlankActorData(Coordinate start, uint32_t exp_bar_size);
+
+  /* Render the loot information */
+  bool renderLoot(Coordinate start);
 
   /* Update the Victory Screen */
   bool update(int32_t cycle_time);

@@ -1620,11 +1620,16 @@ bool Frame::renderTrapezoid(Coordinate start, int32_t h, int32_t b1, int32_t b2,
 }
 
 /*
+ * Description:
  *
+ * Inputs:
+ * Output:
+ *
+ * Notes:
  */
 bool Frame::renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
-                         float orig_exp_pc, uint32_t level,
-                         uint32_t orig_level, SDL_Renderer* renderer)
+                         float orig_exp_pc, uint32_t level, uint32_t orig_level,
+                         SDL_Renderer* renderer)
 {
   orig_exp_pc = 0.25;
 
@@ -1720,7 +1725,7 @@ bool Frame::renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
    *----------------------------------------------------*/
   auto inner_hex_w = w - 2 * inset;
 
-  Coordinate top_left{start.x + inset, start.y + inset};
+  Coordinate top_left{start.x + inset - 1, start.y + inset - 1};
   SDL_SetRenderDrawColor(renderer, 15, 15, 15, 255);
   Frame::renderHexagon(top_left, inner_hex_w, renderer);
 
@@ -1729,6 +1734,49 @@ bool Frame::renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
 
   /* LEVEL VALUE
    *----------------------------------------------------*/
+
+  return true;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ *
+ * Notes:
+ */
+bool Frame::renderExpHexBlank(Coordinate start, uint32_t w,
+                              SDL_Renderer* renderer)
+{
+  //double cos60 = std::cos(60 * 3.14159265358 / 180.0);
+  auto inset = (int32_t)std::round(w * 0.15);
+
+  /*  OUTER HEXAGON
+   *----------------------------------------------------*/
+  SDL_SetRenderDrawColor(renderer, 35, 35, 35, 55);
+  Frame::renderHexagon(start, w, renderer);
+
+  /* HEXAGONAL BORDER
+ *----------------------------------------------------*/
+  SDL_SetRenderDrawColor(renderer, 180, 180, 180, 80);
+  Frame::renderHexagonBorder({start.x, start.y}, w, renderer);
+  Frame::renderHexagonBorder({start.x - 1, start.y}, w, renderer);
+  Frame::renderHexagonBorder({start.x, start.y + 1}, w, renderer);
+
+  // Frame::renderHexagonBorder({outer_hex.x, outer_hex.y + 1}, w,
+  //                            renderer);
+
+  /* INNER HEXAGON AND BORDER
+   *----------------------------------------------------*/
+  auto inner_hex_w = w - 2 * inset;
+
+  Coordinate top_left{start.x + inset - 1, start.y + inset - 1};
+  SDL_SetRenderDrawColor(renderer, 15, 15, 15, 55);
+  Frame::renderHexagon(top_left, inner_hex_w, renderer);
+
+  SDL_SetRenderDrawColor(renderer, 180, 180, 180, 80);
+  Frame::renderHexagonBorder(top_left, inner_hex_w, renderer);
 
   return true;
 }

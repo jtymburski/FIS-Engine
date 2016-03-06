@@ -35,22 +35,24 @@ Victory::Victory(Options* config, SDL_Renderer* renderer,
   this->renderer = renderer;
   this->victors = victors;
   this->losers = losers;
-
-  test_render = new Sprite(
-      config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
 }
 
 Victory::~Victory()
 {
-  if(test_render)
-    delete test_render;
-
-  test_render = nullptr;
+  clearCard();
 }
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+void Victory::clearCard()
+{
+  if(card.frame_backdrop)
+    delete card.frame_backdrop;
+
+  card.frame_backdrop = nullptr;
+}
 
 Sprite* Victory::buildActorSprite(std::string path)
 {
@@ -66,27 +68,63 @@ Sprite* Victory::buildActorSprite(std::string path)
   return nullptr;
 }
 
-bool Victory::buildCard(BattleActor* actor)
+VictoryActor Victory::buildCard(BattleActor* actor)
 {
   assert(actor && actor->getBasePerson());
-  assert(renderer);
 
+  auto victory_actor = VictoryActor();
+
+  victory_actor.actor = actor;
+  victory_actor.base_person = actor->getBasePerson();
+  victory_actor.exp_left = calcActorExp(actor);
+  victory_actor.orig_exp = actor->getBasePerson()->findExpPercent();
+
+  return victory_actor;
+}
+
+bool Victory::buildLoot()
+{
   auto success = true;
-  auto base_person = actor->getBasePerson();
-  auto card = VictoryCard();
-  auto path = base_person->getThirdPersonPath();
-  auto card_sprite = buildActorSprite(path);
 
-  success &= (card_sprite != nullptr);
+  uint32_t credits;
+  std::vector<uint32_t> loot;
 
-  if(success)
+  for(auto& enemy : losers)
   {
-    card.exp_left = calcActorExp(actor);
-    card.card_actor = actor;
-    card.orig_exp = actor->getBasePerson()->findExpPercent();
-    card.orig_lvl = actor->getBasePerson()->getLevel();
-    card.sprite_actor = card_sprite;
+    if(enemy && enemy->getBasePerson())
+    {
+      credits += enemy->getBasePerson()->getCreditDrop();
+      auto enemy_loot = enemy->getBasePerson()->getItemDrops();
 
+      for(auto& item : enemy_loot)
+        loot.push_back(item);
+    }
+  }
+
+  loot_card.credit_drop = credits;
+  loot_card.item_drops = loot;
+
+  return success;
+}
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
+bool Victory::buildVictory()
+{
+  auto success = false;
+
+  /* Clear the card if it was already constructed */
+  clearCard();
+
+  if(renderer)
+  {
+    success = true;
+
+    card = VictoryCard();
+
+    std::cout << "Setting ze cards sprite" << std::endl;
     card.frame_backdrop = new Frame(
         config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
 
@@ -104,59 +142,20 @@ bool Victory::buildCard(BattleActor* actor)
     card.location.height = frame_y;
     card.state_backdrop = SpriteState::HIDDEN;
 
-    // TODO: End locations for layered cards? */
     card.end_location.point.x = (config->getScreenWidth() - frame_x) / 2;
     card.end_location.point.y = card.location.point.y;
 
-    victory_cards.push_back(card);
-  }
-  else
-  {
-    std::cout << "[Error] Creating card" << std::endl;
-  }
-
-  return success;
-}
-
-bool Victory::buildLoot()
-{
-  auto success = true;
-
-  uint32_t credits;
-  std::vector<uint32_t> loot;
-
-  for(auto& enemy : losers)
-  {
-    if(enemy && enemy->getBasePerson())
+    for(const auto& actor : victors)
     {
-      //      credits += enemy->getCreditDrop());
-      //    loot += enemy->getBasePerson()->getLoot();
+      if(actor && actor->getBasePerson())
+        card.actors.push_back(buildCard(actor));
+      else
+        success = false;
     }
+
+    if(success)
+      success &= buildLoot();
   }
-
-  // TODO
-  credits = 0;
-  loot_card.credit_drop = credits;
-  loot_card.item_drops = loot;
-  loot_card.location.point.x = config->getScreenWidth();
-  // loot_card.location.point.y = (config->getScreenHeight());
-
-  return success;
-}
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
-
-bool Victory::buildCards()
-{
-  auto success = true;
-
-  for(const auto& actor : victors)
-    success &= buildCard(actor);
-
-  if(success)
-    success &= buildLoot();
 
   return success;
 }
@@ -239,75 +238,137 @@ VictoryState Victory::getStateVictory()
 // TODO
 void Victory::render()
 {
-  for(auto& card : victory_cards)
-  {
-    renderCard(card);
-  }
+  renderCard(card);
 }
 
 void Victory::renderCard(VictoryCard& card)
 {
   if(config)
   {
-    SDL_Color color = {255, 255, 255, 255};
-    SDL_Color exp_color = {200, 200, 200, 255};
-
-    auto base_person = card.card_actor->getBasePerson();
-
-    auto victory_font = config->getFontTTF(FontName::BATTLE_HEADER);
-    // auto small_font = config->getFontTTF(FontName::BATTLE_SMALL);
     auto x = card.location.point.x;
     auto y = card.location.point.y;
     auto width = card.location.width;
     auto height = card.location.height;
 
-    // double tan60 = std::tan(60.0 * 3.14159265358 / 180.);
-    double tan45 = std::tan(45.0 * 3.14159265358 / 180.0);
-    double tan30 = std::tan(30.0 * 3.14159265358 / 180.0);
-
     /* Render the base frame */
-    test_render->render(renderer, x, y, width, height);
+    if(card.frame_backdrop)
+      card.frame_backdrop->render(renderer, x, y, width, height);
 
     auto col1_x = static_cast<int32_t>(x + std::floor(0.13 * (float)width));
     auto col1_y = static_cast<int32_t>(y + std::floor(0.08 * (float)height));
 
-    auto exp_bar_size = (int32_t)(std::round(0.18 * height));
-    auto exp_bar_offset_x = (int32_t)(std::round(0.15 * width));
-    auto exp_bar_offset_y = (int32_t)(std::round(0.1625 * height));
+    auto e_size = (int32_t)(std::round(0.18 * height));
+    auto os_x = (int32_t)(std::round(0.15 * width));
+    auto os_y = (int32_t)(std::round(0.1625 * height));
 
     x = col1_x;
     y = col1_y;
 
-    /* Sleuth Member #1 Exp Hex */
-    Frame::renderExpHex({x, y}, exp_bar_size,
-                        (base_person->findExpPercent() / 100.0),
-                        card.orig_exp / 100.0, base_person->getLevel(),
-                        card.orig_lvl, renderer);
+    /* Sleuth Member No. 1 */
+    if(card.actors.size() > 0)
+      renderMainActorData(card.actors.at(0), {x, y}, e_size);
 
-    /* Sleuth Member #2 Exp Hex */
-    Frame::renderExpHex({x + exp_bar_offset_x, y + exp_bar_offset_y},
-                        exp_bar_size, (base_person->findExpPercent() / 100.0),
-                        card.orig_exp / 100.0, base_person->getLevel(),
-                        card.orig_lvl, renderer);
+    /* Sleuth Member No. 2 */
+    if(card.actors.size() > 1)
+      renderMainActorData(card.actors.at(1), {x + os_x, y + os_y}, e_size);
+    else
+      renderBlankActorData({x + os_x, y + os_y}, e_size);
 
-    /* Sleuth Member #3 Exp Hex */
-    Frame::renderExpHex({x, y + 2 * exp_bar_offset_y}, exp_bar_size,
-                        (base_person->findExpPercent() / 100.0),
-                        card.orig_exp / 100.0, base_person->getLevel(),
-                        card.orig_lvl, renderer);
+    /* Sleuth Member No. 3 */
+    if(card.actors.size() > 2)
+      renderMainActorData(card.actors.at(2), {x, y + 2 * os_y}, e_size);
+    else
+      renderBlankActorData({x, y + 2 * os_y}, e_size);
 
-    /* Sleuth Member #4 Exp Hex */
-    Frame::renderExpHex({x + exp_bar_offset_x, y + 3 * exp_bar_offset_y},
-                        exp_bar_size, (base_person->findExpPercent() / 100.0),
-                        card.orig_exp / 100.0, base_person->getLevel(),
-                        card.orig_lvl, renderer);
+    /* Sleuth Member No. 4 */
+    if(card.actors.size() > 3)
+      renderMainActorData(card.actors.at(3), {x + os_x, y + 3 * os_y}, e_size);
+    else
+      renderBlankActorData({x + os_x, y + 3 * os_y}, e_size);
 
-    /* Sleuth Member #5 Exp Hex */
-    Frame::renderExpHex({x, y + 4 * exp_bar_offset_y}, exp_bar_size,
-                        (base_person->findExpPercent() / 100.0),
-                        card.orig_exp / 100.0, base_person->getLevel(),
-                        card.orig_lvl, renderer);
+    /* Sleuth Member No. 5 */
+    if(card.actors.size() > 4)
+      renderMainActorData(card.actors.at(4), {x, y + 4 * os_y}, e_size);
+    else
+      renderBlankActorData({x, y + 4 * os_y}, e_size);
   }
+}
+
+// render the loot
+bool Victory::renderLoot(Coordinate start)
+{
+  (void)start;
+  if(renderer)
+  {
+    auto title_font = config->getFontTTF(FontName::BATTLE_HEADER);
+//    auto item_font = config->getFontTTF(FontName::BATTLE_SUBHEADER);
+    SDL_Color color{255, 255, 255, 255};
+
+    Text t_title(title_font);
+
+    t_title.setText(renderer, "Loot", color);
+
+    std::vector<Text> item_texts;
+
+//    for(auto& item : loot_card.loot)
+//    {
+//      Text temp(item_font);
+      // TODO - Obtain the item name
+      // Item* item =
+      // temp.setText(renderer,
+//    }
+
+    return true;
+  }
+
+  return false;
+}
+
+// main actor data with exp bar
+bool Victory::renderMainActorData(VictoryActor actor, Coordinate start,
+                                  uint32_t exp_bar_size)
+{
+  if(renderer && actor.actor && actor.actor->getBasePerson())
+  {
+    double cos60 = std::cos(60 * 3.14159265358 / 180.0);
+    double sin60 = std::sin(60 * 3.14159265358 / 180.0);
+
+    auto l = (int32_t)std::round(exp_bar_size / (1 + 2 * cos60));
+    auto h = (int32_t)std::round(2 * l * sin60);
+
+    auto base_person = actor.actor->getBasePerson();
+
+    SDL_Color color{255, 255, 255, 255};
+    auto name_font = config->getFontTTF(FontName::BATTLE_VICTORY_NAME);
+
+    /* Render the Actor's Experience Bar */
+    Frame::renderExpHex(start, exp_bar_size,
+                        base_person->findExpPercent() / 100.0,
+                        actor.orig_exp / 100.0, base_person->getLevel(),
+                        actor.orig_lvl, renderer);
+
+    /* Render the Name Data */
+    Text name(name_font);
+
+    name.setText(renderer, base_person->getName(), color);
+
+    Coordinate name_location;
+    name_location.x = start.x + exp_bar_size + exp_bar_size / 5;
+    name_location.y = start.y + h / 2 - name.getHeight() / 2;
+
+    name.render(renderer, name_location.x, name_location.y);
+  }
+
+  return false;
+}
+
+// blank actor data showing slot
+bool Victory::renderBlankActorData(Coordinate start, uint32_t exp_bar_size)
+{
+  if(renderer)
+    return Frame::renderExpHexBlank(start, exp_bar_size, renderer);
+
+  return false;
 }
 
 bool Victory::update(int32_t cycle_time)
@@ -330,47 +391,36 @@ bool Victory::update(int32_t cycle_time)
   /* Slide the card(s) towards their locations */
   if(victory_state == VictoryState::SLIDE_IN_CARD)
   {
-    if(index < victory_cards.size())
-    {
-      auto& card = victory_cards.at(index);
+    card.location.point = Helpers::updateCoordinate(
+        cycle_time, card.location.point, card.end_location.point, 2.0);
 
-      card.location.point = Helpers::updateCoordinate(
-          cycle_time, card.location.point, card.end_location.point, 2.0);
-
-      if(card.location.point.x == card.end_location.point.x)
-        victory_state = VictoryState::PROCESS_CARD;
-    }
-  }
-  else if(victory_state == VictoryState::SLIDE_IN_LOOT)
-  {
+    if(card.location.point.x == card.end_location.point.x)
+      victory_state = VictoryState::PROCESS_CARD;
   }
   /* Update the actual state of victory */
   else if(victory_state == VictoryState::PROCESS_CARD)
   {
-    if(index < victory_cards.size())
+    bool done = true;
+
+    for(auto& victory_actor : card.actors)
     {
-      auto& card = victory_cards.at(index);
+          std::cout << "Experience Remaining: " << victory_actor.exp_left << std::endl;
 
-      if(card.exp_left > 0 && card.card_actor &&
-         card.card_actor->getBasePerson())
+      if(victory_actor.exp_left > 0 && victory_actor.actor &&
+         victory_actor.actor->getBasePerson())
       {
-        /* Add 3% of Remaining EXP_LEFT, or 1, if possible */
-        auto add_exp = (int32_t)(std::floor(0.01 * (float)card.exp_left));
+        auto add_exp =
+            (int32_t)(std::floor(0.01 * (float)victory_actor.exp_left));
+
         add_exp = std::max(1, add_exp);
+        victory_actor.exp_left -= add_exp;
 
-        card.card_actor->getBasePerson()->addExp(add_exp, true);
-        card.exp_left -= add_exp;
-
-        if(card.exp_left == 0)
-          card.exp_left += 100;
-
-        // dim_time += 2000;
-      }
-      else
-      {
-        // victory_state = VictoryState::SLIDE_OUT_CARD;
+        done &= (victory_actor.exp_left == 0);
       }
     }
+
+    if(done)
+      victory_state = VictoryState::FINISHED;
   }
 
   return false;

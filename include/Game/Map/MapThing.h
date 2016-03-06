@@ -123,7 +123,7 @@ protected:
                                        bool skip_head = false);
 
   /* Check if the tile can be set with the thing */
-  virtual bool canSetTile(Tile* tile, TileSprite* frames, 
+  virtual bool canSetTile(Tile* tile, TileSprite* frames,
                           bool avoid_player = false);
 
   /* Returns the tile index as a decimal to indicate what percentage of the
