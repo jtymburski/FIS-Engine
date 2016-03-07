@@ -59,7 +59,7 @@ Lay::Lay()
  *         SDL_Renderer* renderer - pointer to the renderer
  */
 Lay::Lay(std::string path, Floatinate velocity, LayType lay_type,
-         Coordinate screen_size, SDL_Renderer* renderer)
+         Coordinate screen_size, SDL_Renderer* renderer) : Lay()
 {
   this->path = path;
   this->lay_type = lay_type;
@@ -105,7 +105,6 @@ Lay::~Lay()
 {
   if(lay_sprite)
     delete lay_sprite;
-
   lay_sprite = nullptr;
 }
 

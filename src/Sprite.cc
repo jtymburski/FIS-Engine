@@ -174,9 +174,9 @@ void Sprite::clear()
   SDL_DestroyTexture(texture);
 
   /* Reset variables back to blank */
-  current = NULL;
-  head = NULL;
-  texture = NULL;
+  current = nullptr;
+  head = nullptr;
+  texture = nullptr;
 }
 
 /*
@@ -859,8 +859,8 @@ bool Sprite::remove(int position)
     /* Reset the current frame based on deletion of frame */
     if(size == 0)
     {
-      head = 0;
-      current = 0;
+      head = nullptr;
+      current = nullptr;
     }
     else
     {

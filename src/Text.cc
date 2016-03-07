@@ -486,7 +486,10 @@ TTF_Font* Text::createFont(string font_path, int font_size, int font_style)
 
   /* If the font creation is successful, set the style */
   if(new_font != NULL)
+  {
     TTF_SetFontStyle(new_font, font_style);
+    //TTF_SetFontKerning(new_font, 100);
+  }
 
   return new_font;
 }

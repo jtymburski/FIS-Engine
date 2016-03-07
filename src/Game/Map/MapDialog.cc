@@ -196,6 +196,8 @@ vector<int> MapDialog::calculateThingList(string text)
  */
 void MapDialog::clearData()
 {
+  clearAll(true);
+
   animation_cursor = 0.0;
   animation_cursor_up = true;
   animation_shifter = 0.0;
@@ -214,7 +216,9 @@ void MapDialog::clearData()
   event_handler = NULL;
   font_normal = NULL;
   font_title = NULL;
+  notification_queue.clear();
   notification_time = 0;
+  notification_waiting.clear();
   paused = false;
   pickup_offset = 0.0;
   pickup_status = WindowStatus::OFF;
@@ -338,12 +342,14 @@ void MapDialog::executeEvent()
  *              not found.
  *
  * Inputs: int id - the reference id (-1 is source, < -1 is invalid)
+ *         vector<MapThing*>* things - set of things to search. If null, uses 
+ *                                     stored conversation things
  * Output: string - the string name of the ID
  */
-string MapDialog::getThingName(int id)
+string MapDialog::getThingName(int id, vector<MapThing*>* things)
 {
   string name = "";
-  MapThing* thing_reference = getThingReference(id);
+  MapThing* thing_reference = getThingReference(id, things);
   if(thing_reference != nullptr)
     name = thing_reference->getName();
   return name;
@@ -355,11 +361,15 @@ string MapDialog::getThingName(int id)
  *              created. Returns NULL if not found.
  *
  * Inputs: int id - the reference id (<0  invalid)
+ *         vector<MapThing*>* things - set of things to search. If null, uses 
+ *                                     stored conversation things
  * Output: MapThing* - map thing reference pointer
  */
-MapThing* MapDialog::getThingReference(int id)
+MapThing* MapDialog::getThingReference(int id, vector<MapThing*>* things)
 {
   MapThing* thing_reference = NULL;
+  if(things == nullptr)
+    things = &thing_data;
 
   if(id == -1)
   {
@@ -367,10 +377,10 @@ MapThing* MapDialog::getThingReference(int id)
   }
   else if(id >= 0)
   {
-    for(auto i = thing_data.begin(); i != thing_data.end(); i++)
+    for(uint32_t i = 0; i < things->size(); i++)
     {
-      if((*i)->getID() == id)
-        thing_reference = *i;
+      if(things->at(i)->getID() == id)
+        thing_reference = things->at(i);
     }
   }
 
@@ -653,13 +663,16 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
   Notification to_display = notification_queue.front();
 
   /* Split text and create text */
-  vector<string> line_set = Text::splitLine(
-                             font_normal, to_display.text, line_width, false);
+  vector<vector<vector<pair<string, TextProperty>>>> line_set = 
+                          Text::splitLineProperty(font_normal, to_display.text, 
+                                                  line_width, false);
+  //vector<string> line_set = Text::splitLine(
+  //                           font_normal, to_display.text, line_width, false);
   vector<Text*> rendered_lines;
   for(auto i = line_set.begin(); i != line_set.end(); i++)
   {
     Text* single_line = new Text(font_normal);
-    single_line->setText(renderer, *i, {255, 255, 255, kOPACITY_MAX});
+    single_line->setText(renderer, *i);//, {255, 255, 255, kOPACITY_MAX});
     rendered_lines.push_back(single_line);
 
     render_height += single_line->getHeight() + kLINE_SPACING;
@@ -907,6 +920,7 @@ void MapDialog::clearAll(bool include_convo)
 
   }
   notification_queue.clear();
+  notification_waiting.clear();
 
   /* Pick up */
   pickup_queue.clear();
@@ -939,6 +953,33 @@ vector<int> MapDialog::getConversationIDs()
   }
 
   return thing_ids;
+}
+  
+/* Returns the thing IDs from the queued notification(s) - returns nothing if
+ * there are no notifications on the waiting stack */
+// TODO: Comment
+vector<int> MapDialog::getNotificationIDs()
+{
+  vector<int> notification_ids;
+
+  if(isNotificationWaiting())
+  {
+    /* Find the IDs from all notifications */
+    for(uint32_t i = 0; i < notification_waiting.size(); i++)
+    {
+      vector<int> id_set = calculateThingList(notification_waiting[i].text);
+      if(id_set.size() > 0)
+        notification_ids.insert(notification_ids.end(),
+                                id_set.begin(), id_set.end());
+    }
+
+    /* Remove duplicates */
+    notification_ids.erase(Helpers::uniqueSplit(notification_ids.begin(),
+                                                notification_ids.end()),
+                           notification_ids.end());
+  }
+
+  return notification_ids;
 }
 
 /*
@@ -1169,6 +1210,13 @@ bool MapDialog::isImagesSet(bool conversation, bool pickup)
   }
 
   return loaded;
+}
+  
+/* Returns if there is a notification on the waiting to be processed queue */
+// TODO: Comment
+bool MapDialog::isNotificationWaiting()
+{
+  return (notification_waiting.size() > 0);
 }
 
 /*
@@ -1714,6 +1762,13 @@ bool MapDialog::setConversationThings(vector<MapThing*> things)
 void MapDialog::setEventHandler(EventHandler* event_handler)
 {
   this->event_handler = event_handler;
+}
+  
+/* Sets the notification things as per the IDs from getNotificationIDs() */
+// TODO: Comment
+bool MapDialog::setNotificationThings(vector<MapThing*> things)
+{
+  // TODO
 }
 
 /*

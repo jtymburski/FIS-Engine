@@ -102,6 +102,7 @@ private:
   /* The queue that holds all bottom notifications that need to be displayed */
   vector<Notification> notification_queue;
   uint16_t notification_time;
+  vector<Notification> notification_waiting;
 
   /* The paused control settings */
   bool paused;
@@ -131,6 +132,7 @@ private:
   vector<Text*> text_options;
   vector<vector<vector<pair<string, TextProperty>>>> text_strings;
 
+  /* Text control */
   uint16_t text_top;
   bool text_update;
 
@@ -189,8 +191,8 @@ private:
   void executeEvent();
 
   /* Functions to acquire thing data, for painting to the screen */
-  string getThingName(int id);
-  MapThing* getThingReference(int id);
+  string getThingName(int id, vector<MapThing*>* things = nullptr);
+  MapThing* getThingReference(int id, vector<MapThing*>* things = nullptr);
 
   /* Render the options. Deletes previous options, if they exist */
   void renderOptions(SDL_Renderer* renderer,
@@ -227,6 +229,10 @@ public:
    * the conversation isn't waiting */
   vector<int> getConversationIDs();
 
+  /* Returns the thing IDs from the queued notification(s) - returns nothing if
+   * there are no notifications on the waiting stack */
+  vector<int> getNotificationIDs(); // TODO
+
   /* Initializes a conversation with the two given people. */
   bool initConversation(ConvoPair convo_pair, MapPerson* target,
                         MapThing* source);
@@ -251,6 +257,9 @@ public:
 
   /* Are the rendering images set */
   bool isImagesSet(bool conversation = true, bool pickup = false);
+
+  /* Returns if there is a notification on the waiting to be processed queue */
+  bool isNotificationWaiting(); // TODO
 
   /* Returns if the class control system is paused */
   bool isPaused();
@@ -283,6 +292,9 @@ public:
 
   /* Sets the event handler */
   void setEventHandler(EventHandler* event_handler);
+
+  /* Sets the notification things as per the IDs from getNotificationIDs() */
+  bool setNotificationThings(vector<MapThing*> things); // TODO
 
   /* Sets if the class control is paused */
   void setPaused(bool paused);
