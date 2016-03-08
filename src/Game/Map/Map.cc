@@ -2947,6 +2947,13 @@ bool Map::update(int cycle_time)
     }
   }
 
+  /* Check on dialog notifications */
+  if(map_dialog.isNotificationWaiting())
+  {
+    std::vector<int> list = map_dialog.getNotificationIDs();
+    map_dialog.setNotificationThings(getThingData(list));
+  }
+
   /* Update the sprite animation */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->update(cycle_time);

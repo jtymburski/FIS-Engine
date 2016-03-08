@@ -420,9 +420,11 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
  *              If not found, blanks out.
  *
  * Inputs: string text - the text to process
+ *         vector<MapThing*>* things - set of things to search. If null, uses 
+ *                                     stored conversation things
  * Output: string - the processed text
  */
-string MapDialog::replaceThingReferences(string text)
+string MapDialog::replaceThingReferences(string text, vector<MapThing*>* things)
 {
   string new_text = "";
 
@@ -443,7 +445,7 @@ string MapDialog::replaceThingReferences(string text)
           /* Process the first which would contain the relevant ID */
           try
           {
-            string name = getThingName(stoi(second_split.front()));
+            string name = getThingName(stoi(second_split.front()), things);
             new_text += "[" + kTHING_COLOR + "]" + name +
                         "[/" + kTHING_COLOR + "]";
           }
@@ -666,8 +668,6 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
   vector<vector<vector<pair<string, TextProperty>>>> line_set = 
                           Text::splitLineProperty(font_normal, to_display.text, 
                                                   line_width, false);
-  //vector<string> line_set = Text::splitLine(
-  //                           font_normal, to_display.text, line_width, false);
   vector<Text*> rendered_lines;
   for(auto i = line_set.begin(); i != line_set.end(); i++)
   {
@@ -955,9 +955,16 @@ vector<int> MapDialog::getConversationIDs()
   return thing_ids;
 }
   
-/* Returns the thing IDs from the queued notification(s) - returns nothing if
- * there are no notifications on the waiting stack */
-// TODO: Comment
+/*
+ * Description: Returns a unique list of notification map thing IDs from the
+ *              stack of waiting notifications that has been set but are
+ *              waiting to be processed first. This is used in conjunction with
+ *              setNotificationThings() corresponding to these IDs.
+ *
+ * Inputs: none
+ * Output: vector<int> - vector array of unique thing IDs from notification(s).
+ */
+
 vector<int> MapDialog::getNotificationIDs()
 {
   vector<int> notification_ids;
@@ -1057,7 +1064,7 @@ bool MapDialog::initNotification(string notification, bool single_line,
     queue_entry.time_visible = time_visible;
 
     /* Append to running queue */
-    notification_queue.push_back(queue_entry);
+    notification_waiting.push_back(queue_entry);
 
     return true;
   }
@@ -1212,8 +1219,14 @@ bool MapDialog::isImagesSet(bool conversation, bool pickup)
   return loaded;
 }
   
-/* Returns if there is a notification on the waiting to be processed queue */
-// TODO: Comment
+/*
+ * Description: Returns if there is a notificaiton waiting for final processing.
+ *              This is finished with getNotificationIDs() and then getting the
+ *              appropriate thing pointers and calling setNotificationThings().
+ *
+ * Inputs: none
+ * Output: bool - true if a notification is waiting
+ */
 bool MapDialog::isNotificationWaiting()
 {
   return (notification_waiting.size() > 0);
@@ -1764,11 +1777,34 @@ void MapDialog::setEventHandler(EventHandler* event_handler)
   this->event_handler = event_handler;
 }
   
-/* Sets the notification things as per the IDs from getNotificationIDs() */
-// TODO: Comment
+/*
+ * Description: Sets the notification map things that are needed for rendering
+ *              and referencing. These correspond to the IDs from
+ *              getNotificationIDs(). This call will only work if one or more
+ *              notifications are waiting.
+ *
+ * Inputs: vector<MapThing*> things - vector array of things
+ * Output: bool - status if the set was successful
+ */
 bool MapDialog::setNotificationThings(vector<MapThing*> things)
 {
-  // TODO
+  /* Loop through all waiting notifications and clean-up thing references */
+  for(uint32_t i = 0; i < notification_waiting.size(); i++)
+  {
+    notification_waiting[i].text = replaceThingReferences(
+                                        notification_waiting[i].text, &things);
+  }
+
+  /* Load from waiting into main queue */
+  if(notification_waiting.size() > 0)
+  {
+    notification_queue.insert(notification_queue.end(),
+                              notification_waiting.begin(),
+                              notification_waiting.end());
+    notification_waiting.clear();
+    return true;
+  }
+  return false;
 }
 
 /*

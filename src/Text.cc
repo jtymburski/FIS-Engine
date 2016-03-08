@@ -1047,6 +1047,7 @@ vector<vector<vector<pair<string, TextProperty>>>>
           }
           line_row.push_back(line_stack[i][j]);
           reload = true;
+          line_str.clear();
         }
         /* Otherwise, if reload, set up as first element */
         else if(reload)

@@ -199,7 +199,8 @@ private:
               vector<vector<vector<pair<string, TextProperty>>>> options = {});
 
   /* Takes the text and replaces {ID} references with name */
-  string replaceThingReferences(string text);
+  string replaceThingReferences(string text, 
+                                vector<MapThing*>* things = nullptr);
 
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
@@ -231,7 +232,7 @@ public:
 
   /* Returns the thing IDs from the queued notification(s) - returns nothing if
    * there are no notifications on the waiting stack */
-  vector<int> getNotificationIDs(); // TODO
+  vector<int> getNotificationIDs();
 
   /* Initializes a conversation with the two given people. */
   bool initConversation(ConvoPair convo_pair, MapPerson* target,
@@ -259,7 +260,7 @@ public:
   bool isImagesSet(bool conversation = true, bool pickup = false);
 
   /* Returns if there is a notification on the waiting to be processed queue */
-  bool isNotificationWaiting(); // TODO
+  bool isNotificationWaiting();
 
   /* Returns if the class control system is paused */
   bool isPaused();
@@ -294,7 +295,7 @@ public:
   void setEventHandler(EventHandler* event_handler);
 
   /* Sets the notification things as per the IDs from getNotificationIDs() */
-  bool setNotificationThings(vector<MapThing*> things); // TODO
+  bool setNotificationThings(vector<MapThing*> things);
 
   /* Sets if the class control is paused */
   void setPaused(bool paused);
