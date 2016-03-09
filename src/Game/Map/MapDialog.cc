@@ -21,7 +21,7 @@
 #include "Game/Map/MapDialog.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint8_t MapDialog::kBORDER_WIDTH = 3;
+const uint8_t MapDialog::kBORDER_WIDTH = 1;
 const float MapDialog::kBUBBLES_ANIMATE = 277.67;
 const uint8_t MapDialog::kBUBBLES_COUNT = 3;
 const uint8_t MapDialog::kBUBBLES_OFFSET = 16;
@@ -33,7 +33,7 @@ const uint8_t MapDialog::kCURSOR_HEIGHT = 8;
 const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
 const uint8_t MapDialog::kLINE_SPACING = 12;
 const uint8_t MapDialog::kMARGIN_SIDES = 50;
-const uint8_t MapDialog::kMARGIN_TOP = 50;
+const uint8_t MapDialog::kMARGIN_TOP = 40;
 const uint16_t MapDialog::kMSEC_PER_WORD = 333;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
 const float MapDialog::kOPACITY_BACKEND = 0.65;
