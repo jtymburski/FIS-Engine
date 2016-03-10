@@ -152,6 +152,7 @@ private:
   const static uint8_t kMARGIN_TOP; /* The top margin size */
   const static uint16_t kMSEC_PER_WORD; /* The read speed per word */
   const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
+  const static uint8_t kNAME_MARGIN; /* Name margin on each side */
   const static float kOPACITY_BACKEND; /* Backend display box opacity */
   const static uint8_t kOPACITY_MAX; /* The max opacity rating (between 0-max */
   const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */

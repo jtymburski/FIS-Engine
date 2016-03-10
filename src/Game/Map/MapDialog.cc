@@ -36,6 +36,7 @@ const uint8_t MapDialog::kMARGIN_SIDES = 50;
 const uint8_t MapDialog::kMARGIN_TOP = 40;
 const uint16_t MapDialog::kMSEC_PER_WORD = 333;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
+const uint8_t MapDialog::kNAME_MARGIN = 13;
 const float MapDialog::kOPACITY_BACKEND = 0.65;
 const uint8_t MapDialog::kOPACITY_MAX = 255;
 const uint8_t MapDialog::kOPTION_OFFSET = 50;
@@ -579,7 +580,8 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
       int textbox_height = img_name_l.getHeight();
       img_name_l.render(renderer, kNAME_BOX_OFFSET, convo_y - textbox_height);
       img_name_r.render(renderer,
-                kNAME_BOX_OFFSET + img_name_l.getWidth() + name_text.getWidth(),
+                kNAME_BOX_OFFSET + img_name_l.getWidth() + 
+                name_text.getWidth() + kNAME_MARGIN + kNAME_MARGIN,
                 convo_y - textbox_height);
 
       /* Draw top white bar encapsulating text */
@@ -587,7 +589,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
       SDL_Rect src_rect;
       src_rect.x = kNAME_BOX_OFFSET + img_name_l.getWidth();
       src_rect.y = convo_y - textbox_height;
-      src_rect.w = name_text.getWidth();
+      src_rect.w = name_text.getWidth() + kNAME_MARGIN + kNAME_MARGIN;
       src_rect.h = kBORDER_WIDTH;
       SDL_RenderFillRect(renderer, &src_rect);
 
