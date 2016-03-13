@@ -21,6 +21,7 @@
 #include "Sprite.h"
 #include "EnumDb.h"
 #include "Options.h"
+#include "Game/Player/Item.h"
 
 using std::begin;
 using std::end;
@@ -65,6 +66,9 @@ private:
 
   /* Pleps for each ailment */
   std::map<Infliction, Sprite*> pleps_ailments;
+
+  /* Map of an Item integer to its string */
+  std::vector<std::pair<uint32_t, std::string>> item_map;
 
   /* Pleps for events */
   // std::map<EventType, Sprite*> pleps_events;
@@ -122,6 +126,9 @@ public:
   /* Builds the data of the BDD */
   bool buildData();
 
+  /* Assemble the vector of Item Maps */
+  void buildItemMap(std::vector<Item*> items);
+
   /* Obtains the battle bar frame */
   Frame* getBattleBar();
 
@@ -142,6 +149,9 @@ public:
 
   /* Returns a scope frame of a given action scope */
   Frame* getFrameScope(ActionScope scope_frame);
+
+  /* Return the string of an Item name by the Item's GameID */
+  std::string getItemName(int32_t id);
 
   /* Returns a pointer to a Plep ailment sprite */
   Sprite* getPlepAilment(Infliction ailment);

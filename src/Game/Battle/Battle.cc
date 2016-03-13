@@ -1117,7 +1117,7 @@ void Battle::updateOutcome(int32_t cycle_time)
     else
     {
       /* If victory screen is not set, create it */
-      victory_screen = new Victory(config, renderer, getAllies(), getEnemies());
+      victory_screen = new Victory(config, battle_display_data, renderer, getAllies(), getEnemies());
       victory_screen->buildVictory();
 
       /* Dim the Battle a little - infinite render element */

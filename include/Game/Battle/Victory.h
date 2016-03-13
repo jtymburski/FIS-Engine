@@ -16,6 +16,7 @@
 #define VICTORY_H
 
 #include "Game/Battle/BattleActor.h"
+#include "Game/Battle/BattleDisplayData.h"
 #include "Game/Battle/RenderElement.h"
 
 struct VictoryActor
@@ -57,10 +58,12 @@ struct VictoryCard
 /* The loot information */
 struct LootCard
 {
-  /* Actual loot of the loot card */
-  std::vector<uint32_t> item_drops;
+  /* Actual loot of the loot card ID, name */
+  std::vector<std::pair<uint32_t, std::string>> item_drops;
+
   uint32_t credit_drop;
 };
+
 
 class Victory
 {
@@ -69,7 +72,7 @@ public:
   Victory();
 
   /* Constructs a victory object given a renderer/configuration setting */
-  Victory(Options* config, SDL_Renderer* renderer,
+  Victory(Options* config, BattleDisplayData* display_data, SDL_Renderer* renderer,
           std::vector<BattleActor*> victors, std::vector<BattleActor*> losers);
 
   /* Annihilate a victory object */
@@ -81,6 +84,9 @@ public:
 private:
   /* Active configuration */
   Options* config;
+
+  /* Pointer to the display data */
+  BattleDisplayData* display_data;
 
   /* Remaining time the Battle needs to dim */
   int32_t dim_time;

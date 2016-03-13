@@ -22,6 +22,7 @@
 #include "Sprite.h"
 #include "ScrollBox.h"
 
+/* Enumerated MenuType */
 enum class MenuType
 {
   PARTY,
@@ -33,6 +34,7 @@ enum class MenuType
   INVALID,
 };
 
+/* Enumerated MenuLayer */
 enum class MenuLayer
 {
   TITLE,

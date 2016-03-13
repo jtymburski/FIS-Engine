@@ -441,7 +441,10 @@ bool Game::eventStartBattle(int person_id, int source_id)
 
       /* Build display data */
       if(!battle_display_data->isDataBuilt())
+      {
         battle_display_data->buildData();
+        battle_display_data->buildItemMap(list_item);
+      }
 
       /* Start battle */
       battle_ctrl->startBattle(getParty(person_id), getParty(source_id));

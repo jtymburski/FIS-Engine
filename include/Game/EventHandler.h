@@ -109,6 +109,9 @@ public:
   /* Returns a reference to the sound handler */
   SoundHandler* getSoundHandler();
 
+  /* Check the name of an Item of a Given ID */
+  std::string peekItemName(int32_t id);
+
   /* Clears the event handling poll queue */
   void pollClear();
 

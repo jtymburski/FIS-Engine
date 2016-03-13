@@ -19,6 +19,7 @@ const double Victory::kEXP_FACTOR{0.60};
 
 Victory::Victory()
     : config{nullptr},
+      display_data{nullptr},
       dim_time{0},
       index{0},
       renderer{nullptr},
@@ -26,12 +27,13 @@ Victory::Victory()
 {
 }
 
-Victory::Victory(Options* config, SDL_Renderer* renderer,
+Victory::Victory(Options* config, BattleDisplayData* display_data, SDL_Renderer* renderer,
                  std::vector<BattleActor*> victors,
                  std::vector<BattleActor*> losers)
     : Victory()
 {
   this->config = config;
+  this->display_data = display_data;
   this->renderer = renderer;
   this->victors = victors;
   this->losers = losers;
@@ -85,24 +87,25 @@ VictoryActor Victory::buildCard(BattleActor* actor)
 bool Victory::buildLoot()
 {
   auto success = true;
-
   uint32_t credits;
-  std::vector<uint32_t> loot;
 
   for(auto& enemy : losers)
   {
-    if(enemy && enemy->getBasePerson())
+    if(enemy && enemy->getBasePerson() && display_data)
     {
       credits += enemy->getBasePerson()->getCreditDrop();
       auto enemy_loot = enemy->getBasePerson()->getItemDrops();
 
       for(auto& item : enemy_loot)
-        loot.push_back(item);
+      {
+        /* Create a pair of the item. Peek the Item name from BattleDIsplayData
+         * by checking its ID against the known IDs. (On failure, will be "") */
+        loot_card.item_drops.push_back(std::make_pair(item, display_data->getItemName(item)));
+      }
     }
   }
 
   loot_card.credit_drop = credits;
-  loot_card.item_drops = loot;
 
   return success;
 }

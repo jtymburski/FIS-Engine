@@ -301,6 +301,19 @@ void BattleDisplayData::buildFramesExtra()
   }
 }
 
+void BattleDisplayData::buildItemMap(std::vector<Item*> items)
+{
+  item_map.clear();
+
+  for(const auto& item : items)
+  {
+    if(item)
+    {
+      item_map.push_back(std::make_pair(item->getGameID(), item->getName()));
+    }
+  }
+}
+
 void BattleDisplayData::buildPlepsAilments()
 {
   bool success = true;
@@ -498,6 +511,16 @@ Frame* BattleDisplayData::getFrameScope(ActionScope scope_frame)
   }
 
   return nullptr;
+}
+
+// Return the string of the Item name
+std::string BattleDisplayData::getItemName(int32_t id)
+{ 
+  for(const auto& element : item_map)
+    if(element.first == (uint32_t)id)
+      return element.second;
+
+  return "";
 }
 
 Sprite* BattleDisplayData::getPlepAilment(Infliction ailment)
