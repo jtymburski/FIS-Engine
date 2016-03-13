@@ -141,17 +141,17 @@ public:
   /* Takes a string of characters and splits it to fit a line after it is
    * rendered by the given font. */
   static vector<string> splitLine(TTF_Font* font, std::string text,
-                                  int line_width, bool elided = false);
+                                  int line_width, int elide_count = 0);
 
   /* Takes a string of characters processed by parseHtml() and splits it to fit
    * a line after it is rendered by the given font */
   static vector<vector<vector<pair<string, TextProperty>>>> splitLineProperty(
                                    TTF_Font* font, string text, int line_width,
-                                   bool elided = false);
+                                   int elide_count = 0);
   static vector<vector<vector<pair<string, TextProperty>>>> splitLineProperty(
                                    TTF_Font* font, int line_width,
                                    vector<pair<string, TextProperty>> text_set,
-                                   bool elided = false);
+                                   int elide_count = 0);
 };
 
 #endif // TEXT_H

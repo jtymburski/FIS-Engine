@@ -323,7 +323,7 @@ bool Text::setText(SDL_Renderer* renderer,
           text_surfaces.push_back(text_surface);
 
         /* Append space if relevant */
-        if((i != (text.size() - 1)) && (j == (text[i].size() - 1)) && 
+        if((i != (text.size() - 1)) && (j == (text[i].size() - 1)) &&
            length > 0)
         {
           text_surfaces.push_back(nullptr);
@@ -443,7 +443,7 @@ void Text::unsetTexture()
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
-  
+
 /*
  * Description: Returns the number of characters in the passed in line of text.
  *
@@ -743,12 +743,12 @@ vector<pair<string, TextProperty>> Text::parseHtml(string text)
  * Inputs: TTF_Font* font - the rendering font (must be non-NULL)
  *         string text - the sequence of characters to split
  *         int line_width - the limited length of line to delimit to
- *         bool elided - if the line should be cut off at a single line. If
- *                       cut shorter then text, add ...
+ *         int elide_count - if the line should be cut off at the designated
+ *                           line count. If cut shorter then text, add ...
  * Output: vector<string> - stack of lines, as per line_width
  */
 vector<string> Text::splitLine(TTF_Font* font, string text,
-                               int line_width, bool elided)
+                               int line_width, int elide_count)
 {
   int dot_width = 0;
   vector<string> line_stack;
@@ -770,68 +770,49 @@ vector<string> Text::splitLine(TTF_Font* font, string text,
   /* Proceed if font sizing was successful */
   if(success)
   {
+    bool first_word = true;
     bool done = false;
     uint16_t index = 0;
     string line = "";
     width = 0;
 
-    /* If elided, it sets the line to the under line length. If it's greater,
-     * it adds ... after the last word */
-    if(elided)
+    /* Loop through all the words */
+    while(index < words.size() && !done)
     {
-      /* Modify the line width to expect the final 3 dots */
-      line_width -= (dot_width * 3);
-
-      while(index < words.size() && !done)
+      /* If it's the first word, force it onto the stack */
+      if(first_word)
       {
-        /* Calculate the check width, to compare against line width */
-        int check_width = width + word_widths[index];
-        if(index != 0)
-          check_width += space_width;
-
-        /* Run the check, if greater, end line fill sequence */
-        if(check_width > line_width)
+        line += words[index];
+        width += word_widths[index];
+        first_word = false;
+        index++;
+      }
+      /* If the elide limiter is valid and this is the last line, check for
+       * ... and if line is over */
+      else if(elide_count > 0 && (int)(line_stack.size() + 1) == elide_count)
+      {
+        /* Check length of line with ... delimiter to see if process is over */
+        if((width + space_width + word_widths[index]
+                  + dot_width * 3) > line_width)
+        {
           done = true;
-        /* Otherwise, append the word */
+          line += "...";
+        }
+        /* Otherwise, the word can be appended and shift index */
         else
         {
-          if(index != 0)
-          {
-            line += " ";
-            width += space_width;
-          }
-          line += words[index];
-          width += word_widths[index];
+          line += " " + words[index];
+          width += space_width + word_widths[index];
           index++;
         }
       }
-
-      /* Add the final ... and push word to vector */
-      if(done)
-        line += "...";
-      line_stack.push_back(line);
-    }
-    /* Otherwise, this creates a sequence of lines, where each line is less
-     * than the limit of line length unless one word is longer than length */
-    else
-    {
-      bool first_word = true;
-
-      /* Loop through all the words */
-      while(index < words.size())
+      /* Otherwise, just a normal line */
+      else
       {
-        /* If it's the first word, force it onto the stack */
-        if(first_word)
-        {
-          line += words[index];
-          width += word_widths[index];
-          first_word = false;
-          index++;
-        }
-        /* Otherwise, check if the new word will make the line too long
+        /* Check if the new word will make the line too long
          * If so, push the previous line and clear to make way for the new
          * word */
-        else if((width + space_width + word_widths[index]) > line_width)
+        if((width + space_width + word_widths[index]) > line_width)
         {
           line_stack.push_back(line);
           line.clear();
@@ -846,11 +827,11 @@ vector<string> Text::splitLine(TTF_Font* font, string text,
           index++;
         }
       }
-
-      /* Append the final line if not null */
-      if(!line.empty())
-        line_stack.push_back(line);
     }
+
+    /* Append the final line if not null */
+    if(!line.empty())
+      line_stack.push_back(line);
   }
 
   return line_stack;
@@ -864,16 +845,17 @@ vector<string> Text::splitLine(TTF_Font* font, string text,
  * Inputs: TTF_Font* font - the font reference pointer
  *         string text - the text to process and split apart
  *         int line_width - the maximum number of characters in one line
- *         bool elided - true to elide the text with ... and only one line
+ *         int elide_count - if the line should be cut off at the designated
+ *                           line count. If cut shorter then text, add ...
  * Output: vector<vector<vector<pair<string, TextProperty>>>> - this is
  *                 <lines<words<sub-words<pair<text of word,
  *                                             style property of word>>>>
  */
 vector<vector<vector<pair<string, TextProperty>>>>
          Text::splitLineProperty(TTF_Font* font, string text, int line_width,
-                                 bool elided)
+                                 int elide_count)
 {
-  return splitLineProperty(font, line_width, parseHtml(text), elided);
+  return splitLineProperty(font, line_width, parseHtml(text), elide_count);
 }
 
 /*
@@ -887,7 +869,8 @@ vector<vector<vector<pair<string, TextProperty>>>>
  *         vector<pair<string, TextProperty>> text_set - this is the processed
  *                       text separated by the different rendering styles
  *                       (defined by html)
- *         bool elided - true to elide the text with ... and only one line
+ *         int elide_count - if the line should be cut off at the designated
+ *                           line count. If cut shorter then text, add ...
  * Output: vector<vector<vector<pair<string, TextProperty>>>> - this is
  *                 <lines<words<sub-words<pair<text of word,
  *                                             style property of word>>>>
@@ -895,7 +878,7 @@ vector<vector<vector<pair<string, TextProperty>>>>
 vector<vector<vector<pair<string, TextProperty>>>>
          Text::splitLineProperty(TTF_Font* font, int line_width,
                                  vector<pair<string, TextProperty>> text_set,
-                                 bool elided)
+                                 int elide_count)
 {
   int elide_width = 0;
   vector<vector<vector<pair<string, TextProperty>>>> line_all;
@@ -904,7 +887,7 @@ vector<vector<vector<pair<string, TextProperty>>>>
   bool success = true;
 
   /* Space width */
-  if(elided)
+  if(elide_count > 0)
   {
     success &= (TTF_SizeText(font, ".", &elide_width, NULL) == 0);
     elide_width *= 3;
@@ -979,7 +962,8 @@ vector<vector<vector<pair<string, TextProperty>>>>
     bool first_word = true;
     uint16_t index = 0;
     vector<vector<pair<string, TextProperty>>> line;
-    width = elide_width;
+    vector<int> line_widths;
+    width = 0;
 
     /* Loop through all the words */
     while(index < words.size())
@@ -997,10 +981,9 @@ vector<vector<vector<pair<string, TextProperty>>>>
        * word */
       else if((width + space_width + word_widths[index]) > line_width)
       {
-        if(elided)
-          line.back().back().first += "...";
         line_stack.push_back(line);
         line.clear();
+        line_widths.push_back(width);
         width = 0;
         first_word = true;
       }
@@ -1016,13 +999,25 @@ vector<vector<vector<pair<string, TextProperty>>>>
     /* Append the final line if not null */
     if(!line.empty())
     {
-      if(elided)
-        line.back().back().first += "...";
       line_stack.push_back(line);
+      line_widths.push_back(width);
     }
-    if(elided)
-      if(line_stack.size() > 1)
-        line_stack.erase(line_stack.begin() + 1, line_stack.end());
+
+    /* Do final elided check */
+    if(elide_count > 0)
+    {
+      if((int)line_stack.size() > elide_count)
+      {
+        /* Erase irrelevant lines */
+        line_stack.erase(line_stack.begin() + elide_count, line_stack.end());
+        line_widths.erase(line_widths.begin() + elide_count, line_widths.end());
+
+        /* Append ... and confirm line length */
+        if((line_widths.back() + elide_width) > line_width)
+          line_stack.back().pop_back();
+        line_stack.back().back().back().first += "...";
+      }
+    }
 
     /* Once complete, go through processing lines that could be combined */
     for(uint32_t i = 0; i < line_stack.size(); i++)

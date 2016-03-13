@@ -37,6 +37,7 @@ const uint8_t MapDialog::kMARGIN_TOP = 40;
 const uint16_t MapDialog::kMSEC_PER_WORD = 333;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
 const uint8_t MapDialog::kNAME_MARGIN = 13;
+const uint8_t MapDialog::kNOTIFY_MAX_LINES = 4;
 const float MapDialog::kOPACITY_BACKEND = 0.65;
 const uint8_t MapDialog::kOPACITY_MAX = 255;
 const uint8_t MapDialog::kOPTION_OFFSET = 50;
@@ -669,7 +670,8 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
   /* Split text and create text */
   vector<vector<vector<pair<string, TextProperty>>>> line_set = 
                           Text::splitLineProperty(font_normal, to_display.text, 
-                                                  line_width, false);
+                                                  line_width, 
+                                                  to_display.text_lines);
   vector<Text*> rendered_lines;
   for(auto i = line_set.begin(); i != line_set.end(); i++)
   {
@@ -1046,11 +1048,6 @@ bool MapDialog::initNotification(string notification, bool single_line,
     if(width < 0)
       width = 0;
 
-    /* Chop to single line if required */
-    if(single_line)
-      notification = Text::splitLine(font_normal, notification,
-                                                  width, true).front();
-
     /* Calculate the display time if invalid */
     if(time_visible <= 0)
     {
@@ -1061,6 +1058,10 @@ bool MapDialog::initNotification(string notification, bool single_line,
     /* Set up the queue entry */
     Notification queue_entry;
     queue_entry.text = notification;
+    if(single_line)
+      queue_entry.text_lines = 1;
+    else
+      queue_entry.text_lines = kNOTIFY_MAX_LINES;
     queue_entry.thing_image = NULL;
     queue_entry.thing_count = 0;
     queue_entry.time_visible = time_visible;

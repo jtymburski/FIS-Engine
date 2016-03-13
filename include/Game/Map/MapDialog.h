@@ -27,6 +27,7 @@ using namespace std;
 struct Notification
 {
   string text;
+  int text_lines;
   Frame* thing_image;
   int32_t thing_count;
   uint16_t time_visible;
@@ -153,6 +154,7 @@ private:
   const static uint16_t kMSEC_PER_WORD; /* The read speed per word */
   const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
   const static uint8_t kNAME_MARGIN; /* Name margin on each side */
+  const static uint8_t kNOTIFY_MAX_LINES; /* Max number of lines for notify */
   const static float kOPACITY_BACKEND; /* Backend display box opacity */
   const static uint8_t kOPACITY_MAX; /* The max opacity rating (between 0-max */
   const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */
