@@ -249,6 +249,15 @@ void Menu::renderTitleSection()
 void Menu::renderMainSection()
 {
   renderMainBackdrop();
+
+  auto box{ScrollBox()};
+
+  box.scroll_box.point.x = 200;
+  box.scroll_box.point.y = 400;
+  box.scroll_box.width = 300;
+  box.scroll_box.height = 200;
+
+  box.render(renderer);
 }
 
 void Menu::renderMainBackdrop()
