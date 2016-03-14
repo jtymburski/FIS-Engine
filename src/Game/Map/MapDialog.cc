@@ -33,7 +33,7 @@ const uint8_t MapDialog::kCURSOR_HEIGHT = 8;
 const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
 const uint8_t MapDialog::kLINE_SPACING = 12;
 const uint8_t MapDialog::kMARGIN_SIDES = 50;
-const uint8_t MapDialog::kMARGIN_TOP = 40;
+const uint8_t MapDialog::kMARGIN_TOP = 35;
 const uint16_t MapDialog::kMSEC_PER_WORD = 333;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
 const uint8_t MapDialog::kNAME_MARGIN = 13;
@@ -694,7 +694,7 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
   /* Render main frame */
   int y_index = 0;
   img_convo.render(renderer, 0, y_index);
-  y_index += kLINE_SPACING + kLINE_SPACING;
+  y_index += kLINE_SPACING + 0.5 * kLINE_SPACING;
 
   /* Render text */
   for(auto i = rendered_lines.begin(); i != rendered_lines.end(); i++)

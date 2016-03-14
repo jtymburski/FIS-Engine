@@ -10,9 +10,8 @@
  * TODO:
  *  1. If the tile image does not exist, disable the painting sequence
  *    - There seems to be a small glitch in this where it paints a white tile
- *  2. If mode is switched, end all notification animations and such. -> battle
- *  3. Animation event for teleport requires fade out -> teleport -> fade in
- *  4. If tile set fails, don't quit the map. Useful only multi tile setups.
+ *  2. Animation event for teleport requires fade out -> teleport -> fade in
+ *  3. If tile set fails, don't quit the map. Useful only multi tile setups.
  *     Maybe only pass if it is a multi tile setup ??
  *
  * Extra:
@@ -302,9 +301,14 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
     if(modified_thing == NULL)
     {
       if(identifier == "mapperson")
+      {
         modified_thing = new MapPerson();
+      }
       else
+      {
         modified_thing = new MapNPC();
+        ((MapNPC*)modified_thing)->setSpottedImage(&img_spotted);
+      }
       new_thing = true;
       base_persons.push_back(static_cast<MapPerson*>(modified_thing));
     }
@@ -389,9 +393,14 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     if(modified_thing == NULL)
     {
       if(identifier == "mapperson")
+      {
         modified_thing = new MapPerson();
+      }
       else
+      {
         modified_thing = new MapNPC();
+        ((MapNPC*)modified_thing)->setSpottedImage(&img_spotted);
+      }
       new_thing = true;
       persons.push_back(static_cast<MapPerson*>(modified_thing));
 
@@ -2130,11 +2139,19 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 /* Finishes the load - last call on successful data */
 void Map::loadDataFinish(SDL_Renderer* renderer)
 {
-  /* Load the item menu sprites - TODO: In file? */
+  /* Base path */
+  std::string base_path = "";
+  if(system_options != nullptr)
+    base_path = system_options->getBasePath();
+
+  /* Load the images */
+  img_spotted.setTexture(base_path + "sprites/Icons/exclamation.png", renderer);
+
+  /* Load the item menu sprites */
   item_menu.loadImageBackend("sprites/Overlay/item_store_left.png",
                              "sprites/Overlay/item_store_right.png", renderer);
 
-  /* Load map dialog sprites - TODO: In file? */
+  /* Load map dialog sprites */
   map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
   map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png",
                                    "sprites/Overlay/dialog_extender.png",

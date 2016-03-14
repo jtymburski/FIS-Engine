@@ -48,6 +48,8 @@ public:
   const static uint16_t kMAX_DELAY; /* The max delay for random delay calcs */
   const static uint16_t kMAX_RANGE; /* THe max range for random x,y move */
   const static float kPYTH_APPROX; /* Pythagorean c side approx factor */
+  const static uint16_t kSPOTTED_FADE; /* Time for spotted fade out sequence */
+  const static uint16_t kSPOTTED_INIT; /* Time for spotted image total */
   const static uint16_t kSTUCK_DELAY; /* The time to sit when stuck */
   const static uint16_t kTRACK_DELAY; /* The track delay before trying dir */
   const static uint16_t kTRACK_DIST_MIN; /* The default min distance to track */
@@ -60,6 +62,9 @@ private:
   bool forced_interaction;
   bool forced_recent;
   int forced_time;
+
+  /* Spotted image reference */
+  Frame* img_spotted;
 
   /* Is the NPC currently going forward or backward - used for BACKANDFORTH */
   bool moving_forward;
@@ -84,6 +89,10 @@ private:
 
   /* The player reference - for tracking purposes */
   MapPerson* player;
+
+  /* Spotted animation information */
+  Frame* spotted_img;
+  int spotted_time;
 
   /* Is this the first run of the path move? */
   bool starting;
@@ -135,6 +144,11 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
+  /* Additional rendering call for overlays - virtualized */
+  virtual bool renderAdditional(SDL_Renderer* renderer, Tile* tile,
+                                int tile_x, int tile_y, 
+                                int render_x, int render_y);
+
   /* Sets the direction that the person is travelling in */
   bool setDirection(Direction direction, bool set_movement = true);
 
@@ -170,6 +184,10 @@ public:
   /* Returns the predicted move request in the class */
   Direction getPredictedMoveRequest();
 
+  /* Returns the spotted information */
+  Frame* getSpottedImage();
+  int getSpottedTime();
+
   /* Tracking distance setpoints getters */
   int getTrackDistMax();
   int getTrackDistMin();
@@ -195,7 +213,7 @@ public:
   bool removeAllNodes();
   bool removeNode(uint16_t index);
   bool removeNodeAtTail();
-
+  
   /* Resets the tile position */
   bool resetPosition();
 
@@ -210,6 +228,9 @@ public:
 
   /* Sets the reference player */
   void setPlayer(MapPerson* player);
+
+  /* Sets the spotted reference image */
+  void setSpottedImage(Frame* new_img);
 
   /* Sets the starting x and y coordinate */
   void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);

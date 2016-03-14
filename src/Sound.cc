@@ -39,8 +39,9 @@ const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
 const uint32_t Sound::kID_SOUND_MENU_PREV = 2;
 
 /* Map Sounds*/
-const uint32_t Sound::kID_SOUND_PICK_COIN = 12;
-const uint32_t Sound::kID_SOUND_PICK_ITEM = 13;
+const uint32_t Sound::kID_SOUND_PICK_COIN = 50;
+const uint32_t Sound::kID_SOUND_PICK_ITEM = 51;
+const uint32_t Sound::kID_SOUND_SPOTTED = 52;
 
 /* Battle Sounds */
 const uint32_t Sound::kID_SOUND_BTL_CONFUSE = 111;

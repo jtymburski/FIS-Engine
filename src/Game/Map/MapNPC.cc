@@ -15,6 +15,8 @@ const uint16_t MapNPC::kFORCED_RESET = 5000;
 const uint16_t MapNPC::kMAX_DELAY = 2000;
 const uint16_t MapNPC::kMAX_RANGE = 10;
 const float MapNPC::kPYTH_APPROX = 0.4;
+const uint16_t MapNPC::kSPOTTED_FADE = 1000;
+const uint16_t MapNPC::kSPOTTED_INIT = 3000;
 const uint16_t MapNPC::kSTUCK_DELAY = 250;
 const uint16_t MapNPC::kTRACK_DELAY = 250;
 const uint16_t MapNPC::kTRACK_DIST_MIN = 4;
@@ -184,6 +186,8 @@ void MapNPC::initializeClass()
   nodes_delete = true;
   npc_delay = 0;
   player = nullptr;
+  spotted_img = nullptr;
+  spotted_time = 0;
   starting = true;
   stuck_delay = 0;
   stuck_flip = false;
@@ -640,6 +644,59 @@ void MapNPC::updateBound()
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
+  
+/*
+ * Description: Renders additional images or frames on top of the designated
+ *              tile. Called from the render call. This is virtualized for use
+ *              by all children. MapNPC has spotted frame to render at times.
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering engine pointer
+ *         Tile* tile - the reference tile to be rendering
+ *         int tile_x - the x location in the matrix in tiles
+ *         int tile_y - the y location in the matrix in tiles
+ *         int render_x - the top x corner of the tile rendering in px
+ *         int render_y - the top y corner of the tile rendering in px
+ * Output: bool - status if call was successful
+ */
+bool MapNPC::renderAdditional(SDL_Renderer* renderer, Tile* tile,
+                              int tile_x, int tile_y, 
+                              int render_x, int render_y)
+{
+  bool success = true;
+ 
+  /* Render spotted if valid and in correct tile */
+  if(spotted_img != nullptr && tile_y == 0 && spotted_time > 0)
+  {
+    Direction dir = getDirection();
+    SpriteMatrix* matrix = getMatrix();
+
+    /* Set alpha */
+    if((uint16_t)spotted_time >= kSPOTTED_FADE)
+      spotted_img->setAlpha();
+    else
+      spotted_img->setAlpha(spotted_time * 255.0 / kSPOTTED_FADE);
+
+    /* Determine render location - if facing east, top left */
+    if(dir == Direction::EAST)
+    {
+      if(tile_x == 0)
+      {
+        success &= spotted_img->render(renderer, render_x, render_y);
+      }
+    }
+    /* Otherwise, top right */
+    else
+    {
+      if((tile_x + 1) == matrix->width())
+      {
+        success &= spotted_img->render(renderer, 
+                         render_x + tile->getWidth() - spotted_img->getWidth(),
+                         render_y);
+      }
+    }
+  }
+  return success;
+}
 
 /*
  * Description: Sets a new direction for the person on the map. It will update
@@ -877,12 +934,14 @@ void MapNPC::clear()
 {
   /* Clear out all the nodes */
   removeAllNodes();
-  node_head = NULL;
+  node_head = nullptr;
   node_current = &node_start;
 
   /* Clear out other variables */
   npc_delay = 0;
   player = nullptr;
+  spotted_img = nullptr;
+  spotted_time = 0;
 
   /* Clear out parent */
   MapPerson::clear();
@@ -996,6 +1055,29 @@ Direction MapNPC::getPredictedMoveRequest()
   }
 
   return getMoveRequest();
+}
+
+/*
+ * Description: Returns the spotted reference image frame.
+ *
+ * Inputs: none
+ * Output: Frame* - the spotted image reference
+ */
+Frame* MapNPC::getSpottedImage()
+{
+  return spotted_img;
+}
+
+/*
+ * Description: Returns the spotted time remaining for visibility. If greater
+ *              than 0, it is currently visible. Otherwise, not being rendered.
+ *
+ * Inputs: none
+ * Output: int - the time in milliseconds remaining for visibility
+ */
+int MapNPC::getSpottedTime()
+{
+  return spotted_time;
 }
 
 /*
@@ -1178,7 +1260,7 @@ bool MapNPC::removeAllNodes()
 
   return true;
 }
-
+  
 /*
  * Description: Removes the node at the given index. If this has nodes after it,
  *              those nodes are bumped up (index - 1).
@@ -1362,6 +1444,18 @@ void MapNPC::setNodeState(NodeState state)
 void MapNPC::setPlayer(MapPerson* player)
 {
   this->player = player;
+}
+
+/*
+ * Description: Sets the spotted reference image. If null is passed in, it 
+ *              unsets all actively used rendering frames.
+ *
+ * Inputs: none
+ * Output: Frame* new_img - the new spotted frame to render
+ */
+void MapNPC::setSpottedImage(Frame* new_img)
+{
+  spotted_img = new_img;
 }
 
 /*
@@ -1563,6 +1657,12 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
               /* Initialize node */
               node_player.x = getTileX();
               node_player.y = getTileY();
+
+              /* Trigger spotted */
+              spotted_time = kSPOTTED_INIT;
+              if(event_handler != nullptr)
+                event_handler->triggerSound(Sound::kID_SOUND_SPOTTED, 
+                                            SoundChannels::TRIGGERS);
             }
           }
           /* Otherwise it is tracking - handle */
@@ -1694,6 +1794,14 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       forced_time += cycle_time;
       if(forced_time > kFORCED_NOTRIGGER)
         forced_recent = false;
+    }
+
+    /* Check on spotted display image */
+    if(spotted_time > 0)
+    {
+      spotted_time -= cycle_time;
+      if(spotted_time < 0)
+        spotted_time = 0;
     }
   }
 

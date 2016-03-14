@@ -94,14 +94,15 @@ public:
   const static uint32_t kID_MUSIC_VICTORY;
   const static uint32_t kID_MUSIC_DEFEAT;
 
-  /* Reserved Sound Map IDs */
-  const static uint32_t kID_SOUND_PICK_COIN;
-  const static uint32_t kID_SOUND_PICK_ITEM;
-
   /* Reserved Sound Menu IDs */
   const static uint32_t kID_SOUND_MENU_CHG;
   const static uint32_t kID_SOUND_MENU_NEXT;
   const static uint32_t kID_SOUND_MENU_PREV;
+
+  /* Reserved Sound Map IDs */
+  const static uint32_t kID_SOUND_PICK_COIN;
+  const static uint32_t kID_SOUND_PICK_ITEM;
+  const static uint32_t kID_SOUND_SPOTTED;
 
   /* Reserved Sound Battle IDs */
   const static uint32_t kID_SOUND_BTL_CONFUSE;

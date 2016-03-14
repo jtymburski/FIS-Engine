@@ -92,6 +92,9 @@ private:
   uint8_t fade_alpha;
   MapFade fade_status;
 
+  /* Images used in rendering */
+  Frame img_spotted;
+
   /* The item store menu */
   ItemStore item_menu;
 

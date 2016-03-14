@@ -385,6 +385,33 @@ bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next,
 }
 
 /*
+ * Description: Renders additional images or frames on top of the designated
+ *              tile. Called from the render call. This is virtualized for use
+ *              by all children. MapThing has no additional rendering.
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering engine pointer
+ *         Tile* tile - the reference tile to be rendering
+ *         int tile_x - the x location in the matrix in tiles
+ *         int tile_y - the y location in the matrix in tiles
+ *         int render_x - the top x corner of the tile rendering in px
+ *         int render_y - the top y corner of the tile rendering in px
+ * Output: bool - status if call was successful
+ */
+bool MapThing::renderAdditional(SDL_Renderer* renderer, Tile* tile,
+                                int tile_x, int tile_y, 
+                                int render_x, int render_y)
+{
+  (void)renderer;
+  (void)tile;
+  (void)tile_x;
+  (void)tile_y;
+  (void)render_x;
+  (void)render_y;
+
+  return true;
+}
+
+/*
  * Description: Calculates the move amount based on the cycle time and the
  *              speed for how many pixels should be shifted. The calculation
  *              is based on 16ms for 2 pixel at speed 8.
@@ -1788,19 +1815,33 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
   if(isTilesSet() && isActive() && isVisible())
   {
+    int render_x = getX() - offset_x;
+    int render_y = getY() - offset_y;
+    bool success = true;
+
+    /* Attempt render */
     if(base_category >= ThingBase::PERSON)
-      return getMatrix()->render(base_control->curr_frame, renderer,
-                                 getX() - offset_x, getY() - offset_y,
-                                 tile_main.front().front()->getWidth(),
-                                 tile_main.front().front()->getHeight());
+      success =  getMatrix()->render(base_control->curr_frame, renderer,
+                                     render_x, render_y,
+                                     tile_main.front().front()->getWidth(),
+                                     tile_main.front().front()->getHeight());
     else
-      return getMatrix()->render(renderer, getX() - offset_x, getY() - offset_y,
+      success = getMatrix()->render(renderer, render_x, render_y,
                                  tile_main.front().front()->getWidth(),
                                  tile_main.front().front()->getHeight());
+
+    /* If successful, render additional */
+    if(success)
+    {
+      renderAdditional(renderer, tile_main.front().front(), 
+                       0, 0, render_x, render_y);
+      return success;
+    }
   }
 
   return false;
 }
+ 
 
 /*
  * Description: Render the single frame, located on the designated tile.
@@ -1828,13 +1869,18 @@ bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
       if(base_category >= ThingBase::PERSON)
         getMatrix()->shiftTo(base_control->curr_frame);
 
-      int render_x = (tile->getX() - tile_main.front().front()->getX()
-                      + getFloatTileX()) * tile->getWidth() - offset_x;
-      int render_y = (tile->getY() - tile_main.front().front()->getY()
-                      + getFloatTileY()) * tile->getHeight() - offset_y;
+      int tile_x = tile->getX() - tile_main.front().front()->getX();
+      int tile_y = tile->getY() - tile_main.front().front()->getY();
+      int render_x = (tile_x + getFloatTileX()) * tile->getWidth() - offset_x;
+      int render_y = (tile_y + getFloatTileY()) * tile->getHeight() - offset_y;
 
-      return render_frame->render(renderer, render_x, render_y,
-                                  tile->getWidth(), tile->getHeight());
+      /* Render */
+      if(render_frame->render(renderer, render_x, render_y,
+                              tile->getWidth(), tile->getHeight()))
+      {
+        renderAdditional(renderer, tile, tile_x, tile_y, render_x, render_y);
+        return true;
+      }
     }
   }
 
@@ -1867,13 +1913,18 @@ bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile,
       if(base_category >= ThingBase::PERSON)
         getMatrix()->shiftTo(base_control->curr_frame);
 
-      int render_x = (tile->getX() - tile_prev.front().front()->getX()
-                      + getFloatTileX()) * tile->getWidth() - offset_x;
-      int render_y = (tile->getY() - tile_prev.front().front()->getY()
-                      + getFloatTileY()) * tile->getHeight() - offset_y;
+      int tile_x = tile->getX() - tile_prev.front().front()->getX();
+      int tile_y = tile->getY() - tile_prev.front().front()->getY();
+      int render_x = (tile_x + getFloatTileX()) * tile->getWidth() - offset_x;
+      int render_y = (tile_y + getFloatTileY()) * tile->getHeight() - offset_y;
 
-      return render_frame->render(renderer, render_x, render_y,
-                                  tile->getWidth(), tile->getHeight());
+      /* Render */
+      if(render_frame->render(renderer, render_x, render_y,
+                              tile->getWidth(), tile->getHeight()))
+      {
+        renderAdditional(renderer, tile, tile_x, tile_y, render_x, render_y);
+        return true;
+      }
     }
   }
 

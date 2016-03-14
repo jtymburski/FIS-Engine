@@ -143,7 +143,12 @@ protected:
                      Direction move_request);
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next,
                                  uint8_t render_depth, Direction move_request);
-
+  
+  /* Additional rendering call for overlays - virtualized */
+  virtual bool renderAdditional(SDL_Renderer* renderer, Tile* tile,
+                                int tile_x, int tile_y, 
+                                int render_x, int render_y);
+  
   /* Move the thing, based on the internal direction */
   virtual float moveAmount(uint16_t cycle_time);
   void moveThing(int cycle_time);
@@ -326,10 +331,10 @@ public:
 
   /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
-  bool renderMain(SDL_Renderer* renderer, Tile* tile, uint8_t render_depth,
-                  int offset_x, int offset_y);
-  bool renderPrevious(SDL_Renderer* renderer, Tile* tile, uint8_t render_depth,
-                      int offset_x, int offset_y);
+  bool renderMain(SDL_Renderer* renderer, Tile* tile,
+                  uint8_t render_depth, int offset_x, int offset_y);
+  bool renderPrevious(SDL_Renderer* renderer, Tile* tile,
+                      uint8_t render_depth, int offset_x, int offset_y);
 
   /* Resets the location back to default (0,0,0), relative to the map */
   virtual void resetLocation();
