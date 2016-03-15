@@ -21,6 +21,15 @@
 
 #include "Game/Player/Party.h"
 
+/* Struct to indicate time played by player */
+struct TimeStore
+{
+  uint32_t hours;
+  uint32_t minutes;
+  uint32_t milliseconds;
+};
+
+/* Main player class */
 class Player
 {
 public:
@@ -33,11 +42,17 @@ private:
   Party* sleuth;
   Party* bearacks;
 
+  /* Current value of credits */
+  uint32_t credits;
+
   /* Current gravity experienced by player */
   uint32_t gravity;
 
-  /* Current value of credits */
-  uint32_t credits;
+  /* Time played */
+  TimeStore play_time;
+
+  /* Step count */
+  uint32_t steps;
 
   /* ------------ Constants --------------- */
   static const uint32_t kDEFAULT_GRAVITY;
@@ -51,6 +66,12 @@ public:
   /* Attempt to add an amount of credits to the current total */
   bool addCredits(const uint32_t &value);
 
+  /* Add play time to the total */
+  void addPlayTime(const uint32_t &milliseconds);
+
+  /* Adds steps onto the total executed - triggered on save or changed map */
+  void addSteps(const uint32_t &value);
+
   /* Returns the current credit value */
   uint32_t getCredits();
 
@@ -63,8 +84,15 @@ public:
   /* Returns the gravity being experiencd by the player */
   uint32_t getGravity();
 
- /* Gets the sleuth party */
+  /* Returns the play time of the player */
+  TimeStore getPlayTime();
+  std::string getPlayTimeStr();
+
+  /* Gets the sleuth party */
   Party* getSleuth();
+
+  /* Returns the number of steps this player has undertaken */
+  uint32_t getSteps();
 
   /* Methods for printing ou the info of the player */
   void print();
@@ -73,28 +101,38 @@ public:
   bool removeBearacksMember(const uint32_t &index);
 
   /* Removes a bearacks member by name by calling Party's remove function */
-  bool removeBearacksMember(const std::string &name); 
+  bool removeBearacksMember(const std::string &name);
 
   /* Attempt to remove an amount of credits from the current total */
   bool removeCredits(const uint32_t &value);
-  
+
   /* Removes a sleuth member by index by calling Party's remove function */
   bool removeSleuthMember(const uint32_t &index);
 
   /* Removes a sleuth member by name by calling Party's remove function */
   bool removeSleuthMember(const std::string &name);
 
-  /* Sets the amount of money the player has */
-  bool setCredits(const uint32_t &value);
-
-  /* Sets the sleuth party WARNING: DANGEROUS FUNCTION */
-  void setSleuth(Party* const new_sleuth);
+  /* Resets the play time of the player */
+  void resetPlayTime();
 
   /* Sets the bearcks party WARNING: Possibly a dangerous function */
   void setBearacks(Party* const new_bearacks = nullptr);
 
+  /* Sets the amount of money the player has */
+  bool setCredits(const uint32_t &value);
+
   /* Assigns the gravity the player is experiencing */
   bool setGravity(const uint32_t &new_value);
+
+  /* Sets the TOTAL time played of the player */
+  void setPlayTime(const uint32_t &hours = 0, const uint32_t &minutes = 0,
+                   const uint32_t &milliseconds = 0);
+
+  /* Sets the sleuth party WARNING: DANGEROUS FUNCTION */
+  void setSleuth(Party* const new_sleuth);
+
+  /* Assigns the steps the player has executed */
+  void setSteps(const uint32_t &new_value);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

@@ -575,6 +575,14 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   std::string level = std::to_string(map_lvl);
   bool success = true;
 
+  /* Load in steps assuming valid states */
+  if(player_main != nullptr && loaded_core && loaded_sub)
+  {
+    player_main->addSteps(map_ctrl.getPlayerSteps());
+    map_ctrl.resetPlayerSteps();
+    //std::cout << "Steps: " << player_main->getSteps() << std::endl;
+  }
+
   /* Ensure nothing is loaded - if full load is false, just unloads map */
   unload(full_load);
 
@@ -1884,6 +1892,10 @@ bool Game::update(int32_t cycle_time)
   /* MAP MODE */
   if(mode == MAP)
   {
+    /* Add play time */
+    if(player_main != nullptr)
+      player_main->addPlayTime(cycle_time);
+
     /* Poll Events */
     pollEvents();
 
@@ -1897,6 +1909,10 @@ bool Game::update(int32_t cycle_time)
   /* BATTLE MODE */
   else if(mode == BATTLE && battle_ctrl)
   {
+    /* Add play time */
+    if(player_main != nullptr)
+      player_main->addPlayTime(cycle_time);
+
     if(battle_ctrl->getTurnState() == TurnState::FINISHED)
     {
       /* Check if health or qd should be restored */
@@ -1957,6 +1973,10 @@ bool Game::update(int32_t cycle_time)
   }
   else if(mode == MENU)
   {
+    /* Add play time */
+    if(player_main != nullptr)
+      player_main->addPlayTime(cycle_time);
+
     map_menu.update(cycle_time);
 
     if(!map_menu.getFlag(MenuState::SHOWING))

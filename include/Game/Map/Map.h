@@ -295,6 +295,18 @@ public:
   int getBattleScene();
   int getBattleThingID();
 
+  /* Returns the current enumerated WindowState of the Map dialog */
+  WindowStatus getDialogStatus();
+
+  /* The fade status of the map */
+  MapFade getFadeStatus();
+
+  /* Return a MapPerson */
+  MapPerson* getPerson(uint16_t id);
+
+  /* Returns the number of steps the player has used on map */
+  uint32_t getPlayerSteps();
+
   /* Initiates a battle, within the map */
   bool initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
                   EventPair event_win, EventPair event_lose);
@@ -347,14 +359,8 @@ public:
   /* Renders the map */
   bool render(SDL_Renderer* renderer);
 
-  /* Returns the current enumerated WindowState of the Map dialog */
-  WindowStatus getDialogStatus();
-
-  /* The fade status of the map */
-  MapFade getFadeStatus();
-
-  /* Return a MapPerson */
-  MapPerson* getPerson(uint16_t id);
+  /* Resets the player steps */
+  void resetPlayerSteps();
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);

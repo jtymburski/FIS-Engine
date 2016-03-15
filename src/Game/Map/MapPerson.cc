@@ -948,6 +948,18 @@ bool MapPerson::resetPosition()
 }
 
 /*
+ * Description: Resets the step count back to 0. Typically used after a
+ *              translation call up to game level parent of Player class.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapPerson::resetStepCount()
+{
+  steps = 0;
+}
+
+/*
  * Description: Sets the base thing class. If set, the primary data will be set
  *              from this with only location and movement handled by this class.
  *

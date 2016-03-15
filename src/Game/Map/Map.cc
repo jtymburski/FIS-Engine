@@ -606,15 +606,6 @@ MapItem* Map::getItemBase(uint16_t id)
   return NULL;
 }
 
-/* Returns the person, based on the ID */
-MapPerson* Map::getPerson(uint16_t id)
-{
-  for(uint32_t i = 0; i < persons.size(); i++)
-    if(persons[i]->getID() == id)
-      return persons[i];
-  return NULL;
-}
-
 /* Returns the base person, based on the ID */
 MapPerson* Map::getPersonBase(uint16_t id)
 {
@@ -659,6 +650,7 @@ MapThing* Map::getThingBase(uint16_t id)
   return NULL;
 }
 
+/* Returns thing data by checking all types one after the other */
 // TODO: Comment
 std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 {
@@ -1605,6 +1597,39 @@ int Map::getBattleThingID()
   return -1;
 }
 
+/* Enumerated state of WindowStatus of the MapDialog */
+WindowStatus Map::getDialogStatus()
+{
+  return map_dialog.getWindowStatus();
+}
+
+/* Returns the map fade status */
+MapFade Map::getFadeStatus()
+{
+  return fade_status;
+}
+
+/* Returns the person, based on the ID */
+MapPerson* Map::getPerson(uint16_t id)
+{
+  for(uint32_t i = 0; i < persons.size(); i++)
+    if(persons[i]->getID() == id)
+      return persons[i];
+  return NULL;
+}
+
+/* Returns the number of steps the player has used on map */
+uint32_t Map::getPlayerSteps()
+{
+  uint32_t steps = 0;
+
+  /* If player is valid, get steps */
+  if(player != nullptr)
+    steps = player->getStepCount();
+
+  return steps;
+}
+
 /* Initiates a battle, within the map */
 bool Map::initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
                      EventPair event_win, EventPair event_lose)
@@ -2419,16 +2444,7 @@ bool Map::pickupItem(MapItem* item, int count)
   return false;
 }
 
-/* Enumerated state of WindowStatus of the MapDialog */
-WindowStatus Map::getDialogStatus()
-{
-  return map_dialog.getWindowStatus();
-}
 
-MapFade Map::getFadeStatus()
-{
-  return fade_status;
-}
 
 /* Renders the title screen */
 bool Map::render(SDL_Renderer* renderer)
@@ -2619,11 +2635,16 @@ bool Map::render(SDL_Renderer* renderer)
 
     /* Map dialog finally */
     map_dialog.render(renderer);
-
-    /* Map menu last to render - TODO */
   }
 
   return success;
+}
+
+/* Resets the player steps */
+void Map::resetPlayerSteps()
+{
+  if(player != nullptr)
+    player->resetStepCount();
 }
 
 /* Sets the running configuration, from the options class */

@@ -193,11 +193,14 @@ public:
   /* Resets the tile position */
   virtual bool resetPosition();
 
+  /* Resets the step count */
+  void resetStepCount();
+
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
 
   /* Sets if the person movement is frozen at the current tile */
-  void setMoveFreeze(bool freeze); // TODO
+  void setMoveFreeze(bool freeze);
 
   /* Sets if the person is running */
   void setRunning(bool running);

@@ -3,7 +3,7 @@
 * Date Created: January 18th, 2014
 * Inheritance: none
 * Description: A Player contains the information of the Parties that are usable
-*              by the player and represents pertinent information to the 
+*              by the player and represents pertinent information to the
 *              progression of the game.
 *
 * Notes
@@ -38,9 +38,12 @@ const uint32_t Player::kMAX_CREDITS{3141592654};
 Player::Player(Party* sleuth, Party* bearacks)
     : sleuth{sleuth}
     , bearacks{bearacks}
-    , gravity{kDEFAULT_GRAVITY}
     , credits{kSTARTING_CREDITS}
-{}
+    , gravity{kDEFAULT_GRAVITY}
+    , steps{0}
+{
+  play_time = {0, 0, 0};
+}
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -69,10 +72,49 @@ bool Player::addCredits(const uint32_t &value)
 }
 
 /*
+ * Description: Adds play time in milliseconds to the total time played of the
+ *              player.
+ *
+ * Inputs: const uint32_t &milliseconds - the delta time in milliseconds
+ * Output: none
+ */
+void Player::addPlayTime(const uint32_t &milliseconds)
+{
+  /* Add time */
+  play_time.milliseconds += milliseconds;
+
+  /* If beyond thresholds for milliseconds, address */
+  if(play_time.milliseconds >= 60000)
+  {
+    play_time.minutes += (play_time.milliseconds / 60000);
+    play_time.milliseconds = (play_time.milliseconds % 60000);
+
+    /* If beyond thresholds for minutes, address */
+    if(play_time.minutes >= 60)
+    {
+      play_time.hours += (play_time.minutes / 60);
+      play_time.minutes = (play_time.minutes % 60);
+    }
+  }
+}
+
+/*
+ * Description: Adds steps onto the total that the player has traversed in
+ *              number of tiles. Triggered on save or changed map.
+ *
+ * Inputs: const uint32_t &value - the value of steps in tiles to add
+ * Output: none
+ */
+void Player::addSteps(const uint32_t &value)
+{
+  steps += value;
+}
+
+/*
  * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 /* Returns the amount of credits (money) the player has */
 uint32_t Player::getCredits()
@@ -83,8 +125,8 @@ uint32_t Player::getCredits()
 /*
  * Description:
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 /* Gets the bearacks party */
 Party* Player::getBearacks()
@@ -95,8 +137,8 @@ Party* Player::getBearacks()
 /*
  * Description: REturns the cu
  *
- * Inputs: 
- * Output: 
+ * Inputs:
+ * Output:
  */
 /* Returns the carry weight */
 double Player::getCarryWeight()
@@ -119,6 +161,51 @@ uint32_t Player::getGravity()
 }
 
 /*
+ * Description: Returns the play time structure of hours, minutes, and
+ *              milliseconds of the player.
+ *
+ * Inputs: none
+ * Output: TimeStore - the time storage structure
+ */
+TimeStore Player::getPlayTime()
+{
+  return play_time;
+}
+
+/*
+ * Description: Returns the play time string formatted in Days:Hours:Minutes.
+ *
+ * Inputs: none
+ * Output: std::string - the string output of time for printing, etc
+ */
+std::string Player::getPlayTimeStr()
+{
+  int day_ref = 0;
+  int hour_ref = 0;
+  std::string time_str = "";
+
+  /* Determine days */
+  if(play_time.hours >= 24)
+  {
+    day_ref = (play_time.hours / 24);
+    hour_ref = (play_time.hours % 24);
+  }
+  else
+  {
+    hour_ref = play_time.hours;
+  }
+
+  /* Format */
+  if(day_ref > 0)
+    time_str += std::to_string(day_ref) + "d:";
+  time_str += std::to_string(hour_ref) + "h:";
+  time_str += std::to_string(play_time.minutes) + "m";
+  //time_str += ":" + std::to_string(play_time.milliseconds) + "ms";
+
+  return time_str;
+}
+
+/*
  * Description: Returns the pointer to the sleuth party.
  *
  * Inputs: none
@@ -130,10 +217,22 @@ Party* Player::getSleuth()
 }
 
 /*
+ * Description: Returns the number of tile steps the player has executed on all
+ *              maps.
+ *
+ * Inputs: none
+ * Output: uint32_t - the number of tile steps
+ */
+uint32_t Player::getSteps()
+{
+  return steps;
+}
+
+/*
  * Description: Prints out the information about the player
  *
  * Inputs:
- * Output: 
+ * Output:
  */
 void Player::print()
 {
@@ -163,7 +262,7 @@ bool Player::removeBearacksMember(const std::string &name)
 {
   return bearacks->removeMember(name);
 }
-  
+
 /*
  * Description: Attempts to remove an amount of credits to the player's total.
  *
@@ -186,7 +285,7 @@ bool Player::removeCredits(const uint32_t &value)
 /*
  * Description: Removes a sleuth member by index by calling its party's removal
  *              function.
- *          
+ *
  * Inputs: uint32_t index - the index of sleuth member to be removed.
  * Output: bool - true if the member was removed successfully.
  */
@@ -208,6 +307,28 @@ bool Player::removeSleuthMember(const std::string &name)
 }
 
 /*
+ * Description: Resets the play time of the player back to 0 on all fronts
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Player::resetPlayTime()
+{
+  play_time = {0, 0, 0};
+}
+
+/*
+ * Description: Assigns a pointer to the Bearacks party.
+ *
+ * Inputs: Party* pointer to the bearacks party.
+ * Output: none
+ */
+void Player::setBearacks(Party* const new_bearacks)
+{
+  bearacks = new_bearacks;
+}
+
+/*
  * Description: Assigns the amount of money the player has.
  *
  * Inputs: uint32_t value - the amoutn of credtis the player has.
@@ -226,28 +347,6 @@ bool Player::setCredits(const uint32_t &value)
 }
 
 /*
- * Description: Assigns the Sleuth party.
- *
- * Inputs: Party* new_slueth - new sleuth party.
- * Output: none
- */
-void Player::setSleuth(Party* const new_sleuth)
-{
-  sleuth = new_sleuth;
-}
-
-/*
- * Description: Assigns a pointer to the Bearacks party.
- *
- * Inputs: Party* pointer to the bearacks party.
- * Output: none
- */
-void Player::setBearacks(Party* const new_bearacks)
-{
-  bearacks = new_bearacks;
-}
-
-/*
  * Description: Assigns a new value to gravity for the gravity that the player
  *              is experiencing.
  *
@@ -259,6 +358,48 @@ bool Player::setGravity(const uint32_t &new_value)
   gravity = new_value;
 
   return true;
+}
+
+/*
+ * Description: Sets the total time played by the Player. This overwrites all
+ *              existing information.
+ *
+ * Inputs: uint32_t hours - the hours played
+ *         uint32_t minutes - the minutes played
+ *         uint32_t milliseconds - the milliseconds played
+ * Output: none
+ */
+void Player::setPlayTime(const uint32_t &hours, const uint32_t &minutes,
+                         const uint32_t &milliseconds)
+{
+  play_time.hours = hours;
+  play_time.minutes = minutes;
+  play_time.milliseconds = milliseconds;
+
+  /* Conform */
+  addPlayTime(0);
+}
+
+/*
+ * Description: Assigns the Sleuth party.
+ *
+ * Inputs: Party* new_slueth - new sleuth party.
+ * Output: none
+ */
+void Player::setSleuth(Party* const new_sleuth)
+{
+  sleuth = new_sleuth;
+}
+
+/*
+ * Description: Sets the number of steps in tiles the player has traversed.
+ *
+ * Inputs: const uint32_t &new_value - the complete count of steps for player
+ * Output: none
+ */
+void Player::setSteps(const uint32_t &new_value)
+{
+  steps = new_value;
 }
 
 /*=============================================================================
