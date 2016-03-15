@@ -81,14 +81,14 @@ struct Floatinate
 };
 
 /* Box with an integer coordinate and a size width by height */
-struct Box
-{
-  Box() : point{Coordinate()}, width{0}, height{0} {};
+// struct Box
+// {
+//   Box() : point{Coordinate()}, width{0}, height{0} {};
 
-  Coordinate point;
-  int32_t width;
-  int32_t height;
-};
+//   Coordinate point;
+//   int32_t width;
+//   int32_t height;
+// };
 
 /* Structure for large lay over frames */
 struct LayOver

@@ -63,7 +63,7 @@ SOURCES=src/Application.cc \
 				src/Game/EventSet.cc \
         src/Game/KeyHandler.cc \
         src/Game/Lay.cc \
-        src/ScrollBox.cc \
+        src/Box.cc \
         src/Game/Game.cc \
         src/Game/Battle/AIModule.cc \
         src/Game/Battle/Battle.cc \

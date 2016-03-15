@@ -19,6 +19,7 @@
 /* Forward declare for Battle constants */
 class Battle;
 
+#include "Box.h"
 #include "Sprite.h"
 #include "Text.h"
 

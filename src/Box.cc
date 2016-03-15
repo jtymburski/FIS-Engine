@@ -11,17 +11,17 @@
 *
 * See .h file for TODOs
 ******************************************************************************/
-#include "ScrollBox.h"
+#include "Box.h"
 
-const SDL_Color ScrollBox::kDEFAULT_COLOR_BG{0, 0, 0, 150};
-const SDL_Color ScrollBox::kDEFAULT_COLOR_BORDER{255, 255, 255, 255};
-const SDL_Color ScrollBox::kDEFAULT_COLOR_SCROLL{150, 150, 150, 255};
-const uint32_t ScrollBox::kDEFAULT_ELEMENT_GAP{0};
-const uint32_t ScrollBox::kDEFAULT_ELEMENT_INSET_X{4};
-const uint32_t ScrollBox::kDEFAULT_ELEMENT_INSET_Y{4};
-const uint32_t ScrollBox::kDEFAULT_SCROLL_INSET_X{4};
-const uint32_t ScrollBox::kDEFAULT_SCROLL_INSET_Y{4};
-const uint32_t ScrollBox::kDEFAULT_SCROLL_WIDTH{10};
+const SDL_Color Box::kDEFAULT_COLOR_BG{0, 0, 0, 150};
+const SDL_Color Box::kDEFAULT_COLOR_BORDER{255, 255, 255, 255};
+const SDL_Color Box::kDEFAULT_COLOR_SCROLL{150, 150, 150, 255};
+const uint32_t Box::kDEFAULT_ELEMENT_GAP{0};
+const uint32_t Box::kDEFAULT_ELEMENT_INSET_X{4};
+const uint32_t Box::kDEFAULT_ELEMENT_INSET_Y{4};
+const uint32_t Box::kDEFAULT_SCROLL_INSET_X{4};
+const uint32_t Box::kDEFAULT_SCROLL_INSET_Y{4};
+const uint32_t Box::kDEFAULT_SCROLL_WIDTH{10};
 
 /*=============================================================================
  * CONSTANTS
@@ -36,7 +36,7 @@ const uint32_t ScrollBox::kDEFAULT_SCROLL_WIDTH{10};
  *
  * Inputs:
  */
-ScrollBox::ScrollBox()
+Box::Box()
 {
   loadDefaults();
 }
@@ -46,10 +46,22 @@ ScrollBox::ScrollBox()
  *
  * Inputs:
  */
-ScrollBox::ScrollBox(std::vector<Frame> elements)
+Box::Box(Coordinate point, int32_t width, int32_t height)
+  : Box()
 {
-  loadDefaults();
+  this->point = point;
+  this->width = width;
+  this->height = height;
+}
 
+/*
+ * Description:
+ *
+ * Inputs:
+ */
+Box::Box(Coordinate point, int32_t width, int32_t height, std::vector<Frame> elements)
+  : Box(point, width, height)
+{
   // TODO
   this->elements = elements;
 }
@@ -64,7 +76,7 @@ ScrollBox::ScrollBox(std::vector<Frame> elements)
  * Inputs: none
  * Output: none
  */
-void ScrollBox::loadDefaults()
+void Box::loadDefaults()
 {
   color_bg = kDEFAULT_COLOR_BG;
   color_border = kDEFAULT_COLOR_BORDER;
@@ -75,7 +87,9 @@ void ScrollBox::loadDefaults()
   element_inset_x = kDEFAULT_ELEMENT_INSET_X;
   element_inset_y = kDEFAULT_ELEMENT_INSET_Y;
   flags = static_cast<ScrollBoxState>(0);
-  scroll_box = Box();
+  point = Coordinate();
+  height = 0;
+  width = 0;
   scroll_inset_x = kDEFAULT_SCROLL_INSET_X;
   scroll_inset_y = kDEFAULT_SCROLL_INSET_Y;
   scroll_width = kDEFAULT_SCROLL_WIDTH;
@@ -85,7 +99,7 @@ void ScrollBox::loadDefaults()
 }
 
 // Render elements
-bool ScrollBox::renderElements(SDL_Renderer* renderer, uint32_t start_index,
+bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
                                uint32_t num_viewable)
 {
   bool success = false;
@@ -94,8 +108,8 @@ bool ScrollBox::renderElements(SDL_Renderer* renderer, uint32_t start_index,
   {
     success = true;
 
-    uint32_t curr_x = scroll_box.point.x + element_inset_x;
-    uint32_t curr_y = scroll_box.point.y + element_inset_y;
+    uint32_t curr_x = point.x + element_inset_x;
+    uint32_t curr_y = point.y + element_inset_y;
 
     for(uint32_t i = start_index; i < start_index + num_viewable; i++)
     {
@@ -112,7 +126,7 @@ bool ScrollBox::renderElements(SDL_Renderer* renderer, uint32_t start_index,
      [] |    If ( 1 + 2 < 4) -- > Render arrow on bot
      []
 */
-bool ScrollBox::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
+bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
 {
   bool success = false;
 
@@ -121,8 +135,8 @@ bool ScrollBox::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
     success = true;
 
     uint32_t curr_x =
-        scroll_box.point.x + scroll_box.width - scroll_inset_x - scroll_width;
-    uint32_t curr_y = scroll_box.point.y + scroll_inset_y;
+        point.x + width - scroll_inset_x - scroll_width;
+    uint32_t curr_y = point.y + scroll_inset_y;
 
     /* Render the top arrow */
     if(element_index > 0)
@@ -131,7 +145,7 @@ bool ScrollBox::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
 
     /* Render the actual bar */
     uint32_t bar_height =
-        scroll_box.height - (2 * scroll_inset_y) - (2 * scroll_width);
+        height - (2 * scroll_inset_y) - (2 * scroll_width);
 
     uint32_t scroll_height = (uint32_t)std::round(
         (float)bar_height * (float)num_viewable / (float)elements.size());
@@ -160,7 +174,7 @@ bool ScrollBox::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool ScrollBox::nextIndex()
+bool Box::nextIndex()
 {
   if(element_index > -1 && element_index + 1 < (int32_t)elements.size())
   {
@@ -172,7 +186,7 @@ bool ScrollBox::nextIndex()
   return false;
 }
 
-bool ScrollBox::prevIndex()
+bool Box::prevIndex()
 {
   if(element_index > 0 && elements.size() > 0)
   {
@@ -184,7 +198,7 @@ bool ScrollBox::prevIndex()
   return false;
 }
 
-bool ScrollBox::render(SDL_Renderer* renderer)
+bool Box::render(SDL_Renderer* renderer)
 {
   bool success = false;
 
@@ -193,10 +207,10 @@ bool ScrollBox::render(SDL_Renderer* renderer)
     success = true;
     /* Render the background rectangle */
     SDL_Rect rect;
-    rect.x = scroll_box.point.x;
-    rect.y = scroll_box.point.y;
-    rect.h = scroll_box.height;
-    rect.w = scroll_box.width;
+    rect.x = point.x;
+    rect.y = point.y;
+    rect.h = height;
+    rect.w = width;
 
     SDL_SetRenderDrawColor(renderer, color_bg.r, color_bg.g, color_bg.b,
                            color_bg.a);
@@ -233,19 +247,19 @@ bool ScrollBox::render(SDL_Renderer* renderer)
   return success;
 }
 
-bool ScrollBox::getFlag(const ScrollBoxState& test_flag)
+bool Box::getFlag(const ScrollBoxState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
-uint32_t ScrollBox::getNumViewable()
+uint32_t Box::getNumViewable()
 {
   uint32_t num_viewable{0};
 
-  if(scroll_box.height > 0 && element_index > 0)
+  if(height > 0 && element_index > 0)
   {
     uint32_t curr_y{element_inset_y};
-    uint32_t end_y{(uint32_t)scroll_box.height - element_inset_y};
+    uint32_t end_y{(uint32_t)height - element_inset_y};
     uint32_t temp_index{(uint32_t)element_index};
     bool done{false};
 
@@ -265,7 +279,7 @@ uint32_t ScrollBox::getNumViewable()
   return num_viewable;
 }
 
-void ScrollBox::setElements(std::vector<Frame> elements)
+void Box::setElements(std::vector<Frame> elements)
 {
   element_index = -1;
 
@@ -276,7 +290,7 @@ void ScrollBox::setElements(std::vector<Frame> elements)
   }
 }
 
-void ScrollBox::setFlag(ScrollBoxState set_flags, const bool& set_value)
+void Box::setFlag(ScrollBoxState set_flags, const bool& set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
 }

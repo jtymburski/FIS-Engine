@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: ScrollBox
+* Class Name: Box
 * Date Created: March 13, 2016
 * Inheritance: None
 * Description:
@@ -12,9 +12,10 @@
 * TODO
 * ----
 *****************************************************************************/
-#ifndef SCROLLBOX_H
-#define SCROLLBOX_H
+#ifndef BOX_H
+#define BOX_H
 
+#include "Helpers.h"
 #include "EnumFlags.h"
 #include "Frame.h"
 
@@ -26,20 +27,24 @@ using std::end;
 ENUM_FLAGS(ScrollBoxState)
 enum class ScrollBoxState
 {
-  SELECTABLE = 1 << 0,
-  BORDER_HOVER_CYCLE = 1 << 1,
-  HOVER_CYCLE = 1 << 2,
-  SELECTED = 1 << 3
+  SCROLL_BOX = 1 << 0,
+  SELECTABLE = 1 << 1,
+  BORDER_HOVER_CYCLE = 1 << 2,
+  HOVER_CYCLE = 1 << 3,
+  SELECTED = 1 << 4
 };
 
-class ScrollBox
+class Box
 {
 public:
   /* Constructs a default ScrollBox object */
-  ScrollBox();
+  Box();
 
-  /* Vector of frames for the elements */
-  ScrollBox(std::vector<Frame> elements);
+  /* Simple box constructor */
+  Box(Coordinate point, int32_t width, int32_t height);
+
+  /* Vector of frames for the elements in a Box */
+  Box(Coordinate point, int32_t width, int32_t height, std::vector<Frame> elements);
 
 private:
   /* Current working element index */
@@ -63,8 +68,10 @@ public:
   /* Flags describing this ScrollBox object */
   ScrollBoxState flags;
 
-  /* Rectangle of the Scroll Box */
-  Box scroll_box;
+  /* Location and dimension of the Box */
+  Coordinate point;
+  int32_t width;
+  int32_t height;
 
   /* X, Y insets for the Scroll Bar */
   uint32_t scroll_inset_x;
@@ -135,4 +142,4 @@ public:
 public:
 };
 
-#endif // SCROLLBOX_H
+#endif // BOX_H

@@ -20,7 +20,7 @@
 #include "Game/EventHandler.h"
 #include "Options.h"
 #include "Sprite.h"
-#include "ScrollBox.h"
+#include "Box.h"
 
 /* Enumerated MenuType */
 enum class MenuType

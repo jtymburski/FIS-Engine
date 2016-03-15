@@ -250,14 +250,8 @@ void Menu::renderMainSection()
 {
   renderMainBackdrop();
 
-  auto box{ScrollBox()};
-
-  box.scroll_box.point.x = 200;
-  box.scroll_box.point.y = 400;
-  box.scroll_box.width = 300;
-  box.scroll_box.height = 200;
-
-  box.render(renderer);
+  auto test_box = Box({200, 400}, 300, 200);
+  test_box.render(renderer);
 }
 
 void Menu::renderMainBackdrop()
