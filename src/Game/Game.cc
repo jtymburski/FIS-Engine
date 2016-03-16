@@ -651,30 +651,6 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
       player_main->setBearacks(getParty(Party::kID_BEARACKS));
     }
 
-    /* Test scenes */
-    std::cout << "--SCENES--" << std::endl;
-    for(uint32_t i = 0; i < list_battles.size(); i++)
-    {
-      std::cout << list_battles[i].id << ": " << list_battles[i].background
-                << " , " << list_battles[i].music_id << std::endl;
-      std::cout << " underlays:" << std::endl;
-      for(uint32_t j = 0; j < list_battles[i].underlays.size(); j++)
-        std::cout << "  " << list_battles[i].underlays[j].path << " , "
-                  << list_battles[i].underlays[j].velocity_x << " , "
-                  << list_battles[i].underlays[j].velocity_y << std::endl;
-      std::cout << " midlays:" << std::endl;
-      for(uint32_t j = 0; j < list_battles[i].midlays.size(); j++)
-        std::cout << "  " << list_battles[i].midlays[j].path << " , "
-                  << list_battles[i].midlays[j].velocity_x << " , "
-                  << list_battles[i].midlays[j].velocity_y << std::endl;
-      std::cout << " overlays:" << std::endl;
-      for(uint32_t j = 0; j < list_battles[i].overlays.size(); j++)
-        std::cout << "  " << list_battles[i].overlays[j].path << " , "
-                  << list_battles[i].overlays[j].velocity_x << " , "
-                  << list_battles[i].overlays[j].velocity_y << std::endl;
-    }
-    std::cout << "--END SCENES--" << std::endl;
-
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
     changeMode(MAP);

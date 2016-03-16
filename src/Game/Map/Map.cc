@@ -1087,6 +1087,32 @@ bool Map::setSectionIndexMode(int index_next)
       viewport.setMapSize(sub_map[index].tiles.size(),
                           sub_map[index].tiles[0].size(), map_index);
 
+      /* Delete old lay overs */
+      for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
+        if(*it)
+          delete *it;
+      lay_overs.clear();
+      for(auto it = lay_unders.begin(); it != lay_unders.end(); ++it)
+        if(*it)
+          delete *it;
+      lay_unders.clear();
+
+      /* Update under layovers for new sub-map */
+      for(uint32_t i = 0; i < sub_map[index].underlays.size(); i++)
+      {
+        Lay* new_under = new Lay();
+        new_under->createFromLayStruct(sub_map[index].underlays[i]);
+        lay_unders.push_back(new_under);
+      }
+
+      /* Update over layovers for new sub-map */
+      for(uint32_t i = 0; i < sub_map[index].overlays.size(); i++)
+      {
+        Lay* new_over = new Lay();
+        new_over->createFromLayStruct(sub_map[index].overlays[i]);
+        lay_overs.push_back(new_over); 
+      }
+
       /* Update sound and dialog now that index is fresh */
       if(real_move)
       {
@@ -2105,6 +2131,46 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
         if(music_id >= 0)
           sub_map[map_index].music.push_back(music_id);
       }
+      /* -- OVERLAYS and UNDERLAYS -- */
+      else if(element2 == "overlay" || element2 == "underlay")
+      {
+        /* Get index */
+        int index_ref = -1;
+        std::string index_str = data.getKeyValue(index + 1);
+        if(!index_str.empty())
+          index_ref = std::stoi(index_str);
+        //std::cout << index_ref << "," << index_str 
+        //          << std::endl; // TODO: Remove
+
+        /* Proceed if index is valid */
+        if(index_ref >= 0)
+        {
+          /* Get referenced layer */
+          LayOver* lay_ref = nullptr;
+          if(element2 == "overlay")
+          {
+            while(static_cast<int>(sub_map[map_index].overlays.size())
+                  <= index_ref)
+              sub_map[map_index].overlays.push_back(
+                                              Helpers::createBlankLayOver());
+            lay_ref = &sub_map[map_index].overlays[index_ref];
+          }
+          else /* underlay */
+          {
+            while(static_cast<int>(sub_map[map_index].underlays.size())
+                  <= index_ref)
+              sub_map[map_index].underlays.push_back(
+                                              Helpers::createBlankLayOver());
+            lay_ref = &sub_map[map_index].underlays[index_ref];
+          }
+
+          /* Modify referenced lay */
+          *lay_ref = Helpers::updateLayOver(*lay_ref, data, index + 2);
+          //std::cout << lay_ref->path << "," << lay_ref->anim_time << ","
+          //          << lay_ref->velocity_x << "," << lay_ref->velocity_y
+          //          << std::endl; // TODO: REMOVE
+        }
+      }
       /* -- WEATHER -- */
       else if(element2 == "weather")
       {
@@ -2143,17 +2209,17 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 
       lay_overs.push_back(
           new Lay("sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", 0,
-                  velocity_smog, LayType::OVERLAY, scr_size, renderer));
+                  velocity_smog, LayType::OVERLAY, scr_size));
       lay_overs.push_back(
           new Lay("sprites/Map/EnviromentEffects/Overlays/fog_underlay.png", 0,
-                  velocity_fog, LayType::OVERLAY, scr_size, renderer));
+                  velocity_fog, LayType::OVERLAY, scr_size));
     }
     if(lay_unders.size() == 0)
     {
       Floatinate velocity_forest = {0.50, 0.50}; /* 50% of Player Movement */
       lay_unders.push_back(
           new Lay("sprites/Map/EnviromentEffects/Overlays/forest_underlay.png",
-                  velocity_forest, LayType::UNDERLAY, scr_size, renderer));
+                  velocity_forest, LayType::UNDERLAY, scr_size));
     }
   }
 #endif
@@ -2295,11 +2361,28 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
     map_index = player->getStartingSection();
   if(sub_map.size() > map_index && sub_map[map_index].tiles.size() > 0)
   {
+    /* Update viewport */
     viewport.clearLocation();
     viewport.setMapSize(sub_map[map_index].tiles.size(),
                         sub_map[map_index].tiles.front().size(), map_index);
     if(player != NULL)
       viewport.lockOn(player);
+
+    /* Update under layovers for the starting map */
+    for(uint32_t i = 0; i < sub_map[map_index].underlays.size(); i++)
+    {
+      Lay* new_under = new Lay();
+      new_under->createFromLayStruct(sub_map[map_index].underlays[i]);
+      lay_unders.push_back(new_under);
+    }
+
+    /* Update over layovers for the starting map */
+    for(uint32_t i = 0; i < sub_map[map_index].overlays.size(); i++)
+    {
+      Lay* new_over = new Lay();
+      new_over->createFromLayStruct(sub_map[map_index].overlays[i]);
+      lay_overs.push_back(new_over); 
+    }
   }
 }
 
@@ -2460,13 +2543,10 @@ bool Map::render(SDL_Renderer* renderer)
     float x_offset = viewport.getX();
     float y_offset = viewport.getY();
 
-    /* Underlay for map - testing: TODO revise */
-    if(map_index == 0)
-    {
-      for(auto it = lay_unders.begin(); it != end(lay_unders); ++it)
-        if(*it)
-          (*it)->render(renderer);
-    }
+    /* Underlay for map */
+    for(auto it = lay_unders.begin(); it != end(lay_unders); ++it)
+      if(*it)
+        (*it)->render(renderer);
 
     /* Render the lower tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
@@ -2590,37 +2670,10 @@ bool Map::render(SDL_Renderer* renderer)
       }
     }
 
-    /* Overlay for map - testing: TODO revise */
-    if(map_index == 0 || map_index == 15)
-    {
-      for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
-        if(*it)
-          (*it)->render(renderer);
-
-      // TODO: Jordan can remove since lays are properly implemented now.
-      //   for(uint16_t i = 0; i < lay_over.size(); i++)
-      //   {
-      //     if(lay_over[i] != nullptr)
-      //     {
-      //       if(i == 0)
-      //       {
-      //         int offset = static_cast<int>(lay_offset);
-      //         lay_over[i]->render(renderer, offset - 1216, 0, 1216, 704);
-      //         lay_over[i]->render(renderer, offset, 0, 1216, 704);
-      //       }
-      //       else if(i == 1)
-      //       {
-      //         int offset = static_cast<int>(lay_offset2);
-      //         lay_over[i]->render(renderer, offset - 1216, 0, 1216, 704);
-      //         lay_over[i]->render(renderer, offset, 0, 1216, 704);
-      //       }
-      //       else
-      //       {
-      //         lay_over[i]->render(renderer, 0, 0, 1216, 704);
-      //       }
-      //     }
-      //   }
-    }
+    /* Overlay for map */
+    for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
+      if(*it)
+        (*it)->render(renderer);
 
     /* Render the map dialogs / pop-ups */
     item_menu.render(renderer);

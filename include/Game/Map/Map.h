@@ -31,14 +31,18 @@
 // #include "Sprite.h"
 
 // TODO: FOR OVERLAY/UNDERLAY - TESTING ONLY - UNCOMMENT TO ENABLE
-#define MAP_LAY
+//#define MAP_LAY
 
 /* Sub map structure - contains all data related only to each sub */
-// TODO: Move thing instances into this struct
+// TODO: Move thing instances into this struct?
 struct SubMap
 {
   /* Tile data */
   std::vector<std::vector<Tile*>> tiles;
+
+  /* Lay data */
+  std::vector<LayOver> underlays;
+  std::vector<LayOver> overlays;
 
   /* Sound data */
   std::vector<uint32_t> battles;
@@ -184,9 +188,9 @@ private:
   const static uint8_t kPLAYER_ID; /* The player ID for computer control */
   const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 
-  /*============================================================================
-   * PRIVATE FUNCTIONS
-   *===========================================================================*/
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
 private:
   /* Adds sprite data, as per data from the file */
   bool addSpriteData(XmlData data, std::string id, int file_index,
@@ -275,9 +279,9 @@ private:
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
 
-  /*============================================================================
-   * PUBLIC FUNCTIONS
-   *===========================================================================*/
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Battle won/loss/end trigger for map */
   void battleLose();

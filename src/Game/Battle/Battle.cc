@@ -1949,7 +1949,7 @@ void Battle::createLay(std::string path, int32_t anim_time, Floatinate velocity,
 {
   Coordinate screen_size = {config->getScreenWidth(), config->getScreenHeight()};
   lays.push_back(
-      new Lay(path, anim_time, velocity, lay_type, screen_size, renderer));
+      new Lay(path, anim_time, velocity, lay_type, screen_size));
 }
 
 // Other todos:
