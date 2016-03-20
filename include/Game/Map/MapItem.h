@@ -46,7 +46,7 @@ private:
  *===========================================================================*/
 protected:
   /* Check if the tile can be set with the item */
-  virtual bool canSetTile(Tile* tile, TileSprite* frames, 
+  virtual bool canSetTile(Tile* tile, TileSprite* frames,
                           bool avoid_player = false);
 
   /* Sets the tile of the selected with the corresponding frames */
@@ -90,7 +90,7 @@ public:
 
   /* Returns if the item is picked up merely by walking over it */
   bool isWalkover();
-  
+
   /* Sets if the item is active */
   virtual bool setActive(bool active, bool set_tiles = true);
 
@@ -113,7 +113,7 @@ public:
   void setWalkover(bool walkover);
 
   /* Updates the thing, based on the tick */
-  void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
+  Floatinate update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 };
 
 #endif // MAPITEM_H

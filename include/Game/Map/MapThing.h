@@ -143,15 +143,15 @@ protected:
                      Direction move_request);
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next,
                                  uint8_t render_depth, Direction move_request);
-  
+
   /* Additional rendering call for overlays - virtualized */
   virtual bool renderAdditional(SDL_Renderer* renderer, Tile* tile,
-                                int tile_x, int tile_y, 
+                                int tile_x, int tile_y,
                                 int render_x, int render_y);
-  
+
   /* Move the thing, based on the internal direction */
   virtual float moveAmount(uint16_t cycle_time);
-  void moveThing(int cycle_time);
+  Floatinate moveThing(int cycle_time);
 
   /* Sets the new direction that the class is moving in */
   bool setDirection(Direction new_direction);
@@ -400,7 +400,8 @@ public:
   virtual void triggerWalkOn(MapPerson* trigger);
 
   /* Updates the thing, called on the tick */
-  virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
+  virtual Floatinate update(int cycle_time,
+                            std::vector<std::vector<Tile*>> tile_set);
 
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);

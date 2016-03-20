@@ -97,6 +97,9 @@ struct LayOver
   int anim_time;
   float velocity_x; /* velocity x cycle_time */
   float velocity_y; /* velocity x cycle_time */
+
+  /* Map only */
+  bool player_relative;
 };
 
 /* Structure for battle scene information */

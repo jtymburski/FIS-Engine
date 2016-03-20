@@ -1174,9 +1174,9 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
     }
   }
 }
-  
+
 /*
- * Description: Attempts an unlock on the MIO taking the mode, relevant state 
+ * Description: Attempts an unlock on the MIO taking the mode, relevant state
  *              number (if mode is state based), and the events within the state
  *              to address
  *
@@ -1185,7 +1185,7 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
  *         UnlockIOEvent mode_events - which events to attempt to unlock
  * Output: bool - true if at least one was locked and now unlocked
  */
-bool MapInteractiveObject::unlockTrigger(UnlockIOMode mode, int state_num, 
+bool MapInteractiveObject::unlockTrigger(UnlockIOMode mode, int state_num,
                                          UnlockIOEvent mode_events)
 {
   bool unlocked = false;
@@ -1236,11 +1236,12 @@ bool MapInteractiveObject::unlockTrigger(UnlockIOMode mode, int state_num,
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none
+ * Output: Floatinate - the delta x and y of the moved IO
  */
-void MapInteractiveObject::update(int cycle_time,
-                                  std::vector<std::vector<Tile*>> tile_set)
+Floatinate MapInteractiveObject::update(int cycle_time,
+                                        std::vector<std::vector<Tile*>> tile_set)
 {
+  Floatinate delta_move;
   (void)tile_set;
 
   /* For active and valid tiles, do update sequence */
@@ -1328,8 +1329,10 @@ void MapInteractiveObject::update(int cycle_time,
   /* Otherwise, just pass to parent */
   else
   {
-    MapThing::update(cycle_time, tile_set);
+    delta_move = MapThing::update(cycle_time, tile_set);
   }
+
+  return delta_move;
 }
 
 /*

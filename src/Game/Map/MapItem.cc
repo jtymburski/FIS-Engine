@@ -18,7 +18,7 @@ const float MapItem::kMIN_BRIGHTNESS = 1.0;
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* 
+/*
  * Description: Constructor for this class. Sets up an empty item with no
  *              data.
  *
@@ -28,12 +28,12 @@ MapItem::MapItem() : MapThing()
 {
   brighter = false;
   walkover = false;
-  
+
   /* Set the count to 0 since the map item is not configured */
   setStartCount(0);
 }
 
-/* 
+/*
  * Description: Constructor for this class. Takes data to create the item.
  *
  * Inputs: TileSprite* frames - the frame pointer to render on map
@@ -41,20 +41,20 @@ MapItem::MapItem() : MapThing()
  *         std::string name - the name of the thing, default to ""
  *         std::string description - the description of the thing, default to ""
  */
-MapItem::MapItem(TileSprite* frames, int id, std::string name, 
+MapItem::MapItem(TileSprite* frames, int id, std::string name,
                  std::string description)
        : MapThing(id, name, description)
 {
   setFrame(frames, 0, 0);
   brighter = false;
   walkover = false;
-  
+
   /* Set the count to the default since the map item is configured */
   setStartCount(kDEFAULT_COUNT);
 }
 
-/* 
- * Description: Destructor function 
+/*
+ * Description: Destructor function
  */
 MapItem::~MapItem()
 {
@@ -108,8 +108,8 @@ bool MapItem::setTile(Tile* tile, TileSprite* frames, bool no_events)
 /*
  * Description: Unsets the tile corresponding to the matrix at the x and y
  *              coordinate. However, since this is an private function, it does
- *              not confirm that the X and Y are in the valid range. Must be 
- *              checked or results are unknown. This will unset the thing from 
+ *              not confirm that the X and Y are in the valid range. Must be
+ *              checked or results are unknown. This will unset the thing from
  *              the tile corresponding to the frame and the tile from the frame.
  *
  * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
@@ -142,8 +142,8 @@ void MapItem::unsetTile(uint32_t x, uint32_t y, bool no_events)
  *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
-bool MapItem::addThingInformation(XmlData data, int file_index, 
-                                  int section_index, SDL_Renderer* renderer, 
+bool MapItem::addThingInformation(XmlData data, int file_index,
+                                  int section_index, SDL_Renderer* renderer,
                                   std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
@@ -154,7 +154,7 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   /*--------------------- SPRITE DATA -----------------*/
   if(identifier == "sprites")
   {
-    success &= MapThing::addThingInformation(data, file_index, section_index, 
+    success &= MapThing::addThingInformation(data, file_index, section_index,
                                              renderer, base_path);
     if(success)
     {
@@ -182,7 +182,7 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   /* Proceed to parent */
   else
   {
-    success &= MapThing::addThingInformation(data, file_index, section_index, 
+    success &= MapThing::addThingInformation(data, file_index, section_index,
                                              renderer, base_path);
   }
 
@@ -204,7 +204,7 @@ ThingBase MapItem::classDescriptor()
 }
 
 /*
- * Description: Takes the frame matrix, as it's been set up and removes any 
+ * Description: Takes the frame matrix, as it's been set up and removes any
  *              rows or columns at the end that have no valid frames set. A
  *              frame is classified as valid if it's not NULL and has renderable
  *              frames stored within it. This controls the virtual equivalent
@@ -231,10 +231,10 @@ bool MapItem::cleanMatrix(bool first_call)
   return success;
 }
 
-/* 
- * Description: Clears out all information stored in the item class. This 
+/*
+ * Description: Clears out all information stored in the item class. This
  *              overwrites the thing function for extra functionality.
- * 
+ *
  * Inputs: none
  * Output: none
  */
@@ -259,7 +259,7 @@ uint32_t MapItem::getCount()
 {
   return count;
 }
-   
+
 /*
  * Description: Returns the starting number of items in the MapItem stack.
  *
@@ -381,20 +381,20 @@ void MapItem::setCount(uint32_t count)
 
 /*
  * Description: Sets a single frame sequence in the matrix of the rendering
- *              item. This takes over control of MapThing function. If the 
- *              x and y aren't 0 (as only one frame is allowed in item), 
+ *              item. This takes over control of MapThing function. If the
+ *              x and y aren't 0 (as only one frame is allowed in item),
  *              the call fails.
  *
  * Inputs: TileSprite* frame - the new frame to insert into the Map Thing
  *                             matrix. Must actually have a sprite set.
- *         uint32_t x - the x coordinate, relative to the top left of the 
+ *         uint32_t x - the x coordinate, relative to the top left of the
  *                      Map Thing render matrix.
  *         uint32_t y - the y coordinate, relative to the top left of the
  *                      Map Thing render matrix.
  *         bool unset_old - delete the old frames from memory?
  * Output: bool - returns if the new frame was set successfully
  */
-bool MapItem::setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
+bool MapItem::setFrame(TileSprite* frame, uint32_t x, uint32_t y,
                        bool delete_old)
 {
   if(x == 0 && y == 0)
@@ -407,18 +407,18 @@ bool MapItem::setFrame(TileSprite* frame, uint32_t x, uint32_t y,
  *              of the MapThing function. If the size of array isn't 1x1 (as
  *              only one frame is allowed in item), the call fails.
  *
- * Inputs: std::vector<std::vector<TileSprite*>> frames - the new matrix of 
+ * Inputs: std::vector<std::vector<TileSprite*>> frames - the new matrix of
  *             frames to define to insert into the thing
  *         bool delete_old - delete the old frames from memory?
  * Output: none
  */
-void MapItem::setFrames(std::vector<std::vector<TileSprite*>> frames, 
+void MapItem::setFrames(std::vector<std::vector<TileSprite*>> frames,
                          bool delete_old)
 {
   if(frames.size() == 1 && frames.front().size() == 1)
     MapThing::setFrames(frames, delete_old);
 }
-  
+
 /*
  * Description: Sets the starting number of items on the map. This is also the
  *              count that respawn uses if it is enabled.
@@ -451,10 +451,12 @@ void MapItem::setWalkover(bool walkover)
  *
  * Inputs: int cycle_time - the time elapsed between updates
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none 
+ * Output: Floatinate - the delta x and y of the moved item
  */
-void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
+Floatinate MapItem::update(int cycle_time,
+                           std::vector<std::vector<Tile*>> tile_set)
 {
+  Floatinate delta_move;
   SpriteMatrix* sprite_set = getMatrix();
 
   if(sprite_set != NULL)
@@ -469,7 +471,7 @@ void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       if(brighter)
       {
         brightness += cycle_time / kDELTA_TIME_ONE_POINT;
-      
+
         if(brightness > kMAX_BRIGHTNESS)
         {
           brightness = kMAX_BRIGHTNESS;
@@ -499,6 +501,8 @@ void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     }
 
     /* Finally update the thing */
-    MapThing::update(cycle_time, tile_set);
+    delta_move = MapThing::update(cycle_time, tile_set);
   }
+
+  return delta_move;
 }

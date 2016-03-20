@@ -1519,9 +1519,10 @@ void MapNPC::setTrackingState(TrackingState state)
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none
+ * Output: Floatinate - the delta x and y of the moved npc
  */
-void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
+Floatinate MapNPC::update(int cycle_time,
+                          std::vector<std::vector<Tile*>> tile_set)
 {
   /* For active and set tiles, update movement and animation */
   if(isActive() && isTilesSet())
@@ -1806,7 +1807,7 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   }
 
   /* Send call to parent */
-  MapPerson::update(cycle_time, tile_set);
+  return MapPerson::update(cycle_time, tile_set);
 }
 
 /*=============================================================================

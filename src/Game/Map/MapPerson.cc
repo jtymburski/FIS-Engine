@@ -1114,10 +1114,13 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  *
  * Inputs: int cycle_time - the time elapsed between updates
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none
+ * Output: Floatinate - the delta x and y of the moved person
  */
-void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
+Floatinate MapPerson::update(int cycle_time,
+                             std::vector<std::vector<Tile*>> tile_set)
 {
+  Floatinate delta_move;
+
   /* For active and set tiles, update movement and animation */
   if(isActive() && isTilesSet())
   {
@@ -1188,7 +1191,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     }
 
     /* Animate and move the person */
-    moveThing(cycle_time);
+    delta_move = moveThing(cycle_time);
     animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
 
     /* Sound trigger for person/npc - for now, only player (TODO:FUTURE) */
@@ -1208,8 +1211,10 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   }
   else
   {
-    MapThing::update(cycle_time, tile_set);
+    delta_move = MapThing::update(cycle_time, tile_set);
   }
+
+  return delta_move;
 }
 
 /*

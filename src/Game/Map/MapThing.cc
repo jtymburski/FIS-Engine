@@ -214,7 +214,7 @@ bool MapThing::canSetTile(Tile* tile, TileSprite* frames, bool avoid_player)
       if(person != nullptr && person->getID() == kPLAYER_ID)
         player = true;
     }
-    
+
     /* Final return */
     return (!tile->isThingSet(frames->getRenderDepth()) && !player);
   }
@@ -398,7 +398,7 @@ bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next,
  * Output: bool - status if call was successful
  */
 bool MapThing::renderAdditional(SDL_Renderer* renderer, Tile* tile,
-                                int tile_x, int tile_y, 
+                                int tile_x, int tile_y,
                                 int render_x, int render_y)
 {
   (void)renderer;
@@ -433,11 +433,12 @@ float MapThing::moveAmount(uint16_t cycle_time)
  *              moveAmount() calculation for determining how much to move.
  *
  * Inputs: int cycle_time - the time since the last update call
- * Output: none
+ * Output: Floatinate - the delta move amount of x and y
  */
-void MapThing::moveThing(int cycle_time)
+Floatinate MapThing::moveThing(int cycle_time)
 {
   float move_amount = moveAmount(cycle_time);
+  Floatinate delta_move;
 
   if(movement == Direction::EAST || movement == Direction::WEST)
   {
@@ -445,6 +446,11 @@ void MapThing::moveThing(int cycle_time)
     y = 0.0;
     if(x > 1.0)
       x -= 1.0;
+
+    if(movement == Direction::EAST)
+      delta_move.x = move_amount;
+    else
+      delta_move.x = -move_amount;
   }
   else if(movement == Direction::NORTH || movement == Direction::SOUTH)
   {
@@ -452,12 +458,19 @@ void MapThing::moveThing(int cycle_time)
     y += move_amount;
     if(y > 1.0)
       y -= 1.0;
+
+    if(movement == Direction::SOUTH)
+      delta_move.y = move_amount;
+    else
+      delta_move.y = -move_amount;
   }
   else
   {
     x = 0.0;
     y = 0.0;
   }
+
+  return delta_move;
 }
 
 /*
@@ -1833,7 +1846,7 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
     /* If successful, render additional */
     if(success)
     {
-      renderAdditional(renderer, tile_main.front().front(), 
+      renderAdditional(renderer, tile_main.front().front(),
                        0, 0, render_x, render_y);
       return success;
     }
@@ -1841,7 +1854,7 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 
   return false;
 }
- 
+
 
 /*
  * Description: Render the single frame, located on the designated tile.
@@ -2278,9 +2291,9 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
     if(getID() != kPLAYER_ID)
       for(uint32_t i = 0; i < sprite_set->width(); i++)
         for(uint32_t j = 0; j < sprite_set->height(); j++)
-          if(sprite_set->at(i, j) != NULL && 
+          if(sprite_set->at(i, j) != NULL &&
              sprite_set->at(i, j)->getSize() > 0)
-            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j), 
+            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j),
                                   avoid_player);
 
     /* Attempt to set the new tiles */
@@ -2290,7 +2303,7 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
       {
         for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
         {
-          if(sprite_set->at(i, j) != NULL && 
+          if(sprite_set->at(i, j) != NULL &&
              sprite_set->at(i, j)->getSize() > 0)
           {
             success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
@@ -2405,11 +2418,13 @@ void MapThing::triggerWalkOn(MapPerson* trigger)
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
- * Output: none
+ * Output: Floatinate - the delta x and y of the moved thing
  */
-void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
+Floatinate MapThing::update(int cycle_time,
+                            std::vector<std::vector<Tile*>> tile_set)
 {
   (void)tile_set;
+  Floatinate delta_move;
 
   /* For base, just update animation of thing */
   if(getBase() == nullptr)
@@ -2420,7 +2435,7 @@ void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   /* For active, update movement and animation */
   else if(isActive() && isTilesSet())
   {
-    moveThing(cycle_time);
+    delta_move = moveThing(cycle_time);
     //if(getBase() == nullptr)
     //  animate(cycle_time);
   }
@@ -2431,6 +2446,8 @@ void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     if(active_lapsed >= active_time)
       setActive(true);
   }
+
+  return delta_move;
 }
 
 /*

@@ -93,7 +93,7 @@ private:
  *===========================================================================*/
 protected:
   /* Check if the tile can be set with the thing */
-  virtual bool canSetTile(Tile* tile, TileSprite* frames, 
+  virtual bool canSetTile(Tile* tile, TileSprite* frames,
                           bool avoid_player = false);
 
   /* Is move allowed, based on main tile and the next tile */
@@ -173,11 +173,12 @@ public:
   void triggerWalkOn(MapPerson* trigger);
 
   /* Unlock trigger call */
-  bool unlockTrigger(UnlockIOMode mode, int state_num, 
+  bool unlockTrigger(UnlockIOMode mode, int state_num,
                      UnlockIOEvent mode_events);
 
   /* Updates the thing, based on the tick */
-  virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
+  virtual Floatinate update(int cycle_time,
+                            std::vector<std::vector<Tile*>> tile_set);
 
   /* Unsets all states - this handles deletion */
   void unsetFrames(bool delete_frames = true);

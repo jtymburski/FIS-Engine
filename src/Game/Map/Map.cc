@@ -714,6 +714,7 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
   return tile_set;
 }
 
+/* Returns a matrix of tiles that match the frames in the thing */
 // TODO: Comment
 std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section, uint16_t x,
                                                    uint16_t y, uint16_t width,
@@ -741,6 +742,44 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section, uint16_t x,
   return tile_set;
 }
 
+/* Initiates a lay over change of the map. Triggered on section change */
+void Map::initiateLayUpdate()
+{
+  /* Delete old lay overs */
+  for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
+    if(*it)
+      delete *it;
+  lay_overs.clear();
+  for(auto it = lay_unders.begin(); it != lay_unders.end(); ++it)
+    if(*it)
+      delete *it;
+  lay_unders.clear();
+
+  if(system_options)
+  {
+    /* Update under layovers for new sub-map */
+    for(uint32_t i = 0; i < sub_map[map_index].underlays.size(); i++)
+    {
+      Lay* new_under = new Lay();
+      new_under->createFromLayStruct(sub_map[map_index].underlays[i]);
+      new_under->setScreenSize(system_options->getScreenWidth(),
+                               system_options->getScreenHeight());
+      lay_unders.push_back(new_under);
+    }
+
+    /* Update over layovers for new sub-map */
+    for(uint32_t i = 0; i < sub_map[map_index].overlays.size(); i++)
+    {
+      Lay* new_over = new Lay();
+      new_over->createFromLayStruct(sub_map[map_index].overlays[i]);
+      new_over->setScreenSize(system_options->getScreenWidth(),
+                              system_options->getScreenHeight());
+      lay_overs.push_back(new_over);
+    }
+  }
+}
+
+/* Initiates a section block of map. Triggered from the file data */
 bool Map::initiateMapSection(uint16_t section_index, int width, int height)
 {
   /* Make sure width and height are valid */
@@ -1087,31 +1126,8 @@ bool Map::setSectionIndexMode(int index_next)
       viewport.setMapSize(sub_map[index].tiles.size(),
                           sub_map[index].tiles[0].size(), map_index);
 
-      /* Delete old lay overs */
-      for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
-        if(*it)
-          delete *it;
-      lay_overs.clear();
-      for(auto it = lay_unders.begin(); it != lay_unders.end(); ++it)
-        if(*it)
-          delete *it;
-      lay_unders.clear();
-
-      /* Update under layovers for new sub-map */
-      for(uint32_t i = 0; i < sub_map[index].underlays.size(); i++)
-      {
-        Lay* new_under = new Lay();
-        new_under->createFromLayStruct(sub_map[index].underlays[i]);
-        lay_unders.push_back(new_under);
-      }
-
-      /* Update over layovers for new sub-map */
-      for(uint32_t i = 0; i < sub_map[index].overlays.size(); i++)
-      {
-        Lay* new_over = new Lay();
-        new_over->createFromLayStruct(sub_map[index].overlays[i]);
-        lay_overs.push_back(new_over); 
-      }
+      /* Update the lay overs */
+      initiateLayUpdate();
 
       /* Update sound and dialog now that index is fresh */
       if(real_move)
@@ -2139,8 +2155,6 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
         std::string index_str = data.getKeyValue(index + 1);
         if(!index_str.empty())
           index_ref = std::stoi(index_str);
-        //std::cout << index_ref << "," << index_str 
-        //          << std::endl; // TODO: Remove
 
         /* Proceed if index is valid */
         if(index_ref >= 0)
@@ -2166,9 +2180,6 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
 
           /* Modify referenced lay */
           *lay_ref = Helpers::updateLayOver(*lay_ref, data, index + 2);
-          //std::cout << lay_ref->path << "," << lay_ref->anim_time << ","
-          //          << lay_ref->velocity_x << "," << lay_ref->velocity_y
-          //          << std::endl; // TODO: REMOVE
         }
       }
       /* -- WEATHER -- */
@@ -2194,35 +2205,6 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
       }
     }
   }
-
-/* TODO: TESTING - REMOVE AND PROPERLY IMPLEMENT */
-#ifdef MAP_LAY
-  if(system_options)
-  {
-    Coordinate scr_size = {system_options->getScreenWidth(),
-                           system_options->getScreenHeight()};
-
-    if(lay_overs.size() == 0)
-    {
-      Floatinate velocity_smog = {2, 0.5};
-      Floatinate velocity_fog = {0.05, -0.01};
-
-      lay_overs.push_back(
-          new Lay("sprites/Map/EnviromentEffects/Overlays/smog_overlay.png", 0,
-                  velocity_smog, LayType::OVERLAY, scr_size));
-      lay_overs.push_back(
-          new Lay("sprites/Map/EnviromentEffects/Overlays/fog_underlay.png", 0,
-                  velocity_fog, LayType::OVERLAY, scr_size));
-    }
-    if(lay_unders.size() == 0)
-    {
-      Floatinate velocity_forest = {0.50, 0.50}; /* 50% of Player Movement */
-      lay_unders.push_back(
-          new Lay("sprites/Map/EnviromentEffects/Overlays/forest_underlay.png",
-                  velocity_forest, LayType::UNDERLAY, scr_size));
-    }
-  }
-#endif
 
   return success;
 }
@@ -2368,21 +2350,8 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
     if(player != NULL)
       viewport.lockOn(player);
 
-    /* Update under layovers for the starting map */
-    for(uint32_t i = 0; i < sub_map[map_index].underlays.size(); i++)
-    {
-      Lay* new_under = new Lay();
-      new_under->createFromLayStruct(sub_map[map_index].underlays[i]);
-      lay_unders.push_back(new_under);
-    }
-
-    /* Update over layovers for the starting map */
-    for(uint32_t i = 0; i < sub_map[map_index].overlays.size(); i++)
-    {
-      Lay* new_over = new Lay();
-      new_over->createFromLayStruct(sub_map[map_index].overlays[i]);
-      lay_overs.push_back(new_over); 
-    }
+    /* Update lay overs */
+    initiateLayUpdate();
   }
 }
 
@@ -2898,24 +2867,14 @@ void Map::unloadMap()
 
   /* Delete the Overlays */
   for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
-  {
     if(*it)
-    {
       delete *it;
-      *it = nullptr;
-    }
-  }
   lay_overs.clear();
 
   /* Delete the Underlays */
   for(auto it = lay_unders.begin(); it != lay_unders.end(); ++it)
-  {
     if(*it)
-    {
       delete *it;
-      *it = nullptr;
-    }
-  }
   lay_unders.clear();
 
   /* Reset the viewport */
@@ -3011,6 +2970,7 @@ void Map::unlockTile(int section_id, int tile_x, int tile_y,
 /* Updates the game state */
 bool Map::update(int cycle_time)
 {
+  Floatinate player_move;
   std::vector<std::vector<Tile*>> tile_set;
 
   /* Check on music */
@@ -3069,7 +3029,13 @@ bool Map::update(int cycle_time)
             getTileMatrix(persons[i], persons[i]->getPredictedMoveRequest());
 
       /* Update person */
-      persons[i]->update(cycle_time, tile_set);
+      Floatinate person_move = persons[i]->update(cycle_time, tile_set);
+
+      /* If player, record and store move distance */
+      if(persons[i] == player)
+      {
+        player_move = {-person_move.x, -person_move.y};
+      }
     }
   }
 
@@ -3088,24 +3054,26 @@ bool Map::update(int cycle_time)
   /* If conversation is active, confirm that player is not moving */
   if(map_dialog.isConversationActive() || !isModeNormal())
     unfocus();
-
-  /* Overlay for map - testing: TODO revise */
-  for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
+  
+  /* Underlay for map */
+  for(auto it = lay_unders.begin(); it != lay_unders.end(); ++it)
   {
-    if((*it) && !(*it)->getFlag(LayState::PLAYER_RELATIVE))
+    if(*it)
+    {
+      (*it)->shift(player_move);
       (*it)->update(cycle_time);
+    }
   }
 
-  /* Offset for overlay */
-  // if(lay_over.size() > 0)
-  // {
-  //   lay_offset += (cycle_time / 16.0);
-  //   if(lay_offset >= 1216.0)
-  //     lay_offset -= 1216.0;
-  //   lay_offset2 += (cycle_time / 8.0);
-  //   if(lay_offset2 >= 1216.0)
-  //     lay_offset2 -= 1216.0;
-  // }
+  /* Overlay for map */
+  for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
+  {
+    if(*it)
+    {
+      (*it)->shift(player_move);
+      (*it)->update(cycle_time);
+    }
+  }
 
   /* Finally, update the viewport and dialogs */
   item_menu.update(cycle_time);

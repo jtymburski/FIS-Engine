@@ -220,6 +220,7 @@ void Lay::createFromLayStruct(LayOver lay_data, SDL_Renderer* renderer)
   else
     setSpriteAnimation(0);
   setVelocity({lay_data.velocity_x, lay_data.velocity_y});
+  setFlag(LayState::PLAYER_RELATIVE, lay_data.player_relative);
 
   /* Generate texture if render engine is available */
   if(renderer)
@@ -261,7 +262,7 @@ bool Lay::createTiledLays(SDL_Renderer* renderer)
     if(split.size() == 1 || split.size() == 3)
     {
       lay_sprite->setAnimationTime(animation_time);
-      //lay_sprite->setNonUnique(true, num_frames); // LEAK.
+      //lay_sprite->setNonUnique(true, num_frames); // TODO: REMOVE - LEAK.
       lay_sprite->createTexture(renderer);
     }
 
@@ -335,20 +336,19 @@ bool Lay::render(SDL_Renderer* renderer)
 }
 
 /*
- * Description:
+ * Description: Render the lay onto the current rendering pointer. It may not
+ *              render if range control is set and limits where the lay may
+ *              be rendered.
  *
- * Inputs:
- * Output:
+ * Inputs: SDL_Renderer* renderer - the rendering engine reference
+ *         Coordinate player_position - the current player position in tiles
+ * Output: bool - true if rendering successful or no rendering took place
  */
 bool Lay::render(SDL_Renderer* renderer, Coordinate player_position)
 {
   /* Check to see if the range is within bounds */
-  if(getFlag(LayState::RANGE_BOUND))
-  {
-    if(Helpers::isWithinRange(player_position, range_top_left, range_bot_right))
-      return render(renderer);
-  }
-  else
+  if(!getFlag(LayState::RANGE_BOUND) || 
+     Helpers::isWithinRange(player_position, range_top_left, range_bot_right))
   {
     return render(renderer);
   }
@@ -370,7 +370,8 @@ void Lay::setFlag(const LayState& flag, const bool& set_value)
 }
 
 /*
- * Description: Sets the range bound for player location based lays
+ * Description: Sets the range bound for player location based lays. The
+ *              coordinate must be in tile counts.
  *
  * Inputs: Coordinate top_left - top left range
  *         Coordinate bot_right - bottom right range
@@ -397,6 +398,8 @@ bool Lay::setScreenSize(const int32_t &screen_x, const int32_t &screen_y)
   {
     screen_size.x = screen_x;
     screen_size.y = screen_y;
+    setFlag(LayState::SCREEN_SIZE, true);
+
     return true;
   }
   return false;
@@ -453,23 +456,28 @@ void Lay::setVelocity(Floatinate new_velocity)
 
 /*
  * Description: Shifts the tiled lays by a given floatinate shift, keeping track
- *              of the error margin.
+ *              of the error margin. This is based on a delta distance shift of
+ *              player and only valid if PLAYER_RELATIVE is used
  *
- * Inputs: Floatinate shift - amount to shift the lay by
+ * Inputs: Floatinate shift - amount to shift the lay by. This is a number
+ *                            relative to one tile (1.0 = 64 pixels)
  * Output: none
  */
 void Lay::shift(Floatinate shift)
 {
-  error.x += shift.x * velocity.x;
-  error.y += shift.y * velocity.y;
+  if(getFlag(LayState::PLAYER_RELATIVE))
+  {
+    error.x += shift.x * velocity.x * Helpers::getTileSize();
+    error.y += shift.y * velocity.y * Helpers::getTileSize();
 
-  auto dist_x = std::floor(error.x);
-  auto dist_y = std::floor(error.y);
+    auto dist_x = std::floor(error.x);
+    auto dist_y = std::floor(error.y);
 
-  updateLocations(dist_x, dist_y);
+    updateLocations(dist_x, dist_y);
 
-  error.x -= dist_x;
-  error.y -= dist_y;
+    error.x -= dist_x;
+    error.y -= dist_y;
+  }
 }
 
 /*
@@ -483,17 +491,22 @@ void Lay::shift(Floatinate shift)
  */
 void Lay::update(int32_t cycle_time)
 {
-  error.x += cycle_time * velocity.x;
-  error.y += cycle_time * velocity.y;
+  /* Update location */
+  if(!getFlag(LayState::PLAYER_RELATIVE))
+  {
+    error.x += cycle_time * velocity.x;
+    error.y += cycle_time * velocity.y;
 
-  auto dist_x = std::floor(error.x);
-  auto dist_y = std::floor(error.y);
+    auto dist_x = std::floor(error.x);
+    auto dist_y = std::floor(error.y);
 
-  updateLocations(dist_x, dist_y);
+    updateLocations(dist_x, dist_y);
 
+    error.x -= dist_x;
+    error.y -= dist_y;
+  }
+
+  /* Update sprite */
   if(lay_sprite)
     lay_sprite->update(cycle_time);
-
-  error.x -= dist_x;
-  error.y -= dist_y;
 }

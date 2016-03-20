@@ -30,9 +30,6 @@
 // #include "Options.h"
 // #include "Sprite.h"
 
-// TODO: FOR OVERLAY/UNDERLAY - TESTING ONLY - UNCOMMENT TO ENABLE
-//#define MAP_LAY
-
 /* Sub map structure - contains all data related only to each sub */
 // TODO: Move thing instances into this struct?
 struct SubMap
@@ -238,6 +235,9 @@ private:
   std::vector<std::vector<Tile*>> getTileMatrix(uint16_t section, uint16_t x,
                                                 uint16_t y, uint16_t width,
                                                 uint16_t height);
+
+  /* Initiates a lay over change of the map. Triggered on section change */
+  void initiateLayUpdate();
 
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);

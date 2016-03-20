@@ -1638,6 +1638,7 @@ LayOver Helpers::createBlankLayOver()
   new_layover.anim_time = 250;
   new_layover.velocity_x = 0.0;
   new_layover.velocity_y = 0.0;
+  new_layover.player_relative = false;
   return new_layover;
 }
 
@@ -2127,6 +2128,8 @@ LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index)
     new_layover.anim_time = data.getDataInteger(&success);
   else if(element3 == "path")
     new_layover.path = data.getDataString(&success);
+  else if(element3 == "player")
+    new_layover.player_relative = data.getDataBool(&success);
   else if(element3 == "velx")
     new_layover.velocity_x = data.getDataFloat(&success);
   else if(element3 == "vely")
