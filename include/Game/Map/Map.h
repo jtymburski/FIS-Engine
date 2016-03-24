@@ -91,6 +91,9 @@ private:
 
   /* Fade status */
   uint8_t fade_alpha;
+  uint16_t fade_delay;
+  float fade_delta;
+  bool fade_main;
   MapFade fade_status;
 
   /* Images used in rendering */
@@ -125,7 +128,10 @@ private:
   int music_id;
   int music_runtime;
 
-  // /* The players info on the map */
+  /* Map name */
+  std::string name;
+
+  /* Thing data (and children) */
   std::vector<MapInteractiveObject*> ios;
   std::vector<MapItem*> items;
   std::vector<MapPerson*> persons;
@@ -173,7 +179,9 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static uint8_t kFADE_BLACK;  /* The fully faded out screen alpha */
-  const static uint8_t kFADE_FACTOR; /* 1/x fade factor for ms cycle time */
+  const static float kFADE_FACTOR; /* 1/x fade factor for ms cycle time */
+  const static uint8_t kFADE_HOLD; /* The hold point in opacity to delay */
+  const static uint16_t kFADE_HOLD_DELAY; /* The ms to delay at the hold */
   const static uint8_t kFADE_MAX;    /* The max differential to fade delta */
   const static uint8_t kFADE_VIS; /* The fully visible faded in screen alpha */
   const static uint8_t kFILE_CLASSIFIER; /* The file tile classification text */
@@ -289,7 +297,7 @@ public:
   void battleWon();
 
   /* Enable view trigger */
-  void enableView(bool enable);
+  void enableView(bool enable, bool map_change = false);
 
   /* Returns the battle information */
   EventPair getBattleEventLose();

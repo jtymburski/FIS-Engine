@@ -22,7 +22,9 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t Map::kFADE_BLACK = 255;
-const uint8_t Map::kFADE_FACTOR = 3;
+const float Map::kFADE_FACTOR = 4.0;
+const uint8_t Map::kFADE_HOLD = 220;
+const uint16_t Map::kFADE_HOLD_DELAY = 1500;
 const uint8_t Map::kFADE_MAX = 5;
 const uint8_t Map::kFADE_VIS = 0;
 const uint8_t Map::kFILE_CLASSIFIER = 3;
@@ -51,6 +53,9 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   battle_trigger = false;
   this->event_handler = NULL;
   fade_alpha = 255;
+  fade_delay = 0;
+  fade_delta = 0.0;
+  fade_main = false;
   fade_status = MapFade::BLACK;
   loaded = false;
   map_index = 0;
@@ -59,6 +64,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   mode_next = NONE;
   music_id = -1;
   music_runtime = -1;
+  name = "Map Name";
   player = NULL;
   system_options = NULL;
   view_acc = 0;
@@ -1271,44 +1277,71 @@ bool Map::updateFade(int cycle_time)
   if(fade_status == MapFade::BLACK)
   {
     fade_alpha = kFADE_BLACK;
+    fade_delay = 0;
+    fade_delta = 0.0;
   }
   /* -- FADE VISIBLE -- */
   else if(fade_status == MapFade::VISIBLE)
   {
     fade_alpha = kFADE_VIS;
+    fade_delay = 0;
+    fade_delta = 0.0;
   }
-  /* -- FADING IN -- */
-  else if(fade_status == MapFade::FADINGIN)
+  /* -- FADING IN AND OUT -- */
+  else if(fade_status == MapFade::FADINGIN || fade_status == MapFade::FADINGOUT)
   {
-    int diff = cycle_time / kFADE_FACTOR;
-    if(diff > kFADE_MAX)
-      diff = kFADE_MAX; /* Over-run protection */
-    if(diff < fade_alpha)
+    /* Calculate diff */
+    fade_delta += (cycle_time / kFADE_FACTOR);
+    int diff = 0;
+    if(fade_delta >= 1.0)
     {
-      fade_alpha -= diff;
+      diff = static_cast<int>(fade_delta);
+      if(diff > kFADE_MAX)
+        diff = kFADE_MAX; /* Over-run protection */
+      fade_delta -= diff;
     }
+    
+    /* Process diff */
+    /* -- FADING IN -- */
+    if(fade_status == MapFade::FADINGIN)
+    {
+      if(mode_curr != DISABLED || !fade_main || fade_alpha > kFADE_HOLD || 
+         fade_delay >= kFADE_HOLD_DELAY)
+      {
+        if(diff < fade_alpha)
+        {
+          fade_alpha -= diff;
+        }
+        else
+        {
+          fade_alpha = kFADE_VIS;
+          fade_status = MapFade::VISIBLE;
+          fade_delay = 0;
+          fade_delta = 0.0;
+          fade_main = false;
+          end_status = true;
+        }
+      }
+      else
+      {
+        fade_delay += cycle_time;
+      }
+    }
+    /* -- FADING OUT -- */
     else
     {
-      fade_alpha = kFADE_VIS;
-      fade_status = MapFade::VISIBLE;
-      end_status = true;
-    }
-  }
-  /* -- FADING OUT -- */
-  else if(fade_status == MapFade::FADINGOUT)
-  {
-    int diff = cycle_time / kFADE_FACTOR;
-    if(diff > kFADE_MAX)
-      diff = kFADE_MAX; /* Over-run protection */
-    if((diff + fade_alpha) < kFADE_BLACK)
-    {
-      fade_alpha += diff;
-    }
-    else
-    {
-      fade_alpha = kFADE_BLACK;
-      fade_status = MapFade::BLACK;
-      end_status = true;
+      if((diff + fade_alpha) < kFADE_BLACK)
+      {
+        fade_alpha += diff;
+      }
+      else
+      {
+        fade_alpha = kFADE_BLACK;
+        fade_status = MapFade::BLACK;
+        fade_delay = 0;
+        fade_delta = 0.0;
+        end_status = true;
+      }
     }
   }
   /* -- FADING INVALID -- */
@@ -1563,7 +1596,7 @@ void Map::battleWon()
 }
 
 /* Enable view trigger */
-void Map::enableView(bool enable)
+void Map::enableView(bool enable, bool map_change)
 {
   /* Stop call for other music - in case no music is available in the map */
   if(event_handler)
@@ -1572,6 +1605,7 @@ void Map::enableView(bool enable)
   if(enable)
   {
     changeMode(NORMAL);
+    fade_main = map_change;
     audioStart();
   }
   else
@@ -2069,8 +2103,15 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
   bool success = true;
   std::string element = data.getElement(index);
 
+  /* ---- MAP NAME ---- */
+  if(element == "name")
+  {
+    std::string new_name = data.getDataString(&success);
+    if(success)
+      name = new_name;
+  }
   /* ---- BASE SPRITES ---- */
-  if(element == "sprite" && !data.getKeyValue(index).empty())
+  else if(element == "sprite" && !data.getKeyValue(index).empty())
   {
     success &=
         addSpriteData(data, data.getKeyValue(index), index + 1, renderer);
@@ -3033,9 +3074,7 @@ bool Map::update(int cycle_time)
 
       /* If player, record and store move distance */
       if(persons[i] == player)
-      {
-        player_move = {-person_move.x, -person_move.y};
-      }
+        player_move = {person_move.x, person_move.y};
     }
   }
 

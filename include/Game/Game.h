@@ -142,7 +142,7 @@ private:
   SkillSet* addSkillSet(const int32_t &id);
 
   /* Change the mode that the game is running */
-  bool changeMode(GameMode mode);
+  bool changeMode(GameMode mode, bool map_change = false);
 
   /* A give item event, based on an ID and count (triggered from stored event */
   int eventGiveItem(int id, int count);

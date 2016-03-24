@@ -232,7 +232,7 @@ SkillSet* Game::addSkillSet(const int32_t& id)
 }
 
 /* Change the mode that the game is running */
-bool Game::changeMode(GameMode mode)
+bool Game::changeMode(GameMode mode, bool map_change)
 {
   // mode is MENU
 
@@ -266,7 +266,7 @@ bool Game::changeMode(GameMode mode)
 
     /* Changes to execute on the view opening */
     if(mode == MAP)
-      map_ctrl.enableView(true);
+      map_ctrl.enableView(true, map_change);
   }
 
   return allow;
@@ -653,7 +653,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
-    changeMode(MAP);
+    changeMode(MAP, true);
   }
   /* If failed, unload */
   else
