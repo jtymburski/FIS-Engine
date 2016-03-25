@@ -2346,13 +2346,12 @@ Coordinate Helpers::updateCoordinate(int32_t cycle_time, Coordinate current,
  * Output:
  */
 float Helpers::updateHoverBrightness(int32_t time_elapsed, float cycle_rate,
-                           float min_value, float max_value)
+                                     float min_value, float max_value)
 {
   auto factor = max_value - min_value;
 
   return fabs(factor * sin((float)time_elapsed * cycle_rate)) + min_value;
 }
-
 
 /*
  * Description: Calculates and returns a new alpha value for fading in,

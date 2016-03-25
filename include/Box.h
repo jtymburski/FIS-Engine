@@ -30,8 +30,9 @@ enum class ScrollBoxState
   SCROLL_BOX = 1 << 0,
   SELECTABLE = 1 << 1,
   BORDER_HOVER_CYCLE = 1 << 2,
-  HOVER_CYCLE = 1 << 3,
-  SELECTED = 1 << 4
+  ELEMENT_HOVER_CYCLE = 1 << 3,
+  HOVER_CYCLE = 1 << 4,
+  SELECTED = 1 << 5
 };
 
 class Box
@@ -44,21 +45,28 @@ public:
   Box(Coordinate point, int32_t width, int32_t height);
 
   /* Vector of frames for the elements in a Box */
-  Box(Coordinate point, int32_t width, int32_t height, std::vector<Frame> elements);
+  Box(Coordinate point, int32_t width, int32_t height,
+      std::vector<Frame*> elements);
 
 private:
   /* Current working element index */
   int32_t element_index;
 
   /* Vector of Frame elements */
-  std::vector<Frame> elements;
+  std::vector<Frame*> elements;
 
 public:
   /* Colors */
   SDL_Color color_bg;
   SDL_Color color_border;
+  SDL_Color color_element_border;
   SDL_Color color_border_selected;
+  SDL_Color color_element_border_selected;
   SDL_Color color_scroll;
+
+  /* Cycle rates for the Box / Element */
+  float cycle_box_rate;
+  float cycle_element_rate;
 
   /* X, Y insets for the Element Frames */
   uint32_t element_gap;
@@ -82,10 +90,16 @@ public:
   uint32_t width_border;
   uint32_t width_border_selected;
 
+  /* Element border widths */
+  uint32_t width_element_border;
+  uint32_t width_element_border_selected;
+
   /* ------------ Constants --------------- */
   static const SDL_Color kDEFAULT_COLOR_BG;
   static const SDL_Color kDEFAULT_COLOR_BORDER;
   static const SDL_Color kDEFAULT_COLOR_SCROLL;
+  static const SDL_Color kDEFAULT_COLOR_BLANK;
+  static const float kDEFAULT_CYCLE_RATE;
   static const uint32_t kDEFAULT_ELEMENT_GAP;
   static const uint32_t kDEFAULT_ELEMENT_INSET_X;
   static const uint32_t kDEFAULT_ELEMENT_INSET_Y;
@@ -127,7 +141,7 @@ public:
   uint32_t getNumViewable();
 
   /* Assign a vector of elements to the scroll box */
-  void setElements(std::vector<Frame> elements);
+  void setElements(std::vector<Frame*> elements);
 
   /* Assigns a given ActorState flag to a given value */
   void setFlag(ScrollBoxState set_flags, const bool& set_value = true);

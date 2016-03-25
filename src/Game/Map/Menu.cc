@@ -250,7 +250,30 @@ void Menu::renderMainSection()
 {
   renderMainBackdrop();
 
-  auto test_box = Box({200, 400}, 300, 200);
+  std::vector<Frame*> box_frames;
+
+  for(uint32_t i = 0; i < 5; i++)
+  {
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                             SDL_TEXTUREACCESS_TARGET, 280, 30);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, i * 20, 150, 150, 30 + (10 * i));
+
+    SDL_Rect element_rect;
+    element_rect.x = 1;
+    element_rect.y = 1;
+    element_rect.w = 280;
+    element_rect.h = 30;
+
+    SDL_RenderFillRect(renderer, &element_rect);
+    box_frames.push_back(new Frame());
+    box_frames.back()->setTexture(texture);
+    SDL_SetRenderTarget(renderer, nullptr);
+  }
+
+  auto test_box = Box({200, 400}, 300, 200, box_frames);
   test_box.render(renderer);
 }
 

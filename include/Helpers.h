@@ -121,9 +121,9 @@ public:
  *============================================================================*/
 #include "Helpers.tcc" /* Template Implementation */
 
-/*=============================================================================
- * RANDOM GENERATOR FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * RANDOM GENERATOR FUNCTIONS
+   *============================================================================*/
 private:
   /* Mersenne Twister Engines */
   static const uint32_t seed_original;
@@ -161,9 +161,9 @@ public:
   /* Rolls an X-Sided die S times */
   static int rollXS(const int& x_sides, const int& s_times);
 
-/*=============================================================================
- * GRAMMAR FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * GRAMMAR FUNCTIONS
+   *============================================================================*/
 public:
   /* Decides between "a" or "an" */
   static std::string a_An(const std::string& noun);
@@ -252,9 +252,9 @@ public:
   /* Renders the string equivalent of a VictoryState enum */
   static std::string victoryStateToStr(VictoryState victory_state);
 
-/*=============================================================================
- * PLAYER / BATTLE HELPER FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * PLAYER / BATTLE HELPER FUNCTIONS
+   *============================================================================*/
 public:
   /* Returns the pair of off/def attributes corresponding to an element */
   static std::pair<Attribute, Attribute> elementToStats(const Element& element);
@@ -265,9 +265,9 @@ public:
   /* Returns the elemental weakness to a given element */
   static Element getWeakness(const Element& element);
 
-/*=============================================================================
- * GENERAL HELPER FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * GENERAL HELPER FUNCTIONS
+   *============================================================================*/
 public:
   /* Builds an exponentially growing table from min to max with iter
    * iterations */
@@ -325,9 +325,9 @@ public:
   static BattleScene updateScene(BattleScene scene, XmlData data,
                                  int file_index);
 
-/*=============================================================================
- * GRAPHICAL HELPER FUNCTIONS
- *============================================================================*/
+  /*=============================================================================
+   * GRAPHICAL HELPER FUNCTIONS
+   *============================================================================*/
 public:
   /* Calculate points needing to be rendered between two coordinates */
   static std::vector<Coordinate> bresenhamPoints(Coordinate begin,
@@ -370,7 +370,7 @@ public:
                                      Coordinate final, float velocity);
 
   static float updateHoverBrightness(int32_t time_elapsed, float cycle_rate,
-                           float min_value, float max_value);
+                                     float min_value, float max_value);
 };
 
 #endif // HELPERS_H
