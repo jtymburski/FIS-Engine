@@ -224,6 +224,7 @@ private:
   /* Update mode */
   void updateMode(int cycle_time);
   void updateMenuEnabledState();
+  void updatePlayerSteps();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

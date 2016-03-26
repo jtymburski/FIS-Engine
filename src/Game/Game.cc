@@ -371,10 +371,12 @@ bool Game::eventMenuShow()
 {
   if(active_renderer && config)
   {
+    updatePlayerSteps();
     map_menu.setRenderer(active_renderer);
     map_menu.setConfig(config);
     map_menu.setEventHandler(&event_handler);
-
+    map_menu.setMap(&map_ctrl);
+    map_menu.setPlayer(player_main);
     map_menu.show();
   }
 
@@ -559,6 +561,17 @@ void Game::eventUnlockTile(int section_id, int tile_x, int tile_y,
   map_ctrl.unlockTile(section_id, tile_x, tile_y, mode, mode_view, view_time);
 }
 
+void Game::updatePlayerSteps()
+{
+  /* Load in steps assuming valid states */
+  if(player_main != nullptr && loaded_core && loaded_sub)
+  {
+    player_main->addSteps(map_ctrl.getPlayerSteps());
+    map_ctrl.resetPlayerSteps();
+    // std::cout << "Steps: " << player_main->getSteps() << std::endl;
+  }
+}
+
 /* Load game */
 // TODO: Comment
 // Notes: Revise that when inst file is blank, it uses default starting map.
@@ -575,13 +588,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   std::string level = std::to_string(map_lvl);
   bool success = true;
 
-  /* Load in steps assuming valid states */
-  if(player_main != nullptr && loaded_core && loaded_sub)
-  {
-    player_main->addSteps(map_ctrl.getPlayerSteps());
-    map_ctrl.resetPlayerSteps();
-    //std::cout << "Steps: " << player_main->getSteps() << std::endl;
-  }
+  /* Update the player step count */
+  updatePlayerSteps();
 
   /* Ensure nothing is loaded - if full load is false, just unloads map */
   unload(full_load);

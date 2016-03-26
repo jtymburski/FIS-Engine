@@ -91,8 +91,8 @@ bool Fonts::createFonts(Options* config)
                                    24, TTF_STYLE_BOLD));
     /* Menu Fonts */
     fonts.emplace(FontName::MENU_MAIN_TITLE,
-                  Text::createFont(config->getBasePath() + config->getFont(),
-                                   30, TTF_STYLE_BOLD));
+                  Text::createFont(config->getBasePath() + config->getFont(3),
+                                   30, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_TITLE_ELEMENT,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    24, TTF_STYLE_NORMAL));

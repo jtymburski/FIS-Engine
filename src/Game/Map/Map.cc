@@ -1701,6 +1701,12 @@ MapFade Map::getFadeStatus()
   return fade_status;
 }
 
+/* Returns the string name of the map */
+std::string Map::getName()
+{
+  return name;
+}
+
 /* Returns the person, based on the ID */
 MapPerson* Map::getPerson(uint16_t id)
 {

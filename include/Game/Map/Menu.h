@@ -18,6 +18,8 @@
 #include "EnumFlags.h"
 #include "Helpers.h"
 #include "Game/EventHandler.h"
+#include "Game/Map/Map.h"
+#include "Game/Player/Player.h"
 #include "Options.h"
 #include "Sprite.h"
 #include "Box.h"
@@ -117,18 +119,29 @@ public:
   ~Menu();
 
 private:
+  /* Current Map the Menu is Running On */
+  Map* curr_map;
+
+  /* The current player for the menu */
+  Player* curr_player;
+
   /* Assigned EventHandler */
   EventHandler* event_handler;
 
   /* Assigned Configuration */
   Options* config;
 
-  /* Test box */
-  Box test_box;
-  Box test_box2;
-
   /* Enumerated flags for the Menu */
   MenuState flags;
+
+  /* Frames to be built */
+  Frame frame_bubbies;
+  Frame frame_equipment;
+  Frame frame_footsteps;
+  Frame frame_items;
+  Frame frame_key_items;
+  Frame frame_location;
+  Frame frame_money;
 
   /* Current menu layer */
   MenuLayer layer;
@@ -149,6 +162,8 @@ private:
   Window title_section;
 
   /* ------- Constants ------- */
+
+  /* Size Constants */
   static const uint8_t kTITLE_ALPHA;
   static const float kTITLE_HEIGHT;
   static const float kTITLE_WIDTH;
@@ -159,10 +174,19 @@ private:
   static const float kTITLE_SLIDE_RATE;
   static const float kMAIN_SLIDE_RATE;
 
+  /* Colors */
+  static const SDL_Color kCOLOR_TITLE_BG;
+  static const SDL_Color kCOLOR_TITLE_BORDER;
+  static const SDL_Color kCOLOR_TITLE_HOVER;
+  static const SDL_Color kCOLOR_TEXT;
+
   /*=============================================================================
    * PRIVATE FUNCTIONS
    *============================================================================*/
 private:
+  /* Constructs icon frames */
+  void buildIconFrames();
+
   /* Construct the inventory display screen */
   void buildInventoryScreen();
 
@@ -227,6 +251,12 @@ public:
 
   /* Assign a given MenuState flag a given value */
   void setFlag(MenuState set_flags, const bool& set_value = true);
+
+  /* Assign a map the menu is running on */
+  void setMap(Map* new_map);
+
+  /* Assign a new player to the menu */
+  void setPlayer(Player* new_player);
 
   /* Assign Renderer */
   void setRenderer(SDL_Renderer* renderer);

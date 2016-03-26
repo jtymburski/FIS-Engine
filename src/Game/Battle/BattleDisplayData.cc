@@ -515,7 +515,7 @@ Frame* BattleDisplayData::getFrameScope(ActionScope scope_frame)
 
 // Return the string of the Item name
 std::string BattleDisplayData::getItemName(int32_t id)
-{ 
+{
   for(const auto& element : item_map)
     if(element.first == (uint32_t)id)
       return element.second;

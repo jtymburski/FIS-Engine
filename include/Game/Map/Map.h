@@ -240,6 +240,7 @@ private:
   MapThing* getThing(uint16_t id, ThingBase type);
   MapThing* getThingBase(uint16_t id);
 
+
   /* Returns a stack of map things that correspond to the ID stack */
   std::vector<MapThing*> getThingData(std::vector<int> thing_ids);
 
@@ -319,6 +320,9 @@ public:
 
   /* The fade status of the map */
   MapFade getFadeStatus();
+
+  /* Returns the string name of the map */
+  std::string getName();
 
   /* Return a MapPerson */
   MapPerson* getPerson(uint16_t id);

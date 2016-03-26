@@ -22,8 +22,9 @@
 /* Constant Implementation - see header file for descriptions */
 const std::string Options::kFONTS[] = {"fonts/colab_light.otf",
                                        "fonts/crimes.ttf",
-                                       "fonts/blanch_caps.otf"};
-const uint8_t Options::kNUM_FONTS = 3;
+                                       "fonts/blanch_caps.otf",
+                                       "fonts/colab_reg.otf"};
+const uint8_t Options::kNUM_FONTS = 4;
 const uint8_t Options::kNUM_RESOLUTIONS = 8;
 const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920,
                                             1920, 2560, 2460, 3860};
