@@ -58,6 +58,10 @@ private:
   /* The previous element in the linked list */
   Frame* previous;
 
+  /* Source rect settings */
+  SDL_Rect rect_src;
+  bool rect_src_valid;
+
   /* The texture for this frame */
   SDL_Texture* texture;
   SDL_Texture* texture_grey;
@@ -68,9 +72,9 @@ private:
   /*------------------- Constants -----------------------*/
   const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Executes the necessary image adjustments, as per the file data handlers */
   bool execImageAdjustment(std::string adjustment);
@@ -110,9 +114,10 @@ public:
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0, int w = 0,
-              int h = 0, bool for_sprite = false);
+              int h = 0, SDL_Rect* src_rect = nullptr, bool for_sprite = false);
   bool renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x = 0, int y = 0,
-                  int w = 0, int h = 0, bool for_sprite = false);
+                  int w = 0, int h = 0, SDL_Rect* src_rect = nullptr,
+                  bool for_sprite = false);
 
   /* Sets the alpha rating of the texture rendering */
   void setAlpha(uint8_t alpha = 255);
@@ -137,9 +142,9 @@ public:
   /* Sets if the greyscale texture is active and returned on getTexture() */
   bool useGreyScale(bool enable);
 
-  /*=============================================================================
-   * PRIVATE STATIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
 private:
   /* Draws a line. This is needed because of SDL draw line glitch */
   static void drawLine(int32_t x1, int32_t x2, int32_t y,
@@ -159,9 +164,9 @@ private:
                                     SDL_Renderer* renderer, bool aliasing,
                                     bool flat_side = false);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Draws a line given a vector of coordinates */
   static void drawLine(std::vector<Coordinate> line_points,

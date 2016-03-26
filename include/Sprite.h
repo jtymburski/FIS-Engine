@@ -97,6 +97,10 @@ private:
   /* Sound Reference */
   int32_t sound_id;
 
+  /* Source rect data for rendering frames */
+  SDL_Rect src_rect;
+  bool src_rect_use;
+
   /* The texture with the presently displayed frame + modifications */
   SDL_Texture* texture;
   bool texture_update;
@@ -185,6 +189,9 @@ public:
 
   /* Returns the sound ID reference */
   int32_t getSoundID() const;
+
+  /* Returns the source rect for rendering */
+  SDL_Rect* getSourceRect();
 
   /* Gets the temporary color balance spectrum values */
   uint8_t getTempColorBlue() const;
@@ -298,8 +305,12 @@ public:
   /* Sets the sound ID reference. Less than 0 unsets */
   void setSoundID(int32_t id);
 
+  /* Sets the source rect for rendering */
+  void setSourceRect(SDL_Rect rect);
+
   /* Sets the temporary color balances for the sprite */
-  void setTempColorBalance(uint8_t temp_red, uint8_t new_green, uint8_t new_blue);
+  void setTempColorBalance(uint8_t temp_red, uint8_t new_green,
+                           uint8_t new_blue);
   void setTempColorRed(uint8_t temp_red);
   void setTempColorGreen(uint8_t temp_green);
   void setTempColorBlue(uint8_t temp_blue);
@@ -312,6 +323,9 @@ public:
 
   /* Switches the direction that the linked list is parsed in */
   bool switchDirection();
+
+  /* Removes all source rect settings and returns to rendering entire frame */
+  void unsetSourceRect();
 
   /* Updates the frames within the sprite */
   bool update(int cycle_time, bool skip_head = false);

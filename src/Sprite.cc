@@ -55,9 +55,11 @@ Sprite::Sprite()
       size{0},
       sequence{FORWARD},
       sound_id{kUNSET_SOUND_ID},
+      src_rect_use{false},
       texture{nullptr},
       texture_update{false}
 {
+  src_rect = {0, 0, 0, 0};
 }
 
 /*
@@ -509,6 +511,21 @@ int32_t Sprite::getSoundID() const
 }
 
 /*
+ * Description: Returns the source rect used when the render call is accessed.
+ *              If no rect has been set, it returns nullptr which by default
+ *              renders the entire active frame.
+ *
+ * Inputs: none
+ * Output: SDL_Rect* - reference to the source rect for rendering
+ */
+SDL_Rect* Sprite::getSourceRect()
+{
+  if(src_rect_use)
+    return &src_rect;
+  return nullptr;
+}
+
+/*
  * Description: Returns the color distribution evenness, according to the temp.
  *              red RGB value. Rated from 0 to 255. (255 full saturation).
  *
@@ -934,8 +951,6 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
   if(current != NULL && renderer != NULL)
   {
-    //return current->render(renderer, x, y, w, h);
-
     /* Proceed to update the running texture if it's changed */
     if(texture_update || grey_scale_update)
     {
@@ -947,9 +962,14 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 
       /* Render current frame */
       if(grey_scale_update)
-        current->renderBoth(renderer, grey_scale_alpha, 0, 0, 0, 0, true);
+      {
+        current->renderBoth(renderer, grey_scale_alpha, 0, 0, 0, 0,
+                            getSourceRect(), true);
+      }
       else
-        current->render(renderer, 0, 0, 0, 0, true);
+      {
+        current->render(renderer, 0, 0, 0, 0, getSourceRect(), true);
+      }
 
       /* Render white mask, if relevant */
       SDL_Texture* white_mask = Helpers::getMaskWhite();
@@ -1239,6 +1259,22 @@ void Sprite::setSoundID(int32_t id)
 }
 
 /*
+ * Description: Sets the source rect for rendering the active current frame.
+ *              This is based on the width and height of the source frame and
+ *              how it associates with the destination render. See
+ *              unsetSourceRect() for unsetting at which point the entire source
+ *              frame will render.
+ *
+ * Inputs: SDL_Rect rect - the source rect for rendering
+ * Output: none
+ */
+void Sprite::setSourceRect(SDL_Rect rect)
+{
+  src_rect = rect;
+  src_rect_use = true;
+}
+
+/*
  * Description: Stores the given RGB values as the temporary color balance
  *              values, easily able to be reverted.
  *
@@ -1388,6 +1424,19 @@ bool Sprite::switchDirection()
   if(sequence == FORWARD)
     return setDirectionReverse();
   return setDirectionForward();
+}
+
+/*
+ * Description: Unsets the source rect being used and returns back to default of
+ *              just using the entire source frame for rendering. This relates
+ *              to setSourceRect()
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Sprite::unsetSourceRect()
+{
+  src_rect_use = false;
 }
 
 /*
