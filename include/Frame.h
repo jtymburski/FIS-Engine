@@ -110,9 +110,9 @@ public:
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0, int w = 0,
-              int h = 0);
+              int h = 0, bool for_sprite = false);
   bool renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x = 0, int y = 0,
-                  int w = 0, int h = 0);
+                  int w = 0, int h = 0, bool for_sprite = false);
 
   /* Sets the alpha rating of the texture rendering */
   void setAlpha(uint8_t alpha = 255);

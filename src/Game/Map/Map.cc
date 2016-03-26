@@ -21,7 +21,6 @@
 #include "Game/Map/Map.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint8_t Map::kFADE_BLACK = 255;
 const float Map::kFADE_FACTOR = 4.0;
 const uint8_t Map::kFADE_HOLD = 220;
 const uint16_t Map::kFADE_HOLD_DELAY = 1500;
@@ -32,7 +31,13 @@ const uint8_t Map::kFILE_GAME_TYPE = 1;
 const uint8_t Map::kFILE_SECTION_ID = 2;
 const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
+const uint8_t Map::kMAX_U8BIT = 255;
 const uint32_t Map::kMUSIC_REPEAT = 300000; /* 5 minutes */
+const uint16_t Map::kNAME_DISPLAY = 5000; /* 5 seconds */
+const uint16_t Map::kNAME_FADE = 1;
+const uint8_t Map::kNAME_SIZE = 48;
+const uint16_t Map::kNAME_X = 65;
+const uint16_t Map::kNAME_Y = 590;
 const uint8_t Map::kPLAYER_ID = 0;
 const uint16_t Map::kZOOM_TILE_SIZE = 16;
 
@@ -65,6 +70,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   music_id = -1;
   music_runtime = -1;
   name = "Map Name";
+  name_view = 0;
   player = NULL;
   system_options = NULL;
   view_acc = 0;
@@ -1273,10 +1279,14 @@ bool Map::updateFade(int cycle_time)
 {
   bool end_status = false;
 
+  /* Fade controller max */
+  if(cycle_time > 50)
+    cycle_time = 16;
+
   /* -- FADE BLACK -- */
   if(fade_status == MapFade::BLACK)
   {
-    fade_alpha = kFADE_BLACK;
+    fade_alpha = kMAX_U8BIT;
     fade_delay = 0;
     fade_delta = 0.0;
   }
@@ -1300,12 +1310,12 @@ bool Map::updateFade(int cycle_time)
         diff = kFADE_MAX; /* Over-run protection */
       fade_delta -= diff;
     }
-    
+
     /* Process diff */
     /* -- FADING IN -- */
     if(fade_status == MapFade::FADINGIN)
     {
-      if(mode_curr != DISABLED || !fade_main || fade_alpha > kFADE_HOLD || 
+      if(mode_curr != DISABLED || !fade_main || fade_alpha > kFADE_HOLD ||
          fade_delay >= kFADE_HOLD_DELAY)
       {
         if(diff < fade_alpha)
@@ -1325,18 +1335,24 @@ bool Map::updateFade(int cycle_time)
       else
       {
         fade_delay += cycle_time;
+        if(name_view == 0 && !name.empty())
+        {
+          name_text.unsetTexture();
+          name_text.setAlpha(0);
+          name_view = kNAME_DISPLAY;
+        }
       }
     }
     /* -- FADING OUT -- */
     else
     {
-      if((diff + fade_alpha) < kFADE_BLACK)
+      if((diff + fade_alpha) < kMAX_U8BIT)
       {
         fade_alpha += diff;
       }
       else
       {
-        fade_alpha = kFADE_BLACK;
+        fade_alpha = kMAX_U8BIT;
         fade_status = MapFade::BLACK;
         fade_delay = 0;
         fade_delta = 0.0;
@@ -2689,11 +2705,23 @@ bool Map::render(SDL_Renderer* renderer)
     item_menu.render(renderer);
     // map_dialog.render(renderer);
 
-    /* Overlay (for fading */
+    /* Overlay (for fading) */
     if(fade_status != MapFade::VISIBLE)
     {
       SDL_SetTextureAlphaMod(Helpers::getMaskBlack(), fade_alpha);
       SDL_RenderCopy(renderer, Helpers::getMaskBlack(), NULL, NULL);
+    }
+
+    /* Map name on top of overlay */
+    if(name_view > 0)
+    {
+      /* Make sure the name has been defined */
+      if(name_text.getTexture() == nullptr)
+        name_text.setText(renderer, name, {kMAX_U8BIT, kMAX_U8BIT, kMAX_U8BIT,
+                                           name_text.getAlpha()});
+
+      /* Render text */
+      name_text.render(renderer, kNAME_X, kNAME_Y);
     }
 
     /* Map dialog finally */
@@ -2721,6 +2749,10 @@ bool Map::setConfiguration(Options* running_config)
     /* Update the viewport information */
     viewport.setSize(running_config->getScreenWidth(),
                      running_config->getScreenHeight());
+
+    /* Update font for name */
+    if(!running_config->getFont(2).empty())
+      name_text.setFont(running_config->getFont(2), kNAME_SIZE);
 
     /* Update the dialogs with options information */
     item_menu.setConfiguration(running_config);
@@ -2812,6 +2844,8 @@ void Map::unloadMap()
   // map_dialog = MapDialog();
   // map_dialog.setEventHandler
   map_dialog.clearAll(true);
+  name_text.unsetTexture();
+  name_view = 0;
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
 
@@ -3093,7 +3127,7 @@ bool Map::update(int cycle_time)
   /* If conversation is active, confirm that player is not moving */
   if(map_dialog.isConversationActive() || !isModeNormal())
     unfocus();
-  
+
   /* Underlay for map */
   for(auto it = lay_unders.begin(); it != lay_unders.end(); ++it)
   {
@@ -3111,6 +3145,57 @@ bool Map::update(int cycle_time)
     {
       (*it)->shift(player_move);
       (*it)->update(cycle_time);
+    }
+  }
+
+  /* Update name */
+  if(name_view > 0)
+  {
+    /* Name time maximum */
+    int name_time = cycle_time;
+    if(name_time > 50)
+      name_time = 16;
+
+    /* Fade in and visible handling */
+    if(name_view > kNAME_FADE)
+    {
+      /* Check if the map is fading out */
+      if(fade_status == MapFade::FADINGOUT)
+      {
+        name_view = kNAME_FADE;
+      }
+      /* Fade In Text */
+      else if(name_text.getAlpha() < kMAX_U8BIT)
+      {
+        int delta = static_cast<int>(name_time / kFADE_FACTOR);
+        if((delta + name_text.getAlpha()) >= kMAX_U8BIT)
+          name_text.setAlpha(kMAX_U8BIT);
+        else
+          name_text.setAlpha(name_text.getAlpha() + delta);
+      }
+      /* Show Text */
+      else
+      {
+        if((name_view - name_time) <= kNAME_FADE)
+          name_view = kNAME_FADE;
+        else
+          name_view -= name_time;
+      }
+    }
+    /* Fade out and hiding handling */
+    else
+    {
+      /* Fade Out */
+      int delta = static_cast<int>(name_time / kFADE_FACTOR);
+      if((name_text.getAlpha() - delta) <= 0)
+      {
+        name_text.setAlpha(0);
+        name_view = 0;
+      }
+      else
+      {
+        name_text.setAlpha(name_text.getAlpha() - delta);
+      }
     }
   }
 

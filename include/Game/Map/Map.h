@@ -130,6 +130,8 @@ private:
 
   /* Map name */
   std::string name;
+  Text name_text;
+  uint16_t name_view;
 
   /* Thing data (and children) */
   std::vector<MapInteractiveObject*> ios;
@@ -178,18 +180,23 @@ private:
   bool zoom_out;
 
   /*------------------- Constants -----------------------*/
-  const static uint8_t kFADE_BLACK;  /* The fully faded out screen alpha */
   const static float kFADE_FACTOR; /* 1/x fade factor for ms cycle time */
   const static uint8_t kFADE_HOLD; /* The hold point in opacity to delay */
   const static uint16_t kFADE_HOLD_DELAY; /* The ms to delay at the hold */
-  const static uint8_t kFADE_MAX;    /* The max differential to fade delta */
+  const static uint8_t kFADE_MAX; /* The max differential to fade delta */
   const static uint8_t kFADE_VIS; /* The fully visible faded in screen alpha */
   const static uint8_t kFILE_CLASSIFIER; /* The file tile classification text */
   const static uint8_t kFILE_GAME_TYPE;  /* The game type classifier */
   const static uint8_t kFILE_SECTION_ID; /* The section identifier, for file */
   const static uint8_t kFILE_TILE_COLUMN; /* The tile depth in XML of column */
-  const static uint8_t kFILE_TILE_ROW;    /* The tile depth in XML of row */
-  const static uint32_t kMUSIC_REPEAT;    /* Milliseconds each song repeats */
+  const static uint8_t kFILE_TILE_ROW; /* The tile depth in XML of row */
+  const static uint8_t kMAX_U8BIT; /* Max unsigned 8 bit */
+  const static uint32_t kMUSIC_REPEAT; /* Milliseconds each song repeats */
+  const static uint16_t kNAME_DISPLAY; /* Time to display map name */
+  const static uint16_t kNAME_FADE; /* The time remaining to fade out */
+  const static uint8_t kNAME_SIZE; /* Size of name font to render */
+  const static uint16_t kNAME_X; /* The top left x location of text */
+  const static uint16_t kNAME_Y; /* The top left y location of text */
   const static uint8_t kPLAYER_ID; /* The player ID for computer control */
   const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 

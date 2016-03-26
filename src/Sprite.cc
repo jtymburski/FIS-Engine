@@ -934,6 +934,8 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
   if(current != NULL && renderer != NULL)
   {
+    //return current->render(renderer, x, y, w, h);
+
     /* Proceed to update the running texture if it's changed */
     if(texture_update || grey_scale_update)
     {
@@ -945,10 +947,9 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 
       /* Render current frame */
       if(grey_scale_update)
-        current->renderBoth(renderer, grey_scale_alpha);
+        current->renderBoth(renderer, grey_scale_alpha, 0, 0, 0, 0, true);
       else
-        // current->renderBoth(renderer, 128);
-        current->render(renderer);
+        current->render(renderer, 0, 0, 0, 0, true);
 
       /* Render white mask, if relevant */
       SDL_Texture* white_mask = Helpers::getMaskWhite();

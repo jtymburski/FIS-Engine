@@ -302,9 +302,12 @@ bool Frame::isTextureSet(bool grey_scale)
  *         int y - the y pixel location of the top left
  *         int w - the width to render (in pixels)
  *         int h - the height to render (in pixels)
+ *         bool for_sprite - true if called from sprite render. Used to change
+ *                           the SDL blend mode for rendering in texture
  * Output: bool - status if the render occurred
  */
-bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
+bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
+                   bool for_sprite)
 {
   if(isTextureSet(grey_scale) && renderer != NULL)
   {
@@ -321,7 +324,12 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
       rect.w = w;
 
     /* Render and return status */
-    return (SDL_RenderCopyEx(renderer, getTextureActive(), NULL, &rect, 0, NULL,
+    SDL_Texture* render_texture = getTextureActive();
+    if(for_sprite)
+      SDL_SetTextureBlendMode(render_texture, SDL_BLENDMODE_NONE);
+    else
+      SDL_SetTextureBlendMode(render_texture, SDL_BLENDMODE_BLEND);
+    return (SDL_RenderCopyEx(renderer, render_texture, NULL, &rect, 0, NULL,
                              flip) == 0);
   }
 
@@ -340,10 +348,12 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
  *         int y - the y pixel location of the top left
  *         int w - the width to render (in pixels)
  *         int h - the height to render (in pixels)
+ *         bool for_sprite - true if called from sprite render. Used to change
+ *                           the SDL blend mode for rendering in texture
  * Output: bool - status if the render occurred
  */
 bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
-                       int w, int h)
+                       int w, int h, bool for_sprite)
 {
   if(isTextureSet() && isTextureSet(true) && renderer != NULL)
   {
@@ -354,7 +364,7 @@ bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
     /* Render grey scale texture */
     useGreyScale(true);
     setAlpha(kDEFAULT_ALPHA - alpha);
-    success &= render(renderer, x, y, w, h);
+    success &= render(renderer, x, y, w, h, for_sprite);
 
     /* Render colored texture */
     useGreyScale(false);
