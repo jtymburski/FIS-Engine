@@ -86,6 +86,35 @@ void Menu::buildMainBackdrop()
 
     main_section.point.x = 0;
     main_section.point.y = main_section.location.point.y;
+
+    std::vector<Frame*> box_frames;
+
+    for(uint32_t i = 0; i < 40; i++)
+    {
+      SDL_Texture* texture =
+          SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                            SDL_TEXTUREACCESS_TARGET, 280, 30);
+      SDL_SetRenderTarget(renderer, texture);
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+      SDL_RenderClear(renderer);
+      SDL_SetRenderDrawColor(renderer, i * 3, 150, 150, 15 + (2 * i));
+
+      SDL_Rect element_rect;
+      element_rect.x = 1;
+      element_rect.y = 1;
+      element_rect.w = 280;
+      element_rect.h = 30;
+
+      SDL_RenderFillRect(renderer, &element_rect);
+      box_frames.push_back(new Frame());
+      box_frames.back()->setTexture(texture);
+      SDL_SetRenderTarget(renderer, nullptr);
+
+      test_box = Box({600, 250}, 300, 250, box_frames);
+      test_box2 = Box({280, 250}, 300, 250, box_frames);
+      test_box.setFlag(ScrollBoxState::SELECTABLE);
+      test_box.color_element_border_selected = {255, 255, 255, 255};
+    }
   }
 }
 
@@ -250,31 +279,8 @@ void Menu::renderMainSection()
 {
   renderMainBackdrop();
 
-  std::vector<Frame*> box_frames;
-
-  for(uint32_t i = 0; i < 5; i++)
-  {
-    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                             SDL_TEXTUREACCESS_TARGET, 280, 30);
-    SDL_SetRenderTarget(renderer, texture);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, i * 20, 150, 150, 30 + (10 * i));
-
-    SDL_Rect element_rect;
-    element_rect.x = 1;
-    element_rect.y = 1;
-    element_rect.w = 280;
-    element_rect.h = 30;
-
-    SDL_RenderFillRect(renderer, &element_rect);
-    box_frames.push_back(new Frame());
-    box_frames.back()->setTexture(texture);
-    SDL_SetRenderTarget(renderer, nullptr);
-  }
-
-  auto test_box = Box({200, 400}, 300, 200, box_frames);
   test_box.render(renderer);
+  test_box2.render(renderer);
 }
 
 void Menu::renderMainBackdrop()
@@ -326,6 +332,10 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
       else
         title_element_index = 0;
     }
+
+    //TODO: Testing
+    test_box.nextIndex();
+    test_box2.nextIndex();
   }
   else if(event.keysym.sym == SDLK_UP)
   {
@@ -336,6 +346,10 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
       else
         title_element_index = title_elements.size() - 1;
     }
+
+    //TODO: Testing
+    test_box.prevIndex();
+    test_box2.prevIndex();
   }
   else if(event.keysym.sym == SDLK_SPACE)
   {
@@ -406,7 +420,6 @@ void Menu::render()
 
 bool Menu::update(int32_t cycle_time)
 {
-  std::cout << "Updating the menu" << std::endl;
   if(title_section.status == WindowStatus::SHOWING)
   {
     /* Update the Coordinate of the TitleScreen */

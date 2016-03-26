@@ -51,6 +51,7 @@ public:
 private:
   /* Current working element index */
   int32_t element_index;
+  int32_t view_index;
 
   /* Vector of Frame elements */
   std::vector<Frame*> elements;
@@ -63,6 +64,7 @@ public:
   SDL_Color color_border_selected;
   SDL_Color color_element_border_selected;
   SDL_Color color_scroll;
+  SDL_Color color_scroll_bg;
 
   /* Cycle rates for the Box / Element */
   float cycle_box_rate;
@@ -98,6 +100,7 @@ public:
   static const SDL_Color kDEFAULT_COLOR_BG;
   static const SDL_Color kDEFAULT_COLOR_BORDER;
   static const SDL_Color kDEFAULT_COLOR_SCROLL;
+  static const SDL_Color kDEFAULT_COLOR_SCROLL_BG;
   static const SDL_Color kDEFAULT_COLOR_BLANK;
   static const float kDEFAULT_CYCLE_RATE;
   static const uint32_t kDEFAULT_ELEMENT_GAP;

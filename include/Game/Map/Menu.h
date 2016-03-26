@@ -123,6 +123,10 @@ private:
   /* Assigned Configuration */
   Options* config;
 
+  /* Test box */
+  Box test_box;
+  Box test_box2;
+
   /* Enumerated flags for the Menu */
   MenuState flags;
 

@@ -16,6 +16,7 @@
 const SDL_Color Box::kDEFAULT_COLOR_BG{0, 0, 0, 150};
 const SDL_Color Box::kDEFAULT_COLOR_BORDER{255, 255, 255, 255};
 const SDL_Color Box::kDEFAULT_COLOR_SCROLL{150, 150, 150, 255};
+const SDL_Color Box::kDEFAULT_COLOR_SCROLL_BG{25, 25, 25, 150};
 const SDL_Color Box::kDEFAULT_COLOR_BLANK{0, 0, 0, 0};
 const float Box::kDEFAULT_CYCLE_RATE{0.05};
 const uint32_t Box::kDEFAULT_ELEMENT_GAP{0};
@@ -23,7 +24,7 @@ const uint32_t Box::kDEFAULT_ELEMENT_INSET_X{4};
 const uint32_t Box::kDEFAULT_ELEMENT_INSET_Y{4};
 const uint32_t Box::kDEFAULT_SCROLL_INSET_X{4};
 const uint32_t Box::kDEFAULT_SCROLL_INSET_Y{4};
-const uint32_t Box::kDEFAULT_SCROLL_WIDTH{10};
+const uint32_t Box::kDEFAULT_SCROLL_WIDTH{8};
 
 /*=============================================================================
  * CONSTANTS
@@ -65,7 +66,7 @@ Box::Box(Coordinate point, int32_t width, int32_t height,
     : Box(point, width, height)
 {
   // TODO
-  this->elements = elements;
+  setElements(elements);
 }
 
 /*=============================================================================
@@ -86,9 +87,11 @@ void Box::loadDefaults()
   color_element_border = kDEFAULT_COLOR_BLANK;
   color_element_border_selected = kDEFAULT_COLOR_BLANK;
   color_scroll = kDEFAULT_COLOR_SCROLL;
+  color_scroll_bg = kDEFAULT_COLOR_SCROLL_BG;
   cycle_box_rate = kDEFAULT_CYCLE_RATE;
   cycle_element_rate = kDEFAULT_CYCLE_RATE;
   element_index = -1;
+  view_index = -1;
   element_gap = kDEFAULT_ELEMENT_GAP;
   element_inset_x = kDEFAULT_ELEMENT_INSET_X;
   element_inset_y = kDEFAULT_ELEMENT_INSET_Y;
@@ -130,7 +133,7 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
         uint32_t border_width = 0;
 
         /* If the element is currently selected, render its selected border */
-        if(element_index > 0 && (uint32_t)element_index == i)
+        if(element_index > -1 && (uint32_t)element_index == i)
         {
           color = color_element_border_selected;
           border_width = width_element_border;
@@ -158,11 +161,6 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
   return success;
 }
 
-/* []   Non-selectable
-   [] |    If ( e > 0) --> render arrow on top
-   [] |    If ( 1 + 2 < 4) -- > Render arrow on bot
-   []
-*/
 bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
 {
   bool success = false;
@@ -171,56 +169,94 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
   {
     success = true;
 
+    /* Calculated Values */
+    uint32_t tri_height = (uint32_t)std::round(scroll_inset_x * 1.5);
+    uint32_t tri_inset = (uint32_t)std::round(scroll_width * 0.1);
+
     /* Working coordinate */
-    uint32_t curr_x = point.x + width - scroll_inset_x - scroll_width;
-    uint32_t curr_y = point.y + scroll_inset_y;
+    uint32_t scroll_x = point.x + width - scroll_inset_x - scroll_width;
+    uint32_t scroll_y = point.y + 2 * scroll_inset_y + tri_height;
 
-    /* Scroll top center coordinate */
-    uint32_t c_x = curr_x + (scroll_width / 2);
-    uint32_t c_y = curr_y;
+    /* Centre Coordinates */
+    uint32_t center_x = scroll_x + scroll_width / 2;
 
-    /* Render the top arrow / circle */
-    if(element_index == 0)
+    SDL_SetRenderDrawColor(renderer, color_scroll.r, color_scroll.b,
+                           color_scroll.b, color_scroll.a);
+
+    /* Render the top scroll bar portion (arrow / triangle where appropriate) */
+    if(view_index == 0)
     {
-      success &= Frame::renderCircleFilled(c_x, c_y, scroll_width, renderer);
+      success &= Frame::renderCircleFilled(center_x, point.y + scroll_inset_y +
+                                                         tri_height / 2,
+                                           tri_height / 3, renderer);
     }
     else
     {
-      //cx + s
-      success &= Frame::renderTriangle(
-          c_x + scroll_width, c_y - scroll_width, c_x - scroll_width, c_y + scroll_width,
-          c_x + scroll_width, c_y + scroll_width, renderer);
+      /* Top Triangle Coordinates */
+      UCoordinate t1 = {scroll_x + tri_inset, scroll_y - scroll_inset_y};
+      UCoordinate t3 = {scroll_x + scroll_width - tri_inset, t1.y};
+      UCoordinate t2 = {t1.x + (t3.x - t1.x) / 2, point.y + scroll_inset_y};
+
+      /* Render the top triangle */
+      success &= Frame::renderTriangle(t1.x, t1.y, t2.x, t2.y, t3.x, t3.y,
+                                       renderer, false);
     }
 
-    /* Render the actual bar */
-    uint32_t bar_height = height - (2 * scroll_inset_y) - (2 * scroll_width);
+    /* Render the bar behind the scroll bar */
+    uint32_t bar_height = height - (4 * scroll_inset_y) - (2 * tri_height);
 
+    SDL_Rect scroll_bar_bg;
+    scroll_bar_bg.x = scroll_x;
+    scroll_bar_bg.y = scroll_y;
+    scroll_bar_bg.h = bar_height;
+    scroll_bar_bg.w = scroll_width;
+
+    SDL_SetRenderDrawColor(renderer, color_scroll_bg.r, color_scroll_bg.g,
+                           color_scroll_bg.b, color_scroll_bg.a);
+    SDL_RenderFillRect(renderer, &scroll_bar_bg);
+
+    /* Render the Scroll Bar */
+    SDL_SetRenderDrawColor(renderer, color_scroll.r, color_scroll.b,
+                           color_scroll.b, color_scroll.a);
+
+    /* Determine the appropriate height and position for the scroll bar */
     uint32_t scroll_height = (uint32_t)std::round(
         (float)bar_height * (float)num_viewable / (float)elements.size());
-    (void)scroll_height; // TODO
 
+    uint32_t scroll_bar_y =
+        scroll_y + (uint32_t)std::round((float)(view_index) / elements.size() *
+                                        bar_height);
     SDL_Rect scroll_bar;
-    scroll_bar.x = curr_x;
-    scroll_bar.y = curr_y + scroll_inset_y;
-    scroll_bar.h = bar_height;
+    scroll_bar.x = scroll_x;
+    scroll_bar.y = scroll_bar_y;
+    scroll_bar.h = scroll_height;
     scroll_bar.w = scroll_width;
 
-    SDL_SetRenderDrawColor(renderer, color_scroll.r, color_scroll.g,
-                           color_scroll.b, color_scroll.a);
     SDL_RenderFillRect(renderer, &scroll_bar);
 
-    /* Render the bottom arrow / circle */
-    c_y += bar_height;
+    /* Bottom Scroll Bar Coordinate */
+    uint32_t b_scroll_y = scroll_y + bar_height;
 
-    if(element_index + num_viewable < elements.size())
+    /* Bottom of Scroll Point (Circle / Triangle) */
+    SDL_SetRenderDrawColor(renderer, color_scroll.r, color_scroll.b,
+                           color_scroll.b, color_scroll.a);
+
+    if(view_index + num_viewable < elements.size())
     {
-      success &= Frame::renderCircleFilled(c_x, c_y, scroll_width, renderer);
+      /* Top Triangle Coordinates */
+      UCoordinate t4 = {scroll_x + tri_inset, b_scroll_y + scroll_inset_y};
+      UCoordinate t6 = {scroll_x + scroll_width - tri_inset, t4.y};
+      UCoordinate t5 = {t4.x + (t6.x - t4.x) / 2,
+                        b_scroll_y + scroll_inset_y + tri_height};
+
+      success &= Frame::renderTriangle(t4.x, t4.y, t5.x, t5.y, t6.x, t6.y,
+                                       renderer, false);
     }
     else
     {
-      success &= Frame::renderTriangle(
-          c_x, c_y + scroll_width - 1, c_x - scroll_width, c_y - scroll_width,
-          c_x + scroll_width, c_y - scroll_width, renderer);
+      success &= Frame::renderCircleFilled(
+          center_x, scroll_y + bar_height + scroll_inset_y + tri_height / 2,
+          tri_height / 3, renderer);
     }
   }
 
@@ -233,9 +269,32 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
 
 bool Box::nextIndex()
 {
-  if(element_index > -1 && element_index + 1 < (int32_t)elements.size())
+  // std::cout << "Num Viewable: " << getNumViewable() << std::endl;
+  // std::cout << "Element Index: " << element_index << std::endl;
+  // std::cout << "View Index: " << view_index << std::endl;
+
+  /* If it's a selectable box, update the view index (unless at the bottom) */
+  if(getFlag(ScrollBoxState::SELECTABLE) && elements.size() > 0 &&
+     view_index > -1 && element_index > -1)
   {
-    element_index++;
+    if((uint32_t)element_index == view_index + getNumViewable() - 1 &&
+       (uint32_t)element_index + 1 < elements.size())
+    {
+      view_index++;
+      element_index++;
+
+      return true;
+    }
+    else if(element_index > -1 && (uint32_t)element_index + 1 < elements.size())
+    {
+      element_index++;
+
+      return true;
+    }
+  }
+  else if(view_index > -1 && view_index + getNumViewable() < elements.size())
+  {
+    view_index++;
 
     return true;
   }
@@ -245,9 +304,25 @@ bool Box::nextIndex()
 
 bool Box::prevIndex()
 {
-  if(element_index > 0 && elements.size() > 0)
+  if(getFlag(ScrollBoxState::SELECTABLE) && elements.size() > 0)
   {
-    element_index--;
+    if(element_index > view_index)
+    {
+      element_index--;
+
+      return true;
+    }
+    else if(view_index > 0)
+    {
+      element_index--;
+      view_index--;
+
+      return true;
+    }
+  }
+  else if(view_index > 0 && elements.size() > 0)
+  {
+    view_index--;
 
     return true;
   }
@@ -294,11 +369,12 @@ bool Box::render(SDL_Renderer* renderer)
     auto num_viewable = getNumViewable();
 
     /* Render the scroll bar, if the No. viewable is less than No. of elmnts */
-    if(num_viewable < elements.size())
+    if(view_index != -1 && element_index != -1 &&
+       num_viewable < elements.size())
       success &= renderScrollBar(renderer, num_viewable);
 
     /* Render the required elements */
-    success &= renderElements(renderer, element_index, num_viewable);
+    success &= renderElements(renderer, view_index, num_viewable);
   }
 
   return success;
@@ -313,11 +389,11 @@ uint32_t Box::getNumViewable()
 {
   uint32_t num_viewable{0};
 
-  if(height > 0 && element_index > 0)
+  if(height > 0 && element_index > -1 && view_index > -1)
   {
     uint32_t curr_y{element_inset_y};
     uint32_t end_y{(uint32_t)height - element_inset_y};
-    uint32_t temp_index{(uint32_t)element_index};
+    uint32_t temp_index{(uint32_t)view_index};
     bool done{false};
 
     while(temp_index < elements.size() && !done)
@@ -330,7 +406,7 @@ uint32_t Box::getNumViewable()
           done = true;
     }
 
-    num_viewable = temp_index - element_index;
+    num_viewable = temp_index - view_index;
   }
 
   return num_viewable;
@@ -339,11 +415,13 @@ uint32_t Box::getNumViewable()
 void Box::setElements(std::vector<Frame*> elements)
 {
   element_index = -1;
+  view_index = -1;
 
   if(elements.size() > 0)
   {
     this->elements = elements;
     element_index = 0;
+    view_index = 0;
   }
 }
 
@@ -351,11 +429,3 @@ void Box::setFlag(ScrollBoxState set_flags, const bool& set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
 }
-
-/*=============================================================================
-* PUBLIC STATIC FUNCTIONS
-*============================================================================*/
-
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/

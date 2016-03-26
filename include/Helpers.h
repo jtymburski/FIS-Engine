@@ -55,6 +55,21 @@ private:
   std::chrono::time_point<clock_> beg_;
 };
 
+/* Coordinate with uints */
+struct UCoordinate
+{
+  UCoordinate() : x{0}, y{0} {};
+  UCoordinate(uint32_t x, uint32_t y) : x{x}, y{y} {};
+
+  uint32_t x;
+  uint32_t y;
+
+  bool operator==(const UCoordinate& b)
+  {
+    return ((x == b.x) && (y == b.y));
+  }
+};
+
 /* Coordinate with ints */
 struct Coordinate
 {
