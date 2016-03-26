@@ -55,6 +55,12 @@ bool Fonts::createFonts(Options* config)
   {
     success = true;
 
+    /* Font Index
+     *
+     * Colab Light - 0
+     * Crimes - 1
+     */
+
     /* Create the fonts */
     fonts.emplace(FontName::BATTLE_ACTION,
                   Text::createFont(config->getBasePath() + config->getFont(1),
@@ -83,15 +89,25 @@ bool Fonts::createFonts(Options* config)
     fonts.emplace(FontName::BATTLE_VICTORY_NAME,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    24, TTF_STYLE_BOLD));
-    fonts.emplace(FontName::MENU_MAINTITLE,
+    /* Menu Fonts */
+    fonts.emplace(FontName::MENU_MAIN_TITLE,
                   Text::createFont(config->getBasePath() + config->getFont(),
-                                   40, TTF_STYLE_BOLD));
-    fonts.emplace(FontName::MENU_TITLE,
+                                   30, TTF_STYLE_BOLD));
+    fonts.emplace(FontName::MENU_TITLE_ELEMENT,
                   Text::createFont(config->getBasePath() + config->getFont(),
-                                   26, TTF_STYLE_NORMAL));
+                                   24, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(),
-                                   30, TTF_STYLE_NORMAL));
+                                   16, TTF_STYLE_NORMAL));
+        fonts.emplace(FontName::MENU_OPTIONS,
+                  Text::createFont(config->getBasePath() + config->getFont(),
+                                   16, TTF_STYLE_BOLD));
+    fonts.emplace(FontName::MENU_HEADER,
+                  Text::createFont(config->getBasePath() + config->getFont(),
+                                   11, TTF_STYLE_NORMAL));
+    fonts.emplace(FontName::MENU_HEADER,
+                  Text::createFont(config->getBasePath() + config->getFont(),
+                                   10, TTF_STYLE_NORMAL));
 
     /* Assert all fonts are not nullptr */
     for(auto& map_font : fonts)

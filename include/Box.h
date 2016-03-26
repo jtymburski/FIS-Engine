@@ -28,11 +28,12 @@ ENUM_FLAGS(ScrollBoxState)
 enum class ScrollBoxState
 {
   SCROLL_BOX = 1 << 0,
-  SELECTABLE = 1 << 1,
-  BORDER_HOVER_CYCLE = 1 << 2,
-  ELEMENT_HOVER_CYCLE = 1 << 3,
-  HOVER_CYCLE = 1 << 4,
-  SELECTED = 1 << 5
+  SCROLL_BAR = 1 << 1,
+  SELECTABLE = 1 << 2,
+  BORDER_HOVER_CYCLE = 1 << 3,
+  ELEMENT_HOVER_CYCLE = 1 << 4,
+  HOVER_CYCLE = 1 << 5,
+  SELECTED = 1 << 6
 };
 
 class Box
@@ -59,12 +60,15 @@ private:
 public:
   /* Colors */
   SDL_Color color_bg;
+  SDL_Color color_bg_selected;
   SDL_Color color_border;
   SDL_Color color_element_border;
   SDL_Color color_border_selected;
   SDL_Color color_element_border_selected;
   SDL_Color color_scroll;
   SDL_Color color_scroll_bg;
+  SDL_Color color_scroll_selected;
+  SDL_Color color_scroll_bg_selected;
 
   /* Cycle rates for the Box / Element */
   float cycle_box_rate;
@@ -101,6 +105,7 @@ public:
   static const SDL_Color kDEFAULT_COLOR_BORDER;
   static const SDL_Color kDEFAULT_COLOR_SCROLL;
   static const SDL_Color kDEFAULT_COLOR_SCROLL_BG;
+  static const SDL_Color kDEFAULT_COLOR_SCROLL_SELECTED;
   static const SDL_Color kDEFAULT_COLOR_BLANK;
   static const float kDEFAULT_CYCLE_RATE;
   static const uint32_t kDEFAULT_ELEMENT_GAP;

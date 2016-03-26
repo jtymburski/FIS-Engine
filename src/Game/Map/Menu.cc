@@ -89,20 +89,20 @@ void Menu::buildMainBackdrop()
 
     std::vector<Frame*> box_frames;
 
-    for(uint32_t i = 0; i < 40; i++)
+    for(uint32_t i = 0; i < 255; i++)
     {
       SDL_Texture* texture =
           SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                            SDL_TEXTUREACCESS_TARGET, 280, 30);
+                            SDL_TEXTUREACCESS_TARGET, 220, 30);
       SDL_SetRenderTarget(renderer, texture);
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
-      SDL_SetRenderDrawColor(renderer, i * 3, 150, 150, 15 + (2 * i));
+      SDL_SetRenderDrawColor(renderer, i, i, i, i);
 
       SDL_Rect element_rect;
       element_rect.x = 1;
       element_rect.y = 1;
-      element_rect.w = 280;
+      element_rect.w = 220;
       element_rect.h = 30;
 
       SDL_RenderFillRect(renderer, &element_rect);
@@ -113,6 +113,11 @@ void Menu::buildMainBackdrop()
       test_box = Box({600, 250}, 300, 250, box_frames);
       test_box2 = Box({280, 250}, 300, 250, box_frames);
       test_box.setFlag(ScrollBoxState::SELECTABLE);
+      test_box2.scroll_width *= 2;
+      test_box2.scroll_inset_x *= 2;
+      test_box2.scroll_inset_y *= 2;
+
+      test_box2.setFlag(ScrollBoxState::SELECTED);
       test_box.color_element_border_selected = {255, 255, 255, 255};
     }
   }
@@ -199,80 +204,80 @@ void Menu::clearTitleSection()
 
 void Menu::renderTitleSection()
 {
-  if(title_section.backdrop)
-  {
-    title_section.backdrop->render(renderer, title_section.location.point.x,
-                                   title_section.location.point.y,
-                                   title_section.location.width,
-                                   title_section.location.height);
-  }
+  // if(title_section.backdrop)
+  // {
+  //   title_section.backdrop->render(renderer, title_section.location.point.x,
+  //                                  title_section.location.point.y,
+  //                                  title_section.location.width,
+  //                                  title_section.location.height);
+  // }
 
-  /* Text Color */
-  SDL_Color color{235, 235, 235, kTITLE_ALPHA};
+  // /* Text Color */
+  // SDL_Color color{235, 235, 235, kTITLE_ALPHA};
 
-  // auto width = config->getScreenWidth();
-  auto font_maintitle = config->getFontTTF(FontName::MENU_MAINTITLE);
-  auto font_title = config->getFontTTF(FontName::MENU_TITLE);
-  auto title_width = title_section.location.width;
-  auto x = title_section.location.point.x;
-  auto y = title_section.location.point.y;
+  // // auto width = config->getScreenWidth();
+  // auto font_maintitle = config->getFontTTF(FontName::MENU_MAINTITLE);
+  // auto font_title = config->getFontTTF(FontName::MENU_TITLE);
+  // auto title_width = title_section.location.width;
+  // auto x = title_section.location.point.x;
+  // auto y = title_section.location.point.y;
 
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, kTITLE_ALPHA);
+  // SDL_SetRenderDrawColor(renderer, 255, 255, 255, kTITLE_ALPHA);
 
-  auto x_offset = (int32_t)std::round((float)config->getScreenWidth() * 0.01);
-  auto y_offset = (int32_t)std::round((float)config->getScreenHeight() * 0.02);
+  // auto x_offset = (int32_t)std::round((float)config->getScreenWidth() * 0.01);
+  // auto y_offset = (int32_t)std::round((float)config->getScreenHeight() * 0.02);
 
-  Text t_main_title(font_maintitle);
-  t_main_title.setText(renderer, "MENU", color);
+  // Text t_main_title(font_maintitle);
+  // t_main_title.setText(renderer, "MENU", color);
 
-  auto y_gap = (int32_t)std::round((float)config->getScreenHeight() * 0.07);
-  auto element_offset = y + y_offset + t_main_title.getHeight() + y_gap;
-  auto running_offset = element_offset;
-  auto title_element_height = 0;
+  // auto y_gap = (int32_t)std::round((float)config->getScreenHeight() * 0.07);
+  // auto element_offset = y + y_offset + t_main_title.getHeight() + y_gap;
+  // auto running_offset = element_offset;
+  // auto title_element_height = 0;
 
-  Text t_title_element(font_title);
-  t_title_element.setText(renderer, "INVALID", color);
-  title_element_height = t_title_element.getHeight();
+  // Text t_title_element(font_title);
+  // t_title_element.setText(renderer, "INVALID", color);
+  // title_element_height = t_title_element.getHeight();
 
-  /* Render the selected title element hover */
-  if(title_element_index != -1 &&
-     title_element_index < (int)title_elements.size())
-  {
-    auto rect_y = element_offset + (title_element_index)*y_gap - (y_gap / 4);
-    auto rect_h = title_element_height + (y_gap / 2);
+  //  Render the selected title element hover
+  // if(title_element_index != -1 &&
+  //    title_element_index < (int)title_elements.size())
+  // {
+  //   auto rect_y = element_offset + (title_element_index)*y_gap - (y_gap / 4);
+  //   auto rect_h = title_element_height + (y_gap / 2);
 
-    Coordinate top_left{x, rect_y};
-    Coordinate top_right{x + title_width, rect_y};
-    Coordinate bot_left{x, rect_y + rect_h};
-    Coordinate bot_right{x + title_width, rect_y + rect_h};
+  //   Coordinate top_left{x, rect_y};
+  //   Coordinate top_right{x + title_width, rect_y};
+  //   Coordinate bot_left{x, rect_y + rect_h};
+  //   Coordinate bot_right{x + title_width, rect_y + rect_h};
 
-    auto top_line = Helpers::bresenhamPoints(top_left, top_right);
-    auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
+  //   auto top_line = Helpers::bresenhamPoints(top_left, top_right);
+  //   auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
 
-    SDL_Rect rect;
-    rect.x = x - 3;
-    rect.y = rect_y;
-    rect.h = rect_h;
-    rect.w = title_width;
+  //   SDL_Rect rect;
+  //   rect.x = x - 3;
+  //   rect.y = rect_y;
+  //   rect.h = rect_h;
+  //   rect.w = title_width;
 
-    auto brightness = Helpers::updateHoverBrightness(
-        title_elements.at(title_element_index).hover_time, 0.0010, 0.05, 0.8);
+  //   auto brightness = Helpers::updateHoverBrightness(
+  //       title_elements.at(title_element_index).hover_time, 0.0010, 0.05, 0.8);
 
-    SDL_SetRenderDrawColor(renderer, 5, 25, 45, kTITLE_ALPHA * brightness);
-    SDL_RenderFillRect(renderer, &rect);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, kTITLE_ALPHA * brightness);
-    Frame::drawLine(top_line, renderer);
-    Frame::drawLine(bot_line, renderer);
-  }
+  //   SDL_SetRenderDrawColor(renderer, 5, 25, 45, kTITLE_ALPHA * brightness);
+  //   SDL_RenderFillRect(renderer, &rect);
+  //   SDL_SetRenderDrawColor(renderer, 255, 255, 255, kTITLE_ALPHA * brightness);
+  //   Frame::drawLine(top_line, renderer);
+  //   Frame::drawLine(bot_line, renderer);
+  // }
 
-  for(auto& title_element : title_elements)
-  {
-    t_title_element.setText(renderer, title_element.name, color);
-    t_title_element.render(renderer, x + x_offset, running_offset);
-    running_offset += y_gap;
-  }
+  // for(auto& title_element : title_elements)
+  // {
+  //   t_title_element.setText(renderer, title_element.name, color);
+  //   t_title_element.render(renderer, x + x_offset, running_offset);
+  //   running_offset += y_gap;
+  // }
 
-  t_main_title.render(renderer, x + x_offset, y + y_offset);
+  // t_main_title.render(renderer, x + x_offset, y + y_offset);
 }
 
 void Menu::renderMainSection()
@@ -285,12 +290,12 @@ void Menu::renderMainSection()
 
 void Menu::renderMainBackdrop()
 {
-  if(main_section.backdrop)
-  {
-    main_section.backdrop->render(
-        renderer, main_section.location.point.x, main_section.location.point.y,
-        main_section.location.width, main_section.location.height);
-  }
+  // if(main_section.backdrop)
+  // {
+  //   main_section.backdrop->render(
+  //       renderer, main_section.location.point.x, main_section.location.point.y,
+  //       main_section.location.width, main_section.location.height);
+  // }
 }
 
 /*=============================================================================

@@ -1749,7 +1749,7 @@ bool Frame::renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
 bool Frame::renderExpHexBlank(Coordinate start, uint32_t w,
                               SDL_Renderer* renderer)
 {
-  //double cos60 = std::cos(60 * 3.14159265358 / 180.0);
+  // double cos60 = std::cos(60 * 3.14159265358 / 180.0);
   auto inset = (int32_t)std::round(w * 0.15);
 
   /*  OUTER HEXAGON
@@ -1779,4 +1779,22 @@ bool Frame::renderExpHexBlank(Coordinate start, uint32_t w,
   Frame::renderHexagonBorder(top_left, inner_hex_w, renderer);
 
   return true;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+
+ */
+bool Frame::setRenderDrawColor(SDL_Renderer* renderer, SDL_Color color)
+{
+  if(renderer)
+  {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+
+    return true;
+  }
+
+  return false;
 }

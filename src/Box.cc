@@ -15,8 +15,9 @@
 
 const SDL_Color Box::kDEFAULT_COLOR_BG{0, 0, 0, 150};
 const SDL_Color Box::kDEFAULT_COLOR_BORDER{255, 255, 255, 255};
-const SDL_Color Box::kDEFAULT_COLOR_SCROLL{150, 150, 150, 255};
-const SDL_Color Box::kDEFAULT_COLOR_SCROLL_BG{25, 25, 25, 150};
+const SDL_Color Box::kDEFAULT_COLOR_SCROLL{255, 255, 255, 122};
+const SDL_Color Box::kDEFAULT_COLOR_SCROLL_BG{45, 45, 45, 150};
+const SDL_Color Box::kDEFAULT_COLOR_SCROLL_SELECTED{255, 255, 255, 255};
 const SDL_Color Box::kDEFAULT_COLOR_BLANK{0, 0, 0, 0};
 const float Box::kDEFAULT_CYCLE_RATE{0.05};
 const uint32_t Box::kDEFAULT_ELEMENT_GAP{0};
@@ -82,12 +83,16 @@ Box::Box(Coordinate point, int32_t width, int32_t height,
 void Box::loadDefaults()
 {
   color_bg = kDEFAULT_COLOR_BG;
+  color_bg_selected = kDEFAULT_COLOR_BG;
   color_border = kDEFAULT_COLOR_BORDER;
   color_border_selected = kDEFAULT_COLOR_BORDER;
   color_element_border = kDEFAULT_COLOR_BLANK;
   color_element_border_selected = kDEFAULT_COLOR_BLANK;
   color_scroll = kDEFAULT_COLOR_SCROLL;
   color_scroll_bg = kDEFAULT_COLOR_SCROLL_BG;
+  color_scroll_selected = kDEFAULT_COLOR_SCROLL_SELECTED;
+  color_scroll_bg_selected = kDEFAULT_COLOR_SCROLL_BG;
+
   cycle_box_rate = kDEFAULT_CYCLE_RATE;
   cycle_element_rate = kDEFAULT_CYCLE_RATE;
   element_index = -1;
@@ -145,7 +150,8 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
         }
 
         /* Set the render draw color, render the border box */
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+        Frame::setRenderDrawColor(renderer, color);
+
         SDL_Rect rect;
         rect.x = curr_x;
         rect.y = curr_y;
@@ -169,6 +175,10 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
   {
     success = true;
 
+    /* Allow proper alignment of triangle / circle points */
+    if(scroll_width % 2 == 0)
+      scroll_width++;
+
     /* Calculated Values */
     uint32_t tri_height = (uint32_t)std::round(scroll_inset_x * 1.5);
     uint32_t tri_inset = (uint32_t)std::round(scroll_width * 0.1);
@@ -180,15 +190,16 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
     /* Centre Coordinates */
     uint32_t center_x = scroll_x + scroll_width / 2;
 
-    SDL_SetRenderDrawColor(renderer, color_scroll.r, color_scroll.b,
-                           color_scroll.b, color_scroll.a);
+    if(getFlag(ScrollBoxState::SELECTED))
+      Frame::setRenderDrawColor(renderer, color_scroll);
+    else
+      Frame::setRenderDrawColor(renderer, color_scroll_selected);
 
     /* Render the top scroll bar portion (arrow / triangle where appropriate) */
     if(view_index == 0)
     {
-      success &= Frame::renderCircleFilled(center_x, point.y + scroll_inset_y +
-                                                         tri_height / 2,
-                                           tri_height / 3, renderer);
+      success &= Frame::renderCircleFilled(
+          center_x, point.y + scroll_inset_y + 1, tri_height / 3, renderer);
     }
     else
     {
@@ -202,44 +213,47 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
                                        renderer, false);
     }
 
-    /* Render the bar behind the scroll bar */
-    uint32_t bar_height = height - (4 * scroll_inset_y) - (2 * tri_height);
+      /* Render the bar behind the scroll bar */
+      uint32_t bar_height = height - (4 * scroll_inset_y) - (2 * tri_height);
 
-    SDL_Rect scroll_bar_bg;
-    scroll_bar_bg.x = scroll_x;
-    scroll_bar_bg.y = scroll_y;
-    scroll_bar_bg.h = bar_height;
-    scroll_bar_bg.w = scroll_width;
+    if(getFlag(ScrollBoxState::SCROLL_BAR))
+    {
+      SDL_Rect scroll_bar_bg;
+      scroll_bar_bg.x = scroll_x;
+      scroll_bar_bg.y = scroll_y;
+      scroll_bar_bg.h = bar_height;
+      scroll_bar_bg.w = scroll_width;
 
-    SDL_SetRenderDrawColor(renderer, color_scroll_bg.r, color_scroll_bg.g,
-                           color_scroll_bg.b, color_scroll_bg.a);
-    SDL_RenderFillRect(renderer, &scroll_bar_bg);
+      if(getFlag(ScrollBoxState::SELECTED))
+        Frame::setRenderDrawColor(renderer, color_scroll_bg);
+      else
+        Frame::setRenderDrawColor(renderer, color_scroll_bg_selected);
 
-    /* Render the Scroll Bar */
-    SDL_SetRenderDrawColor(renderer, color_scroll.r, color_scroll.b,
-                           color_scroll.b, color_scroll.a);
+      SDL_RenderFillRect(renderer, &scroll_bar_bg);
 
-    /* Determine the appropriate height and position for the scroll bar */
-    uint32_t scroll_height = (uint32_t)std::round(
-        (float)bar_height * (float)num_viewable / (float)elements.size());
+      /* Determine the appropriate height and position for the scroll bar */
+      uint32_t scroll_height = (uint32_t)std::round(
+          (float)bar_height * (float)num_viewable / (float)elements.size());
 
-    uint32_t scroll_bar_y =
-        scroll_y + (uint32_t)std::round((float)(view_index) / elements.size() *
-                                        bar_height);
-    SDL_Rect scroll_bar;
-    scroll_bar.x = scroll_x;
-    scroll_bar.y = scroll_bar_y;
-    scroll_bar.h = scroll_height;
-    scroll_bar.w = scroll_width;
+      uint32_t scroll_bar_y =
+          scroll_y + (uint32_t)std::round((float)(view_index) /
+                                          elements.size() * bar_height);
+      SDL_Rect scroll_bar;
+      scroll_bar.x = scroll_x;
+      scroll_bar.y = scroll_bar_y;
+      scroll_bar.h = scroll_height;
+      scroll_bar.w = scroll_width;
 
-    SDL_RenderFillRect(renderer, &scroll_bar);
+      if(getFlag(ScrollBoxState::SELECTED))
+        Frame::setRenderDrawColor(renderer, color_scroll);
+      else
+        Frame::setRenderDrawColor(renderer, color_scroll_selected);
+
+      SDL_RenderFillRect(renderer, &scroll_bar);
+    }
 
     /* Bottom Scroll Bar Coordinate */
     uint32_t b_scroll_y = scroll_y + bar_height;
-
-    /* Bottom of Scroll Point (Circle / Triangle) */
-    SDL_SetRenderDrawColor(renderer, color_scroll.r, color_scroll.b,
-                           color_scroll.b, color_scroll.a);
 
     if(view_index + num_viewable < elements.size())
     {
@@ -255,7 +269,7 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
     else
     {
       success &= Frame::renderCircleFilled(
-          center_x, scroll_y + bar_height + scroll_inset_y + tri_height / 2,
+          center_x, scroll_y + bar_height + scroll_inset_y + tri_height / 2 - 1,
           tri_height / 3, renderer);
     }
   }
@@ -269,10 +283,6 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
 
 bool Box::nextIndex()
 {
-  // std::cout << "Num Viewable: " << getNumViewable() << std::endl;
-  // std::cout << "Element Index: " << element_index << std::endl;
-  // std::cout << "View Index: " << view_index << std::endl;
-
   /* If it's a selectable box, update the view index (unless at the bottom) */
   if(getFlag(ScrollBoxState::SELECTABLE) && elements.size() > 0 &&
      view_index > -1 && element_index > -1)
@@ -344,8 +354,11 @@ bool Box::render(SDL_Renderer* renderer)
     rect.h = height;
     rect.w = width;
 
-    SDL_SetRenderDrawColor(renderer, color_bg.r, color_bg.g, color_bg.b,
-                           color_bg.a);
+    if(getFlag(ScrollBoxState::SELECTED))
+      Frame::setRenderDrawColor(renderer, color_bg);
+    else
+      Frame::setRenderDrawColor(renderer, color_bg_selected);
+
     SDL_RenderFillRect(renderer, &rect);
 
     /* Render the border based on whether this scroll box is currently being
@@ -353,15 +366,12 @@ bool Box::render(SDL_Renderer* renderer)
      */
     if(getFlag(ScrollBoxState::SELECTED))
     {
-      SDL_SetRenderDrawColor(renderer, color_border_selected.r,
-                             color_border_selected.g, color_border_selected.b,
-                             color_border_selected.a);
+      Frame::setRenderDrawColor(renderer, color_border_selected);
       success &= Frame::renderRect(rect, width_border_selected, renderer);
     }
     else
     {
-      SDL_SetRenderDrawColor(renderer, color_border.r, color_border.g,
-                             color_border.b, color_border.a);
+      Frame::setRenderDrawColor(renderer, color_border);
       success &= Frame::renderRect(rect, width_border, renderer);
     }
 
@@ -371,7 +381,9 @@ bool Box::render(SDL_Renderer* renderer)
     /* Render the scroll bar, if the No. viewable is less than No. of elmnts */
     if(view_index != -1 && element_index != -1 &&
        num_viewable < elements.size())
+    {
       success &= renderScrollBar(renderer, num_viewable);
+    }
 
     /* Render the required elements */
     success &= renderElements(renderer, view_index, num_viewable);

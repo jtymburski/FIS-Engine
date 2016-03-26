@@ -239,6 +239,9 @@ public:
   /* Renders a blank experience hex */
   static bool renderExpHexBlank(Coordinate start, uint32_t w,
                                 SDL_Renderer* renderer);
+
+  /* Method to set the rendering draw color */
+  static bool setRenderDrawColor(SDL_Renderer* renderer, SDL_Color color);
 };
 
 #endif // FRAME_H

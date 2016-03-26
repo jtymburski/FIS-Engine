@@ -22,10 +22,12 @@
 /* Constant Implementation - see header file for descriptions */
 const std::string Options::kFONTS[] = {"fonts/colab_light.otf",
                                        "fonts/crimes.ttf"};
-const uint8_t  Options::kNUM_FONTS = 2;
-const uint8_t  Options::kNUM_RESOLUTIONS = 6;
-const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920, 2560, 4480};
-const uint16_t Options::kRESOLUTIONS_Y[] = {704, 705, 768, 1080, 1080, 4480};
+const uint8_t Options::kNUM_FONTS = 2;
+const uint8_t Options::kNUM_RESOLUTIONS = 8;
+const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920,
+                                            1920, 2560, 2460, 3860};
+const uint16_t Options::kRESOLUTIONS_Y[] = {704,  705,  768,  1080,
+                                            1440, 1080, 1440, 2160};
 
 /* Default Screen Width and Height */
 const std::uint32_t Options::kDEF_SCREEN_WIDTH{1216};
@@ -50,7 +52,7 @@ Options::Options(std::string base_path)
   font_data = new Fonts(this);
 }
 
-Options::Options(const Options &source)
+Options::Options(const Options& source)
 {
   copySelf(source);
 }
@@ -67,12 +69,12 @@ Options::~Options()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-void Options::copySelf(const Options &source)
+void Options::copySelf(const Options& source)
 {
   /* Battle Options */
   base_path = source.base_path;
-  resolution_x  = source.resolution_x;
-  resolution_y  = source.resolution_y;
+  resolution_x = source.resolution_x;
+  resolution_y = source.resolution_y;
   flags = source.flags;
 }
 
@@ -176,7 +178,7 @@ std::string Options::getBasePath()
 }
 
 // Get fn for OptionState flags
-bool Options::getFlag(const OptionState &test_flag)
+bool Options::getFlag(const OptionState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
@@ -202,7 +204,6 @@ TTF_Font* Options::getFontTTF(FontName font)
 
   return nullptr;
 }
-
 
 int32_t Options::getMusicLevel()
 {
@@ -254,7 +255,7 @@ void Options::setAudioLevel(int32_t new_level)
 
 void Options::setFlag(OptionState flag, bool set_value)
 {
-  (set_value) ? (flags |= flag): (flags &= ~flag);
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
 
   // TODO: repair. Especially regarding VSync, Full Screen, etc SDL
 }
@@ -274,7 +275,7 @@ void Options::setSoundHandler(SoundHandler* new_handler)
  * OPERATOR FUNCTIONS
  *============================================================================*/
 
-Options& Options::operator= (const Options &source)
+Options& Options::operator=(const Options& source)
 {
   /* Check for self assignment */
   if(this == &source)
