@@ -220,9 +220,6 @@ public:
   static uint16_t elementToInt(Element element);
   static std::string elementToString(const Element& element);
 
-  //  Converts a given EventType to a string equivalent
-  // static std::string eventToStr(EventType event_type);
-
   /* Flush the console with [blank] input */
   static void flushConsole(const char& c = ' ');
 
@@ -280,12 +277,11 @@ public:
   /* Returns the elemental weakness to a given element */
   static Element getWeakness(const Element& element);
 
-  /*=============================================================================
-   * GENERAL HELPER FUNCTIONS
-   *============================================================================*/
+  /*===========================================================================
+  * GENERAL HELPER FUNCTIONS
+  *============================================================================*/
 public:
-  /* Builds an exponentially growing table from min to max with iter
-   * iterations */
+  /* Builds an exponentially growing table from min to max with # iterations */
   static std::vector<uint32_t>
   buildExpTable(const uint32_t& min, const uint32_t& max, const uint32_t& iter);
 
@@ -299,6 +295,9 @@ public:
   /* Creates a blank lay over and scene structures */
   static LayOver createBlankLayOver();
   static BattleScene createBlankScene();
+
+  /* Formats a number ex. 35987 into 32 899 etc. */
+  static std::string formatUInt(uint32_t number, std::string delim = " ");
 
   /* Splites the string into a grid based on the frame naming convention */
   static std::vector<std::vector<std::string>> frameSeparator(std::string path);
@@ -340,9 +339,11 @@ public:
   static BattleScene updateScene(BattleScene scene, XmlData data,
                                  int file_index);
 
-  /*=============================================================================
-   * GRAPHICAL HELPER FUNCTIONS
-   *============================================================================*/
+  /*
+*=============================================================================
+* GRAPHICAL HELPER FUNCTIONS
+*============================================================================
+*/
 public:
   /* Calculate points needing to be rendered between two coordinates */
   static std::vector<Coordinate> bresenhamPoints(Coordinate begin,

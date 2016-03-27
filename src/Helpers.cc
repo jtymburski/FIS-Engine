@@ -1660,6 +1660,22 @@ BattleScene Helpers::createBlankScene()
   return scene;
 }
 
+std::string Helpers::formatUInt(uint32_t i, std::string d)
+{
+  std::stringstream s;
+
+  if(i < 10000)
+    s << i;
+  else if(i < 1000000)
+    s << i / 1000 << d << i % 1000;
+  else if(i < 1000000000)
+    s << i / 1000000 << d << i / 1000 << d << i % 1000;
+  else
+    s << i / 1000000000 << d << i / 1000000 << d << i / 1000 << d << i % 1000;
+
+  return s.str();
+}
+
 /*
  * Description: Takes a string in the designed format for sprite handling and
  *              separates it via the letter range.

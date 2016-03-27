@@ -33,7 +33,7 @@ enum class ScrollBoxState
   BORDER_HOVER_CYCLE = 1 << 3,
   ELEMENT_HOVER_CYCLE = 1 << 4,
   HOVER_CYCLE = 1 << 5,
-  SELECTED = 1 << 6
+  SELECTED = 1 << 7
 };
 
 class Box

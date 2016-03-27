@@ -47,6 +47,13 @@ Menu::Menu()
       event_handler{nullptr},
       config{nullptr},
       flags{static_cast<MenuState>(0)},
+      frame_bubbies{nullptr},
+      frame_equipment{nullptr},
+      frame_footsteps{nullptr},
+      frame_items{nullptr},
+      frame_key_items{nullptr},
+      frame_location{nullptr},
+      frame_money{nullptr},
       layer{MenuLayer::INVALID},
       renderer{nullptr},
       title_elements{},
@@ -65,29 +72,57 @@ Menu::~Menu()
 
 void Menu::buildIconFrames()
 {
+  clearIconFrames();
+
   if(config && renderer)
   {
-    frame_bubbies = Frame(
+    frame_bubbies = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/bubbies.png", renderer);
-    frame_equipment = Frame(
+    frame_equipment = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/equipment.png", renderer);
-    frame_footsteps = Frame(
+    frame_footsteps = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/footsteps.png", renderer);
-    frame_items = Frame(
+    frame_items = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/items.png", renderer);
-    frame_key_items = Frame(
+    frame_key_items = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/key_items.png", renderer);
-    frame_location = Frame(
+    frame_location = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/location.png", renderer);
-    frame_money = Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/money.png", renderer);
-    frame_equipment = Frame(
+    frame_money = new Frame(
+        config->getBasePath() + "sprites/Overlay/Menu/credits.png", renderer);
+    frame_equipment = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/equipment.png", renderer);
   }
 }
 
 void Menu::buildInventoryScreen()
 {
+}
+
+void Menu::clearIconFrames()
+{
+  if(frame_money)
+    delete frame_money;
+  if(frame_location)
+    delete frame_location;
+  if(frame_footsteps)
+    delete frame_footsteps;
+  if(frame_bubbies)
+    delete frame_bubbies;
+  if(frame_equipment)
+    delete frame_equipment;
+  if(frame_items)
+    delete frame_items;
+  if(frame_key_items)
+    delete frame_key_items;
+
+  frame_money = nullptr;
+  frame_location = nullptr;
+  frame_footsteps = nullptr;
+  frame_bubbies = nullptr;
+  frame_equipment = nullptr;
+  frame_items = nullptr;
+  frame_key_items = nullptr;
 }
 
 void Menu::buildMainBackdrop()
@@ -115,37 +150,6 @@ void Menu::buildMainBackdrop()
     main_section.point.y = main_section.location.point.y;
 
     std::vector<Frame*> box_frames;
-
-    for(uint32_t i = 0; i < 255; i++)
-    {
-      SDL_Texture* texture =
-          SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                            SDL_TEXTUREACCESS_TARGET, 220, 30);
-      SDL_SetRenderTarget(renderer, texture);
-      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-      SDL_RenderClear(renderer);
-      SDL_SetRenderDrawColor(renderer, i, i, i, i);
-
-      SDL_Rect element_rect;
-      element_rect.x = 1;
-      element_rect.y = 1;
-      element_rect.w = 220;
-      element_rect.h = 30;
-
-      SDL_RenderFillRect(renderer, &element_rect);
-      box_frames.push_back(new Frame());
-      box_frames.back()->setTexture(texture);
-      SDL_SetRenderTarget(renderer, nullptr);
-
-      // test_box = Box({600, 250}, 300, 250, box_frames);
-      // test_box2 = Box({280, 250}, 300, 250, box_frames);
-      // test_box.setFlag(ScrollBoxState::SELECTABLE);
-      // test_box2.scroll_width *= 2;
-      // test_box2.scroll_inset_x *= 2;
-      // test_box2.scroll_inset_y *= 2;
-      // test_box2.setFlag(ScrollBoxState::SELECTED);
-      // test_box.color_element_border_selected = {255, 255, 255, 255};
-    }
   }
 }
 
@@ -211,40 +215,14 @@ void Menu::buildTitleSection()
     title_section.alpha = kTITLE_ALPHA;
     title_section.status = WindowStatus::OFF;
   }
-
-  // Create frames/textures for the title sections
-  // if(curr_map && curr_player)
-  // {
-  //   std::cout << "Location frame size: " << frame_location.getHeight()
-  //             << std::endl;
-  //   auto step_count = curr_player->getSteps();
-  //   auto credits = curr_player->getCredits();
-  //   auto location = curr_map->getName();
-
-  //   uint32_t location_x = (uint32_t)std::round(0.03 * width);
-  //   uint32_t location_y = (uint32_t)std::round(point.y + (0.70 * height));
-
-  //   std::cout << "Location of location frame: " << location_x << " , "
-  //             << location_y << std::endl;
-
-  //   SDL_Texture* texture = SDL_CreateTexture(
-  //       renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
-  //       frame_location.getWidth(), frame_location.getHeight());
-  //   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-  //   SDL_SetRenderTarget(renderer, texture);
-  //   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  //   SDL_RenderClear(renderer);
-
-  //   frame_location.render(renderer, location_x, location_y);
-  // }
 }
 
 void Menu::clearTitleSection()
 {
+
   // if(title_section.backdrop)
   //  delete title_section.backdrop;
-
-  // title_section.backdrop = nullptr;
+  //  title_section.backdrop = nullptr;
 
   title_section.status = WindowStatus::OFF;
 }
@@ -253,6 +231,8 @@ void Menu::renderTitleSection()
 {
   auto font_main_title = config->getFontTTF(FontName::MENU_MAIN_TITLE);
   auto font_title_element = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
+  auto font_header = config->getFontTTF(FontName::MENU_HEADER);
+
   auto height = config->getScreenHeight();
   auto width = config->getScreenWidth();
   auto location = title_section.location;
@@ -302,22 +282,23 @@ void Menu::renderTitleSection()
   Frame::setRenderDrawColor(renderer, {255, 255, 255, 65});
   Frame::drawLine(corner_aa_bot, renderer);
 
-  /* Text Color */
-  Frame::setRenderDrawColor(renderer, kCOLOR_TEXT);
-
   auto x_offset = (int32_t)std::round(width * kTITLE_X_OFFSET);
   auto y_offset = (int32_t)std::round(height * kTITLE_Y_OFFSET);
 
+  Text map_name(font_header);
+  Text footsteps(font_header);
+  Text credits(font_header);
   Text t_main_title(font_main_title);
+  Text t_title_element(font_title_element);
+
   t_main_title.setText(renderer, "MENU", kCOLOR_TEXT);
 
-  int32_t y_gap = (int32_t)std::round((float)config->getScreenHeight() * 0.06);
+  int32_t y_gap = (int32_t)std::round(config->getScreenHeight() * 0.06);
   int32_t element_offset =
       point.y + y_offset + t_main_title.getHeight() + y_gap;
   int32_t running_offset = element_offset;
   int32_t title_element_height = 0;
 
-  Text t_title_element(font_title_element);
   t_title_element.setText(renderer, "INVALID", kCOLOR_TEXT);
   title_element_height = t_title_element.getHeight();
 
@@ -349,6 +330,9 @@ void Menu::renderTitleSection()
     SDL_RenderFillRect(renderer, &rect);
   }
 
+  /* Text Color */
+  Frame::setRenderDrawColor(renderer, kCOLOR_TEXT);
+
   for(auto& title_element : title_elements)
   {
     t_title_element.setText(renderer, title_element.name, kCOLOR_TEXT);
@@ -356,26 +340,44 @@ void Menu::renderTitleSection()
     running_offset += y_gap;
   }
 
+  if(curr_map && curr_player)
+  {
+    auto bot_y_offset = (int32_t)std::round(height * 0.65);
+    auto icons_y_gap = (int32_t)std::round(height * 0.04);
+    auto tx = (int32_t)std::round(width * 0.025);
+    auto ty = (int32_t)std::round(height * 0.003);
+    auto curr_y = bot_y_offset + icons_y_gap;
+
+    if(frame_location)
+    {
+      map_name.setText(renderer, curr_map->getName(), kCOLOR_TEXT);
+      frame_location->render(renderer, point.x + x_offset, curr_y);
+      map_name.render(renderer, point.x + x_offset + tx, curr_y + ty);
+    }
+    if(frame_footsteps)
+    {
+      curr_y += icons_y_gap;
+
+      footsteps.setText(renderer, Helpers::formatUInt(curr_player->getSteps()),
+                        kCOLOR_TEXT);
+      frame_footsteps->render(renderer, point.x + x_offset, curr_y);
+      footsteps.render(renderer, point.x + x_offset + tx, curr_y + ty);
+    }
+    if(frame_money)
+    {
+      curr_y += icons_y_gap;
+      credits.setText(renderer, Helpers::formatUInt(curr_player->getCredits()),
+                      kCOLOR_TEXT);
+      frame_money->render(renderer, point.x + x_offset, curr_y);
+      credits.render(renderer, point.x + x_offset + tx, curr_y + ty);
+    }
+  }
+
   t_main_title.render(renderer, point.x + x_offset, point.y + y_offset);
 }
 
 void Menu::renderMainSection()
 {
-  renderMainBackdrop();
-
-  // test_box.render(renderer);
-  // test_box2.render(renderer);
-}
-
-void Menu::renderMainBackdrop()
-{
-  // if(main_section.backdrop)
-  // {
-  //   main_section.backdrop->render(
-  //       renderer, main_section.location.point.x,
-  //       main_section.location.point.y,
-  //       main_section.location.width, main_section.location.height);
-  // }
 }
 
 /*=============================================================================
@@ -386,6 +388,7 @@ void Menu::clear()
 {
   clearTitleSection();
   clearMainBackdrop();
+  clearIconFrames();
   setFlag(MenuState::SHOWING, false);
 }
 
@@ -474,8 +477,8 @@ void Menu::show()
   setFlag(MenuState::SHOWING, true);
 
   buildTitleElements();
-  buildTitleSection();
   buildIconFrames();
+  buildTitleSection();
   // buildMainBackdrop();
 
   title_section.status = WindowStatus::SHOWING;

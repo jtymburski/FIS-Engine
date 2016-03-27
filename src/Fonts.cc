@@ -99,13 +99,13 @@ bool Fonts::createFonts(Options* config)
     fonts.emplace(FontName::MENU_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    16, TTF_STYLE_NORMAL));
-        fonts.emplace(FontName::MENU_OPTIONS,
+    fonts.emplace(FontName::MENU_OPTIONS,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    16, TTF_STYLE_BOLD));
-    fonts.emplace(FontName::MENU_HEADER,
+    fonts.emplace(FontName::MENU_SUBHEADER,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    11, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_HEADER,
+    fonts.emplace(FontName::MENU_STANDARD,
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    10, TTF_STYLE_NORMAL));
 

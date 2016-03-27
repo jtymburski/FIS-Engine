@@ -135,13 +135,13 @@ private:
   MenuState flags;
 
   /* Frames to be built */
-  Frame frame_bubbies;
-  Frame frame_equipment;
-  Frame frame_footsteps;
-  Frame frame_items;
-  Frame frame_key_items;
-  Frame frame_location;
-  Frame frame_money;
+  Frame* frame_bubbies;
+  Frame* frame_equipment;
+  Frame* frame_footsteps;
+  Frame* frame_items;
+  Frame* frame_key_items;
+  Frame* frame_location;
+  Frame* frame_money;
 
   /* Current menu layer */
   MenuLayer layer;
@@ -205,18 +205,20 @@ private:
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
 
-  /* Clear the title section data */
-  void clearTitleSection();
+  /* Clear out the Icon Frames */
+  void clearIconFrames();
 
   /* Clear the Main Backdrop */
   void clearMainBackdrop();
 
+  /* Clear the title section data */
+  void clearTitleSection();
+
   /* Render the title section */
   void renderTitleSection();
 
+  /* Render the main section */
   void renderMainSection();
-
-  void renderMainBackdrop();
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
