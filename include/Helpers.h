@@ -298,6 +298,7 @@ public:
 
   /* Formats a number ex. 35987 into 32 899 etc. */
   static std::string formatUInt(uint32_t number, std::string delim = " ");
+  static std::string alignRight(std::string s, uint32_t length);
 
   /* Splites the string into a grid based on the frame naming convention */
   static std::vector<std::vector<std::string>> frameSeparator(std::string path);

@@ -1500,6 +1500,19 @@ Element Helpers::getWeakness(const Element& element)
  * GENERAL HELPER FUNCTIONS
  *============================================================================*/
 
+std::string Helpers::alignRight(std::string s, uint32_t length)
+{
+  if(s.length() < length)
+  {
+    auto spaces_to_add = length - s.length();
+
+    for(uint32_t i = 0; i < spaces_to_add; i++)
+      s = " " + s;
+  }
+
+  return s;
+}
+
 /*
  * Description: Build an exponentially increasing table of values given a
  *              starting value, a maximum value, and the number of iterations

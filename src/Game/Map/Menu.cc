@@ -17,6 +17,7 @@
  * CONSTANTS
  *============================================================================*/
 
+/* Title Section */
 const uint8_t Menu::kTITLE_ALPHA{255};
 const float Menu::kTITLE_HEIGHT{0.77};
 const float Menu::kTITLE_WIDTH{0.17};
@@ -25,7 +26,36 @@ const float Menu::kTITLE_Y_OFFSET{0.05};
 const float Menu::kTITLE_ELEMENT_GAP{0.80};
 const float Menu::kTITLE_CORNER_LENGTH{0.02};
 const float Menu::kTITLE_SLIDE_RATE{0.60};
+const float Menu::kTITLE_LOCATION_Y_OFFSET{0.65};
+const float Menu::kTITLE_ICONS_Y_GAP{0.04};
+const float Menu::kTITLE_ICON_TEXT_X{0.025};
+const float Menu::kTITLE_ICON_TEXT_Y{0.003};
+const float Menu::kTITLE_HOVER_OFFSET_X{0.08};
+const float Menu::kTITLE_HOVER_WIDTH{0.74};
+const float Menu::kTITLE_HOVER_RATE{0.0014};
+const float Menu::kTITLE_HOVER_MIN{0.4};
+const float Menu::kTITLE_HOVER_MAX{0.8};
+
+/* Main Section General */
+const uint8_t Menu::kMAIN_ALPHA{191};
 const float Menu::kMAIN_SLIDE_RATE{2.05};
+const float Menu::kMAIN_CORNER_LENGTH{0.025};
+const float Menu::kINV_WIDTH{0.56};
+const float Menu::kOPTIONS_WIDTH{0.40};
+const float Menu::kQUIT_WIDTH{0.33};
+const float Menu::kSAVE_WIDTH{0.55};
+const float Menu::kSLEUTH_WIDTH{0.65};
+
+/* Inventory Section */
+const float Menu::kINV_X_GAP{0.015};
+const float Menu::kINV_Y_GAP{0.01};
+const float Menu::kINV_MASS_TEXT_Y{0.85};
+const float Menu::kINV_MASS_VALUE_Y{0.90};
+const float Menu::kINV_THUMB_GAP{0.02};
+const float Menu::kINV_ITEM_NAME_X{0.1};
+const float Menu::kINV_ITEM_NAME_Y{0.1};
+const float Menu::kINV_ITEM_MASS_Y{0.25};
+const float Menu::kINV_ITEM_DESC_Y{0.66};
 
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
 const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
@@ -125,40 +155,37 @@ void Menu::clearIconFrames()
   frame_key_items = nullptr;
 }
 
-void Menu::buildMainBackdrop()
+void Menu::buildMainSection(MenuType menu_type)
 {
   if(config && renderer)
   {
-    clearMainBackdrop();
-
     auto width = config->getScreenWidth();
-    auto height = config->getScreenHeight();
+    int32_t main_width{0};
+    auto title_point = title_section.location.point;
+    auto title_corner = (int32_t)std::round(width * kTITLE_CORNER_LENGTH);
+    Coordinate start_point = {title_point.x + title_section.location.width,
+                              title_point.y + title_corner};
+    auto corner_width = (uint32_t)std::round(main_width * kMAIN_CORNER_LENGTH);
 
-    auto frame_w = main_section.backdrop->getWidth();
-    auto frame_h = main_section.backdrop->getHeight();
+    if(menu_type == MenuType::INVENTORY)
+      main_width = (int32_t)std::round(width * kINV_WIDTH);
+    else if(menu_type == MenuType::OPTIONS)
+      main_width = (int32_t)std::round(width * kOPTIONS_WIDTH);
+    else if(menu_type == MenuType::SLEUTH)
+      main_width = (int32_t)std::round(width * kSLEUTH_WIDTH);
+    else if(menu_type == MenuType::SAVE)
+      main_width = (int32_t)std::round(width * kSAVE_WIDTH);
+    else if(menu_type == MenuType::QUIT)
+      main_width = (int32_t)std::round(width * kQUIT_WIDTH);
 
-    frame_w = (float)frame_w * width / (float)Options::kDEF_SCREEN_WIDTH;
-    frame_h = (float)frame_h * height / (float)Options::kDEF_SCREEN_HEIGHT;
-
-    main_section.location.point.x = -frame_w;
-    main_section.location.point.y =
-        title_section.location.point.y + (kTITLE_CORNER_LENGTH * width);
-    main_section.location.width = frame_w;
-    main_section.location.height = frame_h;
-
-    main_section.point.x = 0;
-    main_section.point.y = main_section.location.point.y;
-
-    std::vector<Frame*> box_frames;
+    main_section.location.point.x = -(main_width + corner_width);
+    main_section.location.point.y = start_point.y;
+    main_section.location.height = title_section.location.height - title_corner;
+    main_section.location.width = main_width + corner_width;
+    main_section.point = start_point;
+    main_section.alpha = kMAIN_ALPHA;
+    main_section.status = WindowStatus::OFF;
   }
-}
-
-void Menu::buildPersonDetailScreen()
-{
-}
-
-void Menu::buildSleuthScreen()
-{
 }
 
 void Menu::buildTitleElements()
@@ -166,7 +193,7 @@ void Menu::buildTitleElements()
   title_elements.clear();
 
   /* Party TitleElement */
-  title_elements.push_back(TitleElement("Sleuth", true, MenuType::PARTY));
+  title_elements.push_back(TitleElement("Sleuth", true, MenuType::SLEUTH));
 
   /* Inventory TitleElement */
   title_elements.push_back(
@@ -184,46 +211,23 @@ void Menu::buildTitleElements()
 
 void Menu::buildTitleSection()
 {
-  clearTitleSection();
-
   auto height = config->getScreenHeight();
   auto width = config->getScreenWidth();
 
-  auto title_height = (int32_t)std::round((float)height * kTITLE_HEIGHT);
-  // auto title_width = (int32_t)std::round((float)width * kTITLE_WIDTH);
-
+  auto title_height = (uint32_t)std::round(height * kTITLE_HEIGHT);
   auto y = (height - title_height) / 2 - (height * kTITLE_Y_OFFSET);
+  auto title_width = (uint32_t)std::round(width * kTITLE_WIDTH);
+  auto corner_width = (uint32_t)std::round(width * kTITLE_CORNER_LENGTH);
 
-  if(!title_section.backdrop)
-  {
-    title_section.backdrop = new Frame(
-        config->getBasePath() + "sprites/Overlay/menu_title_section.png",
-        renderer);
+  /* Starting and ending Coordinates for the Title Section */
+  title_section.location.point.x = -(title_width + corner_width);
+  title_section.location.point.y = y;
+  title_section.location.height = title_height;
+  title_section.location.width = title_width + corner_width;
+  title_section.point.x = 0;
+  title_section.point.y = y;
 
-    auto title_width = (uint32_t)std::round(width * kTITLE_WIDTH);
-    auto title_height = (uint32_t)std::round(height * kTITLE_HEIGHT);
-    auto corner_width = (uint32_t)std::round(width * kTITLE_CORNER_LENGTH);
-
-    /* Starting and ending Coordinates for the Title Section */
-    title_section.location.point.x = -(title_width + corner_width);
-    title_section.location.point.y = y;
-    title_section.location.height = title_height;
-    title_section.location.width = title_width + corner_width;
-    title_section.point.x = 0;
-    title_section.point.y = y;
-
-    title_section.alpha = kTITLE_ALPHA;
-    title_section.status = WindowStatus::OFF;
-  }
-}
-
-void Menu::clearTitleSection()
-{
-
-  // if(title_section.backdrop)
-  //  delete title_section.backdrop;
-  //  title_section.backdrop = nullptr;
-
+  title_section.alpha = kTITLE_ALPHA;
   title_section.status = WindowStatus::OFF;
 }
 
@@ -276,9 +280,11 @@ void Menu::renderTitleSection()
   Frame::drawLine(bot_corner, renderer);
   Frame::drawLine(right_line, renderer);
 
+  /* Anti-Aliased Top Line */
   Frame::setRenderDrawColor(renderer, {255, 255, 255, 110});
   Frame::drawLine(corner_aa_top, renderer);
 
+  /* Anti-Aliased Bot Line */
   Frame::setRenderDrawColor(renderer, {255, 255, 255, 65});
   Frame::drawLine(corner_aa_bot, renderer);
 
@@ -316,13 +322,14 @@ void Menu::renderTitleSection()
     auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
 
     SDL_Rect rect;
-    rect.x = point.x + title_width * 0.08;
+    rect.x = point.x + title_width * kTITLE_HOVER_OFFSET_X;
     rect.y = rect_y;
     rect.h = rect_h;
-    rect.w = title_width * 0.74;
+    rect.w = title_width * kTITLE_HOVER_WIDTH;
 
     auto brightness = Helpers::updateHoverBrightness(
-        title_elements.at(title_element_index).hover_time, 0.0014, 0.4, 0.8);
+        title_elements.at(title_element_index).hover_time, kTITLE_HOVER_RATE,
+        kTITLE_HOVER_MIN, kTITLE_HOVER_MAX);
 
     auto hover_color = kCOLOR_TITLE_HOVER;
     SDL_SetRenderDrawColor(renderer, hover_color.r, hover_color.g,
@@ -342,10 +349,10 @@ void Menu::renderTitleSection()
 
   if(curr_map && curr_player)
   {
-    auto bot_y_offset = (int32_t)std::round(height * 0.65);
-    auto icons_y_gap = (int32_t)std::round(height * 0.04);
-    auto tx = (int32_t)std::round(width * 0.025);
-    auto ty = (int32_t)std::round(height * 0.003);
+    auto bot_y_offset = (int32_t)std::round(height * kTITLE_LOCATION_Y_OFFSET);
+    auto icons_y_gap = (int32_t)std::round(height * kTITLE_ICONS_Y_GAP);
+    auto tx = (int32_t)std::round(width * kTITLE_ICON_TEXT_X);
+    auto ty = (int32_t)std::round(height * kTITLE_ICON_TEXT_Y);
     auto curr_y = bot_y_offset + icons_y_gap;
 
     if(frame_location)
@@ -357,7 +364,6 @@ void Menu::renderTitleSection()
     if(frame_footsteps)
     {
       curr_y += icons_y_gap;
-
       footsteps.setText(renderer, Helpers::formatUInt(curr_player->getSteps()),
                         kCOLOR_TEXT);
       frame_footsteps->render(renderer, point.x + x_offset, curr_y);
@@ -376,7 +382,97 @@ void Menu::renderTitleSection()
   t_main_title.render(renderer, point.x + x_offset, point.y + y_offset);
 }
 
+/* Render the Main Section */
 void Menu::renderMainSection()
+{
+  if((uint32_t)title_element_index < title_elements.size() && config &&
+     renderer)
+  {
+    auto menu_type = title_elements.at(title_element_index).menu_type;
+    // auto height = config->getScreenHeight();
+    auto width = config->getScreenWidth();
+
+    auto location = main_section.location;
+    auto point = main_section.location.point;
+
+    auto corner_inset = (int32_t)std::ceil(width * kMAIN_CORNER_LENGTH);
+//    auto main_width = location.width + corner_inset;
+
+    /* Render the frame outline and backdrop */
+    Coordinate tl = {point.x, point.y};
+    Coordinate tr = {point.x + location.width - corner_inset, point.y};
+    Coordinate bl = {point.x, point.y + location.height};
+    Coordinate br = {point.x + location.width - corner_inset,
+                     point.y + location.height};
+
+    Coordinate blc = {br.x + 1, br.y - 1};
+    Coordinate tlc = {tr.x + 1, tl.y};
+
+    Coordinate trc = {tr.x + corner_inset, tr.y};
+    Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
+
+    Coordinate atl= {blc.x - 1, blc.y};
+    Coordinate abl ={blc.x, blc.y + 1};
+    Coordinate atr = {brc.x - 1, brc.y};
+    Coordinate abr = {brc.x, brc.y + 1};
+
+    auto top_bar = Helpers::bresenhamPoints(tl, tr);
+    auto bot_bar = Helpers::bresenhamPoints(bl, br);
+    auto top_corner = Helpers::bresenhamPoints(tlc, trc);
+    auto bot_corner = Helpers::bresenhamPoints(blc, brc);
+    auto right_line = Helpers::bresenhamPoints(trc, brc);
+    auto corner_aa_top = Helpers::bresenhamPoints(atl, atr);
+    auto corner_aa_bot = Helpers::bresenhamPoints(abl, abr);
+
+    Frame::setRenderDrawColor(renderer, {0, 0, 0, main_section.alpha});
+    Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
+    Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
+
+    Frame::setRenderDrawColor(renderer, kCOLOR_TITLE_BORDER);
+    Frame::drawLine(top_bar, renderer);
+    Frame::drawLine(bot_bar, renderer);
+    Frame::drawLine(top_corner, renderer);
+    Frame::drawLine(bot_corner, renderer);
+    Frame::drawLine(right_line, renderer);
+
+    /* Anti-Aliased Top Line */
+    Frame::setRenderDrawColor(renderer, {255, 255, 255, 45});
+    Frame::drawLine(corner_aa_top, renderer);
+
+    /* Anti-Aliased Bot Line */
+    Frame::setRenderDrawColor(renderer, {255, 255, 255, 80});
+    Frame::drawLine(corner_aa_bot, renderer);
+
+    if(menu_type == MenuType::INVENTORY)
+      renderInventory();
+    else if(menu_type == MenuType::OPTIONS)
+      renderOptions();
+    else if(menu_type == MenuType::SLEUTH)
+      renderSleuth();
+    else if(menu_type == MenuType::SAVE)
+      renderSave();
+    else if(menu_type == MenuType::QUIT)
+      renderQuit();
+  }
+}
+
+void Menu::renderInventory()
+{
+}
+
+void Menu::renderOptions()
+{
+}
+
+void Menu::renderSleuth()
+{
+}
+
+void Menu::renderSave()
+{
+}
+
+void Menu::renderQuit()
 {
 }
 
@@ -386,20 +482,11 @@ void Menu::renderMainSection()
 
 void Menu::clear()
 {
-  clearTitleSection();
-  clearMainBackdrop();
+  main_section.status = WindowStatus::OFF;
+  title_section.status = WindowStatus::OFF;
+
   clearIconFrames();
   setFlag(MenuState::SHOWING, false);
-}
-
-void Menu::clearMainBackdrop()
-{
-  if(main_section.backdrop)
-    delete main_section.backdrop;
-
-  main_section.backdrop = nullptr;
-
-  main_section.status = WindowStatus::OFF;
 }
 
 void Menu::hide()
@@ -436,18 +523,12 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
     if(title_section.status == WindowStatus::ON &&
        main_section.status == WindowStatus::OFF)
     {
-      if(title_element_index < (int32_t)title_elements.size() &&
-         title_elements.at(title_element_index).name == "Quit")
+      if(title_element_index < (int32_t)title_elements.size())
       {
-        // TODO: [02-27-16]
-        std::cout << "[Future] -- Return To Title" << std::endl;
-        hide();
-      }
-      else
-      {
-        std::cout << "Name: " << title_elements.at(title_element_index).name
-                  << std::endl;
         layer = MenuLayer::MAIN;
+
+        /* Construct the main section with the appropriate parameters */
+        buildMainSection(title_elements.at(title_element_index).menu_type);
         main_section.status = WindowStatus::SHOWING;
       }
     }
@@ -479,7 +560,6 @@ void Menu::show()
   buildTitleElements();
   buildIconFrames();
   buildTitleSection();
-  // buildMainBackdrop();
 
   title_section.status = WindowStatus::SHOWING;
 
@@ -594,7 +674,3 @@ void Menu::setRenderer(SDL_Renderer* renderer)
 {
   this->renderer = renderer;
 }
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/

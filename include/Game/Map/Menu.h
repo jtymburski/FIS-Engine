@@ -27,7 +27,7 @@
 /* Enumerated MenuType */
 enum class MenuType
 {
-  PARTY,
+  SLEUTH,
   INVENTORY,
   OPTIONS,
   SAVE,
@@ -163,7 +163,7 @@ private:
 
   /* ------- Constants ------- */
 
-  /* Size Constants */
+  /* Title Section */
   static const uint8_t kTITLE_ALPHA;
   static const float kTITLE_HEIGHT;
   static const float kTITLE_WIDTH;
@@ -172,7 +172,36 @@ private:
   static const float kTITLE_ELEMENT_GAP;
   static const float kTITLE_CORNER_LENGTH;
   static const float kTITLE_SLIDE_RATE;
+  static const float kTITLE_LOCATION_Y_OFFSET;
+  static const float kTITLE_ICONS_Y_GAP;
+  static const float kTITLE_ICON_TEXT_X;
+  static const float kTITLE_ICON_TEXT_Y;
+  static const float kTITLE_HOVER_OFFSET_X;
+  static const float kTITLE_HOVER_WIDTH;
+  static const float kTITLE_HOVER_RATE;
+  static const float kTITLE_HOVER_MIN;
+  static const float kTITLE_HOVER_MAX;
+
+  /* Main Section General */
+  static const uint8_t kMAIN_ALPHA;
   static const float kMAIN_SLIDE_RATE;
+  static const float kMAIN_CORNER_LENGTH;
+  static const float kINV_WIDTH;
+  static const float kOPTIONS_WIDTH;
+  static const float kQUIT_WIDTH;
+  static const float kSAVE_WIDTH;
+  static const float kSLEUTH_WIDTH;
+
+  /* Inventory Section */
+  static const float kINV_X_GAP;
+  static const float kINV_Y_GAP;
+  static const float kINV_MASS_TEXT_Y;
+  static const float kINV_MASS_VALUE_Y;
+  static const float kINV_THUMB_GAP;
+  static const float kINV_ITEM_NAME_X;
+  static const float kINV_ITEM_NAME_Y;
+  static const float kINV_ITEM_MASS_Y;
+  static const float kINV_ITEM_DESC_Y;
 
   /* Colors */
   static const SDL_Color kCOLOR_TITLE_BG;
@@ -191,7 +220,7 @@ private:
   void buildInventoryScreen();
 
   /* Construct the main section backdrop */
-  void buildMainBackdrop();
+  void buildMainSection(MenuType menu_type);
 
   /* Construct a detail Person screen */
   void buildPersonDetailScreen();
@@ -208,17 +237,16 @@ private:
   /* Clear out the Icon Frames */
   void clearIconFrames();
 
-  /* Clear the Main Backdrop */
-  void clearMainBackdrop();
-
-  /* Clear the title section data */
-  void clearTitleSection();
-
   /* Render the title section */
   void renderTitleSection();
 
   /* Render the main section */
   void renderMainSection();
+  void renderInventory();
+  void renderOptions();
+  void renderSleuth();
+  void renderSave();
+  void renderQuit();
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
