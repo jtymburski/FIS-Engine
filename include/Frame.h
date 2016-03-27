@@ -72,9 +72,9 @@ private:
   /*------------------- Constants -----------------------*/
   const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*==========================================================================
+* PUBLIC FUNCTIONS
+* =========================================================================*/
 public:
   /* Executes the necessary image adjustments, as per the file data handlers */
   bool execImageAdjustment(std::string adjustment);
@@ -142,9 +142,9 @@ public:
   /* Sets if the greyscale texture is active and returned on getTexture() */
   bool useGreyScale(bool enable);
 
-/*=============================================================================
- * PRIVATE STATIC FUNCTIONS
- *============================================================================*/
+  /*==========================================================================
+* PRIVATE STATIC FUNCTIONS
+* ============================================================================*/
 private:
   /* Draws a line. This is needed because of SDL draw line glitch */
   static void drawLine(int32_t x1, int32_t x2, int32_t y,
@@ -164,9 +164,9 @@ private:
                                     SDL_Renderer* renderer, bool aliasing,
                                     bool flat_side = false);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*==========================================================================
+* PUBLIC STATIC FUNCTIONS
+* ============================================================================*/
 public:
   /* Draws a line given a vector of coordinates */
   static void drawLine(std::vector<Coordinate> line_points,

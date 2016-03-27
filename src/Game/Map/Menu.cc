@@ -24,7 +24,7 @@ const float Menu::kTITLE_X_OFFSET{0.02};
 const float Menu::kTITLE_Y_OFFSET{0.05};
 const float Menu::kTITLE_ELEMENT_GAP{0.80};
 const float Menu::kTITLE_CORNER_LENGTH{0.02};
-const float Menu::kTITLE_SLIDE_RATE{0.70};
+const float Menu::kTITLE_SLIDE_RATE{0.60};
 const float Menu::kMAIN_SLIDE_RATE{2.05};
 
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
@@ -196,16 +196,17 @@ void Menu::buildTitleSection()
         config->getBasePath() + "sprites/Overlay/menu_title_section.png",
         renderer);
 
-    auto frame_w = (uint32_t)std::round(width * kTITLE_WIDTH);
-    auto frame_h = (uint32_t)std::round(height * kTITLE_HEIGHT);
+    auto title_width = (uint32_t)std::round(width * kTITLE_WIDTH);
+    auto title_height = (uint32_t)std::round(height * kTITLE_HEIGHT);
+    auto corner_width = (uint32_t)std::round(width * kTITLE_CORNER_LENGTH);
 
     /* Starting and ending Coordinates for the Title Section */
-    title_section.location.point.x = -frame_w;
+    title_section.location.point.x = -(title_width + corner_width);
     title_section.location.point.y = y;
-    title_section.location.height = frame_h;
-    title_section.location.width = frame_w;
+    title_section.location.height = title_height;
+    title_section.location.width = title_width + corner_width;
     title_section.point.x = 0;
-    title_section.point.y = title_section.location.point.y;
+    title_section.point.y = y;
 
     title_section.alpha = kTITLE_ALPHA;
     title_section.status = WindowStatus::OFF;
@@ -257,14 +258,16 @@ void Menu::renderTitleSection()
   auto location = title_section.location;
   auto point = title_section.location.point;
 
-  /* Render the frame outline and backdrop */
-  Coordinate tl = {point.x, point.y};
-  Coordinate tr = {point.x + location.width, point.y};
-  Coordinate bl = {point.x, point.y + location.height};
-  Coordinate br = {point.x + location.width, point.y + location.height};
-
   auto corner_inset = (int32_t)std::round(width * kTITLE_CORNER_LENGTH);
   auto title_width = location.width + corner_inset;
+
+  /* Render the frame outline and backdrop */
+  Coordinate tl = {point.x, point.y};
+  Coordinate tr = {point.x + location.width - corner_inset, point.y};
+  Coordinate bl = {point.x, point.y + location.height};
+  Coordinate br = {point.x + location.width - corner_inset,
+                   point.y + location.height};
+
   Coordinate tc = {tr.x + corner_inset, tr.y + corner_inset};
   Coordinate bc = {br.x + corner_inset, br.y};
 
@@ -332,10 +335,10 @@ void Menu::renderTitleSection()
     auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
 
     SDL_Rect rect;
-    rect.x = point.x + (title_width * 0.08);
+    rect.x = point.x + title_width * 0.08;
     rect.y = rect_y;
     rect.h = rect_h;
-    rect.w = title_width * 0.84;
+    rect.w = title_width * 0.74;
 
     auto brightness = Helpers::updateHoverBrightness(
         title_elements.at(title_element_index).hover_time, 0.0014, 0.4, 0.8);
@@ -414,10 +417,6 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
       else
         title_element_index = 0;
     }
-
-    // TODO: Testing
-    // test_box.nextIndex();
-    // test_box2.nextIndex();
   }
   else if(event.keysym.sym == SDLK_UP)
   {
@@ -428,10 +427,6 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
       else
         title_element_index = title_elements.size() - 1;
     }
-
-    // TODO: Testing
-    // test_box.prevIndex();
-    // test_box2.prevIndex();
   }
   else if(event.keysym.sym == SDLK_SPACE)
   {
@@ -503,48 +498,51 @@ void Menu::render()
 
 bool Menu::update(int32_t cycle_time)
 {
+  auto& title_point = title_section.location.point;
+  auto& title_location = title_section.location;
+  auto& main_point = main_section.location.point;
+  auto& main_location = main_section.location;
+
   if(title_section.status == WindowStatus::SHOWING)
   {
     /* Update the Coordinate of the TitleScreen */
-    title_section.location.point =
-        Helpers::updateCoordinate(cycle_time, title_section.location.point,
-                                  title_section.point, kTITLE_SLIDE_RATE);
+    title_point = Helpers::updateCoordinate(
+        cycle_time, title_point, title_section.point, kTITLE_SLIDE_RATE);
 
-    if(title_section.location.point == title_section.point)
+    if(title_point == title_section.point)
       title_section.status = WindowStatus::ON;
   }
   else if(title_section.status == WindowStatus::HIDING)
   {
-    title_section.location.point =
-        Helpers::updateCoordinate(cycle_time, title_section.location.point,
-                                  Coordinate(-title_section.location.width,
-                                             title_section.location.point.y),
-                                  kTITLE_SLIDE_RATE);
+    title_point = Helpers::updateCoordinate(
+        cycle_time, title_point,
+        Coordinate(-title_location.width, title_point.y), kTITLE_SLIDE_RATE);
 
-    if(title_section.location.point.x == -title_section.location.width)
+    if(config)
     {
-      title_section.status = WindowStatus::OFF;
-      clear();
+      if(title_point.x == -title_location.width)
+      {
+        title_section.status = WindowStatus::OFF;
+        clear();
+      }
     }
   }
 
   if(main_section.status == WindowStatus::SHOWING)
   {
-    main_section.location.point =
-        Helpers::updateCoordinate(cycle_time, main_section.location.point,
-                                  main_section.point, kMAIN_SLIDE_RATE);
+    main_point = Helpers::updateCoordinate(
+        cycle_time, main_point, main_section.point, kMAIN_SLIDE_RATE);
 
-    if(main_section.location.point == main_section.point)
+    if(main_point == main_section.point)
       main_section.status = WindowStatus::ON;
   }
   else if(main_section.status == WindowStatus::HIDING)
   {
-    main_section.location.point = Helpers::updateCoordinate(
-        cycle_time, main_section.location.point,
-        Coordinate(-main_section.location.width, main_section.location.point.y),
+    main_point = Helpers::updateCoordinate(
+        cycle_time, main_point, Coordinate(-main_location.width, main_point.y),
         kMAIN_SLIDE_RATE);
 
-    if(main_section.location.point.x == -main_section.location.width)
+    if(main_point.x == -main_location.width)
     {
       main_section.status = WindowStatus::OFF;
     }
