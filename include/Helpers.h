@@ -36,14 +36,17 @@
 #include "EnumDb.h"
 #include "XmlData.h"
 
+/* High precision timer abstraction */
 class Timer
 {
 public:
   Timer() : beg_(clock_::now()){};
+
   void reset()
   {
     beg_ = clock_::now();
   }
+
   double elapsed() const
   {
     return std::chrono::duration_cast<second_>(clock_::now() - beg_).count();
@@ -94,16 +97,6 @@ struct Floatinate
   float x;
   float y;
 };
-
-/* Box with an integer coordinate and a size width by height */
-// struct Box
-// {
-//   Box() : point{Coordinate()}, width{0}, height{0} {};
-
-//   Coordinate point;
-//   int32_t width;
-//   int32_t height;
-// };
 
 /* Structure for large lay over frames */
 struct LayOver

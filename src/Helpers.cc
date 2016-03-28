@@ -1686,6 +1686,9 @@ std::string Helpers::formatUInt(uint32_t i, std::string d)
   else
     s << i / 1000000000 << d << i / 1000000 << d << i / 1000 << d << i % 1000;
 
+  if(i >= 10000 && i % 1000 == 0)
+    s << "00";
+
   return s.str();
 }
 

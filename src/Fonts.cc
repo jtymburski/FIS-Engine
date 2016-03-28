@@ -94,19 +94,19 @@ bool Fonts::createFonts(Options* config)
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    30, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_TITLE_ELEMENT,
-                  Text::createFont(config->getBasePath() + config->getFont(),
+                  Text::createFont(config->getBasePath() + config->getFont(3),
                                    24, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_HEADER,
-                  Text::createFont(config->getBasePath() + config->getFont(),
+                  Text::createFont(config->getBasePath() + config->getFont(3),
                                    16, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_OPTIONS,
-                  Text::createFont(config->getBasePath() + config->getFont(),
-                                   16, TTF_STYLE_BOLD));
+                  Text::createFont(config->getBasePath() + config->getFont(3),
+                                   16, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_SUBHEADER,
-                  Text::createFont(config->getBasePath() + config->getFont(),
+                  Text::createFont(config->getBasePath() + config->getFont(3),
                                    11, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_STANDARD,
-                  Text::createFont(config->getBasePath() + config->getFont(),
+                  Text::createFont(config->getBasePath() + config->getFont(3),
                                    10, TTF_STYLE_NORMAL));
 
     /* Assert all fonts are not nullptr */

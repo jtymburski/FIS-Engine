@@ -22,12 +22,13 @@ const uint8_t Menu::kTITLE_ALPHA{255};
 const float Menu::kTITLE_HEIGHT{0.77};
 const float Menu::kTITLE_WIDTH{0.17};
 const float Menu::kTITLE_X_OFFSET{0.02};
+const float Menu::kTITLE_ELEMENT_X_OFFSET{0.01};
 const float Menu::kTITLE_Y_OFFSET{0.05};
 const float Menu::kTITLE_ELEMENT_GAP{0.80};
 const float Menu::kTITLE_CORNER_LENGTH{0.02};
 const float Menu::kTITLE_SLIDE_RATE{0.60};
-const float Menu::kTITLE_LOCATION_Y_OFFSET{0.65};
-const float Menu::kTITLE_ICONS_Y_GAP{0.04};
+const float Menu::kTITLE_LOCATION_Y_OFFSET{0.63};
+const float Menu::kTITLE_ICONS_Y_GAP{0.05};
 const float Menu::kTITLE_ICON_TEXT_X{0.025};
 const float Menu::kTITLE_ICON_TEXT_Y{0.003};
 const float Menu::kTITLE_HOVER_OFFSET_X{0.08};
@@ -60,6 +61,7 @@ const float Menu::kINV_ITEM_DESC_Y{0.66};
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
 const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
+const SDL_Color Menu::kCOLOR_MAIN_BORDER{255, 255, 255, 192};
 const SDL_Color Menu::kCOLOR_TEXT{255, 255, 255, 255};
 
 /*=============================================================================
@@ -340,10 +342,13 @@ void Menu::renderTitleSection()
   /* Text Color */
   Frame::setRenderDrawColor(renderer, kCOLOR_TEXT);
 
+  auto text_offset_x = (uint32_t)std::round(kTITLE_ELEMENT_X_OFFSET * width);
+  auto element_text_x = point.x + x_offset + text_offset_x;
+
   for(auto& title_element : title_elements)
   {
     t_title_element.setText(renderer, title_element.name, kCOLOR_TEXT);
-    t_title_element.render(renderer, point.x + x_offset, running_offset);
+    t_title_element.render(renderer, element_text_x, running_offset);
     running_offset += y_gap;
   }
 
@@ -396,7 +401,7 @@ void Menu::renderMainSection()
     auto point = main_section.location.point;
 
     auto corner_inset = (int32_t)std::ceil(width * kMAIN_CORNER_LENGTH);
-//    auto main_width = location.width + corner_inset;
+    //    auto main_width = location.width + corner_inset;
 
     /* Render the frame outline and backdrop */
     Coordinate tl = {point.x, point.y};
@@ -411,8 +416,8 @@ void Menu::renderMainSection()
     Coordinate trc = {tr.x + corner_inset, tr.y};
     Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
 
-    Coordinate atl= {blc.x - 1, blc.y};
-    Coordinate abl ={blc.x, blc.y + 1};
+    Coordinate atl = {blc.x - 1, blc.y};
+    Coordinate abl = {blc.x, blc.y + 1};
     Coordinate atr = {brc.x - 1, brc.y};
     Coordinate abr = {brc.x, brc.y + 1};
 
@@ -428,7 +433,7 @@ void Menu::renderMainSection()
     Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
     Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
 
-    Frame::setRenderDrawColor(renderer, kCOLOR_TITLE_BORDER);
+    Frame::setRenderDrawColor(renderer, kCOLOR_MAIN_BORDER);
     Frame::drawLine(top_bar, renderer);
     Frame::drawLine(bot_bar, renderer);
     Frame::drawLine(top_corner, renderer);

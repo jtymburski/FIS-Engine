@@ -44,6 +44,106 @@ enum class MenuLayer
   INVALID
 };
 
+/* Option Box Construction for Analog Values */
+struct AnalogOption
+{
+  AnalogOption()
+      : val{nullptr}, default_val{nullptr}, num_options{1}, location{Box()} {};
+
+  /* Pointer to the value for the analog option (0 - 100) */
+  uint32_t* val;
+
+  /* Pointer to a default value */
+  uint32_t* default_val;
+
+  /* The number of possible options */
+  uint32_t num_options;
+
+  /* Location for the analog option */
+  Box location;
+
+  /* Decrease the value */
+  void decrease()
+  {
+    if(val && (*val) - (100 / num_options) > 0)
+      *val = 100 / num_options;
+  }
+
+  /* Reset the analog option to a default value */
+  void reset()
+  {
+    if(default_val && val)
+      (*val) = (*default_val);
+  }
+
+  /* Increase the value */
+  void increase()
+  {
+    if(val && (*val) < 100)
+      *val += 100 / num_options;
+  }
+};
+
+/* Option Box Construction for On/Off Values */
+struct DigitalOption
+{
+  DigitalOption() : config{nullptr}, flag_index{0}
+  {
+  }
+
+  DigitalOption(Options* config, Coordinate point, int32_t width,
+                int32_t height, int32_t flag_index)
+      : DigitalOption()
+  {
+    this->config = config;
+    this->flag_index = flag_index;
+
+    if(config)
+      location = Box{point, width, height};
+  }
+
+  /* Configuraiton pointer */
+  Options* config;
+
+  /* Value */
+  int32_t flag_index;
+
+  /* Locafion for the DigitalOption */
+  Box location;
+
+  void reset()
+  {
+    if(config)
+    {
+      config->setFlag(
+          static_cast<OptionState>(1 << flag_index),
+          config->getDefaultFlag(static_cast<OptionState>(1 << flag_index)));
+    }
+  }
+
+  void set()
+  {
+    if(config)
+      config->setFlag(static_cast<OptionState>(1 << flag_index), true);
+  }
+
+  void toggle()
+  {
+    if(config)
+    {
+      config->setFlag(
+          static_cast<OptionState>(1 << flag_index),
+          config->getFlag(static_cast<OptionState>(1 << flag_index)));
+    }
+  }
+
+  void unset()
+  {
+    if(config)
+      config->setFlag(static_cast<OptionState>(1 << flag_index), false);
+  }
+};
+
 struct TitleElement
 {
   /* Default TitleElement Constructor */
@@ -161,6 +261,10 @@ private:
   /* Title Section (Left) Window */
   Window title_section;
 
+  /* Options Elements */
+  AnalogOption audio_level;
+  AnalogOption music_level;
+
   /* ------- Constants ------- */
 
   /* Title Section */
@@ -168,6 +272,7 @@ private:
   static const float kTITLE_HEIGHT;
   static const float kTITLE_WIDTH;
   static const float kTITLE_X_OFFSET;
+  static const float kTITLE_ELEMENT_X_OFFSET;
   static const float kTITLE_Y_OFFSET;
   static const float kTITLE_ELEMENT_GAP;
   static const float kTITLE_CORNER_LENGTH;
@@ -207,6 +312,7 @@ private:
   static const SDL_Color kCOLOR_TITLE_BG;
   static const SDL_Color kCOLOR_TITLE_BORDER;
   static const SDL_Color kCOLOR_TITLE_HOVER;
+  static const SDL_Color kCOLOR_MAIN_BORDER;
   static const SDL_Color kCOLOR_TEXT;
 
   /*=============================================================================
@@ -290,11 +396,6 @@ public:
 
   /* Assign Renderer */
   void setRenderer(SDL_Renderer* renderer);
-
-  /*=============================================================================
-   * PRIVATE STATIC FUNCTIONS
-   *============================================================================*/
-private:
 };
 
 #endif // MENU_H

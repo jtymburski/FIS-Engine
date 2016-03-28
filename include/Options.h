@@ -51,11 +51,8 @@ private:
   Fonts* font_data;
 
   /* Sound levels */
-  int32_t audio_level;
-  int32_t music_level;
-
-  /* Auto run, in the map */
-  //bool auto_run;
+  uint32_t audio_level;
+  uint32_t music_level;
 
   /* The base string path for accessing file information */
   std::string base_path;
@@ -68,6 +65,7 @@ private:
 
   /* Enum flags option state set */
   OptionState flags;
+  OptionState flags_default;
 
   /* Resolution of the screen currently being used */
   uint8_t resolution_x;
@@ -75,22 +73,6 @@ private:
 
   /* Sound handling class */
   SoundHandler* sound_handler;
-
-  /* Vertical refresh syncing enable */
-  //bool vsync_enabled;
-
-  /* Horizontal resolution options */
-  //QVector<int> x_options;
-
-  /* Vertical resolution options */
-  //QVector<int> y_options;
-
-  /* Primary options menu */
-  //QList<QString> main_options;
-
-  /* Secondary options menu */
-  /* Notes: other options to be added as need (audio, animations, font size) */
-  //QList<QString> secondary_Options;
 
   /*------------------- Constants -----------------------*/
   const static std::string kFONTS[]; /* A list of all the fonts avfhudable */
@@ -103,6 +85,8 @@ public:
   /*--------------------- Constants --------------------*/
   const static std::uint32_t kDEF_SCREEN_WIDTH;
   const static std::uint32_t kDEF_SCREEN_HEIGHT;
+  const static uint32_t kDEF_AUDIO_LEVEL;
+  const static uint32_t kDEF_MUSIC_LEVEL;
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -113,9 +97,6 @@ private:
 
   /* Sets all parameters to default */
   void setAllToDefault();
-
-  /* Assigns if the player is to always run on the map */
-  //void setAutoRun(bool auto_run);
 
   /* Sets the chosen font */
   void setFont(uint8_t index, bool first_call = false);
@@ -141,6 +122,9 @@ public:
 
   /* Returns the program configured base path, used for pathing throughout */
   std::string getBasePath();
+
+  /* Default flags */
+  bool getDefaultFlag(const OptionState &test_flag);
 
   /* Returns the value of a given OptionState flag */
   bool getFlag(const OptionState &test_flag);

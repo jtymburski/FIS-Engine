@@ -20,11 +20,10 @@
 #include "Options.h"
 
 /* Constant Implementation - see header file for descriptions */
-const std::string Options::kFONTS[] = {"fonts/colab_light.otf",
-                                       "fonts/crimes.ttf",
-                                       "fonts/blanch_caps.otf",
-                                       "fonts/colab_reg.otf"};
-const uint8_t Options::kNUM_FONTS = 4;
+const std::string Options::kFONTS[] = {
+    "fonts/colab_light.otf", "fonts/crimes.ttf", "fonts/blanch_caps.otf",
+    "fonts/colab_reg.otf", "fonts/colab_med.otf"};
+const uint8_t Options::kNUM_FONTS = 5;
 const uint8_t Options::kNUM_RESOLUTIONS = 8;
 const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920,
                                             1920, 2560, 2460, 3860};
@@ -64,6 +63,7 @@ Options::~Options()
 {
   if(font_data)
     delete font_data;
+
   font_data = nullptr;
 }
 
@@ -78,6 +78,7 @@ void Options::copySelf(const Options& source)
   resolution_x = source.resolution_x;
   resolution_y = source.resolution_y;
   flags = source.flags;
+  flags_default = source.flags_default;
 }
 
 void Options::setAllToDefault()
@@ -88,12 +89,16 @@ void Options::setAllToDefault()
 
   /* Flags */
   setLinearFiltering(false);
+
   setFlag(OptionState::VSYNC, true);
   setFlag(OptionState::FULLSCREEN, false);
   setFlag(OptionState::AUTO_RUN, false);
   setFlag(OptionState::BATTLE_ANIMATIONS, true);
   setFlag(OptionState::GUI_ENABLED, true);
   setFlag(OptionState::AUDIO_ENABLED, true);
+
+  /* Move the flags into default flags */
+  flags_default = flags;
 
   /* Rendering Options */
   setFont(0, true);
@@ -179,7 +184,13 @@ std::string Options::getBasePath()
   return base_path;
 }
 
-// Get fn for OptionState flags
+/* Returns the default value for a flag */
+bool Options::getDefaultFlag(const OptionState& test_flag)
+{
+  return static_cast<bool>((flags_default & test_flag) == test_flag);
+}
+
+/* Returns the value for an Options flag */
 bool Options::getFlag(const OptionState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
