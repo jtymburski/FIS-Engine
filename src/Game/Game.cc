@@ -23,8 +23,9 @@
  * CONSTANTS
  *============================================================================*/
 
-// const uint32_t Game::kSTARTING_MAP = 0;
-// const std::string Game::kSTARTING_PATH = "maps/Univursa.ugv";
+const std::string Game::kSAVE_PATH_BACK = ".save";
+const std::string Game::kSAVE_PATH_FRONT = "saves/slot";
+const uint8_t Game::kSAVE_SLOT_MAX = 8;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -50,6 +51,7 @@ Game::Game(Options* running_config)
   mode_load = NOLOAD;
   mode_next = NONE;
   player_main = nullptr;
+  save_slot = 1;
 
   /* Set up map class */
   map_ctrl.setConfiguration(config);
@@ -1567,6 +1569,11 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     //                      cost_modifiers, "Kevin's Store", false);
     //}
   }
+  /* Save test */
+  else if(event.keysym.sym == SDLK_5)
+  {
+    save();
+  }
   /* Level Up Key */
   else if(event.keysym.sym == SDLK_F7 && mode != BATTLE)
   {
@@ -1746,6 +1753,50 @@ bool Game::render(SDL_Renderer* renderer)
   return success;
 }
 
+/* Save game based on the current slot number */
+bool Game::save()
+{
+  bool success = true;
+
+  /* Path for save */
+  std::string init_path = base_path + kSAVE_PATH_FRONT;
+  if(save_slot < 10)
+    init_path += "0";
+  std::string save_path = init_path + std::to_string(save_slot)
+                                    + kSAVE_PATH_BACK;
+
+  /* Start file write */
+  if(save_handle.isAvailable() && save_handle.getFilename() != save_path)
+    save_handle.stop(true);
+  if(!save_handle.isAvailable())
+  {
+    save_handle.setEncryptionEnabled(false);
+    save_handle.setFilename(save_path);
+    save_handle.setWriteEnabled(true);
+    save_handle.setFileType(FileHandler::XML);
+    success &= save_handle.start();
+  }
+
+  if(save_handle.isAvailable() && success)
+  {
+    save_handle.writeXmlElement("game");
+
+    /* Write the core data */
+    save_handle.writeXmlElement("core");
+    //game_database->save(&fh, progress_dialog);
+    save_handle.writeXmlElementEnd();
+
+    /* Write the map data */
+    // TODO - need a way to distinguish and save new map data v. old map data
+
+    /* Finish the file write */
+    save_handle.writeXmlElementEnd();
+    success &= save_handle.save();
+  }
+
+  return success;
+}
+
 /* Set the running configuration, from the options class */
 bool Game::setConfiguration(Options* running_config)
 {
@@ -1820,6 +1871,17 @@ void Game::setRenderer(SDL_Renderer* renderer)
     active_renderer = renderer;
 }
 
+/* Sets the active save slot. This needs to be set prior to load */
+bool Game::setSaveSlot(uint8_t slot)
+{
+  if(slot > 0 && slot <= kSAVE_SLOT_MAX)
+  {
+    save_slot = slot;
+    return true;
+  }
+  return false;
+}
+
 /* Sets the sound handler used. If unset, no sounds will play */
 void Game::setSoundHandler(SoundHandler* new_handler)
 {
@@ -1845,6 +1907,9 @@ void Game::unloadCore()
 {
   removeAll();
   loaded_core = false;
+
+  if(save_handle.isAvailable())
+    save_handle.stop(true);
 }
 
 /* Unloads the sub map data of the game */

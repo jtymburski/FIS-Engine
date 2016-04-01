@@ -1000,7 +1000,7 @@ bool FileHandler::xmlReadStart()
   bool done = false;
   bool success = true;
 
-  if(xml_document != 0)
+  if(xml_document != nullptr)
   {
     while(!done && success)
       data.append(readLine(&done, &success));
@@ -1249,6 +1249,41 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
 }
 
 /*
+ * Description: Saves the current write set to the file. This will not close
+ *              the document and just returns if the save was successful.
+ *              If failed, it will not overwrite the main save file.
+ *
+ * Inputs: none
+ * Output: bool - true if the save was successful
+ */
+bool FileHandler::save()
+{
+  if(available && file_write)
+  {
+    bool success = true;
+
+    /* Handle ending of XML file type is XML */
+    if(file_type == XML)
+      success &= xmlWriteEnd();
+
+    /* MD5 write - if encryption is enabled */
+    if(encryption_enabled)
+    {
+      topOfFile();
+      success &= writeLine(MD5::compute(file_data), true);
+    }
+
+    /* If successful, process temporary file */
+    if(success)
+      fileCopy(file_name_temp, file_name, true);
+
+    return success;
+  }
+
+  return false;
+}
+
+/*
  * Description: Sets the encryption status in the class. If enabled, only
  *              encrypted files can be read from and vice versa.
  *
@@ -1434,32 +1469,18 @@ bool FileHandler::stop(bool failed)
 {
   bool success = true;
 
-  /* Handle ending of XML file if file in write and XML */
-  if(file_write && file_type == XML)
-    xmlWriteEnd();
-
-  /* MD5 write - if encryption is enabled */
-  if(file_write && encryption_enabled && available)
-  {
-    topOfFile();
-    success &= writeLine(MD5::compute(file_data), true);
-  }
+  /* Handle write case if not failed */
+  if(!failed)
+    save();
 
   /* Close the file stream */
   success &= fileClose();
   file_date = "";
+  available = false;
 
-  /* If success, reopen the class availability */
-  if(success)
-  {
-    available = false;
-
-    /* If on write and successful, remove temporary file */
-    if(file_write && !failed)
-      fileRename(file_name_temp, file_name, true);
-    else if(file_write)
-      fileDelete(file_name_temp);
-  }
+  /* If file write, delete temporary */
+  if(file_write)
+    fileDelete(file_name_temp);
 
   /* Do the final clean up once everything is stopped */
   cleanUp();
@@ -1699,6 +1720,35 @@ std::string FileHandler::xmlToHead()
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
+  
+/*
+ * Description: A function to copy a given file name to a new file name.
+ *              The success depends on the overwrite flag and if the old file
+ *              exists.
+ *
+ * Inputs: std::string old_filename - the old file to copy
+ *         std::string new_filename - the new file to copy to
+ *         bool overwrite - true to overwrite the new file if it exists. 
+ * Output: bool - true if the copy occurred
+ */
+bool FileHandler::fileCopy(std::string old_filename, std::string new_filename,
+                           bool overwrite)
+{
+  /* Make sure the old exists */
+  if(fileExists(old_filename))
+  {
+    /* Only proceed if overwrite is enabled or the new file does not exist */
+    if(overwrite || !fileExists(new_filename))
+    {
+      std::ifstream ifs(old_filename, std::ios::binary);
+      std::ofstream ofs(new_filename, std::ios::binary);
+      ofs << ifs.rdbuf();
+
+      return true;
+    }
+  }
+  return false;
+}
 
 /*
  * Description: A function to delete a given filename. Only works if the file

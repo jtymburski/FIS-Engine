@@ -220,6 +220,9 @@ public:
    * done */
   XmlData readXmlData(bool* done = 0, bool* success = 0);
 
+  /* Save - triggers the write to file without closing the document */
+  bool save();
+
   /* Sets if encryption is enabled for reading and writing */
   bool setEncryptionEnabled(bool enable);
 
@@ -265,6 +268,10 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Copies the file and based on the overwrite flag */
+  static bool fileCopy(std::string old_filename, std::string new_filename,
+                       bool overwrite = false);
+
   /* Deletes the said file, if it exists */
   static bool fileDelete(std::string filename);
 

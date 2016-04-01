@@ -115,13 +115,18 @@ private:
   /* The player */
   Player* player_main;
 
+  /* Current save properties */
+  FileHandler save_handle;
+  uint8_t save_slot;
+
   /* Number of ticks since inception */
   uint64_t ticks_total;
 
   /* ------------ Constants --------------- */
 public:
-  //static const uint32_t kSTARTING_MAP; /* Starting map ID */
-  //static const std::string kSTARTING_PATH; /* Starting game path */
+  static const std::string kSAVE_PATH_BACK; /* Back of save path */
+  static const std::string kSAVE_PATH_FRONT; /* Front of save path */
+  static const uint8_t kSAVE_SLOT_MAX; /* Max number of save slots */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -278,6 +283,9 @@ public:
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
 
+  /* Save game based on the current slot number */
+  bool save();
+
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 
@@ -286,6 +294,9 @@ public:
 
   /* Sets the active renderer to be used */
   void setRenderer(SDL_Renderer* renderer);
+
+  /* Sets the active save slot. This needs to be set prior to load */
+  bool setSaveSlot(uint8_t slot);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);

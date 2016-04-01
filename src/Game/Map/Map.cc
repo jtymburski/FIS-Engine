@@ -1933,15 +1933,8 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       setSectionIndex(player->getStartingSection());
     }
     /* Test: Dialog Reset */
-    else if(event.keysym.sym == SDLK_5)
+    else if(event.keysym.sym == SDLK_7)
       map_dialog.clearAll(true);
-    /* Test: Pick up test. Time limit */
-    //TODO: Removed as it seg faults [02-27-16]
-    // else if(event.keysym.sym == SDLK_6)
-    //   map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
-    /* Test: Pick up test. No time limit */
-    // else if(event.keysym.sym == SDLK_7)
-    //   map_dialog.initPickup(items.front()->getDialogImage(), 5);
     /* Test: single line chop off notification */
     else if(event.keysym.sym == SDLK_8)
       map_dialog.initNotification("Hello sunshine, what a glorious day and "
