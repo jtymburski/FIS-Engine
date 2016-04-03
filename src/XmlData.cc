@@ -332,7 +332,46 @@ void XmlData::flipElements()
   key = flipped_keys;
   value =flipped_values;
 }
-  
+
+/*
+ * Description: Returns the data stored within the class in string format for
+ *              use within an xml storage struct. If unset, it returns "".
+ *
+ * Inputs: bool* success - status if the data in the class in not invalid
+ * Output: std::string - the data as a string
+ */
+std::string XmlData::getData(bool* success)
+{
+  std::string data_str = "";
+
+  /* Process the data into string form */
+  if(data_type == BOOLEAN)
+  {
+    if(bool_data)
+      data_str = "true";
+    else
+      data_str = "false";
+  }
+  else if(data_type == INTEGER)
+  {
+    data_str = std::to_string(int_data);
+  }
+  else if(data_type == FLOAT)
+  {
+    data_str = std::to_string(float_data);
+  }
+  else if(data_type == STRING)
+  {
+    data_str = string_data;
+  }
+
+  /* Return success status */
+  if(success != nullptr)
+    *success = (data_type != NONE);
+
+  return data_str;
+}
+
 /* 
  * Description: Returns the data stored in the class, if it's a bool. If it's 
  *              not, success is set to false.
@@ -345,13 +384,13 @@ bool XmlData::getDataBool(bool* success)
   /* Only return data if the data stored is a boolean */
   if(data_type == BOOLEAN)
   {
-    if(success != 0)
+    if(success != nullptr)
       *success = true;
     return bool_data;
   }
 
   /* Otherwise, return fail status */
-  if(success != 0)
+  if(success != nullptr)
     *success = false;
   return false;
 }
@@ -368,13 +407,13 @@ float XmlData::getDataFloat(bool* success)
   /* Only return data if the data stored is a float */
   if(data_type == FLOAT)
   {
-    if(success != 0)
+    if(success != nullptr)
       *success = true;
     return float_data;
   }
 
   /* Otherwise, return fail status */
-  if(success != 0)
+  if(success != nullptr)
     *success = false;
   return 0.0;
 }
@@ -391,13 +430,13 @@ int XmlData::getDataInteger(bool* success)
   /* Only return data if the data stored is an integer */
   if(data_type == INTEGER)
   {
-    if(success != 0)
+    if(success != nullptr)
       *success = true;
     return int_data;
   }
 
   /* Otherwise, return fail status and negative integer */
-  if(success != 0)
+  if(success != nullptr)
     *success = false;
   return -1;
 }
@@ -414,15 +453,26 @@ std::string XmlData::getDataString(bool* success)
   /* Only return data if the data stored is a string */
   if(data_type == STRING)
   {
-    if(success != 0)
+    if(success != nullptr)
       *success = true;
     return string_data;
   }
 
   /* Otherwise, return fail status */
-  if(success != 0)
+  if(success != nullptr)
     *success = false;
   return "";
+}
+  
+/*
+ * Description: Returns the data categorizing type from the data set
+ *
+ * Inputs: none
+ * Output: XmlData::DataType - the data type to define
+ */
+XmlData::DataType XmlData::getDataType()
+{
+  return data_type;
 }
 
 /* 
@@ -610,4 +660,4 @@ bool XmlData::removeLastElement()
     return true;
   }
   return false;
-};
+}

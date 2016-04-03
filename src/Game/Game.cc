@@ -1774,7 +1774,7 @@ bool Game::save()
     save_handle.setFilename(save_path);
     save_handle.setWriteEnabled(true);
     save_handle.setFileType(FileHandler::XML);
-    success &= save_handle.start();
+    success &= save_handle.start(true);
   }
 
   if(save_handle.isAvailable() && success)

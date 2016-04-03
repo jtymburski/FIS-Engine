@@ -2,7 +2,7 @@
  * Class Name: XmlData
  * Date Created: March 29, 2013
  * Inheritance: none
- * Description: Handles a line of XML data. This is used when data is read 
+ * Description: Handles a line of XML data. This is used when data is read
  *              from the XML file reader and returned to the calling party.
  *****************************************************************************/
 #ifndef XMLDATA_H
@@ -19,7 +19,7 @@ class XmlData
 public:
   /* Constructor: Sets up a blank template with no data in the line set */
   XmlData();
-  
+
   /* Constructor: Sets up a template with one data item */
   XmlData(bool data);
   XmlData(float data);
@@ -30,10 +30,10 @@ public:
   ~XmlData();
 
   /* Public Enumerators */
-  enum DataType {BOOLEAN = 1, 
-                 INTEGER = 2, 
-                 FLOAT   = 3, 
-                 STRING  = 4, 
+  enum DataType {BOOLEAN = 1,
+                 INTEGER = 2,
+                 FLOAT   = 3,
+                 STRING  = 4,
                  NONE    = 5};
 
 private:
@@ -64,7 +64,7 @@ public:
   bool addDataOfType(std::string data);
 
   /* Add element to XML array */
-  bool addElement(std::string element, 
+  bool addElement(std::string element,
                   std::string key = "", std::string value = "");
 
   /* Delete all elements in the stack for XML - clears data */
@@ -76,12 +76,16 @@ public:
   /* Flips all element arrays, such that the first is the last, and last is
    * first. */
   void flipElements();
-  
+
   /* Get data calls - success holds if the data is actually set in the class */
-  bool getDataBool(bool* success = 0);
-  float getDataFloat(bool* success = 0);
-  int getDataInteger(bool* success = 0);
-  std::string getDataString(bool* success = 0);
+  std::string getData(bool* success = nullptr);
+  bool getDataBool(bool* success = nullptr);
+  float getDataFloat(bool* success = nullptr);
+  int getDataInteger(bool* success = nullptr);
+  std::string getDataString(bool* success = nullptr);
+
+  /* Returns the data type */
+  DataType getDataType();
 
   /* Element handling */
   std::vector<std::string> getAllElements();

@@ -620,21 +620,32 @@ int* FileHandler::longToInt(uint32_t* line_data, int length)
  *                      completed.
  *         bool* success - the pointer for a return value if the file read
  *                         was successful.
+ *         std::fstream* file_stream - the file stream if in write mode to read
+ *                                     from and parse
  * Output: std::string - the line that was read. Empty if file is finished or
  *                       failed.
  */
-std::string FileHandler::readLine(bool* done, bool* success)
+std::string FileHandler::readLine(bool* done, bool* success,
+                                  std::fstream* file_stream)
 {
   std::string line;
 
-  if(done != 0)
+  if(done != nullptr)
     *done = false;
-  if(success != 0)
+  if(success != nullptr)
     *success = true;
 
-  if(available && !file_write)
+  /* If file write is enabled, use the passed stream only */
+  std::fstream* main_read = nullptr;
+  if(file_write)
+    main_read = file_stream;
+  else
+    main_read = &this->file_stream;
+
+  /* Conduct the parse */
+  if(available && main_read != nullptr)
   {
-    if(getline(file_stream, line))
+    if(getline(*main_read, line))
     {
       if(encryption_enabled)
       {
@@ -644,12 +655,12 @@ std::string FileHandler::readLine(bool* done, bool* success)
       return line;
     }
 
-    if(done != 0)
+    if(done != nullptr)
       *done = true;
     return "";
   }
 
-  if(success != 0)
+  if(success != nullptr)
     *success = false;
   return "";
 }
@@ -991,10 +1002,11 @@ TinyXML2::XMLNode* FileHandler::xmlNextNode(TinyXML2::XMLNode* starting_node)
  *              and appropriate header detail. For the reading, it parses
  *              all the data in the file to move it into the QXmlStreamReader.
  *
- * Inputs: none
+ * Inputs: bool read_before_write - on XML write calls, read the orig file first
+ *                                  to populate the XML document
  * Output: bool - returns if the call was successful.
  */
-bool FileHandler::xmlReadStart()
+bool FileHandler::xmlReadStart(bool read_before_write)
 {
   std::string data = "";
   bool done = false;
@@ -1002,15 +1014,48 @@ bool FileHandler::xmlReadStart()
 
   if(xml_document != nullptr)
   {
-    while(!done && success)
-      data.append(readLine(&done, &success));
+    /* File write - open the main file name and parse */
+    if(file_write)
+    {
+      if(read_before_write)
+      {
+        /* Try and open the stream first */
+        std::fstream write_stream;
+        write_stream.open(file_name.c_str(), std::ios::in | std::ios::binary);
+        if(write_stream.good())
+        {
+          /* Read the data */
+          while(!done && success)
+            data.append(readLine(&done, &success, &write_stream));
+
+          /* Close the stream */
+          write_stream.close();
+
+          /* Go to bottom of document */
+        }
+      }
+    }
+    /* File read - just parse the main file */
+    else
+    {
+      while(!done && success)
+        data.append(readLine(&done, &success));
+    }
 
     /* Attempt to parse the document and then set the pointer to the head */
-    success &= !xml_document->Parse(data.c_str());
-    if(success)
+    if(!data.empty())
     {
-      file_date = xmlToHead();
-      determineCount();
+      success &= !xml_document->Parse(data.c_str());
+      if(success)
+      {
+        file_date = xmlToHead();
+        determineCount();
+      }
+    }
+    else
+    {
+      file_date = "";
+      element_count = 0;
     }
 
     return success;
@@ -1182,7 +1227,7 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
   bool finished = false;
 
   /* Only pass through if the XML can proceed */
-  if(available && file_type == XML && !file_write)
+  if(available && file_type == XML)
   {
     /* Try and find the next node of data */
     xml_node = xmlNextData(xml_node);
@@ -1262,6 +1307,14 @@ bool FileHandler::save()
   {
     bool success = true;
 
+    /* Update current date */
+    std::time_t current_time = time(0);
+    std::string date = std::ctime(&current_time);
+    date.pop_back();
+    XmlData date_data(date);
+    date_data.addElement("date");
+    //writeXmlData(date_data); // TODO: FIX
+
     /* Handle ending of XML file type is XML */
     if(file_type == XML)
       success &= xmlWriteEnd();
@@ -1275,7 +1328,11 @@ bool FileHandler::save()
 
     /* If successful, process temporary file */
     if(success)
-      fileCopy(file_name_temp, file_name, true);
+    {
+      success &= fileClose();
+      success &= fileRename(file_name_temp, file_name, true);
+      success &= fileOpen();
+    }
 
     return success;
   }
@@ -1365,12 +1422,13 @@ bool FileHandler::setWriteEnabled(bool enable)
  *              the class (with a fail) if it was running previously to wipe
  *              out the previous settings.
  *
- * Inputs: none
+ * Inputs: bool read_before_write - on XML write calls, read the orig file first
+ *                                  to populate the XML document
  * Output: bool - returns if the call was successful and if the file is now
  *                available to be read or written from. If it fails, the
  *                file will be unavailable.
  */
-bool FileHandler::start()
+bool FileHandler::start(bool read_before_write)
 {
   bool success = true;
 
@@ -1409,15 +1467,12 @@ bool FileHandler::start()
     if(file_type == XML)
     {
       xml_document = new TinyXML2::XMLDocument();
+      xml_node = xml_document;
+      success &= xmlReadStart(read_before_write);
 
+      /* If write mode, push the index to the end */
       if(file_write)
-      {
-        xml_node = xml_document;
-      }
-      else
-      {
-        success &= xmlReadStart();
-      }
+        xmlToTail();
     }
 
     /* Write a blank MD5 sequence, if applicable */
@@ -1433,7 +1488,7 @@ bool FileHandler::start()
 
       if(file_type == REGULAR)
         success &= writeLine(file_date);
-      else
+      else // TODO: Fix for write saves
         success &= writeXmlData("date", VarType::STRING, file_date);
     }
 
@@ -1599,6 +1654,95 @@ bool FileHandler::writeXmlData(std::string element, std::string data)
 }
 
 /*
+ * Description: Writes the data as described in the xml data set. This searches
+ *              from the root element of the xml document (if write) to find
+ *              the set to match xml data. If at any point, an element is not
+ *              found, it will be created and generated.
+ *
+ * Inputs: XmlData data - the data class to define the node sequence
+ * Output: bool - true if successful
+ */
+bool FileHandler::writeXmlData(XmlData data)
+{
+  if(available && file_type == XML && file_write && xml_document != nullptr &&
+     data.getNumElements() > 0 && !data.isDataUnset())
+  {
+    bool done = false;
+    TinyXML2::XMLNode* node = xml_document;
+    int index = 0;
+
+    /* Loop through all elements */
+    while(!done && (index + 1) < data.getNumElements())
+    {
+      /* Find if a child element matches */
+      TinyXML2::XMLElement* ele =
+                        node->FirstChildElement(data.getElement(index).c_str());
+      if(ele != nullptr)
+      {
+        /* Check the attribute if relevant */
+        const TinyXML2::XMLAttribute* attr = ele->FirstAttribute();
+        if(data.getKey(index).empty() ||
+           (attr != nullptr && attr->Name() == data.getKey(index)
+                            && attr->Value() == data.getKeyValue(index)))
+        {
+          node = ele;
+          index++;
+        }
+        else
+        {
+          done = true;
+        }
+      }
+      else
+      {
+        done = true;
+      }
+    }
+
+    /* Loop through remaining elements and add prior to data entry */
+    if(done)
+    {
+      for(int i = index; (i + 1) < data.getNumElements(); i++)
+      {
+        /* Create the element */
+        TinyXML2::XMLElement* ele =
+                           xml_document->NewElement(data.getElement(i).c_str());
+        if(!data.getKey(i).empty())
+          ele->SetAttribute(data.getKey(i).c_str(),data.getKeyValue(i).c_str());
+
+        /* Insert */
+        node = node->InsertEndChild(ele);
+      }
+    }
+    index = data.getNumElements() - 1;
+
+    /* Create the data entry */
+    TinyXML2::XMLElement* data_node =
+                       xml_document->NewElement(data.getElement(index).c_str());
+    data_node->SetAttribute("type", static_cast<int>(data.getDataType()));
+    data_node->InsertEndChild(xml_document->NewText(data.getData().c_str()));
+
+    /* Insert the data entry */
+    TinyXML2::XMLElement* data_ele =
+                        node->FirstChildElement(data.getElement(index).c_str());
+    if(data_ele != nullptr)
+    {
+      //date_ele->DeleteChildren(); // TODO: FIX
+      //date_ele->InsertEndChild(xml_document->NewText(data.get));
+      //node->InsertAfterChild(data_ele, data_node);
+    }
+    else
+    {
+      node->InsertEndChild(data_node);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
  * Description: Writes the XML starting element tag, to encapsulate data in
  *              the XML class. There are option key - value pairs to add to
  *              the end of the start element.
@@ -1696,7 +1840,7 @@ std::string FileHandler::xmlToHead()
 {
   std::string date = "";
 
-  if(available && !file_write && file_type == XML)
+  if(available && file_type == XML && xml_document != nullptr)
   {
     /* Return the node to the root of the document */
     xml_node = xml_document->RootElement();
@@ -1717,10 +1861,33 @@ std::string FileHandler::xmlToHead()
   return date;
 }
 
+/*
+ * Description: If the type is XML, this will push the pointer to the end of the
+ *              XML document for all future writes or reads to the document.
+ *
+ * Inputs: none
+ * Output: bool - true if the pointer was moved
+ */
+bool FileHandler::xmlToTail()
+{
+  if(available && file_type == XML && xml_document != nullptr)
+  {
+    TinyXML2::XMLNode* node = xml_document->LastChild();
+    if(node != nullptr)
+    {
+      while(node->Parent() != nullptr)
+        node = node->Parent();
+      xml_node = node;
+    }
+    return true;
+  }
+  return false;
+}
+
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
-  
+
 /*
  * Description: A function to copy a given file name to a new file name.
  *              The success depends on the overwrite flag and if the old file
@@ -1728,7 +1895,7 @@ std::string FileHandler::xmlToHead()
  *
  * Inputs: std::string old_filename - the old file to copy
  *         std::string new_filename - the new file to copy to
- *         bool overwrite - true to overwrite the new file if it exists. 
+ *         bool overwrite - true to overwrite the new file if it exists.
  * Output: bool - true if the copy occurred
  */
 bool FileHandler::fileCopy(std::string old_filename, std::string new_filename,

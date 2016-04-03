@@ -2,10 +2,10 @@
  * Class Name: FileHandler
  * Date Created: February 16, 2012
  * Inheritance: none
- * Description: Handles all files that enter and leave the game. Will be 
+ * Description: Handles all files that enter and leave the game. Will be
  *              writing everything into a specific XML format and will allow
- *              for encrypting and decrypting the file using an implementation 
- *              of XXTEA. 
+ *              for encrypting and decrypting the file using an implementation
+ *              of XXTEA.
  *
  * Example: REGULAR file read
  *          -----------------
@@ -36,7 +36,7 @@
  *          // Result: <person id="1">
  *          //           <name type="3">john</name> // type 3 is string
  *          //         </person>
- *          
+ *
  *          stop();
  *****************************************************************************/
 #ifndef FILEHANDLER_H
@@ -60,7 +60,7 @@ class FileHandler
 public:
   /* Constructor: Sets up a blank template, no read/write file set */
   FileHandler();
-  FileHandler(std::string filename, bool write = false, 
+  FileHandler(std::string filename, bool write = false,
               bool xml = false, bool encryption = false);
 
   /* Destructor function */
@@ -70,9 +70,9 @@ public:
   enum FileType {REGULAR, XML};
   enum VarType
   {
-    BOOLEAN = 1, 
-    INTEGER = 2, 
-    FLOAT   = 3, 
+    BOOLEAN = 1,
+    INTEGER = 2,
+    FLOAT   = 3,
     STRING  = 4
   };
 
@@ -82,7 +82,7 @@ private:
 
   /* Element count - lines for regular, final elements for XML */
   int element_count;
-  
+
   /* Set if the encryption system is enabled */
   bool encryption_enabled;
 
@@ -98,7 +98,7 @@ private:
   /* XML handlers for reading/writing */
   TinyXML2::XMLDocument* xml_document;
   TinyXML2::XMLNode* xml_node;
-  
+
   /*------------------- Constants -----------------------*/
   const static int kASCII_IN_LONG;   /* # of ascii's that will fit in long */
   const static uint32_t kDELTA;      /* Sum bias for encryption */
@@ -109,7 +109,7 @@ private:
   const static int kINT_BIT_SHIFT;   /* Shift int to next spot */
   const static int kINT_BUFFER;      /* Only use most significant int */
   const static uint32_t kKEY[];      /* Key array for encryption */
-  const static int kLONG_BIT_SHIFT;  /* Number of bits to shift long to 
+  const static int kLONG_BIT_SHIFT;  /* Number of bits to shift long to
                                       * next spot */
   const static int kLONG_BUFFER;     /* Only use most significant long */
   const static int kMAX_ASCII;       /* Max ascii out of bounds */
@@ -129,7 +129,7 @@ private:
 
   /* Determines element XML count */
   void determineCount();
-  
+
   /* Decrypt line of data */
   std::string decryptLine(std::string line, bool* success = 0);
 
@@ -155,14 +155,15 @@ private:
   int* longToInt(uint32_t* line_data, int length);
 
   /* The base read line class, reads data from the file */
-  std::string readLine(bool* done = 0, bool* success = 0);
+  std::string readLine(bool* done = nullptr, bool* success = nullptr,
+                       std::fstream* file_stream = nullptr);
 
   /* Confirms if the MD5 matches the file */
   bool readMd5();
 
   /* Ascertains the temp file name to be used in the program */
   bool setTempFileName();
-  
+
   /* Convert a string to an array of ints, each representing a character */
   int stringToInt(std::string line, int** line_data, bool encrypting = 0);
 
@@ -177,13 +178,13 @@ private:
 
   /* Returns the next data node from the current pointer */
   TinyXML2::XMLNode* xmlNextData(TinyXML2::XMLNode* starting_node);
-  
-  /* Returns the next node, that isn't a child but either a sibling or a 
+
+  /* Returns the next node, that isn't a child but either a sibling or a
    * parent's sibling */
   TinyXML2::XMLNode* xmlNextNode(TinyXML2::XMLNode* starting_node);
-  
+
   /* Starts the XML reading procedure */
-  bool xmlReadStart();
+  bool xmlReadStart(bool read_before_write = false);
 
   /* Finishes the XML writing procedure */
   bool xmlWriteEnd();
@@ -214,11 +215,11 @@ public:
   bool isWriteEnabled();
 
   /* Reads the following line as a string. Only valid for REGULAR files */
-  std::string readRegularLine(bool* done = 0, bool* success = 0);
+  std::string readRegularLine(bool* done = nullptr, bool* success = nullptr);
 
   /* Reads the next XML data element - returns an empty data element when
    * done */
-  XmlData readXmlData(bool* done = 0, bool* success = 0);
+  XmlData readXmlData(bool* done = nullptr, bool* success = nullptr);
 
   /* Save - triggers the write to file without closing the document */
   bool save();
@@ -236,7 +237,7 @@ public:
   bool setWriteEnabled(bool enable);
 
   /* Starts the whole process, to be able to access the file stream */
-  bool start();
+  bool start(bool read_before_write = false);
 
   /* Stops the whole process, to end access to the file stream */
   bool stop(bool failed = false);
@@ -250,19 +251,25 @@ public:
   bool writeXmlData(std::string element, float data);
   bool writeXmlData(std::string element, int data);
   bool writeXmlData(std::string element, std::string data);
-  
+
+  /* Writes the data as described in the xml data set */
+  bool writeXmlData(XmlData data);
+
   /* Writes a starting XML element */
-  bool writeXmlElement(std::string element, 
+  bool writeXmlElement(std::string element,
                        std::string key = "", std::string value = "");
-  bool writeXmlElement(std::string element, 
+  bool writeXmlElement(std::string element,
                         std::string key, int value);
 
   /* Writes an ending XML element or elements */
   bool writeXmlElementEnd(bool all = false);
-  
-  /* Puts the xml reader at the head of the XML document - returns date if 
+
+  /* Puts the xml reader at the head of the XML document - returns date if
    * exists */
   std::string xmlToHead();
+
+  /* Puts the xml reader at the end of the XML document */
+  bool xmlToTail();
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
