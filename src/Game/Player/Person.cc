@@ -833,6 +833,7 @@ bool Person::isPowerGuarder()
  * Inputs: XmlData data - the xml data structure
  *         int index - the element reference index
  *         SDL_Renderer* renderer - the rendering engine
+ *         std::string base_path - the base path for file handling
  * Output: bool - true if load was successful
  */
 bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,

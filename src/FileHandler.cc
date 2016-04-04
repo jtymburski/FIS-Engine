@@ -1098,6 +1098,83 @@ bool FileHandler::xmlWriteEnd()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+  
+/*
+ * Description: Finds the element sequence defined in the XmlData set (not
+ *              including the data entry). If the element does not exist, it
+ *              will be created. It has the capacity to save the location to
+ *              the active node pointer.
+ *
+ * Inputs: XmlData data - the data class to define the node sequence
+ *         bool save_location - save found element location to active
+ * Output: TinyXML2::XMLNode* - the found node location. NULL if failed
+ */
+TinyXML2::XMLNode* FileHandler::findElement(XmlData data, bool save_location)
+{
+  TinyXML2::XMLNode* node = nullptr;
+
+  if(available && file_type == XML && file_write && xml_document != nullptr)
+  {
+    bool done = false;
+    node = xml_document;
+    int index = 0;
+
+    /* Determine parse limit */
+    int limit = data.getNumElements();
+    if(!data.isDataUnset())
+      limit--;
+
+    /* Loop through all elements */
+    while(!done && index < limit)
+    {
+      /* Find if a child element matches */
+      TinyXML2::XMLElement* ele =
+                        node->FirstChildElement(data.getElement(index).c_str());
+      if(ele != nullptr)
+      {
+        /* Check the attribute if relevant */
+        const TinyXML2::XMLAttribute* attr = ele->FirstAttribute();
+        if(data.getKey(index).empty() ||
+           (attr != nullptr && attr->Name() == data.getKey(index)
+                            && attr->Value() == data.getKeyValue(index)))
+        {
+          node = ele;
+          index++;
+        }
+        else
+        {
+          done = true;
+        }
+      }
+      else
+      {
+        done = true;
+      }
+    }
+
+    /* Loop through remaining elements and add prior to data entry */
+    if(done)
+    {
+      for(int i = index; i < limit; i++)
+      {
+        /* Create the element */
+        TinyXML2::XMLElement* ele =
+                           xml_document->NewElement(data.getElement(i).c_str());
+        if(!data.getKey(i).empty())
+          ele->SetAttribute(data.getKey(i).c_str(),data.getKeyValue(i).c_str());
+
+        /* Insert */
+        node = node->InsertEndChild(ele);
+      }
+    }
+
+    /* Save the location, if user selected */
+    if(save_location)
+      xml_node = node;
+  }
+
+  return node;
+}
 
 /*
  * Description: Returns the total number of xml elements that can be read. This
@@ -1180,6 +1257,28 @@ bool FileHandler::isEncryptionEnabled()
 bool FileHandler::isWriteEnabled()
 {
   return file_write;
+}
+  
+/*
+ * Description: Finds the element sequence defined in the XmlData set (not
+ *              including the data entry) and purges all children within. If
+ *              the element does not exist, it will be created. It has the
+ *              capacity to save the location to the active node pointer.
+ *
+ * Inputs: XmlData data - the data class to define the node sequence
+ *         bool save_location - save found element location to active
+ * Output: TinyXML2::XMLNode* - the found node location. NULL if failed
+ */
+TinyXML2::XMLNode* FileHandler::purgeElement(XmlData data, bool save_location)
+{
+  /* Find the node to purge */
+  TinyXML2::XMLNode* node = findElement(data, save_location);
+  if(node != nullptr)
+  {
+    node->DeleteChildren();
+  }
+
+  return node;
 }
 
 /*
@@ -1309,11 +1408,11 @@ bool FileHandler::save()
 
     /* Update current date */
     std::time_t current_time = time(0);
-    std::string date = std::ctime(&current_time);
-    date.pop_back();
-    XmlData date_data(date);
+    file_date = std::ctime(&current_time);
+    file_date.pop_back();
+    XmlData date_data(file_date);
     date_data.addElement("date");
-    //writeXmlData(date_data); // TODO: FIX
+    writeXmlDataSet(date_data);
 
     /* Handle ending of XML file type is XML */
     if(file_type == XML)
@@ -1487,9 +1586,22 @@ bool FileHandler::start(bool read_before_write)
       file_date.pop_back();
 
       if(file_type == REGULAR)
+      {
         success &= writeLine(file_date);
-      else // TODO: Fix for write saves
-        success &= writeXmlData("date", VarType::STRING, file_date);
+      }
+      else
+      {
+        if(xml_document->NoChildren())
+        {
+          success &= writeXmlData("date", VarType::STRING, file_date);
+        }
+        else
+        {
+          XmlData date_data(file_date);
+          date_data.addElement("date");
+          writeXmlDataSet(date_data);
+        }
+      }
     }
 
     /* Read off starting date, if applicable */
@@ -1654,91 +1766,56 @@ bool FileHandler::writeXmlData(std::string element, std::string data)
 }
 
 /*
+ * Description: Writes unsigned integer XML data, using the internal class
+ *              paradigm. Just recalls the 3 parameter writeXmlData() with the
+ *              appropriate settings + casting.
+ *
+ * Inputs: std::string element - the string xml element
+ *         uint32_t data - the data, as an unsigned integer number
+ * Output: bool - status if write was successful
+ */
+bool FileHandler::writeXmlData(std::string element, uint32_t data)
+{
+  return writeXmlData(element, static_cast<int>(data));
+}
+
+/*
  * Description: Writes the data as described in the xml data set. This searches
  *              from the root element of the xml document (if write) to find
  *              the set to match xml data. If at any point, an element is not
  *              found, it will be created and generated.
  *
  * Inputs: XmlData data - the data class to define the node sequence
+ *         bool save_location - save found element location to active
  * Output: bool - true if successful
  */
-bool FileHandler::writeXmlData(XmlData data)
+bool FileHandler::writeXmlDataSet(XmlData data, bool save_location)
 {
-  if(available && file_type == XML && file_write && xml_document != nullptr &&
-     data.getNumElements() > 0 && !data.isDataUnset())
+  if(data.getNumElements() > 0 && !data.isDataUnset())
   {
-    bool done = false;
-    TinyXML2::XMLNode* node = xml_document;
-    int index = 0;
-
-    /* Loop through all elements */
-    while(!done && (index + 1) < data.getNumElements())
+    /* Find the node to insert */
+    TinyXML2::XMLNode* node = findElement(data, save_location);
+    if(node != nullptr)
     {
-      /* Find if a child element matches */
-      TinyXML2::XMLElement* ele =
+      int index = data.getNumElements() - 1;
+
+      /* Create or find the data entry */
+      TinyXML2::XMLElement* data_ele =
                         node->FirstChildElement(data.getElement(index).c_str());
-      if(ele != nullptr)
+      if(data_ele == nullptr)
       {
-        /* Check the attribute if relevant */
-        const TinyXML2::XMLAttribute* attr = ele->FirstAttribute();
-        if(data.getKey(index).empty() ||
-           (attr != nullptr && attr->Name() == data.getKey(index)
-                            && attr->Value() == data.getKeyValue(index)))
-        {
-          node = ele;
-          index++;
-        }
-        else
-        {
-          done = true;
-        }
+        data_ele = xml_document->NewElement(data.getElement(index).c_str());
+        node->InsertEndChild(data_ele);
       }
-      else
-      {
-        done = true;
-      }
+
+      /* Set the data of the element */
+      data_ele->DeleteChildren();
+      data_ele->SetAttribute("type", static_cast<int>(data.getDataType()));
+      data_ele->InsertEndChild(xml_document->NewText(data.getData().c_str()));
+
+      return true;
     }
-
-    /* Loop through remaining elements and add prior to data entry */
-    if(done)
-    {
-      for(int i = index; (i + 1) < data.getNumElements(); i++)
-      {
-        /* Create the element */
-        TinyXML2::XMLElement* ele =
-                           xml_document->NewElement(data.getElement(i).c_str());
-        if(!data.getKey(i).empty())
-          ele->SetAttribute(data.getKey(i).c_str(),data.getKeyValue(i).c_str());
-
-        /* Insert */
-        node = node->InsertEndChild(ele);
-      }
-    }
-    index = data.getNumElements() - 1;
-
-    /* Create the data entry */
-    TinyXML2::XMLElement* data_node =
-                       xml_document->NewElement(data.getElement(index).c_str());
-    data_node->SetAttribute("type", static_cast<int>(data.getDataType()));
-    data_node->InsertEndChild(xml_document->NewText(data.getData().c_str()));
-
-    /* Insert the data entry */
-    TinyXML2::XMLElement* data_ele =
-                        node->FirstChildElement(data.getElement(index).c_str());
-    if(data_ele != nullptr)
-    {
-      //date_ele->DeleteChildren(); // TODO: FIX
-      //date_ele->InsertEndChild(xml_document->NewText(data.get));
-      //node->InsertAfterChild(data_ele, data_node);
-    }
-    else
-    {
-      node->InsertEndChild(data_node);
-    }
-
-    return true;
   }
-
   return false;
 }
 

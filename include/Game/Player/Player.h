@@ -94,6 +94,10 @@ public:
   /* Returns the number of steps this player has undertaken */
   uint32_t getSteps();
 
+  /* Load data from file */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
+                std::string base_path);
+
   /* Methods for printing ou the info of the player */
   void print();
 
@@ -114,6 +118,9 @@ public:
 
   /* Resets the play time of the player */
   void resetPlayTime();
+
+  /* Load data from file */
+  bool saveData(FileHandler* fh);
 
   /* Sets the bearcks party WARNING: Possibly a dangerous function */
   void setBearacks(Party* const new_bearacks = nullptr);

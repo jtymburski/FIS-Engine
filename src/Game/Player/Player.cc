@@ -229,6 +229,60 @@ uint32_t Player::getSteps()
 }
 
 /*
+ * Description: Loads the data from file associated with the player.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         SDL_Renderer* renderer - the rendering engine
+ *         std::string base_path - the base path for file handling
+ * Output: bool - true if load was successful
+ */
+bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
+                      std::string base_path)
+{
+  (void)renderer;
+  (void)base_path;
+  bool success = true;
+
+  /* ---- CREDITS ---- */
+  if(data.getElement(index) == "credits")
+  {
+    success &= setCredits(data.getDataInteger(&success));
+  }
+  /* ---- GRAVITY ---- */
+  else if(data.getElement(index) == "gravity")
+  {
+    success &= setGravity(data.getDataInteger(&success));
+  }
+  /* ---- PLAY TIME ---- */
+  else if(data.getElement(index) == "playtime")
+  {
+    if(data.getElement(index + 1) == "hours")
+    {
+      setPlayTime(data.getDataInteger(&success), play_time.minutes,
+                  play_time.milliseconds);
+    }
+    else if(data.getElement(index + 1) == "minutes")
+    {
+      setPlayTime(play_time.hours, data.getDataInteger(&success),
+                  play_time.milliseconds);
+    }
+    else if(data.getElement(index + 1) == "milliseconds")
+    {
+      setPlayTime(play_time.hours, play_time.minutes,
+                  data.getDataInteger(&success));
+    }
+  }
+  /* ---- STEPS ---- */
+  else if(data.getElement(index) == "steps")
+  {
+    setSteps(data.getDataInteger(&success));
+  }
+
+  return success;
+}
+
+/*
  * Description: Prints out the information about the player
  *
  * Inputs:
@@ -315,6 +369,35 @@ bool Player::removeSleuthMember(const std::string &name)
 void Player::resetPlayTime()
 {
   play_time = {0, 0, 0};
+}
+
+/*
+ * Description: Saves the data of this player to the file handler pointer.
+ *
+ * Inputs: FileHandler* fh - the saving file handler
+ * Output: bool - true if successful
+ */
+bool Player::saveData(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    fh->writeXmlElement("player");
+
+    /* Write data */
+    fh->writeXmlData("credits", credits);
+    if(gravity != kDEFAULT_GRAVITY)
+      fh->writeXmlData("gravity", gravity);
+    fh->writeXmlElement("playtime");
+    fh->writeXmlData("hours", play_time.hours);
+    fh->writeXmlData("minutes", play_time.minutes);
+    fh->writeXmlData("milliseconds", play_time.milliseconds);
+    fh->writeXmlElementEnd();
+    fh->writeXmlData("steps", steps);
+
+    fh->writeXmlElementEnd();
+    return true;
+  }
+  return false;
 }
 
 /*

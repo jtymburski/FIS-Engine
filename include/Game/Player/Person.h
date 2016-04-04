@@ -35,6 +35,7 @@
 
 class AIModule;
 
+#include "FileHandler.h"
 #include "Game/Battle/AIModule.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Equipment.h"

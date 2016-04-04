@@ -20,12 +20,13 @@
 #include <iostream>
 #include <vector>
 
+#include "EnumDb.h"
+#include "EnumFlags.h"
+#include "FileHandler.h"
+#include "Frame.h"
 #include "Game/Player/Item.h"
 #include "Game/Player/Bubby.h"
 #include "Game/Player/Equipment.h"
-#include "EnumDb.h"
-#include "EnumFlags.h"
-#include "Frame.h"
 #include "Helpers.h"
 #include "StringDb.h"
 

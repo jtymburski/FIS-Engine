@@ -193,6 +193,10 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Finds the element sequence in the stack (not including data entry) and
+   * puts the active node pointer at that location. */
+  TinyXML2::XMLNode* findElement(XmlData data, bool save_location = false);
+
   /* Returns a count of the number of elements */
   int getCount();
 
@@ -213,6 +217,10 @@ public:
 
   /* Determines if the class is read or write (TRUE if write) */
   bool isWriteEnabled();
+
+  /* Finds the element in the stack (not including data entry) and then purges
+   * all children. */
+  TinyXML2::XMLNode* purgeElement(XmlData data, bool save_location = false);
 
   /* Reads the following line as a string. Only valid for REGULAR files */
   std::string readRegularLine(bool* done = nullptr, bool* success = nullptr);
@@ -251,9 +259,10 @@ public:
   bool writeXmlData(std::string element, float data);
   bool writeXmlData(std::string element, int data);
   bool writeXmlData(std::string element, std::string data);
+  bool writeXmlData(std::string element, uint32_t data);
 
   /* Writes the data as described in the xml data set */
-  bool writeXmlData(XmlData data);
+  bool writeXmlDataSet(XmlData data, bool save_location = false);
 
   /* Writes a starting XML element */
   bool writeXmlElement(std::string element,

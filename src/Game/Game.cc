@@ -810,11 +810,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
   /* ---- PLAYER ---- */
   else if(element == "player")
   {
-    /* Data for player */
-    if(data.getElement(index + 1) == "credits")
-    {
-      success &= player_main->setCredits(data.getDataInteger(&success));
-    }
+    player_main->loadData(data, index + 1, renderer, base_path);
   }
   /* ---- RACES ---- */
   else if(element == "race")
@@ -1779,15 +1775,24 @@ bool Game::save()
 
   if(save_handle.isAvailable() && success)
   {
-    save_handle.writeXmlElement("game");
+    /* Setup the core data */
+    XmlData data_core;
+    data_core.addElement("game");
+    data_core.addElement("core");
+    save_handle.purgeElement(data_core, true);
 
     /* Write the core data */
-    save_handle.writeXmlElement("core");
-    //game_database->save(&fh, progress_dialog);
-    save_handle.writeXmlElementEnd();
+    if(player_main != nullptr)
+    {
+      /* Write player data */
+      updatePlayerSteps();
+      player_main->saveData(&save_handle);
+
+      // TODO: Add rest of core data
+    }
 
     /* Write the map data */
-    // TODO - need a way to distinguish and save new map data v. old map data
+    // TODO: Modify current map data */
 
     /* Finish the file write */
     save_handle.writeXmlElementEnd();
