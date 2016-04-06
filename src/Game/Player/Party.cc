@@ -522,6 +522,53 @@ PartyType Party::getPartyType()
 {
   return party_type;
 }
+  
+/*
+ * Description: Saves the data of this party to the file handler pointer.
+ *
+ * Inputs: FileHandler* fh - the saving file handler
+ *         std::string wrapper - the text to wrap the xml data in. default is
+ *                               blank and unused
+ * Output: bool - true if successful
+ */
+bool Party::saveData(FileHandler* fh, std::string wrapper)
+{
+  if(fh != nullptr)
+  {
+    /* Start wrapper */
+    if(!wrapper.empty())
+      fh->writeXmlElement(wrapper);
+
+    /* Write data - persons */
+    for(uint16_t i = 0; i < members.size(); i++)
+    {
+      fh->writeXmlElement("person", "index", i);
+      members[i]->saveData(fh);
+      fh->writeXmlElementEnd();
+    }
+
+    /* Write data - reserve persons */
+    for(uint16_t i = 0; i < reserve_members.size(); i++)
+    {
+      fh->writeXmlElement("reserve", "index", i);
+      reserve_members[i]->saveData(fh);
+      fh->writeXmlElementEnd();
+    }
+
+    /* Write data - inventory */
+    if(pouch != nullptr)
+    {
+      pouch->saveData(fh);
+    }
+
+    /* End wrapper */
+    if(!wrapper.empty())
+      fh->writeXmlElementEnd();
+
+    return true;
+  }
+  return false;
+}
 
 /*
  * Description: Assigns a given PartyState flag a given Boolean vale.

@@ -144,6 +144,10 @@ public:
   /* Calcs and returns the number of spaces in the Inv. for a given Item */
   uint32_t hasRoom(Item* const item, uint32_t amount = 1);
 
+  /* Load data from file */
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
+                std::string base_path);
+
   /* Prints out the state of the inventory */
 	void print(bool simple = true);
 
@@ -179,6 +183,9 @@ public:
 
   /* Remove an item from the Inventory by a given unique item ID value */
   bool removeItemUID(const uint32_t &unique_id, const uint16_t &amount = 1);
+
+  /* Save data to file */
+  bool saveData(FileHandler* fh);
 
   /* Sorts an object in the inventory a certain way */
 	bool sort(SortType sort_by, SortObjects object_to_sort,

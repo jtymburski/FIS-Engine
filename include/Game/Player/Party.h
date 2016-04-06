@@ -161,6 +161,9 @@ public:
   /* Return the size of the party */
   uint32_t getSize();
 
+  /* Save data to file */
+  bool saveData(FileHandler* fh, std::string wrapper = "party");
+
   /* Assigns a given PartyState flag a given value */
   void setFlag(const PartyState &flag, const bool &set_value = true);
 

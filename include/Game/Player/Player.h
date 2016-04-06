@@ -119,7 +119,7 @@ public:
   /* Resets the play time of the player */
   void resetPlayTime();
 
-  /* Load data from file */
+  /* Save data to file */
   bool saveData(FileHandler* fh);
 
   /* Sets the bearcks party WARNING: Possibly a dangerous function */

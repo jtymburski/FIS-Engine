@@ -364,6 +364,12 @@ void Person::unsetAll(const bool& clear)
   learned_skills = nullptr;
 }
 
+/* 
+ * Description: Unsets the sprites stored within the person.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::unsetSprites()
 {
   if(dialog_sprite != nullptr)
@@ -374,134 +380,12 @@ void Person::unsetSprites()
 }
 
 /*
- * Description: Recalculates the Person's base stats and base max stats based
- *              on their battle class and their race class.
- *
- * Inputs: none
- * Output: none
- */
-void Person::updateBaseStats()
-{
-  AttributeSet temp;
-  AttributeSet temp_max;
-
-  if(battle_class != nullptr)
-  {
-    temp = battle_class->getBaseSet();
-    temp_max = battle_class->getTopSet();
-  }
-  if(race_class != nullptr)
-  {
-    temp += race_class->getBaseSet();
-    temp_max += race_class->getTopSet();
-  }
-
-  std::vector<int32_t> prim_indexes;
-  std::vector<int32_t> secd_indexes;
-
-  if(primary != Element::NONE)
-  {
-    prim_indexes.push_back(AttributeSet::getOffensiveIndex(primary));
-    prim_indexes.push_back(AttributeSet::getDefensiveIndex(primary));
-
-    auto p_mod = getCurveModifier(primary_curve, true);
-
-    for(auto index : prim_indexes)
-    {
-      if(index != -1)
-      {
-        auto a = std::floor(static_cast<float>(temp.getStat(index)) * p_mod);
-        auto b =
-            std::floor(static_cast<float>(temp_max.getStat(index)) * p_mod);
-
-        temp.setStat(index, a);
-        temp_max.setStat(index, b);
-      }
-    }
-  }
-
-  if(secondary != Element::NONE)
-  {
-    secd_indexes.push_back(AttributeSet::getOffensiveIndex(secondary));
-    secd_indexes.push_back(AttributeSet::getDefensiveIndex(secondary));
-
-    auto s_mod = getCurveModifier(secondary_curve, false);
-
-    for(auto index : secd_indexes)
-    {
-      if(index != -1)
-      {
-        auto a = std::floor(static_cast<float>(temp.getStat(index)) * s_mod);
-        auto b =
-            std::floor(static_cast<float>(temp_max.getStat(index)) * s_mod);
-
-        temp.setStat(index, a);
-        temp_max.setStat(index, b);
-      }
-    }
-  }
-
-  temp.cleanUp();
-  temp_max.cleanUp();
-
-  base_stats = temp;
-  base_max_stats = temp_max;
-
-  updateStats();
-}
-
-/*
- * Description: Updates the base skills of the Person based on the battle class
- *              and the race class.
- *
- * Inputs: none
- * Output: none
- */
-void Person::updateBaseSkills()
-{
-  if(base_skills != nullptr)
-    base_skills->clear();
-  else
-    base_skills = new SkillSet();
-
-  if(battle_class != nullptr && battle_class->getSkills() != nullptr)
-    *base_skills = *base_skills + *(battle_class->getSkills());
-
-  if(race_class != nullptr && race_class->getSkills() != nullptr)
-    *base_skills = *base_skills + *(race_class->getSkills());
-
-  updateSkills();
-}
-
-/*
- * Description: Updates the temp_max_stats attribute set to reflect the
- *              curr_max_stat attribute plus the buff sets for each of the
- *              equipped equipment.
- *
- * Inputs: none
- * Output: none
- */
-AttributeSet Person::calcEquipStats()
-{
-  // auto equip_bonus = AttributeSet();
-
-  // for(auto it = begin(equipments); it != end(equipments); ++it)
-  //   if((*it) != nullptr)
-  //     equip_bonus += (*it)->getStats();
-
-  // return (curr_max_stats + equip_bonus);
-
-  return curr_max_stats;
-}
-
-/*
  * Description: Updates he level of the Person based on their curren total
  *              experience.
  *
  * Inputs: bool ignore_flags - true to ignore CAN_LEVEL_UP flag. default false
  * Output: none
  */
-/* Updates the level of the person based on their current total experience */
 void Person::updateLevel(const bool& ignore_flags)
 {
   if(getPFlag(PState::CAN_LEVEL_UP) || ignore_flags)
@@ -519,79 +403,6 @@ void Person::updateLevel(const bool& ignore_flags)
 }
 
 /*
- * Description: Updates the current stats and current max stats of the Person
- *              based on their level.
- *
- * Inputs: none
- * Output: none
- */
-void Person::updateStats()
-{
-  if(level == 1)
-  {
-    curr_stats = base_stats;
-    curr_max_stats = base_stats;
-  }
-  else if(level == kNUM_LEVELS)
-  {
-    curr_stats = base_max_stats;
-    curr_max_stats = base_max_stats;
-  }
-  else if(level > 1)
-  {
-    curr_stats = AttributeSet(0, true);
-    curr_max_stats = AttributeSet(0, true);
-
-    for(size_t i = 0; i < AttributeSet::getSize(); i++)
-    {
-      std::vector<uint32_t> stat_values{};
-      stat_values = Helpers::buildExpTable(
-          base_stats.getStat(i), base_max_stats.getStat(i), kNUM_LEVELS);
-      curr_stats.setStat(i, stat_values.at(level - 1));
-    }
-
-    curr_max_stats = curr_stats;
-  }
-
-  temp_max_stats = curr_max_stats;
-
-  for(auto equipment : equipments)
-    if(equipment != nullptr)
-      temp_max_stats += equipment->getStats();
-
-  curr_stats.cleanUp();
-  curr_max_stats.cleanUp();
-  temp_max_stats.cleanUp();
-}
-
-/*
- * Description: Updates the current total SkillSet of the person. This means
- *              adding the skills granted by equipment and the learned skills
- *              of the Person to the base skills.
- *
- * Inputs: none
- * Output: none
- */
-void Person::updateSkills()
-{
-
-  if(curr_skills != nullptr)
-    curr_skills->clear();
-  else
-    curr_skills = new SkillSet();
-
-  if(learned_skills != nullptr)
-    *curr_skills += *learned_skills;
-
-  if(base_skills != nullptr)
-    *curr_skills += *base_skills;
-
-  for(auto equipment : equipments)
-    if(equipment != nullptr)
-      *curr_skills += equipment->getSkills();
-}
-
-/*
  * Description: Updates the rank of the Person based on their person record.
  *
  * Inputs: none
@@ -602,6 +413,10 @@ void Person::updateRank()
   rank = Rank::NUBEAR;
   // rank = person_record.getRank();
 }
+
+/*=============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
 
 /*
  * Description: Constructs the static table of experience values given the
@@ -623,7 +438,6 @@ void Person::buildExpTable()
  *         bool - true if to check primary, false for secondary.
  * Output: float - the obtained curve modifier
  */
-/* Returns the curve modifier given a curve value and whether to check prim */
 float Person::getCurveModifier(const ElementCurve& curve, const bool primary)
 {
   auto index = static_cast<uint8_t>(curve);
@@ -681,7 +495,33 @@ bool Person::addExp(const uint32_t& amount, const bool& update,
   return can_add;
 }
 
-// TODO: Comment
+/*
+ * Description: Updates the temp_max_stats attribute set to reflect the
+ *              curr_max_stat attribute plus the buff sets for each of the
+ *              equipped equipment.
+ *
+ * Inputs: none
+ * Output: none
+ */
+AttributeSet Person::calcEquipStats()
+{
+  // auto equip_bonus = AttributeSet();
+
+  // for(auto it = begin(equipments); it != end(equipments); ++it)
+  //   if((*it) != nullptr)
+  //     equip_bonus += (*it)->getStats();
+
+  // return (curr_max_stats + equip_bonus);
+
+  return curr_max_stats;
+}
+
+/*
+ * Description: Calculates the vitality percent at the given value v. max.
+ *
+ * Inputs: uint32_t target_value - the target VITA value
+ * Output: float - the percent vitality of max
+ */
 float Person::calcVitaPercentAtVal(uint32_t target_value)
 {
   auto target_vita = static_cast<int32_t>(target_value);
@@ -690,7 +530,12 @@ float Person::calcVitaPercentAtVal(uint32_t target_value)
   return (max_vita != 0) ? ((float)target_vita / (float)max_vita) : (0);
 }
 
-// TODO: Comment
+/*
+ * Description: Calculates the QTDR percent at the given value v. max
+ *
+ * Inputs: uint32_t target_value - the target QTDR value
+ * Output: float - the percent QTDR of max
+ */
 float Person::calcQtdrPercentAtVal(uint32_t target_value)
 {
   auto target_qtdr = static_cast<int32_t>(target_value);
@@ -1015,9 +860,8 @@ bool Person::loseExpPercent(const uint16_t& percent)
 
 /*
  * Description: Attempts to remove equipment from a given equip slot.
- *Removes
- *              true if an equipment at that slot was found and it was
- *removed.
+ *              Returns true if an equipment at that slot was found and it was
+ *              removed.
  *
  * Note [1]: This function will cause a memory leak unless the equipment is
  *           grabbed before the removal takes place!
@@ -1063,16 +907,256 @@ bool Person::removeEquip(const EquipSlots& equip_slot)
   return removed;
 }
 
+/*
+ * Description: Restores the person health (VITA) to max (full).
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::restoreHealth()
 {
   curr_stats.setStat(Attribute::VITA, curr_max_stats.getStat(Attribute::VITA));
 }
 
+/*
+ * Description: Restores the person QTDR to max (full).
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::restoreQtdr()
 {
   curr_stats.setStat(Attribute::QTDR, curr_max_stats.getStat(Attribute::QTDR));
 }
+  
+/*
+ * Description: Saves the data of this person to the file handler pointer. This
+ *              assumes the person wrapper xml is written before the call.
+ *
+ * Inputs: FileHandler* fh - the saving file handler
+ * Output: bool - true if successful
+ */
+bool Person::saveData(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    Person default_person;
 
+    /* Base reference */
+    if(base_person != nullptr)
+      fh->writeXmlData("base", base_person->getGameID());
+
+    /* Experience */
+    fh->writeXmlData("exp", total_exp);
+
+    /* Damage and experience mods */
+    if(getDmgMod() != default_person.getDmgMod())
+      fh->writeXmlData("dmgmod", getDmgMod());
+    if(getExpMod() != default_person.getExpMod())
+      fh->writeXmlData("expmod", getExpMod());
+
+    /* Learned skills */
+    if(learned_skills != nullptr)
+      learned_skills->saveData(fh, "learned");
+
+    /* Current vitality */
+    if(curr_stats.getStat(Attribute::VITA) != 
+       curr_max_stats.getStat(Attribute::VITA))
+    {
+      fh->writeXmlData("vita", curr_stats.getStat(Attribute::VITA));
+    }
+
+    /* Current quantum drive */
+    if(curr_stats.getStat(Attribute::QTDR) != 
+       curr_max_stats.getStat(Attribute::QTDR))
+    {
+      fh->writeXmlData("qtdr", curr_stats.getStat(Attribute::QTDR));
+    }
+
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Updates the base skills of the Person based on the battle class
+ *              and the race class.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::updateBaseSkills()
+{
+  if(base_skills != nullptr)
+    base_skills->clear();
+  else
+    base_skills = new SkillSet();
+
+  if(battle_class != nullptr && battle_class->getSkills() != nullptr)
+    *base_skills = *base_skills + *(battle_class->getSkills());
+
+  if(race_class != nullptr && race_class->getSkills() != nullptr)
+    *base_skills = *base_skills + *(race_class->getSkills());
+
+  updateSkills();
+}
+
+/*
+ * Description: Recalculates the Person's base stats and base max stats based
+ *              on their battle class and their race class.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::updateBaseStats()
+{
+  AttributeSet temp;
+  AttributeSet temp_max;
+
+  if(battle_class != nullptr)
+  {
+    temp = battle_class->getBaseSet();
+    temp_max = battle_class->getTopSet();
+  }
+  if(race_class != nullptr)
+  {
+    temp += race_class->getBaseSet();
+    temp_max += race_class->getTopSet();
+  }
+
+  std::vector<int32_t> prim_indexes;
+  std::vector<int32_t> secd_indexes;
+
+  if(primary != Element::NONE)
+  {
+    prim_indexes.push_back(AttributeSet::getOffensiveIndex(primary));
+    prim_indexes.push_back(AttributeSet::getDefensiveIndex(primary));
+
+    auto p_mod = getCurveModifier(primary_curve, true);
+
+    for(auto index : prim_indexes)
+    {
+      if(index != -1)
+      {
+        auto a = std::floor(static_cast<float>(temp.getStat(index)) * p_mod);
+        auto b =
+            std::floor(static_cast<float>(temp_max.getStat(index)) * p_mod);
+
+        temp.setStat(index, a);
+        temp_max.setStat(index, b);
+      }
+    }
+  }
+
+  if(secondary != Element::NONE)
+  {
+    secd_indexes.push_back(AttributeSet::getOffensiveIndex(secondary));
+    secd_indexes.push_back(AttributeSet::getDefensiveIndex(secondary));
+
+    auto s_mod = getCurveModifier(secondary_curve, false);
+
+    for(auto index : secd_indexes)
+    {
+      if(index != -1)
+      {
+        auto a = std::floor(static_cast<float>(temp.getStat(index)) * s_mod);
+        auto b =
+            std::floor(static_cast<float>(temp_max.getStat(index)) * s_mod);
+
+        temp.setStat(index, a);
+        temp_max.setStat(index, b);
+      }
+    }
+  }
+
+  temp.cleanUp();
+  temp_max.cleanUp();
+
+  base_stats = temp;
+  base_max_stats = temp_max;
+
+  updateStats();
+}
+
+/*
+ * Description: Updates the current total SkillSet of the person. This means
+ *              adding the skills granted by equipment and the learned skills
+ *              of the Person to the base skills.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::updateSkills()
+{
+
+  if(curr_skills != nullptr)
+    curr_skills->clear();
+  else
+    curr_skills = new SkillSet();
+
+  if(learned_skills != nullptr)
+    *curr_skills += *learned_skills;
+
+  if(base_skills != nullptr)
+    *curr_skills += *base_skills;
+
+  for(auto equipment : equipments)
+    if(equipment != nullptr)
+      *curr_skills += equipment->getSkills();
+}
+
+/*
+ * Description: Updates the current stats and current max stats of the Person
+ *              based on their level.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::updateStats()
+{
+  if(level == 1)
+  {
+    curr_stats = base_stats;
+    curr_max_stats = base_stats;
+  }
+  else if(level == kNUM_LEVELS)
+  {
+    curr_stats = base_max_stats;
+    curr_max_stats = base_max_stats;
+  }
+  else if(level > 1)
+  {
+    curr_stats = AttributeSet(0, true);
+    curr_max_stats = AttributeSet(0, true);
+
+    for(size_t i = 0; i < AttributeSet::getSize(); i++)
+    {
+      std::vector<uint32_t> stat_values{};
+      stat_values = Helpers::buildExpTable(
+          base_stats.getStat(i), base_max_stats.getStat(i), kNUM_LEVELS);
+      curr_stats.setStat(i, stat_values.at(level - 1));
+    }
+
+    curr_max_stats = curr_stats;
+  }
+
+  temp_max_stats = curr_max_stats;
+
+  for(auto equipment : equipments)
+    if(equipment != nullptr)
+      temp_max_stats += equipment->getStats();
+
+  curr_stats.cleanUp();
+  curr_max_stats.cleanUp();
+  temp_max_stats.cleanUp();
+}
+
+/*
+ * Description: Restures the path for the action sprite frames
+ *
+ * Inputs: none
+ * Output: std::string - the path for the frames
+ */
 std::string Person::getActionSpritePath()
 {
   return path_action_sprite;

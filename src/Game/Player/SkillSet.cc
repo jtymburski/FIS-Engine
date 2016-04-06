@@ -379,6 +379,36 @@ bool SkillSet::removeID(const uint32_t &id)
 
   return !(index == -1);
 }
+  
+/*
+ * Description: Saves the data of this skill set to the file handler pointer.
+ *
+ * Inputs: FileHandler* fh - the saving file handler
+ *         std::string set_text - the text of the skill id and level wrap
+ *         std::string wrap_text - the text to wrap the whole set
+ * Output: bool - true if successful
+ */
+bool SkillSet::saveData(FileHandler* fh, std::string set_text,
+                        std::string wrap_text)
+{
+  if(fh != nullptr && !set_text.empty() && skill_elements.size() > 0)
+  {
+    if(!wrap_text.empty())
+      fh->writeXmlElement(wrap_text, "id", getID());
+
+    /* Write skill data */
+    for(uint32_t i = 0; i < skill_elements.size(); i++)
+    {
+      std::string skill_str = std::to_string(skill_elements[i].skill->getID())
+                            + std::to_string(skill_elements[i].level_available);
+      fh->writeXmlData(set_text, skill_str);
+    }
+
+    if(!wrap_text.empty())
+      fh->writeXmlElementEnd();
+  }
+  return false;
+}
 
 /*
  * Description: Sorts the vector of skills by a given sort type, and either in

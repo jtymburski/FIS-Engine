@@ -631,6 +631,22 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 
   return n;
 }
+  
+/*
+ * Description: Loads the data from file associated with the inventory.
+ *
+ * Inputs: XmlData data - the xml data structure
+ *         int index - the element reference index
+ *         SDL_Renderer* renderer - the rendering engine
+ *         std::string base_path - the base path for file handling
+ * Output: bool - true if load was successful
+ */
+bool Inventory::loadData(XmlData data, int index, SDL_Renderer* renderer,
+                         std::string base_path)
+{
+  // TODO: Implementation
+  return false;
+}
 
 /*
  * Description: Prints out the information of the Inventory
@@ -985,6 +1001,26 @@ bool Inventory::removeItemUID(const uint32_t& unique_id, const uint16_t& amount)
   if(item_index != -1)
     return removeItemIndex(item_index, amount);
 
+  return false;
+}
+  
+/*
+ * Description: Saves the data of this inventory to the file handler pointer.
+ *
+ * Inputs: FileHandler* fh - the saving file handler
+ * Output: bool - true if successful
+ */
+bool Inventory::saveData(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    fh->writeXmlElement("inventory");
+
+    // TODO: Data Implementation
+
+    fh->writeXmlElementEnd();
+    return true;
+  }
   return false;
 }
 

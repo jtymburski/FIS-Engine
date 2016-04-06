@@ -383,7 +383,7 @@ bool Player::saveData(FileHandler* fh)
   {
     fh->writeXmlElement("player");
 
-    /* Write data */
+    /* Write class data */
     fh->writeXmlData("credits", credits);
     if(gravity != kDEFAULT_GRAVITY)
       fh->writeXmlData("gravity", gravity);
@@ -393,6 +393,12 @@ bool Player::saveData(FileHandler* fh)
     fh->writeXmlData("milliseconds", play_time.milliseconds);
     fh->writeXmlElementEnd();
     fh->writeXmlData("steps", steps);
+
+    /* Write parties */
+    if(sleuth != nullptr)
+      sleuth->saveData(fh, "sleuth");
+    if(bearacks != nullptr)
+      bearacks->saveData(fh, "bearacks");
 
     fh->writeXmlElementEnd();
     return true;

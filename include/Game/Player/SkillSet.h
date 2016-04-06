@@ -22,6 +22,7 @@
 
 #include "Game/Player/Skill.h"
 #include "EnumDb.h"
+#include "FileHandler.h"
 
 /* A SkillSet is a vector of these SetElements */
 struct SetElement
@@ -116,6 +117,10 @@ public:
   /* Removes a SetElement by a given ID */
   bool removeID(const uint32_t &id);
 
+  /* Save data to file */
+  bool saveData(FileHandler* fh, std::string set_text = "skill",
+                std::string wrap_text = "");
+
   /* Sorts the SetElements by a given sort type */
   bool sort(const SkillSorts &sort_type, bool ascending = true);
 
@@ -138,7 +143,7 @@ public:
   bool getUseable(const uint32_t &index);
 
   /* Returns the ID of the Skill Set */
-  int getID(); // TODO
+  int getID();
 
   /* Returns the index of a given Skill ID (if found) */
   int32_t getIndexOfID(const uint32_t &id);

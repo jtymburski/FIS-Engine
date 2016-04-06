@@ -179,9 +179,9 @@ public:
   static const std::vector<float> kPRIM_MODS; /* Primary elm curv modifiers */
   static const std::vector<float> kSECD_MODS; /* Secondary elm curv mods */
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
 private:
   /* Begin processing the actions on the buffer */
   // void beginProcessActions();
@@ -207,6 +207,10 @@ private:
   /* Updates the rank of the Person based on their Person record */
   void updateRank();
 
+/*=============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
+  
   /* Constructs the table of experience values given the current constants */
   static void buildExpTable();
 
@@ -214,9 +218,9 @@ private:
   static float getCurveModifier(const ElementCurve& curve,
                                 const bool primary = true);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Adds an amount of experience and may update the level */
   bool addExp(const uint32_t& amount, const bool& update = true,
@@ -271,17 +275,20 @@ public:
   void restoreHealth();
   void restoreQtdr();
 
+  /* Save data to file */
+  bool saveData(FileHandler* fh);
+  
+  /* Recalculates the Base skills based on categories */
+  void updateBaseSkills();
+  
+  /* Recalculates the Person's base and base_max stats based on categories */
+  void updateBaseStats();
+  
   /* Recalculates Curr skills based on flags */
   void updateSkills();
 
-  /* Recalculates the Person's base and base_max stats based on categories */
-  void updateBaseStats();
-
   /* Updates the current stats of the Person based on their current level */
   void updateStats();
-
-  /* Recalculates the Base skills based on categories */
-  void updateBaseSkills();
 
   /* Returns the action frames */
   Sprite* getDialogSprite();
@@ -452,16 +459,16 @@ public:
   /* Assigns the sprite pointers for the person */
   void setSprites(Sprite* new_dialog_sprite = nullptr);
 
-  /*============================================================================
-   * OPERATOR FUNCTIONS
-   *===========================================================================*/
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
 public:
   /* The copy operator */
   Person& operator=(const Person& source);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Grabs the experience required to reach a given level */
   static uint32_t getExpAt(const uint8_t& level);
