@@ -1016,7 +1016,52 @@ bool Inventory::saveData(FileHandler* fh)
   {
     fh->writeXmlElement("inventory");
 
-    // TODO: Data Implementation
+    /* Limits */
+    fh->writeXmlElement("limits");
+    if(mass_limit > kMIN_MASS)
+      fh->writeXmlData("mass", static_cast<float>(mass_limit));
+    if(item_each_limit > kMIN_EACH_ITEM)
+      fh->writeXmlData("stack", item_each_limit);
+    if(item_limit > kMIN_ITEM)
+      fh->writeXmlData("items", item_limit);
+    if(equip_limit > kMIN_ITEM)
+      fh->writeXmlData("equipments", equip_limit);
+    if(bubby_limit > kMIN_ITEM)
+      fh->writeXmlData("bubbies", bubby_limit);
+    fh->writeXmlElementEnd();
+
+    /* Items */
+    for(auto const &pair : items)
+    {
+      if(pair.first)
+      {
+        std::string set = std::to_string(pair.first->getGameID()) + "," 
+                        + std::to_string(pair.second);
+        fh->writeXmlData("item", set);
+      }
+    }
+
+    /* Equipment */
+    for(auto const &pair : equipments)
+    {
+      if(pair.first)
+      {
+        std::string set = std::to_string(pair.first->getGameID()) + "," 
+                        + std::to_string(pair.second);
+        fh->writeXmlData("equip", set);
+      }
+    }
+
+    /* Bubbies */
+    for(auto const &pair : bubbies)
+    {
+      if(pair.first)
+      {
+        std::string set = std::to_string(pair.first->getGameID()) + "," 
+                        + std::to_string(pair.second);
+        fh->writeXmlData("bubby", set);
+      }
+    }
 
     fh->writeXmlElementEnd();
     return true;

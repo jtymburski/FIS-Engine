@@ -407,7 +407,9 @@ bool Victory::update(int32_t cycle_time)
 
     for(auto& victory_actor : card.actors)
     {
-          std::cout << "Experience Remaining: " << victory_actor.exp_left << std::endl;
+      std::cout << "Experience Remaining: " << victory_actor.exp_left
+                << "," << victory_actor.orig_exp << ","
+                << victory_actor.orig_lvl << std::endl;
 
       if(victory_actor.exp_left > 0 && victory_actor.actor &&
          victory_actor.actor->getBasePerson())
@@ -417,6 +419,9 @@ bool Victory::update(int32_t cycle_time)
 
         add_exp = std::max(1, add_exp);
         victory_actor.exp_left -= add_exp;
+
+        /* Add to person > TODO: MVR to review */
+        victory_actor.base_person->addExp(add_exp);
 
         done &= (victory_actor.exp_left == 0);
       }
