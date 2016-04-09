@@ -14,6 +14,92 @@
 #include "Game/Map/Menu.h"
 
 /*=============================================================================
+ * ANALOGOPTION
+ *============================================================================*/
+
+AnalogOption::AnalogOption()
+    : val{nullptr}, default_val{0}, num_options{1}, location{Box()}
+{
+}
+
+/* Decrease the value */
+void AnalogOption::decrease()
+{
+  if(val && (*val) - (100 / num_options) > 0)
+    *val = 100 / num_options;
+}
+
+/* Reset the analog option to a default value */
+void AnalogOption::reset()
+{
+  if(default_val && val)
+    *val = default_val;
+}
+
+/* Increase the value */
+void AnalogOption::increase()
+{
+  if(val && (*val) < 100)
+    *val += 100 / num_options;
+}
+
+/*=============================================================================
+ * DIGITALOPTION
+ *============================================================================*/
+
+/* Constructs a DigitalOption */
+DigitalOption::DigitalOption() : config{nullptr}, flag_index{35}
+{
+}
+
+/* Constructs a DigitalOption */
+DigitalOption::DigitalOption(Options* config, Coordinate point, int32_t width,
+                             int32_t height, int32_t flag_index)
+    : DigitalOption()
+{
+  this->config = config;
+  this->flag_index = flag_index;
+
+  if(config)
+    location = Box{point, width, height};
+}
+
+/* Sets the DigitalOption to the Default Value */
+void DigitalOption::reset()
+{
+  if(config)
+  {
+    config->setFlag(
+        static_cast<OptionState>(1 << flag_index),
+        config->getDefaultFlag(static_cast<OptionState>(1 << flag_index)));
+  }
+}
+
+/* Sets the DigitalOption Flag */
+void DigitalOption::set()
+{
+  if(config)
+    config->setFlag(static_cast<OptionState>(1 << flag_index), true);
+}
+
+/* Toggles the DigitalOption Flag */
+void DigitalOption::toggle()
+{
+  if(config)
+  {
+    config->setFlag(static_cast<OptionState>(1 << flag_index),
+                    config->getFlag(static_cast<OptionState>(1 << flag_index)));
+  }
+}
+
+/* Unsets the DigitalOption Flag */
+void DigitalOption::unset()
+{
+  if(config)
+    config->setFlag(static_cast<OptionState>(1 << flag_index), false);
+}
+
+/*=============================================================================
  * CONSTANTS
  *============================================================================*/
 
@@ -56,7 +142,10 @@ const float Menu::kINV_THUMB_GAP{0.02};
 const float Menu::kINV_ITEM_NAME_X{0.1};
 const float Menu::kINV_ITEM_NAME_Y{0.1};
 const float Menu::kINV_ITEM_MASS_Y{0.25};
-const float Menu::kINV_ITEM_DESC_Y{0.66};
+const float Menu::kINV_ITEM_DESC_Y{0};
+
+/* Options Section */
+const uint32_t Menu::kNUM_OPTIONS{4};
 
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
 const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
@@ -89,7 +178,8 @@ Menu::Menu()
       layer{MenuLayer::INVALID},
       renderer{nullptr},
       title_elements{},
-      title_element_index{-1}
+      title_element_index{-1},
+      option_element_index{-1}
 {
 }
 
@@ -127,10 +217,15 @@ void Menu::buildIconFrames()
   }
 }
 
+/* Constructs the Inventory Screen */
 void Menu::buildInventoryScreen()
 {
+  if(config)
+  {
+  }
 }
 
+/* Delets the Icon Frames */
 void Menu::clearIconFrames()
 {
   if(frame_money)
@@ -157,6 +252,40 @@ void Menu::clearIconFrames()
   frame_key_items = nullptr;
 }
 
+/* Constructs the Options */
+void Menu::buildOptions()
+{
+  if(config)
+  {
+    auto analog_y = config->getScreenHeight();
+    auto analog_x = config->getScreenWidth();
+    auto analog_height = 50;
+    auto analog_width = 400;
+    auto analog_box = Box({analog_x, analog_y}, analog_height, analog_width);
+
+    /* Auto Run Flag - Digital */
+    option_auto_run = DigitalOption(config, {100, 100}, 20, 20, 3);
+
+    /* Mute Flag - Digital */
+    option_mute = DigitalOption(config, {100, 100}, 20, 20, 6);
+
+    /* Audio Level - Analog */
+    option_audio_level = AnalogOption();
+    option_audio_level.location = analog_box;
+    option_audio_level.val = &config->audio_level;
+    option_audio_level.default_val = Options::kDEF_AUDIO_LEVEL;
+    option_audio_level.num_options = 20;
+
+    /* Music Level - Analog */
+    option_music_level = AnalogOption();
+    option_music_level.location = analog_box;
+    option_music_level.val = &config->music_level;
+    option_music_level.default_val = Options::kDEF_MUSIC_LEVEL;
+    option_music_level.num_options = 20;
+  }
+}
+
+/* Constructs the Main Section as Required */
 void Menu::buildMainSection(MenuType menu_type)
 {
   if(config && renderer)
@@ -172,7 +301,10 @@ void Menu::buildMainSection(MenuType menu_type)
     if(menu_type == MenuType::INVENTORY)
       main_width = (int32_t)std::round(width * kINV_WIDTH);
     else if(menu_type == MenuType::OPTIONS)
+    {
       main_width = (int32_t)std::round(width * kOPTIONS_WIDTH);
+      option_element_index = 0;
+    }
     else if(menu_type == MenuType::SLEUTH)
       main_width = (int32_t)std::round(width * kSLEUTH_WIDTH);
     else if(menu_type == MenuType::SAVE)
@@ -190,6 +322,7 @@ void Menu::buildMainSection(MenuType menu_type)
   }
 }
 
+/* Constructs TitleElements on the Title Menu Section */
 void Menu::buildTitleElements()
 {
   title_elements.clear();
@@ -211,6 +344,7 @@ void Menu::buildTitleElements()
   title_elements.push_back(TitleElement("Quit", true, MenuType::QUIT));
 }
 
+/* Constructs the TitleSection */
 void Menu::buildTitleSection()
 {
   auto height = config->getScreenHeight();
@@ -233,6 +367,48 @@ void Menu::buildTitleSection()
   title_section.status = WindowStatus::OFF;
 }
 
+// TODO: abtract out BETA [04-9-16]
+void Menu::decrementOptionIndex()
+{
+  unselectOptionIndex();
+  option_element_index--;
+  selectOptionIndex();
+}
+
+void Menu::incrementOptionIndex()
+{
+  unselectOptionIndex();
+  option_element_index++;
+  selectOptionIndex();
+}
+
+/* Unselect the current option index */
+void Menu::unselectOptionIndex()
+{
+  if(option_element_index == 0)
+    option_audio_level.location.setFlag(ScrollBoxState::SELECTED, false);
+  else if(option_element_index == 1)
+    option_music_level.location.setFlag(ScrollBoxState::SELECTED, false);
+  else if(option_element_index == 2)
+    option_auto_run.location.setFlag(ScrollBoxState::SELECTED, false);
+  else if(option_element_index == 3)
+    option_mute.location.setFlag(ScrollBoxState::SELECTED, false);
+}
+
+/* Select the current option index */
+void Menu::selectOptionIndex()
+{
+  if(option_element_index == 0)
+    option_audio_level.location.setFlag(ScrollBoxState::SELECTED);
+  else if(option_element_index == 1)
+    option_music_level.location.setFlag(ScrollBoxState::SELECTED);
+  else if(option_element_index == 2)
+    option_auto_run.location.setFlag(ScrollBoxState::SELECTED);
+  else if(option_element_index == 3)
+    option_mute.location.setFlag(ScrollBoxState::SELECTED);
+}
+
+/* Renders the TitleSection */
 void Menu::renderTitleSection()
 {
   auto font_main_title = config->getFontTTF(FontName::MENU_MAIN_TITLE);
@@ -393,7 +569,7 @@ void Menu::renderMainSection()
   if((uint32_t)title_element_index < title_elements.size() && config &&
      renderer)
   {
-    auto menu_type = title_elements.at(title_element_index).menu_type;
+    auto menu_type = getMainMenuType();
     // auto height = config->getScreenHeight();
     auto width = config->getScreenWidth();
 
@@ -461,30 +637,52 @@ void Menu::renderMainSection()
   }
 }
 
+/* Renders the Inventory Screen */
 void Menu::renderInventory()
 {
 }
 
+/* Renders the Options Screen */
 void Menu::renderOptions()
 {
+  /* Render the audio level */
+
+  /* Render the music level */
+
+  /* Render the auto run flag */
+
+  /* Render the mute flag */
 }
 
+/* Renders the Sleuth Screen */
 void Menu::renderSleuth()
 {
 }
 
+/* Renders the Save Screen */
 void Menu::renderSave()
 {
 }
 
+/* Renders the Quit Screen */
 void Menu::renderQuit()
 {
+}
+
+/* Returns the enumerated MenuType of the Menu Seciton currently */
+MenuType Menu::getMainMenuType()
+{
+  if(title_element_index != -1 && title_element_index < title_elements.size())
+    return title_elements.at(title_element_index).menu_type;
+
+  return MenuType::INVALID;
 }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/* Clear the menu, revert everything off */
 void Menu::clear()
 {
   main_section.status = WindowStatus::OFF;
@@ -494,6 +692,7 @@ void Menu::clear()
   setFlag(MenuState::SHOWING, false);
 }
 
+/* Hides the menu */
 void Menu::hide()
 {
   title_section.status = WindowStatus::HIDING;
@@ -501,9 +700,36 @@ void Menu::hide()
   layer = MenuLayer::INVALID;
 }
 
+/* Process key down event */
 bool Menu::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if(event.keysym.sym == SDLK_DOWN)
+  if(event.keysym.sym == SDLK_LEFT)
+  {
+    if(main_section.status == WindowStatus::ON)
+    {
+      if(getMainMenuType() == MenuType::OPTIONS)
+      {
+        if(option_element_index == 0)
+          option_audio_level.decrease();
+        else if(option_element_index == 1)
+          option_music_level.decrease();
+      }
+    }
+  }
+  else if(event.keysym.sym == SDLK_RIGHT)
+  {
+    if(main_section.status == WindowStatus::ON)
+    {
+      if(getMainMenuType() == MenuType::OPTIONS)
+      {
+        if(option_element_index == 0)
+          option_audio_level.increase();
+        else if(option_element_index == 1)
+          option_music_level.increase();
+      }
+    }
+  }
+  else if(event.keysym.sym == SDLK_DOWN)
   {
     if(layer == MenuLayer::TITLE)
     {
@@ -511,6 +737,14 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
         title_element_index++;
       else
         title_element_index = 0;
+    }
+    else if(main_section.status == WindowStatus::ON)
+    {
+      if(getMainMenuType() == MenuType::OPTIONS)
+      {
+        if(option_element_index > 1)
+          decrementOptionIndex();
+      }
     }
   }
   else if(event.keysym.sym == SDLK_UP)
@@ -521,6 +755,14 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
         title_element_index--;
       else
         title_element_index = title_elements.size() - 1;
+    }
+    else if(main_section.status == WindowStatus::ON)
+    {
+      if(getMainMenuType() == MenuType::OPTIONS)
+      {
+        if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
+          incrementOptionIndex();
+      }
     }
   }
   else if(event.keysym.sym == SDLK_SPACE)
@@ -533,8 +775,21 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
         layer = MenuLayer::MAIN;
 
         /* Construct the main section with the appropriate parameters */
-        buildMainSection(title_elements.at(title_element_index).menu_type);
+        buildMainSection(getMainMenuType());
         main_section.status = WindowStatus::SHOWING;
+      }
+    }
+    else if(main_section.status == WindowStatus::ON)
+    {
+      /* Key down event on the options.
+            --> If digital option, select flag
+       */
+      if(getMainMenuType() == MenuType::OPTIONS)
+      {
+        if(option_element_index == 2)
+          option_auto_run.set();
+        else if(option_element_index == 3)
+          option_mute.set();
       }
     }
   }
@@ -556,6 +811,7 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
   return false;
 }
 
+/* Show the menu status */
 void Menu::show()
 {
   clear();
@@ -572,6 +828,7 @@ void Menu::show()
   layer = MenuLayer::TITLE;
 }
 
+/* Render function to call other render functions */
 void Menu::render()
 {
   if(renderer && config)
@@ -584,6 +841,7 @@ void Menu::render()
   }
 }
 
+/* Update the Menu Screen */
 bool Menu::update(int32_t cycle_time)
 {
   auto& title_point = title_section.location.point;
@@ -645,36 +903,43 @@ bool Menu::update(int32_t cycle_time)
   return false;
 }
 
+/* Returns the value of a MenuState flag */
 bool Menu::getFlag(const MenuState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
+/* Assign configuraiton */
 void Menu::setConfig(Options* config)
 {
   this->config = config;
 }
 
+/* Assign the EventHandler */
 void Menu::setEventHandler(EventHandler* event_handler)
 {
   this->event_handler = event_handler;
 }
 
+/* Assign a MenuState flag a value */
 void Menu::setFlag(MenuState set_flags, const bool& set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
 }
 
+/* Assigns the currently active Map */
 void Menu::setMap(Map* new_map)
 {
   this->curr_map = new_map;
 }
 
+/* Sets the Player Pointer */
 void Menu::setPlayer(Player* new_player)
 {
   this->curr_player = new_player;
 }
 
+/* Assigns the Renderer */
 void Menu::setRenderer(SDL_Renderer* renderer)
 {
   this->renderer = renderer;

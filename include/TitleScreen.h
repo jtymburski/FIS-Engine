@@ -18,7 +18,7 @@
 #include "Sprite.h"
 #include "Text.h"
 
-#define TITLE_SKIP
+//#define TITLE_SKIP
 
 class TitleScreen
 {

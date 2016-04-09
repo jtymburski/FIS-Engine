@@ -47,14 +47,14 @@ enum class MenuLayer
 /* Option Box Construction for Analog Values */
 struct AnalogOption
 {
-  AnalogOption()
-      : val{nullptr}, default_val{nullptr}, num_options{1}, location{Box()} {};
+  /* Constructs an AnalogOption */
+  AnalogOption();
 
   /* Pointer to the value for the analog option (0 - 100) */
   uint32_t* val;
 
   /* Pointer to a default value */
-  uint32_t* default_val;
+  uint32_t default_val;
 
   /* The number of possible options */
   uint32_t num_options;
@@ -63,44 +63,24 @@ struct AnalogOption
   Box location;
 
   /* Decrease the value */
-  void decrease()
-  {
-    if(val && (*val) - (100 / num_options) > 0)
-      *val = 100 / num_options;
-  }
+  void decrease();
 
   /* Reset the analog option to a default value */
-  void reset()
-  {
-    if(default_val && val)
-      (*val) = (*default_val);
-  }
+  void reset();
 
   /* Increase the value */
-  void increase()
-  {
-    if(val && (*val) < 100)
-      *val += 100 / num_options;
-  }
+  void increase();
 };
 
 /* Option Box Construction for On/Off Values */
 struct DigitalOption
 {
-  DigitalOption() : config{nullptr}, flag_index{0}
-  {
-  }
+  /* Constructs a DigitalOption */
+  DigitalOption();
 
+  /* Constructs a DigitalOption */
   DigitalOption(Options* config, Coordinate point, int32_t width,
-                int32_t height, int32_t flag_index)
-      : DigitalOption()
-  {
-    this->config = config;
-    this->flag_index = flag_index;
-
-    if(config)
-      location = Box{point, width, height};
-  }
+                int32_t height, int32_t flag_index);
 
   /* Configuraiton pointer */
   Options* config;
@@ -108,40 +88,20 @@ struct DigitalOption
   /* Value */
   int32_t flag_index;
 
-  /* Locafion for the DigitalOption */
+  /* Location for the DigitalOption */
   Box location;
 
-  void reset()
-  {
-    if(config)
-    {
-      config->setFlag(
-          static_cast<OptionState>(1 << flag_index),
-          config->getDefaultFlag(static_cast<OptionState>(1 << flag_index)));
-    }
-  }
+  /* Resets a DigitalOption */
+  void reset();
 
-  void set()
-  {
-    if(config)
-      config->setFlag(static_cast<OptionState>(1 << flag_index), true);
-  }
+  /* Sets a DigitalOption */
+  void set();
 
-  void toggle()
-  {
-    if(config)
-    {
-      config->setFlag(
-          static_cast<OptionState>(1 << flag_index),
-          config->getFlag(static_cast<OptionState>(1 << flag_index)));
-    }
-  }
+  /* Toggles the DigitalOption */
+  void toggle();
 
-  void unset()
-  {
-    if(config)
-      config->setFlag(static_cast<OptionState>(1 << flag_index), false);
-  }
+  /* Unsets the DigitalOption */
+  void unset();
 };
 
 struct TitleElement
@@ -249,6 +209,12 @@ private:
   /* Main Section (Centre) Window */
   Window main_section;
 
+  /* Options for the Option Menu */
+  AnalogOption option_audio_level;
+  AnalogOption option_music_level;
+  DigitalOption option_auto_run;
+  DigitalOption option_mute;
+
   /* Assigned Renderer */
   SDL_Renderer* renderer;
 
@@ -257,6 +223,7 @@ private:
 
   /* Selected TitleElement index */
   int32_t title_element_index;
+  int32_t option_element_index;
 
   /* Title Section (Left) Window */
   Window title_section;
@@ -308,6 +275,9 @@ private:
   static const float kINV_ITEM_MASS_Y;
   static const float kINV_ITEM_DESC_Y;
 
+  /* Options Section */
+  static const uint32_t kNUM_OPTIONS;
+
   /* Colors */
   static const SDL_Color kCOLOR_TITLE_BG;
   static const SDL_Color kCOLOR_TITLE_BORDER;
@@ -328,6 +298,9 @@ private:
   /* Construct the main section backdrop */
   void buildMainSection(MenuType menu_type);
 
+  /* Constructs the Options Data */
+  void buildOptions();
+
   /* Construct a detail Person screen */
   void buildPersonDetailScreen();
 
@@ -343,6 +316,12 @@ private:
   /* Clear out the Icon Frames */
   void clearIconFrames();
 
+  /* Change the selected option */
+  void decrementOptionIndex();
+  void incrementOptionIndex();
+  void unselectOptionIndex();
+  void selectOptionIndex();
+
   /* Render the title section */
   void renderTitleSection();
 
@@ -353,6 +332,9 @@ private:
   void renderSleuth();
   void renderSave();
   void renderQuit();
+
+  /* Returns the MenuType currently rendering */
+  MenuType getMainMenuType();
 
   /*=============================================================================
    * PUBLIC FUNCTIONS

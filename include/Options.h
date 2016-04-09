@@ -28,10 +28,10 @@ enum class OptionState
   LINEAR_FILTERING  = 1 << 0,
   VSYNC             = 1 << 1,
   FULLSCREEN        = 1 << 2,
-  AUTO_RUN          = 1 << 3,
+  AUTO_RUN          = 1 << 3, /* Do not change -- Linked to Menu */
   BATTLE_ANIMATIONS = 1 << 4,
   GUI_ENABLED       = 1 << 5,
-  AUDIO_ENABLED     = 1 << 6
+  AUDIO_ENABLED     = 1 << 6 /* Do not change -- Linked to Menu */
 };
 
 class Options
@@ -49,10 +49,6 @@ public:
 private:
   /* Fonts */
   Fonts* font_data;
-
-  /* Sound levels */
-  uint32_t audio_level;
-  uint32_t music_level;
 
   /* The base string path for accessing file information */
   std::string base_path;
@@ -82,6 +78,10 @@ private:
   const static uint16_t kRESOLUTIONS_Y[]; /* Y Resolution sizes available */
 
 public:
+  /* Audio / Music Level */
+  uint32_t audio_level;
+  uint32_t music_level;
+
   /*--------------------- Constants --------------------*/
   const static std::uint32_t kDEF_SCREEN_WIDTH;
   const static std::uint32_t kDEF_SCREEN_HEIGHT;

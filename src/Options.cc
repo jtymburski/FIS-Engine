@@ -34,6 +34,9 @@ const uint16_t Options::kRESOLUTIONS_Y[] = {704,  705,  768,  1080,
 const std::uint32_t Options::kDEF_SCREEN_WIDTH{1216};
 const std::uint32_t Options::kDEF_SCREEN_HEIGHT{704};
 
+const std::uint32_t Options::kDEF_AUDIO_LEVEL{50};
+const std::uint32_t Options::kDEF_MUSIC_LEVEL{50};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -41,10 +44,11 @@ const std::uint32_t Options::kDEF_SCREEN_HEIGHT{704};
 /* Constructor function */
 Options::Options(std::string base_path)
 {
-  audio_level = 0;
+  audio_level = kDEF_AUDIO_LEVEL;
+  music_level = kDEF_MUSIC_LEVEL;
+
   this->base_path = base_path;
   font = 0;
-  music_level = 0;
   resolution_x = 0;
   resolution_y = 0;
   sound_handler = nullptr;
