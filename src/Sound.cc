@@ -77,6 +77,7 @@ Sound::Sound()
   loop_count = 0;
   raw_data = NULL;
   volume = MIX_MAX_VOLUME - MIX_MAX_VOLUME / 4;
+  default_volume = MIX_MAX_VOLUME - MIX_MAX_VOLUME / 4;//??
 }
 
 /*
@@ -466,6 +467,18 @@ bool Sound::setSoundFile(std::string path)
   return false;
 }
 
+void Sound::setDefaultVolume(uint8_t default_volume)
+{
+  if(volume > MIX_MAX_VOLUME)
+    this->default_volume = MIX_MAX_VOLUME;
+  else
+    this->default_volume = default_volume;
+
+  /* Change the chunk volume related to this file */
+  if(raw_data != NULL)
+    Mix_VolumeChunk(raw_data, default_volume);
+}
+
 /*
  * Description: Sets the volume to play the mixed sound file at. This is a
  *              constant integer between 0 and 128. This can be set while the
@@ -476,14 +489,16 @@ bool Sound::setSoundFile(std::string path)
  */
 void Sound::setVolume(uint8_t volume)
 {
-  if(volume > MIX_MAX_VOLUME)
+  auto calculated_volume = volume * MIX_MAX_VOLUME / default_volume;
+
+  if(calculated_volume > MIX_MAX_VOLUME)
     this->volume = MIX_MAX_VOLUME;
   else
-    this->volume = volume;
+    this->volume = calculated_volume;
 
   /* Change the chunk volume related to this file */
   if(raw_data != NULL)
-    Mix_VolumeChunk(raw_data, volume);
+    Mix_VolumeChunk(raw_data, this->volume);
 }
 
 /*

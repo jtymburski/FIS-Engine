@@ -268,11 +268,20 @@ bool Options::isVsyncEnabled()
 void Options::setAudioLevel(int32_t new_level)
 {
   audio_level = Sound::setAudioVolumes(new_level);
+
+  if(sound_handler)
+    sound_handler->setAudioLevel(audio_level);
 }
 
 void Options::setFlag(OptionState flag, bool set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
+
+  if(getFlag(OptionState::MUTE) && sound_handler)
+  {
+    sound_handler->setAudioLevel(0);
+    sound_handler->setMusicLevel(0);
+  }
 
   // TODO: repair. Especially regarding VSync, Full Screen, etc SDL
 }
@@ -280,12 +289,40 @@ void Options::setFlag(OptionState flag, bool set_value)
 void Options::setMusicLevel(int32_t new_level)
 {
   music_level = Sound::setMusicVolumes(new_level);
+
+  if(sound_handler && !getFlag(OptionState::MUTE))
+    sound_handler->setMusicLevel(music_level);
+  else if(sound_handler)
+    sound_handler->setMusicLevel(0);
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */
 void Options::setSoundHandler(SoundHandler* new_handler)
 {
   sound_handler = new_handler;
+}
+
+void Options::update()
+{
+  if(sound_handler)
+  {
+    if(getFlag(OptionState::MUTE))
+    {
+      sound_handler->setAudioLevel(0);
+      sound_handler->setMusicLevel(0);
+    }
+    else
+    {
+      /* Scale the Audio / Music % Level From (0-100) to (0-255) */
+      uint8_t scaled_audio_level = MIX_MAX_VOLUME * audio_level / 100;
+      uint8_t scaled_music_level = MIX_MAX_VOLUME * music_level / 100;
+
+      sound_handler->setAudioLevel(scaled_audio_level);
+      sound_handler->setMusicLevel(scaled_music_level);
+    }
+
+    sound_handler->update();
+  }
 }
 
 /*=============================================================================

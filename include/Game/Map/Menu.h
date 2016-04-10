@@ -111,6 +111,9 @@ struct DigitalOption
 
   /* Unsets the DigitalOption */
   void unset();
+
+  /* Returns whether the Option is Set */
+  bool isSet();
 };
 
 struct TitleElement
@@ -291,9 +294,8 @@ private:
   static const float kOPTIONS_Y;
   static const float kOPTIONS_Y_BAR_GAP;
   static const float kOPTIONS_Y_GAP;
-  static const float kOPTIONS_DIGITAL_GAP;
-  static const float kOPTIONS_BOX_SIZE_X;
-  static const float kOPTIONS_BOX_SIZE_Y;
+  static const float kOPTIONS_DIGITAL_TEXT_GAP;
+  static const float kOPTIONS_BOX_SIZE;
 
   /* Colors */
   static const SDL_Color kCOLOR_TITLE_BG;
@@ -301,6 +303,8 @@ private:
   static const SDL_Color kCOLOR_TITLE_HOVER;
   static const SDL_Color kCOLOR_MAIN_BORDER;
   static const SDL_Color kCOLOR_TEXT;
+  static const SDL_Color kCOLOR_OPTION_FILL;
+  static const SDL_Color kCOLOR_OPTION_FILL_SELECTED;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -339,9 +343,6 @@ private:
   void unselectOptionIndex();
   void selectOptionIndex();
 
-  /* Print Options */
-  void printOptions();
-
   /* Render the title section */
   void renderTitleSection();
 
@@ -350,8 +351,8 @@ private:
   void renderInventory();
 
   /* Render options functions */
-  void renderOptionAnalog(AnalogOption& option, Coordinate point);
-  void renderOptionDigital(DigitalOption& option, Coordinate point);
+  UCoordinate renderOptionAnalog(AnalogOption& option, UCoordinate point);
+  UCoordinate renderOptionDigital(DigitalOption& option, UCoordinate point);
   void renderOptions();
 
   void renderSleuth();

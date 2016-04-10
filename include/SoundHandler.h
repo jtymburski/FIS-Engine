@@ -29,6 +29,10 @@ private:
   std::map<int, Sound*> audio_music;
   std::map<int, Sound*> audio_sound;
 
+  /* Audio / Music Levels */
+  uint8_t audio_level;
+  uint8_t music_level;
+
   /* Queue */
   std::vector<SoundQueue> queue;
 
@@ -57,13 +61,9 @@ public:
   /* Add to queue */
   void addPlayToQueue(uint32_t id, SoundChannels channel,
                       bool process_force = false);
-  void addPlayToQueue(std::vector<SoundQueue> entries, 
+  void addPlayToQueue(std::vector<SoundQueue> entries,
                       bool process_force = false);
   void addStopToQueue(SoundChannels channel, bool process_force = false);
-
-  /* Getters for sound files */
-  Sound* getAudioMusic(uint32_t id);
-  Sound* getAudioSound(uint32_t id);
 
   /* Is the given ID music or sound file valid and set */
   bool isMusicSet(uint32_t id);
@@ -79,6 +79,17 @@ public:
   void removeAll();
   bool removeMusic(uint32_t id);
   bool removeSound(uint32_t id);
+
+  /* Update the Sounds */
+  void update();
+
+  /* Getters for sound files */
+  Sound* getAudioMusic(uint32_t id);
+  Sound* getAudioSound(uint32_t id);
+
+  /* Asssing Audio / Music Levels */
+  void setAudioLevel(uint8_t audio_level);
+  void setMusicLevel(uint8_t music_level);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

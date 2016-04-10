@@ -107,6 +107,16 @@ void DigitalOption::unset()
     config->setFlag(static_cast<OptionState>(1 << flag_index), false);
 }
 
+bool DigitalOption::isSet()
+{
+  if(config)
+  {
+    return config->getFlag(static_cast<OptionState>(1 << flag_index));
+  }
+
+  return false;
+}
+
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
@@ -154,19 +164,20 @@ const float Menu::kINV_ITEM_DESC_Y{0};
 
 /* Options Section */
 const uint32_t Menu::kNUM_OPTIONS{4};
-const float Menu::kOPTIONS_X{0.1};
-const float Menu::kOPTIONS_Y{0.1};
-const float Menu::kOPTIONS_Y_BAR_GAP{0.05};
+const float Menu::kOPTIONS_X{0.025};
+const float Menu::kOPTIONS_Y{0.05};
+const float Menu::kOPTIONS_Y_BAR_GAP{0.04};
 const float Menu::kOPTIONS_Y_GAP{0.075};
-const float Menu::kOPTIONS_DIGITAL_GAP{0.1};
-const float Menu::kOPTIONS_BOX_SIZE_X{0.3};
-const float Menu::kOPTIONS_BOX_SIZE_Y{0.3};
+const float Menu::kOPTIONS_DIGITAL_TEXT_GAP{0.03};
+const float Menu::kOPTIONS_BOX_SIZE{0.017};
 
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
 const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
 const SDL_Color Menu::kCOLOR_MAIN_BORDER{255, 255, 255, 192};
 const SDL_Color Menu::kCOLOR_TEXT{255, 255, 255, 255};
+const SDL_Color Menu::kCOLOR_OPTION_FILL{128, 128, 128, 128};
+const SDL_Color Menu::kCOLOR_OPTION_FILL_SELECTED{175, 175, 175, 255};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -278,26 +289,26 @@ void Menu::buildOptions()
 {
   if(config)
   {
-    auto height = config->getScreenHeight();
-    auto width = config->getScreenWidth();
-
-    auto analog_height = 50;
-    auto analog_width = 400;
-    auto analog_box = Box({0, 0}, analog_height, analog_width);
+    auto analog_box = Box({0, 0}, 0, 0);
 
     /* Auto Run Flag - Digital */
     option_auto_run = DigitalOption(config, {0, 0}, 20, 20, 3, "AUTO RUN");
+    option_auto_run.location.color_border_selected = {255, 255, 255, 255};
+    option_auto_run.location.color_border = {255, 255, 255, 65};
 
     /* Mute Flag - Digital */
     option_mute = DigitalOption(config, {0, 0}, 20, 20, 6, "MUTE");
+    option_mute.location.color_border_selected = {255, 255, 255, 255};
+    option_mute.location.color_border = {255, 255, 255, 65};
 
     /* Audio Level - Analog */
     option_audio_level = AnalogOption("AUDIO LEVEL");
     option_audio_level.location = analog_box;
     option_audio_level.val = &config->audio_level;
-
     option_audio_level.default_val = Options::kDEF_AUDIO_LEVEL;
     option_audio_level.num_options = 20;
+    option_audio_level.location.color_border_selected = {255, 255, 255, 255};
+    option_audio_level.location.color_border = {255, 255, 255, 65};
 
     /* Music Level - Analog */
     option_music_level = AnalogOption("MUSIC LEVEL");
@@ -305,6 +316,8 @@ void Menu::buildOptions()
     option_music_level.val = &config->music_level;
     option_music_level.default_val = Options::kDEF_MUSIC_LEVEL;
     option_music_level.num_options = 20;
+    option_audio_level.location.color_border_selected = {255, 255, 255, 255};
+    option_audio_level.location.color_border = {255, 255, 255, 65};
   }
 }
 
@@ -328,6 +341,7 @@ void Menu::buildMainSection(MenuType menu_type)
       main_width = (int32_t)std::round(width * kOPTIONS_WIDTH);
       buildOptions();
       option_element_index = 0;
+      selectOptionIndex();
     }
     else if(menu_type == MenuType::SLEUTH)
       main_width = (int32_t)std::round(width * kSLEUTH_WIDTH);
@@ -430,19 +444,6 @@ void Menu::selectOptionIndex()
     option_auto_run.location.setFlag(ScrollBoxState::SELECTED);
   else if(option_element_index == 3)
     option_mute.location.setFlag(ScrollBoxState::SELECTED);
-}
-
-void Menu::printOptions()
-{
-  if(config)
-  {
-    std::cout << "Option Element Index: " << option_element_index << std::endl;
-    std::cout << "Audio Level: " << config->audio_level << std::endl;
-    std::cout << "Music Level: " << config->music_level << std::endl;
-    std::cout << "Audo Run?: " << config->getFlag(OptionState::AUTO_RUN)
-              << std::endl;
-    std::cout << "Mute?: " << config->getFlag(OptionState::MUTE) << std::endl;
-  }
 }
 
 /* Renders the TitleSection */
@@ -682,41 +683,145 @@ void Menu::renderInventory()
 /* Renders the Options Screen */
 void Menu::renderOptions()
 {
-  auto start_x = 0;
-  auto start_y = 0;
+  auto width = config->getScreenWidth();
+  auto height = config->getScreenHeight();
+
+  auto start_x =
+      main_section.location.point.x + (uint32_t)std::round(kOPTIONS_X * width);
+  auto start_y =
+      main_section.location.point.y + (uint32_t)std::round(kOPTIONS_Y * height);
+
   auto curr_x = start_x;
   auto curr_y = start_y;
 
+  auto y_gap = (uint32_t)std::round(kOPTIONS_Y_GAP * height);
+  // auto digital_gap = (uint32_t)std::round(kOPTIONS_DIGITAL_GAP * width);
+
   /* Render the audio level */
-  curr_y = 100; // todo
-  renderOptionAnalog(option_audio_level, {curr_x, curr_y});
+  auto end = renderOptionAnalog(option_audio_level, {curr_x, curr_y});
 
   /* Render the music level */
-  curr_y = 200; // todo
-  renderOptionAnalog(option_music_level, {curr_x, curr_y});
+  curr_y = end.y + y_gap; // todo
+  end = renderOptionAnalog(option_music_level, {curr_x, curr_y});
 
   /* Render the auto run flag */
-  curr_y = 300; // todo
-  renderOptionDigital(option_auto_run, {curr_x, curr_y});
+  curr_y = end.y + y_gap; // todo
+  end = renderOptionDigital(option_auto_run, {curr_x, curr_y});
 
   /* Render the mute flag */
-  curr_y = 400; // todo
+  curr_y = end.y + y_gap;
+  // curr_x = end.x + digital_gap; // todo
   renderOptionDigital(option_mute, {curr_x, curr_y});
 }
 
 /* Render a given option at a given point */
-void Menu::renderOptionAnalog(AnalogOption& option, Coordinate point)
+UCoordinate Menu::renderOptionAnalog(AnalogOption& option, UCoordinate point)
 {
-  (void)option;
-  (void)point;
+  UCoordinate end{0, 0};
+
+  if(renderer && config && option.val)
+  {
+    auto width = config->getScreenWidth();
+    auto height = config->getScreenHeight();
+    auto bar_gap = (uint32_t)std::round(kOPTIONS_Y_BAR_GAP * height);
+    auto box_size = (int32_t)std::round(kOPTIONS_BOX_SIZE * width);
+    auto start_x = (int32_t)point.x;
+
+    /* Render the Option Name Text */
+    auto option_font = config->getFontTTF(FontName::MENU_HEADER);
+    SDL_Color fill_color = kCOLOR_OPTION_FILL;
+    SDL_Color border_color = {255, 255, 255, 65};
+
+    if(option.location.getFlag(ScrollBoxState::SELECTED))
+    {
+      border_color = kCOLOR_MAIN_BORDER;
+      fill_color = kCOLOR_OPTION_FILL_SELECTED;
+    }
+
+    /* Create and render the option name text */
+    Text t(option_font);
+    t.setText(renderer, option.name, kCOLOR_TEXT);
+    t.render(renderer, point.x, point.y);
+
+    /* Update the running coordinate, past the text and add the bar gap */
+    point.y += t.getHeight() + bar_gap;
+
+    /* Render the Selected Boxes Sized (box_size x box_size) */
+    auto num_filled = (int32_t)(*(option.val) / 100.0 * option.num_options);
+    auto num_unfilled = (int32_t)(option.num_options - num_filled);
+
+    for(int32_t i = 0; i < num_filled; i++)
+    {
+      Box filled_box{Coordinate{(int32_t)point.x, (int32_t)point.y}, box_size,
+                     box_size};
+      filled_box.color_bg = fill_color;
+      filled_box.color_border = {255, 255, 255, 65};
+      filled_box.render(renderer);
+      point.x += box_size;
+    }
+
+    /* Render the Unselected Boxes */
+    for(int32_t i = 0; i < num_unfilled; i++)
+    {
+      Box filled_box{Coordinate{(int32_t)point.x, (int32_t)point.y}, box_size,
+                     box_size};
+      filled_box.color_border = {255, 255, 255, 65};
+      filled_box.render(renderer);
+      point.x += box_size;
+    }
+
+    /* Render the Border Around the Boxes W = Point.X = Original Point.x */
+    Box border_box{Coordinate{start_x, (int32_t)point.y},
+                   (int32_t)(point.x - start_x), box_size};
+    border_box.color_border = border_color;
+    border_box.render(renderer);
+
+    end.x = point.x;
+    end.y = point.y + box_size;
+  }
+
+  return end;
 }
 
 /* Render a given option at a given point */
-void Menu::renderOptionDigital(DigitalOption& option, Coordinate point)
+UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
 {
-  (void)option;
-  (void)point;
+  UCoordinate end{0, 0};
 
+  if(renderer && config)
+  {
+    auto width = config->getScreenWidth();
+    auto text_gap = (uint32_t)std::round(kOPTIONS_DIGITAL_TEXT_GAP * width);
+    auto box_size = (int32_t)std::round(kOPTIONS_BOX_SIZE * width);
+    auto start_x = (int32_t)point.x;
+    auto option_font = config->getFontTTF(FontName::MENU_HEADER);
+    SDL_Color box_border = {255, 255, 255, 65};
+
+    if(option.location.getFlag(ScrollBoxState::SELECTED))
+      box_border = kCOLOR_MAIN_BORDER;
+
+    /* Render the Box */
+    Box digital_box{{start_x, (int32_t)point.y}, box_size, box_size};
+    digital_box.color_border = box_border;
+
+    /* Render the Check if flag is set */
+    if(option.isSet())
+      digital_box.color_bg = kCOLOR_OPTION_FILL; // TODO
+
+    digital_box.render(renderer);
+
+    // frame_checkbox->render(renderer, point.x, point.y, box_size, box_size);
+
+    /* Render the Digital Option Name */
+    std::cout << option.name << std::endl;
+    Text t(option_font);
+    t.setText(renderer, option.name, kCOLOR_TEXT);
+    t.render(renderer, point.x + text_gap, point.y);
+
+    end.y = point.y + t.getHeight();
+  }
+
+  return end;
 }
 
 /* Renders the Sleuth Screen */
@@ -779,8 +884,6 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
           option_audio_level.decrease();
         else if(option_element_index == 1)
           option_music_level.decrease();
-
-        printOptions();
       }
     }
   }
@@ -794,8 +897,6 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
           option_audio_level.increase();
         else if(option_element_index == 1)
           option_music_level.increase();
-
-        printOptions();
       }
     }
   }
@@ -814,8 +915,6 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
       {
         if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
           incrementOptionIndex();
-
-        printOptions();
       }
     }
   }
@@ -834,8 +933,6 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
       {
         if(option_element_index > 0)
           decrementOptionIndex();
-
-        printOptions();
       }
     }
   }
@@ -864,7 +961,6 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
           option_auto_run.toggle();
         else if(option_element_index == 3)
           option_mute.toggle();
-        printOptions();
       }
     }
   }

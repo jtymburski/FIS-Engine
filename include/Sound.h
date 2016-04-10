@@ -77,6 +77,7 @@ private:
   Mix_Chunk* raw_data;
 
   /* The volume that the chunk will play at */
+  uint8_t default_volume;
   uint8_t volume;
 
   /* --------------------- CONSTANTS --------------------- */
@@ -184,7 +185,10 @@ public:
   /* Trys to set the sound file to the given path */
   bool setSoundFile(std::string path);
 
-  /* Sets the volume that the chunk will be played at. */
+  /* Sets the defauilt volume that the chunk will be played at. */
+  void setDefaultVolume(uint8_t default_volume);
+
+  /* Sets the volume that the chunk will be played at */
   void setVolume(uint8_t volume);
 
   /* Stop function. Will stop the sound, if playing */

@@ -521,6 +521,9 @@ bool Application::updateViews(int cycle_time)
     quit = true;
   }
 
+  if(system_options)
+    system_options->update();
+
   return quit;
 }
 

@@ -170,6 +170,9 @@ public:
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);
 
+  /* Update the options state */
+  void update();
+
   /*============================================================================
    * OPERATOR FUNCTIONS
    *===========================================================================*/

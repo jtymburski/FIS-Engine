@@ -213,8 +213,8 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
                                        renderer, false);
     }
 
-      /* Render the bar behind the scroll bar */
-      uint32_t bar_height = height - (4 * scroll_inset_y) - (2 * tri_height);
+    /* Render the bar behind the scroll bar */
+    uint32_t bar_height = height - (4 * scroll_inset_y) - (2 * tri_height);
 
     if(getFlag(ScrollBoxState::SCROLL_BAR))
     {
@@ -355,15 +355,14 @@ bool Box::render(SDL_Renderer* renderer)
     rect.w = width;
 
     if(getFlag(ScrollBoxState::SELECTED))
-      Frame::setRenderDrawColor(renderer, color_bg);
-    else
       Frame::setRenderDrawColor(renderer, color_bg_selected);
+    else
+      Frame::setRenderDrawColor(renderer, color_bg);
 
     SDL_RenderFillRect(renderer, &rect);
 
     /* Render the border based on whether this scroll box is currently being
-     * selected (hovered on).
-     */
+     * selected (hovered on). */
     if(getFlag(ScrollBoxState::SELECTED))
     {
       Frame::setRenderDrawColor(renderer, color_border_selected);
@@ -386,7 +385,8 @@ bool Box::render(SDL_Renderer* renderer)
     }
 
     /* Render the required elements */
-    success &= renderElements(renderer, view_index, num_viewable);
+    if(elements.size())
+      success &= renderElements(renderer, view_index, num_viewable);
   }
 
   return success;

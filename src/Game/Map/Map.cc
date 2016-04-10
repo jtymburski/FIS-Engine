@@ -33,7 +33,7 @@ const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
 const uint8_t Map::kMAX_U8BIT = 255;
 const uint32_t Map::kMUSIC_REPEAT = 300000; /* 5 minutes */
-const uint16_t Map::kNAME_DISPLAY = 5000; /* 5 seconds */
+const uint16_t Map::kNAME_DISPLAY = 5000;   /* 5 seconds */
 const uint16_t Map::kNAME_FADE = 1;
 const uint8_t Map::kNAME_SIZE = 48;
 const uint16_t Map::kNAME_X = 65;
@@ -421,7 +421,9 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       {
         player = static_cast<MapPerson*>(modified_thing);
         if(system_options != NULL && system_options->isAutoRun())
+        {
           player->setRunning(true);
+        }
       }
     }
 
@@ -2219,18 +2221,18 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
           LayOver* lay_ref = nullptr;
           if(element2 == "overlay")
           {
-            while(static_cast<int>(sub_map[map_index].overlays.size())
-                  <= index_ref)
+            while(static_cast<int>(sub_map[map_index].overlays.size()) <=
+                  index_ref)
               sub_map[map_index].overlays.push_back(
-                                              Helpers::createBlankLayOver());
+                  Helpers::createBlankLayOver());
             lay_ref = &sub_map[map_index].overlays[index_ref];
           }
           else /* underlay */
           {
-            while(static_cast<int>(sub_map[map_index].underlays.size())
-                  <= index_ref)
+            while(static_cast<int>(sub_map[map_index].underlays.size()) <=
+                  index_ref)
               sub_map[map_index].underlays.push_back(
-                                              Helpers::createBlankLayOver());
+                  Helpers::createBlankLayOver());
             lay_ref = &sub_map[map_index].underlays[index_ref];
           }
 
@@ -2551,8 +2553,6 @@ bool Map::pickupItem(MapItem* item, int count)
 
   return false;
 }
-
-
 
 /* Renders the title screen */
 bool Map::render(SDL_Renderer* renderer)
@@ -3069,6 +3069,13 @@ bool Map::update(int cycle_time)
     {
       player->getTarget()->clearTarget();
       player->clearTarget();
+    }
+
+    /* Set running if Auto Run flag is enabled */
+    if(system_options != nullptr &&
+       system_options->getFlag(OptionState::AUTO_RUN))
+    {
+      player->setRunning(true);
     }
   }
 

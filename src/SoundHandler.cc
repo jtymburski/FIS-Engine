@@ -18,7 +18,7 @@
  *
  * Inputs: none
  */
-SoundHandler::SoundHandler()
+SoundHandler::SoundHandler() : audio_level{0}, music_level{0}
 {
 }
 
@@ -107,8 +107,8 @@ void SoundHandler::queueCleanUp()
     {
       /* If a later entry is stopping an entry in the same queue that's playing,
        * remove play entry */
-      if(queue[i].channel == queue[j].channel &&
-         !queue[i].stop && queue[j].stop)
+      if(queue[i].channel == queue[j].channel && !queue[i].stop &&
+         queue[j].stop)
       {
         valid = false;
       }
@@ -258,36 +258,6 @@ void SoundHandler::addStopToQueue(SoundChannels channel, bool process_force)
 }
 
 /*
- * Description: Returns audio chunk from the music stack with the connected ID.
- *              If the ID is not found, returns null.
- *
- * Inputs: uint32_t id - the ID of the music chunk to find
- * Output: Sound* - the found chunk
- */
-Sound* SoundHandler::getAudioMusic(uint32_t id)
-{
-  auto iter = audio_music.find(id);
-  if(iter != audio_music.end())
-    return iter->second;
-  return nullptr;
-}
-
-/*
- * Description: Returns audio chunk from the sound stack with the connected ID.
- *              If the ID is not found, returns null.
- *
- * Inputs: uint32_t id - the ID of the sound chunk to find
- * Output: Sound* - the found chunk
- */
-Sound* SoundHandler::getAudioSound(uint32_t id)
-{
-  auto iter = audio_sound.find(id);
-  if(iter != audio_sound.end())
-    return iter->second;
-  return nullptr;
-}
-
-/*
  * Description: Returns if there is an audio chunk in the music stack with the
  *              given ID.
  *
@@ -357,7 +327,7 @@ bool SoundHandler::load(XmlData data, int index, std::string base_path)
     {
       int sound_vol = data.getDataInteger();
       if(sound_vol >= 0 && sound_vol <= 255)
-        edit_chunk->setVolume(sound_vol);
+        edit_chunk->setDefaultVolume(sound_vol);
       else
         success = false;
     }
@@ -553,9 +523,65 @@ bool SoundHandler::removeSound(uint32_t id)
   return false;
 }
 
+//TODO: Conventions
+void SoundHandler::update()
+{
+  /* Update the volume for all audio sounds */
+  for(auto& music_map : audio_sound)
+    if(music_map.second)
+      music_map.second->setVolume(audio_level);
+
+  /* Update the volume for all music sounds */
+  for(auto& audio_map : audio_music)
+    if(audio_map.second)
+      audio_map.second->setVolume(music_level);
+}
+
+/*
+ * Description: Returns audio chunk from the music stack with the connected ID.
+ *              If the ID is not found, returns null.
+ *
+ * Inputs: uint32_t id - the ID of the music chunk to find
+ * Output: Sound* - the found chunk
+ */
+Sound* SoundHandler::getAudioMusic(uint32_t id)
+{
+  auto iter = audio_music.find(id);
+  if(iter != audio_music.end())
+    return iter->second;
+  return nullptr;
+}
+
+/*
+ * Description: Returns audio chunk from the sound stack with the connected ID.
+ *              If the ID is not found, returns null.
+ *
+ * Inputs: uint32_t id - the ID of the sound chunk to find
+ * Output: Sound* - the found chunk
+ */
+Sound* SoundHandler::getAudioSound(uint32_t id)
+{
+  auto iter = audio_sound.find(id);
+  if(iter != audio_sound.end())
+    return iter->second;
+  return nullptr;
+}
+
+//TODO: Conventions
+void SoundHandler::setAudioLevel(uint8_t audio_level)
+{
+  this->audio_level = audio_level;
+}
+
+//TODO: Conventions
+void SoundHandler::setMusicLevel(uint8_t music_level)
+{
+  this->music_level = music_level;
+}
+
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
 /* Pause all channels or select channels */
-//static void pauseAllChannels();
+// static void pauseAllChannels();

@@ -308,6 +308,7 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
 float MapPerson::moveAmount(uint16_t cycle_time)
 {
   float move_amount = 0.0;
+
   if(running)
     move_amount = (cycle_time * getSpeed() * 1.75) / kMOVE_FACTOR;
   else
