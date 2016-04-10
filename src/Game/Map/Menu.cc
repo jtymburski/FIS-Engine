@@ -22,11 +22,16 @@ AnalogOption::AnalogOption()
 {
 }
 
+AnalogOption::AnalogOption(std::string name) : AnalogOption()
+{
+  this->name = name;
+}
+
 /* Decrease the value */
 void AnalogOption::decrease()
 {
-  if(val && (*val) - (100 / num_options) > 0)
-    *val = 100 / num_options;
+  if(val && (*val) > 0)
+    *val -= 100 / num_options;
 }
 
 /* Reset the analog option to a default value */
@@ -54,11 +59,13 @@ DigitalOption::DigitalOption() : config{nullptr}, flag_index{35}
 
 /* Constructs a DigitalOption */
 DigitalOption::DigitalOption(Options* config, Coordinate point, int32_t width,
-                             int32_t height, int32_t flag_index)
+                             int32_t height, int32_t flag_index,
+                             std::string name)
     : DigitalOption()
 {
   this->config = config;
   this->flag_index = flag_index;
+  this->name = name;
 
   if(config)
     location = Box{point, width, height};
@@ -87,8 +94,9 @@ void DigitalOption::toggle()
 {
   if(config)
   {
-    config->setFlag(static_cast<OptionState>(1 << flag_index),
-                    config->getFlag(static_cast<OptionState>(1 << flag_index)));
+    config->setFlag(
+        static_cast<OptionState>(1 << flag_index),
+        !config->getFlag(static_cast<OptionState>(1 << flag_index)));
   }
 }
 
@@ -146,6 +154,13 @@ const float Menu::kINV_ITEM_DESC_Y{0};
 
 /* Options Section */
 const uint32_t Menu::kNUM_OPTIONS{4};
+const float Menu::kOPTIONS_X{0.1};
+const float Menu::kOPTIONS_Y{0.1};
+const float Menu::kOPTIONS_Y_BAR_GAP{0.05};
+const float Menu::kOPTIONS_Y_GAP{0.075};
+const float Menu::kOPTIONS_DIGITAL_GAP{0.1};
+const float Menu::kOPTIONS_BOX_SIZE_X{0.3};
+const float Menu::kOPTIONS_BOX_SIZE_Y{0.3};
 
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
 const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
@@ -169,6 +184,7 @@ Menu::Menu()
       config{nullptr},
       flags{static_cast<MenuState>(0)},
       frame_bubbies{nullptr},
+      frame_checkbox{nullptr},
       frame_equipment{nullptr},
       frame_footsteps{nullptr},
       frame_items{nullptr},
@@ -200,6 +216,8 @@ void Menu::buildIconFrames()
   {
     frame_bubbies = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/bubbies.png", renderer);
+    frame_checkbox = new Frame(
+        config->getBasePath() + "sprites/Overlay/Menu/check.png", renderer);
     frame_equipment = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/equipment.png", renderer);
     frame_footsteps = new Frame(
@@ -236,6 +254,8 @@ void Menu::clearIconFrames()
     delete frame_footsteps;
   if(frame_bubbies)
     delete frame_bubbies;
+  if(frame_checkbox)
+    delete frame_checkbox;
   if(frame_equipment)
     delete frame_equipment;
   if(frame_items)
@@ -247,6 +267,7 @@ void Menu::clearIconFrames()
   frame_location = nullptr;
   frame_footsteps = nullptr;
   frame_bubbies = nullptr;
+  frame_checkbox = nullptr;
   frame_equipment = nullptr;
   frame_items = nullptr;
   frame_key_items = nullptr;
@@ -257,27 +278,29 @@ void Menu::buildOptions()
 {
   if(config)
   {
-    auto analog_y = config->getScreenHeight();
-    auto analog_x = config->getScreenWidth();
+    auto height = config->getScreenHeight();
+    auto width = config->getScreenWidth();
+
     auto analog_height = 50;
     auto analog_width = 400;
-    auto analog_box = Box({analog_x, analog_y}, analog_height, analog_width);
+    auto analog_box = Box({0, 0}, analog_height, analog_width);
 
     /* Auto Run Flag - Digital */
-    option_auto_run = DigitalOption(config, {100, 100}, 20, 20, 3);
+    option_auto_run = DigitalOption(config, {0, 0}, 20, 20, 3, "AUTO RUN");
 
     /* Mute Flag - Digital */
-    option_mute = DigitalOption(config, {100, 100}, 20, 20, 6);
+    option_mute = DigitalOption(config, {0, 0}, 20, 20, 6, "MUTE");
 
     /* Audio Level - Analog */
-    option_audio_level = AnalogOption();
+    option_audio_level = AnalogOption("AUDIO LEVEL");
     option_audio_level.location = analog_box;
     option_audio_level.val = &config->audio_level;
+
     option_audio_level.default_val = Options::kDEF_AUDIO_LEVEL;
     option_audio_level.num_options = 20;
 
     /* Music Level - Analog */
-    option_music_level = AnalogOption();
+    option_music_level = AnalogOption("MUSIC LEVEL");
     option_music_level.location = analog_box;
     option_music_level.val = &config->music_level;
     option_music_level.default_val = Options::kDEF_MUSIC_LEVEL;
@@ -303,6 +326,7 @@ void Menu::buildMainSection(MenuType menu_type)
     else if(menu_type == MenuType::OPTIONS)
     {
       main_width = (int32_t)std::round(width * kOPTIONS_WIDTH);
+      buildOptions();
       option_element_index = 0;
     }
     else if(menu_type == MenuType::SLEUTH)
@@ -406,6 +430,19 @@ void Menu::selectOptionIndex()
     option_auto_run.location.setFlag(ScrollBoxState::SELECTED);
   else if(option_element_index == 3)
     option_mute.location.setFlag(ScrollBoxState::SELECTED);
+}
+
+void Menu::printOptions()
+{
+  if(config)
+  {
+    std::cout << "Option Element Index: " << option_element_index << std::endl;
+    std::cout << "Audio Level: " << config->audio_level << std::endl;
+    std::cout << "Music Level: " << config->music_level << std::endl;
+    std::cout << "Audo Run?: " << config->getFlag(OptionState::AUTO_RUN)
+              << std::endl;
+    std::cout << "Mute?: " << config->getFlag(OptionState::MUTE) << std::endl;
+  }
 }
 
 /* Renders the TitleSection */
@@ -645,13 +682,41 @@ void Menu::renderInventory()
 /* Renders the Options Screen */
 void Menu::renderOptions()
 {
+  auto start_x = 0;
+  auto start_y = 0;
+  auto curr_x = start_x;
+  auto curr_y = start_y;
+
   /* Render the audio level */
+  curr_y = 100; // todo
+  renderOptionAnalog(option_audio_level, {curr_x, curr_y});
 
   /* Render the music level */
+  curr_y = 200; // todo
+  renderOptionAnalog(option_music_level, {curr_x, curr_y});
 
   /* Render the auto run flag */
+  curr_y = 300; // todo
+  renderOptionDigital(option_auto_run, {curr_x, curr_y});
 
   /* Render the mute flag */
+  curr_y = 400; // todo
+  renderOptionDigital(option_mute, {curr_x, curr_y});
+}
+
+/* Render a given option at a given point */
+void Menu::renderOptionAnalog(AnalogOption& option, Coordinate point)
+{
+  (void)option;
+  (void)point;
+}
+
+/* Render a given option at a given point */
+void Menu::renderOptionDigital(DigitalOption& option, Coordinate point)
+{
+  (void)option;
+  (void)point;
+
 }
 
 /* Renders the Sleuth Screen */
@@ -672,7 +737,8 @@ void Menu::renderQuit()
 /* Returns the enumerated MenuType of the Menu Seciton currently */
 MenuType Menu::getMainMenuType()
 {
-  if(title_element_index != -1 && title_element_index < title_elements.size())
+  if(title_element_index != -1 &&
+     (uint32_t)title_element_index < title_elements.size())
     return title_elements.at(title_element_index).menu_type;
 
   return MenuType::INVALID;
@@ -713,6 +779,8 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
           option_audio_level.decrease();
         else if(option_element_index == 1)
           option_music_level.decrease();
+
+        printOptions();
       }
     }
   }
@@ -726,6 +794,8 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
           option_audio_level.increase();
         else if(option_element_index == 1)
           option_music_level.increase();
+
+        printOptions();
       }
     }
   }
@@ -742,8 +812,10 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
     {
       if(getMainMenuType() == MenuType::OPTIONS)
       {
-        if(option_element_index > 1)
-          decrementOptionIndex();
+        if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
+          incrementOptionIndex();
+
+        printOptions();
       }
     }
   }
@@ -760,8 +832,10 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
     {
       if(getMainMenuType() == MenuType::OPTIONS)
       {
-        if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
-          incrementOptionIndex();
+        if(option_element_index > 0)
+          decrementOptionIndex();
+
+        printOptions();
       }
     }
   }
@@ -787,9 +861,10 @@ bool Menu::keyDownEvent(SDL_KeyboardEvent event)
       if(getMainMenuType() == MenuType::OPTIONS)
       {
         if(option_element_index == 2)
-          option_auto_run.set();
+          option_auto_run.toggle();
         else if(option_element_index == 3)
-          option_mute.set();
+          option_mute.toggle();
+        printOptions();
       }
     }
   }

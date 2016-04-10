@@ -88,8 +88,8 @@ void Options::copySelf(const Options& source)
 void Options::setAllToDefault()
 {
   /* Sound options */
-  setAudioLevel(MIX_MAX_VOLUME / 2);
-  setMusicLevel(MIX_MAX_VOLUME / 4);
+  setAudioLevel(kDEF_MUSIC_LEVEL);
+  setMusicLevel(kDEF_AUDIO_LEVEL);
 
   /* Flags */
   setLinearFiltering(false);
@@ -99,7 +99,7 @@ void Options::setAllToDefault()
   setFlag(OptionState::AUTO_RUN, false);
   setFlag(OptionState::BATTLE_ANIMATIONS, true);
   setFlag(OptionState::GUI_ENABLED, true);
-  setFlag(OptionState::AUDIO_ENABLED, true);
+  setFlag(OptionState::MUTE, false);
 
   /* Move the flags into default flags */
   flags_default = flags;
@@ -239,7 +239,7 @@ uint16_t Options::getScreenWidth()
 
 bool Options::isAudioEnabled()
 {
-  return getFlag(OptionState::AUDIO_ENABLED);
+  return !getFlag(OptionState::MUTE);
 }
 
 /* Returns if the player is instructed to always run */

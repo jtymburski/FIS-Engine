@@ -25,13 +25,13 @@ class Fonts;
 ENUM_FLAGS(OptionState)
 enum class OptionState
 {
-  LINEAR_FILTERING  = 1 << 0,
-  VSYNC             = 1 << 1,
-  FULLSCREEN        = 1 << 2,
-  AUTO_RUN          = 1 << 3, /* Do not change -- Linked to Menu */
+  LINEAR_FILTERING = 1 << 0,
+  VSYNC = 1 << 1,
+  FULLSCREEN = 1 << 2,
+  AUTO_RUN = 1 << 3, /* Do not change -- Linked to Menu */
   BATTLE_ANIMATIONS = 1 << 4,
-  GUI_ENABLED       = 1 << 5,
-  AUDIO_ENABLED     = 1 << 6 /* Do not change -- Linked to Menu */
+  GUI_ENABLED = 1 << 5,
+  MUTE = 1 << 6 /* Do not change -- Linked to Menu */
 };
 
 class Options
@@ -41,7 +41,7 @@ public:
   Options(std::string base_path = "");
 
   /* Copy constructor */
-  Options(const Options &source);
+  Options(const Options& source);
 
   /* Destructor */
   ~Options();
@@ -57,7 +57,7 @@ private:
   uint8_t font;
 
   /* If the linear filtering is enabled */
-  //bool linear_filtering;
+  // bool linear_filtering;
 
   /* Enum flags option state set */
   OptionState flags;
@@ -72,8 +72,8 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static std::string kFONTS[]; /* A list of all the fonts avfhudable */
-  const static uint8_t kNUM_FONTS; /* The number of fonts available */
-  const static uint8_t kNUM_RESOLUTIONS; /* Number of resolutions available */
+  const static uint8_t kNUM_FONTS;   /* The number of fonts available */
+  const static uint8_t kNUM_RESOLUTIONS;  /* Number of resolutions available */
   const static uint16_t kRESOLUTIONS_X[]; /* X Resolution sizes available */
   const static uint16_t kRESOLUTIONS_Y[]; /* Y Resolution sizes available */
 
@@ -88,12 +88,12 @@ public:
   const static uint32_t kDEF_AUDIO_LEVEL;
   const static uint32_t kDEF_MUSIC_LEVEL;
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*============================================================================
+   * PRIVATE FUNCTIONS
+   *===========================================================================*/
 private:
   /* Copy all parameters from the other to the current if called */
-  void copySelf(const Options &source);
+  void copySelf(const Options& source);
 
   /* Sets all parameters to default */
   void setAllToDefault();
@@ -110,9 +110,9 @@ private:
   /* Enable or disable vertical refresh syncing */
   void setVsync(bool enabled); // TODO: re-implement - should be in GIT hist
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*============================================================================
+   * PUBLIC FUNCTIONS
+   *===========================================================================*/
 public:
   /* Function to confirm the setup of the font */
   bool confirmFontSetup();
@@ -124,10 +124,10 @@ public:
   std::string getBasePath();
 
   /* Default flags */
-  bool getDefaultFlag(const OptionState &test_flag);
+  bool getDefaultFlag(const OptionState& test_flag);
 
   /* Returns the value of a given OptionState flag */
-  bool getFlag(const OptionState &test_flag);
+  bool getFlag(const OptionState& test_flag);
 
   /* Returns the path to the font to use throughout the application */
   std::string getFont();
@@ -170,11 +170,11 @@ public:
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
+  /*============================================================================
+   * OPERATOR FUNCTIONS
+   *===========================================================================*/
 public:
-  Options& operator= (const Options &source);
+  Options& operator=(const Options& source);
 };
 
 #endif // OPTIONS_H

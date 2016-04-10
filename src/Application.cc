@@ -164,24 +164,8 @@ void Application::handleEvents()
     {
       SDL_KeyboardEvent press_event = event.key;
 
-      /* -- Audio level decrease -- */
-      if(press_event.keysym.sym == SDLK_F3)
-      {
-        // system_options->setAudioLevel(system_options->getAudioLevel() - 15);
-        system_options->setMusicLevel(system_options->getMusicLevel() - 10);
-        std::cout << "Music Level: " << system_options->getMusicLevel()
-                  << std::endl;
-      }
-      /* -- Audio level increase -- */
-      else if(press_event.keysym.sym == SDLK_F4)
-      {
-        // system_options->setAudioLevel(system_options->getAudioLevel() + 15);
-        system_options->setMusicLevel(system_options->getMusicLevel() + 10);
-        std::cout << "Music Level: " << system_options->getMusicLevel()
-                  << std::endl;
-      }
       /* -- Refresh config: cycle maps -- */
-      else if(press_event.keysym.sym == SDLK_F5)
+      if(press_event.keysym.sym == SDLK_F5)
       {
         /* Decide on which reload */
         if(app_path != "maps/design_map.ugv")

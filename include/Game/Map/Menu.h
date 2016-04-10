@@ -50,6 +50,9 @@ struct AnalogOption
   /* Constructs an AnalogOption */
   AnalogOption();
 
+  /* Constructs an AnalogOption with a string name */
+  AnalogOption(std::string name);
+
   /* Pointer to the value for the analog option (0 - 100) */
   uint32_t* val;
 
@@ -61,6 +64,9 @@ struct AnalogOption
 
   /* Location for the analog option */
   Box location;
+
+  /* String name of the option */
+  std::string name;
 
   /* Decrease the value */
   void decrease();
@@ -80,7 +86,7 @@ struct DigitalOption
 
   /* Constructs a DigitalOption */
   DigitalOption(Options* config, Coordinate point, int32_t width,
-                int32_t height, int32_t flag_index);
+                int32_t height, int32_t flag_index, std::string name);
 
   /* Configuraiton pointer */
   Options* config;
@@ -90,6 +96,9 @@ struct DigitalOption
 
   /* Location for the DigitalOption */
   Box location;
+
+  /* String name of the option */
+  std::string name;
 
   /* Resets a DigitalOption */
   void reset();
@@ -196,6 +205,7 @@ private:
 
   /* Frames to be built */
   Frame* frame_bubbies;
+  Frame* frame_checkbox;
   Frame* frame_equipment;
   Frame* frame_footsteps;
   Frame* frame_items;
@@ -277,6 +287,13 @@ private:
 
   /* Options Section */
   static const uint32_t kNUM_OPTIONS;
+  static const float kOPTIONS_X;
+  static const float kOPTIONS_Y;
+  static const float kOPTIONS_Y_BAR_GAP;
+  static const float kOPTIONS_Y_GAP;
+  static const float kOPTIONS_DIGITAL_GAP;
+  static const float kOPTIONS_BOX_SIZE_X;
+  static const float kOPTIONS_BOX_SIZE_Y;
 
   /* Colors */
   static const SDL_Color kCOLOR_TITLE_BG;
@@ -322,13 +339,21 @@ private:
   void unselectOptionIndex();
   void selectOptionIndex();
 
+  /* Print Options */
+  void printOptions();
+
   /* Render the title section */
   void renderTitleSection();
 
   /* Render the main section */
   void renderMainSection();
   void renderInventory();
+
+  /* Render options functions */
+  void renderOptionAnalog(AnalogOption& option, Coordinate point);
+  void renderOptionDigital(DigitalOption& option, Coordinate point);
   void renderOptions();
+
   void renderSleuth();
   void renderSave();
   void renderQuit();
