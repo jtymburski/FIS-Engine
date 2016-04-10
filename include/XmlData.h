@@ -8,9 +8,6 @@
 #ifndef XMLDATA_H
 #define XMLDATA_H
 
-//#include <QDebug>
-//#include <QList>
-//#include <QString>
 #include <string>
 #include <vector>
 

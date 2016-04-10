@@ -210,7 +210,7 @@ private:
 /*=============================================================================
  * PRIVATE STATIC FUNCTIONS
  *============================================================================*/
-  
+
   /* Constructs the table of experience values given the current constants */
   static void buildExpTable();
 
@@ -277,13 +277,13 @@ public:
 
   /* Save data to file */
   bool saveData(FileHandler* fh);
-  
+
   /* Recalculates the Base skills based on categories */
   void updateBaseSkills();
-  
+
   /* Recalculates the Person's base and base_max stats based on categories */
   void updateBaseStats();
-  
+
   /* Recalculates Curr skills based on flags */
   void updateSkills();
 

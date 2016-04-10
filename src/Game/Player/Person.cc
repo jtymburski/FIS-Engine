@@ -364,7 +364,7 @@ void Person::unsetAll(const bool& clear)
   learned_skills = nullptr;
 }
 
-/* 
+/*
  * Description: Unsets the sprites stored within the person.
  *
  * Inputs: none
@@ -686,8 +686,15 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
 {
   bool success = true;
 
+  /* ---- DAMAGE MODIFIER ---- */
+  if(data.getElement(index) == "dmgmod")
+  {
+    float val = data.getDataFloat(&success);
+    if(success)
+      success &= setDmgMod(val);
+  }
   /* ---- ELEMENT PRIMARY ---- */
-  if(data.getElement(index) == "elem_pri")
+  else if(data.getElement(index) == "elem_pri")
   {
     std::string elem_str = data.getDataString(&success);
     if(success)
@@ -717,6 +724,30 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
         setCurves(primary, primary_curve, ele, curve);
       }
     }
+  }
+  /* ---- EXPERIENCE ---- */
+  else if(data.getElement(index) == "exp")
+  {
+    int exp = data.getDataInteger(&success);
+    if(success)
+    {
+      int diff_exp = (exp - getTotalExp());
+      if(diff_exp > 0)
+      {
+        success &= addExp(diff_exp);
+      }
+      else if(diff_exp < 0)
+      {
+        success &= loseExp(-diff_exp);
+      }
+    }
+  }
+  /* ---- EXPERIENCE MODIFIER ---- */
+  else if(data.getElement(index) == "expmod")
+  {
+    float val = data.getDataFloat(&success);
+    if(success)
+      success &= setExpMod(val);
   }
   /* ---- FLAGS ---- */
   else if(data.getElement(index) == "flags")
@@ -760,6 +791,17 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
   {
     setName(data.getDataString(&success));
   }
+  /* ---- QUANTUM DRIVE CURRENT VALUE ---- */
+  else if(data.getElement(index) == "qtdr")
+  {
+    int val = data.getDataInteger(&success);
+    if(success && val >= 0)
+    {
+      restoreQtdr();
+      if(val < curr_max_stats.getStat(Attribute::QTDR))
+        curr_stats.setStat(Attribute::QTDR, val);
+    }
+  }
   /* ---- SPRITE ACTION ---- */
   else if(data.getElement(index) == "sprite_action")
   {
@@ -779,7 +821,8 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- SPRITE DIALOG ---- */
   else if(data.getElement(index) == "sprite_dialog")
   {
-    // TODO, have Dialog & Battle create this sprite as needed?
+    // TODO: have Dialog & Battle create this sprite as needed?.
+    //       Needs the properties
     /* If null, create */
     if(dialog_sprite == nullptr)
       dialog_sprite = new Sprite();
@@ -788,7 +831,7 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
     success &=
         dialog_sprite->addFileInformation(data, index + 1, renderer, base_path);
 
-    // TODO: Keep this after
+    /* Path */
     if(data.getElement(index + 1) == "path")
       path_dialog_sprite = data.getDataString(&success);
   }
@@ -803,6 +846,17 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
   {
     if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
       path_third_person = base_path + data.getDataString(&success);
+  }
+  /* ---- VITALITY CURRENT VALUE ---- */
+  else if(data.getElement(index) == "vita")
+  {
+    int val = data.getDataInteger(&success);
+    if(success && val >= 0)
+    {
+      restoreHealth();
+      if(val < curr_max_stats.getStat(Attribute::VITA))
+        curr_stats.setStat(Attribute::VITA, val);
+    }
   }
 
   return success;
@@ -928,7 +982,7 @@ void Person::restoreQtdr()
 {
   curr_stats.setStat(Attribute::QTDR, curr_max_stats.getStat(Attribute::QTDR));
 }
-  
+
 /*
  * Description: Saves the data of this person to the file handler pointer. This
  *              assumes the person wrapper xml is written before the call.
@@ -960,14 +1014,14 @@ bool Person::saveData(FileHandler* fh)
       learned_skills->saveData(fh, "learned");
 
     /* Current vitality */
-    if(curr_stats.getStat(Attribute::VITA) != 
+    if(curr_stats.getStat(Attribute::VITA) !=
        curr_max_stats.getStat(Attribute::VITA))
     {
       fh->writeXmlData("vita", curr_stats.getStat(Attribute::VITA));
     }
 
     /* Current quantum drive */
-    if(curr_stats.getStat(Attribute::QTDR) != 
+    if(curr_stats.getStat(Attribute::QTDR) !=
        curr_max_stats.getStat(Attribute::QTDR))
     {
       fh->writeXmlData("qtdr", curr_stats.getStat(Attribute::QTDR));

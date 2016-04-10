@@ -240,12 +240,18 @@ uint32_t Player::getSteps()
 bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
                       std::string base_path)
 {
-  (void)renderer;
-  (void)base_path;
   bool success = true;
 
+  /* ---- BEARACKS PARTY ---- */
+  if(data.getElement(index) == "bearacks")
+  {
+    if(bearacks != nullptr)
+      success &= bearacks->loadData(data, index + 1, renderer, base_path);
+    else
+      success = false;
+  }
   /* ---- CREDITS ---- */
-  if(data.getElement(index) == "credits")
+  else if(data.getElement(index) == "credits")
   {
     success &= setCredits(data.getDataInteger(&success));
   }
@@ -272,6 +278,14 @@ bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
       setPlayTime(play_time.hours, play_time.minutes,
                   data.getDataInteger(&success));
     }
+  }
+  /* ---- SLEUTH PARTY ---- */
+  else if(data.getElement(index) == "sleuth")
+  {
+    if(sleuth != nullptr)
+      success &= sleuth->loadData(data, index + 1, renderer, base_path);
+    else
+      success = false;
   }
   /* ---- STEPS ---- */
   else if(data.getElement(index) == "steps")

@@ -248,11 +248,55 @@ bool Party::loadData(XmlData data, int index, SDL_Renderer* renderer,
                      std::string base_path)
 {
   bool success = true;
-  (void)renderer;
-  (void)base_path;
 
+  /* ---- INVENTORY ---- */
+  if(data.getElement(index) == "inventory")
+  {
+    if(pouch != nullptr)
+      success &= pouch->loadData(data, index + 1, renderer, base_path);
+    else
+      success = false;
+  }
+  /* ---- PERSON: MAIN OR RESERVE ---- */
+  else if(data.getElement(index) == "person" ||
+          data.getElement(index) == "reserve")
+  {
+    uint16_t ref_index = 0;
+
+    /* Update the index if valid */
+    if(!data.getKeyValue(index).empty())
+    {
+      try
+      {
+        int new_index = std::stoi(data.getKeyValue(index));
+        if(new_index >= 0)
+          ref_index = new_index;
+      }
+      catch (std::exception&)
+      {}
+    }
+
+    /* Parse index: if valid */
+    Person* ref_person = nullptr;
+    if(data.getElement(index) == "person")
+    {
+      if(ref_index < static_cast<int>(members.size()))
+        ref_person = members[ref_index];
+    }
+    else
+    {
+      if(ref_index < static_cast<int>(reserve_members.size()))
+        ref_person = reserve_members[ref_index];
+    }
+
+    /* If reference person found, load data */
+    if(ref_person != nullptr)
+    {
+      success &= ref_person->loadData(data, index + 1, renderer, base_path);
+    }
+  }
   /* ---- TYPE ---- */
-  if(data.getElement(index) == "type")
+  else if(data.getElement(index) == "type")
   {
     success &=
         setPartyType(Helpers::partyTypeFromStr(data.getDataString(&success)));

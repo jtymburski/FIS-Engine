@@ -631,7 +631,7 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 
   return n;
 }
-  
+
 /*
  * Description: Loads the data from file associated with the inventory.
  *
@@ -644,8 +644,53 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 bool Inventory::loadData(XmlData data, int index, SDL_Renderer* renderer,
                          std::string base_path)
 {
-  // TODO: Implementation
-  return false;
+  (void)renderer;
+  (void)base_path;
+  bool success = true;
+
+  /* ---- LIMITS ---- */
+  if(data.getElement(index) == "limits")
+  {
+    std::string inside = data.getElement(index + 1);
+
+    /* Total Mass Limit : Float Value */
+    if(inside == "mass")
+    {
+      float val = data.getDataFloat(&success);
+      if(success)
+        setLimits(bubby_limit, equip_limit, item_limit, item_each_limit, val);
+    }
+    /* Integer limits */
+    else
+    {
+      int val = data.getDataInteger(&success);
+      if(success)
+      {
+        /* Bubby Limit */
+        if(inside == "bubbies")
+        {
+          setLimits(val, equip_limit, item_limit, item_each_limit, mass_limit);
+        }
+        /* Equipment Limit */
+        else if(inside == "equipments")
+        {
+          setLimits(bubby_limit, val, item_limit, item_each_limit, mass_limit);
+        }
+        /* Generic Item Limit */
+        else if(inside == "items")
+        {
+          setLimits(bubby_limit, equip_limit, val, item_each_limit, mass_limit);
+        }
+        /* Stack Limit */
+        else if(inside == "stack")
+        {
+          setLimits(bubby_limit, equip_limit, item_limit, val, mass_limit);
+        }
+      }
+    }
+  }
+
+  return success;
 }
 
 /*
@@ -1003,7 +1048,7 @@ bool Inventory::removeItemUID(const uint32_t& unique_id, const uint16_t& amount)
 
   return false;
 }
-  
+
 /*
  * Description: Saves the data of this inventory to the file handler pointer.
  *
@@ -1035,7 +1080,7 @@ bool Inventory::saveData(FileHandler* fh)
     {
       if(pair.first)
       {
-        std::string set = std::to_string(pair.first->getGameID()) + "," 
+        std::string set = std::to_string(pair.first->getGameID()) + ","
                         + std::to_string(pair.second);
         fh->writeXmlData("item", set);
       }
@@ -1046,7 +1091,7 @@ bool Inventory::saveData(FileHandler* fh)
     {
       if(pair.first)
       {
-        std::string set = std::to_string(pair.first->getGameID()) + "," 
+        std::string set = std::to_string(pair.first->getGameID()) + ","
                         + std::to_string(pair.second);
         fh->writeXmlData("equip", set);
       }
@@ -1057,7 +1102,7 @@ bool Inventory::saveData(FileHandler* fh)
     {
       if(pair.first)
       {
-        std::string set = std::to_string(pair.first->getGameID()) + "," 
+        std::string set = std::to_string(pair.first->getGameID()) + ","
                         + std::to_string(pair.second);
         fh->writeXmlData("bubby", set);
       }

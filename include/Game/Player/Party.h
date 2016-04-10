@@ -50,8 +50,8 @@ public:
         const uint16_t &max);
 
   /* Constructs a Party given a vector of Person ptrs as members */
-  Party(const int32_t &my_id, std::vector<Person *> members, const uint16_t &max,
-        const PartyType &type);
+  Party(const int32_t &my_id, std::vector<Person *> members, 
+        const uint16_t &max, const PartyType &type);
 
   ~Party();
 

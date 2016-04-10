@@ -760,7 +760,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
         }
       }
     }
-    else if(data.getElement(index + 1) == "inventory")
+    else if(data.getElement(index + 1) == "inventory" &&
+            edit_party->getInventory() != nullptr)
     {
       /* Items */
       if(data.getElement(index + 2) == "item")
@@ -785,6 +786,12 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
               success = false;
           }
         }
+      }
+      /* The Rest */
+      else
+      {
+        edit_party->getInventory()->loadData(data, index + 2,
+                                             renderer, base_path);
       }
     }
     else
