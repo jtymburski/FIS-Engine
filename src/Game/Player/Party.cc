@@ -205,20 +205,32 @@ bool Party::clearParty()
   return false;
 }
 
-//TODO Reserve members?
-void Party::restorePartyVita()
+/*
+ * Description: Attempts to insert a person into the party at the index. If it's
+ *              greater than the count, it merely appends.
+ *
+ * Inputs: const uint8_t &index - the index to insert at. Pushes others back
+ *         Person* const new_member - the instance to insert into the party
+ * Output: bool - true if inserted (delete if false)
+ */
+bool Party::insertMember(const uint8_t &index, Person* const new_member)
 {
-  for(auto& member : members)
-    if(member)
-      member->restoreHealth();
-}
+  if(getFlag(PartyState::CAN_ADD_MEMBERS) && members.size() < max_size &&
+     new_member)
+  {
+    /* Insert the member */
+    if(index < members.size())
+      members.insert(members.begin() + index, new_member);
+    else
+      members.push_back(new_member);
 
-//TODO Reserve members?
-void Party::restorePartyQtdr()
-{
-  for(auto& member : members)
-    if(member)
-      member->restoreQtdr();
+    /* Ensure member is set up properly */
+    setPartyType(party_type);
+
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -307,10 +319,11 @@ bool Party::loadData(XmlData data, int index, SDL_Renderer* renderer,
 }
 
 /*
- * Description:
+ * Description: Moves a main member instance equal to the pointer to the reserve
+ *              member stack
  *
- * Inputs:
- * Output:
+ * Inputs: Person* test_member - the member to find and relocate
+ * Output: bool - true if relocated
  */
 bool Party::moveMemberToReserve(Person* test_member)
 {
@@ -333,10 +346,11 @@ bool Party::moveMemberToReserve(Person* test_member)
 }
 
 /*
- * Description:
+ * Description: Moves a reserve member instance equal to the pointer to the main
+ *              member stack for use in battle.
  *
- * Inputs:
- * Output:
+ * Inputs: Person* test_member - the member to find and relocate
+ * Output: bool - true if relocated
  */
 bool Party::moveReserveMember(Person* test_member)
 {
@@ -422,8 +436,7 @@ bool Party::removeMember(const uint8_t& index)
 }
 
 /*
- * Description: Attempts to remove a member of the party by a given string
- *name.
+ * Description: Attempts to remove a member of the party by a given string name.
  *
  * Inputs: const std::string - name of the party member to be removed.
  * Output: bool - true if the removal was successful.
@@ -444,6 +457,61 @@ bool Party::removeMember(const std::string& name)
   }
 
   return false;
+}
+  
+/*
+ * Description: Replaces the member of the party at the given index with a new
+ *              member. If the index is not a valid person, the call will fail.
+ *              Responsibility for erasing the member is left to the parent 
+ *              handler.
+ *
+ * Inputs: const uint8_t index - the index to replace the member
+ *         Person* const new_member - the member to replace at the index
+ * Output: bool - true if replaced (erase old). false otherwise (erase new)
+ */
+bool Party::replaceMember(const uint8_t &index, Person* const new_member)
+{
+  if(getFlag(PartyState::CAN_ADD_MEMBERS) && index < members.size() &&
+     new_member)
+  {
+    /* Replace the member */
+    members[index] = new_member;
+
+    /* Ensure member is set up properly */
+    setPartyType(party_type);
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Restores all members within the party vitality back to max.
+ * Notes: for reserve members? (TODO)
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::restorePartyVita()
+{
+  for(auto& member : members)
+    if(member)
+      member->restoreHealth();
+}
+
+/*
+ * Description: Restores all members within the party quantum drive back to max.
+ * Notes: for reserve members? (TODO)
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::restorePartyQtdr()
+{
+  for(auto& member : members)
+    if(member)
+      member->restoreQtdr();
 }
 
 /*
@@ -503,8 +571,7 @@ uint32_t Party::getMaxSize()
 
 /*
  * Description: Obtains a pointer to the member person at a given index in
- *the
- *              party.
+ *              the party.
  *
  * Inputs: uint8_t - index to check member for.
  * Output: Person* - pointer to a the person at the given index (or nullptr)
@@ -518,8 +585,7 @@ Person* Party::getMember(const uint32_t& index)
 }
 
 /*
- * Description: Returns the string name of a party member at a given index,
- *if
+ * Description: Returns the string name of a party member at a given index, if
  *              it is valid.
  *
  * Inputs: uint32_t - index of the party member to find the name of.
@@ -557,7 +623,7 @@ std::vector<Person*> Party::getReserveMembers()
 
 /*
  * Description: Returns the enumerated PartyType of the Party (ex. sleuth,
-  *             bearacks, etc.)
+ *              bearacks, etc.)
  *
  * Inputs: none
  * Output: PartyType - enumerated party type.
@@ -725,7 +791,7 @@ bool Party::setPartyType(const PartyType& type)
 
   /* Clear inventory */
   pouch->setFlag(InvState::PLAYER_STORAGE | InvState::SHIP_STORAGE |
-                     InvState::ENEMY_STORAGE | InvState::SHOP_STORAGE,
+                 InvState::ENEMY_STORAGE | InvState::SHOP_STORAGE,
                  false);
 
   /* Set size based on type */

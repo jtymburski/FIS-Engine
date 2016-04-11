@@ -141,7 +141,9 @@ private:
   Party* addParty(const int32_t &id);
   Person* addPersonBase(const int32_t &id);
   Person* addPersonInst(const int32_t &base_id, const uint32_t &lvl);
-  Person* addPersonInst(Person* base_person,const uint32_t &lvl);
+  Person* addPersonInst(Person* base_person, const uint32_t &lvl);
+  bool addPersonToParty(Party* ref_party, const int32_t &base_id,
+                        const uint32_t index = 0, const uint32_t &lvl = 1);
   Category* addRace(const int32_t &id);
   Skill* addSkill(const int32_t &id);
   SkillSet* addSkillSet(const int32_t &id);
@@ -221,6 +223,7 @@ private:
   void removeItems();
   void removeParties();
   void removePersonBases();
+  bool removePersonInstance(Person* const person_inst);
   void removePersonInstances();
   void removeRaces();
   void removeSkills();

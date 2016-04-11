@@ -205,6 +205,47 @@ Person* Game::addPersonInst(Person* base_person, const uint32_t& lvl)
 }
 
 /* Add functions for game objects */
+bool Game::addPersonToParty(Party* ref_party, const int32_t &base_id,
+                            const uint32_t index, const uint32_t &lvl)
+{
+  if(ref_party != nullptr && index < ref_party->getMaxSize())
+  {
+    /* Determine if the instance exists */
+    Person* ref_person = ref_party->getMember(index);
+    if(ref_person == nullptr || ref_person->getGameID() != base_id)
+    {
+
+    }
+
+    /* If the person is valid, confirm level */
+    if(ref_person != nullptr)
+    {
+
+    }
+  }
+
+  return false;
+
+  // TODO: Finish
+
+
+//      std::string person_str = data.getDataString(&success);
+//      if(success)
+//      {
+//        /* Comma split */
+//        std::vector<std::string> person_set = Helpers::split(person_str, ',');
+//        if(person_set.size() == 2)
+//        {
+//          int person_id = std::stoi(person_set.front());
+//          int person_lvl = std::stoi(person_set.back());
+//
+//          success &=
+//              edit_party->addMember(addPersonInst(person_id, person_lvl));
+//        }
+//      }
+}
+
+/* Add functions for game objects */
 Category* Game::addRace(const int32_t& id)
 {
   Category* new_race = new Category();
@@ -1174,6 +1215,26 @@ void Game::removePersonBases()
   for(auto it = begin(list_person_base); it != end(list_person_base); ++it)
     delete(*it);
   list_person_base.clear();
+}
+
+/* Remove functions for game objects */
+bool Game::removePersonInstance(Person* const person_inst)
+{
+  bool found = false;
+
+  /* Find and delete if found */
+  for(auto it = begin(list_person_inst); 
+      !found && it != end(list_person_inst); ++it)
+  {
+    if(*it == person_inst)
+    {
+      delete(*it);
+      list_person_inst.erase(it);
+      found = true;
+    }
+  }
+
+  return found;
 }
 
 /* Remove functions for game objects */

@@ -50,7 +50,7 @@ public:
         const uint16_t &max);
 
   /* Constructs a Party given a vector of Person ptrs as members */
-  Party(const int32_t &my_id, std::vector<Person *> members, 
+  Party(const int32_t &my_id, std::vector<Person *> members,
         const uint16_t &max, const PartyType &type);
 
   ~Party();
@@ -107,9 +107,8 @@ public:
   /* Clears all members of the party except the primary member */
   bool clearParty();
 
-  /* Restores the VITA // QTDR */
-  void restorePartyVita();
-  void restorePartyQtdr();
+  /* Attempts to insert a person into the party at the index */
+  bool insertMember(const uint8_t &index, Person* const new_member);
 
   /* Checks if a given person is in the party */
   bool isInParty(Person *const check_person);
@@ -131,6 +130,13 @@ public:
   /* Attempts to remove a member of the party by a given string name */
   bool removeMember(const std::string &name);
 
+  /* Replaces the member of the party at the given index with a new */
+  bool replaceMember(const uint8_t &index, Person* const new_member);
+
+  /* Restores the VITA // QTDR */
+  void restorePartyVita();
+  void restorePartyQtdr();
+
   /* Evaluates and returns a given PartyState flag */
   bool getFlag(const PartyState &test_flag);
 
@@ -138,13 +144,13 @@ public:
   int32_t getID() const;
 
   /* Returns the pointer to the current inventory of the Party */
-  Inventory *getInventory();
+  Inventory* getInventory();
 
   /* Returns the current maximum size of the party */
   uint32_t getMaxSize();
 
   /* Obtains a ptr to a member of a given index, if the index is valid */
-  Person *getMember(const uint32_t &index);
+  Person* getMember(const uint32_t &index);
 
   /* Returns the string name a party member at a given index, if valid */
   std::string getMemberName(const uint32_t &index);

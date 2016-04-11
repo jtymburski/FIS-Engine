@@ -297,6 +297,7 @@ public:
   int16_t getActionX();
   int16_t getActionY();
 
+  /* Returns the person AI module handler */
   AIModule* getAI();
 
   /* Returns the real % QD value of the maximum QD */
