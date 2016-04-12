@@ -206,14 +206,19 @@ public:
   /* Counts the # of equipments of a given game ID */
   int32_t getEquipCount(const uint32_t &game_id);
 
+  /* Counts the # of equipments total */
+  int32_t getEquipTotalCount();
+
   /* Returns the currently set bubby limit */
   uint32_t getBubbyLimit();
 
   /* Returns the currently set equipment limit */
   uint32_t getEquipmentLimit();
 
+  /* Returns the the index of a Bubby of a given Game ID */
   int32_t getBubbyIndex(const uint32_t &game_id);
 
+  /* Returns the index of a given Equipment of a given Game ID */
   int32_t getEquipIndex(const uint32_t &game_id);
 
   /* Returns the index of an item ID in the vector */

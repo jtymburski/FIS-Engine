@@ -29,6 +29,10 @@ enum class MenuType
 {
   SLEUTH,
   INVENTORY,
+  INVENTORY_BUBBIES,
+  INVENTORY_EQUIP,
+  INVENTORY_ITEMS,
+  INVENTORY_KEY,
   OPTIONS,
   SAVE,
   LOAD,
@@ -41,6 +45,7 @@ enum class MenuLayer
 {
   TITLE,
   MAIN,
+  MAIN_INDENT,
   INVALID
 };
 
@@ -216,6 +221,16 @@ private:
   Frame* frame_location;
   Frame* frame_money;
 
+  /* Inventory titles */
+  std::vector<Box> inventory_titles;
+
+  /* Inventory Screen Boxes */
+  Box inventory_top_box;
+  Box inventory_top_title_box;
+  Box inventory_scroll_box;
+  Box inventory_bottom_box;
+  Box inventory_icon_box;
+
   /* Current menu layer */
   MenuLayer layer;
 
@@ -228,6 +243,9 @@ private:
   DigitalOption option_auto_run;
   DigitalOption option_mute;
 
+  /* Inventory */
+  Inventory* player_inventory;
+
   /* Assigned Renderer */
   SDL_Renderer* renderer;
 
@@ -237,6 +255,8 @@ private:
   /* Selected TitleElement index */
   int32_t title_element_index;
   int32_t option_element_index;
+  int32_t inventory_title_index;
+  int32_t inventory_element_index;
 
   /* Title Section (Left) Window */
   Window title_section;
@@ -298,6 +318,7 @@ private:
   static const float kOPTIONS_BOX_SIZE;
 
   /* Colors */
+  static const SDL_Color kINVENTORY_ICON_FILL;
   static const SDL_Color kCOLOR_TITLE_BG;
   static const SDL_Color kCOLOR_TITLE_BORDER;
   static const SDL_Color kCOLOR_TITLE_HOVER;
@@ -305,6 +326,8 @@ private:
   static const SDL_Color kCOLOR_TEXT;
   static const SDL_Color kCOLOR_OPTION_FILL;
   static const SDL_Color kCOLOR_OPTION_FILL_SELECTED;
+  static const SDL_Color kCOLOR_INVENTORY_ICON_FILL;
+  static const SDL_Color kCOLOR_BORDER_UNSELECTED;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -337,8 +360,14 @@ private:
   /* Clear out the Icon Frames */
   void clearIconFrames();
 
+  /* Decrement the Inventory index */
+  void decrementInventoryIndex();
+
   /* Decrement the Option Index */
   void decrementOptionIndex();
+
+  /* Increment the inventory title element index */
+  void incrementInventoryIndex();
 
   /* Increment to the next Option Index */
   void incrementOptionIndex();
@@ -351,15 +380,32 @@ private:
   void keyDownAction();
   void keyDownCancel();
 
+  /* Set the currently index inventory title elemetn */
+  void selectInventoryIndex();
+
   /* Selects the current option index */
   void selectOptionIndex();
 
-  /* Render the title section */
-  void renderTitleSection();
+  /* Render Bubbies */
+  void renderBubbies();
+
+  /* Render Equipment */
+  void renderEquipment();
+
+  /* Render the Inventory Screen */
+  void renderInventory();
+
+  /* Render Items */
+  void renderItems();
+
+  /* Render Key Items */
+  void renderKeyItems();
 
   /* Render the main section */
   void renderMainSection();
-  void renderInventory();
+
+  /* Render the title section */
+  void renderTitleSection();
 
   /* Render options functions */
   UCoordinate renderOptionAnalog(AnalogOption& option, UCoordinate point);
@@ -375,7 +421,10 @@ private:
   /* Render the Quit Screen */
   void renderQuit();
 
-    /* Unselects the current option index */
+  /* Unselects the current indexed inventory title */
+  void unselectInventoryIndex();
+
+  /* Unselects the current option index */
   void unselectOptionIndex();
 
   /* Returns the MenuType currently rendering */
@@ -414,6 +463,9 @@ public:
 
   /* Assign a given MenuState flag a given value */
   void setFlag(MenuState set_flags, const bool& set_value = true);
+
+  /* Assign the inventory */
+  void setInventory(Inventory* player_inventory);
 
   /* Assign a map the menu is running on */
   void setMap(Map* new_map);

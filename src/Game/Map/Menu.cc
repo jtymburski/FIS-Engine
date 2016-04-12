@@ -152,8 +152,8 @@ const float Menu::kSAVE_WIDTH{0.55};
 const float Menu::kSLEUTH_WIDTH{0.65};
 
 /* Inventory Section */
-const float Menu::kINV_X_GAP{0.015};
-const float Menu::kINV_Y_GAP{0.01};
+const float Menu::kINV_X_GAP{0.01};
+const float Menu::kINV_Y_GAP{0.02};
 const float Menu::kINV_MASS_TEXT_Y{0.85};
 const float Menu::kINV_MASS_VALUE_Y{0.90};
 const float Menu::kINV_THUMB_GAP{0.02};
@@ -178,6 +178,8 @@ const SDL_Color Menu::kCOLOR_MAIN_BORDER{255, 255, 255, 192};
 const SDL_Color Menu::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_OPTION_FILL{70, 70, 70, 128};
 const SDL_Color Menu::kCOLOR_OPTION_FILL_SELECTED{175, 175, 175, 255};
+const SDL_Color Menu::kCOLOR_INVENTORY_ICON_FILL{40, 40, 40, 255};
+const SDL_Color Menu::kCOLOR_BORDER_UNSELECTED{46, 46, 46, 255};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -203,10 +205,13 @@ Menu::Menu()
       frame_location{nullptr},
       frame_money{nullptr},
       layer{MenuLayer::INVALID},
+      player_inventory{nullptr},
       renderer{nullptr},
       title_elements{},
       title_element_index{-1},
-      option_element_index{-1}
+      option_element_index{-1},
+      inventory_title_index{-1},
+      inventory_element_index{-1}
 {
 }
 
@@ -249,8 +254,20 @@ void Menu::buildIconFrames()
 /* Constructs the Inventory Screen */
 void Menu::buildInventoryScreen()
 {
+  inventory_titles.clear();
+
   if(config)
   {
+    int32_t title_box_size{main_section.location.height / 6};
+
+    /* Construct the Title Icon Boxes */
+    Box icon_box{Coordinate{0, 0}, title_box_size, title_box_size};
+    icon_box.color_bg_selected = kCOLOR_INVENTORY_ICON_FILL;
+    icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
+    icon_box.color_border_selected = kCOLOR_TITLE_BORDER;
+
+    for(int32_t i = 0; i < 4; i++)
+      inventory_titles.push_back(icon_box);
   }
 }
 
@@ -337,12 +354,7 @@ void Menu::buildMainSection(MenuType menu_type)
     if(menu_type == MenuType::INVENTORY)
       main_width = (int32_t)std::round(width * kINV_WIDTH);
     else if(menu_type == MenuType::OPTIONS)
-    {
       main_width = (int32_t)std::round(width * kOPTIONS_WIDTH);
-      buildOptions();
-      option_element_index = 0;
-      selectOptionIndex();
-    }
     else if(menu_type == MenuType::SLEUTH)
       main_width = (int32_t)std::round(width * kSLEUTH_WIDTH);
     else if(menu_type == MenuType::SAVE)
@@ -357,6 +369,19 @@ void Menu::buildMainSection(MenuType menu_type)
     main_section.point = start_point;
     main_section.alpha = kMAIN_ALPHA;
     main_section.status = WindowStatus::OFF;
+
+    if(menu_type == MenuType::INVENTORY)
+    {
+      buildInventoryScreen();
+      inventory_title_index = 0;
+      selectInventoryIndex();
+    }
+    else if(menu_type == MenuType::OPTIONS)
+    {
+      buildOptions();
+      option_element_index = 0;
+      selectOptionIndex();
+    }
   }
 }
 
@@ -405,6 +430,13 @@ void Menu::buildTitleSection()
   title_section.status = WindowStatus::OFF;
 }
 
+void Menu::decrementInventoryIndex()
+{
+  unselectInventoryIndex();
+  inventory_title_index--;
+  selectInventoryIndex();
+}
+
 // TODO: abtract out BETA [04-9-16]
 void Menu::decrementOptionIndex()
 {
@@ -420,17 +452,21 @@ void Menu::incrementOptionIndex()
   selectOptionIndex();
 }
 
-/* Unselect the current option index */
-void Menu::unselectOptionIndex()
+void Menu::incrementInventoryIndex()
 {
-  if(option_element_index == 0)
-    option_audio_level.location.setFlag(ScrollBoxState::SELECTED, false);
-  else if(option_element_index == 1)
-    option_music_level.location.setFlag(ScrollBoxState::SELECTED, false);
-  else if(option_element_index == 2)
-    option_auto_run.location.setFlag(ScrollBoxState::SELECTED, false);
-  else if(option_element_index == 3)
-    option_mute.location.setFlag(ScrollBoxState::SELECTED, false);
+  unselectInventoryIndex();
+  inventory_title_index++;
+  selectInventoryIndex();
+}
+
+void Menu::selectInventoryIndex()
+{
+  if(inventory_title_index != -1 &&
+     (uint32_t)inventory_title_index < inventory_titles.size())
+  {
+    inventory_titles.at(inventory_title_index)
+        .setFlag(ScrollBoxState::SELECTED);
+  }
 }
 
 /* Select the current option index */
@@ -444,6 +480,45 @@ void Menu::selectOptionIndex()
     option_auto_run.location.setFlag(ScrollBoxState::SELECTED);
   else if(option_element_index == 3)
     option_mute.location.setFlag(ScrollBoxState::SELECTED);
+}
+
+void Menu::unselectInventoryIndex()
+{
+  if(inventory_title_index != -1 &&
+     (uint32_t)inventory_title_index < inventory_titles.size())
+  {
+    inventory_titles.at(inventory_title_index)
+        .setFlag(ScrollBoxState::SELECTED, false);
+  }
+}
+
+/* Unselect the current option index */
+void Menu::unselectOptionIndex()
+{
+  if(option_element_index == 0)
+    option_audio_level.location.setFlag(ScrollBoxState::SELECTED, false);
+  else if(option_element_index == 1)
+    option_music_level.location.setFlag(ScrollBoxState::SELECTED, false);
+  else if(option_element_index == 2)
+    option_auto_run.location.setFlag(ScrollBoxState::SELECTED, false);
+  else if(option_element_index == 3)
+    option_mute.location.setFlag(ScrollBoxState::SELECTED, false);
+}
+
+void Menu::renderBubbies()
+{
+}
+
+void Menu::renderEquipment()
+{
+}
+
+void Menu::renderItems()
+{
+}
+
+void Menu::renderKeyItems()
+{
 }
 
 /* Renders the TitleSection */
@@ -608,14 +683,11 @@ void Menu::renderMainSection()
      renderer)
   {
     auto menu_type = getMainMenuType();
-    // auto height = config->getScreenHeight();
     auto width = config->getScreenWidth();
 
     auto location = main_section.location;
     auto point = main_section.location.point;
-
     auto corner_inset = (int32_t)std::ceil(width * kMAIN_CORNER_LENGTH);
-    //    auto main_width = location.width + corner_inset;
 
     /* Render the frame outline and backdrop */
     Coordinate tl = {point.x, point.y};
@@ -678,6 +750,53 @@ void Menu::renderMainSection()
 /* Renders the Inventory Screen */
 void Menu::renderInventory()
 {
+  std::cout << inventory_title_index << std::endl;
+  auto height = config->getScreenHeight();
+  auto width = config->getScreenWidth();
+  auto start = main_section.location.point;
+
+  auto gap_x = (int32_t)std::round(width * kINV_X_GAP);
+  auto gap_y = (int32_t)std::round(height * kINV_Y_GAP);
+
+  auto curr_y = start.y + gap_y;
+
+  /* Render the Title Boxes */
+  for(uint32_t i = 0; i < inventory_titles.size(); i++)
+  {
+    auto& icon = inventory_titles.at(i);
+
+    icon.point.x = start.x + gap_x;
+    icon.point.y = curr_y;
+    icon.render(renderer);
+    curr_y += gap_y + icon.height;
+
+    if(i == 0)
+    {
+      frame_items->render(
+          renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
+          icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+    }
+    else if(i == 1)
+    {
+      frame_equipment->render(
+          renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
+          icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+    }
+    else if(i == 2)
+    {
+      frame_bubbies->render(
+          renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
+          icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+    }
+    else if(i == 3)
+    {
+      frame_key_items->render(
+          renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
+          icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+    }
+  }
+
+  /* Render the Top Boxes and the Bottom Boxes */
 }
 
 /* Renders the Options Screen */
@@ -813,7 +932,6 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
     // frame_checkbox->render(renderer, point.x, point.y, box_size, box_size);
 
     /* Render the Digital Option Name */
-    std::cout << option.name << std::endl;
     Text t(option_font);
     t.setText(renderer, option.name, kCOLOR_TEXT);
     t.render(renderer, point.x + text_gap, point.y);
@@ -880,12 +998,17 @@ void Menu::keyDownUp()
     else
       title_element_index = title_elements.size() - 1;
   }
-  else if(main_section.status == WindowStatus::ON)
+  else if(layer == MenuLayer::MAIN)
   {
     if(getMainMenuType() == MenuType::OPTIONS)
     {
       if(option_element_index > 0)
         decrementOptionIndex();
+    }
+    else if(getMainMenuType() == MenuType::INVENTORY)
+    {
+      if(inventory_title_index > 0)
+        decrementInventoryIndex();
     }
   }
 }
@@ -899,12 +1022,17 @@ void Menu::keyDownDown()
     else
       title_element_index = 0;
   }
-  else if(main_section.status == WindowStatus::ON)
+  else if(layer == MenuLayer::MAIN)
   {
     if(getMainMenuType() == MenuType::OPTIONS)
     {
       if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
         incrementOptionIndex();
+    }
+    else if(getMainMenuType() == MenuType::INVENTORY)
+    {
+      if((uint32_t)inventory_title_index + 1 < inventory_titles.size())
+        incrementInventoryIndex();
     }
   }
 }
@@ -961,12 +1089,53 @@ void Menu::keyDownAction()
       else if(option_element_index == 3)
         option_mute.toggle();
     }
+    else if(getMainMenuType() == MenuType::INVENTORY && player_inventory)
+    {
+      bool success = false;
+
+      /* Set to items if there is at least one item */
+      if(inventory_title_index == 0)
+      {
+        if(player_inventory->getItemTotalCount() > 0)
+          success = true;
+      }
+      else if(inventory_title_index == 1)
+      {
+        if(player_inventory->getBubbyTotalCount() > 0)
+          success = true;
+      }
+      else if(inventory_title_index == 2)
+      {
+        if(player_inventory->getEquipTotalCount() > 0)
+          success = true;
+      }
+      else if(inventory_title_index == 3)
+      {
+        if(player_inventory->getKeyItems().size() > 0)
+          success = true;
+      }
+
+      /* Indent the Menu */
+      if(success)
+      {
+        inventory_element_index = 1;
+        layer = MenuLayer::MAIN_INDENT;
+      }
+    }
   }
 }
 
 void Menu::keyDownCancel()
 {
-  if(main_section.status == WindowStatus::ON)
+  if(layer == MenuLayer::MAIN_INDENT)
+  {
+    if(getMainMenuType() == MenuType::INVENTORY)
+    {
+      inventory_element_index = -1;
+      layer = MenuLayer::MAIN;
+    }
+  }
+  else if(main_section.status == WindowStatus::ON)
   {
     layer = MenuLayer::TITLE;
     main_section.status = WindowStatus::HIDING;
@@ -1136,6 +1305,12 @@ void Menu::setEventHandler(EventHandler* event_handler)
 void Menu::setFlag(MenuState set_flags, const bool& set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
+}
+
+/* Assign a new Inventory */
+void Menu::setInventory(Inventory* player_inventory)
+{
+  this->player_inventory = player_inventory;
 }
 
 /* Assigns the currently active Map */

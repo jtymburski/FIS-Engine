@@ -205,8 +205,8 @@ Person* Game::addPersonInst(Person* base_person, const uint32_t& lvl)
 }
 
 /* Add functions for game objects */
-bool Game::addPersonToParty(Party* ref_party, const int32_t &base_id,
-                            const uint32_t index, const uint32_t &lvl)
+bool Game::addPersonToParty(Party* ref_party, const int32_t& base_id,
+                            const uint32_t index, const uint32_t& lvl)
 {
   if(ref_party != nullptr && index < ref_party->getMaxSize())
   {
@@ -214,13 +214,11 @@ bool Game::addPersonToParty(Party* ref_party, const int32_t &base_id,
     Person* ref_person = ref_party->getMember(index);
     if(ref_person == nullptr || ref_person->getGameID() != base_id)
     {
-
     }
 
     /* If the person is valid, confirm level */
     if(ref_person != nullptr)
     {
-
     }
   }
 
@@ -228,21 +226,21 @@ bool Game::addPersonToParty(Party* ref_party, const int32_t &base_id,
 
   // TODO: Finish
 
-
-//      std::string person_str = data.getDataString(&success);
-//      if(success)
-//      {
-//        /* Comma split */
-//        std::vector<std::string> person_set = Helpers::split(person_str, ',');
-//        if(person_set.size() == 2)
-//        {
-//          int person_id = std::stoi(person_set.front());
-//          int person_lvl = std::stoi(person_set.back());
-//
-//          success &=
-//              edit_party->addMember(addPersonInst(person_id, person_lvl));
-//        }
-//      }
+  //      std::string person_str = data.getDataString(&success);
+  //      if(success)
+  //      {
+  //        /* Comma split */
+  //        std::vector<std::string> person_set = Helpers::split(person_str,
+  //        ',');
+  //        if(person_set.size() == 2)
+  //        {
+  //          int person_id = std::stoi(person_set.front());
+  //          int person_lvl = std::stoi(person_set.back());
+  //
+  //          success &=
+  //              edit_party->addMember(addPersonInst(person_id, person_lvl));
+  //        }
+  //      }
 }
 
 /* Add functions for game objects */
@@ -419,6 +417,7 @@ bool Game::eventMenuShow()
     map_menu.setConfig(config);
     map_menu.setEventHandler(&event_handler);
     map_menu.setMap(&map_ctrl);
+    map_menu.setInventory(getInvSleuth());
     map_menu.setPlayer(player_main);
     map_menu.show();
   }
@@ -831,8 +830,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
       /* The Rest */
       else
       {
-        edit_party->getInventory()->loadData(data, index + 2,
-                                             renderer, base_path);
+        edit_party->getInventory()->loadData(data, index + 2, renderer,
+                                             base_path);
       }
     }
     else
@@ -1223,8 +1222,8 @@ bool Game::removePersonInstance(Person* const person_inst)
   bool found = false;
 
   /* Find and delete if found */
-  for(auto it = begin(list_person_inst);
-      !found && it != end(list_person_inst); ++it)
+  for(auto it = begin(list_person_inst); !found && it != end(list_person_inst);
+      ++it)
   {
     if(*it == person_inst)
     {
@@ -1826,8 +1825,8 @@ bool Game::save()
   std::string init_path = base_path + kSAVE_PATH_FRONT;
   if(save_slot < 10)
     init_path += "0";
-  std::string save_path = init_path + std::to_string(save_slot)
-                                    + kSAVE_PATH_BACK;
+  std::string save_path =
+      init_path + std::to_string(save_slot) + kSAVE_PATH_BACK;
 
   /* Start file write */
   if(save_handle.isAvailable() && save_handle.getFilename() != save_path)

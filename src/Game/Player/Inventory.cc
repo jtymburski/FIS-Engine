@@ -1304,11 +1304,11 @@ uint32_t Inventory::getBubbyLimit()
  */
 uint32_t Inventory::getBubbyTotalCount()
 {
-  auto total = 0;
+  int32_t total{0};
 
   /* First, add up values of each T0 Bubby */
   for(auto it = begin(bubbies); it != end(bubbies); ++it)
-    if((*it).first != nullptr)
+    if((*it).first)
       total += (*it).second;
 
   return total;
@@ -1328,6 +1328,23 @@ int32_t Inventory::getEquipCount(const uint32_t& game_id)
         return (*it).second;
 
   return 0;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+int32_t Inventory::getEquipTotalCount()
+{
+  int32_t total{0};
+
+  for(auto it = begin(equipments); it != end(equipments); ++it)
+   if((*it).first)
+    total += (*it).second;
+
+  return total;
 }
 
 /*
