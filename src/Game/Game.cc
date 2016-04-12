@@ -1223,7 +1223,7 @@ bool Game::removePersonInstance(Person* const person_inst)
   bool found = false;
 
   /* Find and delete if found */
-  for(auto it = begin(list_person_inst); 
+  for(auto it = begin(list_person_inst);
       !found && it != end(list_person_inst); ++it)
   {
     if(*it == person_inst)
@@ -1726,7 +1726,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(mode == MENU)
     {
-      map_menu.keyDownEvent(event);
+      map_menu.keyDownEvent();
     }
     /* -- MAP MODE -- */
     else if(mode == MAP)

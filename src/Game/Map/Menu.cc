@@ -176,7 +176,7 @@ const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
 const SDL_Color Menu::kCOLOR_MAIN_BORDER{255, 255, 255, 192};
 const SDL_Color Menu::kCOLOR_TEXT{255, 255, 255, 255};
-const SDL_Color Menu::kCOLOR_OPTION_FILL{128, 128, 128, 128};
+const SDL_Color Menu::kCOLOR_OPTION_FILL{70, 70, 70, 128};
 const SDL_Color Menu::kCOLOR_OPTION_FILL_SELECTED{175, 175, 175, 255};
 
 /*=============================================================================
@@ -871,111 +871,151 @@ void Menu::hide()
   layer = MenuLayer::INVALID;
 }
 
-/* Process key down event */
-bool Menu::keyDownEvent(SDL_KeyboardEvent event)
+void Menu::keyDownUp()
 {
-  if(event.keysym.sym == SDLK_LEFT)
+  if(layer == MenuLayer::TITLE)
   {
-    if(main_section.status == WindowStatus::ON)
+    if(title_element_index > 0)
+      title_element_index--;
+    else
+      title_element_index = title_elements.size() - 1;
+  }
+  else if(main_section.status == WindowStatus::ON)
+  {
+    if(getMainMenuType() == MenuType::OPTIONS)
     {
-      if(getMainMenuType() == MenuType::OPTIONS)
-      {
-        if(option_element_index == 0)
-          option_audio_level.decrease();
-        else if(option_element_index == 1)
-          option_music_level.decrease();
-      }
+      if(option_element_index > 0)
+        decrementOptionIndex();
     }
   }
-  else if(event.keysym.sym == SDLK_RIGHT)
-  {
-    if(main_section.status == WindowStatus::ON)
-    {
-      if(getMainMenuType() == MenuType::OPTIONS)
-      {
-        if(option_element_index == 0)
-          option_audio_level.increase();
-        else if(option_element_index == 1)
-          option_music_level.increase();
-      }
-    }
-  }
-  else if(event.keysym.sym == SDLK_DOWN)
-  {
-    if(layer == MenuLayer::TITLE)
-    {
-      if(title_element_index + 1 < (int32_t)title_elements.size())
-        title_element_index++;
-      else
-        title_element_index = 0;
-    }
-    else if(main_section.status == WindowStatus::ON)
-    {
-      if(getMainMenuType() == MenuType::OPTIONS)
-      {
-        if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
-          incrementOptionIndex();
-      }
-    }
-  }
-  else if(event.keysym.sym == SDLK_UP)
-  {
-    if(layer == MenuLayer::TITLE)
-    {
-      if(title_element_index > 0)
-        title_element_index--;
-      else
-        title_element_index = title_elements.size() - 1;
-    }
-    else if(main_section.status == WindowStatus::ON)
-    {
-      if(getMainMenuType() == MenuType::OPTIONS)
-      {
-        if(option_element_index > 0)
-          decrementOptionIndex();
-      }
-    }
-  }
-  else if(event.keysym.sym == SDLK_SPACE)
-  {
-    if(title_section.status == WindowStatus::ON &&
-       main_section.status == WindowStatus::OFF)
-    {
-      if(title_element_index < (int32_t)title_elements.size())
-      {
-        layer = MenuLayer::MAIN;
+}
 
-        /* Construct the main section with the appropriate parameters */
-        buildMainSection(getMainMenuType());
-        main_section.status = WindowStatus::SHOWING;
-      }
-    }
-    else if(main_section.status == WindowStatus::ON)
+void Menu::keyDownDown()
+{
+  if(layer == MenuLayer::TITLE)
+  {
+    if(title_element_index + 1 < (int32_t)title_elements.size())
+      title_element_index++;
+    else
+      title_element_index = 0;
+  }
+  else if(main_section.status == WindowStatus::ON)
+  {
+    if(getMainMenuType() == MenuType::OPTIONS)
     {
-      /* Key down event on the options.
-            --> If digital option, select flag
-       */
-      if(getMainMenuType() == MenuType::OPTIONS)
-      {
-        if(option_element_index == 2)
-          option_auto_run.toggle();
-        else if(option_element_index == 3)
-          option_mute.toggle();
-      }
+      if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
+        incrementOptionIndex();
     }
   }
-  else if(event.keysym.sym == SDLK_BACKSPACE)
+}
+
+void Menu::keyDownLeft()
+{
+  if(main_section.status == WindowStatus::ON)
   {
-    if(main_section.status == WindowStatus::ON)
+    if(getMainMenuType() == MenuType::OPTIONS)
     {
-      layer = MenuLayer::TITLE;
-      main_section.status = WindowStatus::HIDING;
+      if(option_element_index == 0)
+        option_audio_level.decrease();
+      else if(option_element_index == 1)
+        option_music_level.decrease();
     }
-    else if(title_section.status == WindowStatus::ON &&
-            (main_section.status == WindowStatus::OFF ||
-             main_section.status == WindowStatus::ON))
+  }
+}
+
+void Menu::keyDownRight()
+{
+  if(main_section.status == WindowStatus::ON)
+  {
+    if(getMainMenuType() == MenuType::OPTIONS)
     {
-      hide();
+      if(option_element_index == 0)
+        option_audio_level.increase();
+      else if(option_element_index == 1)
+        option_music_level.increase();
+    }
+  }
+}
+
+void Menu::keyDownAction()
+{
+  if(title_section.status == WindowStatus::ON &&
+     main_section.status == WindowStatus::OFF)
+  {
+    if(title_element_index < (int32_t)title_elements.size())
+    {
+      layer = MenuLayer::MAIN;
+
+      /* Construct the main section with the appropriate parameters */
+      buildMainSection(getMainMenuType());
+      main_section.status = WindowStatus::SHOWING;
+    }
+  }
+  else if(main_section.status == WindowStatus::ON)
+  {
+    /* Key down event on the options. --> If digital option, select flag */
+    if(getMainMenuType() == MenuType::OPTIONS)
+    {
+      if(option_element_index == 2)
+        option_auto_run.toggle();
+      else if(option_element_index == 3)
+        option_mute.toggle();
+    }
+  }
+}
+
+void Menu::keyDownCancel()
+{
+  if(main_section.status == WindowStatus::ON)
+  {
+    layer = MenuLayer::TITLE;
+    main_section.status = WindowStatus::HIDING;
+  }
+  else if(title_section.status == WindowStatus::ON &&
+          (main_section.status == WindowStatus::OFF ||
+           main_section.status == WindowStatus::ON))
+  {
+    hide();
+  }
+}
+
+/* Process key down event */
+bool Menu::keyDownEvent()
+{
+  if(event_handler)
+  {
+    auto& key_handler = event_handler->getKeyHandler();
+    key_handler.update(0);
+
+    if(key_handler.isDepressed(GameKey::MOVE_UP))
+    {
+      keyDownUp();
+      key_handler.setHeld(GameKey::MOVE_UP);
+    }
+    else if(key_handler.isDepressed(GameKey::MOVE_DOWN))
+    {
+      keyDownDown();
+      key_handler.setHeld(GameKey::MOVE_DOWN);
+    }
+    else if(key_handler.isDepressed(GameKey::MOVE_LEFT))
+    {
+      keyDownLeft();
+      key_handler.setHeld(GameKey::MOVE_LEFT);
+    }
+    else if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
+    {
+      keyDownRight();
+      key_handler.setHeld(GameKey::MOVE_RIGHT);
+    }
+    else if(key_handler.isDepressed(GameKey::ACTION))
+    {
+      keyDownAction();
+      key_handler.setHeld(GameKey::ACTION);
+    }
+    else if(key_handler.isDepressed(GameKey::CANCEL))
+    {
+      keyDownCancel();
+      key_handler.setHeld(GameKey::CANCEL);
     }
   }
 

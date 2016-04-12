@@ -242,12 +242,6 @@ bool Options::isAudioEnabled()
   return !getFlag(OptionState::MUTE);
 }
 
-/* Returns if the player is instructed to always run */
-bool Options::isAutoRun()
-{
-  return getFlag(OptionState::AUTO_RUN);
-}
-
 /* Returns if the game is full screen mode */
 bool Options::isFullScreen()
 {

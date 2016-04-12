@@ -146,9 +146,6 @@ public:
   /* Returns true if the sound is enabled */
   bool isAudioEnabled();
 
-  /* Is the player instructed to always run? */
-  bool isAutoRun();
-
   /* Returns if the game is full screen mode */
   bool isFullScreen();
 

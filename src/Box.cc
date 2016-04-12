@@ -13,7 +13,7 @@
 ******************************************************************************/
 #include "Box.h"
 
-const SDL_Color Box::kDEFAULT_COLOR_BG{0, 0, 0, 150};
+const SDL_Color Box::kDEFAULT_COLOR_BG{0, 0, 0, 0};
 const SDL_Color Box::kDEFAULT_COLOR_BORDER{255, 255, 255, 255};
 const SDL_Color Box::kDEFAULT_COLOR_SCROLL{255, 255, 255, 122};
 const SDL_Color Box::kDEFAULT_COLOR_SCROLL_BG{45, 45, 45, 150};

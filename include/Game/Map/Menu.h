@@ -337,10 +337,21 @@ private:
   /* Clear out the Icon Frames */
   void clearIconFrames();
 
-  /* Change the selected option */
+  /* Decrement the Option Index */
   void decrementOptionIndex();
+
+  /* Increment to the next Option Index */
   void incrementOptionIndex();
-  void unselectOptionIndex();
+
+  /* Key Down Methods */
+  void keyDownLeft();
+  void keyDownRight();
+  void keyDownUp();
+  void keyDownDown();
+  void keyDownAction();
+  void keyDownCancel();
+
+  /* Selects the current option index */
   void selectOptionIndex();
 
   /* Render the title section */
@@ -355,9 +366,17 @@ private:
   UCoordinate renderOptionDigital(DigitalOption& option, UCoordinate point);
   void renderOptions();
 
+  /* Render the Save Screen */
   void renderSleuth();
+
+  /* Render the Save Screen */
   void renderSave();
+
+  /* Render the Quit Screen */
   void renderQuit();
+
+    /* Unselects the current option index */
+  void unselectOptionIndex();
 
   /* Returns the MenuType currently rendering */
   MenuType getMainMenuType();
@@ -373,7 +392,7 @@ public:
   void hide();
 
   /* Key down event */
-  bool keyDownEvent(SDL_KeyboardEvent event);
+  bool keyDownEvent();
 
   /* Show the Menu */
   void show();

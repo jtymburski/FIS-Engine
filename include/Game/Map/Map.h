@@ -292,6 +292,9 @@ private:
   bool updateFade(int cycle_time);
   void updateMode(int cycle_time);
 
+  /* Update the Running state of the Player */
+  void updatePlayerRunState();
+
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
 

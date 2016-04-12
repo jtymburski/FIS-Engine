@@ -418,13 +418,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
 
       /* If the ID is the player ID, tie to the player */
       if(id == kPLAYER_ID)
-      {
         player = static_cast<MapPerson*>(modified_thing);
-        if(system_options != NULL && system_options->isAutoRun())
-        {
-          player->setRunning(true);
-        }
-      }
     }
 
     /* Attempt to add base, if applicable */
@@ -1501,6 +1495,22 @@ void Map::updateMode(int cycle_time)
   }
 }
 
+/* Update the player Run State */
+void Map::updatePlayerRunState()
+{
+  if(event_handler && system_options && player)
+  {
+    auto& key_handler = event_handler->getKeyHandler();
+
+    player->setRunning(false);
+
+    if(key_handler.isDepressed(GameKey::RUN))
+      player->setRunning(true);
+    else if(system_options->getFlag(OptionState::AUTO_RUN))
+      player->setRunning(true);
+  }
+}
+
 /* Updates the height and width, based on zoom factors */
 void Map::updateTileSize()
 {
@@ -1750,12 +1760,9 @@ bool Map::initBattle(MapPerson* person, MapThing* source, BattleFlags flags,
     person->setTarget(source);
     source->setTarget(person);
 
-    /* Clear running status */
-    if(system_options != nullptr && !system_options->isAutoRun())
-      person->setRunning(false);
-
     return true;
   }
+
   return false;
 }
 
@@ -1777,10 +1784,6 @@ bool Map::initConversation(ConvoPair convo_pair, MapThing* source)
     player->setTarget(source);
     if(source != NULL)
       source->setTarget(player);
-
-    /* Clear running status */
-    if(system_options != NULL && !system_options->isAutoRun())
-      player->setRunning(false);
 
     return true;
   }
@@ -2072,9 +2075,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     /* Otherwise, send keys to player for control */
     else if(player != NULL)
     {
-      if(event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT)
-        player->setRunning(true);
-      else if(event.keysym.sym == SDLK_1)
+      if(event.keysym.sym == SDLK_1)
       {
         viewport.lockOn(player);
       }
@@ -2102,13 +2103,7 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
     else if(map_dialog.isConversationActive())
       map_dialog.keyUpEvent(event);
     else if(player != NULL)
-    {
-      if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) &&
-         system_options != NULL && !system_options->isAutoRun())
-        player->setRunning(false);
-      else
-        player->keyUpEvent(event);
-    }
+      player->keyUpEvent(event);
   }
 }
 
@@ -2823,10 +2818,7 @@ void Map::unfocus()
 {
   /* If player is set, clear movement */
   if(player != NULL)
-  {
     player->keyFlush();
-    player->setRunning(false);
-  }
 }
 
 void Map::unloadMap()
@@ -3071,12 +3063,8 @@ bool Map::update(int cycle_time)
       player->clearTarget();
     }
 
-    /* Set running if Auto Run flag is enabled */
-    if(system_options != nullptr &&
-       system_options->getFlag(OptionState::AUTO_RUN))
-    {
-      player->setRunning(true);
-    }
+    /* Update the Running state of the Player */
+    updatePlayerRunState();
   }
 
   /* Check on dialog notifications */
