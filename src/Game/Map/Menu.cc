@@ -271,6 +271,45 @@ void Menu::buildInventoryScreen()
   }
 }
 
+void Menu::buildInventoryElements()
+{
+  inventory_details.clear();
+  inventory_scroll_box.clearElements();
+
+  if(inventory_title_index == 0)
+    buildInventoryItems();
+  else if(inventory_title_index == 1)
+    buildInventoryEquips();
+  else if(inventory_title_index == 2)
+    buildInventoryBubbies();
+  else if(inventory_title_index == 3)
+    buildInventoryKeyItems();
+}
+
+/* Construct the Bubby Frames -- Scroll Box and Details */
+void Menu::buildInventoryBubbies()
+{
+
+}
+
+/* Construct the Equipment Frames -- Scroll Box and Details */
+void Menu::buildInventoryEquips()
+{
+
+}
+
+/* Construct the Item Frames -- Scroll Box and Details */
+void Menu::buildInventoryItems()
+{
+
+}
+
+/* Construct the Key Item Frames -- Scroll Box and Details */
+void Menu::buildInventoryKeyItems()
+{
+
+}
+
 /* Delets the Icon Frames */
 void Menu::clearIconFrames()
 {

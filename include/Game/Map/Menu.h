@@ -221,7 +221,10 @@ private:
   Frame* frame_location;
   Frame* frame_money;
 
-  /* Inventory titles */
+  /* Inventory Details Frames (Description etc.) */
+  std::vector<Frame> inventory_details;
+
+  /* Inventory titles (Icon Boxes) */
   std::vector<Box> inventory_titles;
 
   /* Inventory Screen Boxes */
@@ -338,6 +341,11 @@ private:
 
   /* Construct the inventory display screen */
   void buildInventoryScreen();
+  void buildInventoryBubbies();
+  void buildInventoryEquips();
+  void buildInventoryElements();
+  void buildInventoryItems();
+  void buildInventoryKeyItems();
 
   /* Construct the main section backdrop */
   void buildMainSection(MenuType menu_type);

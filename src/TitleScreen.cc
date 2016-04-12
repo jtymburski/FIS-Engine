@@ -13,11 +13,10 @@
 /* Constant Implementation - see header file for descriptions */
 const uint8_t TitleScreen::kFONT_SIZE = 28;
 const std::string TitleScreen::kMENU_ITEMS[]   = {"Play Game",
-                                                  "Test Battle",
                                                   "Options",
                                                   "Exit"};
 const uint16_t TitleScreen::kNAV_TIME_LIMIT = 200;
-const uint8_t TitleScreen::kNUM_MENU_ITEMS = 4;
+const uint8_t TitleScreen::kNUM_MENU_ITEMS = 3;
 const uint16_t TitleScreen::kTEXT_GAP = 65;
 const uint16_t TitleScreen::kTEXT_MARGIN = 75;
 

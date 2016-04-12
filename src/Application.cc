@@ -56,9 +56,6 @@ Application::Application(std::string base_path, std::string app_path,
   game_handler->setConfiguration(system_options);
   game_handler->setSoundHandler(&sound_handler);
 
-  /* Test battle */
-  test_battle.setConfiguration(system_options);
-
   /* Title Screen */
   title_screen.setConfiguration(system_options);
   title_screen.setSoundHandler(&sound_handler);
@@ -224,12 +221,6 @@ void Application::handleEvents()
         // if(game_handler.keyDownEvent(press_event))
         //  changeMode(TITLESCREEN);
       }
-      else if(mode == TESTBATTLE)
-      {
-        /* If the key event returns true, exit the test battle view */
-        if(test_battle.keyDownEvent(press_event))
-          changeMode(TITLESCREEN);
-      }
     }
     else if(event.type == SDL_KEYUP)
     {
@@ -240,8 +231,6 @@ void Application::handleEvents()
         title_screen.keyUpEvent(release_event);
       else if(mode == GAME)
         game_handler->keyUpEvent(release_event);
-      else if(mode == TESTBATTLE)
-        test_battle.keyUpEvent(release_event);
     }
     else if(event.type == SDL_WINDOWEVENT)
     {
@@ -341,10 +330,6 @@ void Application::render(uint32_t cycle_time)
   else if(mode == LOADING)
   {
     displayLoadingFrame();
-  }
-  else if(mode == TESTBATTLE)
-  {
-    test_battle.render(renderer);
   }
   else if(mode == OPTIONS)
   {
@@ -487,11 +472,6 @@ bool Application::updateViews(int cycle_time)
       {
         changeMode(GAME);
       }
-      else if(action_item == TitleScreen::BATTLE)
-      {
-        test_battle.setEventHandler(&game_handler->getHandler());
-        changeMode(TESTBATTLE);
-      }
     }
   }
   /* Otherwise, update the game and check if the game is finished */
@@ -507,12 +487,6 @@ bool Application::updateViews(int cycle_time)
   else if(mode == LOADING)
   {
     load();
-  }
-  /* If test battle, update and check if it's finished */
-  else if(mode == TESTBATTLE)
-  {
-    if(test_battle.update(cycle_time))
-      changeMode(TITLESCREEN);
   }
   /* If exit, return true to notify the running thread the application is
    * done */

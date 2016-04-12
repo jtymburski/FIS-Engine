@@ -54,7 +54,6 @@ SOURCES=src/Application.cc \
         src/Sound.cc \
 				src/SoundHandler.cc \
         src/Sprite.cc \
-				src/TestBattle.cc \
         src/Text.cc \
         src/TinyXML.cc \
         src/TitleScreen.cc \

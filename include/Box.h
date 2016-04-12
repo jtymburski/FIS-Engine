@@ -49,6 +49,9 @@ public:
   Box(Coordinate point, int32_t width, int32_t height,
       std::vector<Frame*> elements);
 
+  /* Annihilates a Box */
+  ~Box();
+
 private:
   /* Current working element index */
   int32_t element_index;
@@ -133,6 +136,9 @@ private:
    * PUBLIC FUNCTIONS
    *============================================================================*/
 public:
+  /* Clears the Elements from the Box */
+  void clearElements();
+
   /* Updates the scroll box to the next index */
   bool nextIndex();
 

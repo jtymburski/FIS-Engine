@@ -70,6 +70,11 @@ Box::Box(Coordinate point, int32_t width, int32_t height,
   setElements(elements);
 }
 
+Box::~Box()
+{
+  clearElements();
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -111,7 +116,7 @@ void Box::loadDefaults()
   width_border_selected = 1;
   width_element_border = 1;
   width_element_border_selected = 1;
-  elements.clear();
+  clearElements();
 }
 
 // Render elements
@@ -281,6 +286,14 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+void Box::clearElements()
+{
+  for(auto& element : elements)
+    if(element)
+      delete element;
+
+  elements.clear();
+}
 bool Box::nextIndex()
 {
   /* If it's a selectable box, update the view index (unless at the bottom) */
