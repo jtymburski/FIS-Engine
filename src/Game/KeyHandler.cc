@@ -49,7 +49,7 @@ const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT = SDLK_DOWN;
 const SDL_Keycode KeyHandler::kMENU_DEFAULT = SDLK_d;
 const SDL_Keycode KeyHandler::kACTION_DEFAULT = SDLK_SPACE;
 const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_ESCAPE;
-const SDL_Keycode KeyHandler::kRUN_DEFAULT = SDLK_RSHIFT;
+const SDL_Keycode KeyHandler::kRUN_DEFAULT = SDLK_LSHIFT;
 const SDL_Keycode KeyHandler::kDEBUG_DEFAULT = SDLK_f;
 const SDL_Keycode KeyHandler::kPAUSE_DEFAULT = SDLK_RCTRL;
 

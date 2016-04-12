@@ -734,11 +734,11 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
       int diff_exp = (exp - getTotalExp());
       if(diff_exp > 0)
       {
-        success &= addExp(diff_exp);
+        success &= addExp(diff_exp, true, true);
       }
       else if(diff_exp < 0)
       {
-        success &= loseExp(-diff_exp);
+        success &= loseExp(-diff_exp, true, true);
       }
     }
   }
@@ -866,17 +866,19 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
  * Description: Removes an amount of experience from the person but not from
  *              their equipment.
  *
- * Inputs: amount - the amount to take away
- *         update - whether to update the level
+ * Inputs: uint32_t amount - the amount to take away
+ *         bool update - whether to update the level
+ *         bool ignore_flags - should flags be ignored on changes
  * Output: bool - whether the loss of experience was possible
  */
-bool Person::loseExp(const uint32_t& amount, const bool& update)
+bool Person::loseExp(const uint32_t& amount, const bool& update,
+                     const bool& ignore_flags)
 {
   if(amount >= total_exp)
     total_exp -= amount;
 
   if(update)
-    updateLevel();
+    updateLevel(ignore_flags);
 
   return true;
 }

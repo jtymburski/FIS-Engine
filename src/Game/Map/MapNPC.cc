@@ -1605,7 +1605,8 @@ Floatinate MapNPC::update(int cycle_time,
       else
       {
         /* Handle tracking */
-        if(track_state != TrackingState::NOTRACK && player != nullptr)
+        if(track_state != TrackingState::NOTRACK && player != nullptr &&
+           !player->isInteractionDisabled())
         {
           /* Delta X/Y distances */
           int delta_x = 0;

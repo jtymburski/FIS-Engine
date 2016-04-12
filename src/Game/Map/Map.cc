@@ -1622,6 +1622,13 @@ void Map::battleWon()
   /* Finally end battle */
   battle_trigger = false;
 }
+  
+/* Disable interaction by NPCs with the player */
+void Map::disableInteraction(bool disable)
+{
+  if(player != nullptr)
+    player->disableInteraction(disable);
+}
 
 /* Enable view trigger */
 void Map::enableView(bool enable, bool map_change)

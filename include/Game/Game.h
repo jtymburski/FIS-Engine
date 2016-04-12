@@ -77,6 +77,7 @@ private:
   Options* config;
 
   /* Handles all events throughout the game. */
+  bool event_disable;
   EventHandler event_handler;
 
   /* Game file path */

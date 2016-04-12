@@ -259,7 +259,8 @@ public:
                 std::string base_path);
 
   /* Lose an amount of experience */
-  bool loseExp(const uint32_t& amount, const bool& update = true);
+  bool loseExp(const uint32_t& amount, const bool& update = true, 
+               const bool& ignore_flags = false);
 
   /* Lose a percentage of experience towards the next level */
   bool loseExpPercent(const uint16_t& percent);

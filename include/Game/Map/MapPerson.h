@@ -37,6 +37,12 @@ protected:
   SurfaceClassifier surface;
 
 private:
+  /* Ignore passability */
+  bool ignore_passability;
+
+  /* Interaction disabled */
+  bool interaction_disabled;
+
   /* Movement freeze */
   bool move_freeze;
 
@@ -148,6 +154,9 @@ public:
    * direction */
   void clearAllMovement();
 
+  /* Disable interaction of NPCs (or others) with the person */
+  void disableInteraction(bool disable);
+
   /* Returns the direction that this person is travelling in */
   Direction getDirection();
 
@@ -173,8 +182,14 @@ public:
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
 
+  /* Ignore passability and just roam */
+  void ignorePassability(bool ignore);
+
   /* Returns if the NPC will force interaction - always false for player */
   virtual bool isForcedInteraction(bool false_if_active = true);
+
+  /* Returns if interaction has been disabled */
+  bool isInteractionDisabled();
 
   /* Determines if the persons movement is frozen */
   bool isMoveFrozen();

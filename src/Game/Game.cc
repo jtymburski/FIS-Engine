@@ -42,6 +42,7 @@ Game::Game(Options* running_config)
   battle_ctrl = nullptr;
   battle_display_data = nullptr;
   config = nullptr;
+  event_disable = false;
   game_path = "";
   loaded_core = false;
   loaded_sub = false;
@@ -214,33 +215,47 @@ bool Game::addPersonToParty(Party* ref_party, const int32_t& base_id,
     Person* ref_person = ref_party->getMember(index);
     if(ref_person == nullptr || ref_person->getGameID() != base_id)
     {
-    }
+      /* Try and generate the new person */
+      Person* new_person = addPersonInst(base_id, lvl);
+      if(new_person != nullptr)
+      {
+        /* Select how to handle based on conditions - no person exists */
+        if(ref_person == nullptr)
+        {
+          /* Fill up to the index point */
+          while(index < ref_party->getSize())
+          {
+            Person* filler_person = new Person();
+            list_person_inst.push_back(filler_person);
+            ref_party->addMember(filler_person);
+          }
 
-    /* If the person is valid, confirm level */
-    if(ref_person != nullptr)
+          /* Append new person */
+          ref_party->addMember(new_person);
+          ref_person = new_person;
+        }
+        /* The person is not the same base reference */
+        else
+        {
+          ref_party->replaceMember(index, new_person);
+          if(!removePersonInstance(ref_person))
+            delete ref_person;
+          ref_person = new_person;
+        }
+
+        return true;
+      }
+    }
+    /* Otherwise, the reference person is valid */
+    else
     {
+      ref_person->loseExp(ref_person->getTotalExp());
+      ref_person->addExp(ref_person->getExpAt(lvl), true, true);
+      return true;
     }
   }
 
   return false;
-
-  // TODO: Finish
-
-  //      std::string person_str = data.getDataString(&success);
-  //      if(success)
-  //      {
-  //        /* Comma split */
-  //        std::vector<std::string> person_set = Helpers::split(person_str,
-  //        ',');
-  //        if(person_set.size() == 2)
-  //        {
-  //          int person_id = std::stoi(person_set.front());
-  //          int person_lvl = std::stoi(person_set.back());
-  //
-  //          success &=
-  //              edit_party->addMember(addPersonInst(person_id, person_lvl));
-  //        }
-  //      }
 }
 
 /* Add functions for game objects */
@@ -703,6 +718,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
+    map_ctrl.disableInteraction(event_disable);
     changeMode(MAP, true);
   }
   /* If failed, unload */
@@ -795,8 +811,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
           int person_id = std::stoi(person_set.front());
           int person_lvl = std::stoi(person_set.back());
 
-          success &=
-              edit_party->addMember(addPersonInst(person_id, person_lvl));
+          success &= addPersonToParty(edit_party, person_id,
+                                      edit_party->getSize(), person_lvl);
         }
       }
     }
@@ -958,7 +974,7 @@ bool Game::parseLock(Locked& lock_struct)
 void Game::pollEvents()
 {
   /* Only proceed if an event is available */
-  if(event_handler.pollEventAvailable())
+  if(!event_disable && event_handler.pollEventAvailable())
   {
     do
     {
@@ -1636,6 +1652,12 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_5)
   {
     save();
+  }
+  /* Disable events Key */
+  else if(event.keysym.sym == SDLK_F1)
+  {
+    event_disable = !event_disable;
+    map_ctrl.disableInteraction(event_disable);
   }
   /* Level Up Key */
   else if(event.keysym.sym == SDLK_F7 && mode != BATTLE)

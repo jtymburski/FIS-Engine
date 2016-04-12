@@ -41,6 +41,8 @@ const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
  */
 MapPerson::MapPerson() : MapThing()
 {
+  ignore_passability = false;
+  interaction_disabled = false;
   move_freeze = false;
   running = false;
   sound_delay = -1;
@@ -293,7 +295,7 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
     }
   }
 
-  return move_allowed;
+  return (move_allowed || ignore_passability);
 }
 
 /*
@@ -705,6 +707,18 @@ void MapPerson::clearAllMovement()
 {
   movement_stack.clear();
 }
+  
+/*
+ * Description: Disables other NPCs from using this person data for tracking
+ *              and such.
+ *
+ * Inputs: bool disable - disable the other NPCs from tracking, etc
+ * Output: none
+ */
+void MapPerson::disableInteraction(bool disable)
+{
+  interaction_disabled = disable;
+}
 
 /*
  * Description: Returns the direction that the MapPerson is currently set to.
@@ -829,6 +843,17 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
 {
   return surface;
 }
+  
+/*
+ * Description: Set to ignore all passability and freely roam. Expect bugs!
+ *
+ * Inputs: bool ignore - true to ignore all passability. false otherwise
+ * Output: none
+ */
+void MapPerson::ignorePassability(bool ignore)
+{
+  ignore_passability = ignore;
+}
 
 /*
  * Description: Returns if the NPC will force interaction - always false when
@@ -843,6 +868,17 @@ bool MapPerson::isForcedInteraction(bool false_if_active)
 {
   (void)false_if_active;
   return false;
+}
+  
+/*
+ * Description: Returns if interaction by other NPCs has been disabled
+ *
+ * Inputs: none
+ * Output: bool - interaction disabled status
+ */
+bool MapPerson::isInteractionDisabled()
+{
+  return interaction_disabled;
 }
 
 /*
@@ -900,6 +936,10 @@ void MapPerson::keyDownEvent(SDL_KeyboardEvent event)
     else if(event.keysym.sym == SDLK_LEFT)
       addDirection(Direction::WEST);
   }
+
+  /* Other keys which transcend - TODO: testing remove */
+  if(event.keysym.sym == SDLK_F2)
+    ignorePassability(!ignore_passability);
 }
 
 /*

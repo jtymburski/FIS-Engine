@@ -307,6 +307,9 @@ public:
   void battleRun();
   void battleWon();
 
+  /* Disable interaction by NPCs with the player */
+  void disableInteraction(bool disable);
+
   /* Enable view trigger */
   void enableView(bool enable, bool map_change = false);
 
