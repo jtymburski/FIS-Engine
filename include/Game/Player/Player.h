@@ -66,6 +66,11 @@ public:
   /* Attempt to add an amount of credits to the current total */
   bool addCredits(const uint32_t &value);
 
+  /* Attempts to add a learned skill, assuming it's valid */
+  bool addLearnedSkill(std::string party_type, Skill* skill,
+                       const uint32_t &person_index = 0,
+                       const uint32_t &req_level = 200);
+
   /* Add play time to the total */
   void addPlayTime(const uint32_t &milliseconds);
 

@@ -31,10 +31,9 @@ public:
 
   /* Enumerator: Application options to be selected */
   enum MenuItems{GAME    = 0,
-                 BATTLE  = 1,
-                 OPTIONS = 2,
-                 EXIT    = 3,
-                 NONE    = 4};
+                 OPTIONS = 1,
+                 EXIT    = 2,
+                 NONE    = 3};
 
 private:
   /* The menu item that has been initiated. Gets polled by a parent class for

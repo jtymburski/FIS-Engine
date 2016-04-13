@@ -139,6 +139,8 @@ private:
   Category* addClass(const int32_t &id);
   Flavour* addFlavour(const int32_t &id);
   Item* addItem(const int32_t &id, SortObjects type = SortObjects::ITEMS);
+  bool addItemToInv(Inventory* inv, const int32_t &item_id,
+                    const int32_t &item_count = 1);
   Party* addParty(const int32_t &id);
   Person* addPersonBase(const int32_t &id);
   Person* addPersonInst(const int32_t &base_id, const uint32_t &lvl);

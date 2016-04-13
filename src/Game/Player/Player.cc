@@ -70,6 +70,41 @@ bool Player::addCredits(const uint32_t &value)
 
   return added;
 }
+  
+/*
+ * Description: Attempts to add a learned skill to the given party type with a 
+ *              required level. The party types are "sleuth" and "bearacks".
+ *
+ * Inputs: std::string party_type - the party type: sleuth or bearacks
+ *         Skill* skill - the skill to attempt to load
+ *         uint32_t person_index - the person index within the party. Default 0
+ *         uint32_t req_level - the level required for the person to use
+ * Output: bool - true if the skill was added to the learned set
+ */
+bool Player::addLearnedSkill(std::string party_type, Skill* skill,
+                       const uint32_t &person_index, const uint32_t &req_level)
+{
+  bool success = false;
+
+  if(skill != nullptr)
+  {
+    /* Get the reference party */
+    Party* ref_party = nullptr;
+    if(party_type == "sleuth")
+      ref_party = sleuth;
+    else if(party_type == "bearacks")
+      ref_party = bearacks;
+
+    /* Access the party */
+    if(ref_party != nullptr && ref_party->getMember(person_index) != nullptr)
+    {
+      success = ref_party->getMember(person_index)->getLearnedSet(true)
+                                                  ->addSkill(skill, req_level);
+    }
+  }
+
+  return success;
+}
 
 /*
  * Description: Adds play time in milliseconds to the total time played of the

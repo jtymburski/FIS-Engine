@@ -160,6 +160,31 @@ Item* Game::addItem(const int32_t& id, SortObjects type)
   return new_item;
 }
 
+/* Add Item to Inventory function */
+bool Game::addItemToInv(Inventory* inv, const int32_t &item_id,
+                        const int32_t &item_count)
+{
+  bool success = false;
+
+  if(inv != nullptr)
+  {
+    Item* base_item = getItem(item_id);
+    if(base_item != nullptr)
+    {
+      Item* new_item = new Item(base_item);
+      success = true;
+
+      AddStatus status = inv->add(new_item, item_count);
+      if(status != AddStatus::GOOD_KEEP)
+        delete new_item;
+      if(status == AddStatus::FAIL)
+        success = false;
+    }
+  }
+
+  return success;
+}
+
 /* Add functions for game objects */
 Party* Game::addParty(const int32_t& id)
 {
@@ -831,15 +856,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
           {
             int item_id = std::stoi(item_set.front());
             int item_count = std::stoi(item_set.back());
-
-            Item* new_item = new Item(getItem(item_id));
-
-            AddStatus status =
-                edit_party->getInventory()->add(new_item, item_count);
-            if(status == AddStatus::GOOD_DELETE)
-              delete new_item;
-            else if(status == AddStatus::FAIL)
-              success = false;
+            success &= addItemToInv(edit_party->getInventory(),
+                                    item_id, item_count);
           }
         }
       }
@@ -873,7 +891,81 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
   /* ---- PLAYER ---- */
   else if(element == "player")
   {
-    player_main->loadData(data, index + 1, renderer, base_path);
+    // TODO: Equipment and Bubbies - FUTURE 
+    /* The base indicator for the person */
+    if(data.getElement(index + 3) == "base" && 
+       data.getElement(index + 2) == "person" && 
+       (data.getElement(index + 1) == "sleuth" || 
+        data.getElement(index + 1) == "bearacks"))
+    {
+      int base_id = data.getDataInteger();
+      std::string index_str = data.getKeyValue(index + 2);
+      if(base_id >= 0 && !index_str.empty())
+      {
+        int index = std::stoi(index_str);
+        if(index >= 0)
+        {
+          if(data.getElement(index + 1) == "sleuth")
+            success &= addPersonToParty(player_main->getSleuth(), base_id,
+                                        static_cast<uint32_t>(index));
+          else
+            success &= addPersonToParty(player_main->getBearacks(), base_id,
+                                        static_cast<uint32_t>(index));
+        }
+      }
+    }
+    /* Inventory: Items */
+    else if(data.getElement(index + 3) == "item" &&
+            data.getElement(index + 2) == "inventory" &&
+            (data.getElement(index + 1) == "sleuth" ||
+             data.getElement(index + 1) == "bearacks"))
+    {
+      std::string item_str = data.getDataString(&success);
+      if(success)
+      {
+        /* Comma split */
+        std::vector<std::string> item_set = Helpers::split(item_str, ',');
+        if(item_set.size() == 2)
+        {
+          int item_id = std::stoi(item_set.front());
+          int item_count = std::stoi(item_set.back());
+          
+          if(data.getElement(index + 1) == "sleuth")
+            success &= addItemToInv(player_main->getSleuth()->getInventory(),
+                                    item_id, item_count);
+          else
+            success &= addItemToInv(player_main->getBearacks()->getInventory(),
+                                    item_id, item_count);
+        }
+      }
+    }
+    /* The learned skills */
+    else if(data.getElement(index + 3) == "learned" &&
+            data.getElement(index + 2) == "person" &&
+            (data.getElement(index + 1) == "sleuth" ||
+             data.getElement(index + 1) == "bearacks"))
+    {
+      std::string index_str = data.getKeyValue(index + 2);
+      std::string learn_str = data.getDataString();
+      if(!index_str.empty() && !learn_str.empty())
+      {
+        /* Process the values */
+        int index = std::stoi(index_str);
+        std::vector<std::string> learn_split = Helpers::split(learn_str, ',');
+        if(index >= 0 && learn_split.size() == 2)
+        {
+          int first = std::stoi(learn_split.front());
+          int second = std::stoi(learn_split.back());
+          success &= player_main->addLearnedSkill(data.getElement(index + 1),
+                                                  getSkill(first), second);
+        }
+      }
+    }
+    /* All other cases */
+    else
+    {
+      player_main->loadData(data, index + 1, renderer, base_path);
+    }
   }
   /* ---- RACES ---- */
   else if(element == "race")
@@ -1873,11 +1965,9 @@ bool Game::save()
     /* Write the core data */
     if(player_main != nullptr)
     {
-      /* Write player data */
+      /* Write player data which contains all other data related */
       updatePlayerSteps();
       player_main->saveData(&save_handle);
-
-      // TODO: Add rest of core data
     }
 
     /* Write the map data */

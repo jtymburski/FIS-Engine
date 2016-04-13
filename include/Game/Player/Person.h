@@ -259,7 +259,7 @@ public:
                 std::string base_path);
 
   /* Lose an amount of experience */
-  bool loseExp(const uint32_t& amount, const bool& update = true, 
+  bool loseExp(const uint32_t& amount, const bool& update = true,
                const bool& ignore_flags = false);
 
   /* Lose a percentage of experience towards the next level */
@@ -301,14 +301,11 @@ public:
   /* Returns the person AI module handler */
   AIModule* getAI();
 
-  /* Returns the real % QD value of the maximum QD */
-  float getQDPercent();
-
-  /* Returns the real % VITA value of the maximum VITA */
-  float getVitaPercent();
-
   /* Returns the game_id (not unique) of the Person */
   int32_t getGameID() const;
+
+  /* Returns the learned skill set - and creates if flagged */
+  SkillSet* getLearnedSet(const bool& create = false);
 
   /* Returns the my_id (unique) of the Person */
   int32_t getMyID();
@@ -396,6 +393,12 @@ public:
 
   /* Grabs the vector of item IDs the person can drop */
   std::vector<uint32_t> getItemDrops();
+
+  /* Returns the real % QD value of the maximum QD */
+  float getQDPercent();
+
+  /* Returns the real % VITA value of the maximum VITA */
+  float getVitaPercent();
 
   /* Calculate and return the /turn RegenRates for QD & VITA */
   RegenRate getQDRegenRate();

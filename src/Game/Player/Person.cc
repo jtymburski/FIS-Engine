@@ -552,8 +552,11 @@ float Person::calcQtdrPercentAtVal(uint32_t target_value)
  */
 void Person::clearLearnedSkills()
 {
-  learned_skills->clear();
-  updateSkills();
+  if(learned_skills != nullptr)
+  {
+    learned_skills->clear();
+    updateSkills();
+  }
 }
 
 /*
@@ -1265,6 +1268,20 @@ int16_t Person::getActionY()
 int32_t Person::getGameID() const
 {
   return game_id;
+}
+  
+/*
+ * Description: Returns the learned skill set. If create flagged, it will 
+ *              generate the learned skills skillset if it is null
+ *
+ * Inputs: const bool& create - true to create it if its null
+ * Output: SkillSet* - the learned set stored within the class
+ */
+SkillSet* Person::getLearnedSet(const bool& create)
+{
+  if(create && learned_skills == nullptr)
+    learned_skills = new SkillSet();
+  return learned_skills;
 }
 
 /*
