@@ -145,20 +145,23 @@ const float Menu::kTITLE_HOVER_MAX{0.8};
 const uint8_t Menu::kMAIN_ALPHA{191};
 const float Menu::kMAIN_SLIDE_RATE{2.05};
 const float Menu::kMAIN_CORNER_LENGTH{0.025};
-const float Menu::kINV_WIDTH{0.56};
+const float Menu::kINV_WIDTH{0.53};
 const float Menu::kOPTIONS_WIDTH{0.40};
 const float Menu::kQUIT_WIDTH{0.33};
 const float Menu::kSAVE_WIDTH{0.55};
 const float Menu::kSLEUTH_WIDTH{0.65};
 
 /* Inventory Section */
-const float Menu::kINV_X_GAP{0.01};
+const float Menu::kINV_X_GAP{0.013};
 const float Menu::kINV_Y_GAP{0.02};
 const float Menu::kINV_MASS_TEXT_Y{0.85};
 const float Menu::kINV_MASS_VALUE_Y{0.90};
 const float Menu::kINV_THUMB_GAP{0.02};
 const float Menu::kINV_ITEM_NAME_X{0.1};
 const float Menu::kINV_ITEM_NAME_Y{0.1};
+const float Menu::kINV_ITEM_ELEMENT_WIDTH{0.75};
+const float Menu::kINV_ITEM_ELEMENT_HEIGHT{0.6};
+const float Menu::kINV_ITEM_ELEMENT_INSET{0.05};
 const float Menu::kINV_ITEM_MASS_Y{0.25};
 const float Menu::kINV_ITEM_DESC_Y{0};
 
@@ -174,13 +177,13 @@ const float Menu::kOPTIONS_BOX_SIZE{0.017};
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
 const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
-const SDL_Color Menu::kCOLOR_MAIN_BORDER{255, 255, 255, 192};
+const SDL_Color Menu::kCOLOR_MAIN_BORDER{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_OPTION_FILL{70, 70, 70, 128};
 const SDL_Color Menu::kCOLOR_OPTION_FILL_SELECTED{175, 175, 175, 255};
 const SDL_Color Menu::kCOLOR_INVENTORY_ICON_FILL{40, 40, 40, 255};
 const SDL_Color Menu::kCOLOR_BORDER_UNSELECTED{46, 46, 46, 255};
-
+const SDL_Color Menu::kCOLOR_ICON_UNSELECTED_FILL{25, 25, 25, 128};
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -262,6 +265,7 @@ void Menu::buildInventoryScreen()
 
     /* Construct the Title Icon Boxes */
     Box icon_box{Coordinate{0, 0}, title_box_size, title_box_size};
+    icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
     icon_box.color_bg_selected = kCOLOR_INVENTORY_ICON_FILL;
     icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
     icon_box.color_border_selected = kCOLOR_TITLE_BORDER;
@@ -273,41 +277,126 @@ void Menu::buildInventoryScreen()
 
 void Menu::buildInventoryElements()
 {
-  inventory_details.clear();
-  inventory_scroll_box.clearElements();
+  if(config)
+  {
+    // auto width = config->getScreenWidth();
+    // auto height = config->getScreenHeight();
 
-  if(inventory_title_index == 0)
-    buildInventoryItems();
-  else if(inventory_title_index == 1)
-    buildInventoryEquips();
-  else if(inventory_title_index == 2)
-    buildInventoryBubbies();
-  else if(inventory_title_index == 3)
-    buildInventoryKeyItems();
+    inventory_details.clear();
+    inventory_scroll_box.clearElements();
+    inventory_scroll_box.setFlag(ScrollBoxState::SCROLL_BOX);
+    inventory_scroll_box.setFlag(ScrollBoxState::SELECTABLE);
+
+    if(inventory_title_index == 0)
+      buildInventoryItems();
+    else if(inventory_title_index == 1)
+      buildInventoryEquips();
+    else if(inventory_title_index == 2)
+      buildInventoryBubbies();
+    else if(inventory_title_index == 3)
+      buildInventoryKeyItems();
+  }
 }
 
 /* Construct the Bubby Frames -- Scroll Box and Details */
 void Menu::buildInventoryBubbies()
 {
-
 }
 
 /* Construct the Equipment Frames -- Scroll Box and Details */
 void Menu::buildInventoryEquips()
 {
-
 }
 
 /* Construct the Item Frames -- Scroll Box and Details */
 void Menu::buildInventoryItems()
 {
+  if(player_inventory)
+  {
+    auto item_pairs = player_inventory->getItems();
+    std::vector<Frame*> item_elements;
 
+    auto width = calcItemTitleWidth();
+    auto height = calcItemTitleHeight();
+
+    for(auto& item_pair : item_pairs)
+    {
+      auto texture =
+          buildItemListFrame(item_pair.first, item_pair.second, width, height);
+
+      /* Create frame with the texture if it was created */
+      if(texture)
+      {
+        item_elements.push_back(new Frame());
+        item_elements.back()->setTexture(texture);
+      }
+    }
+
+    /* Assign the Item Scroll Box with the frames, passing ownership */
+    inventory_scroll_box.setElements(item_elements);
+    std::cout << "Setting the elements." << std::endl;
+  }
+}
+
+SDL_Texture* Menu::buildItemListFrame(Item* build_item, int32_t count,
+                                      uint32_t width, uint32_t height)
+{
+  if(config && renderer && build_item && count > 0)
+  {
+    auto font_item = config->getFontTTF(FontName::MENU_STANDARD);
+    auto item_inset = (uint32_t)std::round(width * kINV_ITEM_ELEMENT_INSET);
+
+    Text t_item_name{font_item};
+    Text t_item_count{font_item};
+
+    t_item_name.setText(renderer, build_item->getName(), kCOLOR_TEXT);
+    t_item_count.setText(renderer, std::to_string(count), kCOLOR_TEXT);
+
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, width, height);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    auto text_y = (height - t_item_name.getHeight()) / 2;
+    auto count_x = width - t_item_count.getWidth() - item_inset;
+
+    t_item_name.render(renderer, item_inset, text_y);
+    t_item_count.render(renderer, count_x, text_y);
+
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    return texture;
+  }
+
+  return nullptr;
+}
+
+SDL_Texture* Menu::buildItemDetailFrame(Item* build_item, uint32_t width,
+                                        uint32_t height)
+{
+  (void)build_item;
+  (void)width;
+  (void)height;
+  return nullptr;
 }
 
 /* Construct the Key Item Frames -- Scroll Box and Details */
 void Menu::buildInventoryKeyItems()
 {
+}
 
+int32_t Menu::calcItemTitleWidth()
+{
+  return (int32_t)std::round(main_section.location.width *
+                             kINV_ITEM_ELEMENT_WIDTH);
+}
+
+int32_t Menu::calcItemTitleHeight()
+{
+  return (int32_t)std::round(main_section.location.height *
+                             kINV_ITEM_ELEMENT_HEIGHT);
 }
 
 /* Delets the Icon Frames */
@@ -413,6 +502,7 @@ void Menu::buildMainSection(MenuType menu_type)
     {
       buildInventoryScreen();
       inventory_title_index = 0;
+      buildInventoryElements();
       selectInventoryIndex();
     }
     else if(menu_type == MenuType::OPTIONS)
@@ -552,8 +642,9 @@ void Menu::renderEquipment()
 {
 }
 
-void Menu::renderItems()
+void Menu::renderItems(Coordinate start)
 {
+  /* Scroll Box Position */
 }
 
 void Menu::renderKeyItems()
@@ -789,25 +880,24 @@ void Menu::renderMainSection()
 /* Renders the Inventory Screen */
 void Menu::renderInventory()
 {
-  std::cout << inventory_title_index << std::endl;
   auto height = config->getScreenHeight();
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
 
-  auto gap_x = (int32_t)std::round(width * kINV_X_GAP);
-  auto gap_y = (int32_t)std::round(height * kINV_Y_GAP);
+  auto gap = (int32_t)std::round(width * kINV_X_GAP);
+  // auto gap_y = (int32_t)std::round(height * kINV_Y_GAP);
 
-  auto curr_y = start.y + gap_y;
+  auto curr_y = start.y + gap;
 
   /* Render the Title Boxes */
   for(uint32_t i = 0; i < inventory_titles.size(); i++)
   {
     auto& icon = inventory_titles.at(i);
 
-    icon.point.x = start.x + gap_x;
+    icon.point.x = start.x + gap;
     icon.point.y = curr_y;
     icon.render(renderer);
-    curr_y += gap_y + icon.height;
+    curr_y += gap + icon.height;
 
     if(i == 0)
     {
@@ -835,7 +925,44 @@ void Menu::renderInventory()
     }
   }
 
+  // TODO: Render the selection triangle [04-13-16]
+
   /* Render the Top Boxes and the Bottom Boxes */
+  auto icon_w = main_section.location.height / 6;
+
+  inventory_top_box.point = {start.x + 2 * gap + icon_w, start.y + gap};
+  inventory_top_box.width = main_section.location.width - icon_w - 3 * gap;
+  inventory_top_box.height = (main_section.location.height - 3 * gap) / 2;
+  inventory_top_box.color_bg = kCOLOR_TITLE_BG;
+  inventory_top_box.render(renderer);
+
+  // inventory_top_title_box;
+
+  inventory_bottom_box.point = {inventory_top_box.point.x,
+                                inventory_top_box.point.y +
+                                    inventory_top_box.height + gap};
+  inventory_bottom_box.width = inventory_top_box.width;
+  inventory_bottom_box.height = inventory_top_box.height - 2 * gap;
+  inventory_bottom_box.color_bg = kCOLOR_TITLE_BG;
+  inventory_bottom_box.color_border = kCOLOR_BORDER_UNSELECTED;
+  inventory_bottom_box.render(renderer);
+
+  // TODO
+  Coordinate element_start = inventory_top_box.point;
+
+  inventory_scroll_box.point = {inventory_top_box.point.x + gap,
+                                inventory_top_box.point.y + gap};
+  inventory_scroll_box.width = inventory_top_box.width - 2 * gap;
+  inventory_scroll_box.height =
+      (int32_t)std::round(inventory_top_box.height * 0.66);
+  inventory_scroll_box.color_border = {0, 0, 0, 0};
+
+  inventory_scroll_box.render(renderer);
+  // TODO ELSE
+
+  // inventory_icon_box;
+
+  // TODO
 }
 
 /* Renders the Options Screen */

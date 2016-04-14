@@ -308,6 +308,9 @@ private:
   static const float kINV_THUMB_GAP;
   static const float kINV_ITEM_NAME_X;
   static const float kINV_ITEM_NAME_Y;
+  static const float kINV_ITEM_ELEMENT_WIDTH;
+  static const float kINV_ITEM_ELEMENT_HEIGHT;
+  static const float kINV_ITEM_ELEMENT_INSET;
   static const float kINV_ITEM_MASS_Y;
   static const float kINV_ITEM_DESC_Y;
 
@@ -331,6 +334,7 @@ private:
   static const SDL_Color kCOLOR_OPTION_FILL_SELECTED;
   static const SDL_Color kCOLOR_INVENTORY_ICON_FILL;
   static const SDL_Color kCOLOR_BORDER_UNSELECTED;
+  static const SDL_Color kCOLOR_ICON_UNSELECTED_FILL;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -346,6 +350,12 @@ private:
   void buildInventoryElements();
   void buildInventoryItems();
   void buildInventoryKeyItems();
+
+  /* Texture Creations for Items */
+  SDL_Texture* buildItemListFrame(Item* build_item, int32_t count,
+                                  uint32_t width, uint32_t height);
+  SDL_Texture* buildItemDetailFrame(Item* build_item, uint32_t width,
+                                    uint32_t height);
 
   /* Construct the main section backdrop */
   void buildMainSection(MenuType menu_type);
@@ -364,6 +374,10 @@ private:
 
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
+
+  /* Calculate dimensions of the Item Title frames */
+  int32_t calcItemTitleWidth();
+  int32_t calcItemTitleHeight();
 
   /* Clear out the Icon Frames */
   void clearIconFrames();
@@ -404,7 +418,7 @@ private:
   void renderInventory();
 
   /* Render Items */
-  void renderItems();
+  void renderItems(Coordinate point);
 
   /* Render Key Items */
   void renderKeyItems();
