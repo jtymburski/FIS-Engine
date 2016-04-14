@@ -159,8 +159,8 @@ const float Menu::kINV_MASS_VALUE_Y{0.90};
 const float Menu::kINV_THUMB_GAP{0.02};
 const float Menu::kINV_ITEM_NAME_X{0.1};
 const float Menu::kINV_ITEM_NAME_Y{0.1};
-const float Menu::kINV_ITEM_ELEMENT_WIDTH{0.75};
-const float Menu::kINV_ITEM_ELEMENT_HEIGHT{0.6};
+const float Menu::kINV_ITEM_ELEMENT_WIDTH{0.70};
+const float Menu::kINV_ITEM_ELEMENT_HEIGHT{0.06};
 const float Menu::kINV_ITEM_ELEMENT_INSET{0.05};
 const float Menu::kINV_ITEM_MASS_Y{0.25};
 const float Menu::kINV_ITEM_DESC_Y{0};
@@ -334,7 +334,10 @@ void Menu::buildInventoryItems()
 
     /* Assign the Item Scroll Box with the frames, passing ownership */
     inventory_scroll_box.setElements(item_elements);
-    std::cout << "Setting the elements." << std::endl;
+
+    // TODO: Debug remove
+    std::cout << "Setting the elements. Size: " << item_elements.size()
+              << std::endl;
   }
 }
 
@@ -343,7 +346,7 @@ SDL_Texture* Menu::buildItemListFrame(Item* build_item, int32_t count,
 {
   if(config && renderer && build_item && count > 0)
   {
-    auto font_item = config->getFontTTF(FontName::MENU_STANDARD);
+    auto font_item = config->getFontTTF(FontName::MENU_HEADER);
     auto item_inset = (uint32_t)std::round(width * kINV_ITEM_ELEMENT_INSET);
 
     Text t_item_name{font_item};
@@ -642,11 +645,6 @@ void Menu::renderEquipment()
 {
 }
 
-void Menu::renderItems(Coordinate start)
-{
-  /* Scroll Box Position */
-}
-
 void Menu::renderKeyItems()
 {
 }
@@ -880,7 +878,6 @@ void Menu::renderMainSection()
 /* Renders the Inventory Screen */
 void Menu::renderInventory()
 {
-  auto height = config->getScreenHeight();
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
 
@@ -928,41 +925,44 @@ void Menu::renderInventory()
   // TODO: Render the selection triangle [04-13-16]
 
   /* Render the Top Boxes and the Bottom Boxes */
+  auto top_section_height = (main_section.location.height - 3 * gap) / 2;
   auto icon_w = main_section.location.height / 6;
 
   inventory_top_box.point = {start.x + 2 * gap + icon_w, start.y + gap};
   inventory_top_box.width = main_section.location.width - icon_w - 3 * gap;
-  inventory_top_box.height = (main_section.location.height - 3 * gap) / 2;
+  inventory_top_box.height = top_section_height / 5;
   inventory_top_box.color_bg = kCOLOR_TITLE_BG;
+  inventory_top_box.color_bg_selected = kCOLOR_TITLE_BG;
+  inventory_top_box.color_border = kCOLOR_BORDER_UNSELECTED;
+  inventory_top_box.color_border_selected = kCOLOR_TITLE_BORDER;
   inventory_top_box.render(renderer);
 
-  // inventory_top_title_box;
+  inventory_scroll_box.point = {inventory_top_box.point.x,
+                                inventory_top_box.point.y +
+                                    inventory_top_box.height - 1};
+  inventory_scroll_box.width = inventory_top_box.width;
+  inventory_scroll_box.height = top_section_height - inventory_top_box.height;
+  inventory_scroll_box.color_bg = kCOLOR_TITLE_BG;
+  inventory_scroll_box.color_bg_selected = kCOLOR_TITLE_BG;
+  inventory_scroll_box.color_border = kCOLOR_BORDER_UNSELECTED;
+  inventory_scroll_box.color_border_selected = kCOLOR_TITLE_BORDER;
+  inventory_scroll_box.color_element_selected = kCOLOR_INVENTORY_ICON_FILL;
+  inventory_scroll_box.element_inset_x = gap;
+  inventory_scroll_box.element_inset_y = gap;
+  inventory_scroll_box.scroll_inset_x = gap;
+  inventory_scroll_box.scroll_inset_y = gap + calcItemTitleHeight() / 2;
+
+  inventory_scroll_box.render(renderer);
 
   inventory_bottom_box.point = {inventory_top_box.point.x,
                                 inventory_top_box.point.y +
-                                    inventory_top_box.height + gap};
+                                    inventory_top_box.height +
+                                    inventory_scroll_box.height + gap};
   inventory_bottom_box.width = inventory_top_box.width;
-  inventory_bottom_box.height = inventory_top_box.height - 2 * gap;
+  inventory_bottom_box.height = top_section_height - 2 * gap;
   inventory_bottom_box.color_bg = kCOLOR_TITLE_BG;
   inventory_bottom_box.color_border = kCOLOR_BORDER_UNSELECTED;
   inventory_bottom_box.render(renderer);
-
-  // TODO
-  Coordinate element_start = inventory_top_box.point;
-
-  inventory_scroll_box.point = {inventory_top_box.point.x + gap,
-                                inventory_top_box.point.y + gap};
-  inventory_scroll_box.width = inventory_top_box.width - 2 * gap;
-  inventory_scroll_box.height =
-      (int32_t)std::round(inventory_top_box.height * 0.66);
-  inventory_scroll_box.color_border = {0, 0, 0, 0};
-
-  inventory_scroll_box.render(renderer);
-  // TODO ELSE
-
-  // inventory_icon_box;
-
-  // TODO
 }
 
 /* Renders the Options Screen */
@@ -1177,6 +1177,11 @@ void Menu::keyDownUp()
         decrementInventoryIndex();
     }
   }
+  else if(layer == MenuLayer::MAIN_INDENT)
+  {
+    if(getMainMenuType() == MenuType::INVENTORY)
+      inventory_scroll_box.prevIndex();
+  }
 }
 
 void Menu::keyDownDown()
@@ -1200,6 +1205,11 @@ void Menu::keyDownDown()
       if((uint32_t)inventory_title_index + 1 < inventory_titles.size())
         incrementInventoryIndex();
     }
+  }
+  else if(layer == MenuLayer::MAIN_INDENT)
+  {
+    if(getMainMenuType() == MenuType::INVENTORY)
+      inventory_scroll_box.nextIndex();
   }
 }
 
@@ -1286,6 +1296,8 @@ void Menu::keyDownAction()
       {
         inventory_element_index = 1;
         layer = MenuLayer::MAIN_INDENT;
+        inventory_top_box.setFlag(ScrollBoxState::SELECTED);
+        inventory_scroll_box.setFlag(ScrollBoxState::SELECTED);
       }
     }
   }
@@ -1299,6 +1311,8 @@ void Menu::keyDownCancel()
     {
       inventory_element_index = -1;
       layer = MenuLayer::MAIN;
+      inventory_top_box.setFlag(ScrollBoxState::SELECTED, false);
+      inventory_scroll_box.setFlag(ScrollBoxState::SELECTED, false);
     }
   }
   else if(main_section.status == WindowStatus::ON)

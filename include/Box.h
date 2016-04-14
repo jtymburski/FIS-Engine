@@ -66,6 +66,7 @@ public:
   SDL_Color color_bg_selected;
   SDL_Color color_border;
   SDL_Color color_element_border;
+  SDL_Color color_element_selected;
   SDL_Color color_border_selected;
   SDL_Color color_element_border_selected;
   SDL_Color color_scroll;

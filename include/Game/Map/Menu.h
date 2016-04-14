@@ -229,7 +229,6 @@ private:
 
   /* Inventory Screen Boxes */
   Box inventory_top_box;
-  Box inventory_top_title_box;
   Box inventory_scroll_box;
   Box inventory_bottom_box;
   Box inventory_icon_box;
@@ -324,7 +323,6 @@ private:
   static const float kOPTIONS_BOX_SIZE;
 
   /* Colors */
-  static const SDL_Color kINVENTORY_ICON_FILL;
   static const SDL_Color kCOLOR_TITLE_BG;
   static const SDL_Color kCOLOR_TITLE_BORDER;
   static const SDL_Color kCOLOR_TITLE_HOVER;

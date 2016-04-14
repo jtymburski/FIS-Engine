@@ -92,6 +92,7 @@ void Box::loadDefaults()
   color_border = kDEFAULT_COLOR_BORDER;
   color_border_selected = kDEFAULT_COLOR_BORDER;
   color_element_border = kDEFAULT_COLOR_BLANK;
+  color_element_selected = kDEFAULT_COLOR_BLANK;
   color_element_border_selected = kDEFAULT_COLOR_BLANK;
   color_scroll = kDEFAULT_COLOR_SCROLL;
   color_scroll_bg = kDEFAULT_COLOR_SCROLL_BG;
@@ -137,15 +138,15 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
     {
       if(elements.at(i))
       {
-        success &= elements.at(i)->render(renderer, curr_x, curr_y);
-
         SDL_Color color = kDEFAULT_COLOR_BLANK;
+        SDL_Color color_fill = kDEFAULT_COLOR_BLANK;
         uint32_t border_width = 0;
 
         /* If the element is currently selected, render its selected border */
         if(element_index > -1 && (uint32_t)element_index == i)
         {
           color = color_element_border_selected;
+          color_fill = color_element_selected;
           border_width = width_element_border;
         }
         else
@@ -154,16 +155,22 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
           border_width = width_element_border_selected;
         }
 
-        /* Set the render draw color, render the border box */
-        Frame::setRenderDrawColor(renderer, color);
-
         SDL_Rect rect;
         rect.x = curr_x;
         rect.y = curr_y;
         rect.h = elements.at(i)->getHeight();
         rect.w = elements.at(i)->getWidth();
 
+        /* Render the Fill Rect */
+        Frame::setRenderDrawColor(renderer, color_fill);
+        success &= SDL_RenderFillRect(renderer, &rect);
+
+        /* Set the render draw color, render the border box */
+        Frame::setRenderDrawColor(renderer, color);
         success &= Frame::renderRect(rect, border_width, renderer);
+
+        /* Render the element and update the running Y-Coordinate */
+        success &= elements.at(i)->render(renderer, curr_x, curr_y);
         curr_y += elements.at(i)->getHeight() + element_gap;
       }
     }
