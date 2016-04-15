@@ -98,13 +98,13 @@ bool Fonts::createFonts(Options* config)
                                    24, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(3),
-                                   16, TTF_STYLE_NORMAL));
+                                   18, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_OPTIONS,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    16, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_SUBHEADER,
                   Text::createFont(config->getBasePath() + config->getFont(3),
-                                   11, TTF_STYLE_NORMAL));
+                                   12, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_STANDARD,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    11, TTF_STYLE_NORMAL));

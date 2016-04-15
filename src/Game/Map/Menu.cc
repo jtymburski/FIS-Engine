@@ -878,12 +878,14 @@ void Menu::renderMainSection()
 /* Renders the Inventory Screen */
 void Menu::renderInventory()
 {
+  auto title_font = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
+  auto font_header = config->getFontTTF(FontName::MENU_HEADER);
+  auto font_subheader = config->getFontTTF(FontName::MENU_SUBHEADER);
+  auto inv = player_inventory;
+
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
-
   auto gap = (int32_t)std::round(width * kINV_X_GAP);
-  // auto gap_y = (int32_t)std::round(height * kINV_Y_GAP);
-
   auto curr_y = start.y + gap;
 
   /* Render the Title Boxes */
@@ -922,11 +924,29 @@ void Menu::renderInventory()
     }
   }
 
+  auto icon_w = main_section.location.height / 6;
+  //curr_y += icon_w / 5;
+
+  /* Render the Mass of the Inventory */
+  Text mass_title(font_subheader);
+  Text mass_value(font_header);
+  std::string mass_string;
+
+  mass_title.setText(renderer, "TOTAL MASS", kCOLOR_TEXT);
+  mass_string = std::to_string((uint32_t)std::round(inv->getMass())) + " / " +
+                std::to_string((uint32_t)std::round(inv->getMassLimit())) + " kg";
+  mass_value.setText(renderer, mass_string, kCOLOR_TEXT);
+
+  mass_title.render(
+      renderer, start.x + gap + icon_w / 2 - mass_title.getWidth() / 2, curr_y);
+  mass_value.render(renderer,
+                    start.x + gap + icon_w / 2 - mass_value.getWidth() / 2,
+                    curr_y + icon_w / 3);
+
   // TODO: Render the selection triangle [04-13-16]
 
   /* Render the Top Boxes and the Bottom Boxes */
   auto top_section_height = (main_section.location.height - 3 * gap) / 2;
-  auto icon_w = main_section.location.height / 6;
 
   inventory_top_box.point = {start.x + 2 * gap + icon_w, start.y + gap};
   inventory_top_box.width = main_section.location.width - icon_w - 3 * gap;
@@ -937,6 +957,7 @@ void Menu::renderInventory()
   inventory_top_box.color_border_selected = kCOLOR_TITLE_BORDER;
   inventory_top_box.render(renderer);
 
+  /* Render the scroll inventory box */
   inventory_scroll_box.point = {inventory_top_box.point.x,
                                 inventory_top_box.point.y +
                                     inventory_top_box.height - 1};
@@ -951,9 +972,9 @@ void Menu::renderInventory()
   inventory_scroll_box.element_inset_y = gap;
   inventory_scroll_box.scroll_inset_x = gap;
   inventory_scroll_box.scroll_inset_y = gap + calcItemTitleHeight() / 2;
-
   inventory_scroll_box.render(renderer);
 
+  /* Render the bottom icon detail box */
   inventory_bottom_box.point = {inventory_top_box.point.x,
                                 inventory_top_box.point.y +
                                     inventory_top_box.height +
@@ -963,6 +984,60 @@ void Menu::renderInventory()
   inventory_bottom_box.color_bg = kCOLOR_TITLE_BG;
   inventory_bottom_box.color_border = kCOLOR_BORDER_UNSELECTED;
   inventory_bottom_box.render(renderer);
+
+  /* Render the Inventory Icon Box */
+  inventory_icon_box.point = {inventory_bottom_box.point.x + gap,
+                              inventory_bottom_box.point.y + gap};
+  inventory_icon_box.width = icon_w;
+  inventory_icon_box.height = icon_w;
+  inventory_icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
+  inventory_icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
+  inventory_icon_box.render(renderer);
+
+  // TODO: Render the item details information.
+
+  /* Render the Item Title Text */
+  Text title_text(title_font);
+  Text number_items(title_font);
+  std::string number_str = "";
+
+  // TODO Color if at limit?
+  if(inventory_title_index == 0)
+  {
+    number_str = std::to_string(inv->getItemTotalCount()) + " / " +
+                 std::to_string(inv->getItemLimit());
+
+    title_text.setText(renderer, "Items", kCOLOR_TEXT);
+  }
+  else if(inventory_title_index == 1)
+  {
+    number_str = std::to_string(inv->getEquipTotalCount()) + " / " +
+                 std::to_string(inv->getEquipmentLimit());
+
+    title_text.setText(renderer, "Equipment", kCOLOR_TEXT);
+  }
+  else if(inventory_title_index == 2)
+  {
+    number_str = std::to_string(inv->getBubbyTotalCount()) + " / " +
+                 std::to_string(inv->getBubbyLimit());
+
+    title_text.setText(renderer, "Bubbies", kCOLOR_TEXT);
+  }
+  else if(inventory_title_index == 3)
+  {
+    title_text.setText(renderer, "Key Items", kCOLOR_TEXT);
+  }
+
+  auto title_text_y = inventory_top_box.point.y + inventory_top_box.height / 2 -
+                      title_text.getHeight() / 2;
+  number_items.setText(renderer, number_str, kCOLOR_TEXT);
+
+  title_text.render(renderer, inventory_top_box.point.x + gap, title_text_y);
+
+  number_items.render(renderer,
+                      inventory_top_box.point.x + inventory_top_box.width -
+                          number_items.getWidth() - gap,
+                      title_text_y);
 }
 
 /* Renders the Options Screen */
@@ -1174,13 +1249,18 @@ void Menu::keyDownUp()
     else if(getMainMenuType() == MenuType::INVENTORY)
     {
       if(inventory_title_index > 0)
+      {
         decrementInventoryIndex();
+        buildInventoryElements();
+      }
     }
   }
   else if(layer == MenuLayer::MAIN_INDENT)
   {
     if(getMainMenuType() == MenuType::INVENTORY)
+    {
       inventory_scroll_box.prevIndex();
+    }
   }
 }
 
@@ -1203,13 +1283,18 @@ void Menu::keyDownDown()
     else if(getMainMenuType() == MenuType::INVENTORY)
     {
       if((uint32_t)inventory_title_index + 1 < inventory_titles.size())
+      {
         incrementInventoryIndex();
+        buildInventoryElements();
+      }
     }
   }
   else if(layer == MenuLayer::MAIN_INDENT)
   {
     if(getMainMenuType() == MenuType::INVENTORY)
+    {
       inventory_scroll_box.nextIndex();
+    }
   }
 }
 

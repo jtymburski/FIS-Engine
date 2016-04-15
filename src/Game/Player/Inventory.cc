@@ -22,9 +22,9 @@ uint32_t Inventory::money_id = 0;
 
 const double Inventory::kMIN_MASS = 200.00;
 const double Inventory::kMAX_MASS = 100000.00;
-const uint32_t Inventory::kMIN_ITEM = 20;
+const uint32_t Inventory::kMIN_ITEM = 100;
 const uint32_t Inventory::kMAX_ITEM = 25000;
-const uint16_t Inventory::kMIN_EACH_ITEM = 10;
+const uint16_t Inventory::kMIN_EACH_ITEM = 20;
 const uint16_t Inventory::kMAX_EACH_ITEM = 105;
 
 /*=============================================================================
@@ -37,9 +37,9 @@ const uint16_t Inventory::kMAX_EACH_ITEM = 105;
  *
  * Note [1]: Inventories by default are created empty, upgradeable, with
  *           default limit values and not of non-shop storage type. To change
- *           to a stop storage inventory the flag must be set after const.
  *
  * Inputs:
+ *           to a stop storage inventory the flag must be set after const.
  */
 Inventory::Inventory(const uint32_t game_id, const std::string name,
                      Frame* thumb)
