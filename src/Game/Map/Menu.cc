@@ -829,7 +829,6 @@ void Menu::renderMainSection()
 
     Coordinate blc = {br.x + 1, br.y - 1};
     Coordinate tlc = {tr.x + 1, tl.y};
-
     Coordinate trc = {tr.x + corner_inset, tr.y};
     Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
 
@@ -935,9 +934,21 @@ void Menu::renderInventory()
   std::string mass_string;
 
   mass_title.setText(renderer, "TOTAL MASS", kCOLOR_TEXT);
-  mass_string = std::to_string((uint32_t)std::round(inv->getMass())) + " / " +
-                std::to_string((uint32_t)std::round(inv->getMassLimit())) +
-                " kg";
+
+  if(inv->getMassLimit() < 1000)
+  {
+    mass_string = std::to_string((uint32_t)std::round(inv->getMass())) + " / " +
+                  std::to_string((uint32_t)std::round(inv->getMassLimit())) +
+                  " kg";
+  }
+  else
+  {
+    mass_string =
+        std::to_string((uint32_t)std::round(inv->getMass() / 1000)) + " / " +
+        std::to_string((uint32_t)std::round(inv->getMassLimit() / 1000)) +
+        " Mg";
+  }
+
   mass_value.setText(renderer, mass_string, kCOLOR_TEXT);
 
   mass_title.render(
@@ -978,17 +989,38 @@ void Menu::renderInventory()
   inventory_scroll_box.render(renderer);
 
   /* Render the bottom icon detail box */
-  inventory_bottom_box.point = {inventory_top_box.point.x,
-                                inventory_top_box.point.y +
-                                    inventory_top_box.height +
-                                    inventory_scroll_box.height + gap};
-  inventory_bottom_box.width = inventory_top_box.width;
-  inventory_bottom_box.height = top_section_height - 2 * gap;
-  inventory_bottom_box.color_bg = kCOLOR_TITLE_BG;
-  inventory_bottom_box.color_border = kCOLOR_BORDER_UNSELECTED;
-  inventory_bottom_box.render(renderer);
+  auto bot_height = main_section.location.height - top_section_height - 3 * gap;
+  auto corner_inset = (int32_t)std::ceil(width * kMAIN_CORNER_LENGTH);
 
-  // TODO: Render the item details information.
+  Coordinate tl = {inventory_top_box.point.x,
+                   inventory_top_box.point.y + inventory_top_box.height +
+                       inventory_scroll_box.height + gap};
+  Coordinate tr = {tl.x + inventory_top_box.width - corner_inset, tl.y};
+  Coordinate bl = {tl.x, tl.y + bot_height};
+  Coordinate br = {tl.x + inventory_top_box.width - corner_inset,
+                   tl.y + bot_height};
+
+  Coordinate blc = {br.x + 1, br.y - 1};
+  Coordinate tlc = {tr.x + 1, tl.y};
+  Coordinate trc = {tr.x + corner_inset, tr.y};
+  Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
+
+  auto top_bar = Helpers::bresenhamPoints(tl, tr);
+  auto bot_bar = Helpers::bresenhamPoints(bl, br);
+  auto top_corner = Helpers::bresenhamPoints(tlc, trc);
+  auto bot_corner = Helpers::bresenhamPoints(blc, brc);
+  auto right_line = Helpers::bresenhamPoints(trc, brc);
+
+  Frame::setRenderDrawColor(renderer, {0, 0, 0, 255});
+  Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
+  Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
+
+  Frame::setRenderDrawColor(renderer, kCOLOR_BORDER_UNSELECTED);
+  Frame::drawLine(top_bar, renderer);
+  Frame::drawLine(bot_bar, renderer);
+  Frame::drawLine(top_corner, renderer);
+  Frame::drawLine(bot_corner, renderer);
+  Frame::drawLine(right_line, renderer);
 
   /* Render the Item Title Text */
   Text title_text(title_font);
@@ -1036,7 +1068,7 @@ void Menu::renderInventory()
   if(inventory_title_index == InventoryIndex::ITEMS &&
      inventory_element_index != -1)
   {
-    renderItem(inventory_bottom_box.point, icon_w, gap);
+    renderItem(tl, icon_w, gap);
   }
 }
 
@@ -1079,17 +1111,17 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap)
       Text item_name(font_standard);
       Text item_mass_title(font_title);
       Text item_mass(font_standard);
-      Text item_tier_title(font_title);
-      Text item_tier(font_standard);
+      Text item_flags(font_standard);
       Text item_description(font_standard);
+      std::string flags_text = Helpers::tierToStr(item->getItemTier());
 
       item_name.setText(renderer, item->getName(), kCOLOR_TEXT);
       item_mass_title.setText(renderer, "MASS", kCOLOR_TEXT);
-      item_mass.setText(renderer, std::to_string(item->getMass()) + " kg",
+      item_mass.setText(renderer, std::to_string(item->getMass()) + " g",
                         kCOLOR_TEXT);
-      item_tier_title.setText(renderer, "TIER", kCOLOR_TEXT);
-      item_tier.setText(renderer, Helpers::tierToStr(item->getItemTier()),
-                        kCOLOR_TEXT);
+
+      item_flags.setText(renderer, Helpers::tierToStr(item->getItemTier()),
+                         kCOLOR_TEXT);
 
       item_name.render(renderer, curr_x, inventory_icon_box.point.y);
       auto curr_y = inventory_icon_box.point.y + item_name.getHeight() + gap;
@@ -1097,9 +1129,9 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap)
       curr_y += gap;
       item_mass.render(renderer, curr_x, curr_y);
 
-      curr_y = inventory_icon_box.point.y + inventory_icon_box.height + gap;
+      curr_y = inventory_icon_box.point.y + inventory_icon_box.height + gap / 2;
       auto desc_split = Text::splitLine(font_standard, item->getDescription(),
-                                        inventory_bottom_box.width - 2 * gap);
+                                        inventory_top_box.width - 2 * gap);
 
       /* Render the description lines */
       for(auto& line : desc_split)
@@ -1414,7 +1446,7 @@ void Menu::keyDownAction()
       main_section.status = WindowStatus::SHOWING;
     }
   }
-  else if(main_section.status == WindowStatus::ON)
+  else if(layer == MenuLayer::MAIN)
   {
     /* Key down event on the options. --> If digital option, select flag */
     if(getMainMenuType() == MenuType::OPTIONS)

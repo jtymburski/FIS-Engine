@@ -1622,7 +1622,7 @@ void Map::battleWon()
   /* Finally end battle */
   battle_trigger = false;
 }
-  
+
 /* Disable interaction by NPCs with the player */
 void Map::disableInteraction(bool disable)
 {

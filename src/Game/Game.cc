@@ -891,11 +891,11 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
   /* ---- PLAYER ---- */
   else if(element == "player")
   {
-    // TODO: Equipment and Bubbies - FUTURE 
+    // TODO: Equipment and Bubbies - FUTURE
     /* The base indicator for the person */
-    if(data.getElement(index + 3) == "base" && 
-       data.getElement(index + 2) == "person" && 
-       (data.getElement(index + 1) == "sleuth" || 
+    if(data.getElement(index + 3) == "base" &&
+       data.getElement(index + 2) == "person" &&
+       (data.getElement(index + 1) == "sleuth" ||
         data.getElement(index + 1) == "bearacks"))
     {
       int base_id = data.getDataInteger();
@@ -929,7 +929,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
         {
           int item_id = std::stoi(item_set.front());
           int item_count = std::stoi(item_set.back());
-          
+
           if(data.getElement(index + 1) == "sleuth")
             success &= addItemToInv(player_main->getSleuth()->getInventory(),
                                     item_id, item_count);

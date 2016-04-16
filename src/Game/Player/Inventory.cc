@@ -20,12 +20,10 @@
 uint32_t Inventory::id = 0;
 uint32_t Inventory::money_id = 0;
 
-const double Inventory::kMIN_MASS = 200.00;
-const double Inventory::kMAX_MASS = 100000.00;
-const uint32_t Inventory::kMIN_ITEM = 100;
+const double Inventory::kMIN_MASS = 15.00;
+const double Inventory::kMAX_MASS = 99999;
+const uint32_t Inventory::kMIN_ITEM = 75;
 const uint32_t Inventory::kMAX_ITEM = 25000;
-const uint16_t Inventory::kMIN_EACH_ITEM = 20;
-const uint16_t Inventory::kMAX_EACH_ITEM = 105;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -48,7 +46,6 @@ Inventory::Inventory(const uint32_t game_id, const std::string name,
       bubby_limit{0},
       equip_limit{0},
       item_limit{0},
-      item_each_limit{0},
       mass_limit{0},
       game_id{game_id},
       my_id{++id},
@@ -59,7 +56,7 @@ Inventory::Inventory(const uint32_t game_id, const std::string name,
 {
   setFlag(InvState::UPGRADEABLE, true);
   setFlag(InvState::ENABLED, true);
-  setLimits(kMIN_ITEM, kMIN_ITEM, kMIN_ITEM, kMIN_EACH_ITEM, kMIN_MASS);
+  setLimits(kMIN_ITEM, kMIN_ITEM, kMIN_ITEM, kMIN_MASS);
 }
 
 /*
@@ -87,17 +84,17 @@ void Inventory::calcMass()
   double temp_mass{0.0};
 
   for(auto bubby : bubbies)
-    if(bubby.first != nullptr)
-      temp_mass += (bubby.first->getMass() * bubby.second);
+    if(bubby.first)
+      temp_mass += (bubby.first->getMass() * bubby.second) / 1000;
 
   for(auto equipment : equipments)
-    if(equipment.first != nullptr)
-      temp_mass += (equipment.first->getMass() * equipment.second);
+    if(equipment.first)
+      temp_mass += (equipment.first->getMass() * equipment.second) / 1000;
 
   for(auto item : items)
-    if(item.first != nullptr)
+    if(item.first)
       if(!item.first->getFlag(ItemFlags::KEY_ITEM))
-        temp_mass += (item.first->getMass() * item.second);
+        temp_mass += (item.first->getMass() * item.second) / 1000;
 
   curr_mass = temp_mass;
 }
@@ -533,9 +530,6 @@ uint32_t Inventory::hasRoom(Bubby* const b, uint32_t n)
   if(need_check)
   {
     n = std::min(bubby_limit - getBubbyTotalCount(), n);
-    n = std::min(item_each_limit - getBubbyCount(b->getGameID(), b->getTier()),
-                 n);
-
     auto lim = std::floor((mass_limit - getMass()) / b->getMass());
     n = std::min(static_cast<uint32_t>(lim), n);
   }
@@ -578,55 +572,21 @@ uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
 }
 
 /*
- * Description: Checks if an Item in the inventory matches a given unique ID
+ * Description:
  *
  * Inputs: item - pointer to an item object to be checked room for
  *         n - the maximum number of objects to be checked for
  * Output: int32_t - the # of the items of given type the inventory has room
  */
-uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
+uint32_t Inventory::hasRoom(Item* const i, uint32_t n)
 {
-  bool need_check = true;
-
-  if(item == nullptr)
+  if(i && !getFlag(InvState::SHOP_STORAGE) && !i->getFlag(ItemFlags::KEY_ITEM))
   {
-    need_check = false;
-    n = 0;
-  }
+    auto count = getItemTotalCount(false);
+    auto mass_lim = std::floor((mass_limit - getMass()) * 1000 / i->getMass());
 
-  if(getFlag(InvState::SHOP_STORAGE))
-  {
-    need_check = false;
-    // n = kMAX_ITEM;
-  }
-
-  if(need_check)
-  {
-    uint32_t curr_count = getItemCount(item->getGameID());
-    bool key_item = item->getFlag(ItemFlags::KEY_ITEM);
-
-    /* Check stack total first, if relevant - if no space, set max to 0*/
-    if(!key_item && curr_count == 0 && getItemStackCount() >= item_limit)
-    {
-      n = 0;
-    }
-
-    /* Check individual stack limit */
-    if(key_item)
-    {
-      n = std::min(kMAX_EACH_ITEM - curr_count, n);
-    }
-    else
-    {
-      n = std::min(item_each_limit - curr_count, n);
-
-      /* Mass calculation in addition, if greater than 0 */
-      if(getMass() > 0)
-      {
-        auto lim = std::floor((mass_limit - getMass()) / item->getMass());
-        n = std::min(static_cast<uint32_t>(lim), n);
-      }
-    }
+    n = std::min(item_limit - count, n);
+    n = std::min(static_cast<uint32_t>(mass_lim), n);
   }
 
   return n;
@@ -658,7 +618,7 @@ bool Inventory::loadData(XmlData data, int index, SDL_Renderer* renderer,
     {
       float val = data.getDataFloat(&success);
       if(success)
-        setLimits(bubby_limit, equip_limit, item_limit, item_each_limit, val);
+        setLimits(bubby_limit, equip_limit, item_limit, val);
     }
     /* Integer limits */
     else
@@ -669,23 +629,24 @@ bool Inventory::loadData(XmlData data, int index, SDL_Renderer* renderer,
         /* Bubby Limit */
         if(inside == "bubbies")
         {
-          setLimits(val, equip_limit, item_limit, item_each_limit, mass_limit);
+          setLimits(val, equip_limit, item_limit, mass_limit);
         }
         /* Equipment Limit */
         else if(inside == "equipments")
         {
-          setLimits(bubby_limit, val, item_limit, item_each_limit, mass_limit);
+          setLimits(bubby_limit, val, item_limit, mass_limit);
         }
         /* Generic Item Limit */
         else if(inside == "items")
         {
-          setLimits(bubby_limit, equip_limit, val, item_each_limit, mass_limit);
+          setLimits(bubby_limit, equip_limit, val, mass_limit);
         }
         /* Stack Limit */
-        else if(inside == "stack")
-        {
-          setLimits(bubby_limit, equip_limit, item_limit, val, mass_limit);
-        }
+        //TODO: No longer need this?
+        // else if(inside == "stack")
+        // {
+        //   setLimits(bubby_limit, equip_limit, val, mass_limit);
+        // }
       }
     }
   }
@@ -1065,8 +1026,10 @@ bool Inventory::saveData(FileHandler* fh)
     fh->writeXmlElement("limits");
     if(mass_limit > kMIN_MASS)
       fh->writeXmlData("mass", static_cast<float>(mass_limit));
-    if(item_each_limit > kMIN_EACH_ITEM)
-      fh->writeXmlData("stack", item_each_limit);
+
+    // TODO: Jordan can we get rid of this?
+    // if(item_each_limit > kMIN_EACH_ITEM)
+    //  fh->writeXmlData("stack", item_each_limit);
     if(item_limit > kMIN_ITEM)
       fh->writeXmlData("items", item_limit);
     if(equip_limit > kMIN_ITEM)
@@ -1076,34 +1039,34 @@ bool Inventory::saveData(FileHandler* fh)
     fh->writeXmlElementEnd();
 
     /* Items */
-    for(auto const &pair : items)
+    for(auto const& pair : items)
     {
       if(pair.first)
       {
-        std::string set = std::to_string(pair.first->getGameID()) + ","
-                        + std::to_string(pair.second);
+        std::string set = std::to_string(pair.first->getGameID()) + "," +
+                          std::to_string(pair.second);
         fh->writeXmlData("item", set);
       }
     }
 
     /* Equipment */
-    for(auto const &pair : equipments)
+    for(auto const& pair : equipments)
     {
       if(pair.first)
       {
-        std::string set = std::to_string(pair.first->getGameID()) + ","
-                        + std::to_string(pair.second);
+        std::string set = std::to_string(pair.first->getGameID()) + "," +
+                          std::to_string(pair.second);
         fh->writeXmlData("equip", set);
       }
     }
 
     /* Bubbies */
-    for(auto const &pair : bubbies)
+    for(auto const& pair : bubbies)
     {
       if(pair.first)
       {
-        std::string set = std::to_string(pair.first->getGameID()) + ","
-                        + std::to_string(pair.second);
+        std::string set = std::to_string(pair.first->getGameID()) + "," +
+                          std::to_string(pair.second);
         fh->writeXmlData("bubby", set);
       }
     }
@@ -1341,8 +1304,8 @@ int32_t Inventory::getEquipTotalCount()
   int32_t total{0};
 
   for(auto it = begin(equipments); it != end(equipments); ++it)
-   if((*it).first)
-    total += (*it).second;
+    if((*it).first)
+      total += (*it).second;
 
   return total;
 }
@@ -1562,17 +1525,6 @@ uint32_t Inventory::getItemCount(const uint32_t& game_id)
 }
 
 /*
- * Description: Returns the currently assigned item each limit
- *
- * Inputs: none
- * Output: uint32_t - the item each limit
- */
-uint32_t Inventory::getItemEachLimit()
-{
-  return item_each_limit;
-}
-
-/*
  * Description: Returns the total number of item stacks within the inventory.
  *              This is associated with item_limit total.
  *
@@ -1736,13 +1688,11 @@ bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
  * Output: none
  */
 void Inventory::setLimits(const uint32_t bubby_lim, const uint32_t equip_lim,
-                          const uint32_t item_lim, const uint16_t item_e,
-                          const double mass_lim)
+                          const uint32_t item_lim, const double mass_lim)
 {
   bubby_limit = Helpers::setInRange(bubby_lim, kMIN_ITEM, kMAX_ITEM);
   equip_limit = Helpers::setInRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
   item_limit = Helpers::setInRange(item_lim, kMIN_ITEM, kMAX_ITEM);
-  item_each_limit = Helpers::setInRange(item_e, kMIN_EACH_ITEM, kMAX_EACH_ITEM);
   mass_limit = Helpers::setInRange(mass_lim, kMIN_MASS, kMAX_MASS);
 }
 
