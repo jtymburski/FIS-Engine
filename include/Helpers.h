@@ -36,17 +36,14 @@
 #include "EnumDb.h"
 #include "XmlData.h"
 
-/* High precision timer abstraction */
 class Timer
 {
 public:
   Timer() : beg_(clock_::now()){};
-
   void reset()
   {
     beg_ = clock_::now();
   }
-
   double elapsed() const
   {
     return std::chrono::duration_cast<second_>(clock_::now() - beg_).count();
@@ -97,6 +94,16 @@ struct Floatinate
   float x;
   float y;
 };
+
+/* Box with an integer coordinate and a size width by height */
+// struct Box
+// {
+//   Box() : point{Coordinate()}, width{0}, height{0} {};
+
+//   Coordinate point;
+//   int32_t width;
+//   int32_t height;
+// };
 
 /* Structure for large lay over frames */
 struct LayOver
@@ -274,6 +281,9 @@ public:
   * GENERAL HELPER FUNCTIONS
   *============================================================================*/
 public:
+  /* Pads a string with spaces until it reaches the required length */
+  static std::string alignRight(std::string s, uint32_t length);
+
   /* Builds an exponentially growing table from min to max with # iterations */
   static std::vector<uint32_t>
   buildExpTable(const uint32_t& min, const uint32_t& max, const uint32_t& iter);
@@ -291,9 +301,8 @@ public:
 
   /* Formats a number ex. 35987 into 32 899 etc. */
   static std::string formatUInt(uint32_t number, std::string delim = " ");
-  static std::string alignRight(std::string s, uint32_t length);
 
-  /* Splites the string into a grid based on the frame naming convention */
+  /* Splits the string into a grid based on the frame naming convention */
   static std::vector<std::vector<std::string>> frameSeparator(std::string path);
 
   /* Returns the distance between two Coordinates */

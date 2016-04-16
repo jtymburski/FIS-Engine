@@ -104,10 +104,10 @@ bool Fonts::createFonts(Options* config)
                                    16, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_SUBHEADER,
                   Text::createFont(config->getBasePath() + config->getFont(3),
-                                   12, TTF_STYLE_NORMAL));
+                                   14, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::MENU_STANDARD,
                   Text::createFont(config->getBasePath() + config->getFont(3),
-                                   11, TTF_STYLE_NORMAL));
+                                   14, TTF_STYLE_NORMAL));
 
     /* Assert all fonts are not nullptr */
     for(auto& map_font : fonts)

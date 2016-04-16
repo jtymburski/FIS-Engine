@@ -40,6 +40,15 @@ enum class MenuType
   INVALID,
 };
 
+enum class InventoryIndex : uint8_t
+{
+  NONE = 0,
+  ITEMS = 1,
+  EQUIPMENT = 2,
+  BUBBIES = 3,
+  KEY_ITEMS = 4
+};
+
 /* Enumerated MenuLayer */
 enum class MenuLayer
 {
@@ -257,7 +266,9 @@ private:
   /* Selected TitleElement index */
   int32_t title_element_index;
   int32_t option_element_index;
-  int32_t inventory_title_index;
+
+  /* Inventory Index Values */
+  InventoryIndex inventory_title_index;
   int32_t inventory_element_index;
 
   /* Title Section (Left) Window */
@@ -416,7 +427,7 @@ private:
   void renderInventory();
 
   /* Render Items */
-  void renderItems(Coordinate point);
+  void renderItem(Coordinate start, int32_t icon_w, int32_t gap);
 
   /* Render Key Items */
   void renderKeyItems();

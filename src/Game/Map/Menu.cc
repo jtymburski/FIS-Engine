@@ -213,7 +213,7 @@ Menu::Menu()
       title_elements{},
       title_element_index{-1},
       option_element_index{-1},
-      inventory_title_index{-1},
+      inventory_title_index{InventoryIndex::NONE},
       inventory_element_index{-1}
 {
 }
@@ -287,13 +287,13 @@ void Menu::buildInventoryElements()
     inventory_scroll_box.setFlag(ScrollBoxState::SCROLL_BOX);
     inventory_scroll_box.setFlag(ScrollBoxState::SELECTABLE);
 
-    if(inventory_title_index == 0)
+    if(inventory_title_index == InventoryIndex::ITEMS)
       buildInventoryItems();
-    else if(inventory_title_index == 1)
+    else if(inventory_title_index == InventoryIndex::EQUIPMENT)
       buildInventoryEquips();
-    else if(inventory_title_index == 2)
+    else if(inventory_title_index == InventoryIndex::BUBBIES)
       buildInventoryBubbies();
-    else if(inventory_title_index == 3)
+    else if(inventory_title_index == InventoryIndex::KEY_ITEMS)
       buildInventoryKeyItems();
   }
 }
@@ -504,7 +504,7 @@ void Menu::buildMainSection(MenuType menu_type)
     if(menu_type == MenuType::INVENTORY)
     {
       buildInventoryScreen();
-      inventory_title_index = 0;
+      inventory_title_index = InventoryIndex::ITEMS;
       buildInventoryElements();
       selectInventoryIndex();
     }
@@ -565,7 +565,8 @@ void Menu::buildTitleSection()
 void Menu::decrementInventoryIndex()
 {
   unselectInventoryIndex();
-  inventory_title_index--;
+  auto new_index = static_cast<uint32_t>(inventory_title_index) - 1;
+  inventory_title_index = static_cast<InventoryIndex>(new_index);
   selectInventoryIndex();
 }
 
@@ -587,16 +588,18 @@ void Menu::incrementOptionIndex()
 void Menu::incrementInventoryIndex()
 {
   unselectInventoryIndex();
-  inventory_title_index++;
+
+  auto new_index = static_cast<uint32_t>(inventory_title_index) + 1;
+  inventory_title_index = static_cast<InventoryIndex>(new_index);
   selectInventoryIndex();
 }
 
 void Menu::selectInventoryIndex()
 {
-  if(inventory_title_index != -1 &&
-     (uint32_t)inventory_title_index < inventory_titles.size())
+  if(inventory_title_index != InventoryIndex::NONE &&
+     inventory_title_index <= InventoryIndex::KEY_ITEMS)
   {
-    inventory_titles.at(inventory_title_index)
+    inventory_titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
         .setFlag(ScrollBoxState::SELECTED);
   }
 }
@@ -616,10 +619,10 @@ void Menu::selectOptionIndex()
 
 void Menu::unselectInventoryIndex()
 {
-  if(inventory_title_index != -1 &&
-     (uint32_t)inventory_title_index < inventory_titles.size())
+  if(inventory_title_index != InventoryIndex::NONE &&
+     inventory_title_index <= InventoryIndex::KEY_ITEMS)
   {
-    inventory_titles.at(inventory_title_index)
+    inventory_titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
         .setFlag(ScrollBoxState::SELECTED, false);
   }
 }
@@ -882,7 +885,6 @@ void Menu::renderInventory()
   auto font_header = config->getFontTTF(FontName::MENU_HEADER);
   auto font_subheader = config->getFontTTF(FontName::MENU_SUBHEADER);
   auto inv = player_inventory;
-
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
   auto gap = (int32_t)std::round(width * kINV_X_GAP);
@@ -925,7 +927,7 @@ void Menu::renderInventory()
   }
 
   auto icon_w = main_section.location.height / 6;
-  //curr_y += icon_w / 5;
+  // curr_y += icon_w / 5;
 
   /* Render the Mass of the Inventory */
   Text mass_title(font_subheader);
@@ -934,7 +936,8 @@ void Menu::renderInventory()
 
   mass_title.setText(renderer, "TOTAL MASS", kCOLOR_TEXT);
   mass_string = std::to_string((uint32_t)std::round(inv->getMass())) + " / " +
-                std::to_string((uint32_t)std::round(inv->getMassLimit())) + " kg";
+                std::to_string((uint32_t)std::round(inv->getMassLimit())) +
+                " kg";
   mass_value.setText(renderer, mass_string, kCOLOR_TEXT);
 
   mass_title.render(
@@ -985,15 +988,6 @@ void Menu::renderInventory()
   inventory_bottom_box.color_border = kCOLOR_BORDER_UNSELECTED;
   inventory_bottom_box.render(renderer);
 
-  /* Render the Inventory Icon Box */
-  inventory_icon_box.point = {inventory_bottom_box.point.x + gap,
-                              inventory_bottom_box.point.y + gap};
-  inventory_icon_box.width = icon_w;
-  inventory_icon_box.height = icon_w;
-  inventory_icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
-  inventory_icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
-  inventory_icon_box.render(renderer);
-
   // TODO: Render the item details information.
 
   /* Render the Item Title Text */
@@ -1002,28 +996,28 @@ void Menu::renderInventory()
   std::string number_str = "";
 
   // TODO Color if at limit?
-  if(inventory_title_index == 0)
+  if(inventory_title_index == InventoryIndex::ITEMS)
   {
     number_str = std::to_string(inv->getItemTotalCount()) + " / " +
                  std::to_string(inv->getItemLimit());
 
     title_text.setText(renderer, "Items", kCOLOR_TEXT);
   }
-  else if(inventory_title_index == 1)
+  else if(inventory_title_index == InventoryIndex::EQUIPMENT)
   {
     number_str = std::to_string(inv->getEquipTotalCount()) + " / " +
                  std::to_string(inv->getEquipmentLimit());
 
     title_text.setText(renderer, "Equipment", kCOLOR_TEXT);
   }
-  else if(inventory_title_index == 2)
+  else if(inventory_title_index == InventoryIndex::BUBBIES)
   {
     number_str = std::to_string(inv->getBubbyTotalCount()) + " / " +
                  std::to_string(inv->getBubbyLimit());
 
     title_text.setText(renderer, "Bubbies", kCOLOR_TEXT);
   }
-  else if(inventory_title_index == 3)
+  else if(inventory_title_index == InventoryIndex::KEY_ITEMS)
   {
     title_text.setText(renderer, "Key Items", kCOLOR_TEXT);
   }
@@ -1038,6 +1032,84 @@ void Menu::renderInventory()
                       inventory_top_box.point.x + inventory_top_box.width -
                           number_items.getWidth() - gap,
                       title_text_y);
+
+  if(inventory_title_index == InventoryIndex::ITEMS &&
+     inventory_element_index != -1)
+  {
+    renderItem(inventory_bottom_box.point, icon_w, gap);
+  }
+}
+
+void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap)
+{
+  if(inventory_element_index < (int32_t)player_inventory->getItems().size())
+  {
+    auto item_pair = player_inventory->getItems().at(inventory_element_index);
+
+    if(item_pair.first)
+    {
+      auto item = item_pair.first;
+      auto font_title = config->getFontTTF(FontName::MENU_SUBHEADER);
+      auto font_standard = config->getFontTTF(FontName::MENU_STANDARD);
+
+      /* Render the Inventory Icon Box */
+      inventory_icon_box.point = {start.x + gap, start.y + gap};
+      inventory_icon_box.width = icon_w;
+      inventory_icon_box.height = icon_w;
+      inventory_icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
+      inventory_icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
+      inventory_icon_box.render(renderer);
+
+      /* Render the Item's Icon in the Icon Box */
+      auto thumb = item->getThumb();
+
+      if(thumb)
+      {
+        thumb->render(renderer,
+                      inventory_icon_box.point.x +
+                          inventory_icon_box.width / 2 - thumb->getWidth(),
+                      inventory_icon_box.point.y +
+                          inventory_icon_box.height / 2 - thumb->getHeight(),
+                      thumb->getWidth() * 2, thumb->getHeight() * 2);
+      }
+
+      /* Render the Item Name, Mass, Description */
+      auto curr_x = inventory_icon_box.point.x + inventory_icon_box.width + gap;
+
+      Text item_name(font_standard);
+      Text item_mass_title(font_title);
+      Text item_mass(font_standard);
+      Text item_tier_title(font_title);
+      Text item_tier(font_standard);
+      Text item_description(font_standard);
+
+      item_name.setText(renderer, item->getName(), kCOLOR_TEXT);
+      item_mass_title.setText(renderer, "MASS", kCOLOR_TEXT);
+      item_mass.setText(renderer, std::to_string(item->getMass()) + " kg",
+                        kCOLOR_TEXT);
+      item_tier_title.setText(renderer, "TIER", kCOLOR_TEXT);
+      item_tier.setText(renderer, Helpers::tierToStr(item->getItemTier()),
+                        kCOLOR_TEXT);
+
+      item_name.render(renderer, curr_x, inventory_icon_box.point.y);
+      auto curr_y = inventory_icon_box.point.y + item_name.getHeight() + gap;
+      item_mass_title.render(renderer, curr_x, curr_y);
+      curr_y += gap;
+      item_mass.render(renderer, curr_x, curr_y);
+
+      curr_y = inventory_icon_box.point.y + inventory_icon_box.height + gap;
+      auto desc_split = Text::splitLine(font_standard, item->getDescription(),
+                                        inventory_bottom_box.width - 2 * gap);
+
+      /* Render the description lines */
+      for(auto& line : desc_split)
+      {
+        item_description.setText(renderer, line, kCOLOR_TEXT);
+        item_description.render(renderer, start.x + gap, curr_y);
+        curr_y += item_description.getHeight() * 1.1;
+      }
+    }
+  }
 }
 
 /* Renders the Options Screen */
@@ -1248,7 +1320,7 @@ void Menu::keyDownUp()
     }
     else if(getMainMenuType() == MenuType::INVENTORY)
     {
-      if(inventory_title_index > 0)
+      if(static_cast<uint32_t>(inventory_title_index) > 1)
       {
         decrementInventoryIndex();
         buildInventoryElements();
@@ -1259,7 +1331,8 @@ void Menu::keyDownUp()
   {
     if(getMainMenuType() == MenuType::INVENTORY)
     {
-      inventory_scroll_box.prevIndex();
+      if(inventory_scroll_box.prevIndex())
+        inventory_element_index--;
     }
   }
 }
@@ -1282,7 +1355,7 @@ void Menu::keyDownDown()
     }
     else if(getMainMenuType() == MenuType::INVENTORY)
     {
-      if((uint32_t)inventory_title_index + 1 < inventory_titles.size())
+      if(inventory_title_index != InventoryIndex::KEY_ITEMS)
       {
         incrementInventoryIndex();
         buildInventoryElements();
@@ -1293,7 +1366,8 @@ void Menu::keyDownDown()
   {
     if(getMainMenuType() == MenuType::INVENTORY)
     {
-      inventory_scroll_box.nextIndex();
+      if(inventory_scroll_box.nextIndex())
+        inventory_element_index++;
     }
   }
 }
@@ -1355,22 +1429,22 @@ void Menu::keyDownAction()
       bool success = false;
 
       /* Set to items if there is at least one item */
-      if(inventory_title_index == 0)
+      if(inventory_title_index == InventoryIndex::ITEMS)
       {
         if(player_inventory->getItemTotalCount() > 0)
           success = true;
       }
-      else if(inventory_title_index == 1)
+      else if(inventory_title_index == InventoryIndex::EQUIPMENT)
       {
         if(player_inventory->getBubbyTotalCount() > 0)
           success = true;
       }
-      else if(inventory_title_index == 2)
+      else if(inventory_title_index == InventoryIndex::BUBBIES)
       {
         if(player_inventory->getEquipTotalCount() > 0)
           success = true;
       }
-      else if(inventory_title_index == 3)
+      else if(inventory_title_index == InventoryIndex::KEY_ITEMS)
       {
         if(player_inventory->getKeyItems().size() > 0)
           success = true;
@@ -1379,7 +1453,7 @@ void Menu::keyDownAction()
       /* Indent the Menu */
       if(success)
       {
-        inventory_element_index = 1;
+        inventory_element_index = 0;
         layer = MenuLayer::MAIN_INDENT;
         inventory_top_box.setFlag(ScrollBoxState::SELECTED);
         inventory_scroll_box.setFlag(ScrollBoxState::SELECTED);
