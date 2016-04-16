@@ -152,16 +152,15 @@ const float Menu::kSAVE_WIDTH{0.55};
 const float Menu::kSLEUTH_WIDTH{0.65};
 
 /* Inventory Section */
-const float Menu::kINV_X_GAP{0.013};
-const float Menu::kINV_Y_GAP{0.02};
+const float Menu::kINV_GAP{0.01};
 const float Menu::kINV_MASS_TEXT_Y{0.85};
 const float Menu::kINV_MASS_VALUE_Y{0.90};
 const float Menu::kINV_THUMB_GAP{0.02};
 const float Menu::kINV_ITEM_NAME_X{0.1};
 const float Menu::kINV_ITEM_NAME_Y{0.1};
 const float Menu::kINV_ITEM_ELEMENT_WIDTH{0.70};
-const float Menu::kINV_ITEM_ELEMENT_HEIGHT{0.06};
-const float Menu::kINV_ITEM_ELEMENT_INSET{0.05};
+const float Menu::kINV_ITEM_ELEMENT_HEIGHT{0.064};
+const float Menu::kINV_ITEM_ELEMENT_INSET{0.02};
 const float Menu::kINV_ITEM_MASS_Y{0.25};
 const float Menu::kINV_ITEM_DESC_Y{0};
 
@@ -180,7 +179,7 @@ const SDL_Color Menu::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
 const SDL_Color Menu::kCOLOR_MAIN_BORDER{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color Menu::kCOLOR_OPTION_FILL{70, 70, 70, 128};
-const SDL_Color Menu::kCOLOR_OPTION_FILL_SELECTED{175, 175, 175, 255};
+const SDL_Color Menu::kCOLOR_OPTION_FILL_SELECTED{125, 125, 125, 255};
 const SDL_Color Menu::kCOLOR_INVENTORY_ICON_FILL{40, 40, 40, 255};
 const SDL_Color Menu::kCOLOR_BORDER_UNSELECTED{46, 46, 46, 255};
 const SDL_Color Menu::kCOLOR_ICON_UNSELECTED_FILL{25, 25, 25, 128};
@@ -388,6 +387,27 @@ SDL_Texture* Menu::buildItemDetailFrame(Item* build_item, uint32_t width,
 /* Construct the Key Item Frames -- Scroll Box and Details */
 void Menu::buildInventoryKeyItems()
 {
+}
+
+std::string Menu::calcItemDetailsString(Item* item)
+{
+  std::string str = "";
+
+  if(item)
+  {
+    str = Helpers::tierToDisplayStr(item->getItemTier());
+
+    if(item->getFlag(ItemFlags::CONSUMED))
+      str = str + " | Consumed";
+    else if(item->getFlag(ItemFlags::MATERIAL))
+      str = str + " | Material";
+    else if(item->getFlag(ItemFlags::STAT_ALTERING))
+      str = str + " | Attribute Altering";
+    else if(item->getFlag(ItemFlags::SKILL_LEARNING))
+      str = str + " | Skill Learning";
+  }
+
+  return str;
 }
 
 int32_t Menu::calcItemTitleWidth()
@@ -886,7 +906,7 @@ void Menu::renderInventory()
   auto inv = player_inventory;
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
-  auto gap = (int32_t)std::round(width * kINV_X_GAP);
+  auto gap = (int32_t)std::round(width * kINV_GAP);
   auto curr_y = start.y + gap;
 
   /* Render the Title Boxes */
@@ -908,25 +928,28 @@ void Menu::renderInventory()
     else if(i == 1)
     {
       frame_equipment->render(
-          renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
-          icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+          renderer,
+          icon.point.x + icon.width / 2 - frame_equipment->getWidth() / 2,
+          icon.point.y + icon.height / 2 - frame_equipment->getHeight() / 2);
     }
     else if(i == 2)
     {
       frame_bubbies->render(
-          renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
-          icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+          renderer,
+          icon.point.x + icon.width / 2 - frame_bubbies->getWidth() / 2,
+          icon.point.y + icon.height / 2 - frame_bubbies->getHeight() / 2);
     }
     else if(i == 3)
     {
       frame_key_items->render(
-          renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
-          icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+          renderer,
+          icon.point.x + icon.width / 2 - frame_key_items->getWidth() / 2,
+          icon.point.y + icon.height / 2 - frame_key_items->getHeight() / 2);
     }
   }
 
   auto icon_w = main_section.location.height / 6;
-  // curr_y += icon_w / 5;
+  curr_y += gap;
 
   /* Render the Mass of the Inventory */
   Text mass_title(font_subheader);
@@ -982,10 +1005,13 @@ void Menu::renderInventory()
   inventory_scroll_box.color_border = kCOLOR_BORDER_UNSELECTED;
   inventory_scroll_box.color_border_selected = kCOLOR_TITLE_BORDER;
   inventory_scroll_box.color_element_selected = kCOLOR_INVENTORY_ICON_FILL;
+  inventory_scroll_box.color_scroll = kCOLOR_OPTION_FILL_SELECTED;
+  inventory_scroll_box.color_scroll_selected = kCOLOR_OPTION_FILL_SELECTED;
   inventory_scroll_box.element_inset_x = gap;
   inventory_scroll_box.element_inset_y = gap;
   inventory_scroll_box.scroll_inset_x = gap;
   inventory_scroll_box.scroll_inset_y = gap + calcItemTitleHeight() / 2;
+  inventory_scroll_box.scroll_width = 10;
   inventory_scroll_box.render(renderer);
 
   /* Render the bottom icon detail box */
@@ -1005,6 +1031,7 @@ void Menu::renderInventory()
   Coordinate trc = {tr.x + corner_inset, tr.y};
   Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
 
+  auto left_line = Helpers::bresenhamPoints(tl, bl);
   auto top_bar = Helpers::bresenhamPoints(tl, tr);
   auto bot_bar = Helpers::bresenhamPoints(bl, br);
   auto top_corner = Helpers::bresenhamPoints(tlc, trc);
@@ -1016,6 +1043,7 @@ void Menu::renderInventory()
   Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
 
   Frame::setRenderDrawColor(renderer, kCOLOR_BORDER_UNSELECTED);
+  Frame::drawLine(left_line, renderer);
   Frame::drawLine(top_bar, renderer);
   Frame::drawLine(bot_bar, renderer);
   Frame::drawLine(top_corner, renderer);
@@ -1068,11 +1096,12 @@ void Menu::renderInventory()
   if(inventory_title_index == InventoryIndex::ITEMS &&
      inventory_element_index != -1)
   {
-    renderItem(tl, icon_w, gap);
+    renderItem(tl, icon_w, gap, bot_height);
   }
 }
 
-void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap)
+void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
+                      int32_t bot_height)
 {
   if(inventory_element_index < (int32_t)player_inventory->getItems().size())
   {
@@ -1081,8 +1110,11 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap)
     if(item_pair.first)
     {
       auto item = item_pair.first;
-      auto font_title = config->getFontTTF(FontName::MENU_SUBHEADER);
+      auto font_options = config->getFontTTF(FontName::MENU_OPTIONS);
+      auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
       auto font_standard = config->getFontTTF(FontName::MENU_STANDARD);
+      auto corner_inset =
+          (int32_t)std::ceil(config->getScreenWidth() * kMAIN_CORNER_LENGTH);
 
       /* Render the Inventory Icon Box */
       inventory_icon_box.point = {start.x + gap, start.y + gap};
@@ -1108,28 +1140,35 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap)
       /* Render the Item Name, Mass, Description */
       auto curr_x = inventory_icon_box.point.x + inventory_icon_box.width + gap;
 
-      Text item_name(font_standard);
+      Text item_name(font_options);
       Text item_mass_title(font_title);
-      Text item_mass(font_standard);
-      Text item_flags(font_standard);
+      Text item_mass(font_options);
+      Text item_value_title(font_title);
+      Text item_value(font_options);
       Text item_description(font_standard);
-      std::string flags_text = Helpers::tierToStr(item->getItemTier());
 
       item_name.setText(renderer, item->getName(), kCOLOR_TEXT);
       item_mass_title.setText(renderer, "MASS", kCOLOR_TEXT);
       item_mass.setText(renderer, std::to_string(item->getMass()) + " g",
                         kCOLOR_TEXT);
 
-      item_flags.setText(renderer, Helpers::tierToStr(item->getItemTier()),
+      item_value_title.setText(renderer, "VALUE", kCOLOR_TEXT);
+      item_value.setText(renderer, std::to_string(item->getValue()),
                          kCOLOR_TEXT);
 
       item_name.render(renderer, curr_x, inventory_icon_box.point.y);
+      auto mass_x = std::max(item_mass.getWidth(), item_mass_title.getWidth());
+      mass_x += curr_x + 2 * gap;
+
       auto curr_y = inventory_icon_box.point.y + item_name.getHeight() + gap;
       item_mass_title.render(renderer, curr_x, curr_y);
-      curr_y += gap;
-      item_mass.render(renderer, curr_x, curr_y);
 
-      curr_y = inventory_icon_box.point.y + inventory_icon_box.height + gap / 2;
+      item_value_title.render(renderer, mass_x, curr_y);
+      curr_y += item_mass_title.getHeight() + gap / 4;
+      item_mass.render(renderer, curr_x, curr_y);
+      item_value.render(renderer, mass_x, curr_y);
+
+      curr_y = inventory_icon_box.point.y + inventory_icon_box.height + gap;
       auto desc_split = Text::splitLine(font_standard, item->getDescription(),
                                         inventory_top_box.width - 2 * gap);
 
@@ -1140,6 +1179,15 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap)
         item_description.render(renderer, start.x + gap, curr_y);
         curr_y += item_description.getHeight() * 1.1;
       }
+
+      Text item_flags(font_standard);
+      item_flags.setText(renderer, calcItemDetailsString(item), kCOLOR_TEXT);
+
+      auto width = inventory_top_box.width - corner_inset;
+
+      item_flags.render(renderer,
+                        start.x + width / 2 - item_flags.getWidth() / 2,
+                        start.y + bot_height - item_flags.getHeight() - gap);
     }
   }
 }

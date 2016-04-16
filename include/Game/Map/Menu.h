@@ -311,8 +311,7 @@ private:
   static const float kSLEUTH_WIDTH;
 
   /* Inventory Section */
-  static const float kINV_X_GAP;
-  static const float kINV_Y_GAP;
+  static const float kINV_GAP;
   static const float kINV_MASS_TEXT_Y;
   static const float kINV_MASS_VALUE_Y;
   static const float kINV_THUMB_GAP;
@@ -384,6 +383,9 @@ private:
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
 
+  /* Calculate the required string for Item Details */
+  std::string calcItemDetailsString(Item* item);
+
   /* Calculate dimensions of the Item Title frames */
   int32_t calcItemTitleWidth();
   int32_t calcItemTitleHeight();
@@ -427,7 +429,7 @@ private:
   void renderInventory();
 
   /* Render Items */
-  void renderItem(Coordinate start, int32_t icon_w, int32_t gap);
+  void renderItem(Coordinate start, int32_t icon_w, int32_t gap, int32_t bot_height);
 
   /* Render Key Items */
   void renderKeyItems();

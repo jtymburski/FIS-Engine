@@ -2086,11 +2086,13 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       {
         viewport.lockOn(player);
       }
-      else if(event.keysym.sym == SDLK_2)
-      {
-        if(getPerson(10000) != nullptr)
-          viewport.lockOn(getPerson(10000));
-      }
+
+      //TODO: Freezes Game
+      // else if(event.keysym.sym == SDLK_2)
+      // {
+      //   if(getPerson(10000) != nullptr)
+      //     viewport.lockOn(getPerson(10000));
+      // }
       else
       {
         player->keyDownEvent(event);

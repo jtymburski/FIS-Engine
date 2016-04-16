@@ -246,6 +246,7 @@ public:
   /* Returns the enumerated tier to/from string form */
   static ItemTier tierFromStr(const std::string& tier);
   static std::string tierToStr(const ItemTier& tier);
+  static std::string tierToDisplayStr(const ItemTier& tier);
 
   /* Returns the enumerated tracking state to/from string form */
   static TrackingState trackingFromStr(const std::string& track);

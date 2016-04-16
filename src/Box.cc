@@ -192,8 +192,9 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
       scroll_width++;
 
     /* Calculated Values */
-    uint32_t tri_height = (uint32_t)std::round(scroll_inset_x * 1.5);
+    uint32_t tri_height = (uint32_t)std::round(scroll_width * 0.65);
     uint32_t tri_inset = (uint32_t)std::round(scroll_width * 0.1);
+    uint32_t circle_size = (uint32_t)std::round(scroll_width * 0.25);
 
     /* Working coordinate */
     uint32_t scroll_x = point.x + width - scroll_inset_x - scroll_width;
@@ -211,13 +212,13 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
     if(view_index == 0)
     {
       success &= Frame::renderCircleFilled(
-          center_x, point.y + scroll_inset_y + 1, tri_height / 3, renderer);
+          center_x, point.y + scroll_inset_y + 1, circle_size, renderer);
     }
     else
     {
       /* Top Triangle Coordinates */
       UCoordinate t1 = {scroll_x + tri_inset, scroll_y - scroll_inset_y};
-      UCoordinate t3 = {scroll_x + scroll_width - tri_inset, t1.y};
+      UCoordinate t3 = {scroll_x + scroll_width * 4 / 5 - tri_inset, t1.y};
       UCoordinate t2 = {t1.x + (t3.x - t1.x) / 2, point.y + scroll_inset_y};
 
       /* Render the top triangle */
@@ -271,7 +272,7 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
     {
       /* Top Triangle Coordinates */
       UCoordinate t4 = {scroll_x + tri_inset, b_scroll_y + scroll_inset_y};
-      UCoordinate t6 = {scroll_x + scroll_width - tri_inset, t4.y};
+      UCoordinate t6 = {scroll_x + scroll_width * 4 / 5 - tri_inset, t4.y};
       UCoordinate t5 = {t4.x + (t6.x - t4.x) / 2,
                         b_scroll_y + scroll_inset_y + tri_height};
 
@@ -282,7 +283,7 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
     {
       success &= Frame::renderCircleFilled(
           center_x, scroll_y + bar_height + scroll_inset_y + tri_height / 2 - 1,
-          tri_height / 3, renderer);
+          circle_size, renderer);
     }
   }
 

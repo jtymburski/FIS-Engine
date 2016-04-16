@@ -1106,16 +1106,17 @@ ItemTier Helpers::tierFromStr(const std::string& tier)
   /* Parse */
   if(tier_up == "TRASH")
     return ItemTier::TRASH;
-  else if(tier_up == "COMMON")
+  if(tier_up == "COMMON")
     return ItemTier::COMMON;
-  else if(tier_up == "UNCOMMON")
+  if(tier_up == "UNCOMMON")
     return ItemTier::UNCOMMON;
-  else if(tier_up == "RARE")
+  if(tier_up == "RARE")
     return ItemTier::RARE;
-  else if(tier_up == "VERYRARE")
+  if(tier_up == "VERYRARE")
     return ItemTier::VERYRARE;
-  else if(tier_up == "LEGENDARY")
+  if(tier_up == "LEGENDARY")
     return ItemTier::LEGENDARY;
+
   return ItemTier::NONE;
 }
 
@@ -1129,16 +1130,35 @@ std::string Helpers::tierToStr(const ItemTier& tier)
 {
   if(tier == ItemTier::TRASH)
     return "TRASH";
-  else if(tier == ItemTier::COMMON)
+  if(tier == ItemTier::COMMON)
     return "COMMON";
-  else if(tier == ItemTier::UNCOMMON)
+  if(tier == ItemTier::UNCOMMON)
     return "UNCOMMON";
-  else if(tier == ItemTier::RARE)
+  if(tier == ItemTier::RARE)
     return "RARE";
-  else if(tier == ItemTier::VERYRARE)
+  if(tier == ItemTier::VERYRARE)
     return "VERYRARE";
-  else if(tier == ItemTier::LEGENDARY)
-    return "LEGENDARY";
+  if(tier == ItemTier::LEGENDARY)
+    return "LEGENDARYu";
+
+  return "";
+}
+
+std::string Helpers::tierToDisplayStr(const ItemTier& tier)
+{
+  if(tier == ItemTier::TRASH)
+    return "Trash";
+  if(tier == ItemTier::COMMON)
+    return "Common";
+  if(tier == ItemTier::UNCOMMON)
+    return "Uncommon";
+  if(tier == ItemTier::RARE)
+    return "Rare";
+  if(tier == ItemTier::VERYRARE)
+    return "Very Rare";
+  if(tier == ItemTier::LEGENDARY)
+    return "Legendary";
+
   return "";
 }
 
