@@ -252,9 +252,7 @@ private:
   static const float kREGEN_RATE_STRONG_PC;
   static const float kREGEN_RATE_GRAND_PC;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Prepare the BattleActor for a Battle */
   void battleSetup(bool is_ally, bool can_run);
@@ -285,9 +283,7 @@ private:
   void updateSpriteKO(int32_t cycle_time);
   void updateStats(int32_t cycle_time);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Inflicts the BattleActor with a given ailment */
   void addAilment(Infliction type, int32_t min_turns, int32_t max_turns,
@@ -450,9 +446,7 @@ public:
   /* Set the upkeep state of the BattleActor */
   void setUpkeepState(UpkeepState state_upkeep);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Returns the flashing color corresponding to the flashing type */
   static SDL_Color getFlashingColor(FlashingType flashing_type);

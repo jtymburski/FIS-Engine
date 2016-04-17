@@ -29,23 +29,33 @@ public:
   Sprite(std::string path, SDL_Renderer* renderer);
 
   /* Constructor: Set up sequence of images */
-  Sprite(std::string head_path, int num_frames,
-         std::string tail_path, SDL_Renderer* renderer);
+  Sprite(std::string head_path, int num_frames, std::string tail_path,
+         SDL_Renderer* renderer);
 
   /* Copy constructor */
-  Sprite(const Sprite &source);
+  Sprite(const Sprite& source);
 
   /* Destructor function */
   ~Sprite();
 
   /* Direction to pass through the sequence of frames */
-  enum Sequencer{REVERSE, FORWARD};
+  enum Sequencer
+  {
+    REVERSE,
+    FORWARD
+  };
 
   /* NONE - the object isn't rotated
    * CLOCKWISE - rotate the object 90 degrees clockwise
    * COUNTERCLOCKWISE - rotate the object 90 degrees counterclockwise
    * FLIP - rotate the object 180 degrees */
-  enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, HALFCIRCLE};
+  enum RotatedAngle
+  {
+    NONE,
+    CLOCKWISE,
+    COUNTERCLOCKWISE,
+    HALFCIRCLE
+  };
 
 private:
   /* Animation time */
@@ -108,16 +118,14 @@ private:
   /*------------------- Constants -----------------------*/
   const static uint16_t kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
-  const static uint8_t kDEFAULT_COLOR; /* the default color rating */
-  const static uint8_t kDEFAULT_OPACITY; /* the default rendered alpha */
+  const static uint8_t kDEFAULT_COLOR;    /* the default color rating */
+  const static uint8_t kDEFAULT_OPACITY;  /* the default rendered alpha */
   const static uint8_t kDELTA_GREY_SCALE; /* Delta grey scale alpha */
-  const static uint8_t kDOUBLE_DIGITS; /* the borderline to double digits */
-  const static float kMAX_BRIGHTNESS; /* The max brightness value */
-  const static int32_t kUNSET_SOUND_ID; /* The unset ID sound */
+  const static uint8_t kDOUBLE_DIGITS;    /* the borderline to double digits */
+  const static float kMAX_BRIGHTNESS;     /* The max brightness value */
+  const static int32_t kUNSET_SOUND_ID;   /* The unset ID sound */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns the angle, if one exists in the list of modifications */
   uint16_t parseAdjustments(std::vector<std::string> adjustments);
@@ -125,25 +133,21 @@ private:
   /* Sets the color modification with the texture */
   void setColorMod();
 
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
+  /*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Contains the destructor implementation (so children can call it) */
   void clear();
 
   /* Copy function, to be called by a copy or equal operator constructor */
-  void copySelf(const Sprite &source);
+  void copySelf(const Sprite& source);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
                           std::string base_path = "", bool no_warnings = false);
 
-    /* Creates a texture for a sprite (for Pleps) */
+  /* Creates a texture for a sprite (for Pleps) */
   void createTexture(SDL_Renderer* renderer);
 
   /* Executes the necessary image adjustments, to all frames */
@@ -255,8 +259,8 @@ public:
   void resetLoops();
 
   /* Render the texture to the given renderer with the given parameters */
-  bool render(SDL_Renderer* renderer, int x = 0, int y = 0,
-                                      int w = 0, int h = 0);
+  bool render(SDL_Renderer* renderer, int x = 0, int y = 0, int w = 0,
+              int h = 0);
 
   /* Take the temp. stored color balance values and restore them */
   void revertColorBalance();
@@ -333,21 +337,17 @@ public:
   /* Sets if the greyscale texture is active and returned on getTexture() */
   bool useGreyScale(bool enable);
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
-public:
-  Sprite& operator= (const Sprite &source);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*====================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Returns the degrees of the string identifier */
   static int getAngle(std::string identifier);
 
   /* Returns the degrees of the angle enumerator */
   static int getAngle(RotatedAngle angle);
+
+  /*========================= OPERATOR FUNCTIONS =============================*/
+public:
+  Sprite& operator=(const Sprite& source);
 };
 
 #endif // SPRITE_H

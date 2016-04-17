@@ -46,17 +46,13 @@ private:
   /* -------------------------- Constants ------------------------- */
   //const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns the interaction, based on the string. Returns NOINTERACTION if
    * nothing found */
   InteractionState getInteraction(std::string interaction);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds the matrix information from the XML data classifier from file */
   bool addFileInformation(XmlData data, int file_index, int section_index,
@@ -115,10 +111,10 @@ public:
   bool triggerExitEvent(MapPerson* initiator, MapThing* source = NULL);
   bool triggerUseEvent(MapPerson* initiator, MapThing* source = NULL);
   bool triggerWalkoverEvent(MapPerson* initiator, MapThing* source = NULL);
-  
+
   /* Unlock trigger call */
   bool unlockTrigger(UnlockIOEvent mode_events);
-  
+
   /* Unsets the matrix internally from the state */
   void unsetMatrix();
 };

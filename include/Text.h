@@ -68,9 +68,7 @@ private:
   /*------------------- Constants -----------------------*/
   const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Returns the alpha rating of the texture */
   uint8_t getAlpha();
@@ -111,9 +109,7 @@ public:
   void unsetFont();
   void unsetTexture();
 
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *===========================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Returns the length of the text passed in */
   static int countLength(vector<vector<pair<string, TextProperty>>> text);

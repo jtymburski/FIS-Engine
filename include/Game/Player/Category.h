@@ -104,9 +104,7 @@ private:
   static const std::vector<int> kMAX_VALUES;
   static const int32_t kUNSET_ID; /* The unset ID for the category ID */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Constructs the Category's absolute min. and max. attr sets */
   static void buildAttrSets();
@@ -120,13 +118,11 @@ private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const Category &source);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds an enumerated infliction to the list of immunities */
   bool addImmunity(const Infliction &new_immunity);
-  
+
   /* Checks if a piece of equipment can be equipped by a person of this cat. */
   bool canEquip(Equipment* const check);
 
@@ -135,7 +131,7 @@ public:
 
   /* Load data from file */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer);
-  
+
   /* Prints out the state of the object */
   void print(const bool &simple = false, const bool &flags = false);
 
@@ -202,9 +198,7 @@ public:
   /* Assign a new enumerated vitality regeneration rate */
   void setVitaRegenRate(const RegenRate &new_regen_rate);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Returns a ref. to the maximum allowable AttributeSet */
   static AttributeSet& getMaxSet();

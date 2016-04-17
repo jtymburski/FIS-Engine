@@ -133,15 +133,11 @@ private:
   const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
   const static uint16_t kACTION_CENTER;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   bool buildSprite(Sprite* sprite);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   bool buildSprite(std::string sprite_path, int32_t num_frames = 1);
   bool buildSpriteLay(std::string sprite_path);
@@ -203,9 +199,7 @@ public:
 
   RenderStatus initialStatusFade();
 
-/*=============================================================================
- * PRIVATE STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 private:
   static SDL_Color colorFromDamageType(DamageType type);
 };

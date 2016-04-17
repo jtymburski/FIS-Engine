@@ -5,8 +5,8 @@
  * Description: This view is the item storage / access that appears on the map.
  *              It allows for direct access to items which can be useful for
  *              shops, inventories, chests, etc. Contains the appropriate API
- *              for setting up a view and then it runs off of update, render, 
- *              and keyPressEvents. 
+ *              for setting up a view and then it runs off of update, render,
+ *              and keyPressEvents.
  *
  * Notes
  * -----
@@ -62,7 +62,7 @@ private:
   /* Rendered frames, that are displayed */
   Frame frame_main;
   bool frame_setup;
-  
+
   /* The necessary rendering fonts, for displaying all text */
   TTF_Font* font_title;
 
@@ -73,7 +73,7 @@ private:
   /* Active inventory being displayed by the store view */
   Inventory* inventory_active;
   std::vector<std::pair<Item*, bool>> inventory_items;
-  
+
   /* The stack of items available in the store view */
   uint8_t store_alpha;
   StoreMode store_mode;
@@ -96,9 +96,7 @@ private:
   const static uint16_t kSHOW_TIME; /* The time to hide or show the store */
   const static uint8_t kTILE_SIZE; /* The tile size, to fit in the grid */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Clears all stored pointer data within the class */
   void clearData();
@@ -111,40 +109,30 @@ private:
 
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
-  
+
   /* Sets up the views, to be rendered on the screen */
   void setupMainView(SDL_Renderer* renderer, std::string title = "");
   void setupSecondaryView(SDL_Renderer* renderer);
 
-/*=============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
-
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Closes the active display */
   void close();
-  
+
   /* Initializes the item store display */
-  bool initDisplay(StoreMode mode, std::vector<Item*> items, 
-                   std::vector<uint32_t> counts, 
+  bool initDisplay(StoreMode mode, std::vector<Item*> items,
+                   std::vector<uint32_t> counts,
                    std::vector<int32_t> cost_modifiers, std::string name = "");
 
   /* Returns if the item store is currently active */
   bool isActive();
-  
+
   /* Key Down/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Loads the image backend for the item store window */
-  bool loadImageBackend(std::string left, std::string right, 
+  bool loadImageBackend(std::string left, std::string right,
                                           SDL_Renderer* renderer);
 
   /* Renders the Item Store */
@@ -158,15 +146,6 @@ public:
 
   /* Updates the item store, called on the tick */
   void update(int cycle_time);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
-
 };
 
 #endif // ITEMSTORE_H

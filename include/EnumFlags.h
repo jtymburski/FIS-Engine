@@ -48,7 +48,8 @@ if ((fruit_flags & Fruit::APPLE) == Fruit::APPLE)
 #define __ENUM_FLAGS_H__
 
 /*
-Use this line before header, if you don't want flags(T x) function to be implemented for your enum.
+Use this line before header, if you don't want flags(T x) function to be
+implemented for your enum.
 #define USE_ENUM_FLAGS_FUNCTION 0
 */
 
@@ -56,27 +57,54 @@ Use this line before header, if you don't want flags(T x) function to be impleme
 #define USE_ENUM_FLAGS_FUNCTION 1
 #endif
 
-
-#define ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,INT_T) \
-enum class T;	\
-inline T	operator	&	(T x, T y)		{	return static_cast<T>	(static_cast<INT_T>(x) & static_cast<INT_T>(y));	}; \
-inline T	operator	|	(T x, T y)		{	return static_cast<T>	(static_cast<INT_T>(x) | static_cast<INT_T>(y));	}; \
-inline T	operator	^	(T x, T y)		{	return static_cast<T>	(static_cast<INT_T>(x) ^ static_cast<INT_T>(y));	}; \
-inline T	operator	~	(T x)			{	return static_cast<T>	(~static_cast<INT_T>(x));							}; \
-inline T&	operator	&=	(T& x, T y)		{	x = x & y;	return x;	}; \
-inline T&	operator	|=	(T& x, T y)		{	x = x | y;	return x;	}; \
-inline T&	operator	^=	(T& x, T y)		{	x = x ^ y;	return x;	};
+#define ENUM_FLAGS_EX_NO_FLAGS_FUNC(T, INT_T)                                  \
+  enum class T;                                                                \
+  inline T operator&(T x, T y)                                                 \
+  {                                                                            \
+    return static_cast<T>(static_cast<INT_T>(x) & static_cast<INT_T>(y));      \
+  };                                                                           \
+  inline T operator|(T x, T y)                                                 \
+  {                                                                            \
+    return static_cast<T>(static_cast<INT_T>(x) | static_cast<INT_T>(y));      \
+  };                                                                           \
+  inline T operator^(T x, T y)                                                 \
+  {                                                                            \
+    return static_cast<T>(static_cast<INT_T>(x) ^ static_cast<INT_T>(y));      \
+  };                                                                           \
+  inline T operator~(T x)                                                      \
+  {                                                                            \
+    return static_cast<T>(~static_cast<INT_T>(x));                             \
+  };                                                                           \
+  inline T& operator&=(T& x, T y)                                              \
+  {                                                                            \
+    x = x & y;                                                                 \
+    return x;                                                                  \
+  };                                                                           \
+  inline T& operator|=(T& x, T y)                                              \
+  {                                                                            \
+    x = x | y;                                                                 \
+    return x;                                                                  \
+  };                                                                           \
+  inline T& operator^=(T& x, T y)                                              \
+  {                                                                            \
+    x = x ^ y;                                                                 \
+    return x;                                                                  \
+  };
 
 #if(USE_ENUM_FLAGS_FUNCTION)
 
-	#define ENUM_FLAGS_EX(T,INT_T) ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,INT_T) \
-	inline bool			flags(T x)			{	return static_cast<INT_T>(x) != 0;};
+#define ENUM_FLAGS_EX(T, INT_T)                                                \
+  ENUM_FLAGS_EX_NO_FLAGS_FUNC(T, INT_T)                                        \
+  inline bool flags(T x)                                                       \
+  {                                                                            \
+    return static_cast<INT_T>(x) != 0;                                         \
+  };
 
 #else
 
-	#define ENUM_FLAGS_EX(T,INT_T) ENUM_FLAGS_EX_NO_FLAGS_FUNC(T,INT_T) 
+#define ENUM_FLAGS_EX(T, INT_T) ENUM_FLAGS_EX_NO_FLAGS_FUNC(T, INT_T)
 
 #endif
 
-#define ENUM_FLAGS(T) ENUM_FLAGS_EX(T,intptr_t)
+#define ENUM_FLAGS(T) ENUM_FLAGS_EX(T, intptr_t)
 #endif

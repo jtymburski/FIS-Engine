@@ -21,15 +21,15 @@
 enum class SoundChannels : int
 {
   UNASSIGNED = -1,
-  MUSIC1     = 0,
-  MUSIC2     = 1,
-  WEATHER1   = 2,
-  WEATHER2   = 3,
-  MENUS      = 4,
-  TILES      = 5,
-  THINGS     = 6,
-  TRIGGERS   = 7,
-  SECTORS    = 8
+  MUSIC1 = 0,
+  MUSIC2 = 1,
+  WEATHER1 = 2,
+  WEATHER2 = 3,
+  MENUS = 4,
+  TILES = 5,
+  THINGS = 6,
+  TRIGGERS = 7,
+  SECTORS = 8
 };
 
 /*
@@ -83,7 +83,7 @@ private:
   /* --------------------- CONSTANTS --------------------- */
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
-  const static int kSTOP_FADE; /* Stop fade time on channel */
+  const static int kSTOP_FADE;       /* Stop fade time on channel */
 
 public:
   const static int kDEFAULT_FREQUENCY; /* Sound frequency - DO NOT CHANGE */
@@ -119,16 +119,12 @@ public:
 
   const static int kUNSET_ID; /* The placeholder unset ID */
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
-  void copySelf(const Sound &source);
+  void copySelf(const Sound& source);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Cross fade the given channel out with the current class in */
   void crossFade(int channel);
@@ -197,15 +193,7 @@ public:
   /* Unset the sound file and frees the memory */
   void unsetSoundFile();
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
-public:
-  Sound& operator= (const Sound &source);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Returns channel int corresponding to the channel enum */
   static int getChannelInt(SoundChannels channel);
@@ -230,6 +218,10 @@ public:
   /* Stop all channels or select channels */
   static void stopAllChannels(int fade = kSTOP_FADE);
   static void stopChannel(SoundChannels channel, int fade = kSTOP_FADE);
+
+  /*======================== OPERATOR FUNCTIONS ==============================*/
+public:
+  Sound& operator=(const Sound& source);
 };
 
 #endif // SOUND_H

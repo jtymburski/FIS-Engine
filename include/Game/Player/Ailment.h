@@ -102,17 +102,15 @@ private:
   /*------------------- Damaging Constants -----------------------*/
   static const float kPOISON_DMG_INIT; /* % damage for Turn # 1 for Poison */
   static const float kPOISON_DMG_INCR; /* % chance / turn for Poison */
-  static const float kHIBER_PC_INIT; /* % heal for 1st turn */
-  static const float kHIBER_PC_INCR; /* incr for per turn heal */
-  static const float kHIBER_PC_MAX; /* max value for hibernation */
+  static const float kHIBER_PC_INIT;   /* % heal for 1st turn */
+  static const float kHIBER_PC_INCR;   /* incr for per turn heal */
+  static const float kHIBER_PC_MAX;    /* max value for hibernation */
 
   /* Confusion / Paralysis Chances */
   static const float kCONFUSION_CHANCE;
   static const float kPARALYSIS_CHANCE;
 
-  /*============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Calculates the amount of poison damage, assigns to damage_amount */
   bool calcPoisonDamage();
@@ -131,9 +129,7 @@ private:
   /* Updates the ailment by decrementing the turn counter if necessary */
   void updateTurnCount();
 
-  /*============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Applies a Buff to the BattleStats of the inflicted BattleActor's stats */
   bool applyBuffs();
@@ -159,9 +155,7 @@ public:
   /* Assigns the update status to the ailment */
   void setUpdateStatus(AilmentStatus new_status);
 
-  /*============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Returns the classification of an ailment from a given Infliction */
   static AilmentClass getClassOfInfliction(Infliction type);

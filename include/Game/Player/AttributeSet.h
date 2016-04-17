@@ -75,16 +75,12 @@ public:
   static const uint32_t kMAX_VALUE;    /* The maximum value of any stat  */
   static const uint32_t kNUM_ELEMENTS; /* Number of elements in set */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Basic setup for construction */
   void classSetup(const bool &personal, const bool &constant);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Method for storing and building AttributeSets from preset values */
   void buildAsPreset(const size_t &level = 0);
@@ -119,9 +115,7 @@ public:
   bool setStat(const Attribute &stat, const int32_t &value);
   bool setStat(const std::string &name, const int32_t &value);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Returns all offensive attributes */
   static std::vector<Attribute> getAllOffensive();
@@ -163,9 +157,7 @@ public:
   static AttributeSet setFromStr(const std::string &str);
   static std::string setToStr(const AttributeSet &set);
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
+  /*========================= OPERATOR FUNCTIONS =============================*/
 public:
   /* Default move-assignment operator */
   AttributeSet& operator=(AttributeSet&&) = default;

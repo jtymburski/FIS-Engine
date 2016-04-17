@@ -152,17 +152,11 @@ private:
   const static SDL_Color kTEXT_PRICEY;
   const static SDL_Color kTEXT_NO_TARGETS;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS - RENDERING
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   void setRectBot(SDL_Rect& srect, uint32_t height);
   void setRectTop(SDL_Rect& rect);
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS - OPERATION
-   *============================================================================*/
-private:
   /* Returns the actor of a given element index */
   BattleActor* actorOfElementIndex(int32_t index);
 
@@ -210,12 +204,11 @@ private:
   /* Obtains the maximum index value for the current issue */
   int32_t getMaxIndex();
 
+  /* Print out the selectable targets */
   void printSelectableTargets();
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS - RENDERING
-   *============================================================================*/
-private:
+  /*========================= PUBLIC FUNCTIONS ===============================*/
+public:
   /* Clears the Item frames */
   void clearItemFrames();
 
@@ -235,10 +228,6 @@ private:
   bool renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
   bool renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS - OPERATION
-   *============================================================================*/
-public:
   /* Clears the information in the menu - for a new person/turn */
   void clear();
 
@@ -306,10 +295,6 @@ public:
   /* Assigns an enumerated window status value to the BattleMenu */
   void setWindowStatus(WindowStatus status_window);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS - RENDERING
-   *============================================================================*/
-public:
   /* Constructs all ItemFrames for the current BattleItems */
   bool createItemFrames(uint32_t width_left, uint32_t width_right);
 
@@ -319,9 +304,7 @@ public:
   /* Render the battle menu */
   bool render();
 
-  /*=============================================================================
-   * PRIVATE STATIC FUNCTIONS
-   *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 private:
   static BattleActor* nextMenuIndex(int32_t curr,
                                     std::vector<BattleActor*> selectable);

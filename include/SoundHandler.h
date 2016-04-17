@@ -37,11 +37,9 @@ private:
   std::vector<SoundQueue> queue;
 
   /* --------------------- CONSTANTS --------------------- */
-  //const static short kINFINITE_LOOP; /* Infinite loop special character */
+  // const static short kINFINITE_LOOP; /* Infinite loop special character */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Create new sound files, based on ID */
   Sound* createAudioMusic(uint32_t id);
@@ -50,9 +48,7 @@ private:
   /* Clean up the queue - pre-processing */
   void queueCleanUp();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Add sound files */
   bool addMusic(Sound* chunk);
@@ -91,12 +87,10 @@ public:
   void setAudioLevel(uint8_t audio_level);
   void setMusicLevel(uint8_t music_level);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Pause all channels or select channels */
-  //static void pauseAllChannels();
+  // static void pauseAllChannels();
 };
 
 #endif // SOUNDHANDLER_H

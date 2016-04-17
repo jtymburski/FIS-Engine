@@ -9,10 +9,10 @@
  * -----
  *
  * [1]: All Bubbies have a "Flavour" (type) and a Bubby of a certain flavour is
- *      identical to another Bubby of the same flavour except for: tier, level, 
+ *      identical to another Bubby of the same flavour except for: tier, level,
  *      and experience.
- *  
- * [2]: This class reimplements virtual functions from Item: getMass(), 
+ *
+ * [2]: This class reimplements virtual functions from Item: getMass(),
  *      getValue(), getThumb(), getStats()
  *
  * TODO
@@ -33,7 +33,7 @@ class Bubby : public Item
 public:
   /* Blank constructor */
   Bubby();
-  
+
   /* Constructs a Bubby object with a flavour at a certain tier */
   Bubby(Flavour* parent, const uint32_t &tier = 0);
 
@@ -61,14 +61,12 @@ private:
   static const uint32_t kMIN_EXP;         /* Starting experience value */
   static const uint32_t kMAX_LEVEL_EXP;   /* Experience required for last lvl */
   static const uint32_t kMAX_EXP;         /* Abs. maximum experience value */
-  
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Determines whether experience can be added */
   bool canAddExperience();
-  
+
   /* Builds the experience table for the Bubby levels */
   static void buildExpTable();
 
@@ -77,16 +75,14 @@ private:
 
   /* Increments the Bubby's tier */
   void tierUp();
-  
+
   /* Updates the thumbnail to the one stored in the Flavour for the curr tier */
   bool updateThumb();
 
   /* Updates the experience to the minimum req. for the curr level */
   bool updateExp();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add experience to the Bubby and returns if successful */
   bool addExperience(const uint32_t &amount);
@@ -111,7 +107,7 @@ public:
 
   /* Returns the ptr to the thumbnail */
   Frame* getThumb();
-  
+
   /* Returns the tier */
   uint32_t getTier();
 

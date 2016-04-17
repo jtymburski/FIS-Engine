@@ -88,9 +88,7 @@ public:
   const static uint32_t kDEF_AUDIO_LEVEL;
   const static uint32_t kDEF_MUSIC_LEVEL;
 
-  /*============================================================================
-   * PRIVATE FUNCTIONS
-   *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy all parameters from the other to the current if called */
   void copySelf(const Options& source);
@@ -110,9 +108,7 @@ private:
   /* Enable or disable vertical refresh syncing */
   void setVsync(bool enabled); // TODO: re-implement - should be in GIT hist
 
-  /*============================================================================
-   * PUBLIC FUNCTIONS
-   *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Function to confirm the setup of the font */
   bool confirmFontSetup();
@@ -170,9 +166,7 @@ public:
   /* Update the options state */
   void update();
 
-  /*============================================================================
-   * OPERATOR FUNCTIONS
-   *===========================================================================*/
+  /*======================== OPERATOR FUNCTIONS ==============================*/
 public:
   Options& operator=(const Options& source);
 };

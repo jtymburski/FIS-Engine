@@ -78,9 +78,7 @@ private:
   /* ------------ Constants --------------- */
   static const uint32_t kMAX_ADDITIVE_MODS; /* Max # of + mods for each Attr */
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add a modifier given necessary information. */
   bool addModifier(Attribute stat, ModifierType type, float value,

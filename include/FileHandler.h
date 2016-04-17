@@ -117,9 +117,7 @@ private:
   const static int kPADDING_ASCII;   /* Start of padding characters */
   const static int kXXTEA_ROUNDS;    /* Number of rounds for encryption */
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Clean up function, frees appropriate pointers */
   void cleanUp();
@@ -189,9 +187,7 @@ private:
   /* Finishes the XML writing procedure */
   bool xmlWriteEnd();
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Finds the element sequence in the stack (not including data entry) and
    * puts the active node pointer at that location. */
@@ -280,9 +276,7 @@ public:
   /* Puts the xml reader at the end of the XML document */
   bool xmlToTail();
 
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *===========================================================================*/
+  /*===================== PUBLIC STATIC  FUNCTIONS ===========================*/
 public:
   /* Copies the file and based on the overwrite flag */
   static bool fileCopy(std::string old_filename, std::string new_filename,

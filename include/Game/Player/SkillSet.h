@@ -74,9 +74,7 @@ public:
   static const size_t kMAX_UNLOCK_LEVEL; /* Max. lvl a Skill can be unlocked */
   static const int    kUNSET_ID;         /* ID for an unset Skill Set */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
  private:
   /* Returns the lowest level required of a given Skill ID */
   uint32_t calcLowestLevel(const uint32_t &skill_id);
@@ -88,9 +86,7 @@ public:
   /* Cleans up the skill set */
   void cleanUp();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add a single skill */
   bool addSkill(Skill* skill, const uint32_t &req_level = 200,
@@ -178,9 +174,7 @@ public:
   /* Builds the vector of values for each skill index */
   std::vector<uint32_t> getValues();
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
+  /*======================== OPERATOR FUNCTIONS ==============================*/
 public:
   /* Compound assignment - adds a SkillSet to another SkillSet */
   SkillSet& operator+=(const SkillSet &rhs);

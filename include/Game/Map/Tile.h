@@ -81,9 +81,8 @@ private:
   const static uint8_t kMAX_ITEMS; /* The max number of items stored */
   const static uint8_t kUPPER_COUNT_MAX; /* The max number of upper layers */
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
+
 private:
   /* Grow the things and persons stack, to allow for the current render
    * level */
@@ -91,9 +90,7 @@ private:
   bool growPersonStack(uint8_t render_level);
   bool growThingStack(uint8_t render_level);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Add item to the stack stored on the tile */
   bool addItem(MapItem* item);

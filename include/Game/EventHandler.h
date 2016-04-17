@@ -69,9 +69,7 @@ private:
   /* Sound handling class */
   SoundHandler* sound_handler;
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns the event in the queue: either from the set or event pointer */
   bool getEvent(Event& event, bool trigger = false);
@@ -81,9 +79,7 @@ private:
   /* Trigger queue sound */
   void triggerQueueSound(Event event);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Execute the given event */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
@@ -139,7 +135,7 @@ public:
   bool pollLockSetData(Locked lock);
 
   /* Poll a multiple event */
-  bool pollMultiple(MapPerson*& person, MapThing*& source, 
+  bool pollMultiple(MapPerson*& person, MapThing*& source,
                     std::vector<EventPair>& events);
 
   /* Poll the empty event */
@@ -179,8 +175,8 @@ public:
                      MapPerson** initiator);
 
   /* Poll the unlock event(s) */
-  bool pollUnlockIO(MapThing*& source, int* io_id, UnlockIOMode* mode, 
-                    int* state_num, UnlockIOEvent* mode_events, 
+  bool pollUnlockIO(MapThing*& source, int* io_id, UnlockIOMode* mode,
+                    int* state_num, UnlockIOEvent* mode_events,
                     UnlockView* mode_view, int* view_time);
   bool pollUnlockThing(MapThing*& source, int* thing_id, UnlockView* mode_view,
                        int* view_time);
@@ -197,9 +193,7 @@ public:
   void triggerSound(uint32_t id, SoundChannels channel);
   void triggerWeather(uint32_t id);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Copies a passed in event */
 //  static Event copyEvent(Event source);

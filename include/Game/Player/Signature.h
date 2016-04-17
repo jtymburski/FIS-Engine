@@ -2,13 +2,13 @@
 * Class Name: Signature & Cell [Declaration]
 * Date Created: December 13th, 2013
 * Inheritance: None
-* Description: A Signature is an abstraction of a 2-D X by Y grid where on 
+* Description: A Signature is an abstraction of a 2-D X by Y grid where on
 *              Bubby objects and Signature Link objects can be placed. This
 *              allows equipment customization for Persons as players may choose
 *              to use Bubbies which amplify their Person's (battle actor) stats
 *              in a desired way.
 *
-*              A Signature also allows a Bubby to gain experience as only a 
+*              A Signature also allows a Bubby to gain experience as only a
 *              Bubby that is attached to a Signature can gain experience.
 *
 *              A Cell is an element in the 2D Cell Matrix of a Signature.
@@ -51,7 +51,7 @@ enum class SigState
   BUBBABLE    = 1 << 0, /* Bubbies can be added or rem from the Signature? */
   UNLOCKABLE  = 1 << 1, /* Cells can be opened or closed? */
   SIZEABLE    = 1 << 2, /* A blank signature can be resized? */
-  LINKABLE    = 1 << 3, /* Can links be placed in the Signature? */ 
+  LINKABLE    = 1 << 3, /* Can links be placed in the Signature? */
   RECIPE_MODE = 1 << 4  /* Signature for Gene Machine mode */
 };
 
@@ -69,14 +69,12 @@ private:
   /* Cell Data */
   Bubby* bubby_ptr;
   CellState state;
-  
+
   uint16_t link_tier;
   uint16_t x;
   uint16_t y;
 
-/*=============================================================================
- * CELL PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Clear the cell */
   void clear();
@@ -134,9 +132,7 @@ private:
   static const uint16_t kMAX_Y;
   static const uint16_t kMAX_LINK_TIER;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Function for setting up flag values in the signature */
   void classSetup(bool bubbable);
@@ -147,14 +143,12 @@ private:
   /* Returns the top left most coodinate of a Bubby at a given coordinate */
   uint16Pair getTopLeft(uint16_t a, uint16_t b);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add an amount of experience to each Bubby in the Signature */
   bool addExp(uint32_t amount);
 
-  /* Attempts to attach a given Bubby to a cell [a,b] */ 
+  /* Attempts to attach a given Bubby to a cell [a,b] */
   bool attach(uint16_t a, uint16_t b, Bubby* new_bubby);
 
   /* Attempts to close given Cell [a, b] */
@@ -223,9 +217,7 @@ public:
   /* Assigns a new size of the signature (or rather, attempts to */
   bool setSize(uint16_t new_x, uint16_t new_y);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Methods for returning the possible sizes of a Signature */
   static constexpr uint16_t getMaxX(); //noexcept;

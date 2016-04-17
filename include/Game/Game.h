@@ -7,9 +7,6 @@
  *              setup and overall insight and control. The painting control
  *              won't be handled here and this will just act as an intermediate
  *              data highway / event handler.
- *
- *
- * // TODO: Starting inventory items [01-11-14]
  ******************************************************************************/
 #ifndef GAME_H
 #define GAME_H
@@ -129,9 +126,7 @@ public:
   static const std::string kSAVE_PATH_FRONT; /* Front of save path */
   static const uint8_t kSAVE_SLOT_MAX; /* Max number of save slots */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Add functions for game objects */
   Action* addAction(const std::string &raw);
@@ -237,9 +232,7 @@ private:
   void updateMenuEnabledState();
   void updatePlayerSteps();
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Enable view trigger */
   void enableView(bool enable);

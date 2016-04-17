@@ -170,9 +170,7 @@ private:
   const static float kTEXT_SHIFT; /* The speed at which the text shifts up */
   const static string kTHING_COLOR; /* Hex color of thing reference in text */
 
- /*============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Computes all IDs that are needed for displaying the conversation */
   vector<int> calculateThingList(Conversation* convo);
@@ -202,7 +200,7 @@ private:
               vector<vector<vector<pair<string, TextProperty>>>> options = {});
 
   /* Takes the text and replaces {ID} references with name */
-  string replaceThingReferences(string text, 
+  string replaceThingReferences(string text,
                                 vector<MapThing*>* things = nullptr);
 
   /* Sets the alpha of all rendering textures on the dialog */
@@ -222,9 +220,7 @@ private:
                vector<vector<vector<pair<string, TextProperty>>>> lines = {},
                bool delete_old = false);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Clear all trigger - wipes out all queues and the current conversation */
   void clearAll(bool include_convo = false);

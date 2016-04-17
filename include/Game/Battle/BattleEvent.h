@@ -213,9 +213,7 @@ public:
   static const uint32_t kMAXIMUM_DAMAGE;
   static const uint32_t kMINIMUM_DAMAGE;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Calculates the action variables for given skill */
   void calcActionVariables();
@@ -255,9 +253,7 @@ private:
   /* Obtains the stats of a given target */
   BattleStats getStatsOfTarget(BattleActor* curr_target);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Calculate alteration taking place */
   int32_t calcAltering(BattleActor* curr_target);

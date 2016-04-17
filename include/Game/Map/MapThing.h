@@ -109,14 +109,7 @@ protected:
   const static uint8_t kRAW_MULTIPLIER; /* The coordinate raw multiplier */
   const static int kUNSET_ID; /* The placeholder unset ID */
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
-private:
-
-/*============================================================================
- * PROTECTED FUNCTIONS
- *===========================================================================*/
+  /*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Animates the thing, if it has multiple frames */
   virtual bool animate(int cycle_time, bool reset = false,
@@ -183,9 +176,7 @@ protected:
   /* This unsets the tile, at the given frame coordinate */
   virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds thing information from the XML file. Will be virtually re-called
    * by all children for proper operation */

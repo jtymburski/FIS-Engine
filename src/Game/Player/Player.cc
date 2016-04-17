@@ -70,9 +70,9 @@ bool Player::addCredits(const uint32_t &value)
 
   return added;
 }
-  
+
 /*
- * Description: Attempts to add a learned skill to the given party type with a 
+ * Description: Attempts to add a learned skill to the given party type with a
  *              required level. The party types are "sleuth" and "bearacks".
  *
  * Inputs: std::string party_type - the party type: sleuth or bearacks

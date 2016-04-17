@@ -89,9 +89,7 @@ private:
   /* The buffer of actions to take place */
   std::vector<BufferAction> action_buffer;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns a ref. to a BufferAction at a given index */
   BufferAction& getIndex(const uint32_t& index);
@@ -100,9 +98,7 @@ private:
   std::vector<BufferAction> sort(std::vector<BufferAction> actions,
                                  BufferSorts buffer_sorts);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds a defend element to the buffer */
   void addDefend(BattleActor* user);

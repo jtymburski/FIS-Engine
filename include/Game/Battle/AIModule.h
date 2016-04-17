@@ -133,15 +133,7 @@ private:
   static const float kPAI_LEAN_TO_ITEM_FACTOR;
   static const AITarget kPAI_DEFAULT_TARGET;
 
-  /* ------------ Tactical AI Modifiers ------------ */
-  // TODO
-
-  /* ------------ Deep-Thought AI Modifiers ------------ */
-  // TODO
-
- /*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Adds a random enemy target to the chosen targets */
   BattleActor* addRandomTarget(std::vector<BattleActor*> available_targets);
@@ -206,9 +198,7 @@ private:
   /* Loads the default parameters of an AI into current object */
   void loadDefaults();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds the current action selection to the record */
   bool addActionToRecord();

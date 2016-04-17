@@ -76,9 +76,7 @@ private:
   /* The SDL Renderer */
   SDL_Renderer* renderer;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Constructs the battle bar */
   void buildBattleBar();
@@ -116,9 +114,7 @@ private:
   // /* Assigns a plep event */
   // void setPlepEvent(EventType event, Sprite* plep);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Returns whether the data has been built */
   bool isDataBuilt();

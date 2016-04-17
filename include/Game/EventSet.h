@@ -270,9 +270,7 @@ private:
   /* State of unlocked events */
   UnlockedState unlocked_state;
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const EventSet& source);
@@ -288,9 +286,7 @@ private:
   /* Set-up for base connection */
   void setupForBase();
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Add calls, for lists */
   bool addEventUnlocked(Event new_event);
@@ -358,16 +354,12 @@ public:
   bool unsetEventUnlocked();
   bool unsetLocked();
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
+  /*========================= OPERATOR FUNCTIONS =============================*/
 public:
   /* The copy operator */
   EventSet& operator=(const EventSet& source);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Classification enumerator to and from string */
   static EventClassifier classifierFromStr(const std::string& classifier);

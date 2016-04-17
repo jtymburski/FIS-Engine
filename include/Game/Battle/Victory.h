@@ -112,9 +112,7 @@ private:
   /* The VictoryCards to render */
   VictoryCard card;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   void clearCard();
 
@@ -130,9 +128,7 @@ private:
   /* Calculates the experience a given Battle Actor will receive */
   uint32_t calcActorExp(BattleActor* actor);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Builds the victory cards and the loot card */
   bool buildVictory();

@@ -84,9 +84,7 @@ public:
   static const uint16_t kMAX_MEMBERS_FOES;
   static const int32_t  kUNSET_ID; /* The unset ID for the party */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const Party &source);
@@ -97,9 +95,7 @@ private:
   /* Loads the default settings for a Party */
   void loadDefaults();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add a person to the party */
   bool addMember(Person *const new_member);
@@ -188,16 +184,12 @@ public:
   /* Attempts to assign the new party type */
   bool setPartyType(const PartyType &type);
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
+  /*======================= OPERATOR FUNCTIONS ===============================*/
 public:
   /* The copy operator */
   Party& operator= (const Party &source);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Returns the maximum size of the Bearacks */
   static uint32_t getMaxBearacks();

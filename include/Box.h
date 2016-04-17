@@ -119,9 +119,7 @@ public:
   static const uint32_t kDEFAULT_SCROLL_INSET_Y;
   static const uint32_t kDEFAULT_SCROLL_WIDTH;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Load the class variables with default values */
   void loadDefaults();
@@ -133,9 +131,8 @@ private:
   /* Render the ScrollBar */
   bool renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Clears the Elements from the Box */
   void clearElements();
@@ -160,15 +157,6 @@ public:
 
   /* Assigns a given ActorState flag to a given value */
   void setFlag(ScrollBoxState set_flags, const bool& set_value = true);
-
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
-public:
-  /*============================================================================
-   * OPERATOR FUNCTIONS
-   *===========================================================================*/
-public:
 };
 
 #endif // BOX_H

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* File Name: StringDB 
+* File Name: StringDB
 * Date Created: December 11th, 2013
 * Inheritance: none
 * Description: Namespace for important game strings. Central location for easy
@@ -27,7 +27,7 @@ static const std::string kDEFAULT_CURRENCY = "Joules";
 
 /* ------------ Battle Strings --------------- */
 static const std::string kACTOR_ALIVE = "Alive";
-static const std::string kACTOR_DEAD = "KOd";
+static const std::string kACTOR_DEAD = "KO";
 static const std::string kACTOR_REVIVE = "regained consciousness";
 static const std::string kRUN = "Flee";
 

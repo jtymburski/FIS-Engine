@@ -3,7 +3,7 @@
  * Date Created: November 20, 2014
  * Inheritance: none
  * Description: This class contains the logic for matrix of sprites that will
- *              be rendered as a group. Primarily utilized by MapThing and 
+ *              be rendered as a group. Primarily utilized by MapThing and
  *              children.
  *****************************************************************************/
 #ifndef SPRITEMATRIX_H
@@ -23,7 +23,7 @@ public:
 
   /* Destructor function */
   ~SpriteMatrix();
-  
+
 private:
   /* Past frame index */
   uint16_t frame_index;
@@ -34,9 +34,7 @@ private:
   /* -------------------------- Constants ------------------------- */
   const static float kBASE_FRAME_COUNT; /* Base num frames for tuning anim */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const SpriteMatrix &source);
@@ -60,12 +58,10 @@ private:
   /* Remove sprite from the matrix */
   void removeSprite(uint16_t x, uint16_t y, bool delete_sprite = true);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds the matrix information from the XML data classifier from file */
-  bool addFileInformation(XmlData data, int file_index, SDL_Renderer* renderer, 
+  bool addFileInformation(XmlData data, int file_index, SDL_Renderer* renderer,
                           std::string base_path = "");
 
   /* Returns the sprite at a given coordinate - unprotected */
@@ -80,7 +76,7 @@ public:
 
   /* Returns the number of frames of the first valid sprite */
   uint16_t getFrameCount();
-  
+
   /* Returns the stored sprite matrix */
   std::vector<std::vector<TileSprite*>> getMatrix() const;
 
@@ -103,9 +99,9 @@ public:
   bool isDirectionReverse();
 
   /* Rendering function, for the entire matrix */
-  bool render(SDL_Renderer* renderer, int x, int y, 
+  bool render(SDL_Renderer* renderer, int x, int y,
               int width, int height);
-  bool render(uint16_t frame, SDL_Renderer* renderer, int x, int y, 
+  bool render(uint16_t frame, SDL_Renderer* renderer, int x, int y,
               int width, int height);
 
   /* Sets all sprites in the matrix at the first frame */
@@ -114,16 +110,16 @@ public:
   /* Sets the direction of movement for the entire matrix */
   bool setDirectionForward();
   bool setDirectionReverse();
-  
+
   /* Sets the rendering set corresponding to the matrix */
   void setRenderMatrix(std::string render_str);
 
   /* Sets an individual sprite in the matrix */
-  bool setSprite(TileSprite* sprite, uint16_t x, uint16_t y, 
+  bool setSprite(TileSprite* sprite, uint16_t x, uint16_t y,
                  bool delete_old = true);
 
   /* Sets the entire set of sprites in the matrix */
-  void setSprites(std::vector<std::vector<TileSprite*>> sprites, 
+  void setSprites(std::vector<std::vector<TileSprite*>> sprites,
                   bool delete_old = false);
 
   /* Shifts all the matrix frames to the next in the stack */
@@ -145,9 +141,7 @@ public:
   /* Returns the width of the sprite matrix */
   uint16_t width() const;
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
+  /*======================= OPERATOR FUNCTIONS ===============================*/
 public:
   SpriteMatrix& operator= (const SpriteMatrix &source);
 };

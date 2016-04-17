@@ -389,6 +389,17 @@ void Menu::buildInventoryKeyItems()
 {
 }
 
+int32_t Menu::calcMainCornerInset()
+{
+  if(config)
+  {
+    return static_cast<int32_t>(
+        std::ceil(config->getScreenWidth() * kMAIN_CORNER_LENGTH));
+  }
+
+  return 0;
+}
+
 std::string Menu::calcItemDetailsString(Item* item)
 {
   std::string str = "";
@@ -834,11 +845,9 @@ void Menu::renderMainSection()
      renderer)
   {
     auto menu_type = getMainMenuType();
-    auto width = config->getScreenWidth();
-
     auto location = main_section.location;
     auto point = main_section.location.point;
-    auto corner_inset = (int32_t)std::ceil(width * kMAIN_CORNER_LENGTH);
+    auto corner_inset = calcMainCornerInset();
 
     /* Render the frame outline and backdrop */
     Coordinate tl = {point.x, point.y};
@@ -1012,11 +1021,11 @@ void Menu::renderInventory()
   inventory_scroll_box.scroll_inset_x = gap;
   inventory_scroll_box.scroll_inset_y = gap + calcItemTitleHeight() / 2;
   inventory_scroll_box.scroll_width = 10;
-  inventory_scroll_box.render(renderer);
+  inventory_scroll_box.render(renderer); //TODO: Causing blip.
 
   /* Render the bottom icon detail box */
   auto bot_height = main_section.location.height - top_section_height - 3 * gap;
-  auto corner_inset = (int32_t)std::ceil(width * kMAIN_CORNER_LENGTH);
+  auto corner_inset = calcMainCornerInset();
 
   Coordinate tl = {inventory_top_box.point.x,
                    inventory_top_box.point.y + inventory_top_box.height +
@@ -1100,6 +1109,7 @@ void Menu::renderInventory()
   }
 }
 
+/* Render the extra information for an item */
 void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
                       int32_t bot_height)
 {
@@ -1113,8 +1123,7 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
       auto font_options = config->getFontTTF(FontName::MENU_OPTIONS);
       auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
       auto font_standard = config->getFontTTF(FontName::MENU_STANDARD);
-      auto corner_inset =
-          (int32_t)std::ceil(config->getScreenWidth() * kMAIN_CORNER_LENGTH);
+      auto corner_inset = calcMainCornerInset();
 
       /* Render the Inventory Icon Box */
       inventory_icon_box.point = {start.x + gap, start.y + gap};

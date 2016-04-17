@@ -25,7 +25,7 @@
 #include "TitleScreen.h"
 
 #ifdef _WIN32
-  #define _WIN32_OPENGL
+#define _WIN32_OPENGL
 #endif
 
 class Application
@@ -39,16 +39,16 @@ public:
   ~Application();
 
   /* Enumerator: Application options to be selected */
-  //enum MenuState{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET}; // OLD
+  // enum MenuState{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET}; // OLD
   enum AppMode
   {
     TITLESCREEN = 0,
-    GAME        = 1,
-    OPTIONS     = 2,
-    PAUSED      = 3,
-    LOADING     = 4,
-    EXIT        = 5,
-    NONE        = 6
+    GAME = 1,
+    OPTIONS = 2,
+    PAUSED = 3,
+    LOADING = 4,
+    EXIT = 5,
+    NONE = 6
   };
 
 private:
@@ -95,16 +95,14 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static std::string kLOGO_ICON; /* The logo icon path */
-  const static std::string kPATH; /* The main application path */
-  const static bool kPATH_ENCRYPTED; /* The main path - is it encrypted */
-  const static int kPATH_MAP; /* The default map index */
+  const static std::string kPATH;      /* The main application path */
+  const static bool kPATH_ENCRYPTED;   /* The main path - is it encrypted */
+  const static int kPATH_MAP;          /* The default map index */
   const static uint8_t kUPDATE_CHANGE_LIMIT; /* The # of different frame times
                                               * allowed */
   const static uint8_t kUPDATE_RATE; /* The minimum ms per update sequence */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Change the mode that the application is running */
   bool changeMode(AppMode mode);
@@ -119,8 +117,8 @@ private:
   bool load();
 
   /* Log an Error */
-  //void logError(std::ostream &os, const std::string &msg); // TODO?
-  //void logSDLError(std::ostream &os, const std::string &msg);
+  // void logError(std::ostream &os, const std::string &msg); // TODO?
+  // void logSDLError(std::ostream &os, const std::string &msg);
 
   /* Renders the current view and all relevant visual data */
   void render(uint32_t cycle_time);
@@ -141,9 +139,7 @@ private:
   /* Handles actions in views, depending on what's active */
   bool updateViews(int cycle_time);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Getter access functions */
   SDL_Renderer* getRenderer();
@@ -161,12 +157,10 @@ public:
   /* Sets the application path */
   void setPath(std::string path, int level = 0, bool skip_title = false);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Uninitialize the passed in renderer and window */
-  //void uninitialize(SDL_Renderer* renderer, SDL_Window* window);
+  // void uninitialize(SDL_Renderer* renderer, SDL_Window* window);
 };
 
 #endif // APPLICATION_H

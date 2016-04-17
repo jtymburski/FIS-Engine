@@ -9,18 +9,17 @@
 * Notes
 * -----
 *
-* [1]: 
+* [1]:
 *
 * TODO
 * ----
 *
 * [1]: Mass and value functions for setting and not const
-*
 *******************************************************************************/
 #ifndef FLAVOUR_H
 #define FLAVOUR_H
 
-#include <vector> 
+#include <vector>
 
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
@@ -39,8 +38,8 @@ public:
   Flavour();
 
   /* Constructs a normal Flavour object given a name and stats */
-  Flavour(const int &game_id, const std::string &flavour_name, 
-          const AttributeSet &min_stats, const uint32_t &min_mass, 
+  Flavour(const int &game_id, const std::string &flavour_name,
+          const AttributeSet &min_stats, const uint32_t &min_mass,
           const uint32_t &min_value, SkillSet* skills = nullptr);
 
 private:
@@ -79,9 +78,7 @@ private:
   static const uint32_t              kMAX_LVL;          /* Max lvl */
   static const int                   kUNSET_ID;         /* Def. ID value */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Adds a flavour to the list of flavours */
   static bool addFlavour(Flavour* new_flavour);
@@ -89,9 +86,7 @@ private:
   /* Evaluates whether a given flavour exists */
   static bool isFlavour(Flavour* flavour_check);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Prints out the info of the Flavour */
   void print(const bool &print_list = false);
@@ -119,7 +114,7 @@ public:
 
   /* Obtains the stats at a given tier */
   AttributeSet getStats(const uint32_t &tier = 0);
-  
+
   /* Returns the thumbnail of the Flavour at a given tier */
   Frame* getThumb(const uint32_t &index);
 
@@ -138,9 +133,7 @@ public:
   /* Assigns a new vector of thumbnails to the flavour */
   bool setThumbs(const std::vector<Frame*> &thumbnails);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Returns a vector of strings of the flavour names */
   static std::vector<Flavour*> getFlavours();

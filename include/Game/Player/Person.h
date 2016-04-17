@@ -179,13 +179,8 @@ public:
   static const std::vector<float> kPRIM_MODS; /* Primary elm curv modifiers */
   static const std::vector<float> kSECD_MODS; /* Secondary elm curv mods */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
-  /* Begin processing the actions on the buffer */
-  // void beginProcessActions();
-
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const Person& source);
 
@@ -207,10 +202,8 @@ private:
   /* Updates the rank of the Person based on their Person record */
   void updateRank();
 
-/*=============================================================================
- * PRIVATE STATIC FUNCTIONS
- *============================================================================*/
-
+  /*===================== PRIVATE STATIC FUNCTIONS ===========================*/
+private:
   /* Constructs the table of experience values given the current constants */
   static void buildExpTable();
 
@@ -218,9 +211,7 @@ private:
   static float getCurveModifier(const ElementCurve& curve,
                                 const bool primary = true);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds an amount of experience and may update the level */
   bool addExp(const uint32_t& amount, const bool& update = true,
@@ -464,16 +455,7 @@ public:
   /* Assigns the sprite pointers for the person */
   void setSprites(Sprite* new_dialog_sprite = nullptr);
 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
-public:
-  /* The copy operator */
-  Person& operator=(const Person& source);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Grabs the experience required to reach a given level */
   static uint32_t getExpAt(const uint8_t& level);
@@ -519,6 +501,11 @@ public:
 
   /* Returns the maximum experience modifier possible */
   static float getMaxExpModi();
+
+  /*======================= OPERATOR FUNCTIONS ===============================*/
+public:
+  /* The copy operator */
+  Person& operator=(const Person& source);
 };
 
 #endif // PERSON_H

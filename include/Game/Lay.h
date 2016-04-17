@@ -83,9 +83,7 @@ public:
   /* The type of lay this object is */
   LayType lay_type;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Create a lay at a given index */
   void createTiledLay(LayIndex lay_index);
@@ -96,9 +94,7 @@ private:
   /* Update the tiled lays by a distance x, y */
   void updateLocations(int32_t dist_x, int32_t dist_y);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Create the lay over data from the lay over struct */
   void createFromLayStruct(LayOver lay_data, SDL_Renderer* renderer = nullptr);

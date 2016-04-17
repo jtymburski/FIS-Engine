@@ -74,16 +74,12 @@ private:
   /* Skill Sets */
   SkillSet* base_skill_list;
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Creates a new signature of a given size */
   bool createSig(const size_t size_x, const size_t size_y);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Prints out the state of the Equipment */
   void print(const bool print_signature = false, const bool item_info = false);

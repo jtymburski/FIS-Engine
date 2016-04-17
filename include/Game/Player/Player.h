@@ -59,9 +59,7 @@ private:
   static const uint32_t kSTARTING_CREDITS;
   static const uint32_t kMAX_CREDITS;
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempt to add an amount of credits to the current total */
   bool addCredits(const uint32_t &value);
@@ -146,9 +144,7 @@ public:
   /* Assigns the steps the player has executed */
   void setSteps(const uint32_t &new_value);
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Return the defaul gravity */
   static uint32_t getDefaultGravity();

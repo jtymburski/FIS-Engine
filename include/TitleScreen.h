@@ -94,9 +94,7 @@ private:
   const static uint16_t kTEXT_MARGIN; /* The margin between the text and edge
                                        * of the screen */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Decrements the selected option */
   void decrementSelected();
@@ -113,9 +111,7 @@ private:
   /* Unsets all the menu related data, such as font and labels */
   void unsetMenu();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Enables or disables the view. This includes any initialization for before
    * or after it was visible */

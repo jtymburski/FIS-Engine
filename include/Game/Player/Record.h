@@ -78,7 +78,7 @@ private:
   static const uint32_t kPOINTS_KILLS_BEAR;
   static const uint32_t kPOINTS_KILLS_HUMAN;
   static const uint32_t kPOINTS_KILLS_FIEND;
-  
+
 /*============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -86,9 +86,7 @@ private:
   /* Initially sets up the points required to reach various ranks */
   static void setUpRankPoints();
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Calculates the grandscore of the PersonRecord */
   void calcGrandScore();
@@ -177,9 +175,7 @@ public:
   /* Returns the value of times_kod */
   uint32_t getTimesKOd();
 
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Returns the rank of a given index */
   static Ranks rankAtIndex(const uint32_t &index);

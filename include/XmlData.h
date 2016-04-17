@@ -46,9 +46,7 @@ private:
   int int_data;
   std::string string_data;
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* If the start element has been added that indicates the data, call this
    * with a string read of the data and it will be converted */

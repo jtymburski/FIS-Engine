@@ -76,16 +76,12 @@ private:
   static const int32_t kMIN_HELD_TIME; /* Amount of time for key to be 'Held' */
   static const bool kMULTIPLE_MAPPINGS; /* Can GameKeys be multi-mapped? */
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Prints out the information of of one Key */
   void printIndex(Key key);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Checks if a Certain Game key is in a 'held' state */
   bool isHeld(GameKey game_key);
@@ -129,9 +125,7 @@ public:
   /* Set a given GameKey to be held */
   bool setHeld(GameKey key);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Method to return min-held time constant */
   static int32_t getMinHeldTime();

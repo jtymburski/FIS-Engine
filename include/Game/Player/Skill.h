@@ -127,16 +127,12 @@ private:
   static const uint16_t kMAX_VALUE;       /* Maximum assigned point value */
   static const int32_t  kUNSET_ID;        /* ID for an unset Skill */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Add effect data */
   bool addEffectData(); // TODO: Remove? Unimplemented...
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add an action given a chance to the effect list */
   bool addAction(Action* new_action, const bool &single = true);

@@ -229,9 +229,7 @@ private:
   static const uint32_t kMAX_VARIANCE_PC; /* Max % value for Variance */
   static const int32_t  kUNSET_ID;  /* ID for a default Action object */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Does the check against the indicated ignore flag */
   bool atkDefFlag(IgnoreFlags test_flag, bool attack = true);
@@ -260,9 +258,7 @@ private:
   /* Assigns an infliction duration returning the validity of the assignment */
   bool setDuration(const int &min_value, const int &max_value);
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Prints out the state of the current Action */
   void print(const bool &print_action = true, const bool &print_ignore = false);

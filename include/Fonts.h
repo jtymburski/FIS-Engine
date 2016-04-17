@@ -56,16 +56,12 @@ private:
   /* The fonts */
   std::map<FontName, TTF_Font*> fonts;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Create fonts, linking to the parent configuration */
   bool createFonts(Options* config);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Destroy the fonts */
   void deleteFonts();

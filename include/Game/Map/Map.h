@@ -200,9 +200,7 @@ private:
   const static uint8_t kPLAYER_ID; /* The player ID for computer control */
   const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Adds sprite data, as per data from the file */
   bool addSpriteData(XmlData data, std::string id, int file_index,
@@ -298,9 +296,7 @@ private:
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Battle won/loss/end trigger for map */
   void battleLose();

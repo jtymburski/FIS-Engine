@@ -28,13 +28,13 @@ public:
   ~Music();
 
 private:
-  /* The number of times to play the sound. It will be loop_count+1 
+  /* The number of times to play the sound. It will be loop_count+1
    * except for -1, which is infinite loop */
   int loop_count;
 
   /* If the music has been set */
   bool music_set;
-  
+
   /* The raw data of the music in RAM */
   Mix_Music* raw_data;
 
@@ -43,31 +43,27 @@ private:
   const static short kFADE_TIME; /* The time for the music to fade in or out */
   const static short kINFINITE_LOOP; /* Infinite loop special character */
 
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
+  /*======================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Returns the loop count, the number of times it will play for */
   int getPlayCount();
 
   /* Play slot. If music is set, it will play for the given number of loops */
   void play(bool fade_in = true);
-  
+
   /* Trys to set the music file to the given path */
   bool setMusicFile(std::string path);
-  
+
   /* Set the number of times to play the song for. If 0, defaults to 1 */
   bool setPlayCount(int play_count);
 
   /* Set the music to loop infinitely, until stop() is called */
   void setPlayForever();
-  
+
   /* Unset the music file and frees the memory */
   void unsetMusicFile();
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+  /*===================== PUBLIC STATIC  FUNCTIONS ===========================*/
 public:
   /* Stops the music from playing */
   static void stop(bool fade_out = true);

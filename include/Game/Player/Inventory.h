@@ -108,9 +108,7 @@ private:
   /* Decreases the count of an item of a given game ID by a given amount */
   bool decreaseCount(const uint32_t& game_id, const uint16_t& amount = 1);
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add a Bubby */
   AddStatus add(Bubby* new_bubby, const uint32_t& amount = 1,
@@ -279,9 +277,8 @@ public:
   /* Assigns new limits given parameters */
   void setLimits(const uint32_t bubby_lim, const uint32_t equip_lim,
                  const uint32_t item_lim, const double mass_lim);
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Assigns the invalid money ID */
   static void setMoneyID(const uint32_t& new_money_id);

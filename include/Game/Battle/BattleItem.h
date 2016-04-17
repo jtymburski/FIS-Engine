@@ -1,9 +1,25 @@
+/*******************************************************************************
+* Class Name: BattleItem
+* Date Created:
+* Inheritance: None
+*
+* Description
+* -----------
+
+*
+* Notes
+* -----
+*
+* [1]:
+*
+* TODO
+* ----
+*******************************************************************************/
 #ifndef BATTLE_ITEM_H
 #define BATTLE_ITEM_H
 
 class BattleActor;
 
-//#include "EnumDb.h"
 #include "Game/Battle/BattleActor.h"
 #include "Game/Player/Item.h"
 

@@ -19,7 +19,7 @@ public:
   /* Constructor functions */
   TileSprite();
   TileSprite(std::string path, SDL_Renderer* renderer);
-  TileSprite(std::string head_path, int num_frames, 
+  TileSprite(std::string head_path, int num_frames,
              std::string tail_path, SDL_Renderer* renderer);
 
   /* Copy constructor */
@@ -27,7 +27,7 @@ public:
 
   /* Destructor function */
   ~TileSprite();
-  
+
 private:
   /* Passability of the tile sprite */
   uint8_t passability;
@@ -38,24 +38,20 @@ private:
   /* -------------------------- Constants ------------------------- */
   //const static uint8_t kMAX_RENDER_DEPTH; /* Max render depth */
 
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const TileSprite &source, bool only_sprite);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds sprite information from the XML data classifier from the file */
-  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
+  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
                           std::string base_path = "", bool no_warnings = false);
 
   /* Call to add passability, as extracted from file data */
   void addPassability(std::string data);
-  
+
   /* Const get functions for internal variables */
   bool getPassability(Direction dir) const;
   uint8_t getRenderDepth() const;
@@ -68,10 +64,8 @@ public:
 
   /* Sets the render depth. 0 is the base up to max */
   bool setRenderDepth(uint8_t depth);
- 
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
+
+  /*======================== OPERATOR FUNCTIONS ==============================*/
 public:
   TileSprite& operator= (const TileSprite &source);
 };

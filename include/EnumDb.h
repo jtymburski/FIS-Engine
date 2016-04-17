@@ -161,7 +161,13 @@ enum class AITarget
 };
 
 /*
- * Description:
+ * Description: Class of ailments to determine processing.
+ *
+ * DAMAGING - ailment inflicts damage such as POISON / BURN
+ * HEALING - ailment restores health such as HIBERNATION
+ * PASSIVE - ailment has a passive effect ex. PARALYSIS
+ * BUFF - ailment adds a buff ex. PHYS_BUFF
+ * UNSET - invalid AilmentClass
  */
 enum class AilmentClass
 {
@@ -173,7 +179,8 @@ enum class AilmentClass
 };
 
 /*
- * Description:
+ * Description: Enumerated status for ailment processing.
+ *
  */
 enum class AilmentStatus
 {
@@ -214,7 +221,7 @@ enum class AilmentStatus
  * UNBR - Unbearability - critical hit chance, increases base damage by factor
  * MANN - Manna - luck which has various effects on outcomes/earnings etc.
  * NONE - No Attribute - the enumeration does not describe an attribute
- * MVIT - Maximum Vitality (Limit as x -> infinity)
+ * MVIT - Maximum Vitality (Limit)
  * MQTD - Maximum Quantum Drive (Limit)
  */
 enum class Attribute : std::uint8_t
@@ -253,7 +260,6 @@ enum class Attribute : std::uint8_t
  * CLOSED - the cell is currently locked (but may be unlocked)
  * BLOCKED - for all purposes, the cell does not really exist
  * LINK - the cell is occupied by a link object
- * E_LINK - the cell is occupied by an elemental link object
  */
 enum class CellState : std::uint32_t
 {
@@ -265,7 +271,8 @@ enum class CellState : std::uint32_t
 };
 
 /*
- * Description:
+ * Description: Types of damage that a BattleActor can receive. Aids in
+ *              determining colours of damage or other effects.
  */
 enum class DamageType
 {
@@ -368,7 +375,8 @@ enum class EquipSlots : std::uint8_t
 };
 
 /*
- * Description:
+ * Description: Enumerated GameKey values. For KeyHandler to process what
+ *              key corresponds to what game action.
  */
 enum class GameKey
 {
@@ -395,7 +403,7 @@ enum class MapFade
 };
 
 /*
- *
+ * Description: FadeState of an object.
  */
 enum class FadeState
 {
@@ -455,7 +463,7 @@ enum class Infliction : std::uint64_t
 };
 
 /*
- * Description:
+ * Description: Tier level that an item can be.
  */
 enum class ItemTier : std::uint8_t
 {
@@ -468,6 +476,9 @@ enum class ItemTier : std::uint8_t
   NONE = 6
 };
 
+/*
+ * Description: Enumerated type of Lay.
+ */
 enum class LayType
 {
   OVERLAY = 1,
@@ -476,7 +487,7 @@ enum class LayType
   NONE = 0
 };
 
-/*  
+/*
  *   ----------------------
  *   |      |      |      |
  *   |  NW  |  N   |  NE  |
@@ -502,7 +513,7 @@ enum class LayIndex
 };
 
 /*
- * Description:
+ * Description: Type of outcome a Battle can have.
  */
 enum class OutcomeType
 {
@@ -531,7 +542,7 @@ enum class PartyType : std::uint8_t
 };
 
 /*
- * Description:
+ * Description: Rank that a Player can be.
  */
 enum class Rank : std::uint16_t
 {

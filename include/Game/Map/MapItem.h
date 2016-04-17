@@ -41,9 +41,7 @@ private:
   const static float kMAX_BRIGHTNESS; /* The max brightness setting */
   const static float kMIN_BRIGHTNESS; /* The min brightness setting */
 
-/*============================================================================
- * PROTECTED FUNCTIONS
- *===========================================================================*/
+  /*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Check if the tile can be set with the item */
   virtual bool canSetTile(Tile* tile, TileSprite* frames,
@@ -56,9 +54,7 @@ protected:
   /* This unsets the tile, at the given frame coordinate */
   virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds item information from the XML file. Will be virtually re-called
    * by all children for proper operation */
