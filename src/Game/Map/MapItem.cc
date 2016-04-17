@@ -325,6 +325,8 @@ bool MapItem::setActive(bool active, bool set_tiles)
   bool next = MapThing::setActive(active, set_tiles);
 
   /* Checks if status changed from false to true, update count */
+  // TODO: Consideration to be given for on respawn time, to also refresh
+  //       count even if there is items left but less than start count
   if(!previous && next)
     count = start_count;
 

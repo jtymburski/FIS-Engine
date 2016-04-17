@@ -37,7 +37,7 @@ private:
 
   /* -------------------------- Constants ------------------------- */
   const static uint8_t kDEFAULT_COUNT; /* Default number of items on setup */
-  const static float kDELTA_TIME_ONE_POINT; /* otal time for 1.0 change */
+  const static float kDELTA_TIME_ONE_POINT; /* total time for 1.0 change */
   const static float kMAX_BRIGHTNESS; /* The max brightness setting */
   const static float kMIN_BRIGHTNESS; /* The min brightness setting */
 

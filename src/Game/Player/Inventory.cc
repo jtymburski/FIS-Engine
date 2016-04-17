@@ -85,16 +85,16 @@ void Inventory::calcMass()
 
   for(auto bubby : bubbies)
     if(bubby.first)
-      temp_mass += (bubby.first->getMass() * bubby.second) / 1000;
+      temp_mass += (bubby.first->getMass() * bubby.second) / 1000.0;
 
   for(auto equipment : equipments)
     if(equipment.first)
-      temp_mass += (equipment.first->getMass() * equipment.second) / 1000;
+      temp_mass += (equipment.first->getMass() * equipment.second) / 1000.0;
 
   for(auto item : items)
     if(item.first)
       if(!item.first->getFlag(ItemFlags::KEY_ITEM))
-        temp_mass += (item.first->getMass() * item.second) / 1000;
+        temp_mass += (item.first->getMass() * item.second) / 1000.0;
 
   curr_mass = temp_mass;
 }
@@ -641,8 +641,7 @@ bool Inventory::loadData(XmlData data, int index, SDL_Renderer* renderer,
         {
           setLimits(bubby_limit, equip_limit, val, mass_limit);
         }
-        /* Stack Limit */
-        //TODO: No longer need this?
+        /* Stack Limit - TODO: remove - no longer need this? */
         // else if(inside == "stack")
         // {
         //   setLimits(bubby_limit, equip_limit, val, mass_limit);
@@ -1027,7 +1026,7 @@ bool Inventory::saveData(FileHandler* fh)
     if(mass_limit > kMIN_MASS)
       fh->writeXmlData("mass", static_cast<float>(mass_limit));
 
-    // TODO: Jordan can we get rid of this?
+    // TODO: remove. Not needed?
     // if(item_each_limit > kMIN_EACH_ITEM)
     //  fh->writeXmlData("stack", item_each_limit);
     if(item_limit > kMIN_ITEM)
@@ -1036,6 +1035,7 @@ bool Inventory::saveData(FileHandler* fh)
       fh->writeXmlData("equipments", equip_limit);
     if(bubby_limit > kMIN_ITEM)
       fh->writeXmlData("bubbies", bubby_limit);
+
     fh->writeXmlElementEnd();
 
     /* Items */
