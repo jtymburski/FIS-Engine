@@ -305,8 +305,8 @@ void Box::clearElements()
 bool Box::nextIndex()
 {
   /* If it's a selectable box, update the view index (unless at the bottom) */
-  if(getFlag(BoxState::SELECTABLE) && elements.size() > 0 &&
-     view_index > -1 && element_index > -1)
+  if(getFlag(BoxState::SELECTABLE) && elements.size() > 0 && view_index > -1 &&
+     element_index > -1)
   {
     if((uint32_t)element_index == view_index + getNumViewable() - 1 &&
        (uint32_t)element_index + 1 < elements.size())

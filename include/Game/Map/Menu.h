@@ -383,6 +383,9 @@ private:
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
 
+  int32_t calcMainCornerInset();
+
+
   /* Calculate the required string for Item Details */
   std::string calcItemDetailsString(Item* item);
 
