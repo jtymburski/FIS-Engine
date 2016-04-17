@@ -158,8 +158,8 @@ const float Menu::kINV_MASS_VALUE_Y{0.90};
 const float Menu::kINV_THUMB_GAP{0.02};
 const float Menu::kINV_ITEM_NAME_X{0.1};
 const float Menu::kINV_ITEM_NAME_Y{0.1};
-const float Menu::kINV_ITEM_ELEMENT_WIDTH{0.70};
-const float Menu::kINV_ITEM_ELEMENT_HEIGHT{0.064};
+const float Menu::kINV_ITEM_ELEMENT_WIDTH{0.738};
+const float Menu::kINV_ITEM_ELEMENT_HEIGHT{0.0645};
 const float Menu::kINV_ITEM_ELEMENT_INSET{0.02};
 const float Menu::kINV_ITEM_MASS_Y{0.25};
 const float Menu::kINV_ITEM_DESC_Y{0};
@@ -283,8 +283,8 @@ void Menu::buildInventoryElements()
 
     inventory_details.clear();
     inventory_scroll_box.clearElements();
-    inventory_scroll_box.setFlag(ScrollBoxState::SCROLL_BOX);
-    inventory_scroll_box.setFlag(ScrollBoxState::SELECTABLE);
+    inventory_scroll_box.setFlag(BoxState::SCROLL_BOX);
+    inventory_scroll_box.setFlag(BoxState::SELECTABLE);
 
     if(inventory_title_index == InventoryIndex::ITEMS)
       buildInventoryItems();
@@ -333,10 +333,6 @@ void Menu::buildInventoryItems()
 
     /* Assign the Item Scroll Box with the frames, passing ownership */
     inventory_scroll_box.setElements(item_elements);
-
-    // TODO: Debug remove
-    std::cout << "Setting the elements. Size: " << item_elements.size()
-              << std::endl;
   }
 }
 
@@ -631,7 +627,7 @@ void Menu::selectInventoryIndex()
      inventory_title_index <= InventoryIndex::KEY_ITEMS)
   {
     inventory_titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
-        .setFlag(ScrollBoxState::SELECTED);
+        .setFlag(BoxState::SELECTED);
   }
 }
 
@@ -639,13 +635,13 @@ void Menu::selectInventoryIndex()
 void Menu::selectOptionIndex()
 {
   if(option_element_index == 0)
-    option_audio_level.location.setFlag(ScrollBoxState::SELECTED);
+    option_audio_level.location.setFlag(BoxState::SELECTED);
   else if(option_element_index == 1)
-    option_music_level.location.setFlag(ScrollBoxState::SELECTED);
+    option_music_level.location.setFlag(BoxState::SELECTED);
   else if(option_element_index == 2)
-    option_auto_run.location.setFlag(ScrollBoxState::SELECTED);
+    option_auto_run.location.setFlag(BoxState::SELECTED);
   else if(option_element_index == 3)
-    option_mute.location.setFlag(ScrollBoxState::SELECTED);
+    option_mute.location.setFlag(BoxState::SELECTED);
 }
 
 void Menu::unselectInventoryIndex()
@@ -654,7 +650,7 @@ void Menu::unselectInventoryIndex()
      inventory_title_index <= InventoryIndex::KEY_ITEMS)
   {
     inventory_titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
-        .setFlag(ScrollBoxState::SELECTED, false);
+        .setFlag(BoxState::SELECTED, false);
   }
 }
 
@@ -662,13 +658,13 @@ void Menu::unselectInventoryIndex()
 void Menu::unselectOptionIndex()
 {
   if(option_element_index == 0)
-    option_audio_level.location.setFlag(ScrollBoxState::SELECTED, false);
+    option_audio_level.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 1)
-    option_music_level.location.setFlag(ScrollBoxState::SELECTED, false);
+    option_music_level.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 2)
-    option_auto_run.location.setFlag(ScrollBoxState::SELECTED, false);
+    option_auto_run.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 3)
-    option_mute.location.setFlag(ScrollBoxState::SELECTED, false);
+    option_mute.location.setFlag(BoxState::SELECTED, false);
 }
 
 void Menu::renderBubbies()
@@ -1021,7 +1017,7 @@ void Menu::renderInventory()
   inventory_scroll_box.scroll_inset_x = gap;
   inventory_scroll_box.scroll_inset_y = gap + calcItemTitleHeight() / 2;
   inventory_scroll_box.scroll_width = 10;
-  inventory_scroll_box.render(renderer); //TODO: Causing blip.
+  inventory_scroll_box.render(renderer);
 
   /* Render the bottom icon detail box */
   auto bot_height = main_section.location.height - top_section_height - 3 * gap;
@@ -1091,6 +1087,7 @@ void Menu::renderInventory()
     title_text.setText(renderer, "Key Items", kCOLOR_TEXT);
   }
 
+  /* Assemble and Render the Item Limits */
   auto title_text_y = inventory_top_box.point.y + inventory_top_box.height / 2 -
                       title_text.getHeight() / 2;
   number_items.setText(renderer, number_str, kCOLOR_TEXT);
@@ -1099,7 +1096,7 @@ void Menu::renderInventory()
 
   number_items.render(renderer,
                       inventory_top_box.point.x + inventory_top_box.width -
-                          number_items.getWidth() - gap,
+                          number_items.getWidth() - 3 * gap,
                       title_text_y);
 
   if(inventory_title_index == InventoryIndex::ITEMS &&
@@ -1208,7 +1205,7 @@ void Menu::renderOptions()
   auto height = config->getScreenHeight();
 
   auto start_x =
-      main_section.location.point.x + (uint32_t)std::round(kOPTIONS_X * width);
+      main_section.location.point.x  + (uint32_t)std::round(kOPTIONS_X * width);
   auto start_y =
       main_section.location.point.y + (uint32_t)std::round(kOPTIONS_Y * height);
 
@@ -1253,7 +1250,7 @@ UCoordinate Menu::renderOptionAnalog(AnalogOption& option, UCoordinate point)
     SDL_Color fill_color = kCOLOR_OPTION_FILL;
     SDL_Color border_color = {255, 255, 255, 65};
 
-    if(option.location.getFlag(ScrollBoxState::SELECTED))
+    if(option.location.getFlag(BoxState::SELECTED))
     {
       border_color = kCOLOR_MAIN_BORDER;
       fill_color = kCOLOR_OPTION_FILL_SELECTED;
@@ -1318,7 +1315,7 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
     auto option_font = config->getFontTTF(FontName::MENU_HEADER);
     SDL_Color box_border = {255, 255, 255, 65};
 
-    if(option.location.getFlag(ScrollBoxState::SELECTED))
+    if(option.location.getFlag(BoxState::SELECTED))
       box_border = kCOLOR_MAIN_BORDER;
 
     /* Render the Box */
@@ -1544,8 +1541,8 @@ void Menu::keyDownAction()
       {
         inventory_element_index = 0;
         layer = MenuLayer::MAIN_INDENT;
-        inventory_top_box.setFlag(ScrollBoxState::SELECTED);
-        inventory_scroll_box.setFlag(ScrollBoxState::SELECTED);
+        inventory_top_box.setFlag(BoxState::SELECTED);
+        inventory_scroll_box.setFlag(BoxState::SELECTED);
       }
     }
   }
@@ -1559,8 +1556,8 @@ void Menu::keyDownCancel()
     {
       inventory_element_index = -1;
       layer = MenuLayer::MAIN;
-      inventory_top_box.setFlag(ScrollBoxState::SELECTED, false);
-      inventory_scroll_box.setFlag(ScrollBoxState::SELECTED, false);
+      inventory_top_box.setFlag(BoxState::SELECTED, false);
+      inventory_scroll_box.setFlag(BoxState::SELECTED, false);
     }
   }
   else if(main_section.status == WindowStatus::ON)

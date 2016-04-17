@@ -239,6 +239,7 @@ private:
   /* Inventory Screen Boxes */
   Box inventory_top_box;
   Box inventory_scroll_box;
+  Box inventory_bottom_box;
   Box inventory_icon_box;
 
   /* Current menu layer */
@@ -382,9 +383,6 @@ private:
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
 
-  /* Calculate the corner of the main section */
-  int32_t calcMainCornerInset();
-
   /* Calculate the required string for Item Details */
   std::string calcItemDetailsString(Item* item);
 
@@ -424,9 +422,6 @@ private:
   /* Render Bubbies */
   void renderBubbies();
 
-  /* Render a box with a 45-degree cut on Bot-Right */
-  void renderCutBox();
-
   /* Render Equipment */
   void renderEquipment();
 
@@ -434,7 +429,8 @@ private:
   void renderInventory();
 
   /* Render Items */
-  void renderItem(Coordinate start, int32_t icon_w, int32_t gap, int32_t bot_height);
+  void renderItem(Coordinate start, int32_t icon_w, int32_t gap,
+                  int32_t bot_height);
 
   /* Render Key Items */
   void renderKeyItems();

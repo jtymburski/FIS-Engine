@@ -24,8 +24,8 @@
 using std::begin;
 using std::end;
 
-ENUM_FLAGS(ScrollBoxState)
-enum class ScrollBoxState
+ENUM_FLAGS(BoxState)
+enum class BoxState
 {
   SCROLL_BOX = 1 << 0,
   SCROLL_BAR = 1 << 1,
@@ -84,7 +84,7 @@ public:
   uint32_t element_inset_y;
 
   /* Flags describing this ScrollBox object */
-  ScrollBoxState flags;
+  BoxState flags;
 
   /* Location and dimension of the Box */
   Coordinate point;
@@ -147,7 +147,7 @@ public:
   bool render(SDL_Renderer* renderer);
 
   /* Returns the value of a given ActorState flag */
-  bool getFlag(const ScrollBoxState& test_flag);
+  bool getFlag(const BoxState& test_flag);
 
   /* Calculate and return the number of viewable elements */
   uint32_t getNumViewable();
@@ -156,7 +156,7 @@ public:
   void setElements(std::vector<Frame*> elements);
 
   /* Assigns a given ActorState flag to a given value */
-  void setFlag(ScrollBoxState set_flags, const bool& set_value = true);
+  void setFlag(BoxState set_flags, const bool& set_value = true);
 };
 
 #endif // BOX_H
