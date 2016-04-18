@@ -556,6 +556,31 @@ bool EventSet::isBaseSet()
 }
 
 /*
+ * Description: Checks to see if there is any data to save. If so, return true
+ *
+ * Inputs: none
+ * Output: bool - true if there is data to save by saveData(*)
+ */
+bool EventSet::isDataToSave()
+{
+  /* Locked status */
+  if(isDataToSave(locked_status))
+    return true;
+
+  /* Lock event */
+  if(locked_status.state != LockedState::NONE && isDataToSave(event_locked))
+    return true;
+
+  /* Unlock event(s) */
+  for(uint32_t i = 0; i < events_unlocked.size(); i++)
+    if(isDataToSave(events_unlocked[i]))
+      return true;
+
+  /* Otherwise, return false */
+  return false;
+}
+
+/*
  * Description: Returns if the event set has any events or data set. If true,
  *              there are no events. It will always return true after a clear()
  *              call.
@@ -691,6 +716,19 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
   }
 
   return true;
+}
+
+/*
+ * Description: Saves the data of this event set to the file handler pointer.
+ *              This includes a wrapper. If blank, no wrap will be added
+ *
+ * Inputs: FileHandler* fh - the saving file handling pointer
+ *         std::string wrapper - the wrapper xml text for the data
+ * Output: bool - true if successful
+ */
+bool EventSet::saveData(FileHandler* fh, std::string wrapper)
+{
+  // TODO
 }
 
 /*
@@ -1368,10 +1406,10 @@ Event EventSet::createEventGiveItem(int id, int count, int sound_id)
 
   return new_event;
 }
-  
+
 /*
  * Description: Public static. Creates a new multi event with the passed in set
- *              of sub events, and an optional connected sound ID. 
+ *              of sub events, and an optional connected sound ID.
  *
  * Inputs: std::vector<Event> event - set of events to trigger within the
  *                                    multiple. Default to blank
@@ -1936,11 +1974,11 @@ bool EventSet::dataEventMultiple(Event event, std::vector<Event>& event_list)
  *              This only pulls the data as is by reference; not a value.
  *
  * Inputs: Event* event - the event ref to extract the data from
- *         std::vector<Event*>& event_list - set of event list references 
+ *         std::vector<Event*>& event_list - set of event list references
  * Output: bool - true if the data was extracted. Fails if the event is the
  *                wrong category
  */
-bool EventSet::dataEventMultiple(Event* event, 
+bool EventSet::dataEventMultiple(Event* event,
                                  std::vector<Event*>& event_list)
 {
   if(event != nullptr && event->classification == EventClassifier::MULTIPLE)
@@ -2277,16 +2315,181 @@ Conversation* EventSet::getConversation(Conversation* reference,
 }
 
 /*
+ * Description: Checks if there is data to save within the conversation ref and
+ *              recursively within its children.
+ *
+ * Inputs: Conversation* ref - the reference conversation to check
+ * Output: bool - true if there is data to save within the conversation
+ */
+bool EventSet::isDataToSave(Conversation* ref)
+{
+  if(ref != nullptr)
+  {
+    /* Check event */
+    if(isDataToSave(ref->action_event))
+      return true;
+
+    /* Check remaining conversation points */
+    for(uint32_t i = 0; i < ref->next.size(); i++)
+      if(isDataToSave(&ref->next[i]))
+        return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Checks if there is data to save within the event reference and
+ *              within any objects stored within the event (including
+ *              conversations).
+ *
+ * Inputs: Event event_ref - the event reference to check
+ * Output: bool - true if there is data to save within the event
+ */
+bool EventSet::isDataToSave(const Event& event_ref)
+{
+  if(event_ref.classification != EventClassifier::NOEVENT)
+  {
+    /* First check the event itself */
+    if(event_ref.has_exec)
+      return true;
+
+    /* Then check the events stored within */
+    if(event_ref.classification == EventClassifier::BATTLESTART ||
+       event_ref.classification == EventClassifier::MULTIPLE)
+    {
+      for(uint32_t i = 0; i < event_ref.events.size(); i++)
+        if(isDataToSave(event_ref.events[i]))
+          return true;
+    }
+
+    /* Then check the conversation */
+    if(event_ref.classification == EventClassifier::CONVERSATION)
+    {
+      if(isDataToSave(event_ref.convo))
+        return true;
+    }
+  }
+
+  /* Otherwise, nothing to save */
+  return false;
+}
+
+/*
+ * Description: Checks if there is data to save within the lock reference
+ *
+ * Inputs: Locked lock_ref - the locked reference to check
+ * Output: bool - true if there is data to save within the lock
+ */
+bool EventSet::isDataToSave(const Locked& lock_ref)
+{
+  return (lock_ref.state != LockedState::NONE && !lock_ref.is_locked);
+}
+
+/*
  * Description: Determines if the locked struct is locked and with a valid
  *              unlock mode possibility.
  *
  * Inputs: Locked lock_struct - the lock struct data
  * Output: bool - true if the struct is locked
  */
-bool EventSet::isLocked(Locked lock_struct)
+
+bool EventSet::isLocked(const Locked& lock_struct)
 {
   return (lock_struct.state != LockedState::NONE &&
           lock_struct.is_locked);
+}
+
+/*
+ * Description: Recursive save of the conversation. Takes a conversation ref
+ *              and starting index with file handling pointer and parses
+ *              all embedded conversations from there.
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ *         Conversation* convo - the starting convo
+ *         std::string index - the index of the starting convo, default "1"
+ * Output: bool - true if the save was successful
+ */
+bool EventSet::saveConversation(FileHandler* fh, Conversation* convo,
+                      std::string index)
+{
+  if(fh != nullptr && convo != nullptr)
+  {
+    /* Check if this index needs to be saved */
+    if(isDataToSave(convo->action_event))
+    {
+      fh->writeXmlElement("conversation", "id", index);
+      saveEvent(fh, convo->action_event, "event", false);
+      fh->writeXmlElementEnd();
+    }
+
+    /* Recursively parse through remaining entries */
+    for(uint32_t i = 0; i < convo->next.size(); i++)
+      saveConversation(fh, &convo->next[i], index + "." + std::to_string(i+1));
+
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Save the passed in event to the file reference pointer. If the
+ *              wrapper is set to blank, it will not wrap in XML
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ *         Event event_ref - the event reference to save delta data
+ *         std::string wrapper - the wrapping xml. Default is "event"
+ *         bool check - check if a save is needed prior to call. default true
+ * Output: bool - true if the save was successful
+ */
+bool EventSet::saveEvent(FileHandler* fh, const Event& event_ref,
+                         std::string wrapper, bool check)
+{
+  if(fh != nullptr)
+  {
+    /* Check to see if the save is to proceed */
+    if(!check || isDataToSave(event_ref))
+    {
+      /* Wrapper */
+      if(!wrapper.empty())
+        fh->writeXmlElement(wrapper);
+
+      /* Executed */
+      if(event_ref.has_exec)
+      {
+        fh->writeXmlData("executed", event_ref.has_exec);
+
+        /* Specialty events with additional data embedded */
+        // TODO
+      }
+
+      /* End Wrapper */
+      if(!wrapper.empty())
+        fh->writeXmlElementEnd();
+    }
+
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Save the passed in locked struct to the file reference pointer.
+ *              This only will save if locked (one item).
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ *         Locked lock_ref - the lock structure reference to save
+ * Output: bool - true if the save was successful
+ */
+bool EventSet::saveLocked(FileHandler* fh, const Locked& lock_ref)
+{
+  if(fh != nullptr)
+  {
+    if(isDataToSave(lock_ref))
+      fh->writeXmlData("locked", lock_ref.is_locked);
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -2587,9 +2790,9 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   else if(category == EventClassifier::PROPERTY)
   {
     /* Baseline modifier */
-    ThingProperty mods_curr = 
+    ThingProperty mods_curr =
                         static_cast<ThingProperty>(event.ints.at(kPROP_MODS));
-    bool active, forced, inactive, move, reset, 
+    bool active, forced, inactive, move, reset,
          respawn, speed, track, visible;
     dataEnumProperties(mods_curr, active, forced, inactive, move, reset,
                        respawn, speed, track, visible);
@@ -2634,11 +2837,11 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     else /* Bools */
     {
       /* Get start point */
-      ThingProperty prop_curr = 
+      ThingProperty prop_curr =
                         static_cast<ThingProperty>(event.ints.at(kPROP_BOOLS));
-      bool active_b, forced_b, inactive_b, move_b, reset_b, 
+      bool active_b, forced_b, inactive_b, move_b, reset_b,
            respawn_b, speed_b, track_b, visible_b;
-      dataEnumProperties(prop_curr, active_b, forced_b, inactive_b, move_b, 
+      dataEnumProperties(prop_curr, active_b, forced_b, inactive_b, move_b,
                          reset_b, respawn_b, speed_b, track_b, visible_b);
 
       /* Parse new data */
@@ -2669,7 +2872,7 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       }
 
       /* Set new data */
-      ThingProperty prop_new = createEnumProperties(active_b, forced_b, 
+      ThingProperty prop_new = createEnumProperties(active_b, forced_b,
           inactive_b, move_b, reset_b, respawn_b, speed_b, track_b, visible_b);
       event.ints.at(kPROP_BOOLS) = static_cast<int>(prop_new);
     }

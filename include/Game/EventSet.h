@@ -17,6 +17,7 @@ struct Conversation;
 #include <vector>
 
 #include "EnumDb.h"
+#include "FileHandler.h"
 #include "Helpers.h"
 #include "XmlData.h"
 
@@ -270,7 +271,7 @@ private:
   /* State of unlocked events */
   UnlockedState unlocked_state;
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const EventSet& source);
@@ -286,7 +287,7 @@ private:
   /* Set-up for base connection */
   void setupForBase();
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Add calls, for lists */
   bool addEventUnlocked(Event new_event);
@@ -320,6 +321,9 @@ public:
   /* Returns if the base event set is set */
   bool isBaseSet();
 
+  /* Returns if there is data to save */
+  bool isDataToSave();
+
   /* Returns if the class is empty (default state after a clear() call) */
   bool isEmpty();
 
@@ -331,6 +335,9 @@ public:
 
   /* Load data from file */
   bool loadData(XmlData data, int file_index, int section_index);
+
+  /* Save data to file */
+  bool saveData(FileHandler* fh, std::string wrapper = "eventset");
 
   /* Sets the base set reference */
   void setBase(EventSet* new_base);
@@ -354,12 +361,12 @@ public:
   bool unsetEventUnlocked();
   bool unsetLocked();
 
-  /*========================= OPERATOR FUNCTIONS =============================*/
+/*========================= OPERATOR FUNCTIONS =============================*/
 public:
   /* The copy operator */
   EventSet& operator=(const EventSet& source);
 
-  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
+/*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Classification enumerator to and from string */
   static EventClassifier classifierFromStr(const std::string& classifier);
@@ -510,8 +517,20 @@ public:
   static Conversation* getConversation(Conversation* reference,
                                        std::vector<std::string> index_list);
 
+  /* Checks if the data needs to be saved for the passed data */
+  static bool isDataToSave(Conversation* ref);
+  static bool isDataToSave(const Event& event_ref);
+  static bool isDataToSave(const Locked& lock_ref);
+
   /* Determines if the locked struct is locked */
-  static bool isLocked(Locked lock_struct);
+  static bool isLocked(const Locked& lock_struct);
+
+  /* Saves the  different structures handled by the event set */
+  static bool saveConversation(FileHandler* fh, Conversation* convo,
+                               std::string index = "1");
+  static bool saveEvent(FileHandler* fh, const Event& event_ref,
+                        std::string wrapper = "event", bool check = true);
+  static bool saveLocked(FileHandler* fh, const Locked& lock_ref);
 
   /* Unlocks the locked state, if the conditions are met */
   static bool unlockItem(Locked& locked_state, int id, int count);
