@@ -673,6 +673,14 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
   {
     locked_status = updateLocked(locked_status, data, file_index + 1);
   }
+  /* -- Locked status -- */
+  else if(category == "locked")
+  {
+    bool success;
+    bool bool_data = data.getDataBool(&success);
+    if(success)
+      locked_status.is_locked = bool_data;
+  }
   /* -- Lock Event -- */
   else if(category == "lockevent")
   {
@@ -688,6 +696,14 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
     {
       *found = updateEvent(*found, data, file_index + 1, section_index);
     }
+  }
+  /* -- Unlock Index Property -- */
+  else if(category == "unlockindex")
+  {
+    bool success;
+    int int_data = data.getDataInteger(&success);
+    if(success && int_data >= 0 && int_data < (int)events_unlocked.size())
+      get_index = int_data;
   }
   /* -- Unlock Parse Property -- */
   else if(category == "unlockparse")
@@ -724,11 +740,69 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
  *
  * Inputs: FileHandler* fh - the saving file handling pointer
  *         std::string wrapper - the wrapper xml text for the data
- * Output: bool - true if successful
+ * Output: bool - true if successful and there was data to save
  */
 bool EventSet::saveData(FileHandler* fh, std::string wrapper)
 {
-  // TODO
+  if(fh != nullptr)
+  {
+    /* Accumulate save status' */
+    bool lock_valid = isDataToSave(locked_status);
+    bool lock_event_valid = (locked_status.state != LockedState::NONE &&
+                            isDataToSave(event_locked));
+    bool unlock_event_valid = false;
+    std::vector<bool> unlock_events_valid;
+    for(uint32_t i = 0; i < events_unlocked.size(); i++)
+    {
+      if(isDataToSave(events_unlocked[i]))
+      {
+        unlock_event_valid = true;
+        unlock_events_valid.push_back(true);
+      }
+      else
+      {
+        unlock_events_valid.push_back(false);
+      }
+    }
+
+    /* Check if save will occur */
+    if(lock_valid || lock_event_valid || unlock_event_valid)
+    {
+      /* Wrapper */
+      if(!wrapper.empty())
+        fh->writeXmlElement(wrapper);
+
+      /* Locked status */
+      if(lock_valid)
+        saveLocked(fh, locked_status);
+
+      /* Lock event */
+      if(lock_event_valid)
+        saveEvent(fh, event_locked, "lockevent", false);
+
+      /* Unlock event index */
+      if(get_index >= 0 && events_unlocked.size() > 1)
+        fh->writeXmlData("unlockindex", get_index);
+
+      /* Unlock event(s) */
+      for(uint32_t i = 0; i < events_unlocked.size(); i++)
+      {
+        if(unlock_events_valid[i])
+        {
+          fh->writeXmlElement("unlockevent", "id", i);
+          saveEvent(fh, events_unlocked[i], "", false);
+          fh->writeXmlElementEnd();
+        }
+      }
+
+      /* End Wrapper */
+      if(!wrapper.empty())
+        fh->writeXmlElementEnd();
+
+      return true;
+    }
+  }
+  return false;
 }
 
 /*
@@ -2411,7 +2485,7 @@ bool EventSet::isLocked(const Locked& lock_struct)
  * Output: bool - true if the save was successful
  */
 bool EventSet::saveConversation(FileHandler* fh, Conversation* convo,
-                      std::string index)
+                                std::string index)
 {
   if(fh != nullptr && convo != nullptr)
   {
@@ -2440,7 +2514,7 @@ bool EventSet::saveConversation(FileHandler* fh, Conversation* convo,
  *         Event event_ref - the event reference to save delta data
  *         std::string wrapper - the wrapping xml. Default is "event"
  *         bool check - check if a save is needed prior to call. default true
- * Output: bool - true if the save was successful
+ * Output: bool - true if the save was successful and there was data to save
  */
 bool EventSet::saveEvent(FileHandler* fh, const Event& event_ref,
                          std::string wrapper, bool check)
@@ -2460,15 +2534,43 @@ bool EventSet::saveEvent(FileHandler* fh, const Event& event_ref,
         fh->writeXmlData("executed", event_ref.has_exec);
 
         /* Specialty events with additional data embedded */
-        // TODO
+        /* -- BATTLE START -- */
+        if(event_ref.classification == EventClassifier::BATTLESTART)
+        {
+          if(event_ref.events.size() > kBATTLE_EVENT_LOSE)
+          {
+            fh->writeXmlElement("startbattle");
+            saveEvent(fh, event_ref.events[kBATTLE_EVENT_WIN], "eventwin");
+            saveEvent(fh, event_ref.events[kBATTLE_EVENT_LOSE], "eventlose");
+            fh->writeXmlElementEnd();
+          }
+        }
+        /* -- CONVERSATION -- */
+        else if(event_ref.classification == EventClassifier::CONVERSATION)
+        {
+          saveConversation(fh, event_ref.convo);
+        }
+        /* -- MULTIPLE -- */
+        else if(event_ref.classification == EventClassifier::MULTIPLE)
+        {
+          for(uint32_t i = 0; i < event_ref.events.size(); i++)
+          {
+            if(isDataToSave(event_ref.events[i]))
+            {
+              fh->writeXmlElement("event", "id", i);
+              saveEvent(fh, event_ref.events[i], "", false);
+              fh->writeXmlElementEnd();
+            }
+          }
+        }
       }
 
       /* End Wrapper */
       if(!wrapper.empty())
         fh->writeXmlElementEnd();
-    }
 
-    return true;
+      return true;
+    }
   }
   return false;
 }
@@ -2663,7 +2765,13 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   std::string element = data.getElement(file_index + 1);
 
   /* Proceed to set up the event with the marked changes */
-  if(element == "one_shot")
+  if(element == "executed")
+  {
+    bool executed = data.getDataBool(&read_success);
+    if(read_success)
+      event.has_exec = executed;
+  }
+  else if(element == "one_shot")
   {
     bool one_shot = data.getDataBool(&read_success);
     if(read_success)
