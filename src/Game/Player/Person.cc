@@ -40,8 +40,8 @@ const uint32_t Person::kID_PLAYER{0};
 const size_t Person::kNUM_LEVELS{15};
 const size_t Person::kNUM_EQUIP_SLOTS{5};
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */
-const uint32_t Person::kMAX_EXP{1000000000}; /* 1 billion */
-const uint32_t Person::kMAX_EXP_DROP{1000000}; /* 1 million */
+const uint32_t Person::kMAX_EXP{1000000000};      /* 1 billion */
+const uint32_t Person::kMAX_EXP_DROP{1000000};    /* 1 million */
 const size_t Person::kMAX_ITEM_DROPS{25};
 const uint32_t Person::kMAX_LVL_EXP{5000}; /* 100 million */
 const uint32_t Person::kMIN_EXP{30};
@@ -165,6 +165,7 @@ void Person::copySelf(const Person& source)
   level = source.level;
   total_exp = source.total_exp;
 
+  path_face = source.path_face;
   path_action_sprite = source.path_action_sprite;
   path_dialog_sprite = source.path_dialog_sprite;
   path_first_person = source.path_first_person;
@@ -229,6 +230,7 @@ void Person::loadDefaults()
   credit_drop = 0;
   exp_drop = 0;
 
+  path_face = "";
   path_action_sprite = "";
   path_dialog_sprite = "";
   path_first_person = "";
@@ -306,6 +308,7 @@ void Person::setupClass()
     level = base_person->level;
     total_exp = base_person->total_exp;
 
+    path_face = base_person->path_face;
     path_action_sprite = base_person->path_action_sprite;
     path_dialog_sprite = base_person->path_dialog_sprite;
     path_first_person = base_person->path_first_person;
@@ -805,6 +808,11 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
         curr_stats.setStat(Attribute::QTDR, val);
     }
   }
+  else if(data.getElement(index) == "sprite_face")
+  {
+    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
+      path_face = base_path + data.getDataString(&success);
+  }
   /* ---- SPRITE ACTION ---- */
   else if(data.getElement(index) == "sprite_action")
   {
@@ -1221,6 +1229,11 @@ std::string Person::getActionSpritePath()
   return path_action_sprite;
 }
 
+std::string Person::getFaceSpritePath()
+{
+  return path_face;
+}
+
 /*
  * Description: Returns the action frames for the person - for the rendering
  *              swipe-away.
@@ -1269,9 +1282,9 @@ int32_t Person::getGameID() const
 {
   return game_id;
 }
-  
+
 /*
- * Description: Returns the learned skill set. If create flagged, it will 
+ * Description: Returns the learned skill set. If create flagged, it will
  *              generate the learned skills skillset if it is null
  *
  * Inputs: const bool& create - true to create it if its null

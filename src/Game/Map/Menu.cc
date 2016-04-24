@@ -210,6 +210,7 @@ Menu::Menu()
       player_inventory{nullptr},
       renderer{nullptr},
       title_elements{},
+      sleuth_element_index{-1},
       title_element_index{-1},
       option_element_index{-1},
       inventory_title_index{InventoryIndex::NONE},
@@ -253,10 +254,38 @@ void Menu::buildIconFrames()
   }
 }
 
-/* Constructs the Inventory Screen */
-void Menu::buildInventoryScreen()
+void Menu::buildSleuthScreen()
 {
-  inventory_titles.clear();
+  sleuth_faces.clear();
+  sleuth_stat_frames.clear();
+
+  if(config && curr_player && curr_player->getSleuth())
+  {
+    if(curr_player && curr_player->getSleuth())
+    {
+      /* Construct the face graphic sprites */
+      auto party = curr_player->getSleuth();
+      auto members = party->getMembers();
+
+      for(const auto& member : party->getMembers())
+      {
+        if(member->getFaceSpritePath() != "")
+        {
+          // TODO: Create face sprite from path. Render face sprite.
+        }
+      }
+    }
+  }
+}
+
+void Menu::buildSleuthStats()
+{
+}
+
+/* Constructs the Inventory Screen */
+void Menu::buildIconTitles(int32_t number)
+{
+  titles.clear();
 
   if(config)
   {
@@ -269,8 +298,8 @@ void Menu::buildInventoryScreen()
     icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
     icon_box.color_border_selected = kCOLOR_TITLE_BORDER;
 
-    for(int32_t i = 0; i < 4; i++)
-      inventory_titles.push_back(icon_box);
+    for(int32_t i = 0; i < number; i++)
+      titles.push_back(icon_box);
   }
 }
 
@@ -429,6 +458,19 @@ int32_t Menu::calcItemTitleHeight()
                              kINV_ITEM_ELEMENT_HEIGHT);
 }
 
+bool Menu::canIncrementSleuth()
+{
+  if(curr_player && curr_player->getSleuth())
+  {
+    auto members = curr_player->getSleuth()->getMembers();
+
+    if(sleuth_element_index + 1 < (int32_t)members.size())
+      return true;
+  }
+
+  return false;
+}
+
 /* Delets the Icon Frames */
 void Menu::clearIconFrames()
 {
@@ -528,9 +570,20 @@ void Menu::buildMainSection(MenuType menu_type)
     main_section.alpha = kMAIN_ALPHA;
     main_section.status = WindowStatus::OFF;
 
-    if(menu_type == MenuType::INVENTORY)
+    if(menu_type == MenuType::SLEUTH)
     {
-      buildInventoryScreen();
+      /* Construct the gray tile boxes */
+      buildIconTitles(5);
+
+      /* Construct the face graphics and other sprites */
+      buildSleuthScreen();
+
+      sleuth_element_index = 0;
+      selectSleuthIndex();
+    }
+    else if(menu_type == MenuType::INVENTORY)
+    {
+      buildIconTitles(4);
       inventory_title_index = InventoryIndex::ITEMS;
       buildInventoryElements();
       selectInventoryIndex();
@@ -605,6 +658,21 @@ void Menu::decrementOptionIndex()
   selectOptionIndex();
 }
 
+void Menu::decrementSleuthIndex()
+{
+  unselectSleuthIndex();
+  sleuth_element_index--;
+  selectSleuthIndex();
+}
+
+void Menu::incrementInventoryIndex()
+{
+  unselectInventoryIndex();
+  auto new_index = static_cast<uint32_t>(inventory_title_index) + 1;
+  inventory_title_index = static_cast<InventoryIndex>(new_index);
+  selectInventoryIndex();
+}
+
 void Menu::incrementOptionIndex()
 {
   unselectOptionIndex();
@@ -612,13 +680,11 @@ void Menu::incrementOptionIndex()
   selectOptionIndex();
 }
 
-void Menu::incrementInventoryIndex()
+void Menu::incrementSleuthIndex()
 {
-  unselectInventoryIndex();
-
-  auto new_index = static_cast<uint32_t>(inventory_title_index) + 1;
-  inventory_title_index = static_cast<InventoryIndex>(new_index);
-  selectInventoryIndex();
+  unselectSleuthIndex();
+  sleuth_element_index++;
+  selectSleuthIndex();
 }
 
 void Menu::selectInventoryIndex()
@@ -626,7 +692,7 @@ void Menu::selectInventoryIndex()
   if(inventory_title_index != InventoryIndex::NONE &&
      inventory_title_index <= InventoryIndex::KEY_ITEMS)
   {
-    inventory_titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
+    titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
         .setFlag(BoxState::SELECTED);
   }
 }
@@ -649,7 +715,7 @@ void Menu::unselectInventoryIndex()
   if(inventory_title_index != InventoryIndex::NONE &&
      inventory_title_index <= InventoryIndex::KEY_ITEMS)
   {
-    inventory_titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
+    titles.at(static_cast<uint32_t>(inventory_title_index) - 1)
         .setFlag(BoxState::SELECTED, false);
   }
 }
@@ -665,6 +731,18 @@ void Menu::unselectOptionIndex()
     option_auto_run.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 3)
     option_mute.location.setFlag(BoxState::SELECTED, false);
+}
+
+void Menu::unselectSleuthIndex()
+{
+  if(sleuth_element_index < (int32_t)titles.size() && sleuth_element_index > -1)
+    titles.at(sleuth_element_index).setFlag(BoxState::SELECTED, false);
+}
+
+void Menu::selectSleuthIndex()
+{
+  if(sleuth_element_index < (int32_t)titles.size() && sleuth_element_index >= 0)
+    titles.at(sleuth_element_index).setFlag(BoxState::SELECTED, true);
 }
 
 void Menu::renderBubbies()
@@ -915,9 +993,9 @@ void Menu::renderInventory()
   auto curr_y = start.y + gap;
 
   /* Render the Title Boxes */
-  for(uint32_t i = 0; i < inventory_titles.size(); i++)
+  for(uint32_t i = 0; i < titles.size(); i++)
   {
-    auto& icon = inventory_titles.at(i);
+    auto& icon = titles.at(i);
 
     icon.point.x = start.x + gap;
     icon.point.y = curr_y;
@@ -1205,7 +1283,7 @@ void Menu::renderOptions()
   auto height = config->getScreenHeight();
 
   auto start_x =
-      main_section.location.point.x  + (uint32_t)std::round(kOPTIONS_X * width);
+      main_section.location.point.x + (uint32_t)std::round(kOPTIONS_X * width);
   auto start_y =
       main_section.location.point.y + (uint32_t)std::round(kOPTIONS_Y * height);
 
@@ -1344,6 +1422,44 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
 /* Renders the Sleuth Screen */
 void Menu::renderSleuth()
 {
+  // auto title_font = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
+  /// auto font_header = config->getFontTTF(FontName::MENU_HEADER);
+  //// auto font_subheader = config->getFontTTF(FontName::MENU_SUBHEADER);
+
+  auto width = config->getScreenWidth();
+  auto start = main_section.location.point;
+  auto gap = (int32_t)std::round(width * kINV_GAP);
+
+  auto curr_y = start.y + gap;
+
+  /* Render the Sleuth Members Face Boxes */
+  for(uint32_t i = 0; i < titles.size(); i++)
+  {
+    auto& icon = titles.at(i);
+
+    icon.point.x = start.x + gap;
+    icon.point.y = curr_y;
+    icon.render(renderer);
+    curr_y += gap + icon.height;
+
+    // TODO: Render the face graphics
+  }
+
+  /* */
+
+  // Render the sleuth top box with name
+
+  // Render the sleuth sprite box
+
+  // Render the sleuth top stats box
+
+  // Render the sleuth bot stats box
+
+  // Render the sleuth info box
+
+  // Render the sleuth equip boxes
+
+  // Render the sleuth equip frames
 }
 
 /* Renders the Save Screen */
@@ -1354,6 +1470,20 @@ void Menu::renderSave()
 /* Renders the Quit Screen */
 void Menu::renderQuit()
 {
+}
+
+Person* Menu::getCurrentPerson()
+{
+  if(curr_player && curr_player->getSleuth())
+  {
+    auto members = curr_player->getSleuth()->getMembers();
+
+    if(sleuth_element_index > 0 &&
+       sleuth_element_index < (int32_t)members.size())
+      return members.at(sleuth_element_index);
+  }
+
+  return nullptr;
 }
 
 /* Returns the enumerated MenuType of the Menu Seciton currently */
@@ -1412,6 +1542,13 @@ void Menu::keyDownUp()
         buildInventoryElements();
       }
     }
+    else if(getMainMenuType() == MenuType::SLEUTH)
+    {
+      if((uint32_t)sleuth_element_index > 1)
+      {
+        decrementSleuthIndex();
+      }
+    }
   }
   else if(layer == MenuLayer::MAIN_INDENT)
   {
@@ -1445,6 +1582,14 @@ void Menu::keyDownDown()
       {
         incrementInventoryIndex();
         buildInventoryElements();
+      }
+    }
+    else if(getMainMenuType() == MenuType::SLEUTH)
+    {
+      if(canIncrementSleuth())
+      {
+        incrementSleuthIndex();
+        buildSleuthStats();
       }
     }
   }
@@ -1502,8 +1647,11 @@ void Menu::keyDownAction()
   }
   else if(layer == MenuLayer::MAIN)
   {
+    if(getMainMenuType() == MenuType::SLEUTH)
+    {
+    }
     /* Key down event on the options. --> If digital option, select flag */
-    if(getMainMenuType() == MenuType::OPTIONS)
+    else if(getMainMenuType() == MenuType::OPTIONS)
     {
       if(option_element_index == 2)
         option_auto_run.toggle();

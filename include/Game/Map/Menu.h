@@ -234,7 +234,7 @@ private:
   std::vector<Frame> inventory_details;
 
   /* Inventory titles (Icon Boxes) */
-  std::vector<Box> inventory_titles;
+  std::vector<Box> titles;
 
   /* Inventory Screen Boxes */
   Box inventory_top_box;
@@ -260,10 +260,23 @@ private:
   /* Assigned Renderer */
   SDL_Renderer* renderer;
 
+  /* Inventory Screen Boxes */
+  Box sleuth_top_box;
+  Box sleuth_sprite_box;
+  Box sleuth_top_stats_box;
+  Box sleuth_bot_stats_box;
+  Box sleuth_info_box;
+  std::vector<Box> sleuth_equip_icons;
+
+  /* Sleuth Frames */
+  std::vector<Sprite*> sleuth_faces;
+  std::vector<Frame*> sleuth_stat_frames;
+
   /* Vector of title elements */
   std::vector<TitleElement> title_elements;
 
   /* Selected TitleElement index */
+  int32_t sleuth_element_index;
   int32_t title_element_index;
   int32_t option_element_index;
 
@@ -350,9 +363,9 @@ private:
 private:
   /* Constructs icon frames */
   void buildIconFrames();
+  void buildIconTitles(int32_t number);
 
   /* Construct the inventory display screen */
-  void buildInventoryScreen();
   void buildInventoryBubbies();
   void buildInventoryEquips();
   void buildInventoryElements();
@@ -377,6 +390,9 @@ private:
   /* Construct the Sleuth overview screen */
   void buildSleuthScreen();
 
+  /* Construct the attribute frames for the current person */
+  void buildSleuthStats();
+
   /* Construct a vector of TitleElements for the Title Section */
   void buildTitleElements();
 
@@ -385,7 +401,6 @@ private:
 
   int32_t calcMainCornerInset();
 
-
   /* Calculate the required string for Item Details */
   std::string calcItemDetailsString(Item* item);
 
@@ -393,20 +408,21 @@ private:
   int32_t calcItemTitleWidth();
   int32_t calcItemTitleHeight();
 
+  /* Can the sleuth element index be incremented? */
+  bool canIncrementSleuth();
+
   /* Clear out the Icon Frames */
   void clearIconFrames();
 
-  /* Decrement the Inventory index */
+  /* Decrement index functions */
   void decrementInventoryIndex();
-
-  /* Decrement the Option Index */
   void decrementOptionIndex();
+  void decrementSleuthIndex();
 
-  /* Increment the inventory title element index */
+  /* Increment index functions */
   void incrementInventoryIndex();
-
-  /* Increment to the next Option Index */
   void incrementOptionIndex();
+  void incrementSleuthIndex();
 
   /* Key Down Methods */
   void keyDownLeft();
@@ -416,11 +432,10 @@ private:
   void keyDownAction();
   void keyDownCancel();
 
-  /* Set the currently index inventory title elemetn */
+  /*  */
   void selectInventoryIndex();
-
-  /* Selects the current option index */
   void selectOptionIndex();
+  void selectSleuthIndex();
 
   /* Render Bubbies */
   void renderBubbies();
@@ -458,11 +473,13 @@ private:
   /* Render the Quit Screen */
   void renderQuit();
 
-  /* Unselects the current indexed inventory title */
+  /* */
   void unselectInventoryIndex();
-
-  /* Unselects the current option index */
   void unselectOptionIndex();
+  void unselectSleuthIndex();
+
+  /* Obtain a pointer to the currently selected person */
+  Person* getCurrentPerson();
 
   /* Returns the MenuType currently rendering */
   MenuType getMainMenuType();

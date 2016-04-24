@@ -143,6 +143,7 @@ private:
   uint32_t total_exp;
 
   /* Path to sprites */
+  std::string path_face;
   std::string path_action_sprite;
   std::string path_dialog_sprite;
   std::string path_first_person;
@@ -377,6 +378,7 @@ public:
   uint32_t getTotalExp();
 
   /* Methods to grab the sprite paths */
+  std::string getFaceSpritePath();
   std::string getActionSpritePath();
   std::string getDialogSpritePath();
   std::string getFirstPersonPath();

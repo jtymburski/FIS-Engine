@@ -46,12 +46,12 @@ public:
   Party();
 
   /* Constructs a Party given a main character and a type of Party */
-  Party(const int32_t &my_id, Person *const main, const PartyType &type,
-        const uint16_t &max);
+  Party(const int32_t& my_id, Person* const main, const PartyType& type,
+        const uint16_t& max);
 
   /* Constructs a Party given a vector of Person ptrs as members */
-  Party(const int32_t &my_id, std::vector<Person *> members,
-        const uint16_t &max, const PartyType &type);
+  Party(const int32_t& my_id, std::vector<Person*> members, const uint16_t& max,
+        const PartyType& type);
 
   ~Party();
 
@@ -63,8 +63,8 @@ private:
   int32_t id;
 
   /* The members who are currently in the Party */
-  std::vector<Person *> members;
-  std::vector<Person *> reserve_members;
+  std::vector<Person*> members;
+  std::vector<Person*> reserve_members;
 
   /* The maximum size of the party */
   uint16_t max_size;
@@ -73,7 +73,7 @@ private:
   PartyType party_type;
 
   /* The inventory for the party */
-  Inventory *pouch;
+  Inventory* pouch;
 
   /* ------------ Constants --------------- */
 public:
@@ -82,12 +82,12 @@ public:
   static const uint16_t kMAX_MEMBERS_BEARACKS;
   static const uint16_t kMAX_MEMBERS_SLEUTH;
   static const uint16_t kMAX_MEMBERS_FOES;
-  static const int32_t  kUNSET_ID; /* The unset ID for the party */
+  static const int32_t kUNSET_ID; /* The unset ID for the party */
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
-  void copySelf(const Party &source);
+  void copySelf(const Party& source);
 
   /* Create the inventory */
   void createInventory();
@@ -98,43 +98,43 @@ private:
   /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add a person to the party */
-  bool addMember(Person *const new_member);
+  bool addMember(Person* const new_member);
 
   /* Clears all members of the party except the primary member */
   bool clearParty();
 
   /* Attempts to insert a person into the party at the index */
-  bool insertMember(const uint8_t &index, Person* const new_member);
+  bool insertMember(const uint8_t& index, Person* const new_member);
 
   /* Checks if a given person is in the party */
-  bool isInParty(Person *const check_person);
+  bool isInParty(Person* const check_person);
 
   /* Load data from file */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 std::string base_path);
 
   /* Move a member between the Reserve and the Standard party */
-  bool moveMemberToReserve(Person *test_member);
-  bool moveReserveMember(Person *test_member);
+  bool moveMemberToReserve(Person* test_member);
+  bool moveReserveMember(Person* test_member);
 
   /* Prints out the state of the Party */
-  void print(const bool &simple = false, const bool &flags = false);
+  void print(const bool& simple = false, const bool& flags = false);
 
   /* Attempts to a remove a member of the party by a given index */
-  bool removeMember(const uint8_t &index);
+  bool removeMember(const uint8_t& index);
 
   /* Attempts to remove a member of the party by a given string name */
-  bool removeMember(const std::string &name);
+  bool removeMember(const std::string& name);
 
   /* Replaces the member of the party at the given index with a new */
-  bool replaceMember(const uint8_t &index, Person* const new_member);
+  bool replaceMember(const uint8_t& index, Person* const new_member);
 
   /* Restores the VITA // QTDR */
   void restorePartyVita();
   void restorePartyQtdr();
 
   /* Evaluates and returns a given PartyState flag */
-  bool getFlag(const PartyState &test_flag);
+  bool getFlag(const PartyState& test_flag);
 
   /* Returns the party ID */
   int32_t getID() const;
@@ -146,16 +146,16 @@ public:
   uint32_t getMaxSize();
 
   /* Obtains a ptr to a member of a given index, if the index is valid */
-  Person* getMember(const uint32_t &index);
+  Person* getMember(const uint32_t& index);
 
   /* Returns the string name a party member at a given index, if valid */
-  std::string getMemberName(const uint32_t &index);
+  std::string getMemberName(const uint32_t& index);
 
   /* Get all members */
-  std::vector<Person *> getMembers();
+  std::vector<Person*> getMembers();
 
   /* Get the reserve members */
-  std::vector<Person *> getReserveMembers();
+  std::vector<Person*> getReserveMembers();
 
   /* Returns the enumerated type of the Party */
   PartyType getPartyType();
@@ -167,27 +167,27 @@ public:
   bool saveData(FileHandler* fh, std::string wrapper = "party");
 
   /* Assigns a given PartyState flag a given value */
-  void setFlag(const PartyState &flag, const bool &set_value = true);
+  void setFlag(const PartyState& flag, const bool& set_value = true);
 
   /* Assigns the party ID */
   void setID(int id);
 
   /* Assigns a new inventory to the Party */
-  bool setInventory(Inventory *const new_inventory);
+  bool setInventory(Inventory* const new_inventory);
 
   /* Attempts to assign a new primary member of the Party */
-  bool setMainMember(const uint32_t &new_main);
+  bool setMainMember(const uint32_t& new_main);
 
   /* Attempts to assign a new maximum size of the Party */
-  bool setMaxSize(const uint32_t &new_max_size);
+  bool setMaxSize(const uint32_t& new_max_size);
 
   /* Attempts to assign the new party type */
-  bool setPartyType(const PartyType &type);
+  bool setPartyType(const PartyType& type);
 
   /*======================= OPERATOR FUNCTIONS ===============================*/
 public:
   /* The copy operator */
-  Party& operator= (const Party &source);
+  Party& operator=(const Party& source);
 
   /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
