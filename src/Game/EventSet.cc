@@ -676,10 +676,7 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
   /* -- Locked status -- */
   else if(category == "locked")
   {
-    bool success;
-    bool bool_data = data.getDataBool(&success);
-    if(success)
-      locked_status.is_locked = bool_data;
+    locked_status = updateLocked(locked_status, data, file_index);
   }
   /* -- Lock Event -- */
   else if(category == "lockevent")
@@ -3217,44 +3214,52 @@ Locked EventSet::updateLocked(Locked locked_curr, XmlData data, int file_index)
   std::string state_str = data.getElement(file_index);
   bool read_success;
 
-  /* Determine the state of the lock that is being updated */
-  if(state_str == "item")
-    state = LockedState::ITEM;
-  else if(state_str == "trigger")
-    state = LockedState::TRIGGER;
-
-  /* If the state doesn't match, create a new locked state - with fresh data */
-  if(state != locked_curr.state)
+  if(state_str == "locked")
   {
-    locked_curr = createBlankLocked();
-
-    if(state == LockedState::ITEM)
-      locked_curr = createLockHaveItem();
-    else if(state == LockedState::TRIGGER)
-      locked_curr = createLockTriggered();
-  }
-
-  /* Proceed to set up the event with the marked changes */
-  if(data.getElement(file_index + 1) == "permanent")
-  {
-    bool permanent = data.getDataBool(&read_success);
+    bool bool_data = data.getDataBool(&read_success);
     if(read_success)
-      locked_curr.permanent = permanent;
+      locked_curr.is_locked = bool_data;
   }
-  /* -- HAVE ITEM -- */
-  else if(state == LockedState::ITEM)
+  else
   {
-    std::string item_element = data.getElement(file_index + 1);
-    if(item_element == "consume")
-      locked_curr.bools.at(kHAVE_ITEM_CONSUME) = data.getDataBool();
-    else if(item_element == "count")
-      locked_curr.ints.at(kHAVE_ITEM_COUNT) = data.getDataInteger();
-    else if(item_element == "id")
-      locked_curr.ints.at(kHAVE_ITEM_ID) = data.getDataInteger();
-  }
-  /* -- TRIGGER -- */
-  else if(state == LockedState::TRIGGER)
-  {
+    /* Determine the state of the lock that is being updated */
+    if(state_str == "item")
+      state = LockedState::ITEM;
+    else if(state_str == "trigger")
+      state = LockedState::TRIGGER;
+
+    /* If the state doesn't match, create a new locked state with fresh data */
+    if(state != locked_curr.state)
+    {
+      locked_curr = createBlankLocked();
+
+      if(state == LockedState::ITEM)
+        locked_curr = createLockHaveItem();
+      else if(state == LockedState::TRIGGER)
+        locked_curr = createLockTriggered();
+    }
+
+    /* Proceed to set up the event with the marked changes */
+    if(data.getElement(file_index + 1) == "permanent")
+    {
+      bool permanent = data.getDataBool(&read_success);
+      if(read_success)
+        locked_curr.permanent = permanent;
+    }
+    /* -- HAVE ITEM -- */
+    else if(state == LockedState::ITEM)
+    {
+      std::string item_element = data.getElement(file_index + 1);
+      if(item_element == "consume")
+        locked_curr.bools.at(kHAVE_ITEM_CONSUME) = data.getDataBool();
+      else if(item_element == "count")
+        locked_curr.ints.at(kHAVE_ITEM_COUNT) = data.getDataInteger();
+      else if(item_element == "id")
+        locked_curr.ints.at(kHAVE_ITEM_ID) = data.getDataInteger();
+    }
+    /* -- TRIGGER -- */
+    else if(state == LockedState::TRIGGER)
+    {}
   }
 
   return locked_curr;

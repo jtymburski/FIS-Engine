@@ -200,7 +200,7 @@ private:
   const static uint8_t kPLAYER_ID; /* The player ID for computer control */
   const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Adds sprite data, as per data from the file */
   bool addSpriteData(XmlData data, std::string id, int file_index,
@@ -238,7 +238,6 @@ private:
   MapThing* getThing(uint16_t id, ThingBase type);
   MapThing* getThingBase(uint16_t id);
 
-
   /* Returns a stack of map things that correspond to the ID stack */
   std::vector<MapThing*> getThingData(std::vector<int> thing_ids);
 
@@ -272,6 +271,11 @@ private:
                            uint16_t* r_start, uint16_t* r_end,
                            uint16_t* c_start, uint16_t* c_end);
 
+  /* Save the passed in sub map based on the map ID */
+  bool saveSubMap(FileHandler* fh, const uint32_t &id = 0,
+                  const std::string &wrapper = "section",
+                  const bool &write_id = true);
+
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);
   bool setSectionIndexMode(int index_next = -1);
@@ -296,7 +300,7 @@ private:
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Battle won/loss/end trigger for map */
   void battleLose();
@@ -386,6 +390,9 @@ public:
 
   /* Resets the player steps */
   void resetPlayerSteps();
+
+  /* Saves the current map data to the active file handling pointer location */
+  bool saveData(FileHandler* fh);
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);

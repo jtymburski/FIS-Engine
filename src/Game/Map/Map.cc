@@ -1101,6 +1101,43 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
   return false;
 }
 
+/* Save the passed in sub map based on the map ID */
+bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
+                     const std::string &wrapper, const bool &write_id)
+{
+  if(fh != nullptr)
+  {
+    /* Wrapper start */
+    if(!wrapper.empty())
+    {
+      if(write_id)
+        fh->writeXmlElement(wrapper, "id", id);
+      else
+        fh->writeXmlElement(wrapper);
+    }
+
+    // TODO: HERE
+    /* Tile Event(s) */
+
+    /* Map Thing(s) */
+
+    /* Map IO(s) */
+
+    /* Map Item(s) */
+
+    /* Map Person(s) */
+
+    /* Map NPC(s) */
+
+    /* Wrapper end */
+    if(!wrapper.empty())
+    {
+      fh->writeXmlElementEnd();
+    }
+  }
+  return false;
+}
+
 /* Changes the map section index - what is displayed */
 bool Map::setSectionIndex(uint16_t index)
 {
@@ -2739,6 +2776,28 @@ void Map::resetPlayerSteps()
 {
   if(player != nullptr)
     player->resetStepCount();
+}
+
+/* Saves the current map data to the active file handling pointer location */
+// TODO: Comment
+bool Map::saveData(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    bool success = true;
+
+    /* Loop through and save all sub-maps */
+    for(uint32_t i = 0; i < sub_map.size(); i++)
+    {
+      if(i == 0)
+        success &= saveSubMap(fh, i, "main", false);
+      else
+        success &= saveSubMap(fh, i);
+    }
+
+    return success;
+  }
+  return false;
 }
 
 /* Sets the running configuration, from the options class */
