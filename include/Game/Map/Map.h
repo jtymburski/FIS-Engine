@@ -31,11 +31,16 @@
 // #include "Sprite.h"
 
 /* Sub map structure - contains all data related only to each sub */
-// TODO: Move thing instances into this struct?
 struct SubMap
 {
   /* Tile data */
   std::vector<std::vector<Tile*>> tiles;
+
+  /* Thing data (and children) */
+  std::vector<MapInteractiveObject*> ios;
+  std::vector<MapItem*> items;
+  std::vector<MapPerson*> persons;
+  std::vector<MapThing*> things;
 
   /* Lay data */
   std::vector<LayOver> underlays;
@@ -111,14 +116,10 @@ private:
 
   /* The menus and dialogs on top of the map */
   MapDialog map_dialog;
-  // MapMenu map_menu;
 
   /* Map reference index for current sub-map */
   uint16_t map_index;
   int map_index_next;
-
-  // /* The status bar on the map */
-  // MapStatusBar map_status_bar; // TODO: Remove
 
   /* Map parsing modes */
   MapMode mode_curr;
@@ -133,12 +134,12 @@ private:
   Text name_text;
   uint16_t name_view;
 
-  /* Thing data (and children) */
-  std::vector<MapInteractiveObject*> ios;
-  std::vector<MapItem*> items;
-  std::vector<MapPerson*> persons;
+  /* Thing data (and children) */ // TODO: Clean up
+  //std::vector<MapInteractiveObject*> ios;
+  //std::vector<MapItem*> items;
+  //std::vector<MapPerson*> persons;
   MapPerson* player; /* The actively controlled player */
-  std::vector<MapThing*> things;
+  //std::vector<MapThing*> things;
 
   // /* The sectors on the map (for rooms, caves, houses etc) */
   // QList<Sector> sectors;
@@ -222,20 +223,20 @@ private:
   /* Change the mode that the game is running */
   bool changeMode(MapMode mode);
 
-  /* Returns the item, based on the ID */
-  MapItem* getItem(uint16_t id);
-  MapItem* getItemBase(uint16_t id);
-
   /* Returns the interactive object, based on the ID */
-  MapInteractiveObject* getIO(uint16_t id);
+  MapInteractiveObject* getIO(uint16_t id, int sub_id = -1);
   MapInteractiveObject* getIOBase(uint16_t id);
+
+  /* Returns the item, based on the ID */
+  MapItem* getItem(uint16_t id, int sub_id = -1);
+  MapItem* getItemBase(uint16_t id);
 
   /* Returns the person, based on the ID */
   MapPerson* getPersonBase(uint16_t id);
 
   /* Returns the thing, based on the ID */
-  MapThing* getThing(uint16_t id);
-  MapThing* getThing(uint16_t id, ThingBase type);
+  MapThing* getThing(uint16_t id, int sub_id = -1);
+  MapThing* getThing(uint16_t id, ThingBase type, int sub_id = -1);
   MapThing* getThingBase(uint16_t id);
 
   /* Returns a stack of map things that correspond to the ID stack */
@@ -265,16 +266,27 @@ private:
   bool modeViewStart(int cycle_time, bool travel);
   bool modeViewStop(int cycle_time, bool travel);
 
+  /* Move thing sections. Strictly handles switching the array where a thing
+   * can be found. This will not handle x, y changes of location */
+  MapThing* moveThing(uint16_t thing_id, uint16_t section_new,
+                      bool starting = false);
+  MapThing* moveThing(MapThing* thing_ref, uint16_t section_new,
+                      bool starting = false);
+
   /* Parse coordinate info from file to give the designated tile coordinates
    * to update */
   bool parseCoordinateInfo(std::string row, std::string col, uint16_t index,
                            uint16_t* r_start, uint16_t* r_end,
                            uint16_t* c_start, uint16_t* c_end);
 
-  /* Save the passed in sub map based on the map ID */
+  /* Save the passed in sub map based on the map ID and other information */
   bool saveSubMap(FileHandler* fh, const uint32_t &id = 0,
                   const std::string &wrapper = "section",
                   const bool &write_id = true);
+  bool saveTiles(FileHandler* fh, SubMap* sub_map);
+  bool saveTileSet(FileHandler* fh, SubMap* sub_map,
+            const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> &set,
+            const std::string &type = "set");
 
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);
@@ -331,7 +343,7 @@ public:
   std::string getName();
 
   /* Return a MapPerson */
-  MapPerson* getPerson(uint16_t id);
+  MapPerson* getPerson(uint16_t id, int sub_id = -1);
 
   /* Returns the number of steps the player has used on map */
   uint32_t getPlayerSteps();

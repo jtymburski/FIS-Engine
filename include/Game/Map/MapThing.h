@@ -109,7 +109,7 @@ protected:
   const static uint8_t kRAW_MULTIPLIER; /* The coordinate raw multiplier */
   const static int kUNSET_ID; /* The placeholder unset ID */
 
-  /*======================= PROTECTED FUNCTIONS ==============================*/
+/*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Animates the thing, if it has multiple frames */
   virtual bool animate(int cycle_time, bool reset = false,
@@ -146,6 +146,9 @@ protected:
   virtual float moveAmount(uint16_t cycle_time);
   Floatinate moveThing(int cycle_time);
 
+  /* Saves the thing data - virtualized */
+  virtual bool saveData(FileHandler* fh, const bool &save_event = true);
+
   /* Sets the new direction that the class is moving in */
   bool setDirection(Direction new_direction);
 
@@ -176,7 +179,7 @@ protected:
   /* This unsets the tile, at the given frame coordinate */
   virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds thing information from the XML file. Will be virtually re-called
    * by all children for proper operation */
@@ -318,7 +321,7 @@ public:
   bool isTilesSet();
 
   /* Returns if the thing is visible / rendered on the screen */
-  virtual bool isVisible() const;
+  bool isVisible() const;
 
   /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
@@ -329,6 +332,9 @@ public:
 
   /* Resets the location back to default (0,0,0), relative to the map */
   virtual void resetLocation();
+
+  /* Saves the delta data within the thing */
+  virtual bool save(FileHandler* fh);
 
   /* Sets if the thing is active */
   virtual bool setActive(bool active, bool set_tiles = true);
@@ -392,7 +398,8 @@ public:
 
   /* Updates the thing, called on the tick */
   virtual Floatinate update(int cycle_time,
-                            std::vector<std::vector<Tile*>> tile_set);
+                            std::vector<std::vector<Tile*>> tile_set,
+                            bool active_map = false);
 
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);

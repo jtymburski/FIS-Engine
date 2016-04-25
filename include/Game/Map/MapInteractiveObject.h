@@ -172,7 +172,8 @@ public:
 
   /* Updates the thing, based on the tick */
   virtual Floatinate update(int cycle_time,
-                            std::vector<std::vector<Tile*>> tile_set);
+                            std::vector<std::vector<Tile*>> tile_set,
+                            bool active_map = false);
 
   /* Unsets all states - this handles deletion */
   void unsetFrames(bool delete_frames = true);

@@ -284,20 +284,6 @@ bool MapItem::isActive()
 }
 
 /*
- * Description: Returns if the thing is visible for rendering. Note that the
- *              item will not be visible unless the count is greater than 0.
- *
- * Inputs: none
- * Output: bool - visibility status
- */ // TODO: DELETE
-//bool MapItem::isVisible()
-//{
-//  if(count > 0)
-//    return MapThing::isVisible();
-//  return false;
-//}
-
-/*
  * Description: Returns if the item is walkover (picked up when the person
  *              enters the tile) or not (picked up only when the person is on
  *              the tile and the action tile is selected).
@@ -350,6 +336,7 @@ bool MapItem::setBase(MapThing* base)
     {
       this->base = base;
       base_category = ThingBase::ITEM;
+      setVisibility(base->isVisible());
       success = true;
     }
     else if(base == NULL)
@@ -453,10 +440,12 @@ void MapItem::setWalkover(bool walkover)
  *
  * Inputs: int cycle_time - the time elapsed between updates
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
+ *         bool active_map - true if this items section is the active map
  * Output: Floatinate - the delta x and y of the moved item
  */
 Floatinate MapItem::update(int cycle_time,
-                           std::vector<std::vector<Tile*>> tile_set)
+                           std::vector<std::vector<Tile*>> tile_set,
+                           bool active_map)
 {
   Floatinate delta_move;
   SpriteMatrix* sprite_set = getMatrix();
@@ -503,7 +492,7 @@ Floatinate MapItem::update(int cycle_time,
     }
 
     /* Finally update the thing */
-    delta_move = MapThing::update(cycle_time, tile_set);
+    delta_move = MapThing::update(cycle_time, tile_set, active_map);
   }
 
   return delta_move;

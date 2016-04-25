@@ -38,12 +38,12 @@ private:
   /* -------------------------- Constants ------------------------- */
   //const static uint8_t kMAX_RENDER_DEPTH; /* Max render depth */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const TileSprite &source, bool only_sprite);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
@@ -65,7 +65,7 @@ public:
   /* Sets the render depth. 0 is the base up to max */
   bool setRenderDepth(uint8_t depth);
 
-  /*======================== OPERATOR FUNCTIONS ==============================*/
+/*======================== OPERATOR FUNCTIONS ==============================*/
 public:
   TileSprite& operator= (const TileSprite &source);
 };

@@ -1019,6 +1019,7 @@ bool MapPerson::setBase(MapThing* base)
       base_category = ThingBase::PERSON;
       setMatrix(getState(surface, direction));
       setSpeed(base->getSpeed());
+      setVisibility(base->isVisible());
       success = true;
     }
     else if(base == NULL)
@@ -1155,104 +1156,110 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  *
  * Inputs: int cycle_time - the time elapsed between updates
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
+ *         bool active_map - true if this persons section is the active map
  * Output: Floatinate - the delta x and y of the moved person
  */
 Floatinate MapPerson::update(int cycle_time,
-                             std::vector<std::vector<Tile*>> tile_set)
+                             std::vector<std::vector<Tile*>> tile_set,
+                             bool active_map)
 {
   Floatinate delta_move;
 
   /* For active and set tiles, update movement and animation */
   if(isActive() && isTilesSet())
   {
-    bool almost_there = false;
-    bool reset = false;
-
-    /* If moving and almost on tile, finish move and check what to do next */
-    if(!isMoving() || (almost_there = isAlmostOnTile(cycle_time)))
+    /* All moving and animation is only valid if on the active map */
+    if(active_map)
     {
-      /* Finish tile move */
-      if(almost_there)
-        tileMoveFinish(getID() != kPLAYER_ID);
-      if(getMovementPaused())
+      bool almost_there = false;
+      bool reset = false;
+
+      /* If moving and almost on tile, finish move and check what to do next */
+      if(!isMoving() || (almost_there = isAlmostOnTile(cycle_time)))
       {
-        if(getTarget() != nullptr ||
-           (isForcedInteraction(false) && getPlayer() != nullptr))
+        /* Finish tile move */
+        if(almost_there)
+          tileMoveFinish(getID() != kPLAYER_ID);
+        if(getMovementPaused())
         {
-          int delta_x = 0;
-          int delta_y = 0;
-          if(getTarget() != nullptr)
+          if(getTarget() != nullptr ||
+             (isForcedInteraction(false) && getPlayer() != nullptr))
           {
-            delta_x = getTarget()->getCenterX() - getCenterX();
-            delta_y = getTarget()->getCenterY() - getCenterY();
+            int delta_x = 0;
+            int delta_y = 0;
+            if(getTarget() != nullptr)
+            {
+              delta_x = getTarget()->getCenterX() - getCenterX();
+              delta_y = getTarget()->getCenterY() - getCenterY();
+            }
+            else
+            {
+              delta_x = getPlayer()->getCenterX() - getCenterX();
+              delta_y = getPlayer()->getCenterY() - getCenterY();
+            }
+
+            /* Determine the absolute values of each variable */
+            int pos_x = delta_x < 0 ? 0 - delta_x : delta_x;
+            int pos_y = delta_y < 0 ? 0 - delta_y : delta_y;
+
+            /* Determine which direction to face */
+            if(delta_x < 0 && pos_x > pos_y)
+              setDirection(Direction::WEST, false);
+            else if(delta_x >= 0 && pos_x > pos_y)
+              setDirection(Direction::EAST, false);
+            else if(delta_y < 0 && pos_y >= pos_x)
+              setDirection(Direction::NORTH, false);
+            else if(delta_y >= 0 && pos_y >= pos_x)
+              setDirection(Direction::SOUTH, false);
           }
           else
           {
-            delta_x = getPlayer()->getCenterX() - getCenterX();
-            delta_y = getPlayer()->getCenterY() - getCenterY();
+            setDirection(Direction::DIRECTIONLESS);
           }
 
-          /* Determine the absolute values of each variable */
-          int pos_x = delta_x < 0 ? 0 - delta_x : delta_x;
-          int pos_y = delta_y < 0 ? 0 - delta_y : delta_y;
-
-          /* Determine which direction to face */
-          if(delta_x < 0 && pos_x > pos_y)
-            setDirection(Direction::WEST, false);
-          else if(delta_x >= 0 && pos_x > pos_y)
-            setDirection(Direction::EAST, false);
-          else if(delta_y < 0 && pos_y >= pos_x)
-            setDirection(Direction::NORTH, false);
-          else if(delta_y >= 0 && pos_y >= pos_x)
-            setDirection(Direction::SOUTH, false);
+          reset = true;
         }
+        /* Otherwise, if move is requested, start the new move */
+        else if(isMoveRequested())
+        {
+          bool can_move = isMoveAllowed(tile_set, getMoveRequest());
+
+          if(setDirection(getMoveRequest(), can_move) || !can_move)
+            reset = true;
+          if(can_move)
+            tileMoveStart(tile_set, getID() != kPLAYER_ID);
+        }
+        /* Otherwise, make sure animation is on default state */
         else
         {
           setDirection(Direction::DIRECTIONLESS);
+          reset = true;
+        }
+      }
+
+      /* Animate and move the person */
+      delta_move = moveThing(cycle_time);
+      animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
+
+      /* Sound trigger for person/npc - for now, only player (TODO:FUTURE) */
+      if(getID() == 0 && base_category != ThingBase::ISBASE && getSoundID() >= 0)
+      {
+        if(sound_delay > 0)
+        {
+          sound_delay -= cycle_time;
+          if(sound_delay <= 0 && event_handler != nullptr)
+            event_handler->triggerSound(getSoundID(), SoundChannels::THINGS);
         }
 
-        reset = true;
+        /* If sound delay is nil or less, re-generate */
+        if(sound_delay <= 0)
+          sound_delay = Helpers::randU(kDELAY_MIN, kDELAY_MAX);
       }
-      /* Otherwise, if move is requested, start the new move */
-      else if(isMoveRequested())
-      {
-        bool can_move = isMoveAllowed(tile_set, getMoveRequest());
-
-        if(setDirection(getMoveRequest(), can_move) || !can_move)
-          reset = true;
-        if(can_move)
-          tileMoveStart(tile_set, getID() != kPLAYER_ID);
-      }
-      /* Otherwise, make sure animation is on default state */
-      else
-      {
-        setDirection(Direction::DIRECTIONLESS);
-        reset = true;
-      }
-    }
-
-    /* Animate and move the person */
-    delta_move = moveThing(cycle_time);
-    animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
-
-    /* Sound trigger for person/npc - for now, only player (TODO:FUTURE) */
-    if(getID() == 0 && base_category != ThingBase::ISBASE && getSoundID() >= 0)
-    {
-      if(sound_delay > 0)
-      {
-        sound_delay -= cycle_time;
-        if(sound_delay <= 0 && event_handler != nullptr)
-          event_handler->triggerSound(getSoundID(), SoundChannels::THINGS);
-      }
-
-      /* If sound delay is nil or less, re-generate */
-      if(sound_delay <= 0)
-        sound_delay = Helpers::randU(kDELAY_MIN, kDELAY_MAX);
     }
   }
   else
   {
-    delta_move = MapThing::update(cycle_time, tile_set);
+    delta_move = MapThing::update(cycle_time, tile_set, active_map);
   }
 
   return delta_move;

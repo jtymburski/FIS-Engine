@@ -474,6 +474,44 @@ Floatinate MapThing::moveThing(int cycle_time)
 }
 
 /*
+ * Description: Saves the data for the thing. This does not include the thing
+ *              wrapper. Virtualized for other classes as well.
+ *
+ * Inputs: FileHandler* fh - the file handling data pointer
+ *         const bool &save_event - true to save the base event set (thing)
+ * Output: none
+ */
+bool MapThing::saveData(FileHandler* fh, const bool &save_event)
+{
+  bool success = true;
+
+  /* Active */
+  fh->writeXmlData("active", isActive());
+
+  /* Active Time */
+  fh->writeXmlData("activetime", getActiveRespawn());
+
+  /* Event Set */
+  if(save_event)
+    event_set.saveData(fh);
+
+  /* Startpoint */
+  if(tile_main.size() > 0 && tile_main.front().size() > 0 &&
+     tile_main.front().front() != nullptr)
+  {
+    Tile* ref_tile = tile_main.front().front();
+    if(starting_x != ref_tile->getX() || starting_y != ref_tile->getY())
+      fh->writeXmlData("startpoint", std::to_string(ref_tile->getX()) + "," +
+                                     std::to_string(ref_tile->getY()));
+  }
+
+  /* Visible */
+  fh->writeXmlData("visible", isVisible());
+
+  return success;
+}
+
+/*
  * Description: Sets the direction that the class should be moving in. Once
  *              the direction has been changed, the animation buffer is forced
  *              to occur so that the result will be noticed.
@@ -1805,10 +1843,9 @@ bool MapThing::isTilesSet()
  */
 bool MapThing::isVisible() const
 {
-  bool visible = this->visible;
-
-  if(base != NULL)
-    visible &= base->visible;
+  //bool visible = this->visible; // TODO: Delete
+  //if(base != NULL)
+  //  visible &= base->visible;
 
   return visible;
 }
@@ -1966,6 +2003,27 @@ void MapThing::resetLocation()
 }
 
 /*
+ * Description: Saves the thing data to the file handling pointer.
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ * Output: bool - true if the save was successful
+ */
+bool MapThing::save(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    bool success = true;
+
+    fh->writeXmlElement("mapthing", "id", getID());
+    success &= saveData(fh);
+    fh->writeXmlElementEnd();
+
+    return success;
+  }
+  return false;
+}
+
+/*
  * Description: Sets if the thing is active and usable within the space
  *
  * Inputs: bool active - true if the thing should be active. false otherwise
@@ -2027,6 +2085,7 @@ bool MapThing::setBase(MapThing* base)
     {
       this->base = base;
       base_category = ThingBase::THING;
+      setVisibility(base->isVisible());
       success = true;
     }
     else if(base == NULL)
@@ -2385,6 +2444,7 @@ bool MapThing::setTarget(MapThing* target)
  */
 void MapThing::setVisibility(bool visible)
 {
+  // TODO: Implement fade instead of instant
   this->visible = visible;
 }
 
@@ -2418,10 +2478,12 @@ void MapThing::triggerWalkOn(MapPerson* trigger)
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
+ *         bool active_map - true if this things section is the active map
  * Output: Floatinate - the delta x and y of the moved thing
  */
 Floatinate MapThing::update(int cycle_time,
-                            std::vector<std::vector<Tile*>> tile_set)
+                            std::vector<std::vector<Tile*>> tile_set,
+                            bool active_map)
 {
   (void)tile_set;
   Floatinate delta_move;
@@ -2435,7 +2497,8 @@ Floatinate MapThing::update(int cycle_time,
   /* For active, update movement and animation */
   else if(isActive() && isTilesSet())
   {
-    delta_move = moveThing(cycle_time);
+    if(active_map)
+      delta_move = moveThing(cycle_time);
     //if(getBase() == nullptr)
     //  animate(cycle_time);
   }

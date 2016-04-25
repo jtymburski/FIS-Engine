@@ -230,7 +230,8 @@ public:
 
   /* Updates the thing, based on the tick */
   virtual Floatinate update(int cycle_time,
-                            std::vector<std::vector<Tile*>> tile_set);
+                            std::vector<std::vector<Tile*>> tile_set,
+                            bool active_map = false);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, Direction direction, uint32_t x,

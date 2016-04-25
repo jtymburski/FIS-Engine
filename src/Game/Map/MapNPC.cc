@@ -1366,6 +1366,7 @@ bool MapNPC::setBase(MapThing* base)
       base_category = ThingBase::NPC;
       setMatrix(getState(getSurface(), getDirection()));
       setSpeed(base->getSpeed());
+      setVisibility(base->isVisible());
       forced_interaction = static_cast<MapNPC*>(base)->forced_interaction;
       track_state = static_cast<MapNPC*>(base)->track_state;
       if(node_head == NULL)
@@ -1519,13 +1520,15 @@ void MapNPC::setTrackingState(TrackingState state)
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
+ *         bool active_map - true if this npcs section is the active map
  * Output: Floatinate - the delta x and y of the moved npc
  */
 Floatinate MapNPC::update(int cycle_time,
-                          std::vector<std::vector<Tile*>> tile_set)
+                          std::vector<std::vector<Tile*>> tile_set,
+                          bool active_map)
 {
   /* For active and set tiles, update movement and animation */
-  if(isActive() && isTilesSet())
+  if(isActive() && isTilesSet() && active_map)
   {
     /* Begin the check to handle each time the NPC is on a tile */
     if(node_current != nullptr) //getNodeState() != LOCKED)
@@ -1808,7 +1811,7 @@ Floatinate MapNPC::update(int cycle_time,
   }
 
   /* Send call to parent */
-  return MapPerson::update(cycle_time, tile_set);
+  return MapPerson::update(cycle_time, tile_set, active_map);
 }
 
 /*=============================================================================

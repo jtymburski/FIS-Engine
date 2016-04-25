@@ -967,6 +967,7 @@ bool MapInteractiveObject::setBase(MapThing* base)
       /* Status */
       this->base = base;
       base_category = ThingBase::INTERACTIVE;
+      setVisibility(base->isVisible());
 
       /* States */
       if(node_head == NULL)
@@ -1236,10 +1237,12 @@ bool MapInteractiveObject::unlockTrigger(UnlockIOMode mode, int state_num,
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
+ *         bool active_map - true if this IOs section is the active map
  * Output: Floatinate - the delta x and y of the moved IO
  */
 Floatinate MapInteractiveObject::update(int cycle_time,
-                                        std::vector<std::vector<Tile*>> tile_set)
+                                      std::vector<std::vector<Tile*>> tile_set,
+                                      bool active_map)
 {
   Floatinate delta_move;
   (void)tile_set;
@@ -1247,89 +1250,94 @@ Floatinate MapInteractiveObject::update(int cycle_time,
   /* For active and valid tiles, do update sequence */
   if(isActive() && isTilesSet())
   {
-    /* Animate the frames and determine if the frame has changed */
-    bool frames_changed = animate(cycle_time, false, false);
-
-    /* Check if base is set or not */
-    if(base != NULL)
+    if(active_map)
     {
-      /* Only proceed if frames are changed and a transitional sequence */
-      if(frames_changed && node_current != NULL &&
-         node_current->transition != NULL)
+      /* Animate the frames and determine if the frame has changed */
+      bool frames_changed = animate(cycle_time, false, false);
+
+      /* Check if base is set or not */
+      if(base != NULL)
       {
-        if(base_control->forward &&
-           base_control->curr_frame == 0)
+        /* Only proceed if frames are changed and a transitional sequence */
+        if(frames_changed && node_current != NULL &&
+           node_current->transition != NULL)
         {
-          /* Try and shift to the next state. If fails, re-animate transition */
-          if(!shiftNext())
+          if(base_control->forward &&
+             base_control->curr_frame == 0)
           {
-            base_control->forward = false;
-            shifting_forward = false;
-            time_elapsed = 0;
+            /* Try and shift to the next state. If fails, re-animate
+             * transition */
+            if(!shiftNext())
+            {
+              base_control->forward = false;
+              shifting_forward = false;
+              time_elapsed = 0;
+            }
           }
-        }
-        else if(!base_control->forward &&
-                (base_control->curr_frame + 1) == base_control->num_frames)
-        {
-          /* Try and shift to the previous state. If fails, re-animate
-           * transition */
-          if(!shiftPrevious())
+          else if(!base_control->forward &&
+                  (base_control->curr_frame + 1) == base_control->num_frames)
           {
-            base_control->forward = true;
-            shifting_forward = true;
-            time_elapsed = 0;
+            /* Try and shift to the previous state. If fails, re-animate
+             * transition */
+            if(!shiftPrevious())
+            {
+              base_control->forward = true;
+              shifting_forward = true;
+              time_elapsed = 0;
+            }
           }
         }
       }
-    }
-    else
-    {
-      /* Only proceed if frames are changed and a transitional sequence */
-      if(frames_changed && node_current != NULL &&
-         node_current->transition != NULL)
+      else
       {
-        if(node_current->transition->isDirectionForward() &&
-           node_current->transition->isAtFirst())
+        /* Only proceed if frames are changed and a transitional sequence */
+        if(frames_changed && node_current != NULL &&
+           node_current->transition != NULL)
         {
-          /* Try and shift to the next state. If fails, re-animate transition */
-          if(!shiftNext())
+          if(node_current->transition->isDirectionForward() &&
+             node_current->transition->isAtFirst())
           {
-            node_current->transition->setDirectionReverse();
-            shifting_forward = false;
-            time_elapsed = 0;
+            /* Try and shift to the next state. If fails, re-animate
+             * transition */
+            if(!shiftNext())
+            {
+              node_current->transition->setDirectionReverse();
+              shifting_forward = false;
+              time_elapsed = 0;
+            }
           }
-        }
-        else if(!node_current->transition->isDirectionForward() &&
-                node_current->transition->isAtEnd())
-        {
-          /* Try and shift to the previous state. If fails, re-animate
-           * transition */
-          if(!shiftPrevious())
+          else if(!node_current->transition->isDirectionForward() &&
+                  node_current->transition->isAtEnd())
           {
-            node_current->transition->setDirectionForward();
-            shifting_forward = true;
-            time_elapsed = 0;
+            /* Try and shift to the previous state. If fails, re-animate
+             * transition */
+            if(!shiftPrevious())
+            {
+              node_current->transition->setDirectionForward();
+              shifting_forward = true;
+              time_elapsed = 0;
+            }
           }
         }
       }
-    }
 
-    /* Determine if the cycle time has passed on activity response */
-    if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head
-                                                && node_current->state != NULL)
-    {
-      time_elapsed += cycle_time;
-      if(time_elapsed > getInactiveTime())
+      /* Determine if the cycle time has passed on activity response */
+      if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head
+                                                  && node_current->state != NULL)
       {
-        shifting_forward = false;
-        shiftPrevious();
+        time_elapsed += cycle_time;
+        if(time_elapsed > getInactiveTime())
+        {
+          shifting_forward = false;
+          shiftPrevious();
+        }
       }
     }
   }
   /* Otherwise, just pass to parent */
   else
   {
-    delta_move = MapThing::update(cycle_time, tile_set);
+    delta_move = MapThing::update(cycle_time, tile_set, active_map);
   }
 
   return delta_move;

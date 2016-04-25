@@ -375,7 +375,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     {
       modified_thing = new MapThing();
       new_thing = true;
-      things.push_back(modified_thing);
+      sub_map[section_index].things.push_back(modified_thing);
     }
 
     /* Attempt to add base, if applicable */
@@ -391,7 +391,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       modified_thing = new MapInteractiveObject();
       modified_thing->setEventHandler(event_handler);
       new_thing = true;
-      ios.push_back(static_cast<MapInteractiveObject*>(modified_thing));
+      sub_map[section_index].ios.push_back(
+                           static_cast<MapInteractiveObject*>(modified_thing));
     }
 
     /* Attempt to add base, if applicable */
@@ -414,7 +415,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
         ((MapNPC*)modified_thing)->setSpottedImage(&img_spotted);
       }
       new_thing = true;
-      persons.push_back(static_cast<MapPerson*>(modified_thing));
+      sub_map[section_index].persons.push_back(
+                                      static_cast<MapPerson*>(modified_thing));
 
       /* If the ID is the player ID, tie to the player */
       if(id == kPLAYER_ID)
@@ -433,7 +435,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     {
       modified_thing = new MapItem();
       new_thing = true;
-      items.push_back(static_cast<MapItem*>(modified_thing));
+      sub_map[section_index].items.push_back(
+                                        static_cast<MapItem*>(modified_thing));
     }
 
     /* Attempt to add base, if applicable */
@@ -447,6 +450,11 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     modified_thing->setEventHandler(event_handler);
     modified_thing->setID(id);
   }
+
+  /* Make sure the section index is appropriately assigned */
+  modified_thing->setStartingLocation(section_index,
+                                      modified_thing->getStartingX(),
+                                      modified_thing->getStartingY());
 
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
@@ -579,12 +587,25 @@ bool Map::changeMode(MapMode mode)
 }
 
 /* Returns the interactive object, based on the ID */
-MapInteractiveObject* Map::getIO(uint16_t id)
+MapInteractiveObject* Map::getIO(uint16_t id, int sub_id)
 {
-  for(uint32_t i = 0; i < ios.size(); i++)
-    if(ios[i]->getID() == id)
-      return ios[i];
-  return NULL;
+  /* The specific sub-map */
+  if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
+  {
+    for(uint32_t i = 0; i < sub_map[sub_id].ios.size(); i++)
+      if(sub_map[sub_id].ios[i]->getID() == id)
+        return sub_map[sub_id].ios[i];
+  }
+  /* All the sub-maps */
+  else
+  {
+    for(uint32_t i = 0; i < sub_map.size(); i++)
+      for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
+        if(sub_map[i].ios[j]->getID() == id)
+          return sub_map[i].ios[j];
+  }
+
+  return nullptr;
 }
 
 /* Returns the base interactive object, based on the ID */
@@ -597,12 +618,25 @@ MapInteractiveObject* Map::getIOBase(uint16_t id)
 }
 
 /* Returns the item, based on the ID */
-MapItem* Map::getItem(uint16_t id)
+MapItem* Map::getItem(uint16_t id, int sub_id)
 {
-  for(uint32_t i = 0; i < items.size(); i++)
-    if(items[i]->getID() == id)
-      return items[i];
-  return NULL;
+  /* The specific sub-map */
+  if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
+  {
+    for(uint32_t i = 0; i < sub_map[sub_id].items.size(); i++)
+      if(sub_map[sub_id].items[i]->getID() == id)
+        return sub_map[sub_id].items[i];
+  }
+  /* All the sub-maps */
+  else
+  {
+    for(uint32_t i = 0; i < sub_map.size(); i++)
+      for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
+        if(sub_map[i].items[j]->getID() == id)
+          return sub_map[i].items[j];
+  }
+
+  return nullptr;
 }
 
 /* Returns the base item, based on the ID */
@@ -624,27 +658,40 @@ MapPerson* Map::getPersonBase(uint16_t id)
 }
 
 /* Returns the thing, based on the ID */
-MapThing* Map::getThing(uint16_t id)
+MapThing* Map::getThing(uint16_t id, int sub_id)
 {
-  for(uint32_t i = 0; i < things.size(); i++)
-    if(things[i]->getID() == id)
-      return things[i];
-  return NULL;
+  /* The specific sub-map */
+  if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
+  {
+    for(uint32_t i = 0; i < sub_map[sub_id].things.size(); i++)
+      if(sub_map[sub_id].things[i]->getID() == id)
+        return sub_map[sub_id].things[i];
+  }
+  /* All the sub-maps */
+  else
+  {
+    for(uint32_t i = 0; i < sub_map.size(); i++)
+      for(uint32_t j = 0; j < sub_map[i].things.size(); j++)
+        if(sub_map[i].things[j]->getID() == id)
+          return sub_map[i].things[j];
+  }
+
+  return nullptr;
 }
 
 /* Returns the thing, based on the ID and the type */
-MapThing* Map::getThing(uint16_t id, ThingBase type)
+MapThing* Map::getThing(uint16_t id, ThingBase type, int sub_id)
 {
   MapThing* found = nullptr;
 
   if(type == ThingBase::THING)
-    found = getThing(id);
+    found = getThing(id, sub_id);
   else if(type == ThingBase::ITEM)
-    found = getItem(id);
+    found = getItem(id, sub_id);
   else if(type == ThingBase::PERSON || type == ThingBase::NPC)
-    found = getPerson(id);
+    found = getPerson(id, sub_id);
   else if(type == ThingBase::INTERACTIVE)
-    found = getIO(id);
+    found = getIO(id, sub_id);
 
   return found;
 }
@@ -1069,6 +1116,31 @@ bool Map::modeViewStop(int cycle_time, bool travel)
 
   return proceed;
 }
+  
+/* Move thing sections. Strictly handles switching the array where a thing
+ * can be found. This will not handle x, y changes of location */
+MapThing* Map::moveThing(uint16_t thing_id, uint16_t section_new, bool starting)
+{
+  /* Find the thing */
+  MapThing* found_thing = getPerson(id);
+  if(found_thing == nullptr)
+    found_thing = getThing(id);
+  if(found_thing == nullptr)
+    found_thing = getIO(id);
+
+  /* Process the move */
+  return moveThing(found_thing, section_new, starting);
+}
+
+/* Move thing sections. Strictly handles switching the array where a thing
+ * can be found. This will not handle x, y changes of location */
+MapThing* Map::moveThing(MapThing* thing_ref, uint16_t section_new,
+                         bool starting)
+{
+  //if(thing_ref != nullptr && section_new != thing_ref->getMapSection() &&
+  //   section_new < sub_map.size()
+  // TODO
+}
 
 /* Parse coordinate info from file to give the designated tile coordinates
  * to update */
@@ -1105,8 +1177,10 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
 bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
                      const std::string &wrapper, const bool &write_id)
 {
-  if(fh != nullptr)
+  if(fh != nullptr && id < sub_map.size())
   {
+    bool success = true;
+
     /* Wrapper start */
     if(!wrapper.empty())
     {
@@ -1116,10 +1190,11 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
         fh->writeXmlElement(wrapper);
     }
 
-    // TODO: HERE
     /* Tile Event(s) */
+    success &= saveTiles(fh, &sub_map[id]);
 
-    /* Map Thing(s) */
+    /* Map Thing(s) */ // TODO: HERE
+    //for(uint32_t i = 0; i < sub_map[id]->
 
     /* Map IO(s) */
 
@@ -1136,6 +1211,85 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
     }
   }
   return false;
+}
+
+/* Saves the delta of the tiles within the sub-map */
+bool Map::saveTiles(FileHandler* fh, SubMap* sub_map)
+{
+  bool success = true;
+  std::vector<std::pair<uint32_t, std::vector<uint32_t>>> tile_enters;
+  std::vector<std::pair<uint32_t, std::vector<uint32_t>>> tile_exits;
+
+  /* Loop through all sub-map tiles to determine which events should be saved */
+  for(uint32_t i = 0; i < sub_map->tiles.size(); i++)
+  {
+    std::vector<uint32_t> col_enter;
+    std::vector<uint32_t> col_exit;
+
+    for(uint32_t j = 0; j < sub_map->tiles[i].size(); j++)
+    {
+      /* Enter Event */
+      EventSet* event_enter = sub_map->tiles[i][j]->getEventEnter();
+      if(event_enter->isDataToSave())
+        col_enter.push_back(j);
+
+      /* Exit Event */
+      EventSet* event_exit = sub_map->tiles[i][j]->getEventExit();
+      if(event_exit->isDataToSave())
+        col_exit.push_back(j);
+    }
+
+    /* Push onto stack if relevant */
+    if(col_enter.size() > 0)
+      tile_enters.push_back(std::pair<uint32_t, std::vector<uint32_t>>
+                            (i, col_enter));
+    if(col_exit.size() > 0)
+      tile_exits.push_back(std::pair<uint32_t, std::vector<uint32_t>>
+                           (i, col_exit));
+  }
+
+  /* Write the changed enter events */
+  success &= saveTileSet(fh, sub_map, tile_enters, "enterset");
+
+  /* Write the changed exit events */
+  success &= saveTileSet(fh, sub_map, tile_exits, "exitset");
+
+  return success;
+}
+
+/* Saves the passed calculated set of changed tiles */
+bool Map::saveTileSet(FileHandler* fh, SubMap* sub_map,
+            const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> &set,
+            const std::string &type)
+{
+  bool success = true;
+
+  /* Only proceed if there is data to save */
+  if(set.size() > 0)
+  {
+    /* Overall wrapper */
+    fh->writeXmlElement("tileevent", "type", type);
+
+    /* Loop through all elements, wrap in x/y, and write delta of event */
+    for(uint32_t i = 0; i < set.size(); i++)
+    {
+      uint32_t x = set[i].first;
+      fh->writeXmlElement("x", "index", x);
+      for(uint32_t j = 0; j < set[i].second.size(); j++)
+      {
+        uint32_t y = set[i].second[j];
+        fh->writeXmlElement("y", "index", y);
+        success &= sub_map->tiles[x][y]->getEventEnter()->saveData(fh, "");
+        fh->writeXmlElementEnd();
+      }
+      fh->writeXmlElementEnd();
+    }
+
+    /* End Overall wrapper */
+    fh->writeXmlElementEnd();
+  }
+
+  return success;
 }
 
 /* Changes the map section index - what is displayed */
@@ -1764,12 +1918,25 @@ std::string Map::getName()
 }
 
 /* Returns the person, based on the ID */
-MapPerson* Map::getPerson(uint16_t id)
+MapPerson* Map::getPerson(uint16_t id, int sub_id)
 {
-  for(uint32_t i = 0; i < persons.size(); i++)
-    if(persons[i]->getID() == id)
-      return persons[i];
-  return NULL;
+  /* The specific sub-map */
+  if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
+  {
+    for(uint32_t i = 0; i < sub_map[sub_id].persons.size(); i++)
+      if(sub_map[sub_id].persons[i]->getID() == id)
+        return sub_map[sub_id].persons[i];
+  }
+  /* All the sub-maps */
+  else
+  {
+    for(uint32_t i = 0; i < sub_map.size(); i++)
+      for(uint32_t j = 0; j < sub_map[i].persons.size(); j++)
+        if(sub_map[i].persons[j]->getID() == id)
+          return sub_map[i].persons[j];
+  }
+
+  return nullptr;
 }
 
 /* Returns the number of steps the player has used on map */
@@ -2082,14 +2249,6 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     /* Test: Zoom back in */
     else if(event.keysym.sym == SDLK_x)
       zoom_in = true;
-    /* Test: Get persons at index 1 to target player */
-    else if(event.keysym.sym == SDLK_t)
-    {
-      if(persons[1]->getTarget() == NULL)
-        persons[1]->setTarget(player);
-      else
-        persons[1]->clearTarget();
-    }
     /* Test: Location of player */
     else if(event.keysym.sym == SDLK_l)
     {
@@ -2350,95 +2509,106 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
       base_ios[i]->unsetFrames(true);
 
   /* Thing clean-up and tile set-up */
-  for(uint16_t i = 0; i < things.size(); i++)
+  for(uint32_t i = 0; i < sub_map.size(); i++)
   {
-    /* Clean the matrix - fixes up the rendering box */
-    if((things[i]->getBase() != NULL &&
-        things[i]->getBase()->getFrames().size() > 0) ||
-       things[i]->cleanMatrix())
+    for(uint32_t j = 0; j < sub_map[i].things.size(); j++)
     {
-      /* Get the tile matrix to match the frames and set */
-      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
-      if(tile_set.size() > 0)
-        things[i]->setStartingTiles(tile_set, things[i]->getStartingSection(),
-                                    true, !things[i]->isActive());
-      else
-        things[i]->unsetFrames(true);
-    }
-    else
-    {
-      things[i]->unsetFrames(true);
-    }
-  }
+      MapThing* ref = sub_map[i].things[j];
 
-  /* IO clean-up and tile set-up */
-  for(uint16_t i = 0; i < ios.size(); i++)
-  {
-    /* Clean the matrix - fixes up the rendering box */
-    if((ios[i]->getBase() != NULL &&
-        ios[i]->getBase()->getFrames().size() > 0) ||
-       ios[i]->cleanMatrix())
-    {
-      /* Get the tile matrix to match the frames and set */
-      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ios[i]);
-      if(tile_set.size() > 0)
-        ios[i]->setStartingTiles(tile_set, ios[i]->getStartingSection(), true,
-                                 !ios[i]->isActive());
-      else
-        ios[i]->unsetFrames(true);
-    }
-    else
-    {
-      ios[i]->unsetFrames(true);
-    }
-  }
-
-  /* Person clean-up and tile set-up */
-  for(uint16_t i = 0; i < persons.size(); i++)
-  {
-    if((persons[i]->getBase() != nullptr &&
-        persons[i]->getBase()->cleanMatrix(false)) ||
-       persons[i]->cleanMatrix())
-    {
-      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
-      if(tile_set.size() > 0)
+      /* Clean the matrix - fixes up the rendering box */
+      if((ref->getBase() != NULL && ref->getBase()->getFrames().size() > 0) ||
+         ref->cleanMatrix())
       {
-        persons[i]->setStartingTiles(tile_set, persons[i]->getStartingSection(),
-                                     true, !persons[i]->isActive());
-        if(persons[i]->classDescriptor() == ThingBase::NPC)
-          ((MapNPC*)persons[i])->setPlayer(player);
+        /* Get the tile matrix to match the frames and set */
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
+        if(tile_set.size() > 0)
+          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
+                                !ref->isActive());
+        else
+          ref->unsetFrames(true);
       }
       else
       {
-        persons[i]->unsetStates(true);
+        ref->unsetFrames(true);
       }
     }
-    else
-    {
-      persons[i]->unsetStates(true);
-    }
-  }
 
-  /* Items clean-up and tile set-up */
-  for(uint16_t i = 0; i < items.size(); i++)
-  {
-    /* Clean the matrix - fixes up the rendering box */
-    if((items[i]->getBase() != NULL &&
-        items[i]->getBase()->cleanMatrix(false)) ||
-       items[i]->cleanMatrix())
+    /* IO clean-up and tile set-up */
+    for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
     {
-      /* Get the tile matrix to match the frames and set */
-      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(items[i]);
-      if(tile_set.size() > 0)
-        items[i]->setStartingTiles(tile_set, items[i]->getStartingSection(),
-                                   true);
+      MapInteractiveObject* ref = sub_map[i].ios[j];
+
+      /* Clean the matrix - fixes up the rendering box */
+      if((ref->getBase() != NULL && ref->getBase()->getFrames().size() > 0) ||
+         ref->cleanMatrix())
+      {
+        /* Get the tile matrix to match the frames and set */
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
+        if(tile_set.size() > 0)
+          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
+                                !ref->isActive());
+        else
+          ref->unsetFrames(true);
+      }
       else
-        items[i]->unsetFrames(true);
+      {
+        ref->unsetFrames(true);
+      }
+    }
+
+    /* Person clean-up and tile set-up */
+    for(uint32_t j = 0; j < sub_map[i].persons.size(); j++)
+    {
+      MapPerson* ref = sub_map[i].persons[j];
+
+      /* Clean the matrix - fixes the rendering box */
+      if((ref->getBase() != nullptr && ref->getBase()->cleanMatrix(false)) ||
+         ref->cleanMatrix())
+      {
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
+        if(tile_set.size() > 0)
+        {
+          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
+                                !ref->isActive());
+          if(ref->classDescriptor() == ThingBase::NPC)
+            ((MapNPC*)ref)->setPlayer(player);
+        }
+        else
+        {
+          ref->unsetStates(true);
+        }
+      }
+      else
+      {
+        ref->unsetStates(true);
+      }
+    }
+
+    /* Items clean-up and tile set-up */
+    for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
+    {
+      MapItem* ref = sub_map[i].items[j];
+
+      /* Clean the matrix - fixes up the rendering box */
+      if((ref->getBase() != NULL && ref->getBase()->cleanMatrix(false)) ||
+         ref->cleanMatrix())
+      {
+        /* Get the tile matrix to match the frames and set */
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
+        if(tile_set.size() > 0)
+          ref->setStartingTiles(tile_set, ref->getStartingSection(), true);
+        else
+          ref->unsetFrames(true);
+      }
+      else
+      {
+        ref->unsetFrames(true);
+      }
     }
   }
 
   /* Modify the map index */
-  if(player != NULL)
+  if(player != nullptr)
     map_index = player->getStartingSection();
   if(sub_map.size() > map_index && sub_map[map_index].tiles.size() > 0)
   {
@@ -2446,7 +2616,7 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
     viewport.clearLocation();
     viewport.setMapSize(sub_map[map_index].tiles.size(),
                         sub_map[map_index].tiles.front().size(), map_index);
-    if(player != NULL)
+    if(player != nullptr)
       viewport.lockOn(player);
 
     /* Update lay overs */
@@ -2648,7 +2818,7 @@ bool Map::render(SDL_Renderer* renderer)
 
         /* Base map IO, if relevant */
         MapInteractiveObject* render_io =
-            sub_map[map_index].tiles[i][j]->getIO(0);
+                                      sub_map[map_index].tiles[i][j]->getIO(0);
         if(render_io != NULL)
           render_io->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                 x_offset, y_offset);
@@ -2905,52 +3075,78 @@ void Map::unloadMap()
   map_dialog.clearAll(true);
   name_text.unsetTexture();
   name_view = 0;
+  player = nullptr;
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
 
   /* Reset music references */
   audioStop();
 
-  /* Deletes the sprite data stored */
-  for(uint16_t i = 0; i < tile_sprites.size(); i++)
+  /* Delete all sub-maps and data within */
+  for(uint32_t i = 0; i < sub_map.size(); i++)
+  {
+    /* Delete all the tiles that have been set */
+    for(uint32_t j = 0; j < sub_map[i].tiles.size(); j++)
+    {
+      for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
+      {
+        delete sub_map[i].tiles[j][k];
+        sub_map[i].tiles[j][k] = NULL;
+      }
+      sub_map[i].tiles[j].clear();
+    }
+    sub_map[i].tiles.clear();
+  
+    /* Delete the instance IOs */
+    for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
+    {
+      delete sub_map[i].ios[j];
+      sub_map[i].ios[j] = nullptr;
+    }
+    sub_map[i].ios.clear();
+  
+    /* Delete the instance items */
+    for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
+    {
+      delete sub_map[i].items[j];
+      sub_map[i].items[j] = nullptr;
+    }
+    sub_map[i].items.clear();
+
+    /* Delete the instance persons */
+    for(uint32_t j = 0; j < sub_map[i].persons.size(); j++)
+    {
+      delete sub_map[i].persons[j];
+      sub_map[i].persons[j] = nullptr;
+    }
+    sub_map[i].persons.clear();
+
+    /* Delete the instance things */
+    for(uint32_t j = 0; j < sub_map[i].things.size(); j++)
+    {
+      delete sub_map[i].things[j];
+      sub_map[i].things[j] = nullptr;
+    }
+    sub_map[i].things.clear();
+  }
+  sub_map.clear();
+
+  /* Deletes the sprite data stored for tiles */
+  for(uint32_t i = 0; i < tile_sprites.size(); i++)
   {
     delete tile_sprites[i];
-    tile_sprites[i] = NULL;
+    tile_sprites[i] = nullptr;
   }
   tile_sprites.clear();
-
-  /* Delete the items */
-  for(uint16_t i = 0; i < items.size(); i++)
+  
+  /* Delete the base interactive objects */
+  for(uint16_t i = 0; i < base_ios.size(); i++)
   {
-    delete items[i];
-    items[i] = NULL;
+    delete base_ios[i];
+    base_ios[i] = NULL;
   }
-  items.clear();
-
-  /* Delete the persons */
-  for(uint16_t i = 0; i < persons.size(); i++)
-  {
-    delete persons[i];
-    persons[i] = NULL;
-  }
-  persons.clear();
-
-  /* Delete the IOs */
-  for(uint16_t i = 0; i < ios.size(); i++)
-  {
-    delete ios[i];
-    ios[i] = NULL;
-  }
-  ios.clear();
-
-  /* Delete the things */
-  for(uint16_t i = 0; i < things.size(); i++)
-  {
-    delete things[i];
-    things[i] = NULL;
-  }
-  things.clear();
-
+  base_ios.clear();
+  
   /* Delete the base items */
   for(uint16_t i = 0; i < base_items.size(); i++)
   {
@@ -2967,14 +3163,6 @@ void Map::unloadMap()
   }
   base_persons.clear();
 
-  /* Delete the base interactive objects */
-  for(uint16_t i = 0; i < base_ios.size(); i++)
-  {
-    delete base_ios[i];
-    base_ios[i] = NULL;
-  }
-  base_ios.clear();
-
   /* Delete the base things */
   for(uint16_t i = 0; i < base_things.size(); i++)
   {
@@ -2982,22 +3170,6 @@ void Map::unloadMap()
     base_things[i] = NULL;
   }
   base_things.clear();
-
-  /* Delete all the tiles that have been set */
-  for(uint16_t i = 0; i < sub_map.size(); i++)
-  {
-    for(uint16_t j = 0; j < sub_map[i].tiles.size(); j++)
-    {
-      for(uint16_t k = 0; k < sub_map[i].tiles[j].size(); k++)
-      {
-        delete sub_map[i].tiles[j][k];
-        sub_map[i].tiles[j][k] = NULL;
-      }
-      sub_map[i].tiles[j].clear();
-    }
-    sub_map[i].tiles.clear();
-  }
-  sub_map.clear();
 
   /* Delete the Overlays */
   for(auto it = lay_overs.begin(); it != lay_overs.end(); ++it)
@@ -3146,45 +3318,57 @@ bool Map::update(int cycle_time)
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->update(cycle_time);
 
-  /* Update map items */
-  for(uint16_t i = 0; i < base_items.size(); i++)
-    base_items[i]->update(cycle_time, tile_set);
-  for(uint16_t i = 0; i < items.size(); i++)
-    items[i]->update(cycle_time, tile_set);
-
-  /* Update persons for movement and animation */
-  for(uint16_t i = 0; i < persons.size(); i++)
-  {
-    tile_set.clear();
-
-    if(persons[i] != NULL && persons[i]->getMapSection() == map_index) // &&
-    // persons[i]->isTilesSet())
-    {
-      /* Tile set for movement */
-      if(persons[i]->isMoving() || persons[i]->isMoveRequested())
-        tile_set =
-            getTileMatrix(persons[i], persons[i]->getPredictedMoveRequest());
-
-      /* Update person */
-      Floatinate person_move = persons[i]->update(cycle_time, tile_set);
-
-      /* If player, record and store move distance */
-      if(persons[i] == player)
-        player_move = {person_move.x, person_move.y};
-    }
-  }
-
-  /* Update map things */
-  for(uint16_t i = 0; i < base_things.size(); i++)
-    base_things[i]->update(cycle_time, tile_set);
-  for(uint16_t i = 0; i < things.size(); i++)
-    things[i]->update(cycle_time, tile_set);
-
-  /* Update map interactive objects */
+  /* Update the base things */
   // for(uint16_t i = 0; i < ios.size(); i++)
   //  base_ios[i]->update(cycle_time, tile_set);
-  for(uint16_t i = 0; i < ios.size(); i++)
-    ios[i]->update(cycle_time, tile_set);
+  for(uint16_t i = 0; i < base_items.size(); i++)
+    base_items[i]->update(cycle_time, tile_set);
+  for(uint16_t i = 0; i < base_things.size(); i++)
+    base_things[i]->update(cycle_time, tile_set);
+
+  /* Update the sub-map information */
+  for(uint32_t i = 0; i < sub_map.size(); i++)
+  {
+    bool active_map = (i == map_index);
+
+    /* Update map interactive objects */
+    for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
+      sub_map[i].ios[j]->update(cycle_time, tile_set, active_map);
+
+    /* Update map items */
+    for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
+      sub_map[i].items[j]->update(cycle_time, tile_set, active_map);
+
+    /* Update persons for movement and animation */
+    for(uint32_t j = 0; j < sub_map[i].persons.size(); j++)
+    {
+      tile_set.clear();
+
+      /* Tile set for movement */
+      if(active_map)
+      {
+        if(sub_map[i].persons[j]->isMoving() || 
+           sub_map[i].persons[j]->isMoveRequested())
+        {
+          tile_set = getTileMatrix(sub_map[i].persons[j],
+                             sub_map[i].persons[j]->getPredictedMoveRequest());
+        }
+      }
+
+      /* Update person */
+      Floatinate person_move = sub_map[i].persons[j]->update(cycle_time,
+                                                             tile_set,
+                                                             active_map);
+
+      /* If player, record and store move distance */
+      if(sub_map[i].persons[j] == player && active_map)
+        player_move = {person_move.x, person_move.y};
+    }
+
+    /* Update map things */
+    for(uint32_t j = 0; j < sub_map[i].things.size(); j++)
+      sub_map[i].things[j]->update(cycle_time, tile_set, active_map);
+  }
 
   /* If conversation is active, confirm that player is not moving */
   if(map_dialog.isConversationActive() || !isModeNormal())

@@ -352,9 +352,10 @@ Sprite* Tile::getEnhancer() const
 {
   return enhancer;
 }
-  
+
 /*
- * Description: Returns the tile enter event set reference
+ * Description: Returns the tile enter event set reference. Will never return a
+ *              nullptr
  *
  * Inputs: none
  * Output: EventSet* - the enter event set
@@ -365,7 +366,8 @@ EventSet* Tile::getEventEnter()
 }
 
 /*
- * Description: Returns the tile exit event set reference
+ * Description: Returns the tile exit event set reference. Will never return a
+ *              nullptr
  *
  * Inputs: none
  * Output: EventSet* - the exit event set
@@ -1507,7 +1509,7 @@ void Tile::setY(uint16_t y)
 {
   this->y = y;
 }
-  
+
 /*
  * Description: Updates the enter event, from the relevant file data. This then
  *              passes the call to the event handler which parses the file data.
@@ -1742,7 +1744,7 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
       {
         /* Execute exit event, if applicable */
         if(event_handler != nullptr && !event_exit.isEmpty())
-          event_handler->executeEventSet(getEventExit(), 
+          event_handler->executeEventSet(getEventExit(),
                                          persons_main[render_level]);
       }
     }

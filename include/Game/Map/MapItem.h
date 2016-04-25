@@ -81,9 +81,6 @@ public:
   /* Check if the item is active */
   bool isActive();
 
-  /* Returns if the Map Item can be seen */
-  //bool isVisible(); // TODO: DELETE
-
   /* Returns if the item is picked up merely by walking over it */
   bool isWalkover();
 
@@ -109,7 +106,8 @@ public:
   void setWalkover(bool walkover);
 
   /* Updates the thing, based on the tick */
-  Floatinate update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
+  Floatinate update(int cycle_time, std::vector<std::vector<Tile*>> tile_set,
+                    bool active_map = false);
 };
 
 #endif // MAPITEM_H

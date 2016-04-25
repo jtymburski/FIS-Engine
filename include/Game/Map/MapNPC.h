@@ -237,7 +237,8 @@ public:
   void setTrackingState(TrackingState state);
 
   /* Updates the thing, based on the tick - reimplemented */
-  Floatinate update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
+  Floatinate update(int cycle_time, std::vector<std::vector<Tile*>> tile_set,
+                    bool active_map = false);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
