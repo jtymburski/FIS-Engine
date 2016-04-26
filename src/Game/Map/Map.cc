@@ -452,9 +452,14 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   }
 
   /* Make sure the section index is appropriately assigned */
-  modified_thing->setStartingLocation(section_index,
-                                      modified_thing->getStartingX(),
-                                      modified_thing->getStartingY());
+  if(modified_thing->getStartingSection() != section_index)
+  {
+    uint16_t section_old = modified_thing->getStartingSection();
+    modified_thing->setStartingLocation(section_index,
+                                        modified_thing->getStartingX(),
+                                        modified_thing->getStartingY());
+    moveThing(modified_thing, section_old);
+  }
 
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
@@ -1116,10 +1121,10 @@ bool Map::modeViewStop(int cycle_time, bool travel)
 
   return proceed;
 }
-  
+
 /* Move thing sections. Strictly handles switching the array where a thing
  * can be found. This will not handle x, y changes of location */
-MapThing* Map::moveThing(uint16_t thing_id, uint16_t section_new, bool starting)
+MapThing* Map::moveThing(uint16_t thing_id, uint16_t section_old)
 {
   /* Find the thing */
   MapThing* found_thing = getPerson(thing_id);
@@ -1129,17 +1134,93 @@ MapThing* Map::moveThing(uint16_t thing_id, uint16_t section_new, bool starting)
     found_thing = getIO(thing_id);
 
   /* Process the move */
-  return moveThing(found_thing, section_new, starting);
+  return moveThing(found_thing, section_old);
 }
 
 /* Move thing sections. Strictly handles switching the array where a thing
- * can be found. This will not handle x, y changes of location */
-MapThing* Map::moveThing(MapThing* thing_ref, uint16_t section_new,
-                         bool starting)
+ * can be found. This will not handle x, y changes and needs to occur after
+ * the thing was successfully changed the section */
+MapThing* Map::moveThing(MapThing* thing_ref, uint16_t section_old)
 {
-  //if(thing_ref != nullptr && section_new != thing_ref->getMapSection() &&
-  //   section_new < sub_map.size()
-  // TODO
+  /* Pre-checks */
+  if(thing_ref != nullptr && section_old < sub_map.size() &&
+     thing_ref->getMapSection() < sub_map.size())
+  {
+    uint16_t section_new = thing_ref->getMapSection();
+
+    /* If the section numbers are different, proceed with the move */
+    if(section_old != section_new)
+    {
+      SubMap* sub_old = &sub_map[section_old];
+      SubMap* sub_new = &sub_map[section_new];
+
+      /* Parse based on the thing descriptor */
+      if(thing_ref->classDescriptor() == ThingBase::THING)
+      {
+        /* Delete the thing from old array */
+        for(uint32_t i = 0; i < sub_old->things.size(); i++)
+        {
+          if(sub_old->things[i] == thing_ref)
+          {
+            sub_old->things.erase(sub_old->things.begin() + i);
+            i--;
+          }
+        }
+
+        /* Add the thing to the new array */
+        sub_new->things.push_back(thing_ref);
+      }
+      else if(thing_ref->classDescriptor() == ThingBase::ITEM)
+      {
+        /* Delete the item from old array */
+        for(uint32_t i = 0; i < sub_old->items.size(); i++)
+        {
+          if(sub_old->items[i] == thing_ref)
+          {
+            sub_old->items.erase(sub_old->items.begin() + i);
+            i--;
+          }
+        }
+
+        /* Add the item to the new array */
+        sub_new->items.push_back(static_cast<MapItem*>(thing_ref));
+      }
+      else if(thing_ref->classDescriptor() == ThingBase::PERSON ||
+              thing_ref->classDescriptor() == ThingBase::NPC)
+      {
+        /* Delete the person/npc from old array */
+        for(uint32_t i = 0; i < sub_old->persons.size(); i++)
+        {
+          if(sub_old->persons[i] == thing_ref)
+          {
+            sub_old->persons.erase(sub_old->persons.begin() + i);
+            i--;
+          }
+        }
+
+        /* Add the person/npc to the new array */
+        sub_new->persons.push_back(static_cast<MapPerson*>(thing_ref));
+      }
+      else if(thing_ref->classDescriptor() == ThingBase::INTERACTIVE)
+      {
+        /* Delete the IO from old array */
+        for(uint32_t i = 0; i < sub_old->ios.size(); i++)
+        {
+          if(sub_old->ios[i] == thing_ref)
+          {
+            sub_old->ios.erase(sub_old->ios.begin() + i);
+            i--;
+          }
+        }
+
+        /* Add the IO to the new array */
+        sub_new->ios.push_back(static_cast<MapInteractiveObject*>(thing_ref));
+      }
+    }
+
+    return thing_ref;
+  }
+  return nullptr;
 }
 
 /* Parse coordinate info from file to give the designated tile coordinates
@@ -3035,9 +3116,15 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
       {
         std::vector<std::vector<Tile*>> matrix = getTileMatrix(
             section, x, y, found_thing->getWidth(), found_thing->getHeight());
+        uint16_t section_old = found_thing->getMapSection();
 
         if(found_thing->setStartingTiles(matrix, section))
         {
+          /* Move the thing if the section changed */
+          if(section_old != section)
+            moveThing(found_thing, section_old);
+
+          /* If player, change the viewport */
           if(id == kPLAYER_ID)
           {
             if(map_index != section)
@@ -3052,6 +3139,7 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
   }
 }
 
+/* Un-focus trigger - flushes keys */
 void Map::unfocus()
 {
   /* If player is set, clear movement */
@@ -3059,6 +3147,7 @@ void Map::unfocus()
     player->keyFlush();
 }
 
+/* Unload all map data */
 void Map::unloadMap()
 {
   /* Reset the index and applicable parameters */
@@ -3085,18 +3174,6 @@ void Map::unloadMap()
   /* Delete all sub-maps and data within */
   for(uint32_t i = 0; i < sub_map.size(); i++)
   {
-    /* Delete all the tiles that have been set */
-    for(uint32_t j = 0; j < sub_map[i].tiles.size(); j++)
-    {
-      for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
-      {
-        delete sub_map[i].tiles[j][k];
-        sub_map[i].tiles[j][k] = NULL;
-      }
-      sub_map[i].tiles[j].clear();
-    }
-    sub_map[i].tiles.clear();
-  
     /* Delete the instance IOs */
     for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
     {
@@ -3104,7 +3181,7 @@ void Map::unloadMap()
       sub_map[i].ios[j] = nullptr;
     }
     sub_map[i].ios.clear();
-  
+
     /* Delete the instance items */
     for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
     {
@@ -3128,6 +3205,18 @@ void Map::unloadMap()
       sub_map[i].things[j] = nullptr;
     }
     sub_map[i].things.clear();
+
+    /* Delete all the tiles that have been set */
+    for(uint32_t j = 0; j < sub_map[i].tiles.size(); j++)
+    {
+      for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
+      {
+        delete sub_map[i].tiles[j][k];
+        sub_map[i].tiles[j][k] = NULL;
+      }
+      sub_map[i].tiles[j].clear();
+    }
+    sub_map[i].tiles.clear();
   }
   sub_map.clear();
 
@@ -3138,7 +3227,7 @@ void Map::unloadMap()
     tile_sprites[i] = nullptr;
   }
   tile_sprites.clear();
-  
+
   /* Delete the base interactive objects */
   for(uint16_t i = 0; i < base_ios.size(); i++)
   {
@@ -3146,7 +3235,7 @@ void Map::unloadMap()
     base_ios[i] = NULL;
   }
   base_ios.clear();
-  
+
   /* Delete the base items */
   for(uint16_t i = 0; i < base_items.size(); i++)
   {
@@ -3347,7 +3436,7 @@ bool Map::update(int cycle_time)
       /* Tile set for movement */
       if(active_map)
       {
-        if(sub_map[i].persons[j]->isMoving() || 
+        if(sub_map[i].persons[j]->isMoving() ||
            sub_map[i].persons[j]->isMoveRequested())
         {
           tile_set = getTileMatrix(sub_map[i].persons[j],

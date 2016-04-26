@@ -268,10 +268,8 @@ private:
 
   /* Move thing sections. Strictly handles switching the array where a thing
    * can be found. This will not handle x, y changes of location */
-  MapThing* moveThing(uint16_t thing_id, uint16_t section_new,
-                      bool starting = false);
-  MapThing* moveThing(MapThing* thing_ref, uint16_t section_new,
-                      bool starting = false);
+  MapThing* moveThing(uint16_t thing_id, uint16_t section_old);
+  MapThing* moveThing(MapThing* thing_ref, uint16_t section_old);
 
   /* Parse coordinate info from file to give the designated tile coordinates
    * to update */
