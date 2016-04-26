@@ -1122,11 +1122,11 @@ bool Map::modeViewStop(int cycle_time, bool travel)
 MapThing* Map::moveThing(uint16_t thing_id, uint16_t section_new, bool starting)
 {
   /* Find the thing */
-  MapThing* found_thing = getPerson(id);
+  MapThing* found_thing = getPerson(thing_id);
   if(found_thing == nullptr)
-    found_thing = getThing(id);
+    found_thing = getThing(thing_id);
   if(found_thing == nullptr)
-    found_thing = getIO(id);
+    found_thing = getIO(thing_id);
 
   /* Process the move */
   return moveThing(found_thing, section_new, starting);
