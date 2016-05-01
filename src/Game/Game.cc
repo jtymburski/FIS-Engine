@@ -161,8 +161,8 @@ Item* Game::addItem(const int32_t& id, SortObjects type)
 }
 
 /* Add Item to Inventory function */
-bool Game::addItemToInv(Inventory* inv, const int32_t &item_id,
-                        const int32_t &item_count)
+bool Game::addItemToInv(Inventory* inv, const int32_t& item_id,
+                        const int32_t& item_count)
 {
   bool success = false;
 
@@ -454,6 +454,7 @@ bool Game::eventMenuShow()
   {
     updatePlayerSteps();
     map_menu.setRenderer(active_renderer);
+    map_menu.setBattleDisplayData(battle_display_data);
     map_menu.setConfig(config);
     map_menu.setEventHandler(&event_handler);
     map_menu.setMap(&map_ctrl);
@@ -856,8 +857,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
           {
             int item_id = std::stoi(item_set.front());
             int item_count = std::stoi(item_set.back());
-            success &= addItemToInv(edit_party->getInventory(),
-                                    item_id, item_count);
+            success &=
+                addItemToInv(edit_party->getInventory(), item_id, item_count);
           }
         }
       }
@@ -2052,7 +2053,19 @@ bool Game::setPath(std::string path, int level, bool load)
 void Game::setRenderer(SDL_Renderer* renderer)
 {
   if(renderer != nullptr)
+  {
     active_renderer = renderer;
+
+    /* Assign the renderer to Battle Display Data if able */
+    if(battle_display_data)
+    {
+      battle_display_data->setRenderer(renderer);
+
+      /* If the data hasn't been built, build it with the renderer */
+      if(!battle_display_data->isDataBuilt())
+        battle_display_data->buildData();
+    }
+  }
 }
 
 /* Sets the active save slot. This needs to be set prior to load */

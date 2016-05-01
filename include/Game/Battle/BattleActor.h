@@ -18,7 +18,7 @@
 * ----
 * [09-05-15]: Guardee/Guard BattleActor pointers
 * [09-05-15]: Bubbified sprites, static objects [link into active sprite]
-*****************************************************************************/
+*******************************************************************************/
 #ifndef BATTLEACTOR_H
 #define BATTLEACTOR_H
 
@@ -101,10 +101,10 @@ enum class SelectionState
 
 enum class GuardingState
 {
-  NONE, /* This person is not guarding nor being guarded or shielded */
+  NONE,      /* This person is not guarding nor being guarded or shielded */
   DEFENDING, /* This person is defending */
-  GUARDING, /* This person is guarding another person presently */
-  GUARDED, /* This person is being guarded by another person */
+  GUARDING,  /* This person is guarding another person presently */
+  GUARDED,   /* This person is being guarded by another person */
   GUARDED_DEFENDING /* This person is defending & being guarded */
 };
 
@@ -154,6 +154,9 @@ public:
   BattleActor(Person* person_base, int32_t battle_index, int32_t menu_index,
               bool is_ally, bool can_run, SDL_Renderer* renderer);
 
+  /* Constructs a Battle actor for the Menu */
+  BattleActor(Person* person_base, SDL_Renderer* renderer);
+
   /* Default BattleActors may not be created */
   BattleActor() = delete;
 
@@ -195,10 +198,11 @@ private:
   Person* person_base;
 
   /* Sprite pointers - See active_sprite enum */
-  Sprite* sprite_first_person;
-  Sprite* sprite_third_person;
   Sprite* sprite_action;
   Sprite* sprite_dialog;
+  Sprite* sprite_face;
+  Sprite* sprite_first_person;
+  Sprite* sprite_third_person;
 
   /* The enumerated SpriteState for the active sprite */
   SpriteState state_active_sprite;
@@ -382,6 +386,9 @@ public:
 
   /* Returns the active sprites' y */
   int32_t getDialogY();
+
+  /* Returns a pointer to the face sprite */
+  Sprite* getFaceSprite();
 
   /* Returns the guarding state of the Battle Actor */
   GuardingState getGuardingState();

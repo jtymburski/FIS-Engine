@@ -735,16 +735,17 @@ std::string Helpers::curveToString(const ElementCurve& curve, bool simple)
   else
   {
     if(curve == ElementCurve::XS)
-      return "Godly";
+      return "SERAPHIC";
     else if(curve == ElementCurve::S)
-      return "X-Powerful";
+      return "DOMINANT";
     else if(curve == ElementCurve::A)
-      return "Powerful";
+      return "PREVAILING";
     else if(curve == ElementCurve::B)
-      return "Strong";
+      return "STEADFAST";
     else if(curve == ElementCurve::C)
-      return "Moderate";
-    return "Normal";
+      return "TYPICAL";
+
+    return "RESTRAINED";
   }
 }
 
@@ -845,6 +846,32 @@ uint16_t Helpers::elementToInt(Element element)
   else if(element == Element::NONE)
     return 7;
   return 0;
+}
+
+/*
+ * Description: Elemental string form of an enumerated element.
+ *
+ * Inputs: Element - enumerated form of element.
+ * Output: std::string - string form of the element
+ */
+std::string Helpers::elementToDisplayString(const Element& element)
+{
+  if(element == Element::PHYSICAL)
+    return "Physical";
+  else if(element == Element::FIRE)
+    return "Thermal";
+  else if(element == Element::FOREST)
+    return "Primal";
+  else if(element == Element::ICE)
+    return "Polar";
+  else if(element == Element::ELECTRIC)
+    return "Charged";
+  else if(element == Element::DIGITAL)
+    return "Cybernetic";
+  else if(element == Element::NIHIL)
+    return "Nihil";
+
+  return "";
 }
 
 /*
@@ -1012,7 +1039,40 @@ std::string Helpers::partyTypeToStr(const PartyType& type)
     return "BOSS";
   if(type == PartyType::FINAL_BOSS)
     return "FINAL_BOSS";
+
   return "REGULAR_FOE";
+}
+
+std::string Helpers::rankToDisplayStr(const Rank& rank_level)
+{
+  if(rank_level == Rank::NUBEAR)
+    return "Nubear";
+  if(rank_level == Rank::CUB)
+    return "Cub";
+  if(rank_level == Rank::RECRUIT)
+    return "Recruit";
+  if(rank_level == Rank::SLEUTHLING)
+    return "Sleuthling";
+  if(rank_level == Rank::SERGEANT)
+    return "Sergeant";
+  if(rank_level == Rank::SLEUTHMASTER)
+    return "Sleuth Master";
+  if(rank_level == Rank::OFFICER)
+    return "Officer";
+  if(rank_level == Rank::URSAMINOR)
+    return "Ursa Minor";
+  if(rank_level == Rank::ADMIRAL)
+    return "Admiral";
+  if(rank_level == Rank::URSAMAJOR)
+    return "Ursa Major";
+  if(rank_level == Rank::FOREBEAR)
+    return "Forebear";
+  if(rank_level == Rank::ALPHABEAR)
+    return "Alpha Bear";
+  if(rank_level == Rank::BOAT)
+    return "Bear of Ancient Times";
+
+  return "INVALID RANK";
 }
 
 std::string Helpers::rankToStr(const Rank& rank_level)

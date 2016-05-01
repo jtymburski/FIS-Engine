@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 * Class Name: Fonts
 * Date Created: June 22, 2015
@@ -33,6 +34,7 @@ enum class FontName
   BATTLE_TURN,
   BATTLE_VICTORY_HEADER,
   BATTLE_VICTORY_NAME,
+  MENU_CURVE,
   MENU_ITEM_HEADER,
   MENU_MAIN_TITLE,
   MENU_TITLE_ELEMENT,
@@ -40,6 +42,7 @@ enum class FontName
   MENU_SUBHEADER,
   MENU_STANDARD,
   MENU_OPTIONS,
+  MENU_VALUE,
   REGULAR_FONT
 };
 

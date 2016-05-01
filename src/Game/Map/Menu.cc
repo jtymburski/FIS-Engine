@@ -149,7 +149,14 @@ const float Menu::kINV_WIDTH{0.53};
 const float Menu::kOPTIONS_WIDTH{0.40};
 const float Menu::kQUIT_WIDTH{0.33};
 const float Menu::kSAVE_WIDTH{0.55};
-const float Menu::kSLEUTH_WIDTH{0.65};
+const float Menu::kSLEUTH_WIDTH{0.60};
+
+/* Sleuth Section */
+const float Menu::kSLEUTH_GAP{0.009};
+const float Menu::kSLEUTH_SPRITE_WIDTH{0.2105};
+const float Menu::kSLEUTH_ELEMENT_HEIGHT{0.056};
+const float Menu::kSLEUTH_EQUIP_ICON_SIZE{0.0376};
+const float Menu::kSLEUTH_ATTRIBUTE_INSET{0.015};
 
 /* Inventory Section */
 const float Menu::kINV_GAP{0.01};
@@ -183,6 +190,8 @@ const SDL_Color Menu::kCOLOR_OPTION_FILL_SELECTED{125, 125, 125, 255};
 const SDL_Color Menu::kCOLOR_INVENTORY_ICON_FILL{40, 40, 40, 255};
 const SDL_Color Menu::kCOLOR_BORDER_UNSELECTED{46, 46, 46, 255};
 const SDL_Color Menu::kCOLOR_ICON_UNSELECTED_FILL{25, 25, 25, 128};
+const SDL_Color Menu::kCOLOR_ELEMENTAL_CURVE{20, 190, 20, 255};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -197,6 +206,7 @@ Menu::Menu()
       curr_player{nullptr},
       event_handler{nullptr},
       config{nullptr},
+      current{Coordinate()},
       flags{static_cast<MenuState>(0)},
       frame_bubbies{nullptr},
       frame_checkbox{nullptr},
@@ -206,15 +216,19 @@ Menu::Menu()
       frame_key_items{nullptr},
       frame_location{nullptr},
       frame_money{nullptr},
+      frame_exp_full{nullptr},
+      frame_exp_middle{nullptr},
+      frame_exp_empty{nullptr},
       layer{MenuLayer::INVALID},
       player_inventory{nullptr},
       renderer{nullptr},
       title_elements{},
+      inventory_element_index{-1},
+      option_element_index{-1},
+      person_element_index{-1},
       sleuth_element_index{-1},
       title_element_index{-1},
-      option_element_index{-1},
-      inventory_title_index{InventoryIndex::NONE},
-      inventory_element_index{-1}
+      inventory_title_index{InventoryIndex::NONE}
 {
 }
 
@@ -251,35 +265,66 @@ void Menu::buildIconFrames()
         config->getBasePath() + "sprites/Overlay/Menu/credits.png", renderer);
     frame_equipment = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/equipment.png", renderer);
+    frame_exp_full = new Frame(
+        config->getBasePath() + "sprites/Overlay/Menu/exp_full.png", renderer);
+    frame_exp_middle =
+        new Frame(config->getBasePath() + "sprites/Overlay/Menu/exp_middle.png",
+                  renderer);
+    frame_exp_empty = new Frame(
+        config->getBasePath() + "sprites/Overlay/Menu/exp_empty.png", renderer);
   }
 }
 
-void Menu::buildSleuthScreen()
+bool Menu::buildSleuthScreen()
 {
+  bool success = false;
+
   sleuth_faces.clear();
   sleuth_stat_frames.clear();
 
-  if(config && curr_player && curr_player->getSleuth())
+  if(config && renderer && curr_player && curr_player->getSleuth())
   {
     if(curr_player && curr_player->getSleuth())
     {
+      success = true;
+
+      /* Clear the current party actors if set */
+      clearActors();
+
       /* Construct the face graphic sprites */
       auto party = curr_player->getSleuth();
       auto members = party->getMembers();
 
       for(const auto& member : party->getMembers())
       {
-        if(member->getFaceSpritePath() != "")
-        {
-          // TODO: Create face sprite from path. Render face sprite.
-        }
+        success &= (member != nullptr);
+
+        if(success && member)
+          actors.push_back(new BattleActor(member, renderer));
+
+        success &= (actors.back() != nullptr);
       }
     }
   }
+
+  return success;
 }
 
 void Menu::buildSleuthStats()
 {
+}
+
+int32_t Menu::calcSleuthTileSize()
+{
+  if(config)
+  {
+    int32_t sleuth_gap =
+        (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+
+    return (main_section.location.height - 6 * sleuth_gap) / 5;
+  }
+
+  return 0;
 }
 
 /* Constructs the Inventory Screen */
@@ -289,14 +334,18 @@ void Menu::buildIconTitles(int32_t number)
 
   if(config)
   {
-    int32_t title_box_size{main_section.location.height / 6};
+    int32_t title_box_size = 0;
+
+    if(getMainMenuType() == MenuType::SLEUTH)
+      title_box_size = calcSleuthTileSize();
+    else if(getMainMenuType() == MenuType::INVENTORY)
+      title_box_size = main_section.location.height / 6;
 
     /* Construct the Title Icon Boxes */
     Box icon_box{Coordinate{0, 0}, title_box_size, title_box_size};
+    setupDefaultBox(icon_box);
     icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
     icon_box.color_bg_selected = kCOLOR_INVENTORY_ICON_FILL;
-    icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
-    icon_box.color_border_selected = kCOLOR_TITLE_BORDER;
 
     for(int32_t i = 0; i < number; i++)
       titles.push_back(icon_box);
@@ -307,10 +356,6 @@ void Menu::buildInventoryElements()
 {
   if(config)
   {
-    // auto width = config->getScreenWidth();
-    // auto height = config->getScreenHeight();
-
-    inventory_details.clear();
     inventory_scroll_box.clearElements();
     inventory_scroll_box.setFlag(BoxState::SCROLL_BOX);
     inventory_scroll_box.setFlag(BoxState::SELECTABLE);
@@ -400,15 +445,6 @@ SDL_Texture* Menu::buildItemListFrame(Item* build_item, int32_t count,
   return nullptr;
 }
 
-SDL_Texture* Menu::buildItemDetailFrame(Item* build_item, uint32_t width,
-                                        uint32_t height)
-{
-  (void)build_item;
-  (void)width;
-  (void)height;
-  return nullptr;
-}
-
 /* Construct the Key Item Frames -- Scroll Box and Details */
 void Menu::buildInventoryKeyItems()
 {
@@ -471,6 +507,18 @@ bool Menu::canIncrementSleuth()
   return false;
 }
 
+/* Clears the menu actors */
+void Menu::clearActors()
+{
+  for(auto& actor : actors)
+  {
+    delete actor;
+    actor = nullptr;
+  }
+
+  actors.clear();
+}
+
 /* Delets the Icon Frames */
 void Menu::clearIconFrames()
 {
@@ -490,6 +538,12 @@ void Menu::clearIconFrames()
     delete frame_items;
   if(frame_key_items)
     delete frame_key_items;
+  if(frame_exp_full)
+    delete frame_exp_full;
+  if(frame_exp_middle)
+    delete frame_exp_middle;
+  if(frame_exp_empty)
+    delete frame_exp_empty;
 
   frame_money = nullptr;
   frame_location = nullptr;
@@ -499,6 +553,9 @@ void Menu::clearIconFrames()
   frame_equipment = nullptr;
   frame_items = nullptr;
   frame_key_items = nullptr;
+  frame_exp_full = nullptr;
+  frame_exp_middle = nullptr;
+  frame_exp_empty = nullptr;
 }
 
 /* Constructs the Options */
@@ -617,6 +674,31 @@ void Menu::buildTitleElements()
 
   /* Quit (Return to title) TitleElement */
   title_elements.push_back(TitleElement("Quit", true, MenuType::QUIT));
+}
+
+void Menu::buildPersonTitleElements()
+{
+  person_title_elements.clear();
+
+  /* Person overview of statistics etc. */
+  person_title_elements.push_back(
+      TitleElement("Overview", true, MenuType::SLEUTH_OVERVIEW));
+
+  // /* Person equipment screen */
+  // person_title_elements.push_back(
+  //     TitleElement("Equipment", true, MenuType::SLEUTH_EQUIPMENT));
+
+  /* Person skill list screen */
+  person_title_elements.push_back(
+      TitleElement("Skills", true, MenuType::SLEUTH_SKILLS));
+
+  /* Person details screen (extra information) */
+  person_title_elements.push_back(
+      TitleElement("Details", true, MenuType::SLEUTH_DETAILS));
+
+  /* Personal record screen (PersonRecord - Battles won etc.) */
+  // person_title_elements.push_back(
+  //     TitleElement("Record", true, MenuType::SLEUTH_RECORD));
 }
 
 /* Constructs the TitleSection */
@@ -743,6 +825,251 @@ void Menu::selectSleuthIndex()
 {
   if(sleuth_element_index < (int32_t)titles.size() && sleuth_element_index >= 0)
     titles.at(sleuth_element_index).setFlag(BoxState::SELECTED, true);
+}
+
+void Menu::clearElementFrames()
+{
+  for(auto& element_frame : sleuth_stat_frames)
+  {
+    if(element_frame)
+      delete element_frame;
+
+    element_frame = nullptr;
+  }
+
+  sleuth_stat_frames.clear();
+}
+
+void Menu::renderAttributes(Coordinate start, int32_t gap)
+{
+  clearElementFrames();
+  auto width = s_attributes_box.width;
+
+  for(uint8_t i = 1; i < 12; i++)
+  {
+    auto height = (int32_t)std::round(main_section.location.height *
+                                      kSLEUTH_ELEMENT_HEIGHT);
+    SDL_Texture* texture = nullptr;
+
+    if(i < 8)
+      texture = buildElementFrame(static_cast<Element>(1 << i), width, height);
+    else if(i == 9)
+      texture = buildAttributeFrame(Attribute::UNBR, width, height);
+    else if(i == 10)
+      texture = buildAttributeFrame(Attribute::LIMB, width, height);
+    else if(i == 11)
+      texture = buildAttributeFrame(Attribute::MMNT, width, height);
+
+    if(texture)
+    {
+      sleuth_stat_frames.push_back(new Frame());
+      sleuth_stat_frames.back()->setTexture(texture);
+    }
+  }
+
+  /* Build unbearability frames */
+
+  /* Build limbertude momentum frames */
+
+  /* Build momentum frames */
+
+  current = Coordinate{start.x + gap / 2, start.y + 2 * gap / 3};
+
+  for(auto& stat_frame : sleuth_stat_frames)
+  {
+    if(stat_frame)
+    {
+      stat_frame->render(renderer, current.x, current.y);
+      current.y += stat_frame->getHeight() + gap / 3;
+    }
+  }
+
+  if(getCurrentActor())
+  {
+    // auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
+    // auto font_value = config->getFontTTF(FontName::MENU_OPTIONS);
+    // auto stats = getCurrentActor()->getStatsRendered();
+
+    // Text t_unbr_title(font_title);
+    // Text t_unbr_val(font_value);
+    // Text t_limb_title(font_title);
+    // Text t_limb_val(font_value);
+    // Text t_mmtm_title(font_title);
+    // Text t_mmtm_val(font_value);
+
+    // t_unbr_title.setText(renderer, "UNBEARABILITY", kCOLOR_TEXT);
+    // t_unbr_val.setText(
+    //     renderer, std::to_string(stats.getValue(Attribute::UNBR)),
+    //     kCOLOR_TEXT);
+    // t_limb_title.setText(renderer, "LIMBERTUDE", kCOLOR_TEXT);
+    // t_limb_val.setText(
+    //     renderer, std::to_string(stats.getValue(Attribute::LIMB)),
+    //     kCOLOR_TEXT);
+    // t_mmtm_title.setText(renderer, "MOMENTUM", kCOLOR_TEXT);
+    // t_mmtm_val.setText(
+    //     renderer, std::to_string(stats.getValue(Attribute::MMNT)),
+    //     kCOLOR_TEXT);
+
+    // auto unbr_x = current.x + 1 * width / 4;
+    // auto limb_x = current.x + 2 * width / 4;
+    // auto mmtm_x = current.x + 3 * width / 4;
+
+    // current.y += gap / 2;
+    // t_unbr_title.render(renderer, unbr_x - t_unbr_title.getWidth() / 2,
+    //                     current.y);
+
+    // t_limb_title.render(renderer, limb_x - t_limb_title.getWidth() / 2,
+    //                     current.y);
+
+    // t_mmtm_title.render(renderer, mmtm_x - t_mmtm_title.getWidth() / 2,
+    //                     current.y);
+
+    // current.y += t_limb_title.getHeight() + gap;
+
+    // t_unbr_val.render(renderer, unbr_x - t_unbr_val.getWidth() / 2,
+    // current.y);
+    // t_limb_val.render(renderer, limb_x - t_limb_val.getWidth() / 2,
+    // current.y);
+    // t_mmtm_val.render(renderer, mmtm_x - t_mmtm_val.getWidth() / 2,
+    // current.y);
+  }
+}
+
+SDL_Texture* Menu::buildAttributeFrame(Attribute attr, uint32_t width,
+                                       uint32_t height)
+{
+  auto actor = getCurrentActor();
+
+  if(battle_display_data && renderer && config && actor)
+  {
+    auto font_value = config->getFontTTF(FontName::MENU_VALUE);
+    auto frame_attribute = battle_display_data->getFrameAttribute(attr);
+    auto inset = (uint32_t)std::round(width * kSLEUTH_ATTRIBUTE_INSET);
+
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, width, height);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    if(frame_attribute)
+    {
+      frame_attribute->render(renderer, inset,
+                              height / 2 - frame_attribute->getHeight() / 2);
+
+      Text t_name(font_value);
+      Text t_value(font_value);
+      Text t_max(font_value);
+
+      t_max.setText(renderer, "Unbearability: 9999", kCOLOR_TEXT);
+
+      if(attr == Attribute::UNBR)
+        t_name.setText(renderer, "Unbearability: ", kCOLOR_TEXT);
+      else if(attr == Attribute::LIMB)
+        t_name.setText(renderer, "Limbertude: ", kCOLOR_TEXT);
+      else if(attr == Attribute::MMNT)
+        t_name.setText(renderer, "Momentum: ", kCOLOR_TEXT);
+
+      std::string value_str =
+          std::to_string(actor->getStatsRendered().getValue(attr));
+
+      t_value.setText(renderer, value_str, kCOLOR_TEXT);
+
+      auto text_x = 2 * inset + frame_attribute->getWidth();
+      t_name.render(renderer, text_x, height - t_name.getHeight());
+
+      auto value_x = text_x + t_max.getWidth() - t_value.getWidth();
+      t_value.render(renderer, value_x, height - t_value.getHeight());
+    }
+
+    SDL_SetRenderTarget(renderer, nullptr);
+    return texture;
+  }
+
+  return nullptr;
+}
+
+SDL_Texture* Menu::buildElementFrame(Element elm, uint32_t width,
+                                     uint32_t height)
+{
+  auto actor = getCurrentActor();
+
+  if(battle_display_data && renderer && config && actor)
+  {
+    auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
+    auto font_value = config->getFontTTF(FontName::MENU_VALUE);
+    auto frame_element = battle_display_data->getFrameElement(elm);
+    auto stats = actor->getStatsRendered();
+    auto attributes = Helpers::elementToStats(elm);
+
+    // TODO: Element special inset?
+    auto inset = (uint32_t)std::round(width * kSLEUTH_ATTRIBUTE_INSET);
+
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, width, height);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    if(frame_element)
+    {
+      frame_element->render(renderer, inset,
+                            height / 2 - frame_element->getHeight() / 2);
+
+      Text t_name(font_title);
+      Text t_atk_title(font_value);
+      Text t_def_title(font_value);
+      Text t_value_atk(font_value);
+      Text t_value_def(font_value);
+
+      Text t_max(font_value);
+      t_max.setText(renderer, "Unbearability: 9999", kCOLOR_TEXT);
+
+      t_atk_title.setText(renderer, "Aggression: ", kCOLOR_TEXT);
+      t_def_title.setText(renderer, "Fortitude: ", kCOLOR_TEXT);
+
+      std::string value_atk_str =
+          std::to_string(stats.getValue(attributes.second));
+      std::string value_def_str =
+          std::to_string(stats.getValue(attributes.second));
+
+      t_value_atk.setText(renderer, value_atk_str, kCOLOR_TEXT);
+      t_value_def.setText(renderer, value_def_str, kCOLOR_TEXT);
+
+      std::string element_str = Helpers::elementToDisplayString(elm);
+      std::transform(element_str.begin(), element_str.end(),
+                     element_str.begin(), ::toupper);
+
+      t_name.setText(renderer, element_str, kCOLOR_TEXT);
+      t_value_atk.setText(renderer, value_atk_str, kCOLOR_TEXT);
+      t_value_def.setText(renderer, value_def_str, kCOLOR_TEXT);
+
+      auto text_x = 2 * inset + frame_element->getWidth();
+      t_name.render(renderer, text_x, 1);
+      t_atk_title.render(renderer, text_x, height - t_value_atk.getHeight());
+
+      auto atk_value_x = text_x + t_max.getWidth() - t_value_atk.getWidth();
+      t_value_atk.render(renderer, atk_value_x,
+                         height - t_value_atk.getHeight());
+
+      auto def_value_title_x =
+          text_x + t_max.getWidth() + t_def_title.getWidth() / 4;
+      t_def_title.render(renderer, def_value_title_x,
+                         height - t_def_title.getHeight());
+
+      auto def_value_x =
+          def_value_title_x + t_max.getWidth() - t_value_def.getWidth();
+      t_value_def.render(renderer, def_value_x,
+                         height - t_value_def.getHeight());
+    }
+
+    SDL_SetRenderTarget(renderer, nullptr);
+    return texture;
+  }
+
+  return nullptr;
 }
 
 void Menu::renderBubbies()
@@ -883,29 +1210,29 @@ void Menu::renderTitleSection()
     auto icons_y_gap = (int32_t)std::round(height * kTITLE_ICONS_Y_GAP);
     auto tx = (int32_t)std::round(width * kTITLE_ICON_TEXT_X);
     auto ty = (int32_t)std::round(height * kTITLE_ICON_TEXT_Y);
-    auto curr_y = bot_y_offset + icons_y_gap;
+    current.y = bot_y_offset + icons_y_gap;
 
     if(frame_location)
     {
       map_name.setText(renderer, curr_map->getName(), kCOLOR_TEXT);
-      frame_location->render(renderer, point.x + x_offset, curr_y);
-      map_name.render(renderer, point.x + x_offset + tx, curr_y + ty);
+      frame_location->render(renderer, point.x + x_offset, current.y);
+      map_name.render(renderer, point.x + x_offset + tx, current.y + ty);
     }
     if(frame_footsteps)
     {
-      curr_y += icons_y_gap;
+      current.y += icons_y_gap;
       footsteps.setText(renderer, Helpers::formatUInt(curr_player->getSteps()),
                         kCOLOR_TEXT);
-      frame_footsteps->render(renderer, point.x + x_offset, curr_y);
-      footsteps.render(renderer, point.x + x_offset + tx, curr_y + ty);
+      frame_footsteps->render(renderer, point.x + x_offset, current.y);
+      footsteps.render(renderer, point.x + x_offset + tx, current.y + ty);
     }
     if(frame_money)
     {
-      curr_y += icons_y_gap;
+      current.y += icons_y_gap;
       credits.setText(renderer, Helpers::formatUInt(curr_player->getCredits()),
                       kCOLOR_TEXT);
-      frame_money->render(renderer, point.x + x_offset, curr_y);
-      credits.render(renderer, point.x + x_offset + tx, curr_y + ty);
+      frame_money->render(renderer, point.x + x_offset, current.y);
+      credits.render(renderer, point.x + x_offset + tx, current.y + ty);
     }
   }
 
@@ -990,7 +1317,7 @@ void Menu::renderInventory()
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
   auto gap = (int32_t)std::round(width * kINV_GAP);
-  auto curr_y = start.y + gap;
+  current.y = start.y + gap;
 
   /* Render the Title Boxes */
   for(uint32_t i = 0; i < titles.size(); i++)
@@ -998,9 +1325,9 @@ void Menu::renderInventory()
     auto& icon = titles.at(i);
 
     icon.point.x = start.x + gap;
-    icon.point.y = curr_y;
+    icon.point.y = current.y;
     icon.render(renderer);
-    curr_y += gap + icon.height;
+    current.y += gap + icon.height;
 
     if(i == 0)
     {
@@ -1032,7 +1359,7 @@ void Menu::renderInventory()
   }
 
   auto icon_w = main_section.location.height / 6;
-  curr_y += gap;
+  current.y += gap;
 
   /* Render the Mass of the Inventory */
   Text mass_title(font_subheader);
@@ -1057,11 +1384,12 @@ void Menu::renderInventory()
 
   mass_value.setText(renderer, mass_string, kCOLOR_TEXT);
 
-  mass_title.render(
-      renderer, start.x + gap + icon_w / 2 - mass_title.getWidth() / 2, curr_y);
+  mass_title.render(renderer,
+                    start.x + gap + icon_w / 2 - mass_title.getWidth() / 2,
+                    current.y);
   mass_value.render(renderer,
                     start.x + gap + icon_w / 2 - mass_value.getWidth() / 2,
-                    curr_y + icon_w / 3);
+                    current.y + icon_w / 3);
 
   // TODO: Render the selection triangle [04-13-16]
 
@@ -1071,10 +1399,7 @@ void Menu::renderInventory()
   inventory_top_box.point = {start.x + 2 * gap + icon_w, start.y + gap};
   inventory_top_box.width = main_section.location.width - icon_w - 3 * gap;
   inventory_top_box.height = top_section_height / 5;
-  inventory_top_box.color_bg = kCOLOR_TITLE_BG;
-  inventory_top_box.color_bg_selected = kCOLOR_TITLE_BG;
-  inventory_top_box.color_border = kCOLOR_BORDER_UNSELECTED;
-  inventory_top_box.color_border_selected = kCOLOR_TITLE_BORDER;
+  setupDefaultBox(inventory_top_box);
   inventory_top_box.render(renderer);
 
   /* Render the scroll inventory box */
@@ -1083,10 +1408,7 @@ void Menu::renderInventory()
                                     inventory_top_box.height - 1};
   inventory_scroll_box.width = inventory_top_box.width;
   inventory_scroll_box.height = top_section_height - inventory_top_box.height;
-  inventory_scroll_box.color_bg = kCOLOR_TITLE_BG;
-  inventory_scroll_box.color_bg_selected = kCOLOR_TITLE_BG;
-  inventory_scroll_box.color_border = kCOLOR_BORDER_UNSELECTED;
-  inventory_scroll_box.color_border_selected = kCOLOR_TITLE_BORDER;
+  setupDefaultBox(inventory_scroll_box);
   inventory_scroll_box.color_element_selected = kCOLOR_INVENTORY_ICON_FILL;
   inventory_scroll_box.color_scroll = kCOLOR_OPTION_FILL_SELECTED;
   inventory_scroll_box.color_scroll_selected = kCOLOR_OPTION_FILL_SELECTED;
@@ -1244,15 +1566,15 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
       auto mass_x = std::max(item_mass.getWidth(), item_mass_title.getWidth());
       mass_x += curr_x + 2 * gap;
 
-      auto curr_y = inventory_icon_box.point.y + item_name.getHeight() + gap;
-      item_mass_title.render(renderer, curr_x, curr_y);
+      current.y = inventory_icon_box.point.y + item_name.getHeight() + gap;
+      item_mass_title.render(renderer, curr_x, current.y);
 
-      item_value_title.render(renderer, mass_x, curr_y);
-      curr_y += item_mass_title.getHeight() + gap / 4;
-      item_mass.render(renderer, curr_x, curr_y);
-      item_value.render(renderer, mass_x, curr_y);
+      item_value_title.render(renderer, mass_x, current.y);
+      current.y += item_mass_title.getHeight() + gap / 4;
+      item_mass.render(renderer, curr_x, current.y);
+      item_value.render(renderer, mass_x, current.y);
 
-      curr_y = inventory_icon_box.point.y + inventory_icon_box.height + gap;
+      current.y = inventory_icon_box.point.y + inventory_icon_box.height + gap;
       auto desc_split = Text::splitLine(font_standard, item->getDescription(),
                                         inventory_top_box.width - 2 * gap);
 
@@ -1260,8 +1582,8 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
       for(auto& line : desc_split)
       {
         item_description.setText(renderer, line, kCOLOR_TEXT);
-        item_description.render(renderer, start.x + gap, curr_y);
-        curr_y += item_description.getHeight() * 1.1;
+        item_description.render(renderer, start.x + gap, current.y);
+        current.y += item_description.getHeight() * 1.1;
       }
 
       Text item_flags(font_standard);
@@ -1282,32 +1604,27 @@ void Menu::renderOptions()
   auto width = config->getScreenWidth();
   auto height = config->getScreenHeight();
 
-  auto start_x =
-      main_section.location.point.x + (uint32_t)std::round(kOPTIONS_X * width);
-  auto start_y =
-      main_section.location.point.y + (uint32_t)std::round(kOPTIONS_Y * height);
-
-  auto curr_x = start_x;
-  auto curr_y = start_y;
+  UCoordinate ucurrent{main_section.location.point.x +
+                           (uint32_t)std::round(kOPTIONS_X * width),
+                       main_section.location.point.y +
+                           (uint32_t)std::round(kOPTIONS_Y * height)};
 
   auto y_gap = (uint32_t)std::round(kOPTIONS_Y_GAP * height);
-  // auto digital_gap = (uint32_t)std::round(kOPTIONS_DIGITAL_GAP * width);
 
   /* Render the audio level */
-  auto end = renderOptionAnalog(option_audio_level, {curr_x, curr_y});
+  auto end = renderOptionAnalog(option_audio_level, ucurrent);
 
   /* Render the music level */
-  curr_y = end.y + y_gap; // todo
-  end = renderOptionAnalog(option_music_level, {curr_x, curr_y});
+  ucurrent.y = end.y + y_gap; // todo
+  end = renderOptionAnalog(option_music_level, ucurrent);
 
   /* Render the auto run flag */
-  curr_y = end.y + y_gap; // todo
-  end = renderOptionDigital(option_auto_run, {curr_x, curr_y});
+  ucurrent.y = end.y + y_gap; // todo
+  end = renderOptionDigital(option_auto_run, ucurrent);
 
   /* Render the mute flag */
-  curr_y = end.y + y_gap;
-  // curr_x = end.x + digital_gap; // todo
-  renderOptionDigital(option_mute, {curr_x, curr_y});
+  ucurrent.y = end.y + y_gap;
+  renderOptionDigital(option_mute, ucurrent);
 }
 
 /* Render a given option at a given point */
@@ -1419,18 +1736,69 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
   return end;
 }
 
+void Menu::renderPersonElementTitles(int32_t gap)
+{
+  if(config && renderer && person_element_index > -1 &&
+     person_element_index < (int32_t)person_title_elements.size())
+  {
+    auto font_header = config->getFontTTF(FontName::MENU_HEADER);
+    Text t_title(font_header);
+    auto index = 0;
+
+    for(auto& title : person_title_elements)
+    {
+      t_title.setText(renderer, title.name, kCOLOR_TEXT);
+
+      if(index == person_element_index)
+      {
+        auto point = Coordinate{current.x - gap, current.y - gap};
+        auto rect_h = t_title.getHeight() + 2 * gap;
+        auto rect_w = t_title.getWidth() + 2 * gap;
+
+        Coordinate top_left{point.x, point.y};
+        Coordinate top_right{point.x + rect_w, point.y};
+        Coordinate bot_left{point.x, point.y + rect_h};
+        Coordinate bot_right{point.x + rect_w, point.y + rect_h};
+        auto top_line = Helpers::bresenhamPoints(top_left, top_right);
+        auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
+
+        SDL_Rect rect;
+        rect.x = current.x;
+        rect.y = current.y;
+        rect.h = rect_h;
+        rect.w = rect_w;
+
+        auto brightness = Helpers::updateHoverBrightness(
+            person_title_elements.at(person_element_index).hover_time,
+            kTITLE_HOVER_RATE, kTITLE_HOVER_MIN, kTITLE_HOVER_MAX);
+
+        auto hover_color = kCOLOR_TITLE_HOVER;
+        SDL_SetRenderDrawColor(renderer, hover_color.r, hover_color.g,
+                               hover_color.b, hover_color.a * brightness);
+        SDL_RenderFillRect(renderer, &rect);
+      }
+
+      /* Render the text */
+      t_title.render(renderer, current.x, current.y);
+      current.x += t_title.getWidth() + gap;
+
+      index++;
+    }
+  }
+}
+
 /* Renders the Sleuth Screen */
 void Menu::renderSleuth()
 {
-  // auto title_font = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
-  /// auto font_header = config->getFontTTF(FontName::MENU_HEADER);
-  //// auto font_subheader = config->getFontTTF(FontName::MENU_SUBHEADER);
-
+  /* Obtained values */
+  auto font_title = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
-  auto gap = (int32_t)std::round(width * kINV_GAP);
+  auto person = getCurrentPerson();
 
-  auto curr_y = start.y + gap;
+  /* Calculated values */
+  auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
+  current.y = start.y + gap;
 
   /* Render the Sleuth Members Face Boxes */
   for(uint32_t i = 0; i < titles.size(); i++)
@@ -1438,28 +1806,319 @@ void Menu::renderSleuth()
     auto& icon = titles.at(i);
 
     icon.point.x = start.x + gap;
-    icon.point.y = curr_y;
+    icon.point.y = current.y;
     icon.render(renderer);
-    curr_y += gap + icon.height;
+    current.y += gap + icon.height;
 
-    // TODO: Render the face graphics
+    // TODO: Render the face graphic
   }
 
-  /* */
+  /* Render the sleuth top box with name */
+  current.y = start.y + gap;
+  auto icon_w = calcSleuthTileSize();
 
-  // Render the sleuth top box with name
+  s_top_box.point = {start.x + 2 * gap + icon_w, current.y};
+  s_top_box.width = main_section.location.width - icon_w - 3 * gap;
+  s_top_box.height = (main_section.location.height - 3 * gap) / 10;
+  setupDefaultBox(s_top_box);
+  s_top_box.render(renderer);
 
-  // Render the sleuth sprite box
+  if(person)
+  {
+    /* Render the player's name in the title box */
+    Text t_name(font_title);
+    t_name.setText(renderer, person->getName(), kCOLOR_TEXT);
 
-  // Render the sleuth top stats box
+    auto name_text_y =
+        s_top_box.point.y + s_top_box.height / 2 - t_name.getHeight() / 2;
+    current.x = s_top_box.point.x + gap;
 
-  // Render the sleuth bot stats box
+    t_name.render(renderer, current.x, name_text_y);
 
-  // Render the sleuth info box
+    /* Render the person titles */
+    Text t_title(font_title);
 
-  // Render the sleuth equip boxes
+    current = Coordinate{current.x + t_name.getWidth() + 3 * gap, name_text_y};
+    renderPersonElementTitles(gap / 2);
+  }
 
-  // Render the sleuth equip frames
+  if(getSleuthMenuType() == MenuType::SLEUTH_OVERVIEW)
+    renderSleuthOverview();
+  else if(getSleuthMenuType() == MenuType::SLEUTH_EQUIPMENT)
+    renderSleuthEquipment();
+  else if(getSleuthMenuType() == MenuType::SLEUTH_SKILLS)
+    renderSleuthSkills();
+  else if(getSleuthMenuType() == MenuType::SLEUTH_DETAILS)
+    renderSleuthDetails();
+  else if(getSleuthMenuType() == MenuType::SLEUTH_RECORD)
+    renderSleuthRecord();
+}
+
+void Menu::renderSleuthOverview()
+{
+  auto width = config->getScreenWidth();
+  auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
+  auto person = getCurrentPerson();
+  auto actor = getCurrentActor();
+  auto font_title_element = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
+  auto font_header = config->getFontTTF(FontName::MENU_OPTIONS);
+  auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
+  auto equip_icon_size = (int32_t)std::round(width * kSLEUTH_EQUIP_ICON_SIZE);
+  auto main = main_section.location;
+
+  assert(person);
+  assert(actor);
+  assert(font_header);
+  assert(config);
+  assert(renderer);
+  assert(frame_exp_empty);
+  assert(frame_exp_full);
+  assert(frame_exp_middle);
+
+  /* Render the top stats box */
+  s_top_stats_box.point = {s_top_box.point.x,
+                           s_top_box.point.y + s_top_box.height - 1};
+  s_top_stats_box.width = s_top_box.width;
+  s_top_stats_box.height =
+      (main_section.location.height - s_top_box.height - gap * 4) / 4;
+  setupDefaultBox(s_top_stats_box);
+  s_top_stats_box.render(renderer);
+
+  /* Render the sleuth sprite box */
+  current.y = s_top_stats_box.point.y + s_top_stats_box.height + gap;
+  auto sprite_box_size = (int32_t)std::round(width * kSLEUTH_SPRITE_WIDTH);
+
+  s_sprite_box.point = {s_top_box.point.x, current.y};
+  s_sprite_box.width = sprite_box_size;
+  s_sprite_box.height =
+      main.height - s_top_stats_box.height - s_top_box.height - 3 * gap;
+  setupDefaultBox(s_sprite_box);
+  s_sprite_box.render(renderer);
+
+  /* Render the attributes box */
+  s_attributes_box.point = {s_sprite_box.point.x + s_sprite_box.width + gap,
+                            s_top_stats_box.point.y + s_top_stats_box.height +
+                                gap};
+  s_attributes_box.width = main.width + main.point.x - s_sprite_box.point.x -
+                           s_sprite_box.width - 2 * gap;
+  s_attributes_box.height =
+      main.height - s_top_stats_box.height - s_top_box.height - 3 * gap;
+  setupDefaultBox(s_attributes_box);
+  s_attributes_box.render(renderer);
+
+  /* Render the person's sprite in the sleuth sprite box */
+  actor->setActiveSprite(ActiveSprite::THIRD_PERSON);
+
+  if(actor->getActiveSprite())
+  {
+    actor->getActiveSprite()->render(
+        renderer, s_sprite_box.point.x,
+        s_sprite_box.point.y + s_sprite_box.height / 2 -
+            actor->getActiveSprite()->getCurrent()->getHeight() / 2);
+  }
+
+  /* Render the equipment icons */
+  auto equip_icon_gap =
+      (s_sprite_box.height - 2 * gap - 5 * equip_icon_size) / 4;
+
+  Box icon_box;
+  icon_box.point = {s_sprite_box.point.x + s_sprite_box.width -
+                        equip_icon_size - gap,
+                    s_sprite_box.point.y + gap};
+  icon_box.width = equip_icon_size;
+  icon_box.height = equip_icon_size;
+  icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
+  icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
+
+  for(int32_t i = 0; i < 5; i++)
+  {
+    icon_box.render(renderer);
+    icon_box.point.y += equip_icon_size + equip_icon_gap;
+  }
+
+  /* Render the sleuth top stats box */
+  auto start = s_top_stats_box.point;
+  auto stats = actor->getStatsRendered();
+  current = Coordinate{start.x + gap, start.y + gap};
+
+  /* Render the base frame exp */
+  frame_exp_full->render(renderer, current.x, current.y);
+
+  /* Render the exp gained frame as proportion of the amount gained */
+  auto height =
+      frame_exp_empty->getHeight() -
+      (person->findExpPercent() / 100.0 * frame_exp_empty->getHeight());
+
+  SDL_Rect exp_rect;
+  exp_rect.x = 0;
+  exp_rect.y = 0;
+  exp_rect.h = height;
+  exp_rect.w = frame_exp_full->getWidth();
+
+  frame_exp_empty->render(renderer, current.x, current.y, 0, height, &exp_rect);
+
+  /* Render the middle exp frame */
+  frame_exp_middle->render(renderer,
+                           current.x + frame_exp_empty->getWidth() / 2 -
+                               frame_exp_middle->getWidth() / 2,
+                           current.y + frame_exp_empty->getHeight() / 2 -
+                               frame_exp_middle->getHeight() / 2);
+
+  /* Render the level text centred to the frame middle exp */
+  Text t_level_title(font_title);
+  Text t_level(font_title_element);
+
+  t_level_title.setText(renderer, "LEVEL", kCOLOR_TEXT);
+  t_level.setText(renderer, std::to_string(person->getLevel()), kCOLOR_TEXT);
+  t_level.setText(renderer, "127", kCOLOR_TEXT);
+
+  auto x = current.x;
+  auto y = current.y;
+  current.x += frame_exp_empty->getWidth() / 2 - t_level_title.getWidth() / 2;
+  current.y += frame_exp_empty->getHeight() * 0.27;
+  t_level_title.render(renderer, current.x, current.y);
+
+  current.x = x + frame_exp_empty->getWidth() / 2 - t_level.getWidth() / 2;
+  current.y += 3 * gap / 2;
+  t_level.render(renderer, current.x, current.y);
+
+  current.x += frame_exp_empty->getWidth() + gap;
+  current.y = y;
+
+
+  Text t_exp(font_header);
+  Text t_vita(font_header);
+  Text t_qtdr(font_header);
+
+  std::string exp_str =
+      std::to_string(person->getTotalExp()) + " / " +
+      std::to_string(person->getExpAt(person->getLevel() + 1)) + " Experience";
+
+  std::string vita_str =
+      std::to_string(stats.getValue(Attribute::VITA)) + " / " +
+      std::to_string(stats.getValue(Attribute::MVIT)) + " Vitality";
+
+  std::string qtdr_str =
+      std::to_string(stats.getValue(Attribute::QTDR)) + " / " +
+      std::to_string(stats.getValue(Attribute::MQTD)) + " Quantum Drive";
+
+  t_exp.setText(renderer, exp_str, kCOLOR_TEXT);
+  t_vita.setText(renderer, vita_str, kCOLOR_TEXT);
+  t_qtdr.setText(renderer, qtdr_str, kCOLOR_TEXT);
+
+  t_exp.render(renderer, current.x, current.y);
+  current.y += t_exp.getHeight() + gap / 2;
+  t_vita.render(renderer, current.x, current.y);
+  current.y += t_vita.getHeight() + gap / 2;
+  t_qtdr.render(renderer, current.x, current.y);
+
+  /* Render the sleuth attributes */
+  renderAttributes(s_attributes_box.point, gap);
+}
+
+void Menu::renderSleuthEquipment()
+{
+}
+
+void Menu::renderSleuthSkills()
+{
+}
+
+void Menu::renderSleuthDetails()
+{
+  // auto font_curve = config->getFontTTF(FontName::MENU_CURVE);
+  // /* Render the text for the bottom statistics box */
+  // auto rank_str = Helpers::rankToDisplayStr(person->getRank());
+  // auto prim_element =
+  // Helpers::elementToDisplayString(person->getPrimary());
+  // auto secd_element =
+  // Helpers::elementToDisplayString(person->getSecondary());
+  // auto prim_curve_str =
+  //     Helpers::curveToString(person->getPrimaryCurve(), false);
+  // auto secd_curve_str =
+  //     Helpers::curveToString(person->getSecondaryCurve(), false);
+
+  // /* Render the sleuth bottom stats box */
+  // curr_y += sleuth_sprite_box.height + gap;
+
+  // sleuth_bot_stats_box.point = {sleuth_sprite_box.point.x + gap,
+  // sleuth_sprite_box.point.y};
+  // sleuth_bot_stats_box.width = sleuth_sprite_box.width;
+  // sleuth_bot_stats_box.height = main_section.location.height -
+  //                               sleuth_sprite_box.height -
+  //                               sleuth_top_box.height - gap * 4;
+  // setupDefaultBox(sleuth_bot_stats_box);
+  // sleuth_bot_stats_box.render(renderer);
+
+  // Text t_rank(font_header);
+  // Text t_race(font_header);
+  // Text t_race_title(font_subheader);
+  // Text t_class(font_header);
+  // Text t_class_title(font_subheader);
+  // Text t_prim_curve(font_curve);
+  // Text t_prim_title(font_subheader);
+  // Text t_prim(font_header);
+  // Text t_secd_curve(font_curve);
+  // Text t_secd_title(font_subheader);
+  // Text t_secd(font_header);
+
+  // t_rank.setText(renderer, rank_str, kCOLOR_TEXT);
+  // t_race.setText(renderer, person->getRace()->getName(), kCOLOR_TEXT);
+  // t_race_title.setText(renderer, "RACE", kCOLOR_TEXT);
+  // t_class.setText(renderer, person->getClass()->getName(), kCOLOR_TEXT);
+  // t_class_title.setText(renderer, "CLASS", kCOLOR_TEXT);
+  // t_prim_curve.setText(renderer, prim_curve_str, kCOLOR_ELEMENTAL_CURVE);
+  // t_prim_title.setText(renderer, "PRIMARY ELEMENT", kCOLOR_TEXT);
+  // t_prim.setText(renderer, prim_element, kCOLOR_TEXT);
+  // t_secd_curve.setText(renderer, secd_curve_str, kCOLOR_ELEMENTAL_CURVE);
+  // t_secd_title.setText(renderer, "SECONDARY ELEMENT", kCOLOR_TEXT);
+  // t_secd.setText(renderer, secd_element, kCOLOR_TEXT);
+
+  // auto start = Coordinate{sleuth_bot_stats_box.point.x + 3 * gap / 2,
+  //                         sleuth_bot_stats_box.point.y + gap};
+  // auto current = start;
+
+  // /* Render column one text */
+  // t_rank.render(renderer, current.x, current.y);
+  // current.y += t_rank.getHeight() + gap * 2 / 3;
+
+  // t_race_title.render(renderer, current.x, current.y);
+  // current.y += t_race_title.getHeight() + gap / 6;
+
+  // t_race.render(renderer, current.x, current.y);
+  // current.y += t_race.getHeight() + gap * 2 / 3;
+
+  // t_class_title.render(renderer, current.x, current.y);
+  // current.y += t_class_title.getHeight() + gap / 6;
+
+  // t_class.render(renderer, current.x, current.y);
+
+  // /* Render column two text */
+  // current.x = start.x + sleuth_bot_stats_box.width / 2 - gap * 3 / 2;
+  // current.y = start.y + t_rank.getHeight() + gap / 2;
+
+  // t_prim_title.render(renderer, current.x, current.y);
+  // current.y += t_prim_title.getHeight() + gap / 6;
+
+  // t_prim.render(renderer, current.x, current.y);
+  // auto curve_x = current.x + t_prim.getWidth() + gap / 3;
+  // auto curve_y = current.y + t_prim.getHeight() - t_prim_curve.getHeight();
+
+  // t_prim_curve.render(renderer, curve_x, curve_y);
+  // current.y += t_prim.getHeight() + gap * 2 / 3;
+
+  // t_secd_title.render(renderer, current.x, current.y);
+  // current.y += t_secd_title.getHeight() + gap / 6;
+
+  // t_secd.render(renderer, current.x, current.y);
+  // curve_x = current.x + t_secd.getWidth() + gap / 3;
+  // curve_y = current.y + t_secd.getHeight() - t_secd_curve.getHeight();
+
+  // t_secd_curve.render(renderer, curve_x, curve_y);
+}
+
+void Menu::renderSleuthRecord()
+{
 }
 
 /* Renders the Save Screen */
@@ -1472,13 +2131,29 @@ void Menu::renderQuit()
 {
 }
 
+void Menu::setupDefaultBox(Box& setup_box)
+{
+  setup_box.color_bg = kCOLOR_TITLE_BG;
+  setup_box.color_bg_selected = kCOLOR_TITLE_BG;
+  setup_box.color_border = kCOLOR_BORDER_UNSELECTED;
+  setup_box.color_border_selected = kCOLOR_TITLE_BORDER;
+}
+
+BattleActor* Menu::getCurrentActor()
+{
+  if(sleuth_element_index < (int32_t)actors.size() && sleuth_element_index >= 0)
+    return actors.at(sleuth_element_index);
+
+  return nullptr;
+}
+
 Person* Menu::getCurrentPerson()
 {
   if(curr_player && curr_player->getSleuth())
   {
     auto members = curr_player->getSleuth()->getMembers();
 
-    if(sleuth_element_index > 0 &&
+    if(sleuth_element_index >= 0 &&
        sleuth_element_index < (int32_t)members.size())
       return members.at(sleuth_element_index);
   }
@@ -1496,6 +2171,22 @@ MenuType Menu::getMainMenuType()
   return MenuType::INVALID;
 }
 
+MenuType Menu::getSleuthMenuType()
+{
+  if(sleuth_element_index == 0)
+    return MenuType::SLEUTH_OVERVIEW;
+  else if(sleuth_element_index == 1)
+    return MenuType::SLEUTH_EQUIPMENT;
+  else if(sleuth_element_index == 2)
+    return MenuType::SLEUTH_SKILLS;
+  else if(sleuth_element_index == 3)
+    return MenuType::SLEUTH_DETAILS;
+  else if(sleuth_element_index == 4)
+    return MenuType::SLEUTH_RECORD;
+
+  return MenuType::INVALID;
+}
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -1506,6 +2197,8 @@ void Menu::clear()
   main_section.status = WindowStatus::OFF;
   title_section.status = WindowStatus::OFF;
 
+  clearActors();
+  clearElementFrames();
   clearIconFrames();
   setFlag(MenuState::SHOWING, false);
 }
@@ -1605,9 +2298,14 @@ void Menu::keyDownDown()
 
 void Menu::keyDownLeft()
 {
-  if(main_section.status == WindowStatus::ON)
+  if(layer == MenuLayer::MAIN)
   {
-    if(getMainMenuType() == MenuType::OPTIONS)
+    if(getMainMenuType() == MenuType::SLEUTH)
+    {
+      if(person_element_index > 0)
+        person_element_index--;
+    }
+    else if(getMainMenuType() == MenuType::OPTIONS)
     {
       if(option_element_index == 0)
         option_audio_level.decrease();
@@ -1619,9 +2317,14 @@ void Menu::keyDownLeft()
 
 void Menu::keyDownRight()
 {
-  if(main_section.status == WindowStatus::ON)
+  if(layer == MenuLayer::MAIN)
   {
-    if(getMainMenuType() == MenuType::OPTIONS)
+    if(getMainMenuType() == MenuType::SLEUTH)
+    {
+      if((uint32_t)person_element_index < person_title_elements.size())
+        person_element_index++;
+    }
+    else if(getMainMenuType() == MenuType::OPTIONS)
     {
       if(option_element_index == 0)
         option_audio_level.increase();
@@ -1772,6 +2475,7 @@ void Menu::show()
   setFlag(MenuState::SHOWING, true);
 
   buildTitleElements();
+  buildPersonTitleElements();
   buildIconFrames();
   buildTitleSection();
 
@@ -1860,6 +2564,12 @@ bool Menu::update(int32_t cycle_time)
 bool Menu::getFlag(const MenuState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
+}
+
+/* Assign the BattleDisplayData */
+void Menu::setBattleDisplayData(BattleDisplayData* battle_display_data)
+{
+  this->battle_display_data = battle_display_data;
 }
 
 /* Assign configuraiton */

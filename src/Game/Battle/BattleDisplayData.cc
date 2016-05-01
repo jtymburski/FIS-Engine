@@ -42,20 +42,37 @@ BattleDisplayData::BattleDisplayData()
  */
 BattleDisplayData::~BattleDisplayData()
 {
-  for(auto& scope : frames_scopes)
-    if(scope.second)
-      delete scope.second;
-  frames_scopes.clear();
-
-  for(auto& element : frames_elements)
-    if(element.second)
-      delete element.second;
-  frames_elements.clear();
-
   for(auto& ailment : frames_ailments)
+  {
     if(ailment.second)
       delete ailment.second;
-  frames_ailments.clear();
+
+    ailment.second = nullptr;
+  }
+
+  for(auto& attribute : frames_attributes)
+  {
+    if(attribute.second)
+      delete attribute.second;
+
+    attribute.second = nullptr;
+  }
+
+  for(auto& element : frames_elements)
+  {
+    if(element.second)
+      delete element.second;
+
+    element.second = nullptr;
+  }
+
+  for(auto& scope : frames_scopes)
+  {
+    if(scope.second)
+      delete scope.second;
+
+    scope.second = nullptr;
+  }
 
   // TODO: THIS STILL FAILS -- WHY??
   // for(auto& ailment_plep : pleps_ailments)
@@ -204,6 +221,20 @@ void BattleDisplayData::buildFramesAilments()
   setFrameAilment(Infliction::METATETHER,
                   config->getBasePath() +
                       "sprites/Battle/Ailments/MetaTether_AA_A00.png");
+}
+
+void BattleDisplayData::buildFramesAttributes()
+{
+  /* Sets the attribute frames */
+  setFrameAttribute(Attribute::UNBR,
+                    config->getBasePath() +
+                        "sprites/Battle/Skills/Elements/Physical_AA_A00.png");
+  setFrameAttribute(Attribute::LIMB,
+                    config->getBasePath() +
+                        "sprites/Battle/Skills/Elements/Physical_AA_A00.png");
+  setFrameAttribute(Attribute::MMNT,
+                    config->getBasePath() +
+                        "sprites/Battle/Skills/Elements/Physical_AA_A00.png");
 }
 
 void BattleDisplayData::buildFramesElements()
@@ -407,6 +438,12 @@ void BattleDisplayData::setFrameAilment(Infliction type, std::string path)
     frames_ailments.emplace(type, new Frame(path, renderer));
 }
 
+void BattleDisplayData::setFrameAttribute(Attribute type, std::string path)
+{
+  if(renderer && type != Attribute::NONE)
+    frames_attributes.emplace(type, new Frame(path, renderer));
+}
+
 void BattleDisplayData::setFrameElement(Element type, std::string path)
 {
   if(renderer && type != Element::NONE)
@@ -440,6 +477,7 @@ bool BattleDisplayData::buildData()
   {
     buildBattleBar();
     buildFramesAilments();
+    buildFramesAttributes();
     buildFramesElements();
     buildFramesScopes();
     buildFramesExtra();
@@ -481,6 +519,19 @@ Frame* BattleDisplayData::getFrameAilment(Infliction ailment_frame)
     auto found = frames_ailments.find(ailment_frame);
 
     if(found != end(frames_ailments))
+      return found->second;
+  }
+
+  return nullptr;
+}
+
+Frame* BattleDisplayData::getFrameAttribute(Attribute attribute_frame)
+{
+  if(attribute_frame != Attribute::NONE)
+  {
+    auto found = frames_attributes.find(attribute_frame);
+
+    if(found != end(frames_attributes))
       return found->second;
   }
 

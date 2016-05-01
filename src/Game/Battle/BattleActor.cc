@@ -56,10 +56,11 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
       frame_info{nullptr},
       menu_index{menu_index},
       person_base{person_base},
-      sprite_first_person{nullptr},
-      sprite_third_person{nullptr},
       sprite_action{nullptr},
       sprite_dialog{nullptr},
+      sprite_face{nullptr},
+      sprite_first_person{nullptr},
+      sprite_third_person{nullptr},
       state_active_sprite{SpriteState::HIDDEN},
       state_death_fade{FadeState::NOT_SHOWN},
       state_elapsed_time{0},
@@ -81,6 +82,15 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
   battleSetup(is_ally, can_run);
   createSprites(renderer);
 }
+
+/*
+* Description:
+ *
+ * Inputs:
+ */
+BattleActor::BattleActor(Person* person_base, SDL_Renderer* renderer)
+  : BattleActor(person_base, 0, 0, true, false, renderer)
+{}
 
 /*
  * Description: Annihilates a BattleActor object
@@ -212,12 +222,18 @@ void BattleActor::clearSprites()
 {
   if(sprite_action)
     delete sprite_action;
+  if(sprite_dialog)
+    delete sprite_dialog;
+  if(sprite_face)
+    delete sprite_face;
   if(sprite_first_person)
     delete sprite_first_person;
   if(sprite_third_person)
     delete sprite_third_person;
 
   sprite_action = nullptr;
+  sprite_dialog = nullptr;
+  sprite_face = nullptr;
   sprite_first_person = nullptr;
   sprite_third_person = nullptr;
 }
@@ -276,6 +292,17 @@ void BattleActor::createSprites(SDL_Renderer* renderer)
       {
         sprite_dialog->setNonUnique(true, 1);
         sprite_dialog->createTexture(renderer);
+      }
+    }
+
+    if(person_base->getFaceSpritePath() != "")
+    {
+      sprite_face = new Sprite(person_base->getFaceSpritePath(), renderer);
+
+      if(sprite_face)
+      {
+        sprite_face->setNonUnique(true, 1);
+        sprite_face->createTexture(renderer);
       }
     }
   }
@@ -811,12 +838,12 @@ std::vector<ActionType> BattleActor::getValidActionTypes()
 
   valid_types.push_back(ActionType::SKILL);
 
-  //TODO: ITM_ENABLED flag
+  // TODO: ITM_ENABLED flag
   valid_types.push_back(ActionType::ITEM);
 
   if(getFlag(ActorState::PAS_ENABLED))
     valid_types.push_back(ActionType::PASS);
-  //if(getFlag(ActorState::RUN_ENABLED))
+  // if(getFlag(ActorState::RUN_ENABLED))
   //  valid_types.push_back(ActionType::RUN);
 
   // TODO: Other action types [10-04-15]
@@ -882,6 +909,11 @@ int32_t BattleActor::getDialogX()
 int32_t BattleActor::getDialogY()
 {
   return dialog_y;
+}
+
+Sprite* BattleActor::getFaceSprite()
+{
+  return sprite_face;
 }
 
 GuardingState BattleActor::getGuardingState()

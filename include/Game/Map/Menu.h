@@ -17,6 +17,8 @@
 
 #include "EnumFlags.h"
 #include "Helpers.h"
+#include "Game/Battle/BattleDisplayData.h"
+#include "Game/Battle/BattleActor.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
@@ -28,6 +30,11 @@
 enum class MenuType
 {
   SLEUTH,
+  SLEUTH_OVERVIEW,
+  SLEUTH_EQUIPMENT,
+  SLEUTH_SKILLS,
+  SLEUTH_DETAILS,
+  SLEUTH_RECORD,
   INVENTORY,
   INVENTORY_BUBBIES,
   INVENTORY_EQUIP,
@@ -205,6 +212,9 @@ public:
   ~Menu();
 
 private:
+  /* Battle Display Data */
+  BattleDisplayData* battle_display_data;
+
   /* Current Map the Menu is Running On */
   Map* curr_map;
 
@@ -216,6 +226,9 @@ private:
 
   /* Assigned Configuration */
   Options* config;
+
+  /* Current working coordinate */
+  Coordinate current;
 
   /* Enumerated flags for the Menu */
   MenuState flags;
@@ -229,11 +242,11 @@ private:
   Frame* frame_key_items;
   Frame* frame_location;
   Frame* frame_money;
+  Frame* frame_exp_full;
+  Frame* frame_exp_middle;
+  Frame* frame_exp_empty;
 
-  /* Inventory Details Frames (Description etc.) */
-  std::vector<Frame> inventory_details;
-
-  /* Inventory titles (Icon Boxes) */
+  /* Inventory / Face Titles (Icon Boxes) */
   std::vector<Box> titles;
 
   /* Inventory Screen Boxes */
@@ -254,19 +267,21 @@ private:
   DigitalOption option_auto_run;
   DigitalOption option_mute;
 
+  /* The Battle Actors for the sleuth */
+  std::vector<BattleActor*> actors;
+
   /* Inventory */
   Inventory* player_inventory;
 
   /* Assigned Renderer */
   SDL_Renderer* renderer;
 
-  /* Inventory Screen Boxes */
-  Box sleuth_top_box;
-  Box sleuth_sprite_box;
-  Box sleuth_top_stats_box;
-  Box sleuth_bot_stats_box;
-  Box sleuth_info_box;
-  std::vector<Box> sleuth_equip_icons;
+  /* Sleuth Screen Boxes */
+  Box s_top_box;
+  Box s_sprite_box;
+  Box s_bot_stats_box;
+  Box s_top_stats_box;
+  Box s_attributes_box;
 
   /* Sleuth Frames */
   std::vector<Sprite*> sleuth_faces;
@@ -275,14 +290,18 @@ private:
   /* Vector of title elements */
   std::vector<TitleElement> title_elements;
 
-  /* Selected TitleElement index */
+  /* Vector of  */
+  std::vector<TitleElement> person_title_elements;
+
+  /* Element indexes */
+  int32_t inventory_element_index;
+  int32_t option_element_index;
+  int32_t person_element_index;
   int32_t sleuth_element_index;
   int32_t title_element_index;
-  int32_t option_element_index;
 
   /* Inventory Index Values */
   InventoryIndex inventory_title_index;
-  int32_t inventory_element_index;
 
   /* Title Section (Left) Window */
   Window title_section;
@@ -323,6 +342,13 @@ private:
   static const float kSAVE_WIDTH;
   static const float kSLEUTH_WIDTH;
 
+  /* Sleuth Section */
+  static const float kSLEUTH_GAP;
+  static const float kSLEUTH_SPRITE_WIDTH;
+  static const float kSLEUTH_ELEMENT_HEIGHT;
+  static const float kSLEUTH_EQUIP_ICON_SIZE;
+  static const float kSLEUTH_ATTRIBUTE_INSET;
+
   /* Inventory Section */
   static const float kINV_GAP;
   static const float kINV_MASS_TEXT_Y;
@@ -356,6 +382,7 @@ private:
   static const SDL_Color kCOLOR_INVENTORY_ICON_FILL;
   static const SDL_Color kCOLOR_BORDER_UNSELECTED;
   static const SDL_Color kCOLOR_ICON_UNSELECTED_FILL;
+  static const SDL_Color kCOLOR_ELEMENTAL_CURVE;
 
   /*=============================================================================
    * PRIVATE FUNCTIONS
@@ -372,11 +399,12 @@ private:
   void buildInventoryItems();
   void buildInventoryKeyItems();
 
-  /* Texture Creations for Items */
+  /* Texture Creations for Items, Attributes, Elements+ */
   SDL_Texture* buildItemListFrame(Item* build_item, int32_t count,
                                   uint32_t width, uint32_t height);
-  SDL_Texture* buildItemDetailFrame(Item* build_item, uint32_t width,
-                                    uint32_t height);
+  SDL_Texture* buildAttributeFrame(Attribute attr, uint32_t width,
+                                   uint32_t height);
+  SDL_Texture* buildElementFrame(Element elm, uint32_t width, uint32_t height);
 
   /* Construct the main section backdrop */
   void buildMainSection(MenuType menu_type);
@@ -388,7 +416,7 @@ private:
   void buildPersonDetailScreen();
 
   /* Construct the Sleuth overview screen */
-  void buildSleuthScreen();
+  bool buildSleuthScreen();
 
   /* Construct the attribute frames for the current person */
   void buildSleuthStats();
@@ -396,10 +424,13 @@ private:
   /* Construct a vector of TitleElements for the Title Section */
   void buildTitleElements();
 
+  /* Construct person title elements for selection */
+  void buildPersonTitleElements();
+
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
-
   int32_t calcMainCornerInset();
+  int32_t calcSleuthTileSize();
 
   /* Calculate the required string for Item Details */
   std::string calcItemDetailsString(Item* item);
@@ -410,6 +441,12 @@ private:
 
   /* Can the sleuth element index be incremented? */
   bool canIncrementSleuth();
+
+  /* Clear the battle actors */
+  void clearActors();
+
+  /* Clear the element frames */
+  void clearElementFrames();
 
   /* Clear out the Icon Frames */
   void clearIconFrames();
@@ -432,10 +469,14 @@ private:
   void keyDownAction();
   void keyDownCancel();
 
-  /*  */
+  /* Selection methods */
   void selectInventoryIndex();
   void selectOptionIndex();
+
   void selectSleuthIndex();
+
+  /* Render the attribute frames */
+  void renderAttributes(Coordinate start, int32_t gap);
 
   /* Render Bubbies */
   void renderBubbies();
@@ -464,8 +505,16 @@ private:
   UCoordinate renderOptionDigital(DigitalOption& option, UCoordinate point);
   void renderOptions();
 
+  /* Render the person element titles */
+  void renderPersonElementTitles(int32_t gap);
+
   /* Render the Save Screen */
   void renderSleuth();
+  void renderSleuthOverview();
+  void renderSleuthEquipment();
+  void renderSleuthSkills();
+  void renderSleuthDetails();
+  void renderSleuthRecord();
 
   /* Render the Save Screen */
   void renderSave();
@@ -473,16 +522,23 @@ private:
   /* Render the Quit Screen */
   void renderQuit();
 
-  /* */
+  /* Setup for the standard box used throughout the menu */
+  void setupDefaultBox(Box& setup_box);
+
+  /* Unselecting index functions */
   void unselectInventoryIndex();
   void unselectOptionIndex();
   void unselectSleuthIndex();
 
   /* Obtain a pointer to the currently selected person */
+  BattleActor* getCurrentActor();
   Person* getCurrentPerson();
 
   /* Returns the MenuType currently rendering */
   MenuType getMainMenuType();
+
+  /* Returns the MenuType of the Sleuth Screen */
+  MenuType getSleuthMenuType();
 
   /*=============================================================================
    * PUBLIC FUNCTIONS
@@ -508,6 +564,9 @@ public:
 
   /* Returns an evaluated MenuState flag */
   bool getFlag(const MenuState& test_flag);
+
+  /* Assign the Battle Display Data */
+  void setBattleDisplayData(BattleDisplayData* battle_display_data);
 
   /* Assign Configuration */
   void setConfig(Options* config);

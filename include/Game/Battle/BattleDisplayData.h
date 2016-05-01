@@ -58,6 +58,9 @@ private:
   /* Frames for each type of Ailment */
   std::map<Infliction, Frame*> frames_ailments;
 
+  /* Attribute frames */
+  std::map<Attribute, Frame*> frames_attributes;
+
   /* Frames for each Element */
   std::map<Element, Frame*> frames_elements;
 
@@ -84,6 +87,9 @@ private:
   /* Builds the ailment frames */
   void buildFramesAilments();
 
+  /* Builds the attribute frames */
+  void buildFramesAttributes();
+
   /* Builds elemental frames */
   void buildFramesElements();
 
@@ -101,6 +107,9 @@ private:
 
   /* Assigns an ailment frame */
   void setFrameAilment(Infliction type, std::string path);
+
+  /* Assigns an attribute frame */
+  void setFrameAttribute(Attribute type, std::string path);
 
   /* Assigns an element frame */
   void setFrameElement(Element type, std::string path);
@@ -139,6 +148,9 @@ public:
 
   /* Returns an ailment frame of a given Infliction */
   Frame* getFrameAilment(Infliction ailment_frame);
+
+  /* Returns an attribute frame of a given Attribute */
+  Frame* getFrameAttribute(Attribute attribute_frame);
 
   /* Returns an element frame of a given element */
   Frame* getFrameElement(Element element_frame);
