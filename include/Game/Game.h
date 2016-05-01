@@ -126,7 +126,7 @@ public:
   static const std::string kSAVE_PATH_FRONT; /* Front of save path */
   static const uint8_t kSAVE_SLOT_MAX; /* Max number of save slots */
 
-/*======================== PRIVATE FUNCTIONS ===============================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Add functions for game objects */
   Action* addAction(const std::string &raw);
@@ -232,7 +232,7 @@ private:
   void updateMenuEnabledState();
   void updatePlayerSteps();
 
-/*========================= PUBLIC FUNCTIONS ===============================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Enable view trigger */
   void enableView(bool enable);

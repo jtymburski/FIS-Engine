@@ -1246,53 +1246,60 @@ void Menu::renderMainSection()
      renderer)
   {
     auto menu_type = getMainMenuType();
-    auto location = main_section.location;
-    auto point = main_section.location.point;
-    auto corner_inset = calcMainCornerInset();
+    //auto location = main_section.location;
+    //auto point = main_section.location.point;
+    //auto corner_inset = calcMainCornerInset();
 
-    /* Render the frame outline and backdrop */
-    Coordinate tl = {point.x, point.y};
-    Coordinate tr = {point.x + location.width - corner_inset, point.y};
-    Coordinate bl = {point.x, point.y + location.height};
-    Coordinate br = {point.x + location.width - corner_inset,
-                     point.y + location.height};
+    setupDefaultBox(main_section.location);
+    main_section.location.corner_inset = calcMainCornerInset();
+    main_section.location.box_type = BoxType::CORNER_CUT_BOX;
+    main_section.location.color_border = kCOLOR_MAIN_BORDER;
+    main_section.location.color_bg = {0, 0, 0, main_section.alpha};
+    main_section.location.render(renderer);
 
-    Coordinate blc = {br.x + 1, br.y - 1};
-    Coordinate tlc = {tr.x + 1, tl.y};
-    Coordinate trc = {tr.x + corner_inset, tr.y};
-    Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
+    // /* Render the frame outline and backdrop */
+    // Coordinate tl = {point.x, point.y};
+    // Coordinate tr = {point.x + location.width - corner_inset, point.y};
+    // Coordinate bl = {point.x, point.y + location.height};
+    // Coordinate br = {point.x + location.width - corner_inset,
+    //                  point.y + location.height};
 
-    Coordinate atl = {blc.x - 1, blc.y};
-    Coordinate abl = {blc.x, blc.y + 1};
-    Coordinate atr = {brc.x - 1, brc.y};
-    Coordinate abr = {brc.x, brc.y + 1};
+    // Coordinate blc = {br.x + 1, br.y - 1};
+    // Coordinate tlc = {tr.x + 1, tl.y};
+    // Coordinate trc = {tr.x + corner_inset, tr.y};
+    // Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
 
-    auto top_bar = Helpers::bresenhamPoints(tl, tr);
-    auto bot_bar = Helpers::bresenhamPoints(bl, br);
-    auto top_corner = Helpers::bresenhamPoints(tlc, trc);
-    auto bot_corner = Helpers::bresenhamPoints(blc, brc);
-    auto right_line = Helpers::bresenhamPoints(trc, brc);
-    auto corner_aa_top = Helpers::bresenhamPoints(atl, atr);
-    auto corner_aa_bot = Helpers::bresenhamPoints(abl, abr);
+    // Coordinate atl = {blc.x - 1, blc.y};
+    // Coordinate abl = {blc.x, blc.y + 1};
+    // Coordinate atr = {brc.x - 1, brc.y};
+    // Coordinate abr = {brc.x, brc.y + 1};
 
-    Frame::setRenderDrawColor(renderer, {0, 0, 0, main_section.alpha});
-    Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
-    Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
+    // auto top_bar = Helpers::bresenhamPoints(tl, tr);
+    // auto bot_bar = Helpers::bresenhamPoints(bl, br);
+    // auto top_corner = Helpers::bresenhamPoints(tlc, trc);
+    // auto bot_corner = Helpers::bresenhamPoints(blc, brc);
+    // auto right_line = Helpers::bresenhamPoints(trc, brc);
+    // auto corner_aa_top = Helpers::bresenhamPoints(atl, atr);
+    // auto corner_aa_bot = Helpers::bresenhamPoints(abl, abr);
 
-    Frame::setRenderDrawColor(renderer, kCOLOR_MAIN_BORDER);
-    Frame::drawLine(top_bar, renderer);
-    Frame::drawLine(bot_bar, renderer);
-    Frame::drawLine(top_corner, renderer);
-    Frame::drawLine(bot_corner, renderer);
-    Frame::drawLine(right_line, renderer);
+    // Frame::setRenderDrawColor(renderer, {0, 0, 0, main_section.alpha});
+    // Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
+    // Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
 
-    /* Anti-Aliased Top Line */
-    Frame::setRenderDrawColor(renderer, {255, 255, 255, 45});
-    Frame::drawLine(corner_aa_top, renderer);
+    // Frame::setRenderDrawColor(renderer, kCOLOR_MAIN_BORDER);
+    // Frame::drawLine(top_bar, renderer);
+    // Frame::drawLine(bot_bar, renderer);
+    // Frame::drawLine(top_corner, renderer);
+    // Frame::drawLine(bot_corner, renderer);
+    // Frame::drawLine(right_line, renderer);
 
-    /* Anti-Aliased Bot Line */
-    Frame::setRenderDrawColor(renderer, {255, 255, 255, 80});
-    Frame::drawLine(corner_aa_bot, renderer);
+    // /* Anti-Aliased Top Line */
+    // Frame::setRenderDrawColor(renderer, {255, 255, 255, 45});
+    // Frame::drawLine(corner_aa_top, renderer);
+
+    // /* Anti-Aliased Bot Line */
+    // Frame::setRenderDrawColor(renderer, {255, 255, 255, 80});
+    // Frame::drawLine(corner_aa_bot, renderer);
 
     if(menu_type == MenuType::INVENTORY)
       renderInventory();
@@ -1982,9 +1989,8 @@ void Menu::renderSleuthOverview()
   current.y += 3 * gap / 2;
   t_level.render(renderer, current.x, current.y);
 
-  current.x += frame_exp_empty->getWidth() + gap;
-  current.y = y;
-
+  current.x = x + frame_exp_empty->getWidth() - gap / 2;
+  current.y = y + frame_exp_empty->getHeight() / 4;
 
   Text t_exp(font_header);
   Text t_vita(font_header);
@@ -2007,10 +2013,15 @@ void Menu::renderSleuthOverview()
   t_qtdr.setText(renderer, qtdr_str, kCOLOR_TEXT);
 
   t_exp.render(renderer, current.x, current.y);
-  current.y += t_exp.getHeight() + gap / 2;
-  t_vita.render(renderer, current.x, current.y);
-  current.y += t_vita.getHeight() + gap / 2;
-  t_qtdr.render(renderer, current.x, current.y);
+  current.y += t_exp.getHeight() + gap;
+
+  /* Render vitality bar */
+  Frame::setRenderDrawColor(renderer, SDL_Color{125, 255, 125, 0});
+  Frame::renderBar(current.x, current.y, 300, 30, 0.5, renderer);
+
+  t_vita.render(renderer, current.x + 300, current.y);
+  current.y += t_vita.getHeight() + gap;
+  t_qtdr.render(renderer, current.x + 300, current.y);
 
   /* Render the sleuth attributes */
   renderAttributes(s_attributes_box.point, gap);

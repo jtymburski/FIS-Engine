@@ -24,6 +24,13 @@
 using std::begin;
 using std::end;
 
+enum class BoxType
+{
+  NORMAL_BOX,
+  CORNER_CUT_BOX,
+  BAR
+};
+
 ENUM_FLAGS(BoxState)
 enum class BoxState
 {
@@ -33,7 +40,7 @@ enum class BoxState
   BORDER_HOVER_CYCLE = 1 << 3,
   ELEMENT_HOVER_CYCLE = 1 << 4,
   HOVER_CYCLE = 1 << 5,
-  SELECTED = 1 << 7
+  SELECTED = 1 << 7,
 };
 
 class Box
@@ -61,6 +68,9 @@ private:
   std::vector<Frame*> elements;
 
 public:
+  /* Box Type */
+  BoxType box_type;
+
   /* Colors */
   SDL_Color color_bg;
   SDL_Color color_bg_selected;
@@ -73,6 +83,9 @@ public:
   SDL_Color color_scroll_bg;
   SDL_Color color_scroll_selected;
   SDL_Color color_scroll_bg_selected;
+
+  /* Number of pixels for corner inset (when rendering cut box) */
+  uint32_t corner_inset;
 
   /* Cycle rates for the Box / Element */
   float cycle_box_rate;

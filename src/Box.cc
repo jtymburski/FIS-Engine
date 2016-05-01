@@ -87,6 +87,8 @@ Box::~Box()
  */
 void Box::loadDefaults()
 {
+  box_type = BoxType::NORMAL_BOX;
+
   color_bg = kDEFAULT_COLOR_BG;
   color_bg_selected = kDEFAULT_COLOR_BG;
   color_border = kDEFAULT_COLOR_BORDER;
@@ -98,6 +100,8 @@ void Box::loadDefaults()
   color_scroll_bg = kDEFAULT_COLOR_SCROLL_BG;
   color_scroll_selected = kDEFAULT_COLOR_SCROLL_SELECTED;
   color_scroll_bg_selected = kDEFAULT_COLOR_SCROLL_BG;
+
+  corner_inset = 0;
 
   cycle_box_rate = kDEFAULT_CYCLE_RATE;
   cycle_element_rate = kDEFAULT_CYCLE_RATE;
@@ -117,6 +121,7 @@ void Box::loadDefaults()
   width_border_selected = 1;
   width_element_border = 1;
   width_element_border_selected = 1;
+
   clearElements();
 }
 
@@ -214,7 +219,7 @@ bool Box::renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable)
       success &= Frame::renderCircleFilled(
           center_x, point.y + scroll_inset_y + 1, circle_size, renderer);
     }
-    else if (scroll_x > 0)
+    else if(scroll_x > 0)
     {
       /* Top Triangle Coordinates */
       UCoordinate t1 = {scroll_x + tri_inset, scroll_y - scroll_inset_y};
@@ -367,6 +372,23 @@ bool Box::render(SDL_Renderer* renderer)
 
   if(renderer)
   {
+    SDL_Color bg_color;
+    SDL_Color border_color;
+    int32_t border_width;
+
+    if(getFlag(BoxState::SELECTED))
+    {
+      bg_color = color_bg_selected;
+      border_color = color_border_selected;
+      border_width = width_border_selected;
+    }
+    else
+    {
+      bg_color = color_bg;
+      border_color = color_border;
+      border_width = width_border;
+    }
+
     success = true;
     /* Render the background rectangle */
     SDL_Rect rect;
@@ -375,24 +397,60 @@ bool Box::render(SDL_Renderer* renderer)
     rect.h = height;
     rect.w = width;
 
-    if(getFlag(BoxState::SELECTED))
-      Frame::setRenderDrawColor(renderer, color_bg_selected);
-    else
-      Frame::setRenderDrawColor(renderer, color_bg);
-
-    SDL_RenderFillRect(renderer, &rect);
-
-    /* Render the border based on whether this scroll box is currently being
-     * selected (hovered on). */
-    if(getFlag(BoxState::SELECTED))
+    if(box_type == BoxType::NORMAL_BOX)
     {
-      Frame::setRenderDrawColor(renderer, color_border_selected);
-      success &= Frame::renderRect(rect, width_border_selected, renderer);
+      Frame::setRenderDrawColor(renderer, bg_color);
+      SDL_RenderFillRect(renderer, &rect);
+
+      /* Render the border based on whether this scroll box is currently being
+       * selected (hovered on). */
+      Frame::setRenderDrawColor(renderer, border_color);
+      success &= Frame::renderRect(rect, border_width, renderer);
     }
-    else
+    else if(box_type == BoxType::CORNER_CUT_BOX)
     {
-      Frame::setRenderDrawColor(renderer, color_border);
-      success &= Frame::renderRect(rect, width_border, renderer);
+      /* Render the frame outline and backdrop */
+      Coordinate tl = {point.x, point.y};
+      Coordinate tr = {point.x + width - corner_inset, point.y};
+      Coordinate bl = {point.x, point.y + height};
+      Coordinate br = {point.x + width - corner_inset, point.y + height};
+
+      Coordinate blc = {br.x + 1, br.y - 1};
+      Coordinate tlc = {tr.x + 1, tl.y};
+      Coordinate trc = {tr.x + corner_inset, tr.y};
+      Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
+
+      Coordinate atl = {blc.x - 1, blc.y};
+      Coordinate abl = {blc.x, blc.y + 1};
+      Coordinate atr = {brc.x - 1, brc.y};
+      Coordinate abr = {brc.x, brc.y + 1};
+
+      auto top_bar = Helpers::bresenhamPoints(tl, tr);
+      auto bot_bar = Helpers::bresenhamPoints(bl, br);
+      auto top_corner = Helpers::bresenhamPoints(tlc, trc);
+      auto bot_corner = Helpers::bresenhamPoints(blc, brc);
+      auto right_line = Helpers::bresenhamPoints(trc, brc);
+      auto corner_aa_top = Helpers::bresenhamPoints(atl, atr);
+      auto corner_aa_bot = Helpers::bresenhamPoints(abl, abr);
+
+      Frame::setRenderDrawColor(renderer, bg_color);
+      Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
+      Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
+
+      Frame::setRenderDrawColor(renderer, border_color);
+      Frame::drawLine(top_bar, renderer);
+      Frame::drawLine(bot_bar, renderer);
+      Frame::drawLine(top_corner, renderer);
+      Frame::drawLine(bot_corner, renderer);
+      Frame::drawLine(right_line, renderer);
+
+      /* Anti-Aliased Top Line */
+      // Frame::setRenderDrawColor(renderer, {255, 255, 255, 45});
+      // Frame::drawLine(corner_aa_top, renderer);
+
+      /* Anti-Aliased Bot Line */
+      // Frame::setRenderDrawColor(renderer, {255, 255, 255, 80});
+      // Frame::drawLine(corner_aa_bot, renderer);
     }
 
     /* Grab the number of viewable elements within the box */
