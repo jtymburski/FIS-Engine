@@ -449,6 +449,9 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   {
     modified_thing->setEventHandler(event_handler);
     modified_thing->setID(id);
+    modified_thing->setStartingLocation(section_index,
+                                        modified_thing->getStartingX(),
+                                        modified_thing->getStartingY());
   }
 
   /* Make sure the section index is appropriately assigned */
@@ -3174,6 +3177,18 @@ void Map::unloadMap()
   /* Delete all sub-maps and data within */
   for(uint32_t i = 0; i < sub_map.size(); i++)
   {
+    /* Delete all the tiles that have been set */
+    for(uint32_t j = 0; j < sub_map[i].tiles.size(); j++)
+    {
+      for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
+      {
+        delete sub_map[i].tiles[j][k];
+        sub_map[i].tiles[j][k] = NULL;
+      }
+      sub_map[i].tiles[j].clear();
+    }
+    sub_map[i].tiles.clear();
+
     /* Delete the instance IOs */
     for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
     {
@@ -3205,18 +3220,6 @@ void Map::unloadMap()
       sub_map[i].things[j] = nullptr;
     }
     sub_map[i].things.clear();
-
-    /* Delete all the tiles that have been set */
-    for(uint32_t j = 0; j < sub_map[i].tiles.size(); j++)
-    {
-      for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
-      {
-        delete sub_map[i].tiles[j][k];
-        sub_map[i].tiles[j][k] = NULL;
-      }
-      sub_map[i].tiles[j].clear();
-    }
-    sub_map[i].tiles.clear();
   }
   sub_map.clear();
 
