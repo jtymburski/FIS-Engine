@@ -1971,8 +1971,14 @@ bool Game::save()
       player_main->saveData(&save_handle);
     }
 
+    /* Setup the map data */
+    XmlData data_map;
+    data_map.addElement("game");
+    data_map.addElement("map", "id", std::to_string(map_lvl));
+    save_handle.purgeElement(data_map, true);
+
     /* Write the map data */
-    // TODO: Modify current map data */
+    map_ctrl.saveData(&save_handle);
 
     /* Finish the file write */
     save_handle.writeXmlElementEnd();

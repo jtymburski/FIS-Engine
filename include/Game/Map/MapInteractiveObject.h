@@ -53,7 +53,7 @@ private:
   /* -------------------------- Constants ------------------------- */
   const static short kRETURN_TIME_UNUSED; /* The unused time inidicator */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Appends an empty node to the tail of the sequence list */
   void appendEmptyNode();
@@ -86,7 +86,7 @@ private:
   bool shiftNext();
   bool shiftPrevious();
 
-  /*======================= PROTECTED FUNCTIONS ==============================*/
+/*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Check if the tile can be set with the thing */
   virtual bool canSetTile(Tile* tile, TileSprite* frames,
@@ -108,13 +108,14 @@ protected:
   /* This unsets the tile, at the given frame coordinate */
   virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds IO information from the XML file. Will be virtually re-called
    * by all children for proper operation */
   virtual bool addThingInformation(XmlData data, int file_index,
                                    int section_index, SDL_Renderer* renderer,
-                                   std::string base_path = "");
+                                   std::string base_path = "",
+                                   bool from_save = false);
 
   /* Returns the class descriptor, useful for casting */
   virtual ThingBase classDescriptor();

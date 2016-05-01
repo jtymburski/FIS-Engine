@@ -140,11 +140,12 @@ void MapItem::unsetTile(uint32_t x, uint32_t y, bool no_events)
  *         int section_index - the map section index of the item
  *         SDL_Renderer* renderer - the graphical rendering engine pointer
  *         std::string base_path - the base path for resources
+ *         bool from_save - true if the load is from a save file
  * Output: bool - status if successful
  */
 bool MapItem::addThingInformation(XmlData data, int file_index,
                                   int section_index, SDL_Renderer* renderer,
-                                  std::string base_path)
+                                  std::string base_path, bool from_save)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
@@ -185,6 +186,10 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
     success &= MapThing::addThingInformation(data, file_index, section_index,
                                              renderer, base_path);
   }
+
+  /* If not from save, reset changed back to false */
+  if(!from_save)
+    changed = false;
 
   return success;
 }

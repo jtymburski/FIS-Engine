@@ -644,7 +644,7 @@ void MapNPC::updateBound()
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
-  
+
 /*
  * Description: Renders additional images or frames on top of the designated
  *              tile. Called from the render call. This is virtualized for use
@@ -659,11 +659,11 @@ void MapNPC::updateBound()
  * Output: bool - status if call was successful
  */
 bool MapNPC::renderAdditional(SDL_Renderer* renderer, Tile* tile,
-                              int tile_x, int tile_y, 
+                              int tile_x, int tile_y,
                               int render_x, int render_y)
 {
   bool success = true;
- 
+
   /* Render spotted if valid and in correct tile */
   if(spotted_img != nullptr && tile_y == 0 && spotted_time > 0)
   {
@@ -689,7 +689,7 @@ bool MapNPC::renderAdditional(SDL_Renderer* renderer, Tile* tile,
     {
       if((tile_x + 1) == matrix->width())
       {
-        success &= spotted_img->render(renderer, 
+        success &= spotted_img->render(renderer,
                          render_x + tile->getWidth() - spotted_img->getWidth(),
                          render_y);
       }
@@ -760,11 +760,12 @@ bool MapNPC::setDirection(Direction direction, bool set_movement)
  *         int section_index - the map section index of the npc
  *         SDL_Renderer* renderer - the graphical rendering engine pointer
  *         std::string base_path - the base path for resources
+ *         bool from_save - true if the load is from a save file
  * Output: bool - status if successful
  */
 bool MapNPC::addThingInformation(XmlData data, int file_index,
                                  int section_index, SDL_Renderer* renderer,
-                                 std::string base_path)
+                                 std::string base_path, bool from_save)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
@@ -900,6 +901,7 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     if(success)
       setForcedInteraction(interact);
   }
+  /* Proceed to parent */
   else
   {
     success &= MapPerson::addThingInformation(data, file_index, section_index,
@@ -907,6 +909,10 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     if(identifier == "startpoint")
       updateBound();
   }
+
+  /* If not from save, reset changed back to false */
+  if(!from_save)
+    changed = false;
 
   return success;
 }
@@ -1260,7 +1266,7 @@ bool MapNPC::removeAllNodes()
 
   return true;
 }
-  
+
 /*
  * Description: Removes the node at the given index. If this has nodes after it,
  *              those nodes are bumped up (index - 1).
@@ -1448,7 +1454,7 @@ void MapNPC::setPlayer(MapPerson* player)
 }
 
 /*
- * Description: Sets the spotted reference image. If null is passed in, it 
+ * Description: Sets the spotted reference image. If null is passed in, it
  *              unsets all actively used rendering frames.
  *
  * Inputs: none
@@ -1666,7 +1672,7 @@ Floatinate MapNPC::update(int cycle_time,
               /* Trigger spotted */
               spotted_time = kSPOTTED_INIT;
               if(event_handler != nullptr)
-                event_handler->triggerSound(Sound::kID_SOUND_SPOTTED, 
+                event_handler->triggerSound(Sound::kID_SOUND_SPOTTED,
                                             SoundChannels::TRIGGERS);
             }
           }

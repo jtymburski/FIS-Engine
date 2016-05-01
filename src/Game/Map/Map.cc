@@ -1277,10 +1277,12 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
     /* Tile Event(s) */
     success &= saveTiles(fh, &sub_map[id]);
 
-    /* Map Thing(s) */ // TODO: HERE
-    //for(uint32_t i = 0; i < sub_map[id]->
+    /* Map Thing(s) */
+    for(uint32_t i = 0; i < sub_map[id].things.size(); i++)
+      sub_map[id].things[i]->save(fh);
 
     /* Map IO(s) */
+    // TODO: HERE
 
     /* Map Item(s) */
 

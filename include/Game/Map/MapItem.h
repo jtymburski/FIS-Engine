@@ -60,7 +60,8 @@ public:
    * by all children for proper operation */
   virtual bool addThingInformation(XmlData data, int file_index,
                                    int section_index, SDL_Renderer* renderer,
-                                   std::string base_path = "");
+                                   std::string base_path = "",
+                                   bool from_save = false);
 
   /* Returns the class descriptor, useful for casting */
   virtual ThingBase classDescriptor();

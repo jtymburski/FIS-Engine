@@ -111,7 +111,7 @@ private:
   TrackingState track_state;
   bool tracking;
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Appends an empty node onto the back of the movement stack */
   void appendEmptyNode();
@@ -138,7 +138,7 @@ private:
   /* update the node bounding rect */
   void updateBound();
 
-  /*======================= PROTECTED FUNCTIONS ==============================*/
+/*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Additional rendering call for overlays - virtualized */
   virtual bool renderAdditional(SDL_Renderer* renderer, Tile* tile,
@@ -148,13 +148,14 @@ protected:
   /* Sets the direction that the person is travelling in */
   bool setDirection(Direction direction, bool set_movement = true);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds npc information from the XML file. Will be virtually re-called
    * by all children for proper operation */
   virtual bool addThingInformation(XmlData data, int file_index,
                                    int section_index, SDL_Renderer* renderer,
-                                   std::string base_path = "");
+                                   std::string base_path = "",
+                                   bool from_save = false);
 
   /* Returns the class descriptor, useful for casting */
   virtual ThingBase classDescriptor();
