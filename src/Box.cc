@@ -87,8 +87,11 @@ Box::~Box()
  */
 void Box::loadDefaults()
 {
+  bar_amount = 0;
+  bar_degrees = 45;
   box_type = BoxType::NORMAL_BOX;
 
+  color_bar = kDEFAULT_COLOR_BORDER;
   color_bg = kDEFAULT_COLOR_BG;
   color_bg_selected = kDEFAULT_COLOR_BG;
   color_border = kDEFAULT_COLOR_BORDER;
@@ -123,6 +126,54 @@ void Box::loadDefaults()
   width_element_border_selected = 1;
 
   clearElements();
+}
+
+/* Render the box as a bar */
+bool Box::renderBar(SDL_Renderer* renderer)
+{
+  auto bar_width = (int32_t)std::round(width * bar_amount);
+  bool success = false;
+
+  if(renderer && bar_degrees <= 90)
+  {
+    success = true;
+
+    auto slope_rads = height / std::tan(bar_degrees * 3.14159265 / 180.0);
+    auto delta_x = (int32_t)std::round(slope_rads);
+
+    /* Find the four points of the scroll bar */
+    Coordinate tl = {point.x + delta_x, point.y};
+    Coordinate bl = {point.x, point.y + height};
+    Coordinate tr = {point.x + width, point.y};
+    Coordinate br = {point.x + width - delta_x, point.y + height};
+
+    Coordinate bar_t = {tl.x + bar_width, tl.y};
+    Coordinate bar_b = {bl.x + bar_width, bl.y + height};
+
+    /* Find the two points where the bar ends */
+    auto top_bar = Helpers::bresenhamPoints(tl, tr);
+    auto bot_bar = Helpers::bresenhamPoints(bl, br);
+    auto left_bar = Helpers::bresenhamPoints(bl, tl);
+    auto right_bar = Helpers::bresenhamPoints(br, tr);
+    auto fill_bar = Helpers::bresenhamPoints(bar_b, bar_t);
+
+    /* Render the background */
+    Frame::setRenderDrawColor(renderer, color_bg);
+    Frame::renderFillLineToLine(left_bar, right_bar, renderer);
+
+    /* Render the foreground */
+    Frame::setRenderDrawColor(renderer, color_bar);
+    Frame::renderFillLineToLine(left_bar, right_bar, renderer);
+
+    /* Render the border */
+    Frame::setRenderDrawColor(renderer, color_border);
+    Frame::drawLine(top_bar, renderer);
+    Frame::drawLine(left_bar, renderer);
+    Frame::drawLine(bot_bar, renderer);
+    Frame::drawLine(right_bar, renderer);
+  }
+
+  return success;
 }
 
 // Render elements
@@ -451,6 +502,10 @@ bool Box::render(SDL_Renderer* renderer)
       /* Anti-Aliased Bot Line */
       // Frame::setRenderDrawColor(renderer, {255, 255, 255, 80});
       // Frame::drawLine(corner_aa_bot, renderer);
+    }
+    else if(box_type == BoxType::BAR)
+    {
+      success &= renderBar(renderer);
     }
 
     /* Grab the number of viewable elements within the box */

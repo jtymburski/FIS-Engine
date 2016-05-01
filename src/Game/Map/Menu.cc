@@ -121,6 +121,10 @@ bool DigitalOption::isSet()
  * CONSTANTS
  *============================================================================*/
 
+/* Bars */
+const float Menu::kBAR_VITA_WIDTH{0.2};
+const float Menu::kBAR_QTDR_WIDTH{0.15};
+
 /* Title Section */
 const uint8_t Menu::kTITLE_ALPHA{255};
 const float Menu::kTITLE_HEIGHT{0.77};
@@ -1246,9 +1250,6 @@ void Menu::renderMainSection()
      renderer)
   {
     auto menu_type = getMainMenuType();
-    //auto location = main_section.location;
-    //auto point = main_section.location.point;
-    //auto corner_inset = calcMainCornerInset();
 
     setupDefaultBox(main_section.location);
     main_section.location.corner_inset = calcMainCornerInset();
@@ -1256,50 +1257,6 @@ void Menu::renderMainSection()
     main_section.location.color_border = kCOLOR_MAIN_BORDER;
     main_section.location.color_bg = {0, 0, 0, main_section.alpha};
     main_section.location.render(renderer);
-
-    // /* Render the frame outline and backdrop */
-    // Coordinate tl = {point.x, point.y};
-    // Coordinate tr = {point.x + location.width - corner_inset, point.y};
-    // Coordinate bl = {point.x, point.y + location.height};
-    // Coordinate br = {point.x + location.width - corner_inset,
-    //                  point.y + location.height};
-
-    // Coordinate blc = {br.x + 1, br.y - 1};
-    // Coordinate tlc = {tr.x + 1, tl.y};
-    // Coordinate trc = {tr.x + corner_inset, tr.y};
-    // Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
-
-    // Coordinate atl = {blc.x - 1, blc.y};
-    // Coordinate abl = {blc.x, blc.y + 1};
-    // Coordinate atr = {brc.x - 1, brc.y};
-    // Coordinate abr = {brc.x, brc.y + 1};
-
-    // auto top_bar = Helpers::bresenhamPoints(tl, tr);
-    // auto bot_bar = Helpers::bresenhamPoints(bl, br);
-    // auto top_corner = Helpers::bresenhamPoints(tlc, trc);
-    // auto bot_corner = Helpers::bresenhamPoints(blc, brc);
-    // auto right_line = Helpers::bresenhamPoints(trc, brc);
-    // auto corner_aa_top = Helpers::bresenhamPoints(atl, atr);
-    // auto corner_aa_bot = Helpers::bresenhamPoints(abl, abr);
-
-    // Frame::setRenderDrawColor(renderer, {0, 0, 0, main_section.alpha});
-    // Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
-    // Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
-
-    // Frame::setRenderDrawColor(renderer, kCOLOR_MAIN_BORDER);
-    // Frame::drawLine(top_bar, renderer);
-    // Frame::drawLine(bot_bar, renderer);
-    // Frame::drawLine(top_corner, renderer);
-    // Frame::drawLine(bot_corner, renderer);
-    // Frame::drawLine(right_line, renderer);
-
-    // /* Anti-Aliased Top Line */
-    // Frame::setRenderDrawColor(renderer, {255, 255, 255, 45});
-    // Frame::drawLine(corner_aa_top, renderer);
-
-    // /* Anti-Aliased Bot Line */
-    // Frame::setRenderDrawColor(renderer, {255, 255, 255, 80});
-    // Frame::drawLine(corner_aa_bot, renderer);
 
     if(menu_type == MenuType::INVENTORY)
       renderInventory();
@@ -1409,7 +1366,7 @@ void Menu::renderInventory()
   setupDefaultBox(inventory_top_box);
   inventory_top_box.render(renderer);
 
-  /* Render the scroll inventory box */
+  /* Render the scroll inventory box cut */
   inventory_scroll_box.point = {inventory_top_box.point.x,
                                 inventory_top_box.point.y +
                                     inventory_top_box.height - 1};
@@ -1427,40 +1384,17 @@ void Menu::renderInventory()
   inventory_scroll_box.render(renderer);
 
   /* Render the bottom icon detail box */
-  auto bot_height = main_section.location.height - top_section_height - 3 * gap;
-  auto corner_inset = calcMainCornerInset();
-
-  Coordinate tl = {inventory_top_box.point.x,
-                   inventory_top_box.point.y + inventory_top_box.height +
-                       inventory_scroll_box.height + gap};
-  Coordinate tr = {tl.x + inventory_top_box.width - corner_inset, tl.y};
-  Coordinate bl = {tl.x, tl.y + bot_height};
-  Coordinate br = {tl.x + inventory_top_box.width - corner_inset,
-                   tl.y + bot_height};
-
-  Coordinate blc = {br.x + 1, br.y - 1};
-  Coordinate tlc = {tr.x + 1, tl.y};
-  Coordinate trc = {tr.x + corner_inset, tr.y};
-  Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
-
-  auto left_line = Helpers::bresenhamPoints(tl, bl);
-  auto top_bar = Helpers::bresenhamPoints(tl, tr);
-  auto bot_bar = Helpers::bresenhamPoints(bl, br);
-  auto top_corner = Helpers::bresenhamPoints(tlc, trc);
-  auto bot_corner = Helpers::bresenhamPoints(blc, brc);
-  auto right_line = Helpers::bresenhamPoints(trc, brc);
-
-  Frame::setRenderDrawColor(renderer, {0, 0, 0, 255});
-  Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
-  Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
-
-  Frame::setRenderDrawColor(renderer, kCOLOR_BORDER_UNSELECTED);
-  Frame::drawLine(left_line, renderer);
-  Frame::drawLine(top_bar, renderer);
-  Frame::drawLine(bot_bar, renderer);
-  Frame::drawLine(top_corner, renderer);
-  Frame::drawLine(bot_corner, renderer);
-  Frame::drawLine(right_line, renderer);
+  inventory_bottom_box.width = inventory_top_box.width;
+  inventory_bottom_box.height =
+      main_section.location.height - top_section_height - 3 * gap;
+  inventory_bottom_box.point = {inventory_top_box.point.x,
+                                inventory_top_box.point.y +
+                                    inventory_top_box.height +
+                                    inventory_scroll_box.height + gap};
+  setupDefaultBox(inventory_bottom_box);
+  inventory_bottom_box.corner_inset = calcMainCornerInset();
+  inventory_bottom_box.box_type = BoxType::CORNER_CUT_BOX;
+  inventory_bottom_box.render(renderer);
 
   /* Render the Item Title Text */
   Text title_text(title_font);
@@ -1509,7 +1443,8 @@ void Menu::renderInventory()
   if(inventory_title_index == InventoryIndex::ITEMS &&
      inventory_element_index != -1)
   {
-    renderItem(tl, icon_w, gap, bot_height);
+    renderItem(inventory_bottom_box.point, icon_w, gap,
+               inventory_bottom_box.height);
   }
 }
 
@@ -1745,10 +1680,11 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
 
 void Menu::renderPersonElementTitles(int32_t gap)
 {
+  std::cout << person_title_elements.size() << std::endl;
   if(config && renderer && person_element_index > -1 &&
      person_element_index < (int32_t)person_title_elements.size())
   {
-    auto font_header = config->getFontTTF(FontName::MENU_HEADER);
+    auto font_header = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
     Text t_title(font_header);
     auto index = 0;
 
@@ -1798,10 +1734,8 @@ void Menu::renderPersonElementTitles(int32_t gap)
 void Menu::renderSleuth()
 {
   /* Obtained values */
-  auto font_title = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
-  auto person = getCurrentPerson();
 
   /* Calculated values */
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
@@ -1820,34 +1754,12 @@ void Menu::renderSleuth()
     // TODO: Render the face graphic
   }
 
-  /* Render the sleuth top box with name */
-  current.y = start.y + gap;
-  auto icon_w = calcSleuthTileSize();
-
-  s_top_box.point = {start.x + 2 * gap + icon_w, current.y};
-  s_top_box.width = main_section.location.width - icon_w - 3 * gap;
+  s_top_box.point = {start.x + 2 * gap + calcSleuthTileSize(), current.y};
+  s_top_box.width = main_section.location.width - calcSleuthTileSize() - 3 * gap;
   s_top_box.height = (main_section.location.height - 3 * gap) / 10;
-  setupDefaultBox(s_top_box);
-  s_top_box.render(renderer);
 
-  if(person)
-  {
-    /* Render the player's name in the title box */
-    Text t_name(font_title);
-    t_name.setText(renderer, person->getName(), kCOLOR_TEXT);
-
-    auto name_text_y =
-        s_top_box.point.y + s_top_box.height / 2 - t_name.getHeight() / 2;
-    current.x = s_top_box.point.x + gap;
-
-    t_name.render(renderer, current.x, name_text_y);
-
-    /* Render the person titles */
-    Text t_title(font_title);
-
-    current = Coordinate{current.x + t_name.getWidth() + 3 * gap, name_text_y};
-    renderPersonElementTitles(gap / 2);
-  }
+  current = s_top_box.point;
+  renderPersonElementTitles(gap);
 
   if(getSleuthMenuType() == MenuType::SLEUTH_OVERVIEW)
     renderSleuthOverview();
@@ -1863,6 +1775,7 @@ void Menu::renderSleuth()
 
 void Menu::renderSleuthOverview()
 {
+  auto start = main_section.location.point;
   auto width = config->getScreenWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
   auto person = getCurrentPerson();
@@ -1882,14 +1795,32 @@ void Menu::renderSleuthOverview()
   assert(frame_exp_full);
   assert(frame_exp_middle);
 
+  /* Render the sleuth top box with name */
+  current.y = start.y + gap;
+  auto icon_w = calcSleuthTileSize();
+
   /* Render the top stats box */
-  s_top_stats_box.point = {s_top_box.point.x,
-                           s_top_box.point.y + s_top_box.height - 1};
+  s_top_stats_box.point = {
+      start.x + 2 * gap + icon_w,
+      current.y + (main_section.location.height - 3 * gap) / 10 - 1};
   s_top_stats_box.width = s_top_box.width;
   s_top_stats_box.height =
       (main_section.location.height - s_top_box.height - gap * 4) / 4;
   setupDefaultBox(s_top_stats_box);
   s_top_stats_box.render(renderer);
+
+  Text t_name(font_title_element);
+
+  if(person)
+  {
+    /* Render the player's name in the title box */
+    t_name.setText(renderer, person->getName(), kCOLOR_TEXT);
+
+    auto name_text_y = s_top_stats_box.point.y + gap;
+    current.x = s_top_box.point.x + gap;
+
+    t_name.render(renderer, current.x, name_text_y);
+  }
 
   /* Render the sleuth sprite box */
   current.y = s_top_stats_box.point.y + s_top_stats_box.height + gap;
@@ -1911,6 +1842,8 @@ void Menu::renderSleuthOverview()
   s_attributes_box.height =
       main.height - s_top_stats_box.height - s_top_box.height - 3 * gap;
   setupDefaultBox(s_attributes_box);
+  s_attributes_box.corner_inset = calcMainCornerInset();
+  s_attributes_box.box_type = BoxType::CORNER_CUT_BOX;
   s_attributes_box.render(renderer);
 
   /* Render the person's sprite in the sleuth sprite box */
@@ -1944,7 +1877,7 @@ void Menu::renderSleuthOverview()
   }
 
   /* Render the sleuth top stats box */
-  auto start = s_top_stats_box.point;
+  start = {s_top_stats_box.point.x + gap * 10, s_top_stats_box.point.y};
   auto stats = actor->getStatsRendered();
   current = Coordinate{start.x + gap, start.y + gap};
 
@@ -1977,20 +1910,16 @@ void Menu::renderSleuthOverview()
 
   t_level_title.setText(renderer, "LEVEL", kCOLOR_TEXT);
   t_level.setText(renderer, std::to_string(person->getLevel()), kCOLOR_TEXT);
-  t_level.setText(renderer, "127", kCOLOR_TEXT);
 
   auto x = current.x;
   auto y = current.y;
   current.x += frame_exp_empty->getWidth() / 2 - t_level_title.getWidth() / 2;
-  current.y += frame_exp_empty->getHeight() * 0.27;
+  current.y += frame_exp_empty->getHeight() * 0.24;
   t_level_title.render(renderer, current.x, current.y);
 
   current.x = x + frame_exp_empty->getWidth() / 2 - t_level.getWidth() / 2;
   current.y += 3 * gap / 2;
   t_level.render(renderer, current.x, current.y);
-
-  current.x = x + frame_exp_empty->getWidth() - gap / 2;
-  current.y = y + frame_exp_empty->getHeight() / 4;
 
   Text t_exp(font_header);
   Text t_vita(font_header);
@@ -2012,16 +1941,52 @@ void Menu::renderSleuthOverview()
   t_vita.setText(renderer, vita_str, kCOLOR_TEXT);
   t_qtdr.setText(renderer, qtdr_str, kCOLOR_TEXT);
 
+  current.x = x + frame_exp_empty->getWidth();
+  current.y = y + frame_exp_empty->getHeight() / 10;
   t_exp.render(renderer, current.x, current.y);
-  current.y += t_exp.getHeight() + gap;
+  current.y = y + frame_exp_empty->getHeight() / 2;
+
+  auto health_pc = actor->getPCVita() / 100.0;
+  auto qtdr_pc = actor->getPCQtdr() / 100.0;
+  health_pc = Helpers::setInRange(health_pc, 0.0, 1.0);
+  qtdr_pc = Helpers::setInRange(qtdr_pc, 0.0, 1.0);
 
   /* Render vitality bar */
-  Frame::setRenderDrawColor(renderer, SDL_Color{125, 255, 125, 0});
-  Frame::renderBar(current.x, current.y, 300, 30, 0.5, renderer);
+  auto vita_height = t_vita.getHeight() * 0.75;
+  s_vita_bar.point = current;
+  s_vita_bar.width = (int32_t)std::round(kBAR_VITA_WIDTH * width);
+  s_vita_bar.height = vita_height;
+  setupDefaultBox(s_vita_bar);
+  s_vita_bar.color_bg = kCOLOR_BORDER_UNSELECTED;
+  s_vita_bar.color_border = {230, 230, 230, 255};
+  s_vita_bar.bar_amount = health_pc;
+  s_vita_bar.color_bar = {(uint8_t)(150 * (1 - health_pc) * 2), 150, 0, 255};
+  s_vita_bar.box_type = BoxType::BAR;
+  s_vita_bar.bar_degrees = 59.5;
+  s_vita_bar.render(renderer);
 
-  t_vita.render(renderer, current.x + 300, current.y);
-  current.y += t_vita.getHeight() + gap;
-  t_qtdr.render(renderer, current.x + 300, current.y);
+  current.x += s_vita_bar.width + gap / 2;
+  t_vita.render(renderer, current.x, current.y);
+
+  /* Render quantum drive bar */
+  auto qtdr_height = t_qtdr.getHeight() * 0.75;
+  current.x = current.x - s_vita_bar.width - 3 * gap / 2;
+  current.y = y + frame_exp_empty->getHeight() - qtdr_height;
+
+  s_qtdr_bar.point = current;
+  s_qtdr_bar.width = (int32_t)std::round(kBAR_QTDR_WIDTH * width);
+  s_qtdr_bar.height = qtdr_height;
+  setupDefaultBox(s_vita_bar);
+  s_qtdr_bar.color_bg = kCOLOR_BORDER_UNSELECTED;
+  s_qtdr_bar.color_border = {230, 230, 230, 255};
+  s_qtdr_bar.color_bar = {58, 170, 198, 255};
+  s_qtdr_bar.bar_amount = qtdr_pc;
+  s_qtdr_bar.bar_degrees = 59.5;
+  s_qtdr_bar.box_type = BoxType::BAR;
+  s_qtdr_bar.render(renderer);
+
+  current.x += s_qtdr_bar.width + gap / 2;
+  t_qtdr.render(renderer, current.x, current.y);
 
   /* Render the sleuth attributes */
   renderAttributes(s_attributes_box.point, gap);

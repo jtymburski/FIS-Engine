@@ -68,10 +68,15 @@ private:
   std::vector<Frame*> elements;
 
 public:
+  /* Bar amount (0-1) and slope */
+  float bar_amount;
+  uint32_t bar_degrees;
+
   /* Box Type */
   BoxType box_type;
 
   /* Colors */
+  SDL_Color color_bar;
   SDL_Color color_bg;
   SDL_Color color_bg_selected;
   SDL_Color color_border;
@@ -85,7 +90,7 @@ public:
   SDL_Color color_scroll_bg_selected;
 
   /* Number of pixels for corner inset (when rendering cut box) */
-  uint32_t corner_inset;
+  int32_t corner_inset;
 
   /* Cycle rates for the Box / Element */
   float cycle_box_rate;
@@ -137,13 +142,15 @@ private:
   /* Load the class variables with default values */
   void loadDefaults();
 
+  /* Render the Box as a bar */
+  bool renderBar(SDL_Renderer* renderer);
+
   /* Render the elements starting at a given index */
   bool renderElements(SDL_Renderer* renderer, uint32_t start_index,
                       uint32_t number);
 
   /* Render the ScrollBar */
   bool renderScrollBar(SDL_Renderer* renderer, uint32_t num_viewable);
-
 
   /*========================= PUBLIC FUNCTIONS ===============================*/
 public:

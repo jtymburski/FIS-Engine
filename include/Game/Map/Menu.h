@@ -282,6 +282,8 @@ private:
   Box s_bot_stats_box;
   Box s_top_stats_box;
   Box s_attributes_box;
+  Box s_vita_bar;
+  Box s_qtdr_bar;
 
   /* Sleuth Frames */
   std::vector<Sprite*> sleuth_faces;
@@ -311,6 +313,10 @@ private:
   AnalogOption music_level;
 
   /* ------- Constants ------- */
+
+  /* Bars */
+  static const float kBAR_VITA_WIDTH;
+  static const float kBAR_QTDR_WIDTH;
 
   /* Title Section */
   static const uint8_t kTITLE_ALPHA;

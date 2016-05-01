@@ -228,13 +228,12 @@ void BattleDisplayData::buildFramesAttributes()
   /* Sets the attribute frames */
   setFrameAttribute(Attribute::UNBR,
                     config->getBasePath() +
-                        "sprites/Battle/Skills/Elements/Physical_AA_A00.png");
+                        "sprites/Overlay/Menu/Unbearability.png");
   setFrameAttribute(Attribute::LIMB,
                     config->getBasePath() +
-                        "sprites/Battle/Skills/Elements/Physical_AA_A00.png");
-  setFrameAttribute(Attribute::MMNT,
-                    config->getBasePath() +
-                        "sprites/Battle/Skills/Elements/Physical_AA_A00.png");
+                        "sprites/Overlay/Menu/Limbertude.png");
+  setFrameAttribute(Attribute::MMNT, config->getBasePath() +
+                                         "sprites/Overlay/Menu/Momentum.png");
 }
 
 void BattleDisplayData::buildFramesElements()

@@ -331,6 +331,7 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
       SDL_SetTextureBlendMode(render_texture, SDL_BLENDMODE_NONE);
     else
       SDL_SetTextureBlendMode(render_texture, SDL_BLENDMODE_BLEND);
+
     return (SDL_RenderCopyEx(renderer, render_texture, src_rect, &rect, 0, NULL,
                              flip) == 0);
   }
@@ -729,7 +730,7 @@ void Frame::drawLine(std::vector<Coordinate> line_points,
 }
 
 /*
- * Description: This renders an entire triangle but it requires that the bottom
+ * Description: This renders an entire triangle t it requires that the bottom
  *              half of the triangle is horizontally flat (y2 and y3)
  *
  * Inputs: uint16_t x1 - first x coordinate

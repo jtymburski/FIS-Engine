@@ -989,7 +989,7 @@ void Battle::processEventAction(Action* curr_action, BattleActor* target)
     }
     else if(curr_action->actionFlag(ActionFlags::ALTER))
     {
-      //std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
+      // std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
       outcome.damage = event->calcAltering(target);
       outcome.actor_outcome_state = ActionState::PLEP;
     }
@@ -1117,7 +1117,8 @@ void Battle::updateOutcome(int32_t cycle_time)
     else
     {
       /* If victory screen is not set, create it */
-      victory_screen = new Victory(config, battle_display_data, renderer, getAllies(), getEnemies());
+      victory_screen = new Victory(config, battle_display_data, renderer,
+                                   getAllies(), getEnemies());
       victory_screen->buildVictory();
 
       /* Dim the Battle a little - infinite render element */
@@ -1365,12 +1366,12 @@ void Battle::updateUserSelection()
         next_module->resetForNewTurn(next_actor);
         next_actor->buildBattleSkills(actors);
 
-// #ifdef UIDEBUG
-//         auto battle_skills = next_actor->getBattleSkills();
+        // #ifdef UIDEBUG
+        //         auto battle_skills = next_actor->getBattleSkills();
 
-//         for(auto& battle_skill : battle_skills)
-//           battle_skill->print();
-// #endif
+        //         for(auto& battle_skill : battle_skills)
+        //           battle_skill->print();
+        // #endif
 
         next_module->setSkills(next_actor->getBattleSkills());
 
@@ -1947,9 +1948,9 @@ void Battle::playInflictionSound(Infliction type)
 void Battle::createLay(std::string path, int32_t anim_time, Floatinate velocity,
                        LayType lay_type)
 {
-  Coordinate screen_size = {config->getScreenWidth(), config->getScreenHeight()};
-  lays.push_back(
-      new Lay(path, anim_time, velocity, lay_type, screen_size));
+  Coordinate screen_size = {config->getScreenWidth(),
+                            config->getScreenHeight()};
+  lays.push_back(new Lay(path, anim_time, velocity, lay_type, screen_size));
 }
 
 // Other todos:
@@ -2580,7 +2581,8 @@ void Battle::updateRenderSprites(int32_t cycle_time)
         {
           if(battle_menu->getActor() == actor)
           {
-            brightness = Helpers::updateHoverBrightness(time_elapsed, kCYCLE_RATE, 0.7, 1.0);
+            brightness = Helpers::updateHoverBrightness(time_elapsed,
+                                                        kCYCLE_RATE, 0.7, 1.0);
             // brightness = 0.3 * sin((float)time_elapsed * kCYCLE_RATE);
             // brightness = 0.7 + fabs(brightness);
           }
