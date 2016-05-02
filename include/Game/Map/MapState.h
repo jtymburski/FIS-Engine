@@ -46,13 +46,13 @@ private:
   /* -------------------------- Constants ------------------------- */
   //const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns the interaction, based on the string. Returns NOINTERACTION if
    * nothing found */
   InteractionState getInteraction(std::string interaction);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds the matrix information from the XML data classifier from file */
   bool addFileInformation(XmlData data, int file_index, int section_index,
@@ -82,6 +82,9 @@ public:
   EventSet* getUseEvent();
   EventSet* getWalkoverEvent();
 
+  /* Is data available to save */
+  bool isDataToSave();
+
   /* Check if events or interactions are set */
   bool isEnterEventSet();
   bool isExitEventSet();
@@ -89,8 +92,11 @@ public:
   bool isWalkInteraction();
   bool isWalkoverEventSet();
 
+  /* Saves the state data */
+  bool saveData(FileHandler* fh);
+
   /* Sets the base state reference */
-  void setBase(MapState* new_base); // TODO
+  void setBase(MapState* new_base);
 
   /* Sets the event handler - this call clears out all existing events */
   void setEventHandler(EventHandler* event_handler);

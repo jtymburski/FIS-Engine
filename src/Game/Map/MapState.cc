@@ -175,7 +175,7 @@ bool MapState::clearEvents()
   event_walkover.clear();
   return true;
 }
-  
+
 /*
  * Description: Returns the base state reference. If null, this class is a base
  *
@@ -287,6 +287,33 @@ EventSet* MapState::getWalkoverEvent()
 }
 
 /*
+ * Description: Checks if there is data to save for the particular IO state.
+ *
+ * Inputs: none
+ * Output: bool - true if save call will result in text
+ */
+bool MapState::isDataToSave()
+{
+  /* Enter event */
+  if(event_enter.isDataToSave())
+    return true;
+
+  /* Exit event */
+  if(event_exit.isDataToSave())
+    return true;
+
+  /* Use event */
+  if(event_use.isDataToSave())
+    return true;
+
+  /* Walkover event */
+  if(event_walkover.isDataToSave())
+    return true;
+
+  return false;
+}
+
+/*
  * Description: Returns if the enter event for the state is set.
  *
  * Inputs: none
@@ -343,7 +370,37 @@ bool MapState::isWalkoverEventSet()
 {
   return !event_walkover.isEmpty();
 }
-  
+
+/*
+ * Description: Saves the data for the IO state. This does not include the state
+ *              wrapper.
+ *
+ * Inputs: FileHandler* fh - the file handling data pointer
+ * Output: none
+ */
+bool MapState::saveData(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    bool success = true;
+
+    /* Enter event */
+    event_enter.saveData(fh, "enterset");
+
+    /* Exit event */
+    event_exit.saveData(fh, "exitset");
+
+    /* Use event */
+    event_use.saveData(fh, "useset");
+
+    /* Walkover event */
+    event_walkover.saveData(fh, "walkoverset");
+
+    return success;
+  }
+  return false;
+}
+
 /*
  * Description: Sets the base state reference. Any change here clears out all
  *              properties stored within the class. If set to null, this set
@@ -546,7 +603,7 @@ bool MapState::triggerWalkoverEvent(MapPerson* initiator, MapThing* source)
 
   return false;
 }
-  
+
 /*
  * Description: Attempts an unlock on the MIO state, take the mode events enum
  *              to define what events to modify.

@@ -92,9 +92,15 @@ protected:
   virtual bool canSetTile(Tile* tile, TileSprite* frames,
                           bool avoid_player = false);
 
+  /* Is data available to save */
+  virtual bool isDataToSave();
+
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next,
                                  uint8_t render_depth, Direction move_request);
+
+  /* Saves the IO data - virtualized */
+  virtual bool saveData(FileHandler* fh, const bool &save_event = true);
 
   /* Sets the tile of the selected with the corresponding frames */
   virtual bool setTile(Tile* tile, TileSprite* frames,
@@ -149,6 +155,9 @@ public:
 
   /* Reset back to head state */
   void reset();
+
+  /* Saves the delta data within the IO */
+  virtual bool save(FileHandler* fh);
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);

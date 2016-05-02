@@ -434,6 +434,47 @@ bool MapInteractiveObject::canSetTile(Tile* tile, TileSprite* frames,
 }
 
 /*
+ * Description: Checks if there is data to save for the particular IO. This
+ *              is virtualized for all children
+ *
+ * Inputs: none
+ * Output: bool - true if save call will result in text
+ */
+bool MapInteractiveObject::isDataToSave()
+{
+  /* Check parent first */
+  if(MapThing::isDataToSave())
+    return true;
+
+  /* Check current state */
+  if(node_head != node_current)
+    return true;
+
+  /* Check shifting forward state */
+  if(!shifting_forward)
+    return true;
+
+  /* Check the elapsed return time status (elapsed) */
+  if(time_valid && time_elapsed > 0)
+    return true;
+
+  /* Check states */
+  StateNode* node_parse = node_head;
+  while(node_parse != nullptr)
+  {
+    if(node_parse->state != nullptr && node_parse->state->isDataToSave())
+      return true;
+    node_parse = node_parse->next;
+  }
+
+  /* Check locked status */
+  if(EventSet::isDataToSave(lock_struct))
+    return true;
+
+  return false;
+}
+
+/*
  * Description: Checks if a move is allowed from the current IO main
  *              tile to the next tile that it is trying to move to. This
  *              handles the individual calculations for a single tile; used
@@ -474,6 +515,84 @@ bool MapInteractiveObject::isTileMoveAllowed(Tile* previous, Tile* next,
   }
 
   return move_allowed;
+}
+
+/*
+ * Description: Saves the data for the IO. This does not include the IO
+ *              wrapper. Virtualized for other classes as well.
+ *
+ * Inputs: FileHandler* fh - the file handling data pointer
+ *         const bool &save_event - true to save the base event set (thing)
+ * Output: none
+ */
+bool MapInteractiveObject::saveData(FileHandler* fh, const bool &save_event)
+{
+  bool success = true;
+
+  /* Parent property saves */
+  success &= MapThing::saveData(fh, save_event);
+
+  /* Property change saves */
+  if(changed)
+  {
+    /* Inactive time */
+    fh->writeXmlData("inactive", getInactiveTime());
+  }
+
+  /* States */
+  int node_index = 0;
+  int node_save_index = 0;
+  StateNode* node_parse = node_head;
+  bool overall = false;
+  while(node_parse != nullptr)
+  {
+    /* Node index - find */
+    if(node_index > 0 && node_parse == node_current)
+      node_save_index = node_index;
+
+    /* Node state event information */
+    if(node_parse->state != nullptr)
+    {
+      if(node_parse->state->isDataToSave())
+      {
+        /* If overall state wrapper hasn't been written yet, write it first */
+        if(!overall)
+        {
+          fh->writeXmlElement("states");
+          overall = true;
+        }
+
+        /* Write state differential */
+        fh->writeXmlElement("state", "id", std::to_string(node_index));
+        node_parse->state->saveData(fh);
+        fh->writeXmlElementEnd();
+      }
+    }
+
+    /* Increment index */
+    node_index++;
+  }
+  if(overall)
+    fh->writeXmlElementEnd();
+
+  /* State - Current */
+  if(node_save_index > 0)
+  {
+    fh->writeXmlData("stateid", node_save_index);
+
+    /* Reverse shift status */
+    if(!shifting_forward)
+      fh->writeXmlData("shiftforward", shifting_forward);
+  }
+
+  /* Locked status */
+  success &= EventSet::saveLocked(fh, lock_struct);
+
+  /* Time elapsed status for return */
+  if(time_valid && time_elapsed > 0)
+    fh->writeXmlData("timeelapsed", time_elapsed);
+
+  return success;
 }
 
 /*
@@ -956,6 +1075,27 @@ void MapInteractiveObject::reset()
 }
 
 /*
+ * Description: Saves the IO data to the file handling pointer.
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ * Output: bool - true if the save was successful
+ */
+bool MapInteractiveObject::save(FileHandler* fh)
+{
+  if(fh != nullptr && isDataToSave())
+  {
+    bool success = true;
+
+    fh->writeXmlElement("mapio", "id", getID());
+    success &= saveData(fh, false);
+    fh->writeXmlElementEnd();
+
+    return success;
+  }
+  return false;
+}
+
+/*
  * Description: Sets the base thing class. If set, the primary data will be set
  *              from this with only location and movement handled by this class.
  *
@@ -1044,13 +1184,21 @@ bool MapInteractiveObject::setBase(MapThing* base)
  */
 void MapInteractiveObject::setInactiveTime(int time)
 {
+  int old_time = time_return;
+
+  /* Set the inactive time */
   if(time < 0)
     time_return = kRETURN_TIME_UNUSED;
   else
     time_return = time;
   time_valid = true;
 
+  /* Reset the elapsed time */
   time_elapsed = 0;
+
+  /* Check if it was changed */
+  if(old_time != time_return)
+    changed = true;
 }
 
 /*

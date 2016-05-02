@@ -58,7 +58,7 @@ protected:
   ThingBase base_category;
   AnimationControl* base_control;
 
-  /* The thing changed flag */
+  /* The thing changed flag - based on property event changeable items */
   bool changed;
 
   /* The thing classification */
@@ -133,6 +133,9 @@ protected:
   /* Returns the appropriate tile. NULL if unset or beyond range */
   Tile* getTileMain(uint32_t x, uint32_t y);
   Tile* getTilePrevious(uint32_t x, uint32_t y);
+
+  /* Is data available to save */
+  virtual bool isDataToSave();
 
   /* Is move allowed, based on main tile and the next tile */
   bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,

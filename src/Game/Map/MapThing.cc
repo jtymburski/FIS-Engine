@@ -305,6 +305,35 @@ Tile* MapThing::getTilePrevious(uint32_t x, uint32_t y)
 }
 
 /*
+ * Description: Checks if there is data to save for the particular thing. This
+ *              is virtualized for all children
+ *
+ * Inputs: none
+ * Output: bool - true if save call will result in text
+ */
+bool MapThing::isDataToSave()
+{
+  /* Changed status */
+  if(changed)
+    return true;
+
+  /* Event status */
+  if(event_set.isDataToSave())
+    return true;
+
+  /* Startpoint status */
+  if(tile_main.size() > 0 && tile_main.front().size() > 0 &&
+     tile_main.front().front() != nullptr)
+  {
+    Tile* ref_tile = tile_main.front().front();
+    if(starting_x != ref_tile->getX() || starting_y != ref_tile->getY())
+      return true;
+  }
+
+  return false;
+}
+
+/*
  * Description: Checks if a move is allowed from the current thing main
  *              tile and the next tile that it is trying to move to. Utilizes
  *              the move request inside the thing class to determine where to
@@ -485,11 +514,18 @@ bool MapThing::saveData(FileHandler* fh, const bool &save_event)
 {
   bool success = true;
 
-  /* Active */ // TODO: This writes too frequently ?
-  fh->writeXmlData("active", isActive());
+  /* Property change saves */
+  if(changed)
+  {
+    /* Active */
+    fh->writeXmlData("active", isActive());
 
-  /* Active Time */
-  fh->writeXmlData("activetime", getActiveRespawn());
+    /* Active Time */
+    fh->writeXmlData("activetime", getActiveRespawn());
+
+    /* Visible */
+    fh->writeXmlData("visible", isVisible());
+  }
 
   /* Event Set */
   if(save_event)
@@ -504,9 +540,6 @@ bool MapThing::saveData(FileHandler* fh, const bool &save_event)
       fh->writeXmlData("startpoint", std::to_string(ref_tile->getX()) + "," +
                                      std::to_string(ref_tile->getY()));
   }
-
-  /* Visible */
-  fh->writeXmlData("visible", isVisible());
 
   return success;
 }
@@ -2016,7 +2049,7 @@ void MapThing::resetLocation()
  */
 bool MapThing::save(FileHandler* fh)
 {
-  if(fh != nullptr)
+  if(fh != nullptr && isDataToSave())
   {
     bool success = true;
 
@@ -2038,6 +2071,11 @@ bool MapThing::save(FileHandler* fh)
  */
 bool MapThing::setActive(bool active, bool set_tiles)
 {
+  /* Check if the active status is changing and update accordingly */
+  if(this->active != active)
+    changed = true;
+
+  /* Change value */
   this->active = active;
   active_lapsed = 0;
 
@@ -2068,10 +2106,17 @@ bool MapThing::setActive(bool active, bool set_tiles)
  */
 void MapThing::setActiveRespawn(int time)
 {
+  int old_time = active_time;
+
+  /* Set the active time */
   if(time < 0)
     active_time = kACTIVE_DEFAULT;
   else
     active_time = time;
+
+  /* Check if it was changed */
+  if(old_time != active_time)
+    changed = true;
 }
 
 /*
@@ -2450,6 +2495,11 @@ bool MapThing::setTarget(MapThing* target)
  */
 void MapThing::setVisibility(bool visible)
 {
+  /* Check if the visibility is changed */
+  if(this->visible != visible)
+    changed = true;
+
+  /* Update the visibility */
   // TODO: Implement fade instead of instant
   this->visible = visible;
 }
