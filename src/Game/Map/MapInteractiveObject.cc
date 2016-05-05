@@ -739,6 +739,11 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   {
     lock_struct = EventSet::updateLocked(lock_struct, data, file_index + 1);
   }
+  /* ------------------- LOCKED --------------------- */
+  else if(identifier == "locked")
+  {
+    lock_struct = EventSet::updateLocked(lock_struct, data, file_index);
+  }
   /*----------------- RENDER MATRIX -----------------*/
   else if(elements.size() == 1 && elements.front() == "rendermatrix")
   {
@@ -753,6 +758,29 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
 
       /* Bump the node */
       node = node->next;
+    }
+  }
+  /* ------------ SHIFT FORWARD ---------------- */
+  else if(identifier == "shiftforward")
+  {
+    bool status = data.getDataBool(&success);
+    if(success)
+      shifting_forward = status;
+  }
+  /* -------------- STATE ID ------------------- */
+  else if(identifier == "stateid")
+  {
+    /* Try and get the ID */
+    int id = data.getDataInteger(&success);
+    if(success && id >= 0)
+    {
+      StateNode* node_parse = node_head;
+      while(node_parse != nullptr && id > 0)
+        node_parse = node_parse->next;
+      if(node_parse != nullptr)
+        node_current = node_parse;
+      else
+        success = false;
     }
   }
   /*--------------- STATES FOR MIO -----------------*/
@@ -819,6 +847,13 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
                                            file_index + 3, renderer, base_path);
       }
     }
+  }
+  /* ---------------------- TIME ELAPSED -------------------- */
+  else if(identifier == "timeelapsed")
+  {
+    int time = data.getDataInteger(&success);
+    if(success && time >= 0)
+      time_elapsed = time;
   }
   /* Proceed to parent */
   else

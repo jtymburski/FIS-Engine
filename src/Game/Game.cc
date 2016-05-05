@@ -1972,7 +1972,11 @@ bool Game::save()
     }
 
     /* Write the map data */
-    // TODO: Modify current map data */
+    map_ctrl.saveData(&save_handle);
+
+    /* Finish the file write */
+    save_handle.writeXmlElementEnd();
+    success &= save_handle.save();
 
     /* Finish the file write */
     save_handle.writeXmlElementEnd();

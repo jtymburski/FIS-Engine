@@ -1282,9 +1282,11 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
       sub_map[id].things[i]->save(fh);
 
     /* Map IO(s) */
-    // TODO: HERE
+    for(uint32_t i = 0; i < sub_map[id].ios.size(); i++)
+      sub_map[id].ios[i]->save(fh);
 
     /* Map Item(s) */
+    // TODO: NEXT
 
     /* Map Person(s) */
 
