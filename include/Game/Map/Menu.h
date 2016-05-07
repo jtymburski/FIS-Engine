@@ -156,6 +156,9 @@ struct TitleElement
     this->menu_type = menu_type;
   };
 
+  /* Location of the title element */
+  Box title_box;
+
   /* Name of the TitleElement */
   std::string name;
 
@@ -285,6 +288,11 @@ private:
   Box s_vita_bar;
   Box s_qtdr_bar;
 
+  /* Skill Screen Boxes */
+  Box skills_top_box;
+  Box skills_bot_box;
+  Box skills_scroll_box;
+
   /* Sleuth Frames */
   std::vector<Sprite*> sleuth_faces;
   std::vector<Frame*> sleuth_stat_frames;
@@ -355,6 +363,11 @@ private:
   static const float kSLEUTH_EQUIP_ICON_SIZE;
   static const float kSLEUTH_ATTRIBUTE_INSET;
 
+  /* Skill Screen (In Sleuth) */
+  static const float kSKILL_ELEMENT_WIDTH;
+  static const float kSKILL_ELEMENT_HEIGHT;
+  static const float kSKILL_ELEMENT_INSET;
+
   /* Inventory Section */
   static const float kINV_GAP;
   static const float kINV_MASS_TEXT_Y;
@@ -405,12 +418,18 @@ private:
   void buildInventoryItems();
   void buildInventoryKeyItems();
 
-  /* Texture Creations for Items, Attributes, Elements+ */
-  SDL_Texture* buildItemListFrame(Item* build_item, int32_t count,
-                                  uint32_t width, uint32_t height);
+  /* Texture Creations for Attributes, Elements */
   SDL_Texture* buildAttributeFrame(Attribute attr, uint32_t width,
                                    uint32_t height);
   SDL_Texture* buildElementFrame(Element elm, uint32_t width, uint32_t height);
+
+  /* Item Frame */
+  SDL_Texture* buildItemListFrame(Item* build_item, int32_t count,
+                                  uint32_t width, uint32_t height);
+
+  /* Texture Creation for Skills (List and Detail Frames) */
+  SDL_Texture* buildSkillListFrame(Skill* build_skill, uint32_t width,
+                                   uint32_t height);
 
   /* Construct the main section backdrop */
   void buildMainSection(MenuType menu_type);
@@ -426,6 +445,8 @@ private:
 
   /* Construct the attribute frames for the current person */
   void buildSleuthStats();
+
+  void buildSkillFrames();
 
   /* Construct a vector of TitleElements for the Title Section */
   void buildTitleElements();
@@ -444,6 +465,10 @@ private:
   /* Calculate dimensions of the Item Title frames */
   int32_t calcItemTitleWidth();
   int32_t calcItemTitleHeight();
+
+  /* Calculate dimensions of the Skill Title frames */
+  int32_t calcSkillTitleWidth();
+  int32_t calcSkillTitleHeight();
 
   /* Can the sleuth element index be incremented? */
   bool canIncrementSleuth();
@@ -513,12 +538,14 @@ private:
 
   /* Render the person element titles */
   void renderPersonElementTitles(int32_t gap);
+  void renderPersonElementTitle(TitleElement& element);
 
   /* Render the Save Screen */
   void renderSleuth();
   void renderSleuthOverview();
   void renderSleuthEquipment();
   void renderSleuthSkills();
+  void renderSleuthSkillsDetail();
   void renderSleuthDetails();
   void renderSleuthRecord();
 

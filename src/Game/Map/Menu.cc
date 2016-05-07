@@ -162,6 +162,11 @@ const float Menu::kSLEUTH_ELEMENT_HEIGHT{0.056};
 const float Menu::kSLEUTH_EQUIP_ICON_SIZE{0.0376};
 const float Menu::kSLEUTH_ATTRIBUTE_INSET{0.015};
 
+/* Skill Section */
+const float Menu::kSKILL_ELEMENT_WIDTH{0.738};
+const float Menu::kSKILL_ELEMENT_HEIGHT{0.0645};
+const float Menu::kSKILL_ELEMENT_INSET{0.02};
+
 /* Inventory Section */
 const float Menu::kINV_GAP{0.01};
 const float Menu::kINV_MASS_TEXT_Y{0.85};
@@ -385,9 +390,48 @@ void Menu::buildInventoryEquips()
 {
 }
 
+void Menu::buildSkillFrames()
+{
+  /* Clear the skill element frames before creating new ones */
+  skills_scroll_box.clearElements();
+
+  if(getCurrentPerson() && getCurrentPerson()->getCurrSkills())
+  {
+    auto curr_skills = getCurrentPerson()->getCurrSkills();
+
+    if(curr_skills)
+    {
+      auto elements = curr_skills->getElements(getCurrentPerson()->getLevel());
+      std::vector<Frame*> skill_frames;
+
+      for(auto& element : elements)
+      {
+        if(element.skill)
+        {
+          auto width = calcSkillTitleWidth();
+          auto height = calcSkillTitleHeight();
+          auto texture = buildSkillListFrame(element.skill, width, height);
+
+          if(texture)
+          {
+            skill_frames.push_back(new Frame());
+            skill_frames.back()->getTexture(texture);
+          }
+        }
+      }
+
+      /* Assign the elements to the skill scroll box */
+      skills_scroll_box.setElements(skill_frames);
+    }
+  }
+}
+
 /* Construct the Item Frames -- Scroll Box and Details */
 void Menu::buildInventoryItems()
 {
+  /* Clear the inventory item frames before creating new ones */
+  inventory_scroll_box.clearElements();
+
   if(player_inventory)
   {
     auto item_pairs = player_inventory->getItems();
@@ -449,6 +493,36 @@ SDL_Texture* Menu::buildItemListFrame(Item* build_item, int32_t count,
   return nullptr;
 }
 
+SDL_Texture* Menu::buildSkillListFrame(Skill* build_skill, uint32_t width,
+                                       uint32_t height)
+{
+  if(config && renderer && build_skill)
+  {
+    auto font_skill = config->getFontTTF(FontName::MENU_HEADER);
+    auto skill_inset = (uint32_t)std::round(width * kSKILL_ELEMENT_INSET);
+
+    Text t_skill_name{font_skill};
+
+    t_skill_name.setText(renderer, build_skill->getName(), kCOLOR_TEXT);
+
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, width, height);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    auto text_y = (height - t_skill_name.getHeight()) / 2;
+    t_skill_name.render(renderer, skill_inset, text_y);
+
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    return texture;
+  }
+
+  return nullptr;
+}
+
 /* Construct the Key Item Frames -- Scroll Box and Details */
 void Menu::buildInventoryKeyItems()
 {
@@ -496,6 +570,18 @@ int32_t Menu::calcItemTitleHeight()
 {
   return (int32_t)std::round(main_section.location.height *
                              kINV_ITEM_ELEMENT_HEIGHT);
+}
+
+int32_t Menu::calcSkillTitleWidth()
+{
+  return (int32_t)std::round(main_section.location.width *
+                             kSKILL_ELEMENT_WIDTH);
+}
+
+int32_t Menu::calcSkillTitleHeight()
+{
+  return (int32_t)std::round(main_section.location.height *
+                             kSKILL_ELEMENT_HEIGHT);
 }
 
 bool Menu::canIncrementSleuth()
@@ -640,6 +726,8 @@ void Menu::buildMainSection(MenuType menu_type)
       buildSleuthScreen();
 
       sleuth_element_index = 0;
+      person_element_index = 0;
+
       selectSleuthIndex();
     }
     else if(menu_type == MenuType::INVENTORY)
@@ -688,9 +776,9 @@ void Menu::buildPersonTitleElements()
   person_title_elements.push_back(
       TitleElement("Overview", true, MenuType::SLEUTH_OVERVIEW));
 
-  // /* Person equipment screen */
-  // person_title_elements.push_back(
-  //     TitleElement("Equipment", true, MenuType::SLEUTH_EQUIPMENT));
+  /* Person equipment screen */
+  person_title_elements.push_back(
+      TitleElement("Equipment", true, MenuType::SLEUTH_EQUIPMENT));
 
   /* Person skill list screen */
   person_title_elements.push_back(
@@ -701,8 +789,8 @@ void Menu::buildPersonTitleElements()
       TitleElement("Details", true, MenuType::SLEUTH_DETAILS));
 
   /* Personal record screen (PersonRecord - Battles won etc.) */
-  // person_title_elements.push_back(
-  //     TitleElement("Record", true, MenuType::SLEUTH_RECORD));
+  person_title_elements.push_back(
+      TitleElement("Record", true, MenuType::SLEUTH_RECORD));
 }
 
 /* Constructs the TitleSection */
@@ -857,12 +945,12 @@ void Menu::renderAttributes(Coordinate start, int32_t gap)
 
     if(i < 8)
       texture = buildElementFrame(static_cast<Element>(1 << i), width, height);
-    else if(i == 9)
-      texture = buildAttributeFrame(Attribute::UNBR, width, height);
-    else if(i == 10)
-      texture = buildAttributeFrame(Attribute::LIMB, width, height);
-    else if(i == 11)
-      texture = buildAttributeFrame(Attribute::MMNT, width, height);
+    // else if(i == 9)
+    //   texture = buildAttributeFrame(Attribute::UNBR, width, height);
+    // else if(i == 10)
+    //   texture = buildAttributeFrame(Attribute::LIMB, width, height);
+    // else if(i == 11)
+    //   texture = buildAttributeFrame(Attribute::MMNT, width, height);
 
     if(texture)
     {
@@ -870,12 +958,6 @@ void Menu::renderAttributes(Coordinate start, int32_t gap)
       sleuth_stat_frames.back()->setTexture(texture);
     }
   }
-
-  /* Build unbearability frames */
-
-  /* Build limbertude momentum frames */
-
-  /* Build momentum frames */
 
   current = Coordinate{start.x + gap / 2, start.y + 2 * gap / 3};
 
@@ -886,56 +968,6 @@ void Menu::renderAttributes(Coordinate start, int32_t gap)
       stat_frame->render(renderer, current.x, current.y);
       current.y += stat_frame->getHeight() + gap / 3;
     }
-  }
-
-  if(getCurrentActor())
-  {
-    // auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
-    // auto font_value = config->getFontTTF(FontName::MENU_OPTIONS);
-    // auto stats = getCurrentActor()->getStatsRendered();
-
-    // Text t_unbr_title(font_title);
-    // Text t_unbr_val(font_value);
-    // Text t_limb_title(font_title);
-    // Text t_limb_val(font_value);
-    // Text t_mmtm_title(font_title);
-    // Text t_mmtm_val(font_value);
-
-    // t_unbr_title.setText(renderer, "UNBEARABILITY", kCOLOR_TEXT);
-    // t_unbr_val.setText(
-    //     renderer, std::to_string(stats.getValue(Attribute::UNBR)),
-    //     kCOLOR_TEXT);
-    // t_limb_title.setText(renderer, "LIMBERTUDE", kCOLOR_TEXT);
-    // t_limb_val.setText(
-    //     renderer, std::to_string(stats.getValue(Attribute::LIMB)),
-    //     kCOLOR_TEXT);
-    // t_mmtm_title.setText(renderer, "MOMENTUM", kCOLOR_TEXT);
-    // t_mmtm_val.setText(
-    //     renderer, std::to_string(stats.getValue(Attribute::MMNT)),
-    //     kCOLOR_TEXT);
-
-    // auto unbr_x = current.x + 1 * width / 4;
-    // auto limb_x = current.x + 2 * width / 4;
-    // auto mmtm_x = current.x + 3 * width / 4;
-
-    // current.y += gap / 2;
-    // t_unbr_title.render(renderer, unbr_x - t_unbr_title.getWidth() / 2,
-    //                     current.y);
-
-    // t_limb_title.render(renderer, limb_x - t_limb_title.getWidth() / 2,
-    //                     current.y);
-
-    // t_mmtm_title.render(renderer, mmtm_x - t_mmtm_title.getWidth() / 2,
-    //                     current.y);
-
-    // current.y += t_limb_title.getHeight() + gap;
-
-    // t_unbr_val.render(renderer, unbr_x - t_unbr_val.getWidth() / 2,
-    // current.y);
-    // t_limb_val.render(renderer, limb_x - t_limb_val.getWidth() / 2,
-    // current.y);
-    // t_mmtm_val.render(renderer, mmtm_x - t_mmtm_val.getWidth() / 2,
-    // current.y);
   }
 }
 
@@ -959,8 +991,8 @@ SDL_Texture* Menu::buildAttributeFrame(Attribute attr, uint32_t width,
 
     if(frame_attribute)
     {
-      frame_attribute->render(renderer, inset,
-                              height / 2 - frame_attribute->getHeight() / 2);
+      // frame_attribute->render(renderer, inset,
+      //                        height / 2 - frame_attribute->getHeight() / 2);
 
       Text t_name(font_value);
       Text t_value(font_value);
@@ -1029,10 +1061,10 @@ SDL_Texture* Menu::buildElementFrame(Element elm, uint32_t width,
       Text t_value_def(font_value);
 
       Text t_max(font_value);
-      t_max.setText(renderer, "Unbearability: 9999", kCOLOR_TEXT);
+      t_max.setText(renderer, "FRT:   9999", kCOLOR_TEXT);
 
-      t_atk_title.setText(renderer, "Aggression: ", kCOLOR_TEXT);
-      t_def_title.setText(renderer, "Fortitude: ", kCOLOR_TEXT);
+      t_atk_title.setText(renderer, "AGR: ", kCOLOR_TEXT);
+      t_def_title.setText(renderer, "FRT: ", kCOLOR_TEXT);
 
       std::string value_atk_str =
           std::to_string(stats.getValue(attributes.second));
@@ -1680,53 +1712,64 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
 
 void Menu::renderPersonElementTitles(int32_t gap)
 {
-  std::cout << person_title_elements.size() << std::endl;
   if(config && renderer && person_element_index > -1 &&
-     person_element_index < (int32_t)person_title_elements.size())
+     person_element_index < (int32_t)person_title_elements.size() &&
+     person_title_elements.size() > 2)
   {
-    auto font_header = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
-    Text t_title(font_header);
-    auto index = 0;
+
+    /* Render the required number of boxes for the element titles */
+    auto point = Coordinate{current.x, current.y + gap};
+    auto box_length = (s_top_box.width) / person_title_elements.size() + 1;
+    auto box_height = s_top_box.height;
+
+    int32_t index{0};
 
     for(auto& title : person_title_elements)
     {
-      t_title.setText(renderer, title.name, kCOLOR_TEXT);
+      title.title_box = Box(point, box_length, box_height);
+      setupDefaultBox(title.title_box);
 
       if(index == person_element_index)
       {
-        auto point = Coordinate{current.x - gap, current.y - gap};
-        auto rect_h = t_title.getHeight() + 2 * gap;
-        auto rect_w = t_title.getWidth() + 2 * gap;
-
-        Coordinate top_left{point.x, point.y};
-        Coordinate top_right{point.x + rect_w, point.y};
-        Coordinate bot_left{point.x, point.y + rect_h};
-        Coordinate bot_right{point.x + rect_w, point.y + rect_h};
-        auto top_line = Helpers::bresenhamPoints(top_left, top_right);
-        auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
-
-        SDL_Rect rect;
-        rect.x = current.x;
-        rect.y = current.y;
-        rect.h = rect_h;
-        rect.w = rect_w;
-
-        auto brightness = Helpers::updateHoverBrightness(
-            person_title_elements.at(person_element_index).hover_time,
-            kTITLE_HOVER_RATE, kTITLE_HOVER_MIN, kTITLE_HOVER_MAX);
-
-        auto hover_color = kCOLOR_TITLE_HOVER;
-        SDL_SetRenderDrawColor(renderer, hover_color.r, hover_color.g,
-                               hover_color.b, hover_color.a * brightness);
-        SDL_RenderFillRect(renderer, &rect);
+        // title.title_box.setFlag(BoxState::SELECTED, true);
+        title.title_box.color_bg = kCOLOR_BORDER_UNSELECTED;
+      }
+      else
+      {
+        title.title_box.setFlag(BoxState::SELECTED, false);
       }
 
-      /* Render the text */
-      t_title.render(renderer, current.x, current.y);
-      current.x += t_title.getWidth() + gap;
-
+      point.x += box_length - 1;
       index++;
     }
+
+    for(uint32_t i = 0; i < person_title_elements.size(); i++)
+      if((int32_t)i != person_element_index)
+        renderPersonElementTitle(person_title_elements.at(i));
+
+    for(uint32_t i = 0; i < person_title_elements.size(); i++)
+      if((int32_t)i == person_element_index)
+        renderPersonElementTitle(person_title_elements.at(i));
+  }
+}
+
+void Menu::renderPersonElementTitle(TitleElement& element)
+{
+
+  element.title_box.render(renderer);
+
+  auto font_header = config->getFontTTF(FontName::MENU_SMALL_TITLE_ELEMENT);
+
+  if(font_header)
+  {
+    Text t(font_header);
+    t.setText(renderer, element.name, kCOLOR_TEXT);
+
+    /* Render the text centered in the title box */
+    t.render(renderer, element.title_box.point.x + element.title_box.width / 2 -
+                           t.getWidth() / 2,
+             element.title_box.point.y + element.title_box.height / 2 -
+                 t.getHeight() / 2);
   }
 }
 
@@ -1754,8 +1797,9 @@ void Menu::renderSleuth()
     // TODO: Render the face graphic
   }
 
-  s_top_box.point = {start.x + 2 * gap + calcSleuthTileSize(), current.y};
-  s_top_box.width = main_section.location.width - calcSleuthTileSize() - 3 * gap;
+  s_top_box.point = {start.x + 2 * gap + calcSleuthTileSize(), start.y};
+  s_top_box.width =
+      main_section.location.width - calcSleuthTileSize() - 3 * gap;
   s_top_box.height = (main_section.location.height - 3 * gap) / 10;
 
   current = s_top_box.point;
@@ -1799,17 +1843,9 @@ void Menu::renderSleuthOverview()
   current.y = start.y + gap;
   auto icon_w = calcSleuthTileSize();
 
-  /* Render the top stats box */
-  s_top_stats_box.point = {
-      start.x + 2 * gap + icon_w,
-      current.y + (main_section.location.height - 3 * gap) / 10 - 1};
-  s_top_stats_box.width = s_top_box.width;
-  s_top_stats_box.height =
-      (main_section.location.height - s_top_box.height - gap * 4) / 4;
-  setupDefaultBox(s_top_stats_box);
-  s_top_stats_box.render(renderer);
-
   Text t_name(font_title_element);
+
+  s_top_box.render(renderer);
 
   if(person)
   {
@@ -1822,6 +1858,17 @@ void Menu::renderSleuthOverview()
     t_name.render(renderer, current.x, name_text_y);
   }
 
+  /* Render the top stats box */
+  s_top_stats_box.point = {start.x + 2 * gap + icon_w,
+                           current.y +
+                               (main_section.location.height - 3 * gap) / 10 -
+                               1 + s_top_box.height};
+  s_top_stats_box.width = s_top_box.width;
+  s_top_stats_box.height =
+      (main_section.location.height - s_top_box.height - gap * 4) / 4;
+  setupDefaultBox(s_top_stats_box);
+  s_top_stats_box.render(renderer);
+
   /* Render the sleuth sprite box */
   current.y = s_top_stats_box.point.y + s_top_stats_box.height + gap;
   auto sprite_box_size = (int32_t)std::round(width * kSLEUTH_SPRITE_WIDTH);
@@ -1829,7 +1876,7 @@ void Menu::renderSleuthOverview()
   s_sprite_box.point = {s_top_box.point.x, current.y};
   s_sprite_box.width = sprite_box_size;
   s_sprite_box.height =
-      main.height - s_top_stats_box.height - s_top_box.height - 3 * gap;
+      main.height - s_top_stats_box.height - 2 * s_top_box.height - 3 * gap;
   setupDefaultBox(s_sprite_box);
   s_sprite_box.render(renderer);
 
@@ -1839,8 +1886,7 @@ void Menu::renderSleuthOverview()
                                 gap};
   s_attributes_box.width = main.width + main.point.x - s_sprite_box.point.x -
                            s_sprite_box.width - 2 * gap;
-  s_attributes_box.height =
-      main.height - s_top_stats_box.height - s_top_box.height - 3 * gap;
+  s_attributes_box.height = s_sprite_box.height;
   setupDefaultBox(s_attributes_box);
   s_attributes_box.corner_inset = calcMainCornerInset();
   s_attributes_box.box_type = BoxType::CORNER_CUT_BOX;
@@ -1877,7 +1923,7 @@ void Menu::renderSleuthOverview()
   }
 
   /* Render the sleuth top stats box */
-  start = {s_top_stats_box.point.x + gap * 10, s_top_stats_box.point.y};
+  start = {s_top_stats_box.point.x, s_top_stats_box.point.y};
   auto stats = actor->getStatsRendered();
   current = Coordinate{start.x + gap, start.y + gap};
 
@@ -1994,9 +2040,41 @@ void Menu::renderSleuthOverview()
 
 void Menu::renderSleuthEquipment()
 {
+  /* Render the sleuth equipment */
 }
 
+/* Render the skills screen for the current person in sleuth selection */
 void Menu::renderSleuthSkills()
+{
+  auto width = config->getScreenWidth();
+  auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
+
+  /* Useable height between the top box and the details box */
+  auto useable_height =
+      main_section.location.height - 3 * gap - s_top_box.height;
+
+  /* Render the top box */
+  skills_top_box.point.x = s_top_box.point.x;
+  skills_top_box.point.y = current.y + s_top_box.height + gap - 1;
+  skills_top_box.height = std::round(3.0 * useable_height / 5);
+  skills_top_box.width = s_top_box.width;
+  setupDefaultBox(skills_top_box);
+  skills_top_box.render(renderer);
+
+  /* Render the skills scroll box inside of the top box */
+
+  /* Render the bottom skill frames box - detail section */
+  skills_bot_box.point.x = s_top_box.point.x;
+  skills_bot_box.point.y = skills_top_box.point.y + skills_top_box.height + gap;
+  skills_bot_box.height = useable_height - skills_top_box.height;
+  skills_bot_box.width = s_top_box.width;
+  setupDefaultBox(skills_bot_box);
+  skills_bot_box.corner_inset = calcMainCornerInset();
+  skills_bot_box.box_type = BoxType::CORNER_CUT_BOX;
+  skills_bot_box.render(renderer);
+}
+
+void Menu::renderSleuthSkillsDetail()
 {
 }
 
@@ -2149,15 +2227,15 @@ MenuType Menu::getMainMenuType()
 
 MenuType Menu::getSleuthMenuType()
 {
-  if(sleuth_element_index == 0)
+  if(person_element_index == 0)
     return MenuType::SLEUTH_OVERVIEW;
-  else if(sleuth_element_index == 1)
+  else if(person_element_index == 1)
     return MenuType::SLEUTH_EQUIPMENT;
-  else if(sleuth_element_index == 2)
+  else if(person_element_index == 2)
     return MenuType::SLEUTH_SKILLS;
-  else if(sleuth_element_index == 3)
+  else if(person_element_index == 3)
     return MenuType::SLEUTH_DETAILS;
-  else if(sleuth_element_index == 4)
+  else if(person_element_index == 4)
     return MenuType::SLEUTH_RECORD;
 
   return MenuType::INVALID;
@@ -2297,7 +2375,7 @@ void Menu::keyDownRight()
   {
     if(getMainMenuType() == MenuType::SLEUTH)
     {
-      if((uint32_t)person_element_index < person_title_elements.size())
+      if((uint32_t)person_element_index + 1 < person_title_elements.size())
         person_element_index++;
     }
     else if(getMainMenuType() == MenuType::OPTIONS)
