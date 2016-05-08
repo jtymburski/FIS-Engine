@@ -455,7 +455,7 @@ bool MapInteractiveObject::isDataToSave()
     return true;
 
   /* Check the elapsed return time status (elapsed) */
-  if(time_valid && time_elapsed > 0)
+  if(isInactiveTimeValid() && time_elapsed > 0)
     return true;
 
   /* Check states */
@@ -571,6 +571,7 @@ bool MapInteractiveObject::saveData(FileHandler* fh, const bool &save_event)
 
     /* Increment index */
     node_index++;
+    node_parse = node_parse->next;
   }
   if(overall)
     fh->writeXmlElementEnd();
@@ -589,7 +590,7 @@ bool MapInteractiveObject::saveData(FileHandler* fh, const bool &save_event)
   success &= EventSet::saveLocked(fh, lock_struct);
 
   /* Time elapsed status for return */
-  if(time_valid && time_elapsed > 0)
+  if(isInactiveTimeValid() && time_elapsed > 0)
     fh->writeXmlData("timeelapsed", time_elapsed);
 
   return success;
@@ -1084,6 +1085,19 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
 }
 
 /*
+ * Description: Returns if the inactive time is valid in either the instance
+ *              or base.
+ *
+ * Inputs: none
+ * Output: bool - true if there is a valid inactive return time
+ */
+bool MapInteractiveObject::isInactiveTimeValid()
+{
+  return (time_valid || (base != nullptr &&
+                         static_cast<MapInteractiveObject*>(base)->time_valid));
+}
+
+/*
  * Description: Returns if the current state of the MIO is locked. If true,
  *              during an interact, no state change will occur. Otherwise,
  *              a state change is permitted to occur.
@@ -1117,13 +1131,17 @@ void MapInteractiveObject::reset()
  */
 bool MapInteractiveObject::save(FileHandler* fh)
 {
-  if(fh != nullptr && isDataToSave())
+  if(fh != nullptr)
   {
     bool success = true;
 
-    fh->writeXmlElement("mapio", "id", getID());
-    success &= saveData(fh, false);
-    fh->writeXmlElementEnd();
+    /* Only proceed if there is data to save */
+    if(isDataToSave())
+    {
+      fh->writeXmlElement("mapio", "id", getID());
+      success &= saveData(fh, false);
+      fh->writeXmlElementEnd();
+    }
 
     return success;
   }
@@ -1219,7 +1237,7 @@ bool MapInteractiveObject::setBase(MapThing* base)
  */
 void MapInteractiveObject::setInactiveTime(int time)
 {
-  int old_time = time_return;
+  int old_time = getInactiveTime();
 
   /* Set the inactive time */
   if(time < 0)

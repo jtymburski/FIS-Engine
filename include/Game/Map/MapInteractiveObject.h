@@ -150,6 +150,9 @@ public:
   /* Interact with the thing (use key) */
   bool interact(MapPerson* initiator);
 
+  /* Returns if the instance (or base) time is valid */
+  bool isInactiveTimeValid();
+
   /* Returns if the MIO state change is currently locked */
   bool isLocked();
 

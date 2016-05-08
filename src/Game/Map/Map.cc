@@ -1279,11 +1279,11 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
 
     /* Map Thing(s) */
     for(uint32_t i = 0; i < sub_map[id].things.size(); i++)
-      sub_map[id].things[i]->save(fh);
+      success &= sub_map[id].things[i]->save(fh);
 
     /* Map IO(s) */
     for(uint32_t i = 0; i < sub_map[id].ios.size(); i++)
-      sub_map[id].ios[i]->save(fh);
+      success &= sub_map[id].ios[i]->save(fh);
 
     /* Map Item(s) */
     // TODO: NEXT
@@ -1297,6 +1297,8 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
     {
       fh->writeXmlElementEnd();
     }
+
+    return success;
   }
   return false;
 }
@@ -2709,6 +2711,9 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
 
     /* Update lay overs */
     initiateLayUpdate();
+
+    /* Trigger loaded */
+    loaded = true;
   }
 }
 

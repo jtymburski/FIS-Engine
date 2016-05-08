@@ -1968,19 +1968,23 @@ bool Game::save()
     {
       /* Write player data which contains all other data related */
       updatePlayerSteps();
-      player_main->saveData(&save_handle);
+      success &= player_main->saveData(&save_handle);
     }
 
-    /* Write the map data */
-    map_ctrl.saveData(&save_handle);
+    if(map_ctrl.isLoaded())
+    {
+      /* Setup the map data */
+      XmlData data_map;
+      data_map.addElement("game");
+      data_map.addElement("map", "id", std::to_string(map_lvl));
+      save_handle.purgeElement(data_map, true);
+
+      /* Write the map data */
+      success &= map_ctrl.saveData(&save_handle);
+    }
 
     /* Finish the file write */
-    save_handle.writeXmlElementEnd();
-    success &= save_handle.save();
-
-    /* Finish the file write */
-    save_handle.writeXmlElementEnd();
-    success &= save_handle.save();
+    save_handle.stop(!success);
   }
 
   return success;

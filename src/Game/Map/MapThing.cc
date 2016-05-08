@@ -2049,13 +2049,17 @@ void MapThing::resetLocation()
  */
 bool MapThing::save(FileHandler* fh)
 {
-  if(fh != nullptr && isDataToSave())
+  if(fh != nullptr)
   {
     bool success = true;
 
-    fh->writeXmlElement("mapthing", "id", getID());
-    success &= saveData(fh);
-    fh->writeXmlElementEnd();
+    /* Only write if there is data to save */
+    if(isDataToSave())
+    {
+      fh->writeXmlElement("mapthing", "id", getID());
+      success &= saveData(fh);
+      fh->writeXmlElementEnd();
+    }
 
     return success;
   }
