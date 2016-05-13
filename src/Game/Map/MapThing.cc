@@ -541,6 +541,10 @@ bool MapThing::saveData(FileHandler* fh, const bool &save_event)
                                      std::to_string(ref_tile->getY()));
   }
 
+  /* Time elapsed status for change of status from inactive to active */
+  if(getActiveRespawn() > 0 && active_lapsed > 0)
+    fh->writeXmlData("activelapsed", active_lapsed);
+
   return success;
 }
 
@@ -897,6 +901,13 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   if(identifier == "active" && elements.size() == 1)
   {
     setActive(data.getDataBool(&success));
+  }
+  /* -------------------- ACTIVE ELAPSED -------------------- */
+  else if(identifier == "activelapsed")
+  {
+    int time = data.getDataInteger(&success);
+    if(success && time >= 0)
+      active_lapsed = time;
   }
   /*--------------------- ACTIVE TIME -----------------*/
   else if(identifier == "activetime" && elements.size() == 1)
@@ -2117,6 +2128,9 @@ void MapThing::setActiveRespawn(int time)
     active_time = kACTIVE_DEFAULT;
   else
     active_time = time;
+
+  /* Reset the elapsed active time */
+  active_lapsed = 0;
 
   /* Check if it was changed */
   if(old_time != active_time)
