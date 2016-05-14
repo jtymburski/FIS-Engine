@@ -147,7 +147,7 @@ const float Menu::kTITLE_HOVER_MAX{0.8};
 
 /* Main Section General */
 const uint8_t Menu::kMAIN_ALPHA{191};
-const float Menu::kMAIN_SLIDE_RATE{2.05};
+const float Menu::kMAIN_SLIDE_RATE{1.75};
 const float Menu::kMAIN_CORNER_LENGTH{0.025};
 const float Menu::kINV_WIDTH{0.53};
 const float Menu::kOPTIONS_WIDTH{0.40};
@@ -157,9 +157,9 @@ const float Menu::kSLEUTH_WIDTH{0.60};
 
 /* Sleuth Section */
 const float Menu::kSLEUTH_GAP{0.009};
-const float Menu::kSLEUTH_SPRITE_WIDTH{0.2105};
-const float Menu::kSLEUTH_ELEMENT_HEIGHT{0.056};
-const float Menu::kSLEUTH_EQUIP_ICON_SIZE{0.0376};
+const float Menu::kSLEUTH_SPRITE_WIDTH{0.1505};
+const float Menu::kSLEUTH_ELEMENT_HEIGHT{0.062};
+const float Menu::kSLEUTH_EQUIP_ICON_SIZE{0.0406};
 const float Menu::kSLEUTH_ATTRIBUTE_INSET{0.015};
 
 /* Skill Section */
@@ -959,14 +959,14 @@ void Menu::renderAttributes(Coordinate start, int32_t gap)
     }
   }
 
-  current = Coordinate{start.x + gap / 2, start.y + 2 * gap / 3};
+  current = Coordinate{start.x + gap, start.y + gap};
 
   for(auto& stat_frame : sleuth_stat_frames)
   {
     if(stat_frame)
     {
       stat_frame->render(renderer, current.x, current.y);
-      current.y += stat_frame->getHeight() + gap / 3;
+      current.y += stat_frame->getHeight() + (int32_t)std::round(0.54 * gap);
     }
   }
 }
@@ -1061,7 +1061,7 @@ SDL_Texture* Menu::buildElementFrame(Element elm, uint32_t width,
       Text t_value_def(font_value);
 
       Text t_max(font_value);
-      t_max.setText(renderer, "FRT:   9999", kCOLOR_TEXT);
+      t_max.setText(renderer, "FRT:     9999", kCOLOR_TEXT);
 
       t_atk_title.setText(renderer, "AGR: ", kCOLOR_TEXT);
       t_def_title.setText(renderer, "FRT: ", kCOLOR_TEXT);
@@ -1719,14 +1719,19 @@ void Menu::renderPersonElementTitles(int32_t gap)
 
     /* Render the required number of boxes for the element titles */
     auto point = Coordinate{current.x, current.y + gap};
-    auto box_length = (s_top_box.width) / person_title_elements.size() + 1;
+    auto box_length = (int32_t)std::ceil(
+        s_top_box.width * 1.0 / person_title_elements.size());
     auto box_height = s_top_box.height;
+
+    int32_t max_remain_length = s_top_box.width + 1;
 
     int32_t index{0};
 
     for(auto& title : person_title_elements)
     {
-      title.title_box = Box(point, box_length, box_height);
+      auto actual_length = std::min(max_remain_length, box_length);
+      title.title_box = Box(point, actual_length, box_height);
+      max_remain_length -= actual_length - 1;
       setupDefaultBox(title.title_box);
 
       if(index == person_element_index)
@@ -1845,6 +1850,8 @@ void Menu::renderSleuthOverview()
 
   Text t_name(font_title_element);
 
+  s_top_box.point.y += s_top_box.height + gap - 1;
+  setupDefaultBox(s_top_box);
   s_top_box.render(renderer);
 
   if(person)
@@ -1852,7 +1859,7 @@ void Menu::renderSleuthOverview()
     /* Render the player's name in the title box */
     t_name.setText(renderer, person->getName(), kCOLOR_TEXT);
 
-    auto name_text_y = s_top_stats_box.point.y + gap;
+    auto name_text_y = s_top_box.point.y + gap;
     current.x = s_top_box.point.x + gap;
 
     t_name.render(renderer, current.x, name_text_y);
@@ -1862,7 +1869,7 @@ void Menu::renderSleuthOverview()
   s_top_stats_box.point = {start.x + 2 * gap + icon_w,
                            current.y +
                                (main_section.location.height - 3 * gap) / 10 -
-                               1 + s_top_box.height};
+                               2 + s_top_box.height};
   s_top_stats_box.width = s_top_box.width;
   s_top_stats_box.height =
       (main_section.location.height - s_top_box.height - gap * 4) / 4;
@@ -1880,18 +1887,6 @@ void Menu::renderSleuthOverview()
   setupDefaultBox(s_sprite_box);
   s_sprite_box.render(renderer);
 
-  /* Render the attributes box */
-  s_attributes_box.point = {s_sprite_box.point.x + s_sprite_box.width + gap,
-                            s_top_stats_box.point.y + s_top_stats_box.height +
-                                gap};
-  s_attributes_box.width = main.width + main.point.x - s_sprite_box.point.x -
-                           s_sprite_box.width - 2 * gap;
-  s_attributes_box.height = s_sprite_box.height;
-  setupDefaultBox(s_attributes_box);
-  s_attributes_box.corner_inset = calcMainCornerInset();
-  s_attributes_box.box_type = BoxType::CORNER_CUT_BOX;
-  s_attributes_box.render(renderer);
-
   /* Render the person's sprite in the sleuth sprite box */
   actor->setActiveSprite(ActiveSprite::THIRD_PERSON);
 
@@ -1904,23 +1899,32 @@ void Menu::renderSleuthOverview()
   }
 
   /* Render the equipment icons */
-  auto equip_icon_gap =
-      (s_sprite_box.height - 2 * gap - 5 * equip_icon_size) / 4;
+  auto equip_icon_gap = (s_sprite_box.height - 5 * equip_icon_size) / 4;
 
   Box icon_box;
-  icon_box.point = {s_sprite_box.point.x + s_sprite_box.width -
-                        equip_icon_size - gap,
-                    s_sprite_box.point.y + gap};
+  icon_box.point = {s_sprite_box.point.x + s_sprite_box.width + gap,
+                    s_sprite_box.point.y};
   icon_box.width = equip_icon_size;
   icon_box.height = equip_icon_size;
-  icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
-  icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
+  setupDefaultBox(icon_box);
 
   for(int32_t i = 0; i < 5; i++)
   {
     icon_box.render(renderer);
     icon_box.point.y += equip_icon_size + equip_icon_gap;
   }
+
+  /* Render the attributes box */
+  s_attributes_box.point = {
+      s_sprite_box.point.x + s_sprite_box.width + equip_icon_size + 2 * gap,
+      s_top_stats_box.point.y + s_top_stats_box.height + gap};
+  s_attributes_box.width = main.width + main.point.x - s_sprite_box.point.x -
+                           equip_icon_size - s_sprite_box.width - 3 * gap;
+  s_attributes_box.height = s_sprite_box.height;
+  setupDefaultBox(s_attributes_box);
+  s_attributes_box.corner_inset = calcMainCornerInset();
+  s_attributes_box.box_type = BoxType::CORNER_CUT_BOX;
+  s_attributes_box.render(renderer);
 
   /* Render the sleuth top stats box */
   start = {s_top_stats_box.point.x, s_top_stats_box.point.y};
