@@ -112,6 +112,8 @@ private:
 
   /* The current element index for the menu */
   int32_t element_index;
+  int32_t index_actions;
+  int32_t index_types;
 
   /* ------------ Constants --------------- */
   const static uint16_t kALLY_HEIGHT; /* Ally display section height */

@@ -231,13 +231,13 @@ void Battle::actionStateSwitchSprite()
   }
   else
   {
-    std::cout << "Skill was not a hit, setting action state to done." << std::endl;
+    std::cout << "Skill was not a hit, setting action state to done."
+              << std::endl;
     event->action_state = ActionState::DONE;
   }
 
   addDelay(200);
 }
-
 
 void Battle::actionStateActionStart()
 {

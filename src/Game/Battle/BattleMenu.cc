@@ -595,8 +595,14 @@ SDL_Texture* BattleMenu::createItemFrame(BattleItem* battle_item,
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   SDL_Rect rect_top;
   setRectTop(rect_top);
-  if(skill->getThumbnail())
-    skill->getThumbnail()->render(renderer, rect_top.x, rect_top.y);
+
+  if(use_item->getThumb())
+  {
+    auto thumb = use_item->getThumb();
+    thumb->render(renderer, rect_top.x + rect_top.w / 2 - thumb->getWidth(),
+                  rect_top.y + rect_top.h / 2 - thumb->getHeight(),
+                  thumb->getWidth() * 2, thumb->getHeight() * 2);
+  }
 
   Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
 
@@ -759,19 +765,26 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
 
   /* Render the description */
   uint16_t line_width = width - text_x;
-  std::vector<std::string> desc_set =
+
+  auto desc_set =
       Text::splitLine(font_subheader, skill->getDescription(), line_width);
 
   text_y += t4.getHeight() + kSKILL_DESC_GAP;
+
   for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
   {
     if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
+    {
       t5.setText(renderer, Text::splitLine(font_subheader,
                                            desc_set[i] + " " + desc_set[i + 1],
                                            line_width, true).front(),
                  kTEXT_STANDARD);
+    }
     else
+    {
       t5.setText(renderer, desc_set[i], kTEXT_STANDARD);
+    }
+
     t5.render(renderer, text_x,
               text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
   }
@@ -785,6 +798,11 @@ SDL_Texture* BattleMenu::createSkillFrame(BattleSkill* battle_skill,
 bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
                                    uint32_t h)
 {
+  if(element_index >= (index_types + kTYPE_MAX))
+    index_types++;
+  else if(element_index < index_types)
+    index_types--;
+
   /* Fonts */
   auto font_header = config->getFontTTF(FontName::BATTLE_HEADER);
 
@@ -809,6 +827,8 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
 
   for(uint32_t i = 0; i < valid_size && i < kTYPE_MAX; i++)
   {
+    // TODO int32_t index = i + index_types;
+
     /* Action Type at index */
     auto type = valid_action_types.at(i);
 
@@ -848,7 +868,7 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
       /* Top of scroll */
       if(i == 0)
       {
-        if(element_index == 0)
+        if(index_types == 0)
         {
           success &= Frame::renderCircleFilled(center_x - 1, center_y,
                                                kSCROLL_R, renderer);
@@ -892,6 +912,11 @@ bool BattleMenu::renderActionTypes(uint32_t x, uint32_t y, uint32_t w,
 
 bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
+  if(element_index >= (index_actions + kTYPE_MAX))
+    index_actions++;
+  else if(element_index < index_actions)
+    index_actions--;
+
   bool success{true};
   int64_t text_x{x + kTYPE_MARGIN * 2};
   int32_t text_y{0};
@@ -910,7 +935,7 @@ bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
   for(uint32_t i = 0; i < frames_item_name.size() && i < kTYPE_MAX; i++)
   {
-    int32_t index = i;
+    int32_t index = i + index_actions;
 
     if(index == element_index)
     {
@@ -930,8 +955,40 @@ bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
       uint16_t center_x = x + w - kTYPE_MARGIN * 2;
       uint16_t center_y = text_y + frames_item_name[i]->getHeight() / 2;
-      (void)center_x;
-      (void)center_y;
+
+      /* Top of scroll */
+      if(i == 0)
+      {
+        if(index_actions == 0)
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        else
+        {
+          center_y -= 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y - kSCROLL_R + 1, center_x - kSCROLL_R,
+              center_y + kSCROLL_R, center_x + kSCROLL_R, center_y + kSCROLL_R,
+              renderer);
+        }
+      }
+
+      /* Bottom of scroll */
+      if(i == kTYPE_MAX - 1)
+      {
+        uint16_t bottom_index = index_actions + kTYPE_MAX;
+
+        if(bottom_index == frames_skill_name.size())
+          success &= Frame::renderCircleFilled(center_x - 1, center_y,
+                                               kSCROLL_R, renderer);
+        else
+        {
+          center_y += 1;
+          success &= Frame::renderTriangle(
+              center_x, center_y + kSCROLL_R - 1, center_x - kSCROLL_R,
+              center_y - kSCROLL_R, center_x + kSCROLL_R, center_y - kSCROLL_R,
+              renderer);
+        }
+      }
     }
 
     text_y += frames_item_name[index]->getHeight();
@@ -942,6 +999,11 @@ bool BattleMenu::renderItems(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
 bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
+  if(element_index >= (index_actions + kTYPE_MAX))
+    index_actions++;
+  else if(element_index < index_actions)
+    index_actions--;
+
   /* Success, Start X/Y  */
   bool success{true};
   int64_t text_x{x + kTYPE_MARGIN * 2};
@@ -961,7 +1023,7 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
   for(uint32_t i = 0; i < frames_skill_name.size() && i < kTYPE_MAX; i++)
   {
-    int32_t index = i;
+    int32_t index = i + index_actions;
 
     if(index == element_index)
     {
@@ -985,7 +1047,7 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
       /* Top of scroll */
       if(i == 0)
       {
-        if(element_index == 0)
+        if(index_actions == 0)
           success &= Frame::renderCircleFilled(center_x - 1, center_y,
                                                kSCROLL_R, renderer);
         else
@@ -1001,7 +1063,8 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
       /* Bottom of scroll */
       if(i == kTYPE_MAX - 1)
       {
-        uint16_t bottom_index = element_index + kTYPE_MAX;
+        uint16_t bottom_index = index_actions + kTYPE_MAX;
+
         if(bottom_index == frames_skill_name.size())
           success &= Frame::renderCircleFilled(center_x - 1, center_y,
                                                kSCROLL_R, renderer);
@@ -1048,12 +1111,16 @@ void BattleMenu::clear()
   valid_battle_items.clear();
   valid_battle_skills.clear();
   element_index = -1;
+  index_actions = -1;
+  index_types = -1;
 }
 
 void BattleMenu::ready()
 {
   status_window = WindowStatus::SHOWING;
   element_index = 0;
+  index_actions = 0;
+  index_types = 0;
   menu_layer = BattleMenuLayer::TYPE_SELECTION;
   setFlag(BattleMenuState::READY, true);
 }
@@ -1336,10 +1403,7 @@ bool BattleMenu::createItemFrames(uint32_t width_left, uint32_t width_right)
   }
 
   if(success)
-  {
-    std::cout << "Item frames built!" << std::endl;
     setFlag(BattleMenuState::ITEM_FRAMES_BUILT, true);
-  }
 
   return true;
 }
@@ -1497,7 +1561,6 @@ bool BattleMenu::render()
 
         if((uint32_t)element_index < frames_item_info.size())
         {
-          std::cout << "Rendering an item info frame!" << std::endl;
           success &= frames_item_info[element_index]->render(
               renderer, rect3.x + kTYPE_MARGIN, rect3.y);
         }

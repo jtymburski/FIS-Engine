@@ -1776,7 +1776,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     {
       auto player_person = player_main->getSleuth()->getMember(0);
 
-      if(player_person)
+      if(player_person &&
+         (size_t)(player_person->getLevel() + 1) <= Person::kNUM_LEVELS)
       {
         auto new_level = player_person->getLevel() + 1;
         player_person->loseExp(player_person->getTotalExp());

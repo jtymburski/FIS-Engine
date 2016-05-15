@@ -1984,9 +1984,18 @@ void Menu::renderSleuthOverview()
   Text t_vita(font_header);
   Text t_qtdr(font_header);
 
-  std::string exp_str =
-      std::to_string(person->getTotalExp()) + " / " +
-      std::to_string(person->getExpAt(person->getLevel() + 1)) + " Experience";
+  std::string exp_str = "";
+
+  if(person->getExpAt(person->getLevel() + 1) == 0)
+  {
+    exp_str = std::to_string(person->getTotalExp()) + " Experience";
+  }
+  else
+  {
+    exp_str = std::to_string(person->getTotalExp()) + " / " +
+              std::to_string(person->getExpAt(person->getLevel() + 1)) +
+              " Experience";
+  }
 
   std::string vita_str =
       std::to_string(stats.getValue(Attribute::VITA)) + " / " +

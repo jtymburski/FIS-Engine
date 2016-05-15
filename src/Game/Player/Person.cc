@@ -508,6 +508,7 @@ bool Person::addExp(const uint32_t& amount, const bool& update,
  */
 AttributeSet Person::calcEquipStats()
 {
+  //TODO: Fix this function
   // auto equip_bonus = AttributeSet();
 
   // for(auto it = begin(equipments); it != end(equipments); ++it)
@@ -2112,7 +2113,7 @@ uint32_t Person::getExpAt(const uint8_t& level)
   if(level != 0 && level <= kNUM_LEVELS)
     return exp_table.at(level - 1);
 
-  return kMAX_EXP + 1;
+  return 0;
 }
 
 /*

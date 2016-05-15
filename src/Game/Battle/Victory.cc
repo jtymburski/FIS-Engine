@@ -80,6 +80,7 @@ VictoryActor Victory::buildCard(BattleActor* actor)
   victory_actor.base_person = actor->getBasePerson();
   victory_actor.exp_left = calcActorExp(actor);
   victory_actor.orig_exp = actor->getBasePerson()->findExpPercent();
+  victory_actor.orig_lvl = actor->getBasePerson()->getLevel();
 
   return victory_actor;
 }
@@ -127,8 +128,6 @@ bool Victory::buildVictory()
     success = true;
 
     card = VictoryCard();
-
-    std::cout << "Setting ze cards sprite" << std::endl;
     card.frame_backdrop = new Frame(
         config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
 
@@ -368,9 +367,16 @@ bool Victory::update(int32_t cycle_time)
             (int32_t)(std::floor(0.01 * (float)victory_actor.exp_left));
 
         add_exp = std::max(1, add_exp);
+
+        std::cout << "EXP Remain: " << victory_actor.exp_left << ","
+                  << victory_actor.orig_exp << "," << victory_actor.orig_lvl
+                  << "Actor can gain exp: "
+                  << victory_actor.actor->getBasePerson()->getPFlag(
+                         PState::CAN_GAIN_EXP) << std::endl;
+
         victory_actor.exp_left -= add_exp;
 
-        /* Add to person > TODO: MVR to review */
+        /* Add to person > TODO: MVR to review [???] */
         victory_actor.base_person->addExp(add_exp);
 
         done &= (victory_actor.exp_left == 0);

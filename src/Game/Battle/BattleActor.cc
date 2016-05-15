@@ -610,7 +610,10 @@ bool BattleActor::dealDamage(int32_t damage_amount)
 
 void BattleActor::dealQtdr(int32_t dealt_amount)
 {
-  (void)dealt_amount; // TODO
+(void)dealt_amount; // TODO
+
+
+
 }
 
 void BattleActor::restoreQtdr(int32_t amount)
