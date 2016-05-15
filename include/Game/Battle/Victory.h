@@ -64,7 +64,6 @@ struct LootCard
   uint32_t credit_drop;
 };
 
-
 class Victory
 {
 public:
@@ -72,8 +71,9 @@ public:
   Victory();
 
   /* Constructs a victory object given a renderer/configuration setting */
-  Victory(Options* config, BattleDisplayData* display_data, SDL_Renderer* renderer,
-          std::vector<BattleActor*> victors, std::vector<BattleActor*> losers);
+  Victory(Options* config, BattleDisplayData* display_data,
+          SDL_Renderer* renderer, std::vector<BattleActor*> victors,
+          std::vector<BattleActor*> losers);
 
   /* Annihilate a victory object */
   ~Victory();

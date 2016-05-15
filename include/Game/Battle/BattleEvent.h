@@ -87,6 +87,7 @@ struct ActorOutcome
   ActorOutcome()
       : actor_outcome_state{ActionState::BEGIN},
         actor{nullptr},
+        attr{Attribute::VITA},
         causes_ko{false},
         critical{false},
         damage{0},
@@ -98,6 +99,9 @@ struct ActorOutcome
 
   /* Pointer to the Battle Actor for the outcome */
   BattleActor* actor;
+
+  /* Effected attribute for the target (in terms of alter) */
+  Attribute attr;
 
   /* Whether this outcome caused the actor to become KOed */
   bool causes_ko;
@@ -155,6 +159,10 @@ public:
 
   /* IgnoreState flags */
   IgnoreState flags_ignore;
+
+  /* Hit Statuses */
+  SkillHitStatus hit_status_action;
+  SkillHitStatus hit_status_skill;
 
   /* Stored attribute types for the Battle Event */
   Attribute attr_prio;
@@ -269,13 +277,13 @@ public:
   bool doesActionCrit(BattleActor* curr_target);
 
   /* Determines whether the action hits against the given target */
-  SkillHitStatus doesActionHit(BattleActor* curr_target);
+  void doesActionHit(BattleActor* curr_target);
 
   /* Can the current person Run? */
   bool doesRunOccur();
 
   /* Returns the enumerated SkillHitStatus value */
-  SkillHitStatus doesSkillHit();
+  void doesSkillHit();
 
   /* Determines whether a given actor is among the targets */
   bool isActorAmongTargets(BattleActor* check_actor);

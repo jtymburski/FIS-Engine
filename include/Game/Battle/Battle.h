@@ -250,7 +250,7 @@ private:
   void actionStateActionStart();
 
   /* Adds a delay amount for processing relative to the current speed setting */
-  void addDelay(int32_t delay_amount);
+  void addDelay(int32_t delay_amount, bool for_outcomes = false);
 
   /* Buffer the current selection of the menu to the action buffer */
   bool bufferMenuSelection();

@@ -558,6 +558,11 @@ uint32_t Box::getNumViewable()
   return num_viewable;
 }
 
+int32_t Box::getNumElements()
+{
+  return elements.size();
+}
+
 void Box::setElements(std::vector<Frame*> elements)
 {
   element_index = -1;

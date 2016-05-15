@@ -27,8 +27,8 @@ Victory::Victory()
 {
 }
 
-Victory::Victory(Options* config, BattleDisplayData* display_data, SDL_Renderer* renderer,
-                 std::vector<BattleActor*> victors,
+Victory::Victory(Options* config, BattleDisplayData* display_data,
+                 SDL_Renderer* renderer, std::vector<BattleActor*> victors,
                  std::vector<BattleActor*> losers)
     : Victory()
 {
@@ -100,7 +100,8 @@ bool Victory::buildLoot()
       {
         /* Create a pair of the item. Peek the Item name from BattleDIsplayData
          * by checking its ID against the known IDs. (On failure, will be "") */
-        loot_card.item_drops.push_back(std::make_pair(item, display_data->getItemName(item)));
+        loot_card.item_drops.push_back(
+            std::make_pair(item, display_data->getItemName(item)));
       }
     }
   }
@@ -186,53 +187,6 @@ uint32_t Victory::calcActorExp(BattleActor* actor)
   return exp_drop;
 }
 
-// for(auto& ally : getAllies())
-// {
-//   auto level_up_occured = false;
-
-//   if(ally && ally->getBasePerson())
-//   {
-//     for(auto& ailment : ally->getAilments())
-//       ally->removeAilment(ailment);
-
-//     auto name = ally->getBasePerson()->getName();
-
-//     auto old_level = ally->getBasePerson()->getLevel();
-//     ally->getBasePerson()->addExp(total_exp_drop);
-//     auto new_level = ally->getBasePerson()->getLevel();
-
-//     if(new_level != old_level)
-//       level_up_occured = true;
-
-//     for(int i = (new_level - old_level); i > 0; i--)
-//       std::cout << name << " has leveled up!" << std::endl;
-
-//     if(!level_up_occured)
-//     {
-//       auto base = ally->getBasePerson();
-
-//       if(base)
-//       {
-//         auto equip_stats = base->calcEquipStats();
-//         auto max_health =
-//             (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
-
-//         auto curr_health =
-//         ally->getStats().getBaseValue(Attribute::VITA);
-//         auto max_qtdr =
-//             (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
-//         auto curr_qtdr =
-//         ally->getStats().getBaseValue(Attribute::QTDR);
-
-//         if(curr_health <= max_health)
-//           base->getCurr().setStat(Attribute::VITA, curr_health);
-//         if(curr_qtdr <= max_qtdr)
-//           base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
-//       }
-//     }
-//   }
-// }
-
 VictoryState Victory::getStateVictory()
 {
   return victory_state;
@@ -304,7 +258,7 @@ bool Victory::renderLoot(Coordinate start)
   if(renderer)
   {
     auto title_font = config->getFontTTF(FontName::BATTLE_HEADER);
-//    auto item_font = config->getFontTTF(FontName::BATTLE_SUBHEADER);
+    //    auto item_font = config->getFontTTF(FontName::BATTLE_SUBHEADER);
     SDL_Color color{255, 255, 255, 255};
 
     Text t_title(title_font);
@@ -313,13 +267,13 @@ bool Victory::renderLoot(Coordinate start)
 
     std::vector<Text> item_texts;
 
-//    for(auto& item : loot_card.loot)
-//    {
-//      Text temp(item_font);
-      // TODO - Obtain the item name
-      // Item* item =
-      // temp.setText(renderer,
-//    }
+    //    for(auto& item : loot_card.loot)
+    //    {
+    //      Text temp(item_font);
+    // TODO - Obtain the item name
+    // Item* item =
+    // temp.setText(renderer,
+    //    }
 
     return true;
   }
@@ -407,10 +361,6 @@ bool Victory::update(int32_t cycle_time)
 
     for(auto& victory_actor : card.actors)
     {
-      std::cout << "Experience Remaining: " << victory_actor.exp_left
-                << "," << victory_actor.orig_exp << ","
-                << victory_actor.orig_lvl << std::endl;
-
       if(victory_actor.exp_left > 0 && victory_actor.actor &&
          victory_actor.actor->getBasePerson())
       {
@@ -428,7 +378,35 @@ bool Victory::update(int32_t cycle_time)
     }
 
     if(done)
+    {
+      for(auto& victory_actor : card.actors)
+      {
+        auto actor = victory_actor.actor;
+
+        for(auto& ailment : actor->getAilments())
+          actor->removeAilment(ailment);
+
+        auto base = actor->getBasePerson();
+
+        if(victory_actor.orig_lvl != base->getLevel())
+        {
+          auto equip_stats = base->calcEquipStats();
+          auto max_health =
+              (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
+
+          auto curr_health = actor->getStats().getBaseValue(Attribute::VITA);
+          auto max_qtdr = (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
+          auto curr_qtdr = actor->getStats().getBaseValue(Attribute::QTDR);
+
+          if(curr_health <= max_health)
+            base->getCurr().setStat(Attribute::VITA, curr_health);
+          if(curr_qtdr <= max_qtdr)
+            base->getCurr().setStat(Attribute::QTDR, curr_qtdr);
+        }
+      }
+
       victory_state = VictoryState::FINISHED;
+    }
   }
 
   return false;

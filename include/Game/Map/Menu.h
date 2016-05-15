@@ -307,6 +307,7 @@ private:
   int32_t inventory_element_index;
   int32_t option_element_index;
   int32_t person_element_index;
+  int32_t skills_element_index;
   int32_t sleuth_element_index;
   int32_t title_element_index;
 
@@ -367,6 +368,7 @@ private:
   static const float kSKILL_ELEMENT_WIDTH;
   static const float kSKILL_ELEMENT_HEIGHT;
   static const float kSKILL_ELEMENT_INSET;
+
 
   /* Inventory Section */
   static const float kINV_GAP;
@@ -443,9 +445,7 @@ private:
   /* Construct the Sleuth overview screen */
   bool buildSleuthScreen();
 
-  /* Construct the attribute frames for the current person */
-  void buildSleuthStats();
-
+  /* Construct the skill frames for the current person */
   void buildSkillFrames();
 
   /* Construct a vector of TitleElements for the Title Section */

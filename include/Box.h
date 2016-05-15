@@ -169,6 +169,9 @@ public:
   /* Returns the value of a given ActorState flag */
   bool getFlag(const BoxState& test_flag);
 
+  /* Returns the number of elements */
+  int32_t getNumElements();
+
   /* Calculate and return the number of viewable elements */
   uint32_t getNumViewable();
 

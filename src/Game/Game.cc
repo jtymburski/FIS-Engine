@@ -2200,7 +2200,10 @@ bool Game::update(int32_t cycle_time)
         if(sleuth != nullptr)
         {
           if(restore_health)
+          {
+            std::cout << " Firing restore Party Vitality" << std::endl;
             sleuth->restorePartyVita();
+          }
           if(restore_qd)
             sleuth->restorePartyQtdr();
         }

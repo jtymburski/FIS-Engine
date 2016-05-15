@@ -182,11 +182,21 @@ void Battle::actionStateBegin()
 
 void Battle::actionStateSlideIn()
 {
+  /* Define whether the skill is going to be a hit or a miss */
+  event->doesSkillHit();
+
   /* Create the fading-in action text */
   auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
   auto element = new RenderElement(renderer, action_font);
 
-  element->createAsActionText(event->getActionName());
+  std::string action_string;
+
+  if(event->hit_status_skill == SkillHitStatus::HIT)
+    action_string = event->getActionName();
+  else if(event->hit_status_skill == SkillHitStatus::MISS)
+    action_string = event->actor->getBasePerson()->getName() + " Missed";
+
+  element->createAsActionText(action_string);
   render_elements.push_back(element);
   event->action_state = ActionState::FADE_IN_TEXT;
   addDelay(350);
@@ -214,30 +224,20 @@ void Battle::actionStateSlideOut()
 
 void Battle::actionStateSwitchSprite()
 {
-  auto skill_hit_status = event->doesSkillHit();
-
-  if(skill_hit_status == SkillHitStatus::HIT)
+  if(event->hit_status_skill == SkillHitStatus::HIT)
+  {
+    event->action_state = ActionState::ACTION_START;
     processEventSkill();
+  }
   else
-    event->action_state = ActionState::SKILL_MISS;
-
-  event->action_state = ActionState::ACTION_START;
+  {
+    std::cout << "Skill was not a hit, setting action state to done." << std::endl;
+    event->action_state = ActionState::DONE;
+  }
 
   addDelay(200);
 }
 
-/* Create the fading-in action text */
-void Battle::actionStateSkillMiss()
-{
-  auto action_font = config->getFontTTF(FontName::BATTLE_ACTION);
-  auto element = new RenderElement(renderer, action_font);
-  auto action_text = event->actor->getBasePerson()->getName() + " Missed";
-  element->createAsActionText(action_text);
-  render_elements.push_back(element);
-  event->action_state = ActionState::DONE;
-
-  addDelay(1000);
-}
 
 void Battle::actionStateActionStart()
 {
@@ -275,11 +275,17 @@ void Battle::actionStateActionStart()
   }
 }
 
-void Battle::addDelay(int32_t delay_amount)
+void Battle::addDelay(int32_t delay_amount, bool for_outcomes)
 {
   if(delay_amount > 0)
   {
-    auto to_add = delay_amount;
+    int32_t to_add = delay_amount * kDELAY_NORM_FACTOR;
+
+    if(for_outcomes && event && event->actor_outcomes.size() > 0)
+    {
+      to_add =
+          (int32_t)std::round((float)to_add / event->actor_outcomes.size());
+    }
 
     delay += (to_add * kDELAY_NORM_FACTOR);
   }
@@ -647,7 +653,7 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
   render_elements.push_back(element);
 
   outcome.actor_outcome_state = ActionState::ACTION_END;
-  addDelay(600);
+  addDelay(600, true);
 }
 
 void Battle::outcomeStatePlep(ActorOutcome& outcome)
@@ -687,7 +693,7 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
     outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
 
-  addDelay(150);
+  addDelay(150, true);
 }
 
 void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
@@ -710,23 +716,37 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
     }
     else if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
     {
+      DamageType damage_type = DamageType::HEALING;
+
+      if(outcome.attr == Attribute::QTDR)
+      {
+        damage_type = DamageType::QTDR_REGEN;
+      }
+
       // TODO: Non-VITA altering stats?
       element->createAsDamageValue(
-          std::abs(outcome.damage), DamageType::HEALING,
-          config->getScreenHeight(), getActorX(outcome.actor),
-          getActorY(outcome.actor));
+          std::abs(outcome.damage), damage_type, config->getScreenHeight(),
+          getActorX(outcome.actor), getActorY(outcome.actor));
     }
   }
 
   render_elements.push_back(element);
   outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
-  addDelay(300);
+  addDelay(300, true);
 }
 
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
 {
-  if(outcome.actor->dealDamage(outcome.damage))
-    outcome.causes_ko = true;
+  if(outcome.attr == Attribute::VITA)
+  {
+    if(outcome.actor->dealDamage(outcome.damage))
+      outcome.causes_ko = true;
+  }
+  else if(outcome.attr == Attribute::QTDR)
+  {
+    // TODO: +/- modifications?
+    outcome.actor->restoreQtdr(-outcome.damage);
+  }
   else
     outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
 
@@ -744,7 +764,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
 
     outcome.actor->startFlashing(flashing_type, 750);
     outcome.actor_outcome_state = ActionState::OUTCOME;
-    addDelay(100);
+    addDelay(100, true);
   }
   else if(outcome.infliction_status == InflictionStatus::IMMUNE)
   {
@@ -756,7 +776,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
         "Immune", DamageType::IMMUNE, config->getScreenHeight(),
         getActorX(outcome.actor), getActorY(outcome.actor));
     render_elements.push_back(element);
-    addDelay(600);
+    addDelay(600, true);
     outcome.actor_outcome_state = ActionState::ACTION_END;
   }
   else if(outcome.infliction_status == InflictionStatus::ALREADY_INFLICTED)
@@ -769,7 +789,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
         "Fizzle", DamageType::ALREADY_INFLICTED, config->getScreenHeight(),
         getActorX(outcome.actor), getActorY(outcome.actor));
     render_elements.push_back(element);
-    addDelay(600);
+    addDelay(600, true);
     outcome.actor_outcome_state = ActionState::ACTION_END;
   }
   else if(outcome.infliction_status == InflictionStatus::FIZZLE)
@@ -784,7 +804,7 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
   if(outcome.causes_ko)
   {
     if(this->outcome != OutcomeType::NONE)
-      addDelay(2000);
+      addDelay(1700, true);
 
     event_handler->triggerSound(Sound::kID_SOUND_BTL_DEATH,
                                 SoundChannels::TRIGGERS);
@@ -914,8 +934,8 @@ void Battle::updateEvent()
       actionStateSlideOut();
     else if(event->action_state == ActionState::SWITCH_SPRITE)
       actionStateSwitchSprite();
-    else if(event->action_state == ActionState::SKILL_MISS)
-      actionStateSkillMiss();
+    // else if(event->action_state == ActionState::SKILL_MISS)
+    //   actionStateSkillMiss();
     else if(event->action_state == ActionState::ACTION_START)
       actionStateActionStart();
   }
@@ -957,9 +977,9 @@ void Battle::processEventAction(Action* curr_action, BattleActor* target)
   ActorOutcome outcome;
   outcome.actor = target;
 
-  auto action_hits = event->doesActionHit(target);
+  event->doesActionHit(target);
 
-  if(action_hits == SkillHitStatus::HIT)
+  if(event->hit_status_action == SkillHitStatus::HIT)
   {
     if(curr_action->actionFlag(ActionFlags::DAMAGE))
     {
@@ -989,12 +1009,12 @@ void Battle::processEventAction(Action* curr_action, BattleActor* target)
     }
     else if(curr_action->actionFlag(ActionFlags::ALTER))
     {
-      // std::cout << "[CALCULATING THE ALTER VALUE]" << std::endl;
       outcome.damage = event->calcAltering(target);
+      outcome.attr = curr_action->getTargetAttribute();
       outcome.actor_outcome_state = ActionState::PLEP;
     }
   }
-  else if(action_hits == SkillHitStatus::MISS)
+  else if(event->hit_status_action == SkillHitStatus::MISS)
   {
     outcome.damage = 0;
     outcome.actor_outcome_state = ActionState::ACTION_MISS;
@@ -1002,7 +1022,7 @@ void Battle::processEventAction(Action* curr_action, BattleActor* target)
     if(curr_action->actionFlag(ActionFlags::INFLICT))
       outcome.actor_outcome_state = ActionState::INFLICTION_MISS;
   }
-  else if(action_hits == SkillHitStatus::INVALID)
+  else if(event->hit_status_action == SkillHitStatus::INVALID)
   {
     outcome.actor_outcome_state = ActionState::ACTION_END;
   }
@@ -1112,6 +1132,7 @@ void Battle::updateOutcome(int32_t cycle_time)
       else if(victory_screen->getStateVictory() == VictoryState::FINISHED)
       {
         setFlagCombat(CombatState::PHASE_DONE, true);
+        addDelay(800);
       }
     }
     else
@@ -1159,7 +1180,7 @@ void Battle::updatePersonalUpkeep()
     if(!upkeep_actor)
       setFlagCombat(CombatState::PHASE_DONE, true);
     else
-      addDelay(200);
+      addDelay(150);
   }
 }
 
@@ -1180,7 +1201,7 @@ void Battle::updatePersonalVitaRegen()
         getActorX(upkeep_actor), getActorY(upkeep_actor));
 
     render_elements.push_back(element);
-    addDelay(600);
+    addDelay(350);
   }
 
   upkeep_actor->setUpkeepState(UpkeepState::QTDR_REGEN);
@@ -1200,7 +1221,7 @@ void Battle::updatePersonalQtdrRegen()
         qtdr_regen, DamageType::QTDR_REGEN, config->getScreenHeight(),
         getActorX(upkeep_actor), getActorY(upkeep_actor));
     render_elements.push_back(element);
-    addDelay(600);
+    addDelay(350);
   }
   // Calculate and create the qtdr regen for the upkeep_actor
   upkeep_actor->setUpkeepState(UpkeepState::AILMENT_BEGIN);
@@ -2609,7 +2630,7 @@ void Battle::upkeepAilmentClear()
   // Remove the ailment - How to deal with consequences?
   upkeep_actor->removeAilment(upkeep_ailment);
   setFlagCombat(CombatState::AILMENT_CLEARS, true);
-  addDelay(400);
+  addDelay(350);
 }
 
 void Battle::upkeepAilmentDamage()

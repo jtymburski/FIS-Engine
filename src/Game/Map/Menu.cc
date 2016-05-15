@@ -163,8 +163,8 @@ const float Menu::kSLEUTH_EQUIP_ICON_SIZE{0.0406};
 const float Menu::kSLEUTH_ATTRIBUTE_INSET{0.015};
 
 /* Skill Section */
-const float Menu::kSKILL_ELEMENT_WIDTH{0.738};
-const float Menu::kSKILL_ELEMENT_HEIGHT{0.0645};
+const float Menu::kSKILL_ELEMENT_WIDTH{0.538};
+const float Menu::kSKILL_ELEMENT_HEIGHT{0.0245};
 const float Menu::kSKILL_ELEMENT_INSET{0.02};
 
 /* Inventory Section */
@@ -235,6 +235,7 @@ Menu::Menu()
       inventory_element_index{-1},
       option_element_index{-1},
       person_element_index{-1},
+      skills_element_index{-1},
       sleuth_element_index{-1},
       title_element_index{-1},
       inventory_title_index{InventoryIndex::NONE}
@@ -319,10 +320,6 @@ bool Menu::buildSleuthScreen()
   return success;
 }
 
-void Menu::buildSleuthStats()
-{
-}
-
 int32_t Menu::calcSleuthTileSize()
 {
   if(config)
@@ -377,6 +374,9 @@ void Menu::buildInventoryElements()
       buildInventoryBubbies();
     else if(inventory_title_index == InventoryIndex::KEY_ITEMS)
       buildInventoryKeyItems();
+
+    if(inventory_scroll_box.getNumElements())
+      inventory_element_index = 0;
   }
 }
 
@@ -394,6 +394,8 @@ void Menu::buildSkillFrames()
 {
   /* Clear the skill element frames before creating new ones */
   skills_scroll_box.clearElements();
+  skills_scroll_box.setFlag(BoxState::SCROLL_BOX);
+  skills_scroll_box.setFlag(BoxState::SELECTABLE);
 
   if(getCurrentPerson() && getCurrentPerson()->getCurrSkills())
   {
@@ -422,6 +424,12 @@ void Menu::buildSkillFrames()
 
       /* Assign the elements to the skill scroll box */
       skills_scroll_box.setElements(skill_frames);
+
+      if(skill_frames.size() > 0)
+      {
+        std::cout << "Built and set." << std::endl;
+        skills_element_index = 0;
+      }
     }
   }
 }
@@ -722,13 +730,14 @@ void Menu::buildMainSection(MenuType menu_type)
       /* Construct the gray tile boxes */
       buildIconTitles(5);
 
-      /* Construct the face graphics and other sprites */
-      buildSleuthScreen();
-
       sleuth_element_index = 0;
       person_element_index = 0;
 
       selectSleuthIndex();
+
+      /* Construct the face graphics and other sprites/frames required */
+      buildSleuthScreen();
+      buildSkillFrames();
     }
     else if(menu_type == MenuType::INVENTORY)
     {
@@ -1719,11 +1728,11 @@ void Menu::renderPersonElementTitles(int32_t gap)
 
     /* Render the required number of boxes for the element titles */
     auto point = Coordinate{current.x, current.y + gap};
-    auto box_length = (int32_t)std::ceil(
-        s_top_box.width * 1.0 / person_title_elements.size());
+    auto box_length = (int32_t)std::ceil(s_top_box.width * 1.0 /
+                                         person_title_elements.size());
     auto box_height = s_top_box.height;
 
-    int32_t max_remain_length = s_top_box.width + 1;
+    int32_t max_remain_length = s_top_box.width + 2;
 
     int32_t index{0};
 
@@ -2066,6 +2075,20 @@ void Menu::renderSleuthSkills()
   skills_top_box.render(renderer);
 
   /* Render the skills scroll box inside of the top box */
+  /* Render the scroll inventory box cut */
+  skills_scroll_box.point = {skills_top_box.point.x, skills_top_box.point.y};
+  skills_scroll_box.width = skills_top_box.width;
+  skills_scroll_box.height = skills_top_box.height;
+  setupDefaultBox(skills_scroll_box);
+  skills_scroll_box.color_element_selected = kCOLOR_INVENTORY_ICON_FILL;
+  skills_scroll_box.color_scroll = kCOLOR_OPTION_FILL_SELECTED;
+  skills_scroll_box.color_scroll_selected = kCOLOR_OPTION_FILL_SELECTED;
+  skills_scroll_box.element_inset_x = gap;
+  skills_scroll_box.element_inset_y = gap;
+  skills_scroll_box.scroll_inset_x = gap;
+  skills_scroll_box.scroll_inset_y = gap + calcSkillTitleHeight() / 2;
+  skills_scroll_box.scroll_width = 10;
+  skills_scroll_box.render(renderer);
 
   /* Render the bottom skill frames box - detail section */
   skills_bot_box.point.x = s_top_box.point.x;
@@ -2298,11 +2321,20 @@ void Menu::keyDownUp()
       if((uint32_t)sleuth_element_index > 1)
       {
         decrementSleuthIndex();
+        buildSkillFrames();
       }
     }
   }
   else if(layer == MenuLayer::MAIN_INDENT)
   {
+    if(getMainMenuType() == MenuType::SLEUTH)
+    {
+      if(person_element_index == 2)
+      {
+        if(skills_scroll_box.prevIndex())
+          skills_element_index--;
+      }
+    }
     if(getMainMenuType() == MenuType::INVENTORY)
     {
       if(inventory_scroll_box.prevIndex())
@@ -2340,12 +2372,20 @@ void Menu::keyDownDown()
       if(canIncrementSleuth())
       {
         incrementSleuthIndex();
-        buildSleuthStats();
+        buildSkillFrames();
       }
     }
   }
   else if(layer == MenuLayer::MAIN_INDENT)
   {
+    if(getMainMenuType() == MenuType::SLEUTH)
+    {
+      if(person_element_index == 2)
+      {
+        if(skills_scroll_box.nextIndex())
+          skills_element_index++;
+      }
+    }
     if(getMainMenuType() == MenuType::INVENTORY)
     {
       if(inventory_scroll_box.nextIndex())
@@ -2410,6 +2450,12 @@ void Menu::keyDownAction()
   {
     if(getMainMenuType() == MenuType::SLEUTH)
     {
+      if(person_element_index == 2)
+      {
+        layer = MenuLayer::MAIN_INDENT;
+        skills_top_box.setFlag(BoxState::SELECTED);
+        skills_scroll_box.setFlag(BoxState::SELECTED);
+      }
     }
     /* Key down event on the options. --> If digital option, select flag */
     else if(getMainMenuType() == MenuType::OPTIONS)
@@ -2448,7 +2494,6 @@ void Menu::keyDownAction()
       /* Indent the Menu */
       if(success)
       {
-        inventory_element_index = 0;
         layer = MenuLayer::MAIN_INDENT;
         inventory_top_box.setFlag(BoxState::SELECTED);
         inventory_scroll_box.setFlag(BoxState::SELECTED);
@@ -2461,6 +2506,12 @@ void Menu::keyDownCancel()
 {
   if(layer == MenuLayer::MAIN_INDENT)
   {
+    if(getMainMenuType() == MenuType::SLEUTH)
+    {
+      skills_scroll_box.setFlag(BoxState::SELECTED, false);
+      skills_top_box.setFlag(BoxState::SELECTED, false);
+      layer = MenuLayer::MAIN;
+    }
     if(getMainMenuType() == MenuType::INVENTORY)
     {
       inventory_element_index = -1;

@@ -61,7 +61,7 @@
  * Minimum Damage (Possible)
  * Maximum Damage (Possible)
  */
-const float BattleEvent::kRUN_BASE_CHANCE   = 25.0;
+const float BattleEvent::kRUN_BASE_CHANCE = 25.0;
 const float BattleEvent::kRUN_LIMB_MODIFIER = 0.05;
 const float BattleEvent::kRUN_MMNT_MODIFIER = 0.05;
 
@@ -120,6 +120,8 @@ BattleEvent::BattleEvent()
       event_skill{nullptr},
       event_type{BattleEventType::NONE},
       flags_ignore{static_cast<IgnoreState>(0)},
+      hit_status_action{SkillHitStatus::HIT},
+      hit_status_skill{SkillHitStatus::HIT},
       attr_prio{Attribute::NONE},
       attr_prid{Attribute::NONE},
       attr_seco{Attribute::NONE},
@@ -530,7 +532,7 @@ bool BattleEvent::doesRunOccur()
 }
 
 // Does the skill hit the given target vectors or entirely miss?
-SkillHitStatus BattleEvent::doesSkillHit()
+void BattleEvent::doesSkillHit()
 {
   auto curr_skill = getCurrSkill();
   SkillHitStatus status = SkillHitStatus::HIT;
@@ -538,7 +540,10 @@ SkillHitStatus BattleEvent::doesSkillHit()
   if(actor && curr_skill && event_skill)
   {
     if(actor->getFlag(ActorState::MISS_NEXT_TARGET))
+    {
+      std::cout << "[Skill Hit Status: DREAMSNARED]" << std::endl;
       status = SkillHitStatus::DREAMSNARED;
+    }
 
     if(status == SkillHitStatus::HIT)
     {
@@ -562,12 +567,14 @@ SkillHitStatus BattleEvent::doesSkillHit()
     }
   }
 
-  return status;
+  hit_status_skill = status;
 }
 
-SkillHitStatus BattleEvent::doesActionHit(BattleActor* curr_target)
+void BattleEvent::doesActionHit(BattleActor* curr_target)
 {
   auto curr_action = getCurrAction();
+
+  hit_status_action = SkillHitStatus::INVALID;
 
   if(curr_action && curr_target)
   {
@@ -590,15 +597,17 @@ SkillHitStatus BattleEvent::doesActionHit(BattleActor* curr_target)
 
     if(go_to_chance)
     {
-      if(Helpers::chanceHappens(
-          static_cast<uint32_t>(curr_action->getChance()), 100))
-        return SkillHitStatus::HIT;
-
-      return SkillHitStatus::MISS;
+      if(Helpers::chanceHappens(static_cast<uint32_t>(curr_action->getChance()),
+                                100))
+      {
+        hit_status_action = SkillHitStatus::HIT;
+      }
+      else
+      {
+        hit_status_action = SkillHitStatus::MISS;
+      }
     }
   }
-
-  return SkillHitStatus::INVALID;
 }
 
 int32_t BattleEvent::calcDamageImplode(BattleActor* curr_target)
@@ -898,20 +907,31 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
     int32_t amount = 0;
     int32_t variance = 0;
 
+    int32_t targ_value = 0;
+    int32_t targ_max_value = 0;
+
     // TODO: Other attributes
-    int32_t health = curr_target->getStats().getValue(Attribute::VITA);
-    int32_t max_health = curr_target->getStats().getValue(Attribute::MVIT);
+    if(action->getTargetAttribute() == Attribute::VITA)
+    {
+      targ_value = curr_target->getStats().getValue(Attribute::VITA);
+      targ_max_value = curr_target->getStats().getValue(Attribute::MVIT);
+    }
+    else if(action->getTargetAttribute() == Attribute::QTDR)
+    {
+      targ_value = curr_target->getStats().getValue(Attribute::QTDR);
+      targ_max_value = curr_target->getStats().getValue(Attribute::MVIT);
+    }
 
     auto action_amt = action->getBase();
     auto action_var = action->getVariance();
 
     if(action->actionFlag(ActionFlags::BASE_PC))
-      amount = std::round((float)action_amt / 100.0 * health);
+      amount = std::round((float)action_amt / 100.0 * targ_value);
     else
       amount = action_amt;
 
     if(action->actionFlag(ActionFlags::VARI_PC))
-      variance = std::round((float)action_var / 100.0 * (float)health);
+      variance = std::round((float)action_var / 100.0 * (float)targ_value);
     else
       variance = action_var;
 
@@ -919,7 +939,7 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
 
     std::cout << "Alter amount: " << amount << std::endl;
 
-    auto max_amount = max_health - health;
+    auto max_amount = targ_max_value - targ_value;
 
     if(amount > max_amount)
       amount = max_amount;
