@@ -2686,7 +2686,8 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
         /* Get the tile matrix to match the frames and set */
         std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
         if(tile_set.size() > 0)
-          ref->setStartingTiles(tile_set, ref->getStartingSection(), true);
+          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
+                                !ref->isActive());
         else
           ref->unsetFrames(true);
       }

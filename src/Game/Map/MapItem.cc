@@ -29,8 +29,8 @@ MapItem::MapItem() : MapThing()
   brighter = false;
   walkover = false;
 
-  /* Set the count to 0 since the map item is not configured */
-  setStartCount(0);
+  /* Set the count to default - active status maintained */
+  setStartCount(kDEFAULT_COUNT);
 }
 
 /*
@@ -285,7 +285,7 @@ uint32_t MapItem::getStartCount()
  */
 bool MapItem::isActive()
 {
-  return (count > 0);
+  return (this->active && (count > 0));
 }
 
 /*
@@ -314,12 +314,14 @@ bool MapItem::setActive(bool active, bool set_tiles)
 {
   bool previous = this->active;
   bool next = MapThing::setActive(active, set_tiles);
-
+  
   /* Checks if status changed from false to true, update count */
   // TODO: Consideration to be given for on respawn time, to also refresh
   //       count even if there is items left but less than start count
   if(!previous && next)
     count = start_count;
+  else if(!next)
+    count = 0;
 
   return next;
 }
@@ -362,15 +364,16 @@ bool MapItem::setBase(MapThing* base)
  * Description: Sets the number of items in the MapItem stack.
  *
  * Inputs: uint32_t count - unsigned integer for number of items
+ *         bool set_tiles - set tiles on the active delta. Default true
  * Output: none
  */
-void MapItem::setCount(uint32_t count)
+void MapItem::setCount(uint32_t count, bool set_tiles)
 {
   this->count = count;
   if(count > 0)
-    setActive(true);
+    setActive(true, set_tiles);
   else
-    setActive(false);
+    setActive(false, set_tiles);
 }
 
 /*
@@ -423,7 +426,8 @@ void MapItem::setFrames(std::vector<std::vector<TileSprite*>> frames,
 void MapItem::setStartCount(uint32_t count)
 {
   start_count = count;
-  setCount(start_count);
+  if(this->active)
+    setCount(start_count, false);
 }
 
 /*

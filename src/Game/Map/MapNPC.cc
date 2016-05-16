@@ -1546,16 +1546,25 @@ Floatinate MapNPC::update(int cycle_time,
       int delta = 0;
       int delta_range = 0;
       bool stopped = !isMoving();
+      uint16_t tile_x = getTileX();
+      uint16_t tile_y = getTileY();
 
-      /* Do checks if stuck */
-      if(stopped && node_current->x != getTileX() && /* removed !tracking */
-         node_current->y != getTileY())
+      /* Do checks if stuck  - removed !tracking from <if> */
+      if(stopped && node_current->x != tile_x &&
+         node_current->y != tile_y)
       {
+        /* Increment delay */
         stuck_delay += cycle_time;
+
+        /* If starting, reset (removed if only on first tile) */
+        if(starting)// && node_start.x == tile_x && node_start.y == tile_y)
+          stuck_delay = 0;
+
+        /* Check delay limits */
         if(stuck_delay > kSTUCK_DELAY)
         {
           stuck_delay = 0;
-          stuck_flip = !stuck_flip;
+          stuck_flip = !stuck_flip; // HERE
         }
       }
 
@@ -1566,8 +1575,7 @@ Floatinate MapNPC::update(int cycle_time,
         {
           /* If reached node and done movement again, kill starting */
           if(node_current != &node_start &&
-             node_current->x == tile_main.front().front()->getX() &&
-             node_current->y == tile_main.front().front()->getY())
+             node_current->x == tile_x && node_current->y == tile_y)
           {
             if(node_state == RANDOMRANGE)
             {
@@ -1619,15 +1627,15 @@ Floatinate MapNPC::update(int cycle_time,
         {
           /* Delta X/Y distances */
           int delta_x = 0;
-          if(player->getTileX() >= getTileX())
-            delta_x = player->getTileX() - getTileX();
+          if(player->getTileX() >= tile_x)
+            delta_x = player->getTileX() - tile_x;
           else
-            delta_x = getTileX() - player->getTileX();
+            delta_x = tile_x - player->getTileX();
           int delta_y = 0;
-          if(player->getTileY() >= getTileY())
-            delta_y = player->getTileY() - getTileY();
+          if(player->getTileY() >= tile_y)
+            delta_y = player->getTileY() - tile_y;
           else
-            delta_y = getTileY() - player->getTileY();
+            delta_y = tile_y - player->getTileY();
 
           /* Main delta */
           if(delta_x >= delta_y)
@@ -1648,8 +1656,8 @@ Floatinate MapNPC::update(int cycle_time,
                 track_delay = 0;
 
               /* Once limits reach, reset tracking recent */
-              if((getTileX() == node_current->x &&
-                  getTileY() == node_current->y) ||
+              if((tile_x == node_current->x &&
+                  tile_y == node_current->y) ||
                  (stopped && track_delay > kFORCED_RESET))
               {
                 track_recent = false;
@@ -1666,8 +1674,8 @@ Floatinate MapNPC::update(int cycle_time,
               node_current = &node_player;
 
               /* Initialize node */
-              node_player.x = getTileX();
-              node_player.y = getTileY();
+              node_player.x = tile_x;
+              node_player.y = tile_y;
 
               /* Trigger spotted */
               spotted_time = kSPOTTED_INIT;
@@ -1765,8 +1773,8 @@ Floatinate MapNPC::update(int cycle_time,
               /* If direction is not directionless, reset random location */
               if(direction != Direction::DIRECTIONLESS)
               {
-                node_random.x = tile_main.front().front()->getX();
-                node_random.y = tile_main.front().front()->getY();
+                node_random.x = tile_x;
+                node_random.y = tile_y;
               }
 
               /* Randomize a new location */
