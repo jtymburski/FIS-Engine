@@ -327,7 +327,7 @@ bool SoundHandler::load(XmlData data, int index, std::string base_path)
     {
       int sound_vol = data.getDataInteger();
       if(sound_vol >= 0 && sound_vol <= 255)
-        edit_chunk->setDefaultVolume(sound_vol);
+        edit_chunk->setVolume(sound_vol);
       else
         success = false;
     }

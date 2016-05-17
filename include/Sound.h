@@ -77,11 +77,12 @@ private:
   Mix_Chunk* raw_data;
 
   /* The volume that the chunk will play at */
-  uint8_t default_volume;
+  //uint8_t default_volume; // TODO: Remove? See cc.
   uint8_t volume;
 
   /* --------------------- CONSTANTS --------------------- */
 private:
+  const static float kDEFAULT_RATIO; /* Default percentage of max */
   const static short kINFINITE_LOOP; /* Infinite loop special character */
   const static int kSTOP_FADE;       /* Stop fade time on channel */
 
@@ -182,7 +183,8 @@ public:
   bool setSoundFile(std::string path);
 
   /* Sets the defauilt volume that the chunk will be played at. */
-  void setDefaultVolume(uint8_t default_volume);
+  // TODO: Remove? See cc.
+  //void setDefaultVolume(uint8_t default_volume);
 
   /* Sets the volume that the chunk will be played at */
   void setVolume(uint8_t volume);

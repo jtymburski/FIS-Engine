@@ -14,8 +14,10 @@
 #include "Sound.h"
 
 /* Constant Implementation - see header file for descriptions */
+const float Sound::kDEFAULT_RATIO = 0.75;
 const short Sound::kINFINITE_LOOP = -1;
 const int Sound::kSTOP_FADE = 1500;
+
 /* Public Constant Implementation */
 const int Sound::kDEFAULT_FREQUENCY = 22050;
 
@@ -76,8 +78,8 @@ Sound::Sound()
   length = 0;
   loop_count = 0;
   raw_data = NULL;
-  volume = MIX_MAX_VOLUME - MIX_MAX_VOLUME / 4;
-  default_volume = MIX_MAX_VOLUME - MIX_MAX_VOLUME / 4;//??
+  volume = MIX_MAX_VOLUME * kDEFAULT_RATIO;
+  //default_volume = MIX_MAX_VOLUME - MIX_MAX_VOLUME / 4; // TODO: Remove?
 }
 
 /*
@@ -467,17 +469,20 @@ bool Sound::setSoundFile(std::string path)
   return false;
 }
 
-void Sound::setDefaultVolume(uint8_t default_volume)
-{
-  if(volume > MIX_MAX_VOLUME)
-    this->default_volume = MIX_MAX_VOLUME;
-  else
-    this->default_volume = default_volume;
-
-  /* Change the chunk volume related to this file */
-  if(raw_data != NULL)
-    Mix_VolumeChunk(raw_data, default_volume);
-}
+// TODO: Remove - what is this and why is it needed? Volume should be controlled
+//       by the volume variable with max range control as per SDL. Any
+//       additional layers adds unnecessary complexity
+//void Sound::setDefaultVolume(uint8_t default_volume)
+//{
+//  if(volume > MIX_MAX_VOLUME)
+//    this->default_volume = MIX_MAX_VOLUME;
+//  else
+//    this->default_volume = default_volume;
+//
+//  /* Change the chunk volume related to this file */
+//  if(raw_data != NULL)
+//    Mix_VolumeChunk(raw_data, default_volume);
+//}
 
 /*
  * Description: Sets the volume to play the mixed sound file at. This is a
@@ -489,12 +494,13 @@ void Sound::setDefaultVolume(uint8_t default_volume)
  */
 void Sound::setVolume(uint8_t volume)
 {
-  auto calculated_volume = volume * MIX_MAX_VOLUME / default_volume;
+  // TODO: Remove? See above desc
+  //auto calculated_volume = volume * MIX_MAX_VOLUME;// / default_volume;
 
-  if(calculated_volume > MIX_MAX_VOLUME)
+  if(volume > MIX_MAX_VOLUME)
     this->volume = MIX_MAX_VOLUME;
   else
-    this->volume = calculated_volume;
+    this->volume = volume;
 
   /* Change the chunk volume related to this file */
   if(raw_data != NULL)

@@ -134,12 +134,8 @@ private:
   Text name_text;
   uint16_t name_view;
 
-  /* Thing data (and children) */ // TODO: Clean up
-  //std::vector<MapInteractiveObject*> ios;
-  //std::vector<MapItem*> items;
-  //std::vector<MapPerson*> persons;
-  MapPerson* player; /* The actively controlled player */
-  //std::vector<MapThing*> things;
+  /* Active player reference - controlled by keyboard (or gamepad) */
+  MapPerson* player;
 
   // /* The sectors on the map (for rooms, caves, houses etc) */
   // QList<Sector> sectors;
@@ -284,7 +280,7 @@ private:
   bool saveTiles(FileHandler* fh, SubMap* sub_map);
   bool saveTileSet(FileHandler* fh, SubMap* sub_map,
             const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> &set,
-            const std::string &type = "set");
+            const bool &enter = true, const std::string &type_txt = "set");
 
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);

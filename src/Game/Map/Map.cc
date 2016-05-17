@@ -1286,9 +1286,11 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
       success &= sub_map[id].ios[i]->save(fh);
 
     /* Map Item(s) */
-    // TODO: NEXT
+    for(uint32_t i = 0; i < sub_map[id].items.size(); i++)
+      success &= sub_map[id].items[i]->save(fh);
 
     /* Map Person(s) */
+    // TODO: NEXT
 
     /* Map NPC(s) */
 
@@ -1339,10 +1341,10 @@ bool Map::saveTiles(FileHandler* fh, SubMap* sub_map)
   }
 
   /* Write the changed enter events */
-  success &= saveTileSet(fh, sub_map, tile_enters, "enterset");
+  success &= saveTileSet(fh, sub_map, tile_enters, true, "enterset");
 
   /* Write the changed exit events */
-  success &= saveTileSet(fh, sub_map, tile_exits, "exitset");
+  success &= saveTileSet(fh, sub_map, tile_exits, false, "exitset");
 
   return success;
 }
@@ -1350,7 +1352,7 @@ bool Map::saveTiles(FileHandler* fh, SubMap* sub_map)
 /* Saves the passed calculated set of changed tiles */
 bool Map::saveTileSet(FileHandler* fh, SubMap* sub_map,
             const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> &set,
-            const std::string &type)
+            const bool &enter, const std::string &type_txt)
 {
   bool success = true;
 
@@ -1358,7 +1360,7 @@ bool Map::saveTileSet(FileHandler* fh, SubMap* sub_map,
   if(set.size() > 0)
   {
     /* Overall wrapper */
-    fh->writeXmlElement("tileevent", "type", type);
+    fh->writeXmlElement("tileevent", "type", type_txt);
 
     /* Loop through all elements, wrap in x/y, and write delta of event */
     for(uint32_t i = 0; i < set.size(); i++)
@@ -1369,7 +1371,10 @@ bool Map::saveTileSet(FileHandler* fh, SubMap* sub_map,
       {
         uint32_t y = set[i].second[j];
         fh->writeXmlElement("y", "index", y);
-        success &= sub_map->tiles[x][y]->getEventEnter()->saveData(fh, "");
+        if(enter)
+          success &= sub_map->tiles[x][y]->getEventEnter()->saveData(fh, "");
+        else
+          success &= sub_map->tiles[x][y]->getEventExit()->saveData(fh, "");
         fh->writeXmlElementEnd();
       }
       fh->writeXmlElementEnd();

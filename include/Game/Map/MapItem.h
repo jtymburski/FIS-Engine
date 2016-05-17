@@ -47,6 +47,12 @@ protected:
   virtual bool canSetTile(Tile* tile, TileSprite* frames,
                           bool avoid_player = false);
 
+  /* Is data available to save */
+  virtual bool isDataToSave();
+
+  /* Saves the item data - virtualized */
+  virtual bool saveData(FileHandler* fh, const bool &save_event = true);
+
   /* Sets the tile of the selected with the corresponding frames */
   virtual bool setTile(Tile* tile, TileSprite* frames,
                        bool no_events = true);
@@ -84,6 +90,9 @@ public:
 
   /* Returns if the item is picked up merely by walking over it */
   bool isWalkover();
+
+  /* Saves the delta data within the item */
+  virtual bool save(FileHandler* fh);
 
   /* Sets if the item is active */
   virtual bool setActive(bool active, bool set_tiles = true);

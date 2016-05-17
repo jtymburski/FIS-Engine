@@ -86,6 +86,49 @@ bool MapItem::canSetTile(Tile* tile, TileSprite* frames, bool avoid_player)
 }
 
 /*
+ * Description: Checks if there is data to save for the particular IO. This
+ *              is virtualized for all children
+ *
+ * Inputs: none
+ * Output: bool - true if save call will result in text
+ */
+bool MapItem::isDataToSave()
+{
+  /* Check parent first */
+  if(MapThing::isDataToSave())
+    return true;
+
+  /* Check count */
+  if(count != start_count)
+    return true;
+
+  return false;
+}
+
+/*
+ * Description: Saves the data for the item. This does not include the item
+ *              wrapper. Virtualized for other classes as well.
+ *
+ * Inputs: FileHandler* fh - the file handling data pointer
+ *         const bool &save_event - true to save the base event set (thing)
+ * Output: none
+ */
+bool MapItem::saveData(FileHandler* fh, const bool &save_event)
+{
+  (void)save_event;
+  bool success = true;
+
+  /* Parent property saves */
+  success &= MapThing::saveData(fh, false);
+
+  /* Count */
+  if(count != start_count)
+    fh->writeXmlData("count", count);
+
+  return success;
+}
+
+/*
  * Description: Sets the tile with the given object and frames and allows for
  *              event triggers to be controlled (relevant for MapPerson only).
  *
@@ -152,8 +195,15 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   bool success = true;
 
   /* Parse the identifier for setting the item information */
+  /*------------------- DELTA COUNT --------------------*/
+  if(identifier == "count" && elements.size() == 1)
+  {
+    int count = data.getDataInteger(&success);
+    if(success && count >= 0 && static_cast<uint32_t>(count) <= start_count)
+      setCount(count);
+  }
   /*--------------------- SPRITE DATA -----------------*/
-  if(identifier == "sprites")
+  else if(identifier == "sprites")
   {
     success &= MapThing::addThingInformation(data, file_index, section_index,
                                              renderer, base_path);
@@ -166,8 +216,8 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
       }
     }
   }
-  /*--------------------- COUNT --------------------*/
-  else if(identifier == "count" && elements.size() == 1)
+  /*------------------- START COUNT --------------------*/
+  else if(identifier == "startcount" && elements.size() == 1)
   {
     int count = data.getDataInteger(&success);
     if(success)
@@ -204,7 +254,6 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
  */
 ThingBase MapItem::classDescriptor()
 {
-  //return "MapItem";
   return ThingBase::ITEM;
 }
 
@@ -304,6 +353,31 @@ bool MapItem::isWalkover()
 }
 
 /*
+ * Description: Saves the item data to the file handling pointer.
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ * Output: bool - true if the save was successful
+ */
+bool MapItem::save(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    bool success = true;
+
+    /* Only write if there is data to save */
+    if(isDataToSave())
+    {
+      fh->writeXmlElement("mapitem", "id", getID());
+      success &= saveData(fh);
+      fh->writeXmlElementEnd();
+    }
+
+    return success;
+  }
+  return false;
+}
+
+/*
  * Description: Sets if the item is active and usable within the space
  *
  * Inputs: bool active - true if the item should be active. false otherwise
@@ -314,7 +388,7 @@ bool MapItem::setActive(bool active, bool set_tiles)
 {
   bool previous = this->active;
   bool next = MapThing::setActive(active, set_tiles);
-  
+
   /* Checks if status changed from false to true, update count */
   // TODO: Consideration to be given for on respawn time, to also refresh
   //       count even if there is items left but less than start count
