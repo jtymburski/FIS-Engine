@@ -344,20 +344,6 @@ int32_t BattleMenu::validLast()
     }
   }
 
-  // if(menu_layer == BattleMenuLayer::TARGET_SELECTION)
-  // {
-  //   auto curr_hover = actorOfElementIndex(element_index);
-  //   auto is_ally = false;
-
-  //   if(curr_hover)
-  //     is_ally = curr_hover->getFlag(ActorState::ALLY);
-
-  //   if(is_ally)
-  //     return elementIndexOfActor(getMostLeft(true));
-  //   else
-  //     return elementIndexOfActor(getMostRight(false));
-  // }
-
   return -1;
 }
 
@@ -1066,8 +1052,10 @@ bool BattleMenu::renderSkills(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
         uint16_t bottom_index = index_actions + kTYPE_MAX;
 
         if(bottom_index == frames_skill_name.size())
+        {
           success &= Frame::renderCircleFilled(center_x - 1, center_y,
                                                kSCROLL_R, renderer);
+        }
         else
         {
           center_y += 1;

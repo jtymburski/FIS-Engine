@@ -141,14 +141,14 @@ bool Box::renderBar(SDL_Renderer* renderer)
     auto slope_rads = height / std::tan(bar_degrees * 3.14159265 / 180.0);
     auto delta_x = (int32_t)std::round(slope_rads);
 
-    /* Find the four points of the scroll bar */
+    /* Find the four points of the bar */
     Coordinate tl = {point.x + delta_x, point.y};
     Coordinate bl = {point.x, point.y + height};
-    Coordinate tr = {point.x + width, point.y};
-    Coordinate br = {point.x + width - delta_x, point.y + height};
+    Coordinate tr = {tl.x + width, point.y};
+    Coordinate br = {bl.x + width, point.y + height};
 
     Coordinate bar_t = {tl.x + bar_width, tl.y};
-    Coordinate bar_b = {bl.x + bar_width, bl.y + height};
+    Coordinate bar_b = {bl.x + bar_width, bl.y};
 
     /* Find the two points where the bar ends */
     auto top_bar = Helpers::bresenhamPoints(tl, tr);
@@ -163,7 +163,7 @@ bool Box::renderBar(SDL_Renderer* renderer)
 
     /* Render the foreground */
     Frame::setRenderDrawColor(renderer, color_bar);
-    Frame::renderFillLineToLine(left_bar, right_bar, renderer);
+    Frame::renderFillLineToLine(left_bar, fill_bar, renderer);
 
     /* Render the border */
     Frame::setRenderDrawColor(renderer, color_border);
@@ -480,6 +480,7 @@ bool Box::render(SDL_Renderer* renderer)
       auto bot_bar = Helpers::bresenhamPoints(bl, br);
       auto top_corner = Helpers::bresenhamPoints(tlc, trc);
       auto bot_corner = Helpers::bresenhamPoints(blc, brc);
+      auto left_line = Helpers::bresenhamPoints(tl, bl);
       auto right_line = Helpers::bresenhamPoints(trc, brc);
       auto corner_aa_top = Helpers::bresenhamPoints(atl, atr);
       auto corner_aa_bot = Helpers::bresenhamPoints(abl, abr);
@@ -493,6 +494,7 @@ bool Box::render(SDL_Renderer* renderer)
       Frame::drawLine(bot_bar, renderer);
       Frame::drawLine(top_corner, renderer);
       Frame::drawLine(bot_corner, renderer);
+      Frame::drawLine(left_line, renderer);
       Frame::drawLine(right_line, renderer);
 
       /* Anti-Aliased Top Line */

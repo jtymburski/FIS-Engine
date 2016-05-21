@@ -163,8 +163,8 @@ const float Menu::kSLEUTH_EQUIP_ICON_SIZE{0.0406};
 const float Menu::kSLEUTH_ATTRIBUTE_INSET{0.015};
 
 /* Skill Section */
-const float Menu::kSKILL_ELEMENT_WIDTH{0.538};
-const float Menu::kSKILL_ELEMENT_HEIGHT{0.0245};
+const float Menu::kSKILL_ELEMENT_WIDTH{0.778};
+const float Menu::kSKILL_ELEMENT_HEIGHT{0.06};
 const float Menu::kSKILL_ELEMENT_INSET{0.02};
 
 /* Inventory Section */
@@ -412,12 +412,13 @@ void Menu::buildSkillFrames()
         {
           auto width = calcSkillTitleWidth();
           auto height = calcSkillTitleHeight();
+
           auto texture = buildSkillListFrame(element.skill, width, height);
 
           if(texture)
           {
             skill_frames.push_back(new Frame());
-            skill_frames.back()->getTexture(texture);
+            skill_frames.back()->setTexture(texture);
           }
         }
       }
@@ -428,6 +429,9 @@ void Menu::buildSkillFrames()
       if(skill_frames.size() > 0)
       {
         std::cout << "Built and set." << std::endl;
+
+        std::cout << "Frame skill height: " << skill_frames.at(0)->getHeight()
+                  << ", " << skill_frames.at(0)->getWidth() << std::endl;
         skills_element_index = 0;
       }
     }
@@ -2033,7 +2037,7 @@ void Menu::renderSleuthOverview()
   s_vita_bar.bar_degrees = 59.5;
   s_vita_bar.render(renderer);
 
-  current.x += s_vita_bar.width + gap / 2;
+  current.x += s_vita_bar.width + gap;
   t_vita.render(renderer, current.x, current.y);
 
   /* Render quantum drive bar */
@@ -2053,7 +2057,7 @@ void Menu::renderSleuthOverview()
   s_qtdr_bar.box_type = BoxType::BAR;
   s_qtdr_bar.render(renderer);
 
-  current.x += s_qtdr_bar.width + gap / 2;
+  current.x += s_qtdr_bar.width + gap;
   t_qtdr.render(renderer, current.x, current.y);
 
   /* Render the sleuth attributes */
@@ -2068,12 +2072,16 @@ void Menu::renderSleuthEquipment()
 /* Render the skills screen for the current person in sleuth selection */
 void Menu::renderSleuthSkills()
 {
+  auto title_font = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
   auto width = config->getScreenWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
 
   /* Useable height between the top box and the details box */
   auto useable_height =
       main_section.location.height - 3 * gap - s_top_box.height;
+
+  /* Icon Width */
+  int32_t icon_w = main_section.location.height / 6;
 
   /* Render the top box */
   skills_top_box.point.x = s_top_box.point.x;
@@ -2083,11 +2091,26 @@ void Menu::renderSleuthSkills()
   setupDefaultBox(skills_top_box);
   skills_top_box.render(renderer);
 
+  /* Render the Skills Title Box */
+  skills_name_box.point = skills_top_box.point;
+  skills_name_box.height = skills_top_box.height / 5;
+  skills_name_box.width = s_top_box.width;
+  setupDefaultBox(skills_name_box);
+  skills_name_box.render(renderer);
+
+  /* Render the skills title name */
+  Text title_text(title_font);
+  title_text.setText(renderer, "Skills", kCOLOR_TEXT);
+  title_text.render(renderer, skills_name_box.point.x + gap,
+                    skills_name_box.point.y + skills_name_box.height / 2 -
+                        title_text.getHeight() / 2);
+
   /* Render the skills scroll box inside of the top box */
-  /* Render the scroll inventory box cut */
-  skills_scroll_box.point = {skills_top_box.point.x, skills_top_box.point.y};
+  skills_scroll_box.point = {skills_top_box.point.x,
+                             skills_name_box.point.y + skills_name_box.height -
+                                 1};
   skills_scroll_box.width = skills_top_box.width;
-  skills_scroll_box.height = skills_top_box.height;
+  skills_scroll_box.height = skills_top_box.height - skills_name_box.height + 1;
   setupDefaultBox(skills_scroll_box);
   skills_scroll_box.color_element_selected = kCOLOR_INVENTORY_ICON_FILL;
   skills_scroll_box.color_scroll = kCOLOR_OPTION_FILL_SELECTED;
@@ -2108,10 +2131,147 @@ void Menu::renderSleuthSkills()
   skills_bot_box.corner_inset = calcMainCornerInset();
   skills_bot_box.box_type = BoxType::CORNER_CUT_BOX;
   skills_bot_box.render(renderer);
+
+  if(skills_element_index != -1)
+    renderSleuthSkillDetail(skills_bot_box.point, icon_w, gap);
 }
 
-void Menu::renderSleuthSkillsDetail()
+void Menu::renderSleuthSkillDetail(Coordinate start, int32_t icon_w,
+                                   int32_t gap)
 {
+  auto curr_skill = getCurrentSkill();
+
+  if(curr_skill)
+  {
+    auto font_options = config->getFontTTF(FontName::MENU_OPTIONS);
+    auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
+    auto font_standard = config->getFontTTF(FontName::MENU_STANDARD);
+
+    skills_icon_box.point = {start.x + gap, start.y + gap};
+    skills_icon_box.width = icon_w;
+    skills_icon_box.height = icon_w;
+    skills_icon_box.color_bg = kCOLOR_ICON_UNSELECTED_FILL;
+    skills_icon_box.color_border = kCOLOR_BORDER_UNSELECTED;
+    skills_icon_box.render(renderer);
+
+    current = skills_icon_box.point;
+
+    /* Render the skill icon */
+    if(curr_skill->getThumbnail())
+    {
+      auto t = curr_skill->getThumbnail();
+      t->render(renderer, skills_icon_box.point.x + skills_icon_box.width / 2 -
+                              t->getWidth() / 2,
+                skills_icon_box.point.y + skills_icon_box.height / 2 -
+                    t->getHeight() / 2);
+    }
+
+    current.x += icon_w + gap;
+
+    /* Render the Skills Text */
+    Text skill_name(font_options);
+    Text skill_qd(font_title);
+    Text skill_acc(font_title);
+    Text skill_cd(font_title);
+    Text skill_description(font_standard);
+
+    skill_name.setText(renderer, curr_skill->getName(), kCOLOR_TEXT);
+    skill_qd.setText(renderer, std::to_string(curr_skill->getCost()),
+                     kCOLOR_TEXT);
+    skill_acc.setText(
+        renderer, std::to_string((int32_t)std::round(curr_skill->getChance())),
+        kCOLOR_TEXT);
+    skill_cd.setText(renderer, std::to_string(curr_skill->getCooldown()),
+                     kCOLOR_TEXT);
+
+    auto desc_split =
+        Text::splitLine(font_standard, curr_skill->getDescription(),
+                        skills_bot_box.width - 8 * gap - icon_w);
+
+    skill_name.render(renderer, current.x, current.y);
+    current.y += skill_name.getHeight() + gap;
+
+    for(auto& line : desc_split)
+    {
+      skill_description.setText(renderer, line, kCOLOR_TEXT);
+      skill_description.render(renderer, current.x, current.y);
+      current.y += skill_description.getHeight() * 1.1;
+    }
+
+    /* Render the skill cost, accuracy, cooldown */
+    current.x = skills_bot_box.point.x + skills_bot_box.width - gap;
+    current.y = skills_bot_box.point.y + gap;
+
+    auto f_qd = battle_display_data->getFrameQD();
+
+    if(f_qd)
+    {
+      f_qd->render(renderer, current.x - f_qd->getWidth(), current.y);
+      current.x -= f_qd->getWidth() + gap / 2 + skill_qd.getWidth();
+      skill_qd.render(renderer, current.x, current.y);
+      current.y += skill_qd.getHeight() + gap;
+    }
+
+    auto f_acc = battle_display_data->getFramePercent();
+    current.x = skills_bot_box.point.x + skills_bot_box.width - gap;
+
+    if(f_acc)
+    {
+      f_acc->render(renderer, current.x - f_acc->getWidth(), current.y);
+      current.x -= f_acc->getWidth() + gap / 2 + skill_acc.getWidth();
+      skill_acc.render(renderer, current.x, current.y);
+      current.y += skill_acc.getHeight() + gap;
+    }
+
+    auto f_time = battle_display_data->getFrameTime();
+    current.x = skills_bot_box.point.x + skills_bot_box.width - gap;
+
+    if(f_time)
+    {
+      f_time->render(renderer, current.x - f_time->getWidth(), current.y);
+      current.x -= f_time->getWidth() + gap / 2 + skill_cd.getWidth();
+      skill_cd.render(renderer, current.x, current.y);
+    }
+
+    /* Render the action scope frame */
+    current.x = skills_bot_box.point.x + gap;
+
+    auto f_scope = battle_display_data->getFrameScope(curr_skill->getScope());
+
+    if(f_scope)
+    {
+      f_scope->render(renderer, current.x, skills_bot_box.point.y +
+                                               skills_bot_box.height -
+                                               f_scope->getHeight() - gap);
+
+      current.x += f_scope->getWidth() + gap;
+    }
+
+    /* Render the primary element frame */
+    auto f_pri = battle_display_data->getFrameElement(curr_skill->getPrimary());
+
+    if(f_pri)
+    {
+      f_pri->render(renderer, current.x, skills_bot_box.point.y +
+                                             skills_bot_box.height -
+                                             f_pri->getHeight() - gap);
+
+      current.x += f_pri->getWidth() + gap;
+    }
+
+    /* Render the secondary element frame */
+    auto f_sec =
+        battle_display_data->getFrameElement(curr_skill->getSecondary());
+
+    if(f_sec)
+    {
+      f_sec->render(renderer, current.x, skills_bot_box.point.y +
+                                             skills_bot_box.height -
+                                             f_pri->getHeight() - gap);
+
+      current.x += f_sec->getWidth() + gap;
+    }
+  }
 }
 
 void Menu::renderSleuthDetails()
@@ -2233,6 +2393,22 @@ BattleActor* Menu::getCurrentActor()
 {
   if(sleuth_element_index < (int32_t)actors.size() && sleuth_element_index >= 0)
     return actors.at(sleuth_element_index);
+
+  return nullptr;
+}
+
+Skill* Menu::getCurrentSkill()
+{
+  if(getCurrentPerson() && getCurrentPerson()->getCurrSkills() &&
+     skills_element_index > -1 &&
+     skills_element_index <
+         (int32_t)getCurrentPerson()->getCurrSkills()->getSize())
+  {
+    return getCurrentPerson()
+        ->getCurrSkills()
+        ->getElement(skills_element_index)
+        .skill;
+  }
 
   return nullptr;
 }
@@ -2463,6 +2639,7 @@ void Menu::keyDownAction()
       {
         layer = MenuLayer::MAIN_INDENT;
         skills_top_box.setFlag(BoxState::SELECTED);
+        skills_name_box.setFlag(BoxState::SELECTED);
         skills_scroll_box.setFlag(BoxState::SELECTED);
       }
     }
@@ -2519,6 +2696,7 @@ void Menu::keyDownCancel()
     {
       skills_scroll_box.setFlag(BoxState::SELECTED, false);
       skills_top_box.setFlag(BoxState::SELECTED, false);
+      skills_name_box.setFlag(BoxState::SELECTED, false);
       layer = MenuLayer::MAIN;
     }
     if(getMainMenuType() == MenuType::INVENTORY)

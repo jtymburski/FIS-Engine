@@ -290,6 +290,8 @@ private:
 
   /* Skill Screen Boxes */
   Box skills_top_box;
+  Box skills_name_box;
+  Box skills_icon_box;
   Box skills_bot_box;
   Box skills_scroll_box;
 
@@ -368,7 +370,6 @@ private:
   static const float kSKILL_ELEMENT_WIDTH;
   static const float kSKILL_ELEMENT_HEIGHT;
   static const float kSKILL_ELEMENT_INSET;
-
 
   /* Inventory Section */
   static const float kINV_GAP;
@@ -545,7 +546,7 @@ private:
   void renderSleuthOverview();
   void renderSleuthEquipment();
   void renderSleuthSkills();
-  void renderSleuthSkillsDetail();
+  void renderSleuthSkillDetail(Coordinate start, int32_t icon_w, int32_t gap);
   void renderSleuthDetails();
   void renderSleuthRecord();
 
@@ -565,6 +566,7 @@ private:
 
   /* Obtain a pointer to the currently selected person */
   BattleActor* getCurrentActor();
+  Skill* getCurrentSkill();
   Person* getCurrentPerson();
 
   /* Returns the MenuType currently rendering */

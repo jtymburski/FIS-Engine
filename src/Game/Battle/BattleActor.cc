@@ -610,7 +610,7 @@ bool BattleActor::dealDamage(int32_t damage_amount)
 
 void BattleActor::dealQtdr(int32_t dealt_amount)
 {
-(void)dealt_amount; // TODO
+  (void)dealt_amount; // TODO
 
 
 
@@ -1248,7 +1248,7 @@ int32_t BattleActor::calcTurnRegen(Attribute attr, int32_t outnumbered_val)
     reg_fac = getRegenFactor(person_base->getQDRegenRate());
 
   if(attr == Attribute::VITA && outnumbered_val != 0)
-    reg_fac += (0.007 * outnumbered_val);
+    reg_fac += (0.004 * outnumbered_val);
 
   int32_t max_attr_val = 0;
   int32_t amount = 0;

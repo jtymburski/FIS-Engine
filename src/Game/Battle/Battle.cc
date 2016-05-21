@@ -231,8 +231,6 @@ void Battle::actionStateSwitchSprite()
   }
   else
   {
-    std::cout << "Skill was not a hit, setting action state to done."
-              << std::endl;
     event->action_state = ActionState::DONE;
   }
 
@@ -1982,10 +1980,11 @@ void Battle::createLay(std::string path, int32_t anim_time, Floatinate velocity,
 {
   Coordinate screen_size = {config->getScreenWidth(),
                             config->getScreenHeight()};
+
   lays.push_back(new Lay(path, anim_time, velocity, lay_type, screen_size));
 }
 
-// Other todos:
+// Other todos
 bool Battle::render()
 {
   auto success = false;
