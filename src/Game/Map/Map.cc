@@ -1289,10 +1289,9 @@ bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
     for(uint32_t i = 0; i < sub_map[id].items.size(); i++)
       success &= sub_map[id].items[i]->save(fh);
 
-    /* Map Person(s) */
-    // TODO: NEXT
-
-    /* Map NPC(s) */
+    /* Map Person(s) and NPC(s) */
+    for(uint32_t i = 0; i < sub_map[id].persons.size(); i++)
+      success &= sub_map[id].persons[i]->save(fh);
 
     /* Wrapper end */
     if(!wrapper.empty())
@@ -2240,7 +2239,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     /* Test: Reset player location */
     else if(event.keysym.sym == SDLK_r)
     {
-      player->resetPosition();
+      player->resetToStart();
       setSectionIndex(player->getStartingSection());
     }
     /* Test: Dialog Reset */
@@ -2783,7 +2782,7 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
       /* Reset location */
       if(reset)
       {
-        found_person->resetPosition();
+        found_person->resetToStart();
         if(viewport.getLockThing() == found_person &&
            found_person->getStartingSection() != map_index)
         {
@@ -3192,18 +3191,6 @@ void Map::unloadMap()
   /* Delete all sub-maps and data within */
   for(uint32_t i = 0; i < sub_map.size(); i++)
   {
-    /* Delete all the tiles that have been set */
-    for(uint32_t j = 0; j < sub_map[i].tiles.size(); j++)
-    {
-      for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
-      {
-        delete sub_map[i].tiles[j][k];
-        sub_map[i].tiles[j][k] = NULL;
-      }
-      sub_map[i].tiles[j].clear();
-    }
-    sub_map[i].tiles.clear();
-
     /* Delete the instance IOs */
     for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
     {
@@ -3235,6 +3222,18 @@ void Map::unloadMap()
       sub_map[i].things[j] = nullptr;
     }
     sub_map[i].things.clear();
+
+    /* Delete all the tiles that have been set */
+    for(uint32_t j = 0; j < sub_map[i].tiles.size(); j++)
+    {
+      for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
+      {
+        delete sub_map[i].tiles[j][k];
+        sub_map[i].tiles[j][k] = NULL;
+      }
+      sub_map[i].tiles[j].clear();
+    }
+    sub_map[i].tiles.clear();
   }
   sub_map.clear();
 

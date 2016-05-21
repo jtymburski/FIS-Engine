@@ -283,7 +283,7 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
     /* If successful, reset the current node ptr of the class */
     if(success)
     {
-      resetPosition();
+      resetToStart();
       node_current = &node_start;
       npc_delay = 0;
       updateBound();
@@ -646,6 +646,39 @@ void MapNPC::updateBound()
  *===========================================================================*/
 
 /*
+ * Description: Checks if there is data to save for the particular NPC. This
+ *              is virtualized for all children
+ *
+ * Inputs: none
+ * Output: bool - true if save call will result in text
+ */
+bool MapNPC::isDataToSave()
+{
+  /* Check parent first (includes changed variable) */
+  if(MapPerson::isDataToSave())
+    return true;
+
+  /* Is starting */
+  if(starting)
+  {
+    if(active && npc_delay > 0)
+      return true;
+  }
+  /* Has already started */
+  else
+  {
+    /* Check NPC pathing status */
+    if(node_state == LOOPED || node_state == BACKANDFORTH ||
+       node_state == RANDOMRANGE)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*
  * Description: Renders additional images or frames on top of the designated
  *              tile. Called from the render call. This is virtualized for use
  *              by all children. MapNPC has spotted frame to render at times.
@@ -695,6 +728,95 @@ bool MapNPC::renderAdditional(SDL_Renderer* renderer, Tile* tile,
       }
     }
   }
+  return success;
+}
+
+/*
+ * Description: Saves the data for the NPC. This does not include the npc
+ *              wrapper. Virtualized for other classes as well.
+ *
+ * Inputs: FileHandler* fh - the file handling data pointer
+ *         const bool &save_event - true to save the base event set (thing)
+ * Output: none
+ */
+bool MapNPC::saveData(FileHandler* fh, const bool &save_event)
+{
+  bool success = true;
+
+  /* Parent property saves */
+  success &= MapPerson::saveData(fh, save_event);
+
+  /* Property change saves */
+  if(changed)
+  {
+    /* Forced Interaction */
+    fh->writeXmlData("forcedinteraction", isForcedInteraction(false));
+
+    /* Tracking */
+    TrackingState state = getTrackingState();
+    std::string state_str;
+    if(state == TrackingState::NOTRACK)
+      state_str = "none";
+    else if(state == TrackingState::TOPLAYER)
+      state_str = "toplayer";
+    else if(state == TrackingState::AVOIDPLAYER)
+      state_str = "avoidplayer";
+    fh->writeXmlData("tracking", state_str);
+  }
+
+  /* Starting */
+  if(starting)
+  {
+    if(active && npc_delay > 0)
+      fh->writeXmlData("nodedelay", npc_delay);
+  }
+  /* Already started */
+  else
+  {
+    /* Ensure correct type */
+    if(node_state == LOOPED || node_state == BACKANDFORTH ||
+       node_state == RANDOMRANGE)
+    {
+      /* Starting flag - if false */
+      fh->writeXmlData("starting", starting);
+
+      /* Node location analysis */
+      if(node_head != nullptr && active &&
+         (node_state == LOOPED || node_state == BACKANDFORTH))
+      {
+        Path* node_save = node_current;
+        if(node_previous != nullptr)
+          node_save = node_previous;
+
+        /* Find current node */
+        int node_index = 0;
+        Path* node_parse = node_head;
+        while(node_parse != node_save && node_parse != nullptr)
+        {
+          node_index++;
+          node_parse = node_parse->next;
+          if(node_parse == node_head)
+            node_parse = nullptr;
+        }
+
+        /* Save current node */
+        if(node_parse != nullptr)
+        {
+          /* Index */
+          fh->writeXmlData("nodecurrent", node_index);
+
+          /* Node delay */
+          if(npc_delay > 0)
+            fh->writeXmlData("nodedelay", npc_delay);
+
+          /* Moving forward status */
+          if(!moving_forward && node_state == BACKANDFORTH)
+            fh->writeXmlData("moveforward", moving_forward);
+        }
+      }
+    }
+  }
+
   return success;
 }
 
@@ -772,8 +894,15 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   bool success = true;
 
   /* Parse the identifier for setting the person information */
+  /*-------------------- MOVE FORWARD -------------------*/
+  if(identifier == "moveforward" && elements.size() == 1)
+  {
+    bool forward_read = data.getDataBool(&success);
+    if(success && node_state == BACKANDFORTH)
+      moving_forward = forward_read;
+  }
   /*--------------------- NODESTATE --------------------*/
-  if(identifier == "nodestate" && elements.size() == 1)
+  else if(identifier == "nodestate" && elements.size() == 1)
   {
     std::string state = data.getDataString(&success);
     if(success)
@@ -846,6 +975,47 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
       success = false;
     }
   }
+  /*-------------------- NODE CURRENT ---------------------*/
+  else if(identifier == "nodecurrent" && elements.size() == 1)
+  {
+    /* Read the data */
+    int node_read = data.getDataInteger(&success);
+    if(success && node_read >= 0)
+    {
+      /* Try and find the node */
+      Path* node_parse = node_head;
+      while(node_parse != nullptr && node_read >= 0)
+      {
+        node_parse = node_parse->next;
+        node_read--;
+        
+        /* Wrap around protection */
+        if(node_parse == node_head)
+          node_parse = nullptr;
+      }
+      
+      /* If the node is found, set to the current */
+      if(node_read < 0 && node_parse != nullptr)
+        node_current = node_parse;
+    }
+  }
+  /*--------------------- NODE DELAY --------------------*/
+  else if(identifier == "nodedelay" && elements.size() == 1)
+  {
+    int delay_read = data.getDataInteger(&success);
+    if(delay_read > 0)
+      npc_delay = delay_read;
+  }
+  /*---------------------- STARTING --------------------*/
+  else if(identifier == "starting" && elements.size() == 1)
+  {
+    bool start_read = data.getDataBool(&success);
+    if(success && !start_read)
+    {
+      starting = false;
+      node_current = node_head;
+    }
+  }
   /*--------------------- START NODE --------------------*/
   else if(identifier == "startnode" && elements.size() == 2)
   {
@@ -863,17 +1033,17 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
         node_start.xy_flip = flip;
     }
   }
-  /* -- TRACKING DIST MAX -- */
+  /*------------------- TRACKING DIST MAX -------------------*/
   else if(identifier == "trackmax" && elements.size() == 1)
   {
     setTrackingDist(track_dist, data.getDataInteger(), track_dist_run);
   }
-  /* -- TRACKING DIST MIN -- */
+  /*------------------- TRACKING DIST MIN -------------------*/
   else if(identifier == "trackmin" && elements.size() == 1)
   {
     setTrackingDist(data.getDataInteger(), track_dist_max, track_dist_run);
   }
-  /* -- TRACKING DIST RUN -- */
+  /*------------------- TRACKING DIST RUN -------------------*/
   else if(identifier == "trackrun" && elements.size() == 1)
   {
     setTrackingDist(track_dist, track_dist_max, data.getDataInteger());
@@ -926,7 +1096,6 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
  */
 ThingBase MapNPC::classDescriptor()
 {
-  //return "MapNPC";
   return ThingBase::NPC;
 }
 
@@ -1329,25 +1498,50 @@ bool MapNPC::removeNodeAtTail()
   return false;
 }
 
-/* Resets the tile position */
 /*
  * Description: Resets the position of the npc back to the initial starting
  *              point. This is the position that was set when the last
  *              setStartingTile() was called.
  *
- * Inputs: none
+ * Inputs: bool no_set - true to not set tiles and just reset. false default
  * Output: bool - status if successful
  */
-bool MapNPC::resetPosition()
+bool MapNPC::resetToStart(bool no_set)
 {
-  if(MapPerson::resetPosition())
+  if(MapPerson::resetToStart(no_set))
   {
+    std::cout << " NPC" << std::endl;
     forced_recent = false;
     node_current = &node_start;
     starting = true;
     stuck_flip = false;
     track_recent = false;
     return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Saves the npc data to the file handling pointer.
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ * Output: bool - true if the save was successful
+ */
+bool MapNPC::save(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    bool success = true;
+
+    /* Only proceed if there is data to save */
+    if(isDataToSave())
+    {
+      fh->writeXmlElement("mapnpc", "id", getID());
+      success &= saveData(fh);
+      fh->writeXmlElementEnd();
+    }
+
+    return success;
   }
   return false;
 }
@@ -1409,8 +1603,15 @@ bool MapNPC::setBase(MapThing* base)
  */
 void MapNPC::setForcedInteraction(bool forced)
 {
+  bool old_forced = forced_interaction;
+  
+  /* Set the forced interaction */
   forced_interaction = forced;
   forced_recent = false;
+  
+  /* Check if it was changed */
+  if(forced_interaction != old_forced)
+    changed = true;
 }
 
 /*
@@ -1516,8 +1717,15 @@ void MapNPC::setTrackingDist(int trigger, int max, int run)
  */
 void MapNPC::setTrackingState(TrackingState state)
 {
+  TrackingState old_state = track_state;
+  
+  /* Modify the state */
   track_state = state;
   track_recent = false;
+  
+  /* Check if it was changed */
+  if(track_state != old_state)
+    changed = true;
 }
 
 /*
@@ -1564,7 +1772,7 @@ Floatinate MapNPC::update(int cycle_time,
         if(stuck_delay > kSTUCK_DELAY)
         {
           stuck_delay = 0;
-          stuck_flip = !stuck_flip; // HERE
+          stuck_flip = !stuck_flip;
         }
       }
 

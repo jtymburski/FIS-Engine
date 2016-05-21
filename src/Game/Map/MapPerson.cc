@@ -241,6 +241,30 @@ bool MapPerson::canSetTile(Tile* tile, TileSprite* frames, bool avoid_player)
 }
 
 /*
+ * Description: Checks if there is data to save for the particular person. This
+ *              is virtualized for all children
+ *
+ * Inputs: none
+ * Output: bool - true if save call will result in text
+ */
+bool MapPerson::isDataToSave()
+{
+  /* Check parent first (includes changed variable) */
+  if(MapThing::isDataToSave())
+    return true;
+
+  /* Check direction */
+  if(direction != starting_dir)
+    return true;
+
+  /* Check move freeze */
+  if(move_freeze)
+    return true;
+
+  return false;
+}
+
+/*
  * Description: Checks if a move is allowed from the current person main
  *              tile to the next tile that it is trying to move to. This
  *              handles the individual calculations for a single tile; used
@@ -342,6 +366,39 @@ void MapPerson::removeDirection(Direction direction)
   /* Try and find the direction */
   if(index >= 0)
     movement_stack.erase(movement_stack.begin() + index);
+}
+
+/*
+ * Description: Saves the data for the person. This does not include the person
+ *              wrapper. Virtualized for other classes as well.
+ *
+ * Inputs: FileHandler* fh - the file handling data pointer
+ *         const bool &save_event - true to save the base event set (thing)
+ * Output: none
+ */
+bool MapPerson::saveData(FileHandler* fh, const bool &save_event)
+{
+  bool success = true;
+
+  /* Parent property saves */
+  success &= MapThing::saveData(fh, save_event);
+
+  /* Property change saves */
+  if(changed)
+  {
+    /* Speed */
+    fh->writeXmlData("speed", getSpeed());
+  }
+
+  /* Direction */
+  if(direction != starting_dir)
+    fh->writeXmlData("dirfacing", Helpers::directionToString(direction));
+
+  /* Move frozen */
+  if(move_freeze)
+    fh->writeXmlData("movefreeze", move_freeze);
+
+  return success;
 }
 
 /*
@@ -570,15 +627,6 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
 
     /* Create the direction identifier */
     Direction direction = Helpers::directionFromString(elements[1]);
-    // Direction direction = Direction::DIRECTIONLESS;
-    // if(elements[1] == "north")
-    //   direction = Direction::NORTH;
-    // else if(elements[1] == "south")
-    //   direction = Direction::SOUTH;
-    // else if(elements[1] == "east")
-    //   direction = Direction::EAST;
-    // else if(elements[1] == "west")
-    //   direction = Direction::WEST;
 
     /* Only proceed if the direction was a valid direction */
     SpriteMatrix* matrix = getState(surface, direction);
@@ -588,7 +636,21 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
     else
       success = false;
   }
-   /*----------------- RENDER MATRIX -----------------*/
+  /*----------------- DIRECTION FACING -----------------*/
+  else if(elements.size() == 1 && elements.front() == "dirfacing")
+  {
+    Direction dir = Helpers::directionFromString(data.getDataString(&success));
+    if(success)
+      setDirection(dir, false);
+  }
+  /*----------------- MOVE FREEZE -----------------*/
+  else if(elements.size() == 1 && elements.front() == "movefreeze")
+  {
+    bool freeze = data.getDataBool(&success);
+    if(success)
+      move_freeze = freeze;
+  }
+  /*----------------- RENDER MATRIX -----------------*/
   else if(elements.size() == 1 && elements.front() == "rendermatrix")
   {
     for(uint8_t i = 0; i < states.size(); i++)
@@ -599,7 +661,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
       }
     }
   }
-   /*----------------- STARTING DIRECTION -----------------*/
+  /*----------------- STARTING DIRECTION -----------------*/
   else if(data.getElement(file_index) == "startingdir")
   {
     Direction dir = Helpers::directionFromString(data.getDataString());
@@ -634,7 +696,6 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
  */
 ThingBase MapPerson::classDescriptor()
 {
-  //return "MapPerson";
   return ThingBase::PERSON;
 }
 
@@ -978,22 +1039,6 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
 }
 
 /*
- * Description: Resets the position of the person back to the initial starting
- *              point. This is the position that was set when the last
- *              setStartingTile() was called.
- *
- * Inputs: none
- * Output: bool - status if successful
- */
-bool MapPerson::resetPosition()
-{
-  /* Set the new tiles to the starting tiles */
-  if(isTilesSet())
-    return setStartingTiles(starting_tiles, getStartingSection(), true);
-  return false;
-}
-
-/*
  * Description: Resets the step count back to 0. Typically used after a
  *              translation call up to game level parent of Player class.
  *
@@ -1003,6 +1048,49 @@ bool MapPerson::resetPosition()
 void MapPerson::resetStepCount()
 {
   steps = 0;
+}
+
+/*
+ * Description: Resets the position of the person back to the initial starting
+ *              point. This is the position that was set when the last
+ *              setStartingTile() was called.
+ *
+ * Inputs: bool no_set - true to not set tiles and just reset. false default
+ * Output: bool - status if successful
+ */
+bool MapPerson::resetToStart(bool no_set)
+{
+  if(MapThing::resetToStart(no_set))
+  {
+    MapPerson::setDirection(starting_dir, false);
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Saves the person data to the file handling pointer.
+ *
+ * Inputs: FileHandler* fh - the file handling pointer
+ * Output: bool - true if the save was successful
+ */
+bool MapPerson::save(FileHandler* fh)
+{
+  if(fh != nullptr)
+  {
+    bool success = true;
+
+    /* Only proceed if there is data to save */
+    if(isDataToSave())
+    {
+      fh->writeXmlElement("mapperson", "id", getID());
+      success &= saveData(fh);
+      fh->writeXmlElementEnd();
+    }
+
+    return success;
+  }
+  return false;
 }
 
 /*

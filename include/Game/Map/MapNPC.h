@@ -140,12 +140,18 @@ private:
 
 /*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
+  /* Is data available to save */
+  virtual bool isDataToSave();
+
   /* Additional rendering call for overlays - virtualized */
   virtual bool renderAdditional(SDL_Renderer* renderer, Tile* tile,
                                 int tile_x, int tile_y,
                                 int render_x, int render_y);
 
-  /* Sets the direction that the person is travelling in */
+  /* Saves the NPC data - virtualized */
+  virtual bool saveData(FileHandler* fh, const bool &save_event = true);
+
+  /* Sets the direction that the NPC is travelling in */
   bool setDirection(Direction direction, bool set_movement = true);
 
 /*========================= PUBLIC FUNCTIONS ===============================*/
@@ -210,7 +216,10 @@ public:
   bool removeNodeAtTail();
 
   /* Resets the tile position */
-  bool resetPosition();
+  bool resetToStart(bool no_set = false);
+
+  /* Saves the delta data within the npc */
+  virtual bool save(FileHandler* fh);
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);

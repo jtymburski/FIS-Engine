@@ -340,6 +340,9 @@ public:
   /* Resets the location back to default (0,0,0), relative to the map */
   virtual void resetLocation();
 
+  /* Resets the tile position */
+  virtual bool resetToStart(bool no_set = false);
+
   /* Saves the delta data within the thing */
   virtual bool save(FileHandler* fh);
 

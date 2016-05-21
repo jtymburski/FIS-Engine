@@ -2053,6 +2053,29 @@ void MapThing::resetLocation()
 }
 
 /*
+ * Description: Resets the position of the thing back to the initial starting
+ *              point. This is the position that was set when the last
+ *              setStartingTile() was called.
+ *
+ * Inputs: bool no_set - true to not set tiles and just reset. false default
+ * Output: bool - status if successful
+ */
+bool MapThing::resetToStart(bool no_set)
+{
+  if(no_set)
+  {
+    unsetTiles(true);
+    return true;
+  }
+  else
+  {
+    if(setStartingTiles(starting_tiles, getStartingSection(), true))
+      return true;
+  }
+  return false;
+}
+
+/*
  * Description: Saves the thing data to the file handling pointer.
  *
  * Inputs: FileHandler* fh - the file handling pointer
@@ -2097,15 +2120,10 @@ bool MapThing::setActive(bool active, bool set_tiles)
   /* Update thing placement */
   if(set_tiles)
   {
-    if(active)  // TODO: Implement fade instead of instant
-    {
-      this->active = setStartingTiles(starting_tiles, starting_section, true,
-                                      false, true);
-    }
-    else
-    {
-      unsetTiles(true);
-    }
+    bool reset = resetToStart(!active);
+    if(active)
+      this->active = reset;
+    // TODO: Implement fade instead of instant.
   }
 
   return this->active;
@@ -2362,7 +2380,14 @@ void MapThing::setSoundID(int32_t id)
  */
 void MapThing::setSpeed(uint16_t speed)
 {
+  uint16_t old_speed = getSpeed();
+  
+  /* Set the speed */
   this->speed = speed;
+  
+  /* Check if it was changed */
+  if(old_speed != speed)
+    changed = true;
 }
 
 /*
