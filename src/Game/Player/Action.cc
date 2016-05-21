@@ -465,7 +465,7 @@ bool Action::defFlag(IgnoreFlags test_flag)
 {
   return ((ignore_def & test_flag) == test_flag);
 }
-  
+
 /* Clears the class info */
 void Action::clear()
 {

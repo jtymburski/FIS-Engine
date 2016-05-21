@@ -902,7 +902,7 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
 {
   auto action = getCurrAction();
 
-  if(action && curr_target)
+  if(action && curr_target && actor)
   {
     int32_t amount = 0;
     int32_t variance = 0;
@@ -913,14 +913,29 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
     // TODO: Other attributes
     if(action->getTargetAttribute() == Attribute::VITA)
     {
+      std::cout << "Target attribute is vitality!" << std::endl;
       targ_value = curr_target->getStats().getValue(Attribute::VITA);
       targ_max_value = curr_target->getStats().getValue(Attribute::MVIT);
     }
     else if(action->getTargetAttribute() == Attribute::QTDR)
     {
+      std::cout << "Target attribute is quantum drive!" << std::endl;
       targ_value = curr_target->getStats().getValue(Attribute::QTDR);
-      targ_max_value = curr_target->getStats().getValue(Attribute::MVIT);
+      targ_max_value = curr_target->getStats().getValue(Attribute::MQTD);
     }
+
+    // if(action->getUserAttribute() == Attribute::VITA)
+    // {
+    //   std::cout << "User attribute is vitality!" << std::endl;
+    //   targ_value = actor->getStats().getValue(Attribute::VITA);
+    //   targ_max_value = actor->getStats().getValue(Attribute::MVIT);
+    // }
+    // else if(action->getUserAttribute() == Attribute::QTDR)
+    // {
+    //   std::cout << "User attribute is quantum drive!" << std::endl;
+    //   targ_value = actor->getStats().getValue(Attribute::QTDR);
+    //   targ_max_value = actor->getStats().getValue(Attribute::MQTD);
+    // }
 
     auto action_amt = action->getBase();
     auto action_var = action->getVariance();

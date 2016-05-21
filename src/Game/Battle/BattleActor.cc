@@ -587,7 +587,7 @@ bool BattleActor::dealDamage(int32_t damage_amount)
 
   if(curr_vita != curr_base_vita)
   {
-    std::cout << "[WARNING] : Damage do base value with modified curr vita."
+    std::cout << "[WARNING] : Damage to base value with modified curr vita."
               << std::endl;
   }
 
@@ -627,9 +627,12 @@ void BattleActor::restoreQtdr(int32_t amount)
 
 void BattleActor::restoreVita(int32_t amount)
 {
-
   auto curr_value = stats_actual.getBaseValue(Attribute::VITA);
   auto max_value = stats_actual.getBaseValue(Attribute::MVIT);
+
+  std::cout << "--- Restoring ---: " << amount << std::endl;
+  std::cout << "----- With current: " << curr_value << std::endl;
+  std::cout << "----- Max value:    " << max_value << std::endl;
 
   if(amount > 0 && amount + curr_value <= max_value)
     stats_actual.setBaseValue(Attribute::VITA, curr_value + amount);

@@ -739,16 +739,27 @@ void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
 {
   if(outcome.attr == Attribute::VITA)
   {
-    if(outcome.actor->dealDamage(outcome.damage))
-      outcome.causes_ko = true;
+    if(outcome.damage > 0)
+    {
+      if(outcome.actor->dealDamage(outcome.damage))
+        outcome.causes_ko = true;
+    }
+    else
+    {
+      outcome.actor->restoreVita(-outcome.damage);
+    }
   }
   else if(outcome.attr == Attribute::QTDR)
   {
-    // TODO: +/- modifications?
-    outcome.actor->restoreQtdr(-outcome.damage);
+    if(outcome.damage > 0)
+      outcome.actor->dealQtdr(outcome.damage);
+    else
+      outcome.actor->restoreQtdr(-outcome.damage);
   }
   else
+  {
     outcome.actor->startFlashing(FlashingType::DAMAGE, 750);
+  }
 
   outcome.actor_outcome_state = ActionState::OUTCOME;
 }

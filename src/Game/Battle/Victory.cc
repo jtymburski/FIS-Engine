@@ -375,8 +375,6 @@ bool Victory::update(int32_t cycle_time)
                          PState::CAN_GAIN_EXP) << std::endl;
 
         victory_actor.exp_left -= add_exp;
-
-        /* Add to person > TODO: MVR to review [???] */
         victory_actor.base_person->addExp(add_exp);
 
         done &= (victory_actor.exp_left == 0);
@@ -397,9 +395,7 @@ bool Victory::update(int32_t cycle_time)
         if(victory_actor.orig_lvl != base->getLevel())
         {
           auto equip_stats = base->calcEquipStats();
-          auto max_health =
-              (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
-
+          auto max_health = (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
           auto curr_health = actor->getStats().getBaseValue(Attribute::VITA);
           auto max_qtdr = (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
           auto curr_qtdr = actor->getStats().getBaseValue(Attribute::QTDR);
