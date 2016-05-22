@@ -56,6 +56,13 @@ enum class InventoryIndex : uint8_t
   KEY_ITEMS = 4
 };
 
+enum class QuitIndex : uint8_t
+{
+  NONE = 0,
+  NO = 1,
+  YES = 2
+};
+
 /* Enumerated MenuLayer */
 enum class MenuLayer
 {
@@ -203,6 +210,7 @@ ENUM_FLAGS(MenuState)
 enum class MenuState
 {
   SHOWING = 1 << 2, /* Is the menu currently rendering */
+  QUITTING = 1 << 3 /* Is the menu declaring to quit the game? */
 };
 
 class Menu
@@ -318,6 +326,7 @@ private:
 
   /* Inventory Index Values */
   InventoryIndex inventory_title_index;
+  QuitIndex quit_index;
 
   /* Title Section (Left) Window */
   Window title_section;
@@ -443,8 +452,8 @@ private:
   /* Constructs the Options Data */
   void buildOptions();
 
-  /* Construct a detail Person screen */
-  void buildPersonDetailScreen();
+  /* Builds the quit screen */
+  void buildQuit();
 
   /* Construct the Sleuth overview screen */
   bool buildSleuthScreen();
@@ -493,11 +502,13 @@ private:
   /* Decrement index functions */
   void decrementInventoryIndex();
   void decrementOptionIndex();
+  void decrementQuitIndex();
   void decrementSleuthIndex();
 
   /* Increment index functions */
   void incrementInventoryIndex();
   void incrementOptionIndex();
+  void incrementQuitIndex();
   void incrementSleuthIndex();
 
   /* Key Down Methods */
@@ -511,7 +522,6 @@ private:
   /* Selection methods */
   void selectInventoryIndex();
   void selectOptionIndex();
-
   void selectSleuthIndex();
 
   /* Render the attribute frames */
@@ -620,6 +630,9 @@ public:
 
   /* Returns an evaluated MenuState flag */
   bool getFlag(const MenuState& test_flag);
+
+  /* Enumerated menu layer */
+  MenuLayer getMenuLayer();
 
   /* Assign the Battle Display Data */
   void setBattleDisplayData(BattleDisplayData* battle_display_data);

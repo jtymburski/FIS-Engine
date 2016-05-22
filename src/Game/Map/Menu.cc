@@ -134,7 +134,7 @@ const float Menu::kTITLE_ELEMENT_X_OFFSET{0.01};
 const float Menu::kTITLE_Y_OFFSET{0.05};
 const float Menu::kTITLE_ELEMENT_GAP{0.80};
 const float Menu::kTITLE_CORNER_LENGTH{0.02};
-const float Menu::kTITLE_SLIDE_RATE{0.60};
+const float Menu::kTITLE_SLIDE_RATE{1.3};
 const float Menu::kTITLE_LOCATION_Y_OFFSET{0.63};
 const float Menu::kTITLE_ICONS_Y_GAP{0.05};
 const float Menu::kTITLE_ICON_TEXT_X{0.025};
@@ -147,7 +147,7 @@ const float Menu::kTITLE_HOVER_MAX{0.8};
 
 /* Main Section General */
 const uint8_t Menu::kMAIN_ALPHA{191};
-const float Menu::kMAIN_SLIDE_RATE{1.75};
+const float Menu::kMAIN_SLIDE_RATE{1.7};
 const float Menu::kMAIN_CORNER_LENGTH{0.025};
 const float Menu::kINV_WIDTH{0.53};
 const float Menu::kOPTIONS_WIDTH{0.40};
@@ -238,7 +238,8 @@ Menu::Menu()
       skills_element_index{-1},
       sleuth_element_index{-1},
       title_element_index{-1},
-      inventory_title_index{InventoryIndex::NONE}
+      inventory_title_index{InventoryIndex::NONE},
+      quit_index{QuitIndex::NONE}
 {
 }
 
@@ -761,6 +762,10 @@ void Menu::buildMainSection(MenuType menu_type)
       option_element_index = 0;
       selectOptionIndex();
     }
+    else if(menu_type == MenuType::QUIT)
+    {
+      quit_index = QuitIndex::NO;
+    }
   }
 }
 
@@ -813,6 +818,10 @@ void Menu::buildPersonTitleElements()
   //     TitleElement("Record", true, MenuType::SLEUTH_RECORD));
 }
 
+void Menu::buildQuit()
+{
+}
+
 /* Constructs the TitleSection */
 void Menu::buildTitleSection()
 {
@@ -831,7 +840,6 @@ void Menu::buildTitleSection()
   title_section.location.width = title_width + corner_width;
   title_section.point.x = 0;
   title_section.point.y = y;
-
   title_section.alpha = kTITLE_ALPHA;
   title_section.status = WindowStatus::OFF;
 }
@@ -844,12 +852,18 @@ void Menu::decrementInventoryIndex()
   selectInventoryIndex();
 }
 
-// TODO: abtract out BETA [04-9-16]
+// TODO [04-9-16]: abtract out BETA
 void Menu::decrementOptionIndex()
 {
   unselectOptionIndex();
   option_element_index--;
   selectOptionIndex();
+}
+
+void Menu::decrementQuitIndex()
+{
+  auto new_index = static_cast<uint32_t>(quit_index) - 1;
+  quit_index = static_cast<QuitIndex>(new_index);
 }
 
 void Menu::decrementSleuthIndex()
@@ -872,6 +886,12 @@ void Menu::incrementOptionIndex()
   unselectOptionIndex();
   option_element_index++;
   selectOptionIndex();
+}
+
+void Menu::incrementQuitIndex()
+{
+  auto new_index = static_cast<uint32_t>(quit_index) + 1;
+  quit_index = static_cast<QuitIndex>(new_index);
 }
 
 void Menu::incrementSleuthIndex()
@@ -2625,6 +2645,65 @@ void Menu::renderSave()
 /* Renders the Quit Screen */
 void Menu::renderQuit()
 {
+  auto gap = (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+
+  /* Render the are you sure text */
+  Text t_question{getFont(FontName::M_TITLE_ELM)};
+  Text t_yes{getFont(FontName::M_TITLE_ELM)};
+  Text t_no{getFont(FontName::M_TITLE_ELM)};
+
+  t_question.setText(renderer, "Are you sure?", kCOLOR_TEXT);
+  t_yes.setText(renderer, "Yes", kCOLOR_TEXT);
+  t_no.setText(renderer, "No", kCOLOR_TEXT);
+
+  current.x = main_section.location.point.x;
+  auto start = current;
+  current.y = main_section.location.point.y + main_section.location.height / 3;
+
+  t_question.render(renderer, current.x + main_section.location.width / 2 -
+                                  t_question.getWidth() / 2,
+                    current.y);
+
+  current.x =
+      start.x + main_section.location.width / 2 - 3 * gap - t_yes.getWidth();
+  current.y += main_section.location.height / 3;
+
+  Box yes_box;
+  yes_box.width = t_yes.getWidth() * 1.4;
+  yes_box.height = t_yes.getWidth() * 1.2;
+  yes_box.point = {current.x, current.y - yes_box.height / 2};
+  yes_box.color_bg = SDL_Color{0, 0, 0, 0};
+  yes_box.color_bg_selected = kCOLOR_OPTION_FILL_SELECTED;
+  yes_box.color_border = SDL_Color{0, 0, 0, 0};
+  yes_box.color_border_selected = SDL_Color{0, 0, 0, 0};
+
+  if(quit_index == QuitIndex::YES)
+    yes_box.setFlag(BoxState::SELECTED, true);
+
+  yes_box.render(renderer);
+
+  t_yes.render(renderer,
+               yes_box.point.x + yes_box.width / 2 - t_yes.getWidth() / 2,
+               yes_box.point.y + yes_box.height / 2 - t_yes.getHeight() / 2);
+
+  current.x = start.x + main_section.location.width / 2 + 3 * gap;
+
+  Box no_box;
+  no_box.width = t_yes.getWidth() * 1.4;
+  no_box.height = t_yes.getWidth() * 1.2;
+  no_box.point = {current.x, current.y - no_box.height / 2};
+  no_box.color_bg = SDL_Color{0, 0, 0, 0};
+  no_box.color_bg_selected = kCOLOR_OPTION_FILL_SELECTED;
+  no_box.color_border = SDL_Color{0, 0, 0, 0};
+  no_box.color_border_selected = SDL_Color{0, 0, 0, 0};
+
+  if(quit_index == QuitIndex::NO)
+    no_box.setFlag(BoxState::SELECTED, true);
+
+  no_box.render(renderer);
+
+  t_no.render(renderer, no_box.point.x + no_box.width / 2 - t_no.getWidth() / 2,
+              no_box.point.y + no_box.height / 2 - t_no.getHeight() / 2);
 }
 
 void Menu::setupDefaultBox(Box& setup_box)
@@ -2861,6 +2940,11 @@ void Menu::keyDownLeft()
       else if(option_element_index == 1)
         option_music_level.decrease();
     }
+    else if(getMainMenuType() == MenuType::QUIT)
+    {
+      if(quit_index != QuitIndex::YES)
+        incrementQuitIndex();
+    }
   }
 }
 
@@ -2879,6 +2963,11 @@ void Menu::keyDownRight()
         option_audio_level.increase();
       else if(option_element_index == 1)
         option_music_level.increase();
+    }
+    else if(getMainMenuType() == MenuType::QUIT)
+    {
+      if(quit_index != QuitIndex::NO)
+        decrementQuitIndex();
     }
   }
 }
@@ -2949,6 +3038,19 @@ void Menu::keyDownAction()
         layer = MenuLayer::MAIN_INDENT;
         inventory_top_box.setFlag(BoxState::SELECTED);
         inventory_scroll_box.setFlag(BoxState::SELECTED);
+      }
+    }
+    else if(getMainMenuType() == MenuType::QUIT)
+    {
+      if(quit_index == QuitIndex::NO)
+      {
+        quit_index = QuitIndex::NONE;
+        layer = MenuLayer::TITLE;
+        main_section.status = WindowStatus::HIDING;
+      }
+      else if(quit_index == QuitIndex::YES)
+      {
+        setFlag(MenuState::QUITTING, true);
       }
     }
   }
@@ -3119,6 +3221,13 @@ bool Menu::update(int32_t cycle_time)
     title_elements.at(title_element_index).hover_time += cycle_time;
   }
 
+  if(getFlag(MenuState::QUITTING))
+  {
+    setFlag(MenuState::QUITTING, false);
+
+    return true;
+  }
+
   return false;
 }
 
@@ -3126,6 +3235,11 @@ bool Menu::update(int32_t cycle_time)
 bool Menu::getFlag(const MenuState& test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
+}
+
+MenuLayer Menu::getMenuLayer()
+{
+  return layer;
 }
 
 /* Assign the BattleDisplayData */

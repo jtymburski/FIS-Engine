@@ -1708,10 +1708,14 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
   /* TESTING section - probably remove at end */
   /* Inventory Testing */
-  if(event.keysym.sym == SDLK_d)
+  if(event.keysym.sym == SDLK_ESCAPE && map_menu_enabled &&
+     (map_menu.getMenuLayer() == MenuLayer::TITLE ||
+      !map_menu.getFlag(MenuState::SHOWING)))
   {
-    if(mode == MAP && map_menu_enabled)
+    if(mode == MAP && !map_menu.getFlag(MenuState::SHOWING))
       changeMode(MENU);
+    else if(mode == MENU)
+      eventMenuHide();
   }
   else if(event.keysym.sym == SDLK_3)
   {
@@ -1851,11 +1855,6 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       if(map_ctrl.keyDownEvent(event))
         changeMode(DISABLED);
     }
-    // /* -- TODO: TEMP - just for dev mode so you can escape battle -- */
-    // else if(event.keysym.sym == SDLK_ESCAPE)
-    // {
-    //   changeMode(DISABLED);
-    // }
     /* -- BATTLE MODE -- */
     else if(mode == BATTLE)
     {
@@ -1964,14 +1963,13 @@ bool Game::save()
   {
     /* Get a BMP of the current surface */
     SDL_Rect rect = map_ctrl.getSnapshotRect();
-    SDL_Surface* sshot = SDL_CreateRGBSurface(0, rect.w, rect.h, 32,
-                                              0x00ff0000, 0x0000ff00,
-                                              0x000000ff, 0xff000000);
+    SDL_Surface* sshot = SDL_CreateRGBSurface(
+        0, rect.w, rect.h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     SDL_RenderReadPixels(active_renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
                          sshot->pixels, sshot->pitch);
-    SDL_Surface* sshot2 = SDL_CreateRGBSurface(0, rect.w/4, rect.h/4, 32,
-                                               0x00ff0000, 0x0000ff00,
-                                               0x000000ff, 0xff000000);
+    SDL_Surface* sshot2 =
+        SDL_CreateRGBSurface(0, rect.w / 4, rect.h / 4, 32, 0x00ff0000,
+                             0x0000ff00, 0x000000ff, 0xff000000);
     SDL_BlitScaled(sshot, NULL, sshot2, NULL);
     SDL_SaveBMP(sshot2, save_path_img.c_str());
     SDL_FreeSurface(sshot);
@@ -2254,10 +2252,10 @@ bool Game::update(int32_t cycle_time)
     if(player_main != nullptr)
       player_main->addPlayTime(cycle_time);
 
-    map_menu.update(cycle_time);
-
     if(!map_menu.getFlag(MenuState::SHOWING))
       changeMode(MAP);
+
+    return map_menu.update(cycle_time);
   }
 
   return false;
