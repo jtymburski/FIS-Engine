@@ -282,7 +282,9 @@ private:
   /* Sleuth Screen Boxes */
   Box s_top_box;
   Box s_sprite_box;
-  Box s_bot_stats_box;
+  Box s_rank_box;
+  Box s_exp_box;
+  Box s_details_box;
   Box s_top_stats_box;
   Box s_attributes_box;
   Box s_vita_bar;
@@ -297,6 +299,7 @@ private:
 
   /* Sleuth Frames */
   std::vector<Sprite*> sleuth_faces;
+  std::vector<Frame*> sleuth_attr_frames;
   std::vector<Frame*> sleuth_stat_frames;
 
   /* Vector of title elements */
@@ -458,6 +461,7 @@ private:
   /* Construct the TitleSection (Main Selection) of the Menu */
   void buildTitleSection();
   int32_t calcMainCornerInset();
+  int32_t calcSleuthAttributeHeight();
   int32_t calcSleuthTileSize();
 
   /* Calculate the required string for Item Details */
@@ -476,6 +480,9 @@ private:
 
   /* Clear the battle actors */
   void clearActors();
+
+  /* Clears the extra attribute frames */
+  void clearAttributeFrames();
 
   /* Clear the element frames */
   void clearElementFrames();
@@ -509,6 +516,7 @@ private:
 
   /* Render the attribute frames */
   void renderAttributes(Coordinate start, int32_t gap);
+  void renderExtraAttributes(Coordinate start, int32_t gap);
 
   /* Render Bubbies */
   void renderBubbies();
@@ -544,13 +552,20 @@ private:
   void renderPersonElementTitles(int32_t gap);
   void renderPersonElementTitle(TitleElement& element);
 
-  /* Render the Save Screen */
+  /* Render the Sleuth Screen */
   void renderSleuth();
+
+  /* Render the sleuth details sections */
+  void renderSleuthDetails();
+  void renderSleuthDetailsRank();
+  void renderSleuthDetailsExp();
+  void renderSleuthDetailsStats();
+
+  /* Render the other sleuth information */
   void renderSleuthOverview();
   void renderSleuthEquipment();
   void renderSleuthSkills();
   void renderSleuthSkillDetail(Coordinate start, int32_t icon_w, int32_t gap);
-  void renderSleuthDetails();
   void renderSleuthRecord();
 
   /* Render the Save Screen */

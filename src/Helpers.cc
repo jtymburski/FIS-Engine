@@ -1634,21 +1634,15 @@ BattleScene Helpers::createBlankScene()
 
 std::string Helpers::formatUInt(uint32_t i, std::string d)
 {
-  std::stringstream s;
+  std::string formatted_number = std::to_string(i);
+  int32_t insertPosition = formatted_number.length() - 3;
+  while(insertPosition > 0)
+  {
+    formatted_number.insert(insertPosition, d);
+    insertPosition -= 3;
+  }
 
-  if(i < 10000)
-    s << i;
-  else if(i < 1000000)
-    s << i / 1000 << d << i % 1000;
-  else if(i < 1000000000)
-    s << i / 1000000 << d << i / 1000 << d << i % 1000;
-  else
-    s << i / 1000000000 << d << i / 1000000 << d << i / 1000 << d << i % 1000;
-
-  if(i >= 10000 && i % 1000 == 0)
-    s << "00";
-
-  return s.str();
+  return formatted_number;
 }
 
 /*

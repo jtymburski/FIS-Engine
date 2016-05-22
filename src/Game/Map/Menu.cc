@@ -320,6 +320,14 @@ bool Menu::buildSleuthScreen()
   return success;
 }
 
+/* Calculate the height required for the Attribute stat frames */
+int32_t Menu::calcSleuthAttributeHeight()
+{
+  return (int32_t)std::round(main_section.location.height *
+                             kSLEUTH_ELEMENT_HEIGHT);
+}
+
+/* Calculuate the tile size required for the persons face graphics */
 int32_t Menu::calcSleuthTileSize()
 {
   if(config)
@@ -931,6 +939,18 @@ void Menu::selectSleuthIndex()
     titles.at(sleuth_element_index).setFlag(BoxState::SELECTED, true);
 }
 
+void Menu::clearAttributeFrames()
+{
+  for(auto& attribute_frame : sleuth_attr_frames)
+  {
+    if(attribute_frame)
+      delete attribute_frame;
+
+    attribute_frame = nullptr;
+  }
+
+  sleuth_attr_frames.clear();
+}
 void Menu::clearElementFrames()
 {
   for(auto& element_frame : sleuth_stat_frames)
@@ -948,21 +968,12 @@ void Menu::renderAttributes(Coordinate start, int32_t gap)
 {
   clearElementFrames();
   auto width = s_attributes_box.width;
+  auto height = calcSleuthAttributeHeight();
 
-  for(uint8_t i = 1; i < 12; i++)
+  for(uint8_t i = 1; i < 8; i++)
   {
-    auto height = (int32_t)std::round(main_section.location.height *
-                                      kSLEUTH_ELEMENT_HEIGHT);
     SDL_Texture* texture = nullptr;
-
-    if(i < 8)
-      texture = buildElementFrame(static_cast<Element>(1 << i), width, height);
-    // else if(i == 9)
-    //   texture = buildAttributeFrame(Attribute::UNBR, width, height);
-    // else if(i == 10)
-    //   texture = buildAttributeFrame(Attribute::LIMB, width, height);
-    // else if(i == 11)
-    //   texture = buildAttributeFrame(Attribute::MMNT, width, height);
+    texture = buildElementFrame(static_cast<Element>(1 << i), width, height);
 
     if(texture)
     {
@@ -979,6 +990,46 @@ void Menu::renderAttributes(Coordinate start, int32_t gap)
     {
       stat_frame->render(renderer, current.x, current.y);
       current.y += stat_frame->getHeight() + (int32_t)std::round(0.54 * gap);
+    }
+  }
+}
+
+/* Render the extra attribute frames */
+void Menu::renderExtraAttributes(Coordinate start, int32_t gap)
+{
+  clearAttributeFrames();
+  auto width = s_details_box.width;
+  auto height = calcSleuthAttributeHeight();
+
+  if(renderer)
+  {
+    for(int32_t i = 0; i < 3; i++)
+    {
+      SDL_Texture* texture = nullptr;
+
+      if(i == 0)
+        texture = buildAttributeFrame(Attribute::UNBR, width, height);
+      else if(i == 1)
+        texture = buildAttributeFrame(Attribute::LIMB, width, height);
+      else if(i == 2)
+        texture = buildAttributeFrame(Attribute::MMNT, width, height);
+
+      if(texture)
+      {
+        sleuth_attr_frames.push_back(new Frame());
+        sleuth_attr_frames.back()->setTexture(texture);
+      }
+    }
+
+    current = Coordinate{start.x + gap, start.y + gap};
+
+    for(auto& stat_frame : sleuth_attr_frames)
+    {
+      if(stat_frame)
+      {
+        stat_frame->render(renderer, current.x, current.y);
+        current.y += stat_frame->getHeight() + (int32_t)std::round(0.54 * gap);
+      }
     }
   }
 }
@@ -1002,8 +1053,8 @@ SDL_Texture* Menu::buildAttributeFrame(Attribute attr, uint32_t width,
 
     if(frame_attribute)
     {
-      // frame_attribute->render(renderer, inset,
-      //                        height / 2 - frame_attribute->getHeight() / 2);
+      frame_attribute->render(renderer, inset,
+                              height / 2 - frame_attribute->getHeight() / 2);
 
       Text t_name{getFont(FontName::M_VALUE)};
       Text t_value{getFont(FontName::M_VALUE)};
@@ -1578,8 +1629,9 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
       item_value.render(renderer, mass_x, current.y);
 
       current.y = inventory_icon_box.point.y + inventory_icon_box.height + gap;
-      auto desc_split = Text::splitLine(getFont(FontName::M_STANDARD), item->getDescription(),
-                                        inventory_top_box.width - 2 * gap);
+      auto desc_split =
+          Text::splitLine(getFont(FontName::M_STANDARD), item->getDescription(),
+                          inventory_top_box.width - 2 * gap);
 
       /* Render the description lines */
       for(auto& line : desc_split)
@@ -2216,9 +2268,9 @@ void Menu::renderSleuthSkillDetail(Coordinate start, int32_t icon_w,
     skill_cd.setText(renderer, std::to_string(curr_skill->getCooldown()),
                      kCOLOR_TEXT);
 
-    auto desc_split =
-        Text::splitLine(getFont(FontName::M_STANDARD), curr_skill->getDescription(),
-                        skills_bot_box.width - 8 * gap - icon_w);
+    auto desc_split = Text::splitLine(getFont(FontName::M_STANDARD),
+                                      curr_skill->getDescription(),
+                                      skills_bot_box.width - 8 * gap - icon_w);
 
     skill_name.render(renderer, current.x, current.y);
     current.y += skill_name.getHeight() + gap;
@@ -2310,9 +2362,6 @@ void Menu::renderSleuthDetails()
 {
   auto width = config->getScreenWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
-  auto person = getCurrentPerson();
-
-  assert(person);
 
   /* Useable height */
   current.y = main_section.location.point.y + s_top_box.height + gap - 1;
@@ -2331,88 +2380,237 @@ void Menu::renderSleuthDetails()
                                                        s_top_box.height / 2 -
                                                        t_name.getHeight() / 2);
 
-  /* Render the text for the bottom statistics box */
-  auto rank_str = Helpers::rankToDisplayStr(person->getRank());
-  auto prim_element = Helpers::elementToDisplayString(person->getPrimary());
-  auto secd_element = Helpers::elementToDisplayString(person->getSecondary());
-  auto prim_curve_str =
-      Helpers::curveToString(person->getPrimaryCurve(), false);
-  auto secd_curve_str =
-      Helpers::curveToString(person->getSecondaryCurve(), false);
+  /* Render the sections of the Sleuth Details screen */
+  renderSleuthDetailsRank();
+  renderSleuthDetailsExp();
+  renderSleuthDetailsStats();
+}
 
-  /* Render the sleuth bottom stats box */
-  s_bot_stats_box.point = current;
-  s_bot_stats_box.width =
-      (main_section.location.width - calcSleuthTileSize() - 4 * gap) / 2;
-  s_bot_stats_box.height = main_section.location.height / 4;
-  setupDefaultBox(s_bot_stats_box);
-  s_bot_stats_box.render(renderer);
+/* Render a detailed breakdown of the experience for the person */
+void Menu::renderSleuthDetailsStats()
+{
+  auto gap = (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+  auto person = getCurrentPerson();
 
-  Text t_rank{getFont(FontName::M_OPTIONS)};
-  Text t_race{getFont(FontName::M_OPTIONS)};
-  Text t_race_title{getFont(FontName::M_ITEM_HEADER)};
-  Text t_class{getFont(FontName::M_OPTIONS)};
-  Text t_class_title{getFont(FontName::M_ITEM_HEADER)};
-  Text t_prim_curve{getFont(FontName::M_CURVE)};
-  Text t_prim_title{getFont(FontName::M_CURVE)};
-  Text t_prim{getFont(FontName::M_OPTIONS)};
-  Text t_secd_curve{getFont(FontName::M_CURVE)};
-  Text t_secd_title{getFont(FontName::M_ITEM_HEADER)};
-  Text t_secd{getFont(FontName::M_OPTIONS)};
+  if(person)
+  {
+    current.x = s_rank_box.point.x + s_rank_box.width + gap;
+    current.y = s_rank_box.point.y;
 
-  t_rank.setText(renderer, rank_str, kCOLOR_TEXT);
-  t_race.setText(renderer, person->getRace()->getName(), kCOLOR_TEXT);
-  t_race_title.setText(renderer, "RACE", kCOLOR_TEXT);
-  t_class.setText(renderer, person->getClass()->getName(), kCOLOR_TEXT);
-  t_class_title.setText(renderer, "CLASS", kCOLOR_TEXT);
-  t_prim_curve.setText(renderer, prim_curve_str, kCOLOR_ELEMENTAL_CURVE);
-  t_prim_title.setText(renderer, "PRIMARY ELEMENT", kCOLOR_TEXT);
-  t_prim.setText(renderer, prim_element, kCOLOR_TEXT);
-  t_secd_curve.setText(renderer, secd_curve_str, kCOLOR_ELEMENTAL_CURVE);
-  t_secd_title.setText(renderer, "SECONDARY ELEMENT", kCOLOR_TEXT);
-  t_secd.setText(renderer, secd_element, kCOLOR_TEXT);
+    s_details_box.point = current;
+    s_details_box.width = main_section.location.width - calcSleuthTileSize() -
+                          s_rank_box.width - 4 * gap;
+    s_details_box.height = s_rank_box.height;
+    //    main_section.location.height - titles.at(0).height - 3 * gap;
+    setupDefaultBox(s_details_box);
+    // s_details_box.corner_inset = calcMainCornerInset();
+    // s_details_box.box_type = BoxType::CORNER_CUT_BOX;
+    s_details_box.render(renderer);
 
-  auto start = Coordinate{s_bot_stats_box.point.x + 3 * gap / 2,
-                          s_bot_stats_box.point.y + gap};
-  auto current = start;
+    /* Render the attribute frames */
+    renderExtraAttributes(current, gap);
+  }
+}
 
-  /* Render column one text */
-  t_rank.render(renderer, current.x, current.y);
-  current.y += t_rank.getHeight() + gap * 2 / 3;
+/* Render the extra attributes for the person (MMNT, LIMB, UNBR) */
+void Menu::renderSleuthDetailsExp()
+{
+  auto width = config->getScreenWidth();
+  auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
+  auto person = getCurrentPerson();
 
-  t_race_title.render(renderer, current.x, current.y);
-  current.y += t_race_title.getHeight() + gap / 6;
+  if(person)
+  {
+    current.x = s_rank_box.point.x;
+    current.y += s_rank_box.height + gap;
 
-  t_race.render(renderer, current.x, current.y);
-  current.y += t_race.getHeight() + gap * 2 / 3;
+    s_exp_box.point = current;
+    s_exp_box.height = main_section.location.height -
+                       (s_rank_box.point.y + s_rank_box.height -
+                        main_section.location.point.y) -
+                       gap * 2;
+    s_exp_box.width = s_rank_box.width;
+    setupDefaultBox(s_exp_box);
+    s_exp_box.render(renderer);
 
-  t_class_title.render(renderer, current.x, current.y);
-  current.y += t_class_title.getHeight() + gap / 6;
+    Text t_exp_title{getFont(FontName::M_OPTIONS)};
+    Text t_exp_total{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_exp_curr{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_exp_next{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_exp_progress{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_exp_val_total{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_exp_val_curr{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_exp_val_next{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_exp_val_progress{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_mod_title{getFont(FontName::M_OPTIONS)};
+    Text t_mod_exp{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_mod_dmg{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_mod_val_exp{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_mod_val_dmg{getFont(FontName::M_ITEM_HEADER_14)};
+    Text t_max_exp{getFont(FontName::M_ITEM_HEADER_14)};
 
-  t_class.render(renderer, current.x, current.y);
+    auto total_exp = person->getTotalExp();
+    auto exp_at_curr = Person::getExpAt(person->getLevel());
+    auto exp_at_next = Person::getExpAt(person->getLevel() + 1);
+    auto total_str = std::to_string(person->getTotalExp());
+    auto curr_exp = std::to_string(total_exp - exp_at_curr);
+    auto mod_exp = std::to_string((int32_t)person->getExpMod() * 100);
+    auto mod_dmg = std::to_string((int32_t)person->getDmgMod() * 100);
+    auto max_exp_str = "   " + Helpers::formatUInt(Person::getMaxExp(), " ");
+    auto progress = std::to_string(person->findExpPercent()) + "\%";
+    std::string next_exp = "MAX LEVEL";
 
-  /* Render column two text */
-  current.x = start.x + s_bot_stats_box.width / 2 - gap * 3 / 2;
-  current.y = start.y + t_rank.getHeight() + gap / 2;
+    if(exp_at_next != 0)
+      next_exp = std::to_string(exp_at_next);
 
-  t_prim_title.render(renderer, current.x, current.y);
-  current.y += t_prim_title.getHeight() + gap / 6;
+    t_exp_title.setText(renderer, "Experience", kCOLOR_TEXT);
+    t_exp_total.setText(renderer, "TOTAL ", kCOLOR_TEXT);
+    t_exp_curr.setText(renderer, "THIS LEVEL", kCOLOR_TEXT);
+    t_exp_next.setText(renderer, "NEXT LEVEL", kCOLOR_TEXT);
+    t_exp_progress.setText(renderer, "PROGRESS", kCOLOR_TEXT);
+    t_exp_val_total.setText(renderer, total_str, kCOLOR_TEXT);
+    t_exp_val_curr.setText(renderer, curr_exp, kCOLOR_TEXT);
+    t_exp_val_next.setText(renderer, next_exp, kCOLOR_TEXT);
+    t_exp_val_progress.setText(renderer, progress, kCOLOR_TEXT);
+    t_mod_title.setText(renderer, "Modifications", kCOLOR_TEXT);
+    t_mod_exp.setText(renderer, "EXPERIENCE", kCOLOR_TEXT);
+    t_mod_dmg.setText(renderer, "DAMAGE", kCOLOR_TEXT);
+    t_mod_val_exp.setText(renderer, mod_exp, kCOLOR_TEXT);
+    t_mod_val_dmg.setText(renderer, mod_dmg, kCOLOR_TEXT);
+    t_max_exp.setText(renderer, max_exp_str, kCOLOR_TEXT);
 
-  t_prim.render(renderer, current.x, current.y);
-  auto curve_x = current.x + t_prim.getWidth() + gap / 3;
-  auto curve_y = current.y + t_prim.getHeight() - t_prim_curve.getHeight();
+    /* Setup for second column text */
+    auto c2 = current;
+    c2.x += t_mod_title.getWidth() + t_max_exp.getWidth() + 2 * gap;
 
-  t_prim_curve.render(renderer, curve_x, curve_y);
-  current.y += t_prim.getHeight() + gap * 2 / 3;
+    current = {current.x + gap, current.y + gap};
 
-  t_secd_title.render(renderer, current.x, current.y);
-  current.y += t_secd_title.getHeight() + gap / 6;
+    t_exp_title.render(renderer, current.x, current.y);
+    current.y += t_exp_title.getHeight() + 3 * gap / 2;
 
-  t_secd.render(renderer, current.x, current.y);
-  curve_x = current.x + t_secd.getWidth() + gap / 3;
-  curve_y = current.y + t_secd.getHeight() - t_secd_curve.getHeight();
+    t_exp_total.render(renderer, current.x, current.y);
+    t_exp_val_total.render(renderer, c2.x - t_exp_val_total.getWidth(),
+                           current.y);
+    current.y += t_exp_total.getHeight() + 2 * gap / 3;
 
-  t_secd_curve.render(renderer, curve_x, curve_y);
+    t_exp_curr.render(renderer, current.x, current.y);
+    t_exp_val_curr.render(renderer, c2.x - t_exp_val_curr.getWidth(),
+                          current.y);
+    current.y += t_exp_curr.getHeight() + 2 * gap / 3;
+
+    t_exp_next.render(renderer, current.x, current.y);
+    t_exp_val_next.render(renderer, c2.x - t_exp_val_next.getWidth(),
+                          current.y);
+    current.y += t_exp_curr.getHeight() + 2 * gap / 3;
+
+    t_exp_progress.render(renderer, current.x, current.y);
+    t_exp_val_progress.render(renderer, c2.x - t_exp_val_progress.getWidth(),
+                              current.y);
+    current.y += t_exp_next.getHeight() + 3 * gap / 2;
+
+    t_mod_title.render(renderer, current.x, current.y);
+    current.y += t_mod_title.getHeight() + 3 * gap / 2;
+
+    t_mod_exp.render(renderer, current.x, current.y);
+    t_mod_val_exp.render(renderer, c2.x - t_mod_val_exp.getWidth(), current.y);
+    current.y += t_mod_exp.getHeight() + 2 * gap / 3;
+
+    t_mod_dmg.render(renderer, current.x, current.y);
+    t_mod_val_dmg.render(renderer, c2.x - t_mod_val_dmg.getWidth(), current.y);
+    current.y += t_mod_dmg.getHeight() + 2 * gap / 3;
+  }
+}
+
+void Menu::renderSleuthDetailsRank()
+{
+  auto gap = (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+  auto person = getCurrentPerson();
+
+  if(person)
+  {
+    /* Render the text for the bottom statistics box */
+    auto rank_str = Helpers::rankToDisplayStr(person->getRank());
+    auto prim_element = Helpers::elementToDisplayString(person->getPrimary());
+    auto secd_element = Helpers::elementToDisplayString(person->getSecondary());
+    auto prim_curve_str =
+        Helpers::curveToString(person->getPrimaryCurve(), false);
+    auto secd_curve_str =
+        Helpers::curveToString(person->getSecondaryCurve(), false);
+
+    /* Render the sleuth bottom stats box */
+    s_rank_box.point = current;
+    s_rank_box.width =
+        (main_section.location.width - calcSleuthTileSize() - 4 * gap) / 2;
+    s_rank_box.height = main_section.location.height / 4;
+    setupDefaultBox(s_rank_box);
+    s_rank_box.render(renderer);
+
+    Text t_rank{getFont(FontName::M_OPTIONS)};
+    Text t_race{getFont(FontName::M_OPTIONS)};
+    Text t_race_title{getFont(FontName::M_ITEM_HEADER)};
+    Text t_class{getFont(FontName::M_OPTIONS)};
+    Text t_class_title{getFont(FontName::M_ITEM_HEADER)};
+    Text t_prim_curve{getFont(FontName::M_CURVE)};
+    Text t_prim_title{getFont(FontName::M_ITEM_HEADER)};
+    Text t_prim{getFont(FontName::M_OPTIONS)};
+    Text t_secd_curve{getFont(FontName::M_CURVE)};
+    Text t_secd_title{getFont(FontName::M_ITEM_HEADER)};
+    Text t_secd{getFont(FontName::M_OPTIONS)};
+
+    t_rank.setText(renderer, rank_str, kCOLOR_TEXT);
+    t_race.setText(renderer, person->getRace()->getName(), kCOLOR_TEXT);
+    t_race_title.setText(renderer, "RACE", kCOLOR_TEXT);
+    t_class.setText(renderer, person->getClass()->getName(), kCOLOR_TEXT);
+    t_class_title.setText(renderer, "CLASS", kCOLOR_TEXT);
+    t_prim_curve.setText(renderer, prim_curve_str, kCOLOR_ELEMENTAL_CURVE);
+    t_prim_title.setText(renderer, "PRIMARY ELEMENT", kCOLOR_TEXT);
+    t_prim.setText(renderer, prim_element, kCOLOR_TEXT);
+    t_secd_curve.setText(renderer, secd_curve_str, kCOLOR_ELEMENTAL_CURVE);
+    t_secd_title.setText(renderer, "SECONDARY ELEMENT", kCOLOR_TEXT);
+    t_secd.setText(renderer, secd_element, kCOLOR_TEXT);
+
+    auto start =
+        Coordinate{s_rank_box.point.x + 3 * gap / 2, s_rank_box.point.y + gap};
+    auto current = start;
+
+    /* Render column one text */
+    t_rank.render(renderer, current.x, current.y);
+    current.y += t_rank.getHeight() + gap * 2 / 3;
+
+    t_race_title.render(renderer, current.x, current.y);
+    current.y += t_race_title.getHeight() + gap / 6;
+
+    t_race.render(renderer, current.x, current.y);
+    current.y += t_race.getHeight() + gap * 2 / 3;
+
+    t_class_title.render(renderer, current.x, current.y);
+    current.y += t_class_title.getHeight() + gap / 6;
+
+    t_class.render(renderer, current.x, current.y);
+
+    /* Render column two text */
+    current.x = start.x + s_rank_box.width / 2 - gap * 3 / 2;
+    current.y = start.y + t_rank.getHeight() + gap / 2;
+
+    t_prim_title.render(renderer, current.x, current.y);
+    current.y += t_prim_title.getHeight() + gap / 6;
+
+    t_prim.render(renderer, current.x, current.y);
+    auto curve_x = current.x + t_prim.getWidth() + gap / 3;
+    auto curve_y = current.y + t_prim.getHeight() - t_prim_curve.getHeight();
+
+    t_prim_curve.render(renderer, curve_x, curve_y);
+    current.y += t_prim.getHeight() + gap * 2 / 3;
+
+    t_secd_title.render(renderer, current.x, current.y);
+    current.y += t_secd_title.getHeight() + gap / 6;
+
+    t_secd.render(renderer, current.x, current.y);
+    curve_x = current.x + t_secd.getWidth() + gap / 3;
+    curve_y = current.y + t_secd.getHeight() - t_secd_curve.getHeight();
+
+    t_secd_curve.render(renderer, curve_x, curve_y);
+  }
 }
 
 void Menu::renderSleuthRecord()
@@ -2531,6 +2729,7 @@ void Menu::clear()
   title_section.status = WindowStatus::OFF;
 
   clearActors();
+  clearAttributeFrames();
   clearElementFrames();
   clearIconFrames();
   setFlag(MenuState::SHOWING, false);
