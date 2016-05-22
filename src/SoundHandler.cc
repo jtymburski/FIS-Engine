@@ -486,11 +486,11 @@ void SoundHandler::removeAll()
 }
 
 /*
- * description: Removes the music chunk from the database with the given id.
+ * Description: Removes the music chunk from the database with the given id.
  *              if there is no music chunk with the given id, it returns false.
  *
- * inputs: uint32_t id - the music chunk id to try and find and delete
- * output: bool - true if the music chunk was found and removed
+ * Inputs: uint32_t id - the music chunk id to try and find and delete
+ * Output: bool - true if the music chunk was found and removed
  */
 bool SoundHandler::removeMusic(uint32_t id)
 {
@@ -505,11 +505,11 @@ bool SoundHandler::removeMusic(uint32_t id)
 }
 
 /*
- * description: Removes the sound chunk from the database with the given id.
+ * Description: Removes the sound chunk from the database with the given id.
  *              if there is no sound chunk with the given id, it returns false.
  *
- * inputs: uint32_t id - the sound chunk id to try and find and delete
- * output: bool - true if the sound chunk was found and removed
+ * Inputs: uint32_t id - the sound chunk id to try and find and delete
+ * Output: bool - true if the sound chunk was found and removed
  */
 bool SoundHandler::removeSound(uint32_t id)
 {

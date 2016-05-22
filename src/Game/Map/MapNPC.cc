@@ -668,8 +668,9 @@ bool MapNPC::isDataToSave()
   else
   {
     /* Check NPC pathing status */
-    if(node_state == LOOPED || node_state == BACKANDFORTH ||
-       node_state == RANDOMRANGE)
+    if(getStartingSection() == getMapSection() && 
+       (node_state == LOOPED || node_state == BACKANDFORTH ||
+        node_state == RANDOMRANGE))
     {
       return true;
     }
@@ -774,8 +775,9 @@ bool MapNPC::saveData(FileHandler* fh, const bool &save_event)
   else
   {
     /* Ensure correct type */
-    if(node_state == LOOPED || node_state == BACKANDFORTH ||
-       node_state == RANDOMRANGE)
+    if(getStartingSection() == getMapSection() && 
+       (node_state == LOOPED || node_state == BACKANDFORTH ||
+        node_state == RANDOMRANGE))
     {
       /* Starting flag - if false */
       fh->writeXmlData("starting", starting);
@@ -988,12 +990,12 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
       {
         node_parse = node_parse->next;
         node_read--;
-        
+
         /* Wrap around protection */
         if(node_parse == node_head)
           node_parse = nullptr;
       }
-      
+
       /* If the node is found, set to the current */
       if(node_read < 0 && node_parse != nullptr)
         node_current = node_parse;
@@ -1510,7 +1512,6 @@ bool MapNPC::resetToStart(bool no_set)
 {
   if(MapPerson::resetToStart(no_set))
   {
-    std::cout << " NPC" << std::endl;
     forced_recent = false;
     node_current = &node_start;
     starting = true;
@@ -1604,14 +1605,58 @@ bool MapNPC::setBase(MapThing* base)
 void MapNPC::setForcedInteraction(bool forced)
 {
   bool old_forced = forced_interaction;
-  
+
   /* Set the forced interaction */
   forced_interaction = forced;
   forced_recent = false;
-  
+
   /* Check if it was changed */
   if(forced_interaction != old_forced)
     changed = true;
+}
+
+/*
+ * Description: Sets the next location which needs the map section id and
+ *              an x and y coordinate. Virtually called before sending to thing
+ *              to set the random next location.
+ *
+ * Inputs: uint16_t section_id - the map section id
+ *         uint16_t x - the x coordinate of the thing
+ *         uint16_t y - the y coordinate of the thing
+ * Output: none
+ */
+void MapNPC::setLocationNext(uint16_t section_id, uint16_t x, uint16_t y)
+{
+  /* Set to parent */
+  MapThing::setLocationNext(section_id, x, y);
+
+  /* Reset random location */
+  node_random.x = x;
+  node_random.y = y;
+}
+
+/*
+ * Description: Sets the starting location which needs the map section id and
+ *              an x and y coordinate. Virtually called before sending to thing
+ *              to set the random starting location.
+ *
+ * Inputs: uint16_t section_id - the map section id
+ *         uint16_t x - the x coordinate of the thing
+ *         uint16_t y - the y coordinate of the thing
+ * Output: none
+ */
+void MapNPC::setLocationStart(uint16_t section_id, uint16_t x, uint16_t y)
+{
+  /* Set to parent */
+  MapThing::setLocationStart(section_id, x, y);
+
+  /* Reset random location */
+  node_random.x = x;
+  node_random.y = y;
+
+  /* Reset start location */
+  node_start.x = x;
+  node_start.y = y;
 }
 
 /*
@@ -1667,28 +1712,6 @@ void MapNPC::setSpottedImage(Frame* new_img)
 }
 
 /*
- * Description: Sets the starting location which needs the map section id and
- *              an x and y coordinate. Virtually called before sending to thing
- *              to set the random starting location.
- *
- * Inputs: uint16_t section_id - the map section id
- *         uint16_t x - the x coordinate of the thing
- *         uint16_t y - the y coordinate of the thing
- * Output: none
- */
-void MapNPC::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
-{
-  node_random.x = x;
-  node_random.y = y;
-
-  node_start.x = x;
-  node_start.y = y;
-
-  /* Set to parent */
-  MapThing::setStartingLocation(section_id, x, y);
-}
-
-/*
  * Description: Sets the three tracking distance tile setpoints for the
  *              current NPC. For explanation of each, see the associated
  *              getter functions.
@@ -1718,11 +1741,11 @@ void MapNPC::setTrackingDist(int trigger, int max, int run)
 void MapNPC::setTrackingState(TrackingState state)
 {
   TrackingState old_state = track_state;
-  
+
   /* Modify the state */
   track_state = state;
   track_recent = false;
-  
+
   /* Check if it was changed */
   if(track_state != old_state)
     changed = true;
@@ -1745,7 +1768,8 @@ Floatinate MapNPC::update(int cycle_time,
   if(isActive() && isTilesSet() && active_map)
   {
     /* Begin the check to handle each time the NPC is on a tile */
-    if(node_current != nullptr) //getNodeState() != LOCKED)
+    if(getStartingSection() == getMapSection() && 
+       node_current != nullptr) //getNodeState() != LOCKED)
     {
       /* Acquire direction */
       Direction direction = getPredictedMoveRequest();

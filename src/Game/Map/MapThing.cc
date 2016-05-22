@@ -537,8 +537,8 @@ bool MapThing::saveData(FileHandler* fh, const bool &save_event)
   {
     Tile* ref_tile = tile_main.front().front();
     if(starting_x != ref_tile->getX() || starting_y != ref_tile->getY())
-      fh->writeXmlData("startpoint", std::to_string(ref_tile->getX()) + "," +
-                                     std::to_string(ref_tile->getY()));
+      fh->writeXmlData("savepoint", std::to_string(ref_tile->getX()) + "," +
+                                    std::to_string(ref_tile->getY()));
   }
 
   /* Time elapsed status for change of status from inactive to active */
@@ -680,6 +680,103 @@ bool MapThing::setTileStart(Tile* old_tile, Tile* new_tile,
   if(new_tile != NULL)
     return new_tile->setThing(this, render_depth);
 
+  return false;
+}
+
+/*
+ * Description: Sets the tiles for rendering the thing. This tile
+ *              set needs to be equal to the size of the bounding box and
+ *              each corresponding frame will be set to the tile. Will fail
+ *              if a thing is already set up in the corresponding spot.
+ *
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
+ *         uint16_t section - map section corresponding to tiles
+ *         bool no_events - if no events should occur from setting the thing
+ *         bool just_store - true to just store it as the starting tiles and
+ *                           not call setTile(). Default false
+ *         bool avoid_player - do not place if player is on location
+ * Output: bool - true if the tiles are set
+ */
+bool MapThing::setTiles(std::vector<std::vector<Tile*>> tile_set,
+                        uint16_t section, bool no_events,
+                        bool just_store, bool avoid_player)
+{
+  SpriteMatrix* sprite_set = getMatrix();
+  bool success = true;
+
+  if(sprite_set != nullptr && tile_set.size() > 0 &&
+     tile_set.size() == sprite_set->width() &&
+     tile_set.back().size() == sprite_set->height())
+  {
+    /* First, unset all tiles */
+    unsetTiles(no_events);
+    uint32_t end_x = 0;
+    uint32_t end_y = 0;
+
+    /* Check if the thing can be placed */
+    if(getID() != kPLAYER_ID)
+      for(uint32_t i = 0; i < sprite_set->width(); i++)
+        for(uint32_t j = 0; j < sprite_set->height(); j++)
+          if(sprite_set->at(i, j) != NULL &&
+             sprite_set->at(i, j)->getSize() > 0)
+            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j),
+                                  avoid_player);
+
+    /* Attempt to set the new tiles */
+    if(!just_store)
+    {
+      for(uint32_t i = 0; success && (i < sprite_set->width()); i++)
+      {
+        for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
+        {
+          if(sprite_set->at(i, j) != NULL &&
+             sprite_set->at(i, j)->getSize() > 0)
+          {
+            success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
+            if(!success)
+            {
+              end_x = i;
+              end_y = j;
+            }
+          }
+        }
+      }
+    }
+
+    /* If unsuccessful, unset all that were set */
+    if(!success)
+    {
+      if(!just_store)
+      {
+        bool finished = false;
+
+        for(uint32_t i = 0; !finished && (i < sprite_set->width()); i++)
+        {
+          for(uint32_t j = 0; !finished && (j < sprite_set->height()); j++)
+          {
+            if(sprite_set->at(i, j) != NULL)
+            {
+              if(i == end_x && j == end_y)
+                finished = true;
+              else
+                unsetTile(i, j, true);
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      if(!just_store)
+      {
+        active = true;
+        tile_main = tile_set;
+        tile_section = section;
+      }
+    }
+
+    return success;
+  }
   return false;
 }
 
@@ -952,6 +1049,16 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
       sprite_set = new SpriteMatrix();
     sprite_set->setRenderMatrix(data.getDataString(&success));
   }
+  /*--------------------- SAVE POINT -----------------*/
+  else if(identifier == "savepoint")
+  {
+    std::vector<std::string> points = Helpers::split(data.getDataString(), ',');
+    if(points.size() == 2) /* There needs to be an x and y point */
+      setLocationNext(section_index, std::stoul(points[0]),
+                                     std::stoul(points[1]));
+    else
+      success = false;
+  }
   /*----------------- SOUND ID -----------------*/
   else if(identifier == "sound_id" && elements.size() == 1)
   {
@@ -975,8 +1082,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     std::vector<std::string> points = Helpers::split(data.getDataString(), ',');
     if(points.size() == 2) /* There needs to be an x and y point */
-      setStartingLocation(section_index, std::stoul(points[0]),
-                                         std::stoul(points[1]));
+      setLocationStart(section_index, std::stoul(points[0]),
+                                      std::stoul(points[1]));
     else
       success = false;
   }
@@ -1038,7 +1145,7 @@ bool MapThing::cleanMatrix(bool first_call)
 void MapThing::clear()
 {
   /* Unset tiles before proceeding to any class parameters */
-  unsetTiles(true);
+  resetLocation();
 
   /* Resets the class parameters */
   active = true;
@@ -1063,7 +1170,6 @@ void MapThing::clear()
   visible = true;
 
   unsetFrames();
-  resetLocation();
 }
 
 /*
@@ -1121,17 +1227,17 @@ MapThing* MapThing::getBase()
  *              This bounding box is in Tile units, void of any tile width
  *              or height considerations.
  *
- * Inputs: none
+ * Inputs: bool start_only - true to only use start x, y. default false
  * Output: SDL_Rect - rect definition of bounding box with top left x and y as
  *                    well as width and height.
  */
-SDL_Rect MapThing::getBoundingBox()
+SDL_Rect MapThing::getBoundingBox(bool start_only)
 {
   SDL_Rect rect;
   SpriteMatrix* sprite_set = getMatrix();
 
-  rect.x = getTileX();
-  rect.y = getTileY();
+  rect.x = getTileX(false, start_only);
+  rect.y = getTileY(false, start_only);
   if(sprite_set != NULL)
   {
     rect.w = sprite_set->width();
@@ -1401,13 +1507,18 @@ Event MapThing::getInteraction()
  * Description: Gets the map section attributed to the tile(s) that the thing
  *              currently resides on. It will default to 0 (main) if unset.
  *
- * Inputs: none
+ * Inputs: bool start_only - true to only use start x, y. default false
  * Output: uint16_t - the section ID, based on the map
  */
-uint16_t MapThing::getMapSection()
+uint16_t MapThing::getMapSection(bool start_only)
 {
-  if(tile_main.size() > 0)
-    return tile_section;
+  if(!start_only)
+  {
+    if(tile_main.size() > 0)
+      return tile_section;
+    else if(next_valid)
+      return next_section;
+  }
   return starting_section;
 }
 
@@ -1500,6 +1611,42 @@ std::string MapThing::getName() const
 }
 
 /*
+ * Description: Returns the section of map the thing moved to last, as set by
+ *              setLocation(*).
+ *
+ * Inputs: none
+ * Output: uint16_t - the next section integer
+ */
+uint16_t MapThing::getNextSection()
+{
+  return next_section;
+}
+
+/*
+ * Description: Returns the x coordinate, in tile units, of where the thing
+ *              started, as set by setLocation(*).
+ *
+ * Inputs: none
+ * Output: uint16_t - the next x integer
+ */
+uint16_t MapThing::getNextX()
+{
+  return next_x;
+}
+
+/*
+ * Description: Returns the y coordinate, in tile units, of where the thing
+ *              started, as set by setLocation(*).
+ *
+ * Inputs: none
+ * Output: uint16_t - the next y integer
+ */
+uint16_t MapThing::getNextY()
+{
+  return next_y;
+}
+
+/*
  * Description: Gets if the thing is passable entering from the given
  *              direction and with the frame at the given tile.
  *
@@ -1568,7 +1715,7 @@ uint16_t MapThing::getSpeed() const
 
 /*
  * Description: Returns the section of map the thing started in, as set by
- *              setStartingLocation(*).
+ *              setLocationStart(*).
  *
  * Inputs: none
  * Output: uint16_t - the starting section integer
@@ -1580,7 +1727,7 @@ uint16_t MapThing::getStartingSection()
 
 /*
  * Description: Returns the x coordinate, in tile units, of where the thing
- *              started, as set by setStartingLocation(*).
+ *              started, as set by setLocationStart(*).
  *
  * Inputs: none
  * Output: uint16_t - the start x integer
@@ -1592,7 +1739,7 @@ uint16_t MapThing::getStartingX()
 
 /*
  * Description: Returns the y coordinate, in tile units, of where the thing
- *              started, as set by setStartingLocation(*).
+ *              started, as set by setLocationStart(*).
  *
  * Inputs: none
  * Output: uint16_t - the start y integer
@@ -1682,14 +1829,20 @@ uint16_t MapThing::getTileWidth()
  *
  * Inputs: bool previous - true to access previous tile instead of main.
  *                         If there is no previous, gets main. default false
+ *         bool start_only - true to only use start x, y. default false
  * Output: uint16_t - X tile coordinate
  */
-uint16_t MapThing::getTileX(bool previous)
+uint16_t MapThing::getTileX(bool previous, bool start_only)
 {
-  if(previous && tile_prev.size() > 0)
-    return tile_prev.front().front()->getX();
-  else if(tile_main.size() > 0)
-    return tile_main.front().front()->getX();
+  if(!start_only)
+  {
+    if(previous && tile_prev.size() > 0)
+      return tile_prev.front().front()->getX();
+    else if(tile_main.size() > 0)
+      return tile_main.front().front()->getX();
+    else if(next_valid)
+      return next_x;
+  }
   return starting_x;
 }
 
@@ -1700,14 +1853,20 @@ uint16_t MapThing::getTileX(bool previous)
  *
  * Inputs: bool previous - true to access previous tile instead of main.
  *                         If there is no previous, gets main. default false
+ *         bool start_only - true to only use start x, y. default false
  * Output: uint16_t - Y tile coordinate
  */
-uint16_t MapThing::getTileY(bool previous)
+uint16_t MapThing::getTileY(bool previous, bool start_only)
 {
-  if(previous && tile_prev.size() > 0)
-    return tile_prev.front().front()->getY();
-  else if(tile_main.size() > 0)
-    return tile_main.front().front()->getY();
+  if(!start_only)
+  {
+    if(previous && tile_prev.size() > 0)
+      return tile_prev.front().front()->getY();
+    else if(tile_main.size() > 0)
+      return tile_main.front().front()->getY();
+    else if(next_valid)
+      return next_y;
+  }
   return starting_y;
 }
 
@@ -1853,6 +2012,17 @@ bool MapThing::isMoving()
 }
 
 /*
+ * Description: Returns if there is a next location set in the thing
+ *
+ * Inputs: none
+ * Output: none
+ */
+bool MapThing::isNextLocation()
+{
+  return next_valid;
+}
+
+/*
  * Description: Returns if the thing is currently centered on a tile
  *              (approximately).
  *
@@ -1893,10 +2063,6 @@ bool MapThing::isTilesSet()
  */
 bool MapThing::isVisible() const
 {
-  //bool visible = this->visible; // TODO: Delete
-  //if(base != NULL)
-  //  visible &= base->visible;
-
   return visible;
 }
 
@@ -2043,8 +2209,13 @@ void MapThing::resetLocation()
 {
   /* Unset the tiles, prior to unsetting the point */
   unsetTiles(true);
+  starting_tiles.clear();
 
   /* Clean up the point variables */
+  next_section = 0;
+  next_valid = false;
+  next_x = 0;
+  next_y = 0;
   starting_section = 0;
   starting_x = 0;
   starting_y = 0;
@@ -2069,7 +2240,7 @@ bool MapThing::resetToStart(bool no_set)
   }
   else
   {
-    if(setStartingTiles(starting_tiles, getStartingSection(), true))
+    if(setTilesStart(starting_tiles, getStartingSection(), true))
       return true;
   }
   return false;
@@ -2335,6 +2506,47 @@ void MapThing::setIDPlayer()
 }
 
 /*
+ * Description: Sets the next location to be which needs the map section id and
+ *              an x and y coordinate.
+ *
+ * Inputs: uint16_t section_id - the map section id
+ *         uint16_t x - the x coordinate of the thing
+ *         uint16_t y - the y coordinate of the thing
+ * Output: none
+ */
+void MapThing::setLocationNext(uint16_t section_id, uint16_t x, uint16_t y)
+{
+  /* Unset the tiles, currently in use */
+  unsetTiles(true);
+
+  /* Set the new tile coordinate */
+  next_section = section_id;
+  next_x = x;
+  next_y = y;
+  next_valid = true;
+}
+
+/*
+ * Description: Sets the starting location which needs the map section id and
+ *              an x and y coordinate.
+ *
+ * Inputs: uint16_t section_id - the map section id
+ *         uint16_t x - the x coordinate of the thing
+ *         uint16_t y - the y coordinate of the thing
+ * Output: none
+ */
+void MapThing::setLocationStart(uint16_t section_id, uint16_t x, uint16_t y)
+{
+  /* Unset the tiles, currently in use */
+  resetLocation();
+
+  /* Set the new tile coordinate */
+  starting_section = section_id;
+  starting_x = x;
+  starting_y = y;
+}
+
+/*
  * Description: Sets if the class should be paused. When it's paused, it will
  *              finish walking to the tile and then stop there until unpaused.
  *
@@ -2381,132 +2593,13 @@ void MapThing::setSoundID(int32_t id)
 void MapThing::setSpeed(uint16_t speed)
 {
   uint16_t old_speed = getSpeed();
-  
+
   /* Set the speed */
   this->speed = speed;
-  
+
   /* Check if it was changed */
   if(old_speed != speed)
     changed = true;
-}
-
-/*
- * Description: Sets the starting location which needs the map section id and
- *              an x and y coordinate.
- *
- * Inputs: uint16_t section_id - the map section id
- *         uint16_t x - the x coordinate of the thing
- *         uint16_t y - the y coordinate of the thing
- * Output: none
- */
-void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
-{
-  /* Unset the tiles, currently in use */
-  resetLocation();
-
-  /* Set the new tile coordinate */
-  starting_section = section_id;
-  starting_x = x;
-  starting_y = y;
-}
-
-/*
- * Description: Sets the starting tiles, for rendering the thing. This tile
- *              set needs to be equal to the size of the bounding box and
- *              each corresponding frame will be set to the tile. Will fail
- *              if a thing is already set up in the corresponding spot.
- *
- * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
- *         uint16_t section - map section corresponding to tiles
- *         bool no_events - if no events should occur from setting the thing
- *         bool just_store - true to just store it as the starting tiles and
- *                           not call setTile(). Default false
- *         bool avoid_player - do not place if player is on location
- * Output: bool - true if the tiles are set
- */
-bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
-                                uint16_t section, bool no_events,
-                                bool just_store, bool avoid_player)
-{
-  SpriteMatrix* sprite_set = getMatrix();
-  bool success = true;
-
-  if(sprite_set != nullptr && tile_set.size() > 0 &&
-     tile_set.size() == sprite_set->width() &&
-     tile_set.back().size() == sprite_set->height())
-  {
-    /* First, unset all tiles */
-    unsetTiles(no_events);
-    uint32_t end_x = 0;
-    uint32_t end_y = 0;
-
-    /* Check if the thing can be placed */
-    if(getID() != kPLAYER_ID)
-      for(uint32_t i = 0; i < sprite_set->width(); i++)
-        for(uint32_t j = 0; j < sprite_set->height(); j++)
-          if(sprite_set->at(i, j) != NULL &&
-             sprite_set->at(i, j)->getSize() > 0)
-            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j),
-                                  avoid_player);
-
-    /* Attempt to set the new tiles */
-    if(!just_store)
-    {
-      for(uint32_t i = 0; success && (i < sprite_set->width()); i++)
-      {
-        for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
-        {
-          if(sprite_set->at(i, j) != NULL &&
-             sprite_set->at(i, j)->getSize() > 0)
-          {
-            success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
-            if(!success)
-            {
-              end_x = i;
-              end_y = j;
-            }
-          }
-        }
-      }
-    }
-
-    /* If unsuccessful, unset all that were set */
-    if(!success)
-    {
-      if(!just_store)
-      {
-        bool finished = false;
-
-        for(uint32_t i = 0; !finished && (i < sprite_set->width()); i++)
-        {
-          for(uint32_t j = 0; !finished && (j < sprite_set->height()); j++)
-          {
-            if(sprite_set->at(i, j) != NULL)
-            {
-              if(i == end_x && j == end_y)
-                finished = true;
-              else
-                unsetTile(i, j, true);
-            }
-          }
-        }
-      }
-    }
-    else
-    {
-      starting_tiles = tile_set;
-
-      if(!just_store)
-      {
-        active = true;
-        tile_main = tile_set;
-        tile_section = section;
-      }
-    }
-
-    return success;
-  }
-  return false;
 }
 
 /*
@@ -2527,6 +2620,69 @@ bool MapThing::setTarget(MapThing* target)
     return true;
   }
 
+  return false;
+}
+
+/*
+ * Description: Sets the next tiles, for rendering the thing. This tile
+ *              set needs to be equal to the size of the bounding box and
+ *              each corresponding frame will be set to the tile. Will fail
+ *              if a thing is already set up in the corresponding spot.
+ *
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
+ *         uint16_t section - map section corresponding to tiles
+ *         bool no_events - if no events should occur from setting the thing
+ *         bool just_store - true to just store it as the starting tiles and
+ *                           not call setTile(). Default false
+ *         bool avoid_player - do not place if player is on location
+ * Output: bool - true if the tiles are set
+ */
+bool MapThing::setTilesNext(std::vector<std::vector<Tile*>> tile_set,
+                            uint16_t section, bool no_events,
+                            bool just_store, bool avoid_player)
+{
+  if(next_valid && tile_set.size() > 0 &&
+     tile_set.front().front()->getX() == next_x &&
+     tile_set.front().front()->getY() == next_y && section == next_section)
+  {
+    if(setTiles(tile_set, section, no_events, just_store, avoid_player))
+    {
+      if(!just_store)
+        next_valid = false;
+      return true;
+    }
+  }
+  return false;
+}
+
+/*
+ * Description: Sets the starting tiles, for rendering the thing. This tile
+ *              set needs to be equal to the size of the bounding box and
+ *              each corresponding frame will be set to the tile. Will fail
+ *              if a thing is already set up in the corresponding spot.
+ *
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
+ *         uint16_t section - map section corresponding to tiles
+ *         bool no_events - if no events should occur from setting the thing
+ *         bool just_store - true to just store it as the starting tiles and
+ *                           not call setTile(). Default false
+ *         bool avoid_player - do not place if player is on location
+ * Output: bool - true if the tiles are set
+ */
+bool MapThing::setTilesStart(std::vector<std::vector<Tile*>> tile_set,
+                             uint16_t section, bool no_events,
+                             bool just_store, bool avoid_player)
+{
+  if(tile_set.size() > 0 && tile_set.front().front()->getX() == starting_x &&
+     tile_set.front().front()->getY() == starting_y &&
+     section == starting_section)
+  {
+    if(setTiles(tile_set, section, no_events, just_store, avoid_player))
+    {
+      starting_tiles = tile_set;
+      return true;
+    }
+  }
   return false;
 }
 

@@ -23,6 +23,7 @@
  * CONSTANTS
  *============================================================================*/
 
+const std::string Game::kSAVE_IMG_BACK = ".bmp";
 const std::string Game::kSAVE_PATH_BACK = ".save";
 const std::string Game::kSAVE_PATH_FRONT = "saves/slot";
 const uint8_t Game::kSAVE_SLOT_MAX = 8;
@@ -644,6 +645,7 @@ void Game::eventUnlockTile(int section_id, int tile_x, int tile_y,
   map_ctrl.unlockTile(section_id, tile_x, tile_y, mode, mode_view, view_time);
 }
 
+/* Updates the player steps with the map information */
 void Game::updatePlayerSteps()
 {
   /* Load in steps assuming valid states */
@@ -1941,8 +1943,9 @@ bool Game::save()
   std::string init_path = base_path + kSAVE_PATH_FRONT;
   if(save_slot < 10)
     init_path += "0";
-  std::string save_path =
-      init_path + std::to_string(save_slot) + kSAVE_PATH_BACK;
+  init_path += std::to_string(save_slot);
+  std::string save_path = init_path + kSAVE_PATH_BACK;
+  std::string save_path_img = init_path + kSAVE_IMG_BACK;
 
   /* Start file write */
   if(save_handle.isAvailable() && save_handle.getFilename() != save_path)
@@ -1956,8 +1959,24 @@ bool Game::save()
     success &= save_handle.start(true);
   }
 
+  /* If handle is ready to go, proceed */
   if(save_handle.isAvailable() && success)
   {
+    /* Get a BMP of the current surface */
+    SDL_Rect rect = map_ctrl.getSnapshotRect();
+    SDL_Surface* sshot = SDL_CreateRGBSurface(0, rect.w, rect.h, 32,
+                                              0x00ff0000, 0x0000ff00,
+                                              0x000000ff, 0xff000000);
+    SDL_RenderReadPixels(active_renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
+                         sshot->pixels, sshot->pitch);
+    SDL_Surface* sshot2 = SDL_CreateRGBSurface(0, rect.w/4, rect.h/4, 32,
+                                               0x00ff0000, 0x0000ff00,
+                                               0x000000ff, 0xff000000);
+    SDL_BlitScaled(sshot, NULL, sshot2, NULL);
+    SDL_SaveBMP(sshot2, save_path_img.c_str());
+    SDL_FreeSurface(sshot);
+    SDL_FreeSurface(sshot2);
+
     /* Setup the core data */
     XmlData data_core;
     data_core.addElement("game");

@@ -195,6 +195,8 @@ private:
   const static uint16_t kNAME_X; /* The top left x location of text */
   const static uint16_t kNAME_Y; /* The top left y location of text */
   const static uint8_t kPLAYER_ID; /* The player ID for computer control */
+  const static uint16_t kSNAPSHOT_W; /* The snapshot rect width */
+  const static uint16_t kSNAPSHOT_H; /* The snapshot rect height */
   const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 
 /*======================== PRIVATE FUNCTIONS ===============================*/
@@ -209,7 +211,7 @@ private:
   /* Adds thing data, as per data from the file */
   bool addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer);
   bool addThingData(XmlData data, uint16_t section_index,
-                    SDL_Renderer* renderer);
+                    SDL_Renderer* renderer, bool from_save = false);
 
   /* Audio start/stop triggers */
   void audioStart();
@@ -240,8 +242,9 @@ private:
 
   /* Returns a matrix of tiles that match the frames in the thing */
   std::vector<std::vector<Tile*>>
-  getTileMatrix(MapThing* thing,
-                Direction direction = Direction::DIRECTIONLESS);
+           getTileMatrix(MapThing* thing,
+                         Direction direction = Direction::DIRECTIONLESS,
+                         bool start_only = false);
   std::vector<std::vector<Tile*>> getTileMatrix(uint16_t section, uint16_t x,
                                                 uint16_t y, uint16_t width,
                                                 uint16_t height);
@@ -285,6 +288,9 @@ private:
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);
   bool setSectionIndexMode(int index_next = -1);
+
+  /* Sets the starting (and next) tiles of a newly generated thing */
+  bool setTiles(MapThing* ref);
 
   /* Splits the ID into a vector of IDs */
   std::vector<std::vector<int32_t>> splitIdString(std::string id,
@@ -341,6 +347,9 @@ public:
 
   /* Returns the number of steps the player has used on map */
   uint32_t getPlayerSteps();
+
+  /* Returns the rect (in pixels) snapshot of the map viewport */
+  SDL_Rect getSnapshotRect();
 
   /* Initiates a battle, within the map */
   bool initBattle(MapPerson* person, MapThing* source, BattleFlags flags,

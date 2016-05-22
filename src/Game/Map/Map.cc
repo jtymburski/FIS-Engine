@@ -39,6 +39,8 @@ const uint8_t Map::kNAME_SIZE = 48;
 const uint16_t Map::kNAME_X = 65;
 const uint16_t Map::kNAME_Y = 590;
 const uint8_t Map::kPLAYER_ID = 0;
+const uint16_t Map::kSNAPSHOT_W = 600;
+const uint16_t Map::kSNAPSHOT_H = 500;
 const uint16_t Map::kZOOM_TILE_SIZE = 16;
 
 /*============================================================================
@@ -353,17 +355,17 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
 
 // TODO: Comment
 bool Map::addThingData(XmlData data, uint16_t section_index,
-                       SDL_Renderer* renderer)
+                       SDL_Renderer* renderer, bool from_save)
 {
   int32_t base_id = -1;
   std::string identifier = data.getElement(kFILE_CLASSIFIER);
   uint16_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
-  MapThing* modified_thing = NULL;
+  MapThing* modified_thing = nullptr;
   bool new_thing = false;
   bool success = true;
 
   /* Check if it's base */
-  if(data.getElement(kFILE_CLASSIFIER + 1) == "base")
+  if(data.getElement(kFILE_CLASSIFIER + 1) == "base" && !from_save)
     base_id = data.getDataInteger();
 
   /* Identify which thing to be created */
@@ -371,7 +373,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   {
     /* Create a new thing, if one doesn't exist */
     modified_thing = getThing(id);
-    if(modified_thing == NULL)
+    if(modified_thing == nullptr && !from_save)
     {
       modified_thing = new MapThing();
       new_thing = true;
@@ -386,7 +388,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   {
     /* Create a new MIO, if one doesn't exist */
     modified_thing = getIO(id);
-    if(modified_thing == NULL)
+    if(modified_thing == nullptr && !from_save)
     {
       modified_thing = new MapInteractiveObject();
       modified_thing->setEventHandler(event_handler);
@@ -403,7 +405,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   {
     /* Create a new person, if one doesn't exist */
     modified_thing = getPerson(id);
-    if(modified_thing == NULL)
+    if(modified_thing == nullptr && !from_save)
     {
       if(identifier == "mapperson")
       {
@@ -431,7 +433,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   {
     /* Create a new item, if one doesn't exist */
     modified_thing = getItem(id);
-    if(modified_thing == NULL)
+    if(modified_thing == nullptr && !from_save)
     {
       modified_thing = new MapItem();
       new_thing = true;
@@ -444,29 +446,55 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       success &= modified_thing->setBase(getItemBase(base_id));
   }
 
-  /* If new, set the ID and event handler */
-  if(new_thing)
+  /* Proceed to update the found (or created) thing information */
+  if(modified_thing != nullptr)
   {
-    modified_thing->setEventHandler(event_handler);
-    modified_thing->setID(id);
-    modified_thing->setStartingLocation(section_index,
-                                        modified_thing->getStartingX(),
-                                        modified_thing->getStartingY());
-  }
+    /* If new, set the ID and event handler */
+    if(new_thing)
+    {
+      modified_thing->setEventHandler(event_handler);
+      modified_thing->setID(id);
+      modified_thing->setLocationStart(section_index,
+                                       modified_thing->getStartingX(),
+                                       modified_thing->getStartingY());
+    }
 
-  /* Make sure the section index is appropriately assigned */
-  if(modified_thing->getStartingSection() != section_index)
-  {
-    uint16_t section_old = modified_thing->getStartingSection();
-    modified_thing->setStartingLocation(section_index,
-                                        modified_thing->getStartingX(),
-                                        modified_thing->getStartingY());
-    moveThing(modified_thing, section_old);
-  }
+    /* Make sure the section index is appropriately assigned */
+    int section_old = -1;
+    if(from_save)
+    {
+      if(modified_thing->isNextLocation())
+      {
+        if(modified_thing->getNextSection() != section_index)
+        {
+          section_old = modified_thing->getNextSection();
+          modified_thing->setLocationNext(section_index,
+                        modified_thing->getNextX(), modified_thing->getNextY());
+        }
+      }
+      else
+      {
+        if(modified_thing->getStartingSection() != section_index)
+        {
+          section_old = modified_thing->getStartingSection();
+          modified_thing->setLocationNext(section_index,
+                modified_thing->getStartingX(), modified_thing->getStartingY());
+        }
+      }
+    }
+    else
+    {
+      if(modified_thing->getStartingSection() != section_index)
+      {
+        section_old = modified_thing->getStartingSection();
+        modified_thing->setLocationStart(section_index,
+                modified_thing->getStartingX(), modified_thing->getStartingY());
+      }
+    }
+    if(section_old >= 0)
+      moveThing(modified_thing, section_old);
 
-  /* Proceed to update the thing information from the XML data */
-  if(modified_thing != NULL)
-  {
+    /* Update the data */
     success &= modified_thing->addThingInformation(
         data, kFILE_CLASSIFIER + 1, section_index, renderer, base_path);
     return success;
@@ -754,12 +782,13 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 /* Returns a matrix of tiles that match the frames in the thing */
 // TODO: Comment
 std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
-                                                   Direction direction)
+                                                   Direction direction,
+                                                   bool start_only)
 {
   std::vector<std::vector<Tile*>> tile_set;
   if(thing != NULL)
   {
-    SDL_Rect render_box = thing->getBoundingBox();
+    SDL_Rect render_box = thing->getBoundingBox(start_only);
 
     /* Check the direction to modify the range if needed */
     if(direction == Direction::NORTH)
@@ -770,8 +799,8 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
       render_box.y++;
     else if(direction == Direction::WEST)
       render_box.x--;
-    return getTileMatrix(thing->getMapSection(), render_box.x, render_box.y,
-                         render_box.w, render_box.h);
+    return getTileMatrix(thing->getMapSection(start_only), render_box.x,
+                         render_box.y, render_box.w, render_box.h);
   }
 
   return tile_set;
@@ -1438,6 +1467,54 @@ bool Map::setSectionIndexMode(int index_next)
   return false;
 }
 
+/* Sets the starting (and next) tiles of a newly generated thing */
+bool Map::setTiles(MapThing* ref)
+{
+  if(ref != nullptr)
+  {
+    /* Clean the matrix - fixes up the rendering box */
+    if((ref->getBase() != nullptr &&
+        ref->getBase()->getFrames().size() > 0) || ref->cleanMatrix())
+    {
+      bool success = true;
+      std::vector<std::vector<Tile*>> start_set = getTileMatrix(
+                                         ref, Direction::DIRECTIONLESS, true);
+
+      /* Depending on if next is valid, set the new tiles accordingly */
+      if(ref->isNextLocation())
+      {
+        std::vector<std::vector<Tile*>> next_set = getTileMatrix(ref);
+        success &= ref->setTilesStart(start_set, ref->getStartingSection(),
+                                      true, true);
+        if(ref->isActive())
+          success &= ref->setTilesNext(next_set, ref->getNextSection(), true);
+      }
+      else
+      {
+        success &= ref->setTilesStart(start_set, ref->getStartingSection(),
+                                      true, !ref->isActive());
+      }
+
+      /* If success, return. else, unset the frames */
+      if(success)
+      {
+        if(ref->classDescriptor() == ThingBase::NPC)
+          static_cast<MapNPC*>(ref)->setPlayer(player);
+        return true;
+      }
+      else
+      {
+        ref->unsetFrames(true);
+      }
+    }
+    else
+    {
+      ref->unsetFrames(true);
+    }
+  }
+  return false;
+}
+
 /* Splits the ID into a vector of IDs */
 std::vector<std::vector<int32_t>> Map::splitIdString(std::string id,
                                                      bool matrix)
@@ -1890,7 +1967,9 @@ void Map::battleWon()
     /* Battle clean-up on win condition */
     if(isBattleWinDisappear())
     {
+      uint16_t section_old = battle_thing->getMapSection();
       battle_thing->setActive(false);
+      moveThing(battle_thing, section_old);
     }
     else
     {
@@ -2043,6 +2122,30 @@ uint32_t Map::getPlayerSteps()
     steps = player->getStepCount();
 
   return steps;
+}
+
+/* Returns the rect (in pixels) snapshot of the map viewport - ideally player */
+SDL_Rect Map::getSnapshotRect()
+{
+  SDL_Rect rect = {0, 0, kSNAPSHOT_W, kSNAPSHOT_H};
+  if(player != nullptr)
+  {
+    /* X coordinate */
+    rect.x = player->getCenterX() - static_cast<int>(viewport.getX()) - (kSNAPSHOT_W / 2);
+    if(rect.x < 0)
+      rect.x = 0;
+    else if((rect.x + rect.w) >= viewport.getWidth())
+      rect.x = viewport.getWidth() - rect.w - 1;
+
+    /* Y coordinate */
+    rect.y = player->getCenterY() - static_cast<int>(viewport.getY()) - (kSNAPSHOT_H / 2);
+    if(rect.y < 0)
+      rect.y = 0;
+    else if((rect.y + rect.h) >= viewport.getHeight())
+      rect.y = viewport.getHeight() - rect.h - 1;
+  }
+
+  return rect;
 }
 
 /* Initiates a battle, within the map */
@@ -2239,8 +2342,16 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     /* Test: Reset player location */
     else if(event.keysym.sym == SDLK_r)
     {
-      player->resetToStart();
-      setSectionIndex(player->getStartingSection());
+      if(player != nullptr)
+      {
+        uint16_t section_old = player->getMapSection();
+        player->resetToStart();
+        if(player->getMapSection() != section_old)
+        {
+          moveThing(player, section_old);
+          setSectionIndex(player->getMapSection());
+        }
+      }
     }
     /* Test: Dialog Reset */
     else if(event.keysym.sym == SDLK_7)
@@ -2370,23 +2481,9 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     else if(event.keysym.sym == SDLK_SPACE)
       initiateThingInteraction(player);
     /* Otherwise, send keys to player for control */
-    else if(player != NULL)
+    else if(player != nullptr)
     {
-      if(event.keysym.sym == SDLK_1)
-      {
-        viewport.lockOn(player);
-      }
-
-      //TODO: Freezes Game
-      // else if(event.keysym.sym == SDLK_2)
-      // {
-      //   if(getPerson(10000) != nullptr)
-      //     viewport.lockOn(getPerson(10000));
-      // }
-      else
-      {
-        player->keyDownEvent(event);
-      }
+      player->keyDownEvent(event);
     }
   }
 
@@ -2602,104 +2699,24 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
     if(!base_ios[i]->cleanMatrix())
       base_ios[i]->unsetFrames(true);
 
-  /* Thing clean-up and tile set-up */
+  /* Sub-map handling */
   for(uint32_t i = 0; i < sub_map.size(); i++)
   {
+    /* Thing clean-up and tile set-up */
     for(uint32_t j = 0; j < sub_map[i].things.size(); j++)
-    {
-      MapThing* ref = sub_map[i].things[j];
-
-      /* Clean the matrix - fixes up the rendering box */
-      if((ref->getBase() != NULL && ref->getBase()->getFrames().size() > 0) ||
-         ref->cleanMatrix())
-      {
-        /* Get the tile matrix to match the frames and set */
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
-        if(tile_set.size() > 0)
-          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
-                                !ref->isActive());
-        else
-          ref->unsetFrames(true);
-      }
-      else
-      {
-        ref->unsetFrames(true);
-      }
-    }
+      setTiles(sub_map[i].things[j]);
 
     /* IO clean-up and tile set-up */
     for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
-    {
-      MapInteractiveObject* ref = sub_map[i].ios[j];
-
-      /* Clean the matrix - fixes up the rendering box */
-      if((ref->getBase() != NULL && ref->getBase()->getFrames().size() > 0) ||
-         ref->cleanMatrix())
-      {
-        /* Get the tile matrix to match the frames and set */
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
-        if(tile_set.size() > 0)
-          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
-                                !ref->isActive());
-        else
-          ref->unsetFrames(true);
-      }
-      else
-      {
-        ref->unsetFrames(true);
-      }
-    }
+      setTiles(sub_map[i].ios[j]);
 
     /* Person clean-up and tile set-up */
     for(uint32_t j = 0; j < sub_map[i].persons.size(); j++)
-    {
-      MapPerson* ref = sub_map[i].persons[j];
-
-      /* Clean the matrix - fixes the rendering box */
-      if((ref->getBase() != nullptr && ref->getBase()->cleanMatrix(false)) ||
-         ref->cleanMatrix())
-      {
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
-        if(tile_set.size() > 0)
-        {
-          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
-                                !ref->isActive());
-          if(ref->classDescriptor() == ThingBase::NPC)
-            ((MapNPC*)ref)->setPlayer(player);
-        }
-        else
-        {
-          ref->unsetStates(true);
-        }
-      }
-      else
-      {
-        ref->unsetStates(true);
-      }
-    }
+      setTiles(sub_map[i].persons[j]);
 
     /* Items clean-up and tile set-up */
     for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
-    {
-      MapItem* ref = sub_map[i].items[j];
-
-      /* Clean the matrix - fixes up the rendering box */
-      if((ref->getBase() != NULL && ref->getBase()->cleanMatrix(false)) ||
-         ref->cleanMatrix())
-      {
-        /* Get the tile matrix to match the frames and set */
-        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ref);
-        if(tile_set.size() > 0)
-          ref->setStartingTiles(tile_set, ref->getStartingSection(), true,
-                                !ref->isActive());
-        else
-          ref->unsetFrames(true);
-      }
-      else
-      {
-        ref->unsetFrames(true);
-      }
-    }
+      setTiles(sub_map[i].items[j]);
   }
 
   /* Modify the map index */
@@ -2755,7 +2772,10 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
     /* Active */
     if(active)
     {
+      uint16_t section_old = found_thing->getMapSection();
       found_thing->setActive(active_v);
+      if(!active_v)
+        moveThing(found_thing, section_old);
     }
     /* Respawn */
     if(respawn)
@@ -3135,7 +3155,11 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
             section, x, y, found_thing->getWidth(), found_thing->getHeight());
         uint16_t section_old = found_thing->getMapSection();
 
-        if(found_thing->setStartingTiles(matrix, section))
+        /* Update the next location and get tiles */
+        found_thing->setLocationNext(section, x, y);
+
+        /* Set the next tiles */
+        if(found_thing->setTilesNext(matrix, section))
         {
           /* Move the thing if the section changed */
           if(section_old != section)

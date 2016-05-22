@@ -227,6 +227,12 @@ public:
   /* Sets the forced interaction of the npc */
   void setForcedInteraction(bool forced);
 
+  /* Sets the new location */
+  void setLocationNext(uint16_t section_id, uint16_t x, uint16_t y);
+
+  /* Sets the starting x and y coordinate */
+  void setLocationStart(uint16_t section_id, uint16_t x, uint16_t y);
+
   /* Sets the node movement state - how it traverses */
   void setNodeState(NodeState state);
 
@@ -235,9 +241,6 @@ public:
 
   /* Sets the spotted reference image */
   void setSpottedImage(Frame* new_img);
-
-  /* Sets the starting x and y coordinate */
-  void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
 
   /* Sets the tracking distance setpoints */
   void setTrackingDist(int trigger = kTRACK_DIST_MIN,

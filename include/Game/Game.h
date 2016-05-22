@@ -122,6 +122,7 @@ private:
 
   /* ------------ Constants --------------- */
 public:
+  static const std::string kSAVE_IMG_BACK; /* Back of save img path */
   static const std::string kSAVE_PATH_BACK; /* Back of save path */
   static const std::string kSAVE_PATH_FRONT; /* Front of save path */
   static const uint8_t kSAVE_SLOT_MAX; /* Max number of save slots */

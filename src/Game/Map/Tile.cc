@@ -1737,7 +1737,7 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
   {
     /* Finish the move, if applicable */
     if(!personMoveFinish(render_level, no_events) &&
-       persons_main[render_level] != NULL)
+       persons_main[render_level] != nullptr)
     {
       /* Event is only applicable if it's a render level 0 on person */
       if(render_level == 0 && !no_events)
@@ -1749,8 +1749,8 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
       }
     }
 
-    persons_main[render_level] = NULL;
-    persons_prev[render_level] = NULL;
+    persons_main[render_level] = nullptr;
+    persons_prev[render_level] = nullptr;
     return true;
   }
 

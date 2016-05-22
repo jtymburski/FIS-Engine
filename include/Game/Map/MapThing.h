@@ -84,13 +84,19 @@ protected:
   bool movement_paused;
   uint16_t speed;
 
+  /* Next new location for thing - may differ from starting point */
+  uint16_t next_section;
+  bool next_valid;
+  uint16_t next_x;
+  uint16_t next_y;
+
   /* Sound Reference */
   int32_t sound_id;
 
   /* The main sprite frame data - contains passability and render depth */
   SpriteMatrix* sprite_set;
 
-  /* Startinc coordinate information */
+  /* Starting coordinate information */
   uint16_t starting_section;
   std::vector<std::vector<Tile*>> starting_tiles;
   uint16_t starting_x;
@@ -174,6 +180,11 @@ protected:
   virtual bool setTileStart(Tile* old_tile, Tile* new_tile,
                             uint8_t render_depth, bool no_events = false);
 
+  /* Sets the set of tiles that the thing will be placed on. */
+  bool setTiles(std::vector<std::vector<Tile*>> tile_set,
+                uint16_t section, bool no_events = true,
+                bool just_store = false, bool avoid_player = false);
+
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   virtual void tileMoveFinish(bool no_events = true);
   virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
@@ -218,7 +229,7 @@ public:
   MapThing* getBase();
 
   /* Returns the bounding box of the thing */
-  SDL_Rect getBoundingBox();
+  SDL_Rect getBoundingBox(bool start_only = false);
   SDL_Rect getBoundingPixels();
 
   /* Returns center pixel of thing */
@@ -253,7 +264,7 @@ public:
   Event getInteraction();
 
   /* Returns the map section of the tile where this is painted */
-  uint16_t getMapSection();
+  uint16_t getMapSection(bool start_only = false);
 
   /* Get the specific details of the movement information */
   Direction getMovement();
@@ -267,6 +278,11 @@ public:
   /* Gets the things name */
   std::string getName() const;
 
+  /* Returns the new coordinates - as set by setLocation() */
+  uint16_t getNextSection();
+  uint16_t getNextX();
+  uint16_t getNextY();
+
   /* Returns the passability of the tile based on direction */
   bool getPassabilityEntering(Tile* frame_tile, Direction dir);
   bool getPassabilityExiting(Tile* frame_tile, Direction dir);
@@ -277,7 +293,7 @@ public:
   /* Returns the speed that the thing is moving at */
   uint16_t getSpeed() const;
 
-  /* Returns the starting coordinates - as set by setStartingLocation() */
+  /* Returns the starting coordinates - as set by setLocationStart() */
   uint16_t getStartingSection();
   uint16_t getStartingX();
   uint16_t getStartingY();
@@ -296,8 +312,8 @@ public:
   uint16_t getTileWidth();
 
   /* Returns x/y of the top left, in tile units */
-  uint16_t getTileX(bool previous = false);
-  uint16_t getTileY(bool previous = false);
+  uint16_t getTileX(bool previous = false, bool start_only = false);
+  uint16_t getTileY(bool previous = false, bool start_only = false);
 
   /* Returns the width of the thing */
   uint16_t getWidth();
@@ -320,6 +336,9 @@ public:
 
   /* Returns if the thing is moving */
   bool isMoving();
+
+  /* Returns if there is a next location set in the thing */
+  bool isNextLocation();
 
   /* Is the thing centered on a tile */
   bool isOnTile();
@@ -375,6 +394,12 @@ public:
   bool setID(int new_id);
   void setIDPlayer();
 
+  /* Sets the new location */
+  virtual void setLocationNext(uint16_t section_id, uint16_t x, uint16_t y);
+
+  /* Sets the starting x and y coordinate */
+  virtual void setLocationStart(uint16_t section_id, uint16_t x, uint16_t y);
+
   /* Sets if the movement is paused */
   void setMovementPaused(bool paused);
 
@@ -387,17 +412,19 @@ public:
   /* Sets the things speed */
   void setSpeed(uint16_t speed);
 
-  /* Sets the starting x and y coordinate */
-  virtual void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
-
-  /* Sets the set of tiles that the thing will be placed on. Needed after
-   * defining a starting point.*/
-  bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
-                        uint16_t section, bool no_events = true,
-                        bool just_store = false, bool avoid_player = false);
-
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);
+
+  /* Sets the set of tiles that the thing will be placed on. */
+  bool setTilesNext(std::vector<std::vector<Tile*>> tile_set,
+                    uint16_t section, bool no_events = true,
+                    bool just_store = false, bool avoid_player = false);
+
+  /* Sets the set of tiles that the thing will be placed on at start. Needed
+   * after defining a starting point.*/
+  bool setTilesStart(std::vector<std::vector<Tile*>> tile_set,
+                     uint16_t section, bool no_events = true,
+                     bool just_store = false, bool avoid_player = false);
 
   /* Sets the visibility of the rendering thing */
   void setVisibility(bool visible);
