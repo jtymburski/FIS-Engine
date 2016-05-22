@@ -532,6 +532,9 @@ private:
   /* Render the title section */
   void renderTitleSection();
 
+  /* Render the title triangle on a given icon box */
+  void renderTitleTriangle(Box& icon_box);
+
   /* Render options functions */
   UCoordinate renderOptionAnalog(AnalogOption& option, UCoordinate point);
   UCoordinate renderOptionDigital(DigitalOption& option, UCoordinate point);

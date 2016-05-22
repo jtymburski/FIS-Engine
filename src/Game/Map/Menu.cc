@@ -327,7 +327,12 @@ int32_t Menu::calcSleuthTileSize()
     int32_t sleuth_gap =
         (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
 
-    return (main_section.location.height - 6 * sleuth_gap) / 5;
+    auto size = (main_section.location.height - 6 * sleuth_gap) / 5;
+
+    if(size % 2 != 0 && size > 1)
+      --size;
+
+    return size;
   }
 
   return 0;
@@ -427,13 +432,7 @@ void Menu::buildSkillFrames()
       skills_scroll_box.setElements(skill_frames);
 
       if(skill_frames.size() > 0)
-      {
-        std::cout << "Built and set." << std::endl;
-
-        std::cout << "Frame skill height: " << skill_frames.at(0)->getHeight()
-                  << ", " << skill_frames.at(0)->getWidth() << std::endl;
         skills_element_index = 0;
-      }
     }
   }
 }
@@ -789,9 +788,10 @@ void Menu::buildPersonTitleElements()
   person_title_elements.push_back(
       TitleElement("Overview", true, MenuType::SLEUTH_OVERVIEW));
 
-  /* Person equipment screen */
-  person_title_elements.push_back(
-      TitleElement("Equipment", true, MenuType::SLEUTH_EQUIPMENT));
+  // TODO [05-21-16]: Future equipment title selection
+  // /* Person equipment screen */
+  // person_title_elements.push_back(
+  //     TitleElement("Equipment", true, MenuType::SLEUTH_EQUIPMENT));
 
   /* Person skill list screen */
   person_title_elements.push_back(
@@ -801,9 +801,10 @@ void Menu::buildPersonTitleElements()
   person_title_elements.push_back(
       TitleElement("Details", true, MenuType::SLEUTH_DETAILS));
 
-  /* Personal record screen (PersonRecord - Battles won etc.) */
-  person_title_elements.push_back(
-      TitleElement("Record", true, MenuType::SLEUTH_RECORD));
+  // TODO [05-21-16]: Future Record selection. Needed?
+  // /* Personal record screen (PersonRecord - Battles won etc.) */
+  // person_title_elements.push_back(
+  //     TitleElement("Record", true, MenuType::SLEUTH_RECORD));
 }
 
 /* Constructs the TitleSection */
@@ -1288,6 +1289,23 @@ void Menu::renderTitleSection()
   t_main_title.render(renderer, point.x + x_offset, point.y + y_offset);
 }
 
+void Menu::renderTitleTriangle(Box& icon)
+{
+  /* Determine the length/size of the triangle */
+  auto tan47 = std::tan(47 * 3.141592635 / 180.0);
+  auto l = (int32_t)std::round(icon.height / 15.0 * tan47);
+
+  /* Calculate the three points of the triangle */
+  Coordinate end{icon.point.x + icon.width, icon.point.y + icon.height};
+  Coordinate p1{end.x, end.y - icon.height / 2 - icon.height / 15};
+  Coordinate p2{end.x + l - 1, end.y - icon.height / 2};
+  Coordinate p3{end.x, end.y - icon.height / 2 + icon.height / 15};
+
+  /* Render the triangle */
+  if(p1.x > 0 && p2.x > 0 && p3.x > 0)
+    Frame::renderTriangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, renderer);
+}
+
 /* Render the Main Section */
 void Menu::renderMainSection()
 {
@@ -1328,6 +1346,8 @@ void Menu::renderInventory()
   auto gap = (int32_t)std::round(width * kINV_GAP);
   current.y = start.y + gap;
 
+  Frame::setRenderDrawColor(renderer, kCOLOR_MAIN_BORDER);
+
   /* Render the Title Boxes */
   for(uint32_t i = 0; i < titles.size(); i++)
   {
@@ -1343,6 +1363,9 @@ void Menu::renderInventory()
       frame_items->render(
           renderer, icon.point.x + icon.width / 2 - frame_items->getWidth() / 2,
           icon.point.y + icon.height / 2 - frame_items->getHeight() / 2);
+
+      if(inventory_title_index == InventoryIndex::ITEMS)
+        renderTitleTriangle(icon);
     }
     else if(i == 1)
     {
@@ -1350,6 +1373,9 @@ void Menu::renderInventory()
           renderer,
           icon.point.x + icon.width / 2 - frame_equipment->getWidth() / 2,
           icon.point.y + icon.height / 2 - frame_equipment->getHeight() / 2);
+
+      if(inventory_title_index == InventoryIndex::EQUIPMENT)
+        renderTitleTriangle(icon);
     }
     else if(i == 2)
     {
@@ -1357,6 +1383,9 @@ void Menu::renderInventory()
           renderer,
           icon.point.x + icon.width / 2 - frame_bubbies->getWidth() / 2,
           icon.point.y + icon.height / 2 - frame_bubbies->getHeight() / 2);
+
+      if(inventory_title_index == InventoryIndex::BUBBIES)
+        renderTitleTriangle(icon);
     }
     else if(i == 3)
     {
@@ -1364,6 +1393,9 @@ void Menu::renderInventory()
           renderer,
           icon.point.x + icon.width / 2 - frame_key_items->getWidth() / 2,
           icon.point.y + icon.height / 2 - frame_key_items->getHeight() / 2);
+
+      if(inventory_title_index == InventoryIndex::KEY_ITEMS)
+        renderTitleTriangle(icon);
     }
   }
 
@@ -1399,8 +1431,6 @@ void Menu::renderInventory()
   mass_value.render(renderer,
                     start.x + gap + icon_w / 2 - mass_value.getWidth() / 2,
                     current.y + icon_w / 3);
-
-  // TODO: Render the selection triangle [04-13-16]
 
   /* Render the Top Boxes and the Bottom Boxes */
   auto top_section_height = (main_section.location.height - 3 * gap) / 2;
@@ -1706,11 +1736,11 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
 
     /* Render the Check if flag is set */
     if(option.isSet())
-      digital_box.color_bg = kCOLOR_OPTION_FILL; // TODO
+      frame_checkbox->render(renderer, point.x, point.y);
+
+    // digital_box.color_bg = kCOLOR_OPTION_FILL; // TODO
 
     digital_box.render(renderer);
-
-    // frame_checkbox->render(renderer, point.x, point.y, box_size, box_size);
 
     /* Render the Digital Option Name */
     Text t(option_font);
@@ -1812,7 +1842,25 @@ void Menu::renderSleuth()
     icon.render(renderer);
     current.y += gap + icon.height;
 
-    // TODO: Render the face graphic
+    // TODO [05-21-16]: Properly implement face graphics post-alpha
+    // -- editor face graphics saving
+    // -- maintain face graphics inside of person
+    if(i == 0)
+    {
+      Frame* face = new Frame(
+          config->getBasePath() + "sprites/Map/Faces/player.png", renderer);
+
+      if(face)
+      {
+        face->render(renderer, icon.point.x + icon.width / 2 - face->getWidth(),
+                     icon.point.y + icon.height / 2 - face->getHeight(),
+                     face->getWidth() * 2, face->getHeight() * 2);
+        delete face;
+      }
+
+      face = nullptr;
+      renderTitleTriangle(icon);
+    }
   }
 
   s_top_box.point = {start.x + 2 * gap + calcSleuthTileSize(), start.y};
@@ -1866,6 +1914,24 @@ void Menu::renderSleuthOverview()
   s_top_box.point.y += s_top_box.height + gap - 1;
   setupDefaultBox(s_top_box);
   s_top_box.render(renderer);
+
+  /* Render the primary and secondary elements of the person at the bottom
+   * of the sprite box */
+  auto f_prim = battle_display_data->getFrameElement(person->getPrimary());
+  auto f_secd = battle_display_data->getFrameElement(person->getSecondary());
+
+  Coordinate elements{s_top_box.point.x + s_top_box.width - gap,
+                      s_top_box.point.y};
+
+  if(f_prim && f_secd)
+  {
+    f_secd->render(renderer, elements.x - f_secd->getWidth(),
+                   elements.y + s_top_box.height / 2 - f_secd->getHeight() / 2);
+    elements.x -= f_secd->getWidth() + gap / 2;
+
+    f_prim->render(renderer, elements.x - f_prim->getWidth(),
+                   elements.y + s_top_box.height / 2 - f_prim->getHeight() / 2);
+  }
 
   if(person)
   {
@@ -2399,15 +2465,17 @@ BattleActor* Menu::getCurrentActor()
 
 Skill* Menu::getCurrentSkill()
 {
-  if(getCurrentPerson() && getCurrentPerson()->getCurrSkills() &&
-     skills_element_index > -1 &&
-     skills_element_index <
-         (int32_t)getCurrentPerson()->getCurrSkills()->getSize())
+  auto curr_person = getCurrentPerson();
+
+  if(curr_person)
   {
-    return getCurrentPerson()
-        ->getCurrSkills()
-        ->getElement(skills_element_index)
-        .skill;
+    auto curr_skills = curr_person->getCurrSkills();
+
+    if(curr_skills && skills_element_index > -1 &&
+       skills_element_index < (int32_t)curr_skills->getSize())
+    {
+      return curr_skills->getElement(skills_element_index).skill;
+    }
   }
 
   return nullptr;
@@ -2441,14 +2509,14 @@ MenuType Menu::getSleuthMenuType()
 {
   if(person_element_index == 0)
     return MenuType::SLEUTH_OVERVIEW;
+  // else if(person_element_index == 1)
+  //   return MenuType::SLEUTH_EQUIPMENT;
   else if(person_element_index == 1)
-    return MenuType::SLEUTH_EQUIPMENT;
-  else if(person_element_index == 2)
     return MenuType::SLEUTH_SKILLS;
-  else if(person_element_index == 3)
+  else if(person_element_index == 2)
     return MenuType::SLEUTH_DETAILS;
-  else if(person_element_index == 4)
-    return MenuType::SLEUTH_RECORD;
+  // else if(person_element_index == 4)
+  //   return MenuType::SLEUTH_RECORD;
 
   return MenuType::INVALID;
 }
@@ -2514,7 +2582,7 @@ void Menu::keyDownUp()
   {
     if(getMainMenuType() == MenuType::SLEUTH)
     {
-      if(person_element_index == 2)
+      if(person_element_index == 1)
       {
         if(skills_scroll_box.prevIndex())
           skills_element_index--;
@@ -2565,7 +2633,7 @@ void Menu::keyDownDown()
   {
     if(getMainMenuType() == MenuType::SLEUTH)
     {
-      if(person_element_index == 2)
+      if(person_element_index == 1)
       {
         if(skills_scroll_box.nextIndex())
           skills_element_index++;
@@ -2635,7 +2703,7 @@ void Menu::keyDownAction()
   {
     if(getMainMenuType() == MenuType::SLEUTH)
     {
-      if(person_element_index == 2)
+      if(person_element_index == 1)
       {
         layer = MenuLayer::MAIN_INDENT;
         skills_top_box.setFlag(BoxState::SELECTED);
