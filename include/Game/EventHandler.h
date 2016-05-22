@@ -108,6 +108,9 @@ public:
   /* Check the name of an Item of a Given ID */
   std::string peekItemName(int32_t id);
 
+  /* Log/debug an error if debugging is enabled */
+  void logError(std::string raw, bool log_cerr = true);
+
   /* Clears the event handling poll queue */
   void pollClear();
 

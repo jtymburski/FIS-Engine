@@ -11,7 +11,7 @@
 #include "Game/EventHandler.h"
 
 /* Constant Implementation - see header file for descriptions */
-//const uint8_t EventHandler::kGIVE_ITEM_COUNT = 1;
+// const uint8_t EventHandler::kGIVE_ITEM_COUNT = 1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -117,7 +117,7 @@ void EventHandler::triggerQueueSound(Event event)
 
 /* Execute the given event - done through signal emits */
 void EventHandler::executeEvent(Event event, MapPerson* initiator,
-                                             MapThing* source)
+                                MapThing* source)
 {
   if(event.classification != EventClassifier::NOEVENT)
   {
@@ -193,8 +193,7 @@ void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator,
 
 /* Executes an MIO trigger event */
 void EventHandler::executeIOTrigger(MapInteractiveObject* io,
-                                    int interaction_state,
-                                    MapPerson* initiator)
+                                    int interaction_state, MapPerson* initiator)
 {
   /* Create the executed event queue entry */
   if(io != nullptr && interaction_state >= 0)
@@ -243,6 +242,20 @@ SoundHandler* EventHandler::getSoundHandler()
   return sound_handler;
 }
 
+/* Log an error/warning if UDEBUG is set (cleans up macrocode elsewhere) */
+void EventHandler::logError(std::string raw, bool log_cerr)
+{
+#ifdef UDEBUG
+  if(log_cerr)
+    std::cerr << "[ERROR] " << raw << std::endl;
+  else
+    std::cout << "[WARNING] " << raw << std::endl;
+#else
+  (void)raw;
+  (void)log_cerr;
+#endif
+}
+
 /* Clears the event handling poll queue */
 void EventHandler::pollClear()
 {
@@ -276,8 +289,7 @@ bool EventHandler::pollGiveItem(int* id, int* count)
   if(id != nullptr && count != nullptr)
   {
     Event event;
-    if(getEvent(event, true) &&
-       EventSet::dataEventGiveItem(event, *id, *count))
+    if(getEvent(event, true) && EventSet::dataEventGiveItem(event, *id, *count))
     {
       triggerQueueSound(event);
       return true;
@@ -339,8 +351,7 @@ bool EventHandler::pollLockAvail()
 
     /* Determine if the current set is locked and if its a locked state that
      * needs to be reviewed at call time */
-    if(set->isLocked() &&
-       (set->getLockedState().state == LockedState::ITEM))
+    if(set->isLocked() && (set->getLockedState().state == LockedState::ITEM))
     {
       return true;
     }
@@ -370,9 +381,9 @@ bool EventHandler::pollLockSetData(Locked lock)
   }
   return false;
 }
-  
+
 /* Poll a multiple event */
-bool EventHandler::pollMultiple(MapPerson*& person, MapThing*& source, 
+bool EventHandler::pollMultiple(MapPerson*& person, MapThing*& source,
                                 std::vector<EventPair>& events)
 {
   if(pollEventType() == EventClassifier::MULTIPLE)
@@ -395,7 +406,7 @@ bool EventHandler::pollMultiple(MapPerson*& person, MapThing*& source,
       person = event_queue[queue_index].initiator;
       source = event_queue[queue_index].source;
       triggerQueueSound(*pair.base);
-      return true; 
+      return true;
     }
   }
   return false;
@@ -444,9 +455,9 @@ bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 
   return false;
 }
-  
+
 /* Poll a property event */
-bool EventHandler::pollPropMod(MapThing*& source, ThingBase& type, int& id, 
+bool EventHandler::pollPropMod(MapThing*& source, ThingBase& type, int& id,
                                ThingProperty& props, ThingProperty& bools,
                                int& respawn, int& speed, TrackingState& track,
                                int& inactive)
@@ -467,8 +478,7 @@ bool EventHandler::pollPropMod(MapThing*& source, ThingBase& type, int& id,
 bool EventHandler::pollSound()
 {
   Event event;
-  if(pollEventType() == EventClassifier::SOUNDONLY &&
-     getEvent(event, true))
+  if(pollEventType() == EventClassifier::SOUNDONLY && getEvent(event, true))
   {
     triggerQueueSound(event);
     return true;
@@ -481,17 +491,17 @@ bool EventHandler::pollStartBattle(MapPerson** person, MapThing** source,
                                    BattleFlags& flags, EventPair& event_win,
                                    EventPair& event_lose)
 {
-  if(pollEventType() == EventClassifier::BATTLESTART &&
-     person != nullptr && source != nullptr)
+  if(pollEventType() == EventClassifier::BATTLESTART && person != nullptr &&
+     source != nullptr)
   {
     EventPair pair;
     if(getEventPair(pair, true))
     {
       BattleFlags inst_flags;
-      if(EventSet::dataEventStartBattle(pair.base, flags,
-                                        event_win.base, event_lose.base) &&
-         EventSet::dataEventStartBattle(pair.inst, inst_flags,
-                                        event_win.inst, event_lose.inst))
+      if(EventSet::dataEventStartBattle(pair.base, flags, event_win.base,
+                                        event_lose.base) &&
+         EventSet::dataEventStartBattle(pair.inst, inst_flags, event_win.inst,
+                                        event_lose.inst))
       {
         *person = event_queue[queue_index].initiator;
         *source = event_queue[queue_index].source;
@@ -509,8 +519,7 @@ bool EventHandler::pollStartMap(int* id)
   if(id != nullptr)
   {
     Event event;
-    if(getEvent(event, true) &&
-       EventSet::dataEventStartMap(event, *id))
+    if(getEvent(event, true) && EventSet::dataEventStartMap(event, *id))
     {
       triggerQueueSound(event);
       return true;
@@ -525,8 +534,7 @@ bool EventHandler::pollTakeItem(int* id, int* count)
   if(id != nullptr && count != nullptr)
   {
     Event event;
-    if(getEvent(event, true) &&
-       EventSet::dataEventTakeItem(event, *id, *count))
+    if(getEvent(event, true) && EventSet::dataEventTakeItem(event, *id, *count))
     {
       triggerQueueSound(event);
       return true;
@@ -537,7 +545,7 @@ bool EventHandler::pollTakeItem(int* id, int* count)
 
 /* Poll a teleport thing event */
 bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
-                                                    int* section_id)
+                                     int* section_id)
 {
   if(thing_id != nullptr && x != nullptr && y != nullptr &&
      section_id != nullptr)

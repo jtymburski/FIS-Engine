@@ -474,11 +474,10 @@ SDL_Texture* Menu::buildItemListFrame(Item* build_item, int32_t count,
 {
   if(config && renderer && build_item && count > 0)
   {
-    auto font_item = config->getFontTTF(FontName::MENU_HEADER);
     auto item_inset = (uint32_t)std::round(width * kINV_ITEM_ELEMENT_INSET);
 
-    Text t_item_name{font_item};
-    Text t_item_count{font_item};
+    Text t_item_name{getFont(FontName::M_HEADER)};
+    Text t_item_count{getFont(FontName::M_HEADER)};
 
     t_item_name.setText(renderer, build_item->getName(), kCOLOR_TEXT);
     t_item_count.setText(renderer, std::to_string(count), kCOLOR_TEXT);
@@ -509,10 +508,9 @@ SDL_Texture* Menu::buildSkillListFrame(Skill* build_skill, uint32_t width,
 {
   if(config && renderer && build_skill)
   {
-    auto font_skill = config->getFontTTF(FontName::MENU_HEADER);
     auto skill_inset = (uint32_t)std::round(width * kSKILL_ELEMENT_INSET);
 
-    Text t_skill_name{font_skill};
+    Text t_skill_name{getFont(FontName::M_HEADER)};
 
     t_skill_name.setText(renderer, build_skill->getName(), kCOLOR_TEXT);
 
@@ -992,7 +990,6 @@ SDL_Texture* Menu::buildAttributeFrame(Attribute attr, uint32_t width,
 
   if(battle_display_data && renderer && config && actor)
   {
-    auto font_value = config->getFontTTF(FontName::MENU_VALUE);
     auto frame_attribute = battle_display_data->getFrameAttribute(attr);
     auto inset = (uint32_t)std::round(width * kSLEUTH_ATTRIBUTE_INSET);
 
@@ -1008,9 +1005,9 @@ SDL_Texture* Menu::buildAttributeFrame(Attribute attr, uint32_t width,
       // frame_attribute->render(renderer, inset,
       //                        height / 2 - frame_attribute->getHeight() / 2);
 
-      Text t_name(font_value);
-      Text t_value(font_value);
-      Text t_max(font_value);
+      Text t_name{getFont(FontName::M_VALUE)};
+      Text t_value{getFont(FontName::M_VALUE)};
+      Text t_max{getFont(FontName::M_VALUE)};
 
       t_max.setText(renderer, "Unbearability: 9999", kCOLOR_TEXT);
 
@@ -1047,8 +1044,6 @@ SDL_Texture* Menu::buildElementFrame(Element elm, uint32_t width,
 
   if(battle_display_data && renderer && config && actor)
   {
-    auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
-    auto font_value = config->getFontTTF(FontName::MENU_VALUE);
     auto frame_element = battle_display_data->getFrameElement(elm);
     auto stats = actor->getStatsRendered();
     auto attributes = Helpers::elementToStats(elm);
@@ -1068,13 +1063,13 @@ SDL_Texture* Menu::buildElementFrame(Element elm, uint32_t width,
       frame_element->render(renderer, inset,
                             height / 2 - frame_element->getHeight() / 2);
 
-      Text t_name(font_title);
-      Text t_atk_title(font_value);
-      Text t_def_title(font_value);
-      Text t_value_atk(font_value);
-      Text t_value_def(font_value);
+      Text t_name{getFont(FontName::M_ITEM_HEADER)};
+      Text t_atk_title{getFont(FontName::M_VALUE)};
+      Text t_def_title{getFont(FontName::M_VALUE)};
+      Text t_value_atk{getFont(FontName::M_VALUE)};
+      Text t_value_def{getFont(FontName::M_VALUE)};
+      Text t_max{getFont(FontName::M_VALUE)};
 
-      Text t_max(font_value);
       t_max.setText(renderer, "FRT:     9999", kCOLOR_TEXT);
 
       t_atk_title.setText(renderer, "AGR: ", kCOLOR_TEXT);
@@ -1137,10 +1132,6 @@ void Menu::renderKeyItems()
 /* Renders the TitleSection */
 void Menu::renderTitleSection()
 {
-  auto font_main_title = config->getFontTTF(FontName::MENU_MAIN_TITLE);
-  auto font_title_element = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
-  auto font_header = config->getFontTTF(FontName::MENU_HEADER);
-
   auto height = config->getScreenHeight();
   auto width = config->getScreenWidth();
   auto location = title_section.location;
@@ -1195,11 +1186,11 @@ void Menu::renderTitleSection()
   auto x_offset = (int32_t)std::round(width * kTITLE_X_OFFSET);
   auto y_offset = (int32_t)std::round(height * kTITLE_Y_OFFSET);
 
-  Text map_name(font_header);
-  Text footsteps(font_header);
-  Text credits(font_header);
-  Text t_main_title(font_main_title);
-  Text t_title_element(font_title_element);
+  Text map_name{getFont(FontName::M_HEADER)};
+  Text footsteps{getFont(FontName::M_HEADER)};
+  Text credits{getFont(FontName::M_HEADER)};
+  Text t_main_title{getFont(FontName::M_MAIN_TITLE)};
+  Text t_title_element{getFont(FontName::M_TITLE_ELM)};
 
   t_main_title.setText(renderer, "MENU", kCOLOR_TEXT);
 
@@ -1337,9 +1328,6 @@ void Menu::renderMainSection()
 /* Renders the Inventory Screen */
 void Menu::renderInventory()
 {
-  auto title_font = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
-  auto font_header = config->getFontTTF(FontName::MENU_HEADER);
-  auto font_subheader = config->getFontTTF(FontName::MENU_SUBHEADER);
   auto inv = player_inventory;
   auto width = config->getScreenWidth();
   auto start = main_section.location.point;
@@ -1403,8 +1391,8 @@ void Menu::renderInventory()
   current.y += gap;
 
   /* Render the Mass of the Inventory */
-  Text mass_title(font_subheader);
-  Text mass_value(font_header);
+  Text mass_title{getFont(FontName::M_SUBHEADER)};
+  Text mass_value{getFont(FontName::M_HEADER)};
   std::string mass_string;
 
   mass_title.setText(renderer, "TOTAL MASS", kCOLOR_TEXT);
@@ -1472,8 +1460,8 @@ void Menu::renderInventory()
   inventory_bottom_box.render(renderer);
 
   /* Render the Item Title Text */
-  Text title_text(title_font);
-  Text number_items(title_font);
+  Text title_text{getFont(FontName::M_TITLE_ELM)};
+  Text number_items{getFont(FontName::M_TITLE_ELM)};
   std::string number_str = "";
 
   // TODO Color if at limit?
@@ -1534,9 +1522,7 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
     if(item_pair.first)
     {
       auto item = item_pair.first;
-      auto font_options = config->getFontTTF(FontName::MENU_OPTIONS);
-      auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
-      auto font_standard = config->getFontTTF(FontName::MENU_STANDARD);
+
       auto corner_inset = calcMainCornerInset();
 
       /* Render the Inventory Icon Box */
@@ -1563,12 +1549,12 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
       /* Render the Item Name, Mass, Description */
       auto curr_x = inventory_icon_box.point.x + inventory_icon_box.width + gap;
 
-      Text item_name(font_options);
-      Text item_mass_title(font_title);
-      Text item_mass(font_options);
-      Text item_value_title(font_title);
-      Text item_value(font_options);
-      Text item_description(font_standard);
+      Text item_name{getFont(FontName::M_OPTIONS)};
+      Text item_mass_title{getFont(FontName::M_ITEM_HEADER)};
+      Text item_mass{getFont(FontName::M_OPTIONS)};
+      Text item_value_title{getFont(FontName::M_ITEM_HEADER)};
+      Text item_value{getFont(FontName::M_OPTIONS)};
+      Text item_description{getFont(FontName::M_STANDARD)};
 
       item_name.setText(renderer, item->getName(), kCOLOR_TEXT);
       item_mass_title.setText(renderer, "MASS", kCOLOR_TEXT);
@@ -1592,7 +1578,7 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
       item_value.render(renderer, mass_x, current.y);
 
       current.y = inventory_icon_box.point.y + inventory_icon_box.height + gap;
-      auto desc_split = Text::splitLine(font_standard, item->getDescription(),
+      auto desc_split = Text::splitLine(getFont(FontName::M_STANDARD), item->getDescription(),
                                         inventory_top_box.width - 2 * gap);
 
       /* Render the description lines */
@@ -1603,7 +1589,7 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
         current.y += item_description.getHeight() * 1.1;
       }
 
-      Text item_flags(font_standard);
+      Text item_flags{getFont(FontName::M_STANDARD)};
       item_flags.setText(renderer, calcItemDetailsString(item), kCOLOR_TEXT);
 
       auto width = inventory_top_box.width - corner_inset;
@@ -1658,7 +1644,6 @@ UCoordinate Menu::renderOptionAnalog(AnalogOption& option, UCoordinate point)
     auto start_x = (int32_t)point.x;
 
     /* Render the Option Name Text */
-    auto option_font = config->getFontTTF(FontName::MENU_HEADER);
     SDL_Color fill_color = kCOLOR_OPTION_FILL;
     SDL_Color border_color = {255, 255, 255, 65};
 
@@ -1669,7 +1654,7 @@ UCoordinate Menu::renderOptionAnalog(AnalogOption& option, UCoordinate point)
     }
 
     /* Create and render the option name text */
-    Text t(option_font);
+    Text t{getFont(FontName::M_HEADER)};
     t.setText(renderer, option.name, kCOLOR_TEXT);
     t.render(renderer, point.x, point.y);
 
@@ -1724,7 +1709,6 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
     auto text_gap = (uint32_t)std::round(kOPTIONS_DIGITAL_TEXT_GAP * width);
     auto box_size = (int32_t)std::round(kOPTIONS_BOX_SIZE * width);
     auto start_x = (int32_t)point.x;
-    auto option_font = config->getFontTTF(FontName::MENU_HEADER);
     SDL_Color box_border = {255, 255, 255, 65};
 
     if(option.location.getFlag(BoxState::SELECTED))
@@ -1738,12 +1722,10 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
     if(option.isSet())
       frame_checkbox->render(renderer, point.x, point.y);
 
-    // digital_box.color_bg = kCOLOR_OPTION_FILL; // TODO
-
     digital_box.render(renderer);
 
     /* Render the Digital Option Name */
-    Text t(option_font);
+    Text t{getFont(FontName::M_HEADER)};
     t.setText(renderer, option.name, kCOLOR_TEXT);
     t.render(renderer, point.x + text_gap, point.y);
 
@@ -1803,22 +1785,15 @@ void Menu::renderPersonElementTitles(int32_t gap)
 
 void Menu::renderPersonElementTitle(TitleElement& element)
 {
-
   element.title_box.render(renderer);
 
-  auto font_header = config->getFontTTF(FontName::MENU_SMALL_TITLE_ELEMENT);
+  Text t{getFont(FontName::M_SMALL_TITLE_ELM)};
+  t.setText(renderer, element.name, kCOLOR_TEXT);
 
-  if(font_header)
-  {
-    Text t(font_header);
-    t.setText(renderer, element.name, kCOLOR_TEXT);
-
-    /* Render the text centered in the title box */
-    t.render(renderer, element.title_box.point.x + element.title_box.width / 2 -
-                           t.getWidth() / 2,
-             element.title_box.point.y + element.title_box.height / 2 -
-                 t.getHeight() / 2);
-  }
+  /* Render the text centered in the title box */
+  auto b = element.title_box;
+  t.render(renderer, b.point.x + b.width / 2 - t.getWidth() / 2,
+           b.point.y + b.height / 2 - t.getHeight() / 2);
 }
 
 /* Renders the Sleuth Screen */
@@ -1890,15 +1865,11 @@ void Menu::renderSleuthOverview()
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
   auto person = getCurrentPerson();
   auto actor = getCurrentActor();
-  auto font_title_element = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
-  auto font_header = config->getFontTTF(FontName::MENU_OPTIONS);
-  auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
   auto equip_icon_size = (int32_t)std::round(width * kSLEUTH_EQUIP_ICON_SIZE);
   auto main = main_section.location;
 
   assert(person);
   assert(actor);
-  assert(font_header);
   assert(config);
   assert(renderer);
   assert(frame_exp_empty);
@@ -1909,7 +1880,7 @@ void Menu::renderSleuthOverview()
   current.y = start.y + gap;
   auto icon_w = calcSleuthTileSize();
 
-  Text t_name(font_title_element);
+  Text t_name{getFont(FontName::M_TITLE_ELM)};
 
   s_top_box.point.y += s_top_box.height + gap - 1;
   setupDefaultBox(s_top_box);
@@ -2034,8 +2005,8 @@ void Menu::renderSleuthOverview()
                                frame_exp_middle->getHeight() / 2);
 
   /* Render the level text centred to the frame middle exp */
-  Text t_level_title(font_title);
-  Text t_level(font_title_element);
+  Text t_level_title{getFont(FontName::M_ITEM_HEADER)};
+  Text t_level{getFont(FontName::M_TITLE_ELM)};
 
   t_level_title.setText(renderer, "LEVEL", kCOLOR_TEXT);
   t_level.setText(renderer, std::to_string(person->getLevel()), kCOLOR_TEXT);
@@ -2050,9 +2021,9 @@ void Menu::renderSleuthOverview()
   current.y += 3 * gap / 2;
   t_level.render(renderer, current.x, current.y);
 
-  Text t_exp(font_header);
-  Text t_vita(font_header);
-  Text t_qtdr(font_header);
+  Text t_exp{getFont(FontName::M_OPTIONS)};
+  Text t_vita{getFont(FontName::M_OPTIONS)};
+  Text t_qtdr{getFont(FontName::M_OPTIONS)};
 
   std::string exp_str = "";
 
@@ -2138,7 +2109,6 @@ void Menu::renderSleuthEquipment()
 /* Render the skills screen for the current person in sleuth selection */
 void Menu::renderSleuthSkills()
 {
-  auto title_font = config->getFontTTF(FontName::MENU_TITLE_ELEMENT);
   auto width = config->getScreenWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
 
@@ -2165,7 +2135,7 @@ void Menu::renderSleuthSkills()
   skills_name_box.render(renderer);
 
   /* Render the skills title name */
-  Text title_text(title_font);
+  Text title_text{getFont(FontName::M_TITLE_ELM)};
   title_text.setText(renderer, "Skills", kCOLOR_TEXT);
   title_text.render(renderer, skills_name_box.point.x + gap,
                     skills_name_box.point.y + skills_name_box.height / 2 -
@@ -2209,10 +2179,6 @@ void Menu::renderSleuthSkillDetail(Coordinate start, int32_t icon_w,
 
   if(curr_skill)
   {
-    auto font_options = config->getFontTTF(FontName::MENU_OPTIONS);
-    auto font_title = config->getFontTTF(FontName::MENU_ITEM_HEADER);
-    auto font_standard = config->getFontTTF(FontName::MENU_STANDARD);
-
     skills_icon_box.point = {start.x + gap, start.y + gap};
     skills_icon_box.width = icon_w;
     skills_icon_box.height = icon_w;
@@ -2235,11 +2201,11 @@ void Menu::renderSleuthSkillDetail(Coordinate start, int32_t icon_w,
     current.x += icon_w + gap;
 
     /* Render the Skills Text */
-    Text skill_name(font_options);
-    Text skill_qd(font_title);
-    Text skill_acc(font_title);
-    Text skill_cd(font_title);
-    Text skill_description(font_standard);
+    Text skill_name{getFont(FontName::M_OPTIONS)};
+    Text skill_qd{getFont(FontName::M_ITEM_HEADER)};
+    Text skill_acc{getFont(FontName::M_ITEM_HEADER)};
+    Text skill_cd{getFont(FontName::M_ITEM_HEADER)};
+    Text skill_description{getFont(FontName::M_STANDARD)};
 
     skill_name.setText(renderer, curr_skill->getName(), kCOLOR_TEXT);
     skill_qd.setText(renderer, std::to_string(curr_skill->getCost()),
@@ -2251,7 +2217,7 @@ void Menu::renderSleuthSkillDetail(Coordinate start, int32_t icon_w,
                      kCOLOR_TEXT);
 
     auto desc_split =
-        Text::splitLine(font_standard, curr_skill->getDescription(),
+        Text::splitLine(getFont(FontName::M_STANDARD), curr_skill->getDescription(),
                         skills_bot_box.width - 8 * gap - icon_w);
 
     skill_name.render(renderer, current.x, current.y);
@@ -2342,95 +2308,111 @@ void Menu::renderSleuthSkillDetail(Coordinate start, int32_t icon_w,
 
 void Menu::renderSleuthDetails()
 {
-  // auto font_curve = config->getFontTTF(FontName::MENU_CURVE);
-  // /* Render the text for the bottom statistics box */
-  // auto rank_str = Helpers::rankToDisplayStr(person->getRank());
-  // auto prim_element =
-  // Helpers::elementToDisplayString(person->getPrimary());
-  // auto secd_element =
-  // Helpers::elementToDisplayString(person->getSecondary());
-  // auto prim_curve_str =
-  //     Helpers::curveToString(person->getPrimaryCurve(), false);
-  // auto secd_curve_str =
-  //     Helpers::curveToString(person->getSecondaryCurve(), false);
+  auto width = config->getScreenWidth();
+  auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
+  auto person = getCurrentPerson();
 
-  // /* Render the sleuth bottom stats box */
-  // curr_y += sleuth_sprite_box.height + gap;
+  assert(person);
 
-  // sleuth_bot_stats_box.point = {sleuth_sprite_box.point.x + gap,
-  // sleuth_sprite_box.point.y};
-  // sleuth_bot_stats_box.width = sleuth_sprite_box.width;
-  // sleuth_bot_stats_box.height = main_section.location.height -
-  //                               sleuth_sprite_box.height -
-  //                               sleuth_top_box.height - gap * 4;
-  // setupDefaultBox(sleuth_bot_stats_box);
-  // sleuth_bot_stats_box.render(renderer);
+  /* Useable height */
+  current.y = main_section.location.point.y + s_top_box.height + gap - 1;
+  current.x = s_top_box.point.x;
 
-  // Text t_rank(font_header);
-  // Text t_race(font_header);
-  // Text t_race_title(font_subheader);
-  // Text t_class(font_header);
-  // Text t_class_title(font_subheader);
-  // Text t_prim_curve(font_curve);
-  // Text t_prim_title(font_subheader);
-  // Text t_prim(font_header);
-  // Text t_secd_curve(font_curve);
-  // Text t_secd_title(font_subheader);
-  // Text t_secd(font_header);
+  /* Render the top box with text "Details" */
+  s_top_box.point.y = current.y;
+  setupDefaultBox(s_top_box);
+  s_top_box.render(renderer);
 
-  // t_rank.setText(renderer, rank_str, kCOLOR_TEXT);
-  // t_race.setText(renderer, person->getRace()->getName(), kCOLOR_TEXT);
-  // t_race_title.setText(renderer, "RACE", kCOLOR_TEXT);
-  // t_class.setText(renderer, person->getClass()->getName(), kCOLOR_TEXT);
-  // t_class_title.setText(renderer, "CLASS", kCOLOR_TEXT);
-  // t_prim_curve.setText(renderer, prim_curve_str, kCOLOR_ELEMENTAL_CURVE);
-  // t_prim_title.setText(renderer, "PRIMARY ELEMENT", kCOLOR_TEXT);
-  // t_prim.setText(renderer, prim_element, kCOLOR_TEXT);
-  // t_secd_curve.setText(renderer, secd_curve_str, kCOLOR_ELEMENTAL_CURVE);
-  // t_secd_title.setText(renderer, "SECONDARY ELEMENT", kCOLOR_TEXT);
-  // t_secd.setText(renderer, secd_element, kCOLOR_TEXT);
+  current.y += s_top_box.height + gap;
 
-  // auto start = Coordinate{sleuth_bot_stats_box.point.x + 3 * gap / 2,
-  //                         sleuth_bot_stats_box.point.y + gap};
-  // auto current = start;
+  Text t_name{getFont(FontName::M_TITLE_ELM)};
+  t_name.setText(renderer, "Details", kCOLOR_TEXT);
+  t_name.render(renderer, s_top_box.point.x + gap, s_top_box.point.y +
+                                                       s_top_box.height / 2 -
+                                                       t_name.getHeight() / 2);
 
-  // /* Render column one text */
-  // t_rank.render(renderer, current.x, current.y);
-  // current.y += t_rank.getHeight() + gap * 2 / 3;
+  /* Render the text for the bottom statistics box */
+  auto rank_str = Helpers::rankToDisplayStr(person->getRank());
+  auto prim_element = Helpers::elementToDisplayString(person->getPrimary());
+  auto secd_element = Helpers::elementToDisplayString(person->getSecondary());
+  auto prim_curve_str =
+      Helpers::curveToString(person->getPrimaryCurve(), false);
+  auto secd_curve_str =
+      Helpers::curveToString(person->getSecondaryCurve(), false);
 
-  // t_race_title.render(renderer, current.x, current.y);
-  // current.y += t_race_title.getHeight() + gap / 6;
+  /* Render the sleuth bottom stats box */
+  s_bot_stats_box.point = current;
+  s_bot_stats_box.width =
+      (main_section.location.width - calcSleuthTileSize() - 4 * gap) / 2;
+  s_bot_stats_box.height = main_section.location.height / 4;
+  setupDefaultBox(s_bot_stats_box);
+  s_bot_stats_box.render(renderer);
 
-  // t_race.render(renderer, current.x, current.y);
-  // current.y += t_race.getHeight() + gap * 2 / 3;
+  Text t_rank{getFont(FontName::M_OPTIONS)};
+  Text t_race{getFont(FontName::M_OPTIONS)};
+  Text t_race_title{getFont(FontName::M_ITEM_HEADER)};
+  Text t_class{getFont(FontName::M_OPTIONS)};
+  Text t_class_title{getFont(FontName::M_ITEM_HEADER)};
+  Text t_prim_curve{getFont(FontName::M_CURVE)};
+  Text t_prim_title{getFont(FontName::M_CURVE)};
+  Text t_prim{getFont(FontName::M_OPTIONS)};
+  Text t_secd_curve{getFont(FontName::M_CURVE)};
+  Text t_secd_title{getFont(FontName::M_ITEM_HEADER)};
+  Text t_secd{getFont(FontName::M_OPTIONS)};
 
-  // t_class_title.render(renderer, current.x, current.y);
-  // current.y += t_class_title.getHeight() + gap / 6;
+  t_rank.setText(renderer, rank_str, kCOLOR_TEXT);
+  t_race.setText(renderer, person->getRace()->getName(), kCOLOR_TEXT);
+  t_race_title.setText(renderer, "RACE", kCOLOR_TEXT);
+  t_class.setText(renderer, person->getClass()->getName(), kCOLOR_TEXT);
+  t_class_title.setText(renderer, "CLASS", kCOLOR_TEXT);
+  t_prim_curve.setText(renderer, prim_curve_str, kCOLOR_ELEMENTAL_CURVE);
+  t_prim_title.setText(renderer, "PRIMARY ELEMENT", kCOLOR_TEXT);
+  t_prim.setText(renderer, prim_element, kCOLOR_TEXT);
+  t_secd_curve.setText(renderer, secd_curve_str, kCOLOR_ELEMENTAL_CURVE);
+  t_secd_title.setText(renderer, "SECONDARY ELEMENT", kCOLOR_TEXT);
+  t_secd.setText(renderer, secd_element, kCOLOR_TEXT);
 
-  // t_class.render(renderer, current.x, current.y);
+  auto start = Coordinate{s_bot_stats_box.point.x + 3 * gap / 2,
+                          s_bot_stats_box.point.y + gap};
+  auto current = start;
 
-  // /* Render column two text */
-  // current.x = start.x + sleuth_bot_stats_box.width / 2 - gap * 3 / 2;
-  // current.y = start.y + t_rank.getHeight() + gap / 2;
+  /* Render column one text */
+  t_rank.render(renderer, current.x, current.y);
+  current.y += t_rank.getHeight() + gap * 2 / 3;
 
-  // t_prim_title.render(renderer, current.x, current.y);
-  // current.y += t_prim_title.getHeight() + gap / 6;
+  t_race_title.render(renderer, current.x, current.y);
+  current.y += t_race_title.getHeight() + gap / 6;
 
-  // t_prim.render(renderer, current.x, current.y);
-  // auto curve_x = current.x + t_prim.getWidth() + gap / 3;
-  // auto curve_y = current.y + t_prim.getHeight() - t_prim_curve.getHeight();
+  t_race.render(renderer, current.x, current.y);
+  current.y += t_race.getHeight() + gap * 2 / 3;
 
-  // t_prim_curve.render(renderer, curve_x, curve_y);
-  // current.y += t_prim.getHeight() + gap * 2 / 3;
+  t_class_title.render(renderer, current.x, current.y);
+  current.y += t_class_title.getHeight() + gap / 6;
 
-  // t_secd_title.render(renderer, current.x, current.y);
-  // current.y += t_secd_title.getHeight() + gap / 6;
+  t_class.render(renderer, current.x, current.y);
 
-  // t_secd.render(renderer, current.x, current.y);
-  // curve_x = current.x + t_secd.getWidth() + gap / 3;
-  // curve_y = current.y + t_secd.getHeight() - t_secd_curve.getHeight();
+  /* Render column two text */
+  current.x = start.x + s_bot_stats_box.width / 2 - gap * 3 / 2;
+  current.y = start.y + t_rank.getHeight() + gap / 2;
 
-  // t_secd_curve.render(renderer, curve_x, curve_y);
+  t_prim_title.render(renderer, current.x, current.y);
+  current.y += t_prim_title.getHeight() + gap / 6;
+
+  t_prim.render(renderer, current.x, current.y);
+  auto curve_x = current.x + t_prim.getWidth() + gap / 3;
+  auto curve_y = current.y + t_prim.getHeight() - t_prim_curve.getHeight();
+
+  t_prim_curve.render(renderer, curve_x, curve_y);
+  current.y += t_prim.getHeight() + gap * 2 / 3;
+
+  t_secd_title.render(renderer, current.x, current.y);
+  current.y += t_secd_title.getHeight() + gap / 6;
+
+  t_secd.render(renderer, current.x, current.y);
+  curve_x = current.x + t_secd.getWidth() + gap / 3;
+  curve_y = current.y + t_secd.getHeight() - t_secd_curve.getHeight();
+
+  t_secd_curve.render(renderer, curve_x, curve_y);
 }
 
 void Menu::renderSleuthRecord()
@@ -2495,6 +2477,21 @@ Person* Menu::getCurrentPerson()
   return nullptr;
 }
 
+TTF_Font* Menu::getFont(FontName font_name)
+{
+  if(config && event_handler)
+  {
+    auto font = config->getFontTTF(font_name);
+
+    if(font)
+      return font;
+    else
+      event_handler->logError("Null font requested");
+  }
+
+  return nullptr;
+}
+
 /* Returns the enumerated MenuType of the Menu Seciton currently */
 MenuType Menu::getMainMenuType()
 {
@@ -2509,12 +2506,14 @@ MenuType Menu::getSleuthMenuType()
 {
   if(person_element_index == 0)
     return MenuType::SLEUTH_OVERVIEW;
+  // TODO [05-22-16]: Add equipment screen when equipment is ready
   // else if(person_element_index == 1)
   //   return MenuType::SLEUTH_EQUIPMENT;
   else if(person_element_index == 1)
     return MenuType::SLEUTH_SKILLS;
   else if(person_element_index == 2)
     return MenuType::SLEUTH_DETAILS;
+  // TODO [05-22-16]: Add record screen when personal record is ready
   // else if(person_element_index == 4)
   //   return MenuType::SLEUTH_RECORD;
 

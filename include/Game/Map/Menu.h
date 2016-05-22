@@ -572,6 +572,9 @@ private:
   Skill* getCurrentSkill();
   Person* getCurrentPerson();
 
+  /* Returns the requested menu font */
+  TTF_Font* getFont(FontName font_name);
+
   /* Returns the MenuType currently rendering */
   MenuType getMainMenuType();
 

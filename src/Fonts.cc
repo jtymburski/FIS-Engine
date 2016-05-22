@@ -90,34 +90,34 @@ bool Fonts::createFonts(Options* config)
                   Text::createFont(config->getBasePath() + config->getFont(),
                                    24, TTF_STYLE_BOLD));
     /* Menu Fonts */
-    fonts.emplace(FontName::MENU_CURVE,
+    fonts.emplace(FontName::M_CURVE,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    10, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_ITEM_HEADER,
+    fonts.emplace(FontName::M_ITEM_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    12, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_MAIN_TITLE,
+    fonts.emplace(FontName::M_MAIN_TITLE,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    30, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_TITLE_ELEMENT,
+    fonts.emplace(FontName::M_TITLE_ELM,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    24, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_HEADER,
+    fonts.emplace(FontName::M_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    18, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_OPTIONS,
+    fonts.emplace(FontName::M_OPTIONS,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    16, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_VALUE,
+    fonts.emplace(FontName::M_VALUE,
                   Text::createFont(config->getBasePath() + config->getFont(4),
                                    14, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_SUBHEADER,
+    fonts.emplace(FontName::M_SUBHEADER,
                   Text::createFont(config->getBasePath() + config->getFont(4),
                                    14, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_STANDARD,
+    fonts.emplace(FontName::M_STANDARD,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    14, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::MENU_SMALL_TITLE_ELEMENT,
+    fonts.emplace(FontName::M_SMALL_TITLE_ELM,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    20, TTF_STYLE_NORMAL));
 
