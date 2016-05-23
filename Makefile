@@ -43,6 +43,7 @@ else
 endif
 
 SOURCES=src/Application.cc \
+        src/Box.cc \
         src/FileHandler.cc \
         src/Fonts.cc \
         src/Frame.cc \
@@ -60,10 +61,10 @@ SOURCES=src/Application.cc \
         src/XmlData.cc \
         src/Game/EventHandler.cc \
 				src/Game/EventSet.cc \
+        src/Game/Game.cc \
         src/Game/KeyHandler.cc \
         src/Game/Lay.cc \
-        src/Box.cc \
-        src/Game/Game.cc \
+        src/Game/Save.cc \
         src/Game/Battle/AIModule.cc \
         src/Game/Battle/Battle.cc \
         src/Game/Battle/BattleActor.cc \

@@ -513,26 +513,26 @@ bool Inventory::contains(const int32_t& id_check)
  */
 uint32_t Inventory::hasRoom(Bubby* const b, uint32_t n)
 {
-  auto need_check = true;
-
-  if(b == nullptr)
+  if(b)
   {
-    need_check = false;
+    if(!getFlag(InvState::SHOP_STORAGE))
+    {
+      n = std::min(bubby_limit - getBubbyTotalCount(), n);
+
+      if(b->getMass() > 0)
+      {
+        auto lim = std::floor((mass_limit - getMass()) / b->getMass());
+        n = std::min(static_cast<uint32_t>(lim), n);
+      }
+    }
+    else
+    {
+      n = kMAX_ITEM;
+    }
+  }
+  else
+  {
     n = 0;
-  }
-
-  if(getFlag(InvState::SHOP_STORAGE))
-  {
-    need_check = false;
-    n = kMAX_ITEM;
-  }
-
-  if(need_check)
-  {
-    n = std::min(bubby_limit - getBubbyTotalCount(), n);
-    auto lim = std::floor((mass_limit - getMass()) / b->getMass());
-    if(b->getMass() > 0)
-      n = std::min(static_cast<uint32_t>(lim), n);
   }
 
   return n;
@@ -547,27 +547,26 @@ uint32_t Inventory::hasRoom(Bubby* const b, uint32_t n)
  */
 uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
 {
-  auto need_check = true;
-
-  if(equip == nullptr)
+  if(equip)
   {
-    need_check = false;
+    if(!getFlag(InvState::SHOP_STORAGE))
+    {
+      n = std::min(equip_limit - getEquipTotalCount(), n);
+
+      if(equip->getMass() > 0)
+      {
+        auto lim = std::floor((mass_limit - getMass()) / equip->getMass());
+        n = std::min(static_cast<uint32_t>(lim), n);
+      }
+    }
+    else
+    {
+      n = kMAX_ITEM;
+    }
+  }
+  else
+  {
     n = 0;
-  }
-
-  if(getFlag(InvState::SHOP_STORAGE))
-  {
-    need_check = false;
-    n = kMAX_ITEM;
-  }
-
-  if(need_check)
-  {
-    n = std::min(equip_limit - getEquipCount(equip->getGameID()), n);
-
-    auto lim = std::floor((mass_limit - getMass()) / equip->getMass());
-    if(equip->getMass() > 0)
-      n = std::min(static_cast<uint32_t>(lim), n);
   }
 
   return n;
@@ -585,11 +584,14 @@ uint32_t Inventory::hasRoom(Item* const i, uint32_t n)
   if(i && !getFlag(InvState::SHOP_STORAGE) && !i->getFlag(ItemFlags::KEY_ITEM))
   {
     auto count = getItemTotalCount(false);
-    auto mass_lim = std::floor((mass_limit - getMass()) * 1000 / i->getMass());
-
     n = std::min(item_limit - count, n);
+
     if(i->getMass() > 0)
+    {
+      auto mass_lim =
+          std::floor((mass_limit - getMass()) * 1000 / i->getMass());
       n = std::min(static_cast<uint32_t>(mass_lim), n);
+    }
   }
 
   return n;

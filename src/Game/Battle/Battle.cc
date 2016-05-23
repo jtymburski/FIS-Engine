@@ -1323,7 +1323,7 @@ void Battle::updateProcessing()
 void Battle::updateScreenDim()
 {
   auto element = new RenderElement();
-  element->createAsRGBOverlay({0, 0, 0, 150}, 3000, 500, 1250,
+  element->createAsRGBOverlay({0, 0, 0, 255}, 2500, 0, 2200,
                               config->getScreenHeight(),
                               config->getScreenWidth());
   render_elements.push_back(element);
@@ -1989,7 +1989,8 @@ bool Battle::render()
 {
   auto success = false;
 
-  if(config && turn_state != TurnState::FINISHED)
+  if(config && turn_state != TurnState::FINISHED &&
+     turn_state != TurnState::BEGIN)
   {
     auto height = config->getScreenHeight();
     auto width = config->getScreenWidth();
