@@ -616,6 +616,9 @@ public:
   /* Hide the Menu */
   void hide();
 
+  /* Returns true if the main section is sliding */
+  bool isMainSliding();
+
   /* Key down event */
   bool keyDownEvent();
 

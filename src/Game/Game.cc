@@ -1714,7 +1714,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(mode == MAP && !map_menu.getFlag(MenuState::SHOWING))
       changeMode(MENU);
-    else if(mode == MENU)
+    else if(mode == MENU && !map_menu.isMainSliding())
       eventMenuHide();
   }
   else if(event.keysym.sym == SDLK_3)
@@ -2255,7 +2255,8 @@ bool Game::update(int32_t cycle_time)
     if(!map_menu.getFlag(MenuState::SHOWING))
       changeMode(MAP);
 
-    return map_menu.update(cycle_time);
+    //TODO [05-22-16]: Update alterations for map JMT // JT // J MICHAEL T
+    return map_menu.update(cycle_time); //map_ctrl.update(cycle_time)
   }
 
   return false;

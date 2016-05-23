@@ -2318,19 +2318,19 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   if(isModeNormal())
   {
     /* Exit the map, map has finished processing */
-    if(event.keysym.sym == SDLK_ESCAPE)
-    {
-      if(item_menu.isActive())
-        item_menu.close();
-      else
-      {
-        unfocus();
-        return true;
-      }
-    }
+    // if(event.keysym.sym == SDLK_ESCAPE)
+    // {
+    //   if(item_menu.isActive())
+    //     item_menu.close();
+    //   else
+    //   {
+    //     unfocus();
+    //     return true;
+    //   }
+    // }
     /* ---- START TEST CODE ---- */
     /* Test: trigger grey scale */
-    else if(event.keysym.sym == SDLK_g)
+    if(event.keysym.sym == SDLK_g)
     {
       bool enable = !tile_sprites[0]->isGreyScale();
       for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
@@ -3215,15 +3215,14 @@ void Map::unloadMap()
   /* Delete all sub-maps and data within */
   for(uint32_t i = 0; i < sub_map.size(); i++)
   {
-    /* Delete the instance IOs */
-    for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
+    /* Delete theF= 0; j < sub_map[i].ios.size(); j++)
     {
       delete sub_map[i].ios[j];
       sub_map[i].ios[j] = nullptr;
     }
     sub_map[i].ios.clear();
 
-    /* Delete the instance items */
+    Delete the instance items */
     for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
     {
       delete sub_map[i].items[j];

@@ -134,7 +134,7 @@ const float Menu::kTITLE_ELEMENT_X_OFFSET{0.01};
 const float Menu::kTITLE_Y_OFFSET{0.05};
 const float Menu::kTITLE_ELEMENT_GAP{0.80};
 const float Menu::kTITLE_CORNER_LENGTH{0.02};
-const float Menu::kTITLE_SLIDE_RATE{1.3};
+const float Menu::kTITLE_SLIDE_RATE{1.1};
 const float Menu::kTITLE_LOCATION_Y_OFFSET{0.63};
 const float Menu::kTITLE_ICONS_Y_GAP{0.05};
 const float Menu::kTITLE_ICON_TEXT_X{0.025};
@@ -147,7 +147,7 @@ const float Menu::kTITLE_HOVER_MAX{0.8};
 
 /* Main Section General */
 const uint8_t Menu::kMAIN_ALPHA{191};
-const float Menu::kMAIN_SLIDE_RATE{1.7};
+const float Menu::kMAIN_SLIDE_RATE{1.8};
 const float Menu::kMAIN_CORNER_LENGTH{0.025};
 const float Menu::kINV_WIDTH{0.53};
 const float Menu::kOPTIONS_WIDTH{0.40};
@@ -849,6 +849,7 @@ void Menu::decrementInventoryIndex()
   unselectInventoryIndex();
   auto new_index = static_cast<uint32_t>(inventory_title_index) - 1;
   inventory_title_index = static_cast<InventoryIndex>(new_index);
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
   selectInventoryIndex();
 }
 
@@ -857,6 +858,7 @@ void Menu::decrementOptionIndex()
 {
   unselectOptionIndex();
   option_element_index--;
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
   selectOptionIndex();
 }
 
@@ -864,12 +866,14 @@ void Menu::decrementQuitIndex()
 {
   auto new_index = static_cast<uint32_t>(quit_index) - 1;
   quit_index = static_cast<QuitIndex>(new_index);
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
 }
 
 void Menu::decrementSleuthIndex()
 {
   unselectSleuthIndex();
   sleuth_element_index--;
+
   selectSleuthIndex();
 }
 
@@ -878,6 +882,7 @@ void Menu::incrementInventoryIndex()
   unselectInventoryIndex();
   auto new_index = static_cast<uint32_t>(inventory_title_index) + 1;
   inventory_title_index = static_cast<InventoryIndex>(new_index);
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
   selectInventoryIndex();
 }
 
@@ -885,6 +890,7 @@ void Menu::incrementOptionIndex()
 {
   unselectOptionIndex();
   option_element_index++;
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
   selectOptionIndex();
 }
 
@@ -892,12 +898,14 @@ void Menu::incrementQuitIndex()
 {
   auto new_index = static_cast<uint32_t>(quit_index) + 1;
   quit_index = static_cast<QuitIndex>(new_index);
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
 }
 
 void Menu::incrementSleuthIndex()
 {
   unselectSleuthIndex();
   sleuth_element_index++;
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
   selectSleuthIndex();
 }
 
@@ -2474,8 +2482,8 @@ void Menu::renderSleuthDetailsExp()
     auto exp_at_next = Person::getExpAt(person->getLevel() + 1);
     auto total_str = std::to_string(person->getTotalExp());
     auto curr_exp = std::to_string(total_exp - exp_at_curr);
-    auto mod_exp = std::to_string((int32_t)person->getExpMod() * 100);
-    auto mod_dmg = std::to_string((int32_t)person->getDmgMod() * 100);
+    auto mod_exp = std::to_string((int32_t)person->getExpMod() * 100) + "\%";
+    auto mod_dmg = std::to_string((int32_t)person->getDmgMod() * 100) + "\%";
     auto max_exp_str = "   " + Helpers::formatUInt(Person::getMaxExp(), " ");
     auto progress = std::to_string(person->findExpPercent()) + "\%";
     std::string next_exp = "MAX LEVEL";
@@ -2817,6 +2825,7 @@ void Menu::clear()
 /* Hides the menu */
 void Menu::hide()
 {
+  event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV, SoundChannels::MENUS);
   title_section.status = WindowStatus::HIDING;
   title_element_index = -1;
   layer = MenuLayer::INVALID;
@@ -2862,13 +2871,21 @@ void Menu::keyDownUp()
       if(person_element_index == 1)
       {
         if(skills_scroll_box.prevIndex())
+        {
+          event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                      SoundChannels::MENUS);
           skills_element_index--;
+        }
       }
     }
     if(getMainMenuType() == MenuType::INVENTORY)
     {
       if(inventory_scroll_box.prevIndex())
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         inventory_element_index--;
+      }
     }
   }
 }
@@ -2913,13 +2930,21 @@ void Menu::keyDownDown()
       if(person_element_index == 1)
       {
         if(skills_scroll_box.nextIndex())
+        {
+          event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                      SoundChannels::MENUS);
           skills_element_index++;
+        }
       }
     }
     if(getMainMenuType() == MenuType::INVENTORY)
     {
       if(inventory_scroll_box.nextIndex())
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         inventory_element_index++;
+      }
     }
   }
 }
@@ -2931,14 +2956,26 @@ void Menu::keyDownLeft()
     if(getMainMenuType() == MenuType::SLEUTH)
     {
       if(person_element_index > 0)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         person_element_index--;
+      }
     }
     else if(getMainMenuType() == MenuType::OPTIONS)
     {
       if(option_element_index == 0)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         option_audio_level.decrease();
+      }
       else if(option_element_index == 1)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         option_music_level.decrease();
+      }
     }
     else if(getMainMenuType() == MenuType::QUIT)
     {
@@ -2955,14 +2992,26 @@ void Menu::keyDownRight()
     if(getMainMenuType() == MenuType::SLEUTH)
     {
       if((uint32_t)person_element_index + 1 < person_title_elements.size())
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         person_element_index++;
+      }
     }
     else if(getMainMenuType() == MenuType::OPTIONS)
     {
       if(option_element_index == 0)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         option_audio_level.increase();
+      }
       else if(option_element_index == 1)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
         option_music_level.increase();
+      }
     }
     else if(getMainMenuType() == MenuType::QUIT)
     {
@@ -2979,10 +3028,13 @@ void Menu::keyDownAction()
   {
     if(title_element_index < (int32_t)title_elements.size())
     {
+      event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                  SoundChannels::MENUS);
       layer = MenuLayer::MAIN;
 
       /* Construct the main section with the appropriate parameters */
       buildMainSection(getMainMenuType());
+
       main_section.status = WindowStatus::SHOWING;
     }
   }
@@ -2992,6 +3044,8 @@ void Menu::keyDownAction()
     {
       if(person_element_index == 1)
       {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
         layer = MenuLayer::MAIN_INDENT;
         skills_top_box.setFlag(BoxState::SELECTED);
         skills_name_box.setFlag(BoxState::SELECTED);
@@ -3002,9 +3056,17 @@ void Menu::keyDownAction()
     else if(getMainMenuType() == MenuType::OPTIONS)
     {
       if(option_element_index == 2)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
         option_auto_run.toggle();
+      }
       else if(option_element_index == 3)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
         option_mute.toggle();
+      }
     }
     else if(getMainMenuType() == MenuType::INVENTORY && player_inventory)
     {
@@ -3035,6 +3097,8 @@ void Menu::keyDownAction()
       /* Indent the Menu */
       if(success)
       {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
         layer = MenuLayer::MAIN_INDENT;
         inventory_top_box.setFlag(BoxState::SELECTED);
         inventory_scroll_box.setFlag(BoxState::SELECTED);
@@ -3066,26 +3130,40 @@ void Menu::keyDownCancel()
       skills_top_box.setFlag(BoxState::SELECTED, false);
       skills_name_box.setFlag(BoxState::SELECTED, false);
       layer = MenuLayer::MAIN;
+      event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV,
+                                  SoundChannels::MENUS);
     }
-    if(getMainMenuType() == MenuType::INVENTORY)
+    else if(getMainMenuType() == MenuType::INVENTORY)
     {
       inventory_element_index = -1;
       layer = MenuLayer::MAIN;
       inventory_top_box.setFlag(BoxState::SELECTED, false);
       inventory_scroll_box.setFlag(BoxState::SELECTED, false);
+      event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV,
+                                  SoundChannels::MENUS);
     }
   }
   else if(main_section.status == WindowStatus::ON)
   {
     layer = MenuLayer::TITLE;
     main_section.status = WindowStatus::HIDING;
+    event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV,
+                                SoundChannels::MENUS);
   }
   else if(title_section.status == WindowStatus::ON &&
           (main_section.status == WindowStatus::OFF ||
            main_section.status == WindowStatus::ON))
   {
     hide();
+    event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV,
+                                SoundChannels::MENUS);
   }
+}
+
+bool Menu::isMainSliding()
+{
+  return main_section.status == WindowStatus::SHOWING ||
+         main_section.status == WindowStatus::HIDING;
 }
 
 /* Process key down event */
@@ -3134,6 +3212,12 @@ bool Menu::keyDownEvent()
 /* Show the menu status */
 void Menu::show()
 {
+  if(event_handler)
+  {
+    event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                SoundChannels::MENUS);
+  }
+
   clear();
 
   setFlag(MenuState::SHOWING, true);
@@ -3224,6 +3308,7 @@ bool Menu::update(int32_t cycle_time)
   if(getFlag(MenuState::QUITTING))
   {
     setFlag(MenuState::QUITTING, false);
+    setFlag(MenuState::SHOWING, false);
 
     return true;
   }
