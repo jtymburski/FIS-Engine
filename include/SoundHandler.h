@@ -48,7 +48,7 @@ private:
   /* Clean up the queue - pre-processing */
   void queueCleanUp();
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Add sound files */
   bool addMusic(Sound* chunk);
@@ -87,7 +87,7 @@ public:
   void setAudioLevel(uint8_t audio_level);
   void setMusicLevel(uint8_t music_level);
 
-  /*===================== PUBLIC STATIC FUNCTIONS ===========================*/
+/*===================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Pause all channels or select channels */
   // static void pauseAllChannels();

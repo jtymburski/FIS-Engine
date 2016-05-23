@@ -777,7 +777,10 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
     {
       StateNode* node_parse = node_head;
       while(node_parse != nullptr && id > 0)
+      {
         node_parse = node_parse->next;
+        id--;
+      }
       if(node_parse != nullptr)
         node_current = node_parse;
       else

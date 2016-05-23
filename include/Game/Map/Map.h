@@ -389,7 +389,7 @@ public:
 
   /* Loads the map data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
-                std::string base_path);
+                std::string base_path, bool from_save = false);
   void loadDataFinish(SDL_Renderer* renderer);
 
   /* Modify thing properties based on passed in properties */

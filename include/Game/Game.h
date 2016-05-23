@@ -125,6 +125,7 @@ public:
   static const std::string kSAVE_IMG_BACK; /* Back of save img path */
   static const std::string kSAVE_PATH_BACK; /* Back of save path */
   static const std::string kSAVE_PATH_FRONT; /* Front of save path */
+  static const uint8_t kSAVE_SLOT_DEFAULT; /* The default save slot */
   static const uint8_t kSAVE_SLOT_MAX; /* Max number of save slots */
 
 /*======================== PRIVATE FUNCTIONS ===============================*/
@@ -200,11 +201,15 @@ private:
 
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
-            std::string inst_file = "", bool encryption = false,
+            uint8_t slot = 0, bool encryption = false,
             bool full_load = true);
 
   /* Load game data */
-  bool loadData(XmlData data, int index, SDL_Renderer* renderer);
+  bool loadData(FileHandler* fh, SDL_Renderer* renderer,
+                bool core_data = false, bool save_data = false,
+                std::string level = "");
+  bool loadData(XmlData data, int index, SDL_Renderer* renderer,
+                bool from_save = false);
 
   /* Parse lock and attempt unlock */
   bool parseLock(Locked& lock_struct);
@@ -275,7 +280,7 @@ public:
   void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Load game */
-  bool load(SDL_Renderer* renderer, bool full_load = true);
+  bool load(SDL_Renderer* renderer, bool full_load = true, uint8_t slot = 0);
 
   /* Pauses der game in der Wald, ja ja ja */
   //void pause(); // TODO: implement
@@ -284,7 +289,7 @@ public:
   bool render(SDL_Renderer* renderer);
 
   /* Save game based on the current slot number */
-  bool save();
+  bool save(uint8_t slot = 0);
 
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
@@ -294,9 +299,6 @@ public:
 
   /* Sets the active renderer to be used */
   void setRenderer(SDL_Renderer* renderer);
-
-  /* Sets the active save slot. This needs to be set prior to load */
-  bool setSaveSlot(uint8_t slot);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);
@@ -311,6 +313,12 @@ public:
 
   /* Updates the game state */
   bool update(int cycle_time);
+
+/*===================== PUBLIC STATIC FUNCTIONS ===========================*/
+public:
+  /* Returns the save string based on the slot number */
+  static std::string getSlotPath(uint8_t slot, std::string base_path = "",
+                                 bool image = false);
 };
 
 #endif // GAME_H

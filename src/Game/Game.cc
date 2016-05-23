@@ -26,6 +26,7 @@
 const std::string Game::kSAVE_IMG_BACK = ".bmp";
 const std::string Game::kSAVE_PATH_BACK = ".save";
 const std::string Game::kSAVE_PATH_FRONT = "saves/slot";
+const uint8_t Game::kSAVE_SLOT_DEFAULT = 1;
 const uint8_t Game::kSAVE_SLOT_MAX = 8;
 
 /*============================================================================
@@ -53,7 +54,7 @@ Game::Game(Options* running_config)
   mode_load = NOLOAD;
   mode_next = NONE;
   player_main = nullptr;
-  save_slot = 1;
+  save_slot = 0;
 
   /* Set up map class */
   map_ctrl.setConfiguration(config);
@@ -548,7 +549,7 @@ void Game::eventSwitchMap(int map_id)
   if(map_id >= 0 && map_id != map_lvl)
   {
     map_lvl = map_id;
-    load(game_path, active_renderer, "", false, false);
+    load(active_renderer, false);
   }
 }
 
@@ -653,25 +654,16 @@ void Game::updatePlayerSteps()
   {
     player_main->addSteps(map_ctrl.getPlayerSteps());
     map_ctrl.resetPlayerSteps();
-    // std::cout << "Steps: " << player_main->getSteps() << std::endl;
   }
 }
 
-/* Load game */
-// TODO: Comment
-// Notes: Revise that when inst file is blank, it uses default starting map.
-//        Otherwise, determine current map from inst first, then load correct
-//        base followed by correct inst map and all associated data.
+/* Load game - main function call */
 bool Game::load(std::string base_file, SDL_Renderer* renderer,
-                std::string inst_file, bool encryption, bool full_load)
+                uint8_t slot, bool encryption, bool full_load)
 {
-  (void)inst_file;
-
-  bool done = false;
-  bool read_success = true;
-  int index = 0;
-  std::string level = std::to_string(map_lvl);
   bool success = true;
+  std::cout << base_file << "," << slot << "," << full_load << ","
+            << map_lvl << std::endl;
 
   /* Update the player step count */
   updatePlayerSteps();
@@ -686,64 +678,74 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   if(full_load)
     player_main = new Player();
 
-  /* Create the file handler */
-  FileHandler fh(base_file, false, true, encryption);
-  XmlData data;
+  /* Create the base file handler */
+  FileHandler fh_base(base_file, false, true, encryption);
+  success &= fh_base.start();
 
-  /* Start the map read */
-  success &= fh.start();
-  std::string type = " - SUB";
-  if(full_load)
-    type = " - FULL";
-  std::cout << "--" << std::endl
-            << "Game Load: " << fh.getDate() << type << std::endl
-            << "--" << std::endl;
+  /* Create the save slot file handler, if applicable */
+  FileHandler fh_slot(getSlotPath(slot, base_path), false, true, encryption);
+  bool slot_valid = (slot > 0);
+  if(slot_valid)
+    slot_valid &= fh_slot.start();
 
-  /* Timer to calculate Core Game load time */
+  /* Timer to calculate the game load time */
   Timer t;
 
-  /* If file open was successful, move forward */
+  //std::cout << "1: " << success << std::endl;
+
+  /* Core data first, if applicable */
+  if(success && full_load)
+  {
+    /* Base file */
+    success &= loadData(&fh_base, renderer, true, false);
+
+    //std::cout << "2: " << success << std::endl;
+
+    /* Player set-up */
+    player_main->setSleuth(getParty(Party::kID_SLEUTH));
+    player_main->setBearacks(getParty(Party::kID_BEARACKS));
+
+    //std::cout << "3: " << success << std::endl;
+
+    /* Slot file */
+    if(slot_valid)
+      success &= loadData(&fh_slot, renderer, true, true);
+  }
+
+  //std::cout << "4: " << success << std::endl;
+
+  /* Map data to follow */
   if(success)
   {
-    do
-    {
-      /* Read set of XML data */
-      data = fh.readXmlData(&done, &read_success);
-      success &= read_success;
+    std::string level = std::to_string(map_lvl);
 
-      /* Only proceed if inside game */
-      if(data.getElement(index) == "game")
-      {
-        /* Core game data */
-        if(data.getElement(index + 1) == "core" && full_load)
-        {
-          success &= loadData(data, index + 2, renderer);
-        }
-        /* Map data */
-        else if(data.getElement(index + 1) == "map" &&
-                data.getKeyValue(index + 1) == level)
-        {
-          success &= map_ctrl.loadData(data, index + 2, renderer, base_path);
-        }
-      }
-    } while(!done); // && success); // TODO: Success in loop??
+    /* Base file */
+    fh_base.xmlToHead();
+    success &= loadData(&fh_base, renderer, false, false, level);
+    
+    //std::cout << "5: " << success << std::endl;
+    
+    /* Slot file */
+    if(slot_valid)
+    {
+      fh_slot.xmlToHead();
+      success &= loadData(&fh_slot, renderer, false, true, level);
+    }
   }
+
+  //std::cout << "6: " << success << std::endl;
 
   /* Print the time to load out */
   std::cout << "Game Load Time: " << t.elapsed() << "s" << std::endl;
 
-  success &= fh.stop();
+  /* Stop the handler */
+  success &= fh_base.stop();
+  if(slot_valid)
+    success &= fh_slot.stop();
 
   /* If the load was successful, proceed to clean-up */
   if(success)
   {
-    if(full_load)
-    {
-      /* Player set-up */
-      player_main->setSleuth(getParty(Party::kID_SLEUTH));
-      player_main->setBearacks(getParty(Party::kID_BEARACKS));
-    }
-
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
     map_ctrl.disableInteraction(event_disable);
@@ -764,9 +766,60 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   return success;
 }
 
+/* Load game data */
+bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer,
+                    bool core_data, bool save_data, std::string level)
+{
+  XmlData data;
+  bool done = false;
+  int index = 0;
+  bool read_success = true;
+  bool success = true;
+
+  do
+  {
+    /* Read set of XML data */
+    data = fh->readXmlData(&done, &read_success);
+    success &= read_success;
+
+    /* Only proceed if inside game */
+    if(data.getElement(index) == "game")
+    {
+      /* If core data load */
+      if(core_data)
+      {
+        /* General game data */
+        if(data.getElement(index + 1) == "core")
+        {
+          success &= loadData(data, index + 2, renderer, save_data);
+        }
+        /* Current Map Index */
+        else if(data.getElement(index + 1) == "currentmap" && save_data)
+        {
+          // TODO
+        }
+      }
+      /* If map data load */
+      else
+      {
+        /* Map data */
+        if(data.getElement(index + 1) == "map" &&
+           data.getKeyValue(index + 1) == level)
+        {
+          success &= map_ctrl.loadData(data, index + 2, renderer,
+                                       base_path, save_data);
+        }
+      }
+    }
+  } while(!done); // && success); /* Success in loop?? */
+
+  return success;
+}
+
 /* Load game specific data */
 // TODO: Comment
-bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
+bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
+                    bool from_save)
 {
   bool success = true;
   std::string element = data.getElement(index);
@@ -1025,6 +1078,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer)
     }
   }
 
+  //std::cout << "Core loadData: " << element << ","
+  //          << data.getElement(index + 1) << "." << success << std::endl;
   return success;
 }
 
@@ -1660,6 +1715,7 @@ SkillSet* Game::getSkillSet(const int32_t& index, const bool& by_id)
   return nullptr;
 }
 
+/* Returns the event handler */
 EventHandler& Game::getHandler()
 {
   return event_handler;
@@ -1751,6 +1807,16 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_5)
   {
     save();
+  }
+  else if(event.keysym.sym == SDLK_6)
+  {
+    save(3);
+  }
+  else if(event.keysym.sym == SDLK_7)
+  {
+    save_slot = 1;
+    changeMode(LOADING);
+    mode_load = FULLLOAD;
   }
   /* Disable events Key */
   else if(event.keysym.sym == SDLK_F1)
@@ -1881,9 +1947,9 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 }
 
 /* Load game */
-bool Game::load(SDL_Renderer* renderer, bool full_load)
+bool Game::load(SDL_Renderer* renderer, bool full_load, uint8_t slot)
 {
-  return load(base_path + game_path, renderer, "", false, full_load);
+  return load(base_path + game_path, renderer, slot, false, full_load);
 }
 
 /* Renders the title screen */
@@ -1895,9 +1961,9 @@ bool Game::render(SDL_Renderer* renderer)
   if(mode == LOADING)
   {
     if(!isLoadedCore() || mode_load == FULLLOAD)
-      load(renderer, true);
+      load(renderer, true, save_slot);
     else
-      load(renderer, false);
+      load(renderer, false, save_slot);
     mode_load = NOLOAD;
   }
 
@@ -1934,78 +2000,100 @@ bool Game::render(SDL_Renderer* renderer)
 }
 
 /* Save game based on the current slot number */
-bool Game::save()
+bool Game::save(uint8_t slot)
 {
-  bool success = true;
-
-  /* Path for save */
-  std::string init_path = base_path + kSAVE_PATH_FRONT;
-  if(save_slot < 10)
-    init_path += "0";
-  init_path += std::to_string(save_slot);
-  std::string save_path = init_path + kSAVE_PATH_BACK;
-  std::string save_path_img = init_path + kSAVE_IMG_BACK;
-
-  /* Start file write */
-  if(save_handle.isAvailable() && save_handle.getFilename() != save_path)
-    save_handle.stop(true);
-  if(!save_handle.isAvailable())
+  if(slot <= kSAVE_SLOT_MAX)
   {
-    save_handle.setEncryptionEnabled(false);
-    save_handle.setFilename(save_path);
-    save_handle.setWriteEnabled(true);
-    save_handle.setFileType(FileHandler::XML);
-    success &= save_handle.start(true);
-  }
+    bool success = true;
 
-  /* If handle is ready to go, proceed */
-  if(save_handle.isAvailable() && success)
-  {
-    /* Get a BMP of the current surface */
-    SDL_Rect rect = map_ctrl.getSnapshotRect();
-    SDL_Surface* sshot = SDL_CreateRGBSurface(
-        0, rect.w, rect.h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-    SDL_RenderReadPixels(active_renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
-                         sshot->pixels, sshot->pitch);
-    SDL_Surface* sshot2 =
-        SDL_CreateRGBSurface(0, rect.w / 4, rect.h / 4, 32, 0x00ff0000,
-                             0x0000ff00, 0x000000ff, 0xff000000);
-    SDL_BlitScaled(sshot, NULL, sshot2, NULL);
-    SDL_SaveBMP(sshot2, save_path_img.c_str());
-    SDL_FreeSurface(sshot);
-    SDL_FreeSurface(sshot2);
-
-    /* Setup the core data */
-    XmlData data_core;
-    data_core.addElement("game");
-    data_core.addElement("core");
-    save_handle.purgeElement(data_core, true);
-
-    /* Write the core data */
-    if(player_main != nullptr)
+    /* Get the proper save slot number and file name */
+    if(slot == 0)
     {
-      /* Write player data which contains all other data related */
-      updatePlayerSteps();
-      success &= player_main->saveData(&save_handle);
+      /* If the passed slot is out of range, try and use the stored slot */
+      slot = save_slot;
+
+      /* If the stored slot is out of range, use the default slot */
+      if(slot == 0)
+        slot = kSAVE_SLOT_DEFAULT;
+    }
+    std::string save_path = getSlotPath(slot, base_path);
+    std::string save_path_img = getSlotPath(slot, base_path, true);
+
+    /* If the slot is different, the old data needs to be copied */
+    if(slot != save_slot && save_slot > 0)
+    {
+      std::string old_path = getSlotPath(save_slot, base_path);
+      if(FileHandler::fileExists(old_path))
+        success &= FileHandler::fileCopy(old_path, save_path, true);
     }
 
-    if(map_ctrl.isLoaded())
+    /* Start file write */
+    if(save_handle.isAvailable() && save_handle.getFilename() != save_path)
+       save_handle.stop(true);
+    if(!save_handle.isAvailable())
     {
-      /* Setup the map data */
-      XmlData data_map;
-      data_map.addElement("game");
-      data_map.addElement("map", "id", std::to_string(map_lvl));
-      save_handle.purgeElement(data_map, true);
-
-      /* Write the map data */
-      success &= map_ctrl.saveData(&save_handle);
+      save_handle.setEncryptionEnabled(false);
+      save_handle.setFilename(save_path);
+      save_handle.setWriteEnabled(true);
+      save_handle.setFileType(FileHandler::XML);
+      success &= save_handle.start(true);
     }
 
-    /* Finish the file write */
-    save_handle.stop(!success);
-  }
+    /* If handle is ready to go, proceed */
+    if(save_handle.isAvailable() && success)
+    {
+      /* Get a BMP of the current surface */
+      SDL_Rect rect = map_ctrl.getSnapshotRect();
+      SDL_Surface* sshot = SDL_CreateRGBSurface(0, rect.w, rect.h, 32,
+                                                0x00ff0000, 0x0000ff00,
+                                                0x000000ff, 0xff000000);
+      SDL_RenderReadPixels(active_renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
+                           sshot->pixels, sshot->pitch);
+      SDL_Surface* sshot2 = SDL_CreateRGBSurface(0, rect.w/4, rect.h/4, 32,
+                                                 0x00ff0000, 0x0000ff00,
+                                                 0x000000ff, 0xff000000);
+      SDL_BlitScaled(sshot, NULL, sshot2, NULL);
+      SDL_SaveBMP(sshot2, save_path_img.c_str());
+      SDL_FreeSurface(sshot);
+      SDL_FreeSurface(sshot2);
 
-  return success;
+      /* Setup the core data */
+      XmlData data_core;
+      data_core.addElement("game");
+      data_core.addElement("core");
+      save_handle.purgeElement(data_core, true);
+
+      /* Write the core data */
+      if(player_main != nullptr)
+      {
+        /* Write player data which contains all other data related */
+        updatePlayerSteps();
+        success &= player_main->saveData(&save_handle);
+      }
+
+      if(map_ctrl.isLoaded())
+      {
+        /* Setup the map data */
+        XmlData data_map;
+        data_map.addElement("game");
+        data_map.addElement("map", "id", std::to_string(map_lvl));
+        save_handle.purgeElement(data_map, true);
+
+        /* Write the map data */
+        success &= map_ctrl.saveData(&save_handle);
+      }
+
+      /* Finish the file write */
+      save_handle.stop(!success);
+    }
+
+    /* If success, save slot */
+    if(success)
+      save_slot = slot;
+
+    return success;
+  }
+  return false;
 }
 
 /* Set the running configuration, from the options class */
@@ -2050,6 +2138,8 @@ bool Game::setPath(std::string path, int level, bool load)
         full_load = false;
 
       /* Update info */
+      if(path != game_path)
+        save_slot = 0;
       game_path = path;
       map_lvl = level;
 
@@ -2092,17 +2182,6 @@ void Game::setRenderer(SDL_Renderer* renderer)
         battle_display_data->buildData();
     }
   }
-}
-
-/* Sets the active save slot. This needs to be set prior to load */
-bool Game::setSaveSlot(uint8_t slot)
-{
-  if(slot > 0 && slot <= kSAVE_SLOT_MAX)
-  {
-    save_slot = slot;
-    return true;
-  }
-  return false;
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */
@@ -2262,6 +2341,7 @@ bool Game::update(int32_t cycle_time)
   return false;
 }
 
+/* Updates the menu enabled state as per the appropriate flag states */
 void Game::updateMenuEnabledState()
 {
   map_menu_enabled = true;
@@ -2274,4 +2354,27 @@ void Game::updateMenuEnabledState()
     map_menu_enabled = false;
   else if(battle_ctrl && battle_ctrl->getTurnState() != TurnState::STOPPED)
     map_menu_enabled = false;
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/* Static: Returns the save string based on the slot number */
+std::string Game::getSlotPath(uint8_t slot, std::string base_path, bool image)
+{
+  std::string save_path = "";
+
+  if(slot < 100)
+  {
+    save_path = base_path + kSAVE_PATH_FRONT;
+    if(slot < 10)
+      save_path += "0";
+    save_path += std::to_string(slot);
+    if(image)
+      save_path += kSAVE_IMG_BACK;
+    else
+      save_path += kSAVE_PATH_BACK;
+  }
+  return save_path;
 }

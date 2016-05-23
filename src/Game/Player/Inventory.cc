@@ -531,7 +531,8 @@ uint32_t Inventory::hasRoom(Bubby* const b, uint32_t n)
   {
     n = std::min(bubby_limit - getBubbyTotalCount(), n);
     auto lim = std::floor((mass_limit - getMass()) / b->getMass());
-    n = std::min(static_cast<uint32_t>(lim), n);
+    if(b->getMass() > 0)
+      n = std::min(static_cast<uint32_t>(lim), n);
   }
 
   return n;
@@ -565,7 +566,8 @@ uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
     n = std::min(equip_limit - getEquipCount(equip->getGameID()), n);
 
     auto lim = std::floor((mass_limit - getMass()) / equip->getMass());
-    n = std::min(static_cast<uint32_t>(lim), n);
+    if(equip->getMass() > 0)
+      n = std::min(static_cast<uint32_t>(lim), n);
   }
 
   return n;
@@ -586,7 +588,8 @@ uint32_t Inventory::hasRoom(Item* const i, uint32_t n)
     auto mass_lim = std::floor((mass_limit - getMass()) * 1000 / i->getMass());
 
     n = std::min(item_limit - count, n);
-    n = std::min(static_cast<uint32_t>(mass_lim), n);
+    if(i->getMass() > 0)
+      n = std::min(static_cast<uint32_t>(mass_lim), n);
   }
 
   return n;

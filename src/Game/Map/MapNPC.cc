@@ -668,7 +668,7 @@ bool MapNPC::isDataToSave()
   else
   {
     /* Check NPC pathing status */
-    if(getStartingSection() == getMapSection() && 
+    if(getStartingSection() == getMapSection() && node_head != nullptr &&
        (node_state == LOOPED || node_state == BACKANDFORTH ||
         node_state == RANDOMRANGE))
     {
@@ -775,7 +775,7 @@ bool MapNPC::saveData(FileHandler* fh, const bool &save_event)
   else
   {
     /* Ensure correct type */
-    if(getStartingSection() == getMapSection() && 
+    if(getStartingSection() == getMapSection() && node_head != nullptr &&
        (node_state == LOOPED || node_state == BACKANDFORTH ||
         node_state == RANDOMRANGE))
     {
@@ -783,8 +783,7 @@ bool MapNPC::saveData(FileHandler* fh, const bool &save_event)
       fh->writeXmlData("starting", starting);
 
       /* Node location analysis */
-      if(node_head != nullptr && active &&
-         (node_state == LOOPED || node_state == BACKANDFORTH))
+      if(active && (node_state == LOOPED || node_state == BACKANDFORTH))
       {
         Path* node_save = node_current;
         if(node_previous != nullptr)

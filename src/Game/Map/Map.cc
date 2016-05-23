@@ -2505,7 +2505,7 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
 
 /* Loads the map data - called from game */
 bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
-                   std::string base_path)
+                   std::string base_path, bool from_save)
 {
   (void)base_path;
   bool success = true;
