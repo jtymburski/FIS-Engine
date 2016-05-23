@@ -96,7 +96,9 @@ bool Fonts::createFonts(Options* config)
     fonts.emplace(FontName::M_ITEM_HEADER,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    12, TTF_STYLE_NORMAL));
-    fonts.emplace(FontName::M_ITEM_HEADER_14, Text::createFont(config->getBasePath() + config->getFont(3), 14, TTF_STYLE_NORMAL));
+    fonts.emplace(FontName::M_ITEM_HEADER_14,
+                  Text::createFont(config->getBasePath() + config->getFont(3),
+                                   14, TTF_STYLE_NORMAL));
     fonts.emplace(FontName::M_MAIN_TITLE,
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    30, TTF_STYLE_NORMAL));
