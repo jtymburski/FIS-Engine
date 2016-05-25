@@ -157,8 +157,6 @@ private:
 
   /* -------- Battle Outcome Constants (See Implementation) ----------- */
   static const int16_t kALLY_KO_EXP_PC;
-  static const int16_t kENEMY_RUN_EXP_PC;
-  static const int16_t kRUN_PC_EXP_PENALTY;
 
   /*=============================================================================
    * CONSTANTS - Battle Display
@@ -202,10 +200,6 @@ private:
   const static uint16_t kBOB_AMOUNT; /* Amount of PX to 'bob the sprites */
   const static float kBOB_RATE;      /* Rate at which to bob the sprites */
   const static uint32_t kBOB_TIME;   /* Time to bob the sprites for */
-
-  const static uint16_t kRUN_AMOUNT;
-  const static float kRUN_RATE;
-  const static uint32_t kRUN_TIME;
 
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
   const static float kCYCLE_RATE;   /* Rate of cycling for selecting persons */
@@ -475,11 +469,6 @@ private:
 
   /* Render underlays */
   void renderUnderlays();
-
-  /* Run State Processing */
-  void runStateBegin();
-  void runStateFail();
-  void runStateSucceed();
 
   /* Basic setup for health drawing */
   bool setupHealthDraw(BattleActor* actor, float health_pc);

@@ -231,8 +231,6 @@ std::string Helpers::actionTypeToStr(const ActionType& action_type)
     return "Guard";
   else if(action_type == ActionType::IMPLODE)
     return "Implode";
-  else if(action_type == ActionType::RUN)
-    return "Run";
   else if(action_type == ActionType::PASS)
     return "Pass";
   else if(action_type == ActionType::NONE)
@@ -369,8 +367,6 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality& ai_personality)
     return "MASOCHISTIC";
   else if(ai_personality == AIPersonality::ANNIHILATOR)
     return "ANNIHILATOR";
-  else if(ai_personality == AIPersonality::RUNNER)
-    return "RUNNER";
   else if(ai_personality == AIPersonality::PASSER)
     return "PASSER";
   else if(ai_personality == AIPersonality::NONE)

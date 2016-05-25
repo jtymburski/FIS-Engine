@@ -157,6 +157,9 @@ public:
   /* Clears the Elements from the Box */
   void clearElements();
 
+  /* Clears the box index value */
+  void clearIndex();
+
   /* Updates the scroll box to the next index */
   bool nextIndex();
 
@@ -165,6 +168,9 @@ public:
 
   /* Render the scroll box in its current state */
   bool render(SDL_Renderer* renderer);
+
+  /* Assigns an index to the Box */
+  bool setIndex(uint32_t index);
 
   /* Returns the value of a given ActorState flag */
   bool getFlag(const BoxState& test_flag);

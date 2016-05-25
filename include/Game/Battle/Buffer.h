@@ -116,9 +116,6 @@ public:
   /* Adds a Pass event to the Battle */
   void addPass(BattleActor* user, int32_t initialturn);
 
-  /* Adds a run element to the buffer */
-  void addRun(BattleActor* user);
-
   /* Adds a skill use to the buffer */
   void addSkill(BattleActor* user, BattleSkill* used_skill,
                 std::vector<BattleActor*> targets, uint32_t cooldown = 0,

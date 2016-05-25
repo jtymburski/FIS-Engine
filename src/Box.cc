@@ -358,6 +358,32 @@ void Box::clearElements()
 
   elements.clear();
 }
+
+/* Clear the index of the Box */
+void Box::clearIndex()
+{
+  view_index = -1;
+  element_index = -1;
+}
+
+/* Assign an index to the Box */
+bool Box::setIndex(uint32_t index)
+{
+  bool success = false;
+
+  if(index < elements.size())
+  {
+    success = true;
+    view_index = 0;
+    element_index = 0;
+
+    for(uint32_t i = 0; i < index; i++)
+      success &= nextIndex();
+  }
+
+  return success;
+}
+
 bool Box::nextIndex()
 {
   /* If it's a selectable box, update the view index (unless at the bottom) */

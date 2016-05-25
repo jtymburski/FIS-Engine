@@ -35,7 +35,6 @@ const float AIModule::kGAI_VARIANCE{0.05};
 const float AIModule::kGAI_BASE_GUARD_FACTOR{0.05};
 const float AIModule::kGAI_BASE_IMPLODE_FACTOR{0.95};
 const float AIModule::kGAI_BASE_DEFEND_FACTOR{0.10};
-const float AIModule::kGAI_BASE_RUN_FACTOR{0.000};
 const float AIModule::kGAI_BASE_PASS_FACTOR{0.00};
 
 /* Random AI Offensive Factor
@@ -317,12 +316,6 @@ void AIModule::calculateActionTypeChances()
         std::make_pair(ActionType::IMPLODE, implode_chance));
   }
 
-  if(Helpers::enumVectorSearch(ActionType::RUN, valid_action_types))
-  {
-    run_chance = kGAI_BASE_RUN_FACTOR;
-    act_typ_chances.push_back(std::make_pair(ActionType::RUN, run_chance));
-  }
-
   if(Helpers::enumVectorSearch(ActionType::PASS, valid_action_types))
   {
     pass_chance = kGAI_BASE_PASS_FACTOR;
@@ -530,7 +523,6 @@ bool AIModule::selectRandomAction()
   else if(chosen_action_type == ActionType::GUARD ||
           chosen_action_type == ActionType::DEFEND ||
           chosen_action_type == ActionType::IMPLODE ||
-          chosen_action_type == ActionType::RUN ||
           chosen_action_type == ActionType::PASS)
   {
     action_index_selected = true;
@@ -658,10 +650,6 @@ bool AIModule::selectPriorityAction()
     action_index_selected = true;
     // TODO: Action index selection [07-20-14]
   }
-  else if(chosen_action_type == ActionType::RUN)
-  {
-    // TODO: Action index selection [07-20-14]
-  }
   else if(chosen_action_type == ActionType::PASS)
   {
     // TODO: Action index selection [07-20-14]
@@ -723,7 +711,6 @@ void AIModule::loadDefaults()
   guard_chance = 0;
   defend_chance = 0;
   implode_chance = 0;
-  run_chance = 0;
   pass_chance = 0;
 
   running_config = nullptr;

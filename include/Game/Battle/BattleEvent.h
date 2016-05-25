@@ -73,8 +73,6 @@ enum class ActionState
   DAMAGE_VALUE,
   INFLICT,
   ACTION_END,
-  RUN_FAIL,
-  RUN_SUCCEED,
   OUTCOME,
   DONE
 };
@@ -177,10 +175,6 @@ public:
   std::vector<BattleStats> temp_targ_stats;
 
   /* ------------ Constants --------------- */
-  static const float kRUN_BASE_CHANCE;
-  static const float kRUN_MMNT_MODIFIER;
-  static const float kRUN_LIMB_MODIFIER;
-
   static const float kOFF_PHYS_MODIFIER;
   static const float kDEF_PHYS_MODIFIER;
   static const float kOFF_PRIM_ELM_MATCH_MODIFIER;
@@ -251,9 +245,6 @@ private:
   /* Can a given BattleActor be inflicted with the */
   InflictionStatus canInflictTarget(BattleActor* curr_target, Infliction type);
 
-  /* Check if a run can actually occur */
-  bool canRunOccur();
-
   /* Methods for matching primary and secondary skills to their users */
   bool doesPrimMatch(Skill* skill);
   bool doesSecdMatch(Skill* skill);
@@ -278,9 +269,6 @@ public:
 
   /* Determines whether the action hits against the given target */
   void doesActionHit(BattleActor* curr_target);
-
-  /* Can the current person Run? */
-  bool doesRunOccur();
 
   /* Returns the enumerated SkillHitStatus value */
   void doesSkillHit();

@@ -108,15 +108,6 @@ void Buffer::addPass(BattleActor* user, int32_t initial_turn)
   action_buffer.push_back(pass_action);
 }
 
-/* Adds a run element to the buffer */
-void Buffer::addRun(BattleActor* user)
-{
-  BufferAction run_action;
-  run_action.user = user;
-  run_action.type = ActionType::RUN;
-  action_buffer.push_back(run_action);
-}
-
 /* Adds a skill use to the buffer */
 void Buffer::addSkill(BattleActor* user, BattleSkill* used_skill,
                       std::vector<BattleActor*> targets, uint32_t cooldown,

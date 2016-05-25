@@ -3135,7 +3135,6 @@ void Menu::keyDownCancel()
     }
     else if(getMainMenuType() == MenuType::INVENTORY)
     {
-      inventory_element_index = -1;
       layer = MenuLayer::MAIN;
       inventory_top_box.setFlag(BoxState::SELECTED, false);
       inventory_scroll_box.setFlag(BoxState::SELECTED, false);

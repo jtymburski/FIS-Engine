@@ -98,8 +98,7 @@ enum class ActionType : std::uint16_t
   GUARD = 4,
   IMPLODE = 5,
   INSPECT = 6,
-  RUN = 7,
-  PASS = 8,
+  PASS = 7,
   NONE = 0
 };
 

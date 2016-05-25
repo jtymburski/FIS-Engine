@@ -24,13 +24,9 @@ const size_t Battle::kMAX_AILMENTS = 50;
 const size_t Battle::kMAX_EACH_AILMENTS = 5;
 
 /* ------------ Battle Outcome Modifiers ---------------
- * kENEMY_RUN_EXP_PC - %EXP to maintain on pyrric victory (enemies run)
- * kRUN_PC_EXP_PENALTY - %EXP (MAX) penalty when the Allies run from Battle.
  * kALLY_KO_EXP_PC - %EXP which KO member get for winning a Battle.
  */
 const int16_t Battle::kALLY_KO_EXP_PC = 50;
-const int16_t Battle::kENEMY_RUN_EXP_PC = 25;
-const int16_t Battle::kRUN_PC_EXP_PENALTY = 5;
 
 /*=============================================================================
  * CONSTANTS - Battle Display
@@ -75,10 +71,6 @@ const uint16_t Battle::kBIGBAR_R_OFFSET = 25;
 const uint16_t Battle::kBOB_AMOUNT = 10;
 const float Battle::kBOB_RATE = 0.01;
 const uint32_t Battle::kBOB_TIME = 1000;
-
-const uint16_t Battle::kRUN_AMOUNT{20};
-const float Battle::kRUN_RATE{0.03};
-const uint32_t Battle::kRUN_TIME{750};
 
 const uint8_t Battle::kCOLOR_BASE = 150;
 const float Battle::kCYCLE_RATE = 0.003;
@@ -373,10 +365,6 @@ bool Battle::bufferModuleSelection()
     {
       battle_buffer->addPass(curr_actor, turns_elapsed);
     }
-    else if(action_type == ActionType::RUN)
-    {
-      battle_buffer->addRun(curr_actor);
-    }
   }
   else
   {
@@ -386,7 +374,6 @@ bool Battle::bufferModuleSelection()
   return true;
 }
 
-// TODO: Determine can run
 void Battle::buildBattleActors(Party* allies, Party* enemies)
 {
   for(uint32_t i = 0; i < allies->getSize(); i++)
@@ -948,15 +935,6 @@ void Battle::updateEvent()
     else if(event->action_state == ActionState::ACTION_START)
       actionStateActionStart();
   }
-  else if(event->action_type == ActionType::RUN)
-  {
-    if(event->action_state == ActionState::BEGIN)
-      runStateBegin();
-    if(event->action_state == ActionState::RUN_FAIL)
-      runStateFail();
-    if(event->action_state == ActionState::RUN_SUCCEED)
-      runStateSucceed();
-  }
   else if(event->action_type == ActionType::PASS)
   {
     event->action_state = ActionState::DONE;
@@ -1086,26 +1064,16 @@ void Battle::updateFadeInText()
   auto element = new RenderElement(renderer, font);
 
   std::string turn_text = "";
-  uint32_t random = Helpers::randU(1, 85);
+  uint32_t random = Helpers::randU(1, 55);
 
-  if(random == 2)
-    turn_text = "Just Run Away";
-  else if(random == 3)
-    turn_text = "Did You Turn The Oven Off";
-  else if(random == 4)
+  if(random == 1)
     turn_text = "Why Even Try";
-  else if(random == 5)
-    turn_text = "Never Go Backwards";
-  else if(random == 6)
+  else if(random == 2)
     turn_text = "Embrace Your Fate";
-  else if(random == 7)
-    turn_text = "Destroy";
-  else if(random == 8)
+  else if(random == 3)
     turn_text = "Bearly Even Difficult";
-  else if(random == 9)
-    turn_text = "Eat Your Fate Cookies";
   else
-    turn_text = "Decide Your Fate";
+    turn_text = "Choose Your Fate";
 
   element->createAsEnterText(turn_text, config->getScreenHeight(),
                              config->getScreenWidth());
@@ -1989,43 +1957,45 @@ bool Battle::render()
 {
   auto success = false;
 
-  if(config && turn_state != TurnState::FINISHED &&
-     turn_state != TurnState::BEGIN)
+  if(config && turn_state != TurnState::FINISHED)
   {
+    success = true;
+
     auto height = config->getScreenHeight();
     auto width = config->getScreenWidth();
 
-    success = true;
+    if(turn_state != TurnState::BEGIN)
+    {
+      /* Bottom layer is the background */
+      if(background)
+        success &= background->render(renderer, 0, 0, width, height);
 
-    /* Bottom layer is the background */
-    if(background)
-      success &= background->render(renderer, 0, 0, width, height);
+      /* Render the underlays */
+      renderUnderlays();
 
-    /* Render the underlays */
-    renderUnderlays();
+      /* Render the enemies in their present state */
+      success &= renderEnemies();
+      success &= renderEnemiesInfo();
 
-    /* Render the enemies in their present state */
-    success &= renderEnemies();
-    success &= renderEnemiesInfo();
+      /* Render the midlays */
+      renderMidlays();
 
-    /* Render the midlays */
-    renderMidlays();
+      /* Render the allies in their present states */
+      success &= renderAllies();
 
-    /* Render the allies in their present states */
-    success &= renderAllies();
+      /* Render the action frame */
+      if(turn_state == TurnState::PROCESS_ACTIONS)
+        success &= renderActionFrame();
 
-    /* Render the action frame */
-    if(turn_state == TurnState::PROCESS_ACTIONS)
-      success &= renderActionFrame();
+      /* Render the overlays */
+      renderOverlays();
 
-    /* Render the overlays */
-    renderOverlays();
+      /* Render battle bar (on bottom) */
+      success &= renderBattleBar();
 
-    /* Render battle bar (on bottom) */
-    success &= renderBattleBar();
-
-    /* Render the menu (if needed) */
-    success &= renderMenu();
+      /* Render the menu (if needed) */
+      success &= renderMenu();
+    }
 
     /* Render the render elements (damage text values) etc. */
     success &= renderElements();
@@ -2385,28 +2355,6 @@ void Battle::renderUnderlays()
   for(auto& lay : lays)
     if(lay && lay->lay_type == LayType::UNDERLAY)
       lay->render(renderer);
-}
-
-void Battle::runStateBegin()
-{
-  /* Determine whether the run occurs as per chances in BattleEvent */
-  auto run_occurs = event->doesRunOccur();
-
-  /* Alter the event's run state depending on the outcome */
-  if(run_occurs)
-    event->action_state = ActionState::RUN_FAIL;
-  else
-    event->action_state = ActionState::RUN_SUCCEED;
-
-  addDelay(50);
-}
-
-void Battle::runStateFail()
-{
-}
-
-void Battle::runStateSucceed()
-{
 }
 
 bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
