@@ -144,10 +144,10 @@ public:
   /* Prints out the state of the inventory */
   void print(bool simple = true);
 
-  /* Attempts to remove any item given a game ID and an amount to rem */
+  /* Attempts to remove any item given a game ID and an amount to remove */
   bool removeID(const uint32_t& game_id, const uint16_t& amount = 1);
 
-  /* Attempts to remove any item given a unique ID and an amount to rem */
+  /* Attempts to remove any item given a unique ID and an amount to remove */
   bool removeUID(const uint32_t& unique_id, const uint16_t& amount = 1);
 
   /* Removes a Bubby from the Inventory at a given index */

@@ -164,11 +164,11 @@ Item* Game::addItem(const int32_t& id, SortObjects type)
 
 /* Add Item to Inventory function */
 bool Game::addItemToInv(Inventory* inv, const int32_t& item_id,
-                        const int32_t& item_count)
+                        const int32_t& item_count, const bool &total)
 {
   bool success = false;
 
-  if(inv != nullptr)
+  if(inv != nullptr && item_count > 0)
   {
     Item* base_item = getItem(item_id);
     if(base_item != nullptr)
@@ -176,11 +176,24 @@ bool Game::addItemToInv(Inventory* inv, const int32_t& item_id,
       Item* new_item = new Item(base_item);
       success = true;
 
-      AddStatus status = inv->add(new_item, item_count);
-      if(status != AddStatus::GOOD_KEEP)
-        delete new_item;
-      if(status == AddStatus::FAIL)
-        success = false;
+      /* Attempt to remove the item if the new count is total */
+      int curr_count = 0;
+      if(total)
+        curr_count = inv->getItemCount(item_id);
+
+      /* Add (or remove) depending on the count delta */
+      if(item_count > curr_count)
+      {
+        AddStatus status = inv->add(new_item, item_count - curr_count);
+        if(status != AddStatus::GOOD_KEEP)
+          delete new_item;
+        if(status == AddStatus::FAIL)
+          success = false;
+      }
+      else if(item_count < curr_count)
+      {
+        success &= inv->removeItemID(item_id, curr_count - item_count);
+      }
     }
   }
 
@@ -326,7 +339,7 @@ bool Game::changeMode(GameMode mode, bool map_change)
   if(allow && this->mode != mode && mode_next != mode)
   {
     /* Changes to execute on the view closing */
-    if(this->mode == MAP && mode != MENU)
+    if((this->mode == MAP || this->mode == MENU) && mode != MENU)
       map_ctrl.enableView(false);
 
     /* Set the next mode */
@@ -661,10 +674,6 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
 {
   bool success = true;
 
-  /* Log the base file, slot, full load and map level statuses */
-  event_handler.log(base_file + "," + std::to_string(slot) + "," +
-                    std::to_string(full_load) + "," + std::to_string(map_lvl));
-
   /* Update the player step count */
   updatePlayerSteps();
 
@@ -912,8 +921,8 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
           {
             int item_id = std::stoi(item_set.front());
             int item_count = std::stoi(item_set.back());
-            success &=
-                addItemToInv(edit_party->getInventory(), item_id, item_count);
+            success &= addItemToInv(edit_party->getInventory(), item_id,
+                                    item_count, true);
           }
         }
       }
@@ -988,10 +997,10 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
 
           if(data.getElement(index + 1) == "sleuth")
             success &= addItemToInv(player_main->getSleuth()->getInventory(),
-                                    item_id, item_count);
+                                    item_id, item_count, true);
           else
             success &= addItemToInv(player_main->getBearacks()->getInventory(),
-                                    item_id, item_count);
+                                    item_id, item_count, true);
         }
       }
     }

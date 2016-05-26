@@ -985,7 +985,7 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     {
       /* Try and find the node */
       Path* node_parse = node_head;
-      while(node_parse != nullptr && node_read >= 0)
+      while(node_parse != nullptr && node_read > 0)
       {
         node_parse = node_parse->next;
         node_read--;
@@ -996,7 +996,7 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
       }
 
       /* If the node is found, set to the current */
-      if(node_read < 0 && node_parse != nullptr)
+      if(node_read == 0 && node_parse != nullptr)
         node_current = node_parse;
     }
   }

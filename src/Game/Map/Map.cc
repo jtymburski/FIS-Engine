@@ -367,7 +367,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   /* Check if it's base */
   if(data.getElement(kFILE_CLASSIFIER + 1) == "base" && !from_save)
     base_id = data.getDataInteger();
-
+  
   /* Identify which thing to be created */
   if(identifier == "mapthing")
   {
@@ -499,7 +499,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
 
     /* Update the data */
     success &= modified_thing->addThingInformation(
-        data, kFILE_CLASSIFIER + 1, section_index, renderer, base_path);
+                           data, kFILE_CLASSIFIER + 1, section_index, renderer,
+                           base_path, from_save);
     return success;
   }
 
@@ -2645,7 +2646,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
               element2 == "mapnpc" || element2 == "mapitem" ||
               element2 == "mapio")
       {
-        success &= addThingData(data, map_index, renderer);
+        success &= addThingData(data, map_index, renderer, from_save);
       }
     }
   }

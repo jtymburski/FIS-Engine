@@ -2694,8 +2694,11 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
                             int section_index)
 {
   EventClassifier category = EventClassifier::NOEVENT;
-  std::string category_str = data.getElement(file_index);
   bool read_success;
+
+  /* Category and Element */
+  std::string category_str = data.getElement(file_index);
+  std::string element = data.getElement(file_index + 1);
 
   /* Determine the category of the event that is being updated */
   if(category_str == "startbattle")
@@ -2726,8 +2729,9 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     category = EventClassifier::UNLOCKTILE;
 
   /* If the category doesn't match, create a new event */
-  if(category != event.classification)
+  if(category_str != "executed" && category != event.classification)
   {
+    bool old_exec = event.has_exec;
     event = deleteEvent(event);
 
     if(category == EventClassifier::BATTLESTART)
@@ -2756,13 +2760,12 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event = createEventUnlockThing();
     else if(category == EventClassifier::UNLOCKTILE)
       event = createEventUnlockTile();
+
+    event.has_exec = old_exec;
   }
 
-  /* Element */
-  std::string element = data.getElement(file_index + 1);
-
   /* Proceed to set up the event with the marked changes */
-  if(element == "executed")
+  if(category_str == "executed")// && category != EventClassifier::NOEVENT)
   {
     bool executed = data.getDataBool(&read_success);
     if(read_success)
