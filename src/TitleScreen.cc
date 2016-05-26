@@ -35,6 +35,7 @@ TitleScreen::TitleScreen(Options* running_config)
   nav_down = false;
   nav_time = 0;
   nav_up = false;
+  render_disable = false;
   render_index = 0;
   sound_handler = nullptr;
   system_options = nullptr;
@@ -206,6 +207,13 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
 {
   if(system_options != NULL)
   {
+    /* Testing code item - wrap */
+    if(event.keysym.sym == SDLK_F1 && event.repeat == 0)
+    {
+      render_disable = !render_disable;
+    }
+
+    /* Main code items */
     if(event.keysym.sym == SDLK_DOWN && event.repeat == 0)
     {
       incrementSelected();
@@ -291,18 +299,22 @@ bool TitleScreen::render(SDL_Renderer* renderer)
     background3.render(renderer, 153, 314);
 
     /* Render title */
-    title.render(renderer, 50, 50);
+    if(!render_disable)
+      title.render(renderer, 50, 50);
 #endif
 
     /* Paint the selected options on the screen */
-    for(uint8_t i = 0; i < selected_options.size(); i++)
+    if(!render_disable)
     {
-      if(i == cursor_index)
-        selected_options[i]->render(renderer, kTEXT_MARGIN,
-                                    render_index + kTEXT_GAP*i);
-      else
-        unselected_options[i]->render(renderer, kTEXT_MARGIN,
+      for(uint8_t i = 0; i < selected_options.size(); i++)
+      {
+        if(i == cursor_index)
+          selected_options[i]->render(renderer, kTEXT_MARGIN,
                                       render_index + kTEXT_GAP*i);
+        else
+          unselected_options[i]->render(renderer, kTEXT_MARGIN,
+                                        render_index + kTEXT_GAP*i);
+      }
     }
 
     return true;

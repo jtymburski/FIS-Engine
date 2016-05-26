@@ -69,6 +69,9 @@ private:
   uint16_t nav_time;
   bool nav_up;
 
+  /* Render text and other items on top of title screen disable */
+  bool render_disable;
+
   /* The render index of the top left of the title screen options */
   int render_index;
 
@@ -94,7 +97,7 @@ private:
   const static uint16_t kTEXT_MARGIN; /* The margin between the text and edge
                                        * of the screen */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Decrements the selected option */
   void decrementSelected();
@@ -111,7 +114,7 @@ private:
   /* Unsets all the menu related data, such as font and labels */
   void unsetMenu();
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Enables or disables the view. This includes any initialization for before
    * or after it was visible */
