@@ -46,7 +46,7 @@ const uint16_t MapDialog::kPICKUP_DISPLAY_TIME = 5000;
 const uint16_t MapDialog::kPICKUP_IMG_SIZE = 64;
 const uint8_t MapDialog::kPICKUP_TEXT_MARGIN = 10;
 const uint16_t MapDialog::kPICKUP_Y = 50;
-const float MapDialog::kSHIFT_TIME = 3;//.704;
+const float MapDialog::kSHIFT_TIME = 3; //.704;
 const uint8_t MapDialog::kTEXT_LINES = 4;
 const uint8_t MapDialog::kTEXT_OPTIONS = 3;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 33.33;
@@ -109,7 +109,7 @@ vector<int> MapDialog::calculateThingList(Conversation* convo)
       vector<int> computed_list = calculateThingList(&(convo->next[i]));
       list.insert(list.end(), computed_list.begin(), computed_list.end());
     }
-    //for(auto i = convo->next.begin(); i != convo->next.end(); i++)
+    // for(auto i = convo->next.begin(); i != convo->next.end(); i++)
     //{
     //  vector<int> computed_list = calculateThingList(i);
     //  list.insert(list.end(), computed_list.begin(), computed_list.end());
@@ -159,7 +159,8 @@ vector<int> MapDialog::calculateThingList(string text)
             ids.push_back(id);
           }
           catch(exception)
-          {}
+          {
+          }
         }
       }
     }
@@ -176,7 +177,7 @@ vector<int> MapDialog::calculateThingList(string text)
  * Inputs: Conversation* convo - a convo reference pointer, to clean up
  * Output: none
  */
-//void MapDialog::clearConversation(Conversation* convo)
+// void MapDialog::clearConversation(Conversation* convo)
 //{
 //  if(convo != NULL)
 //  {
@@ -203,7 +204,7 @@ void MapDialog::clearData()
   animation_cursor = 0.0;
   animation_cursor_up = true;
   animation_shifter = 0.0;
-  //clearConversation(&conversation_info);
+  // clearConversation(&conversation_info);
   conversation_info = nullptr;
   conversation_inst = nullptr;
   conversation_ready = false;
@@ -271,10 +272,10 @@ bool MapDialog::createFonts()
   if(system_options != NULL)
   {
     /* Try and create the new fonts */
-    TTF_Font* regular_font = Text::createFont(system_options->getBasePath() +
-                                              system_options->getFont(), 20);
+    TTF_Font* regular_font = Text::createFont(
+        system_options->getBasePath() + system_options->getFont(), 20);
     TTF_Font* title_font = Text::createFont(system_options->getBasePath() +
-                                            system_options->getFont(),
+                                                system_options->getFont(),
                                             20, TTF_STYLE_BOLD);
 
     /* If successful, insert the new fonts. Otherwise, delete if any were
@@ -344,7 +345,7 @@ void MapDialog::executeEvent()
  *              not found.
  *
  * Inputs: int id - the reference id (-1 is source, < -1 is invalid)
- *         vector<MapThing*>* things - set of things to search. If null, uses 
+ *         vector<MapThing*>* things - set of things to search. If null, uses
  *                                     stored conversation things
  * Output: string - the string name of the ID
  */
@@ -363,7 +364,7 @@ string MapDialog::getThingName(int id, vector<MapThing*>* things)
  *              created. Returns NULL if not found.
  *
  * Inputs: int id - the reference id (<0  invalid)
- *         vector<MapThing*>* things - set of things to search. If null, uses 
+ *         vector<MapThing*>* things - set of things to search. If null, uses
  *                                     stored conversation things
  * Output: MapThing* - map thing reference pointer
  */
@@ -398,8 +399,9 @@ MapThing* MapDialog::getThingReference(int id, vector<MapThing*>* things)
  *                                                     array of string options
  * Output: none
  */
-void MapDialog::renderOptions(SDL_Renderer* renderer,
-                    vector<vector<vector<pair<string, TextProperty>>>> options)
+void MapDialog::renderOptions(
+    SDL_Renderer* renderer,
+    vector<vector<vector<pair<string, TextProperty>>>> options)
 {
   /* Clear the options stack */
   for(auto i = text_options.begin(); i != text_options.end(); i++)
@@ -422,7 +424,7 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
  *              If not found, blanks out.
  *
  * Inputs: string text - the text to process
- *         vector<MapThing*>* things - set of things to search. If null, uses 
+ *         vector<MapThing*>* things - set of things to search. If null, uses
  *                                     stored conversation things
  * Output: string - the processed text
  */
@@ -448,8 +450,8 @@ string MapDialog::replaceThingReferences(string text, vector<MapThing*>* things)
           try
           {
             string name = getThingName(stoi(second_split.front()), things);
-            new_text += "[" + kTHING_COLOR + "]" + name +
-                        "[/" + kTHING_COLOR + "]";
+            new_text +=
+                "[" + kTHING_COLOR + "]" + name + "[/" + kTHING_COLOR + "]";
           }
           catch(exception)
           {
@@ -503,9 +505,9 @@ void MapDialog::setAlpha(uint8_t alpha)
 
   /* Set the text alpha */
   for(auto i = text_lines.begin(); i != text_lines.end(); i++)
-   (*i)->setAlpha(alpha);
+    (*i)->setAlpha(alpha);
   for(auto i = text_options.begin(); i != text_options.end(); i++)
-   (*i)->setAlpha(alpha);
+    (*i)->setAlpha(alpha);
 }
 
 /*
@@ -548,7 +550,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     string name = "";
     Text name_text;
     if(thing_active != NULL)
-     name = thing_active->getName();
+      name = thing_active->getName();
     if(!name.empty())
     {
       SDL_Color text_color = {255, 255, 255, kOPACITY_MAX};
@@ -572,7 +574,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     img_convo.render(renderer, 0, convo_y);
     if(dialog_frame != NULL)
       dialog_frame->render(renderer, render_width - dialog_frame->getWidth(),
-                                     render_height - dialog_frame->getHeight());
+                           render_height - dialog_frame->getHeight());
 
     /* Handle name rendering, if it exists */
     if(!name.empty())
@@ -581,9 +583,9 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
       int textbox_height = img_name_l.getHeight();
       img_name_l.render(renderer, kNAME_BOX_OFFSET, convo_y - textbox_height);
       img_name_r.render(renderer,
-                kNAME_BOX_OFFSET + img_name_l.getWidth() + 
-                name_text.getWidth() + kNAME_MARGIN + kNAME_MARGIN,
-                convo_y - textbox_height);
+                        kNAME_BOX_OFFSET + img_name_l.getWidth() +
+                            name_text.getWidth() + kNAME_MARGIN + kNAME_MARGIN,
+                        convo_y - textbox_height);
 
       /* Draw top white bar encapsulating text */
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, kOPACITY_MAX);
@@ -617,25 +619,26 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     {
       if(conversation_info->next.size() > 1)
       {
-        text_strings = Text::splitLineProperty(font_normal, txt_line,
-                                               txt_length, true);
+        text_strings =
+            Text::splitLineProperty(font_normal, txt_line, txt_length, true);
 
         /* Fill the options */
         int options_length = txt_length - kOPTION_OFFSET;
         vector<vector<vector<pair<string, TextProperty>>>> options_text;
 
         for(auto i = conversation_info->next.begin();
-                 i != conversation_info->next.end(); i++)
+            i != conversation_info->next.end(); i++)
         {
           options_text.push_back(Text::splitLineProperty(font_normal, (*i).text,
-                                                 options_length, true).front());
+                                                         options_length,
+                                                         true).front());
         }
         renderOptions(renderer, options_text);
       }
       else
       {
-        text_strings = Text::splitLineProperty(font_normal, txt_line,
-                                               txt_length);
+        text_strings =
+            Text::splitLineProperty(font_normal, txt_line, txt_length);
         renderOptions(NULL);
       }
 
@@ -668,24 +671,23 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
   Notification to_display = notification_queue.front();
 
   /* Split text and create text */
-  vector<vector<vector<pair<string, TextProperty>>>> line_set = 
-                          Text::splitLineProperty(font_normal, to_display.text, 
-                                                  line_width, 
-                                                  to_display.text_lines);
+  vector<vector<vector<pair<string, TextProperty>>>> line_set =
+      Text::splitLineProperty(font_normal, to_display.text, line_width,
+                              to_display.text_lines);
   vector<Text*> rendered_lines;
   for(auto i = line_set.begin(); i != line_set.end(); i++)
   {
     Text* single_line = new Text(font_normal);
-    single_line->setText(renderer, *i);//, {255, 255, 255, kOPACITY_MAX});
+    single_line->setText(renderer, *i); //, {255, 255, 255, kOPACITY_MAX});
     rendered_lines.push_back(single_line);
 
     render_height += single_line->getHeight() + kLINE_SPACING;
   }
 
   /* Create rendering texture */
-  SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                           SDL_TEXTUREACCESS_TARGET,
-                                           render_width, render_height);
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, render_width, render_height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
   SDL_SetRenderTarget(renderer, texture);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -703,7 +705,7 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
     (*i)->render(renderer, x_index, y_index);
     y_index += (*i)->getHeight() + kLINE_SPACING;
 
-    delete (*i);
+    delete(*i);
   }
   SDL_SetRenderTarget(renderer, NULL);
 
@@ -730,10 +732,10 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
 
   /* Do some checking on height and width, before rendering */
   uint16_t frame_width = pickup.thing_image->getWidth();
-  //if(frame_width < Helpers::getTileSize())
+  // if(frame_width < Helpers::getTileSize())
   //  frame_width = Helpers::getTileSize();
   uint16_t frame_height = pickup.thing_image->getHeight();
-  //if(frame_height < Helpers::getTileSize())
+  // if(frame_height < Helpers::getTileSize())
   //  frame_height = Helpers::getTileSize();
   if(frame_width >= frame_height)
   {
@@ -753,10 +755,10 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
   }
 
   /* Determine render height and width */
-  int render_height = img_pick_t.getHeight() + frame_height
-                                             + img_pick_b.getHeight();
-  int render_width = img_pick_t.getWidth() * 2 + frame_width
-                                               + kPICKUP_TEXT_MARGIN;
+  int render_height =
+      img_pick_t.getHeight() + frame_height + img_pick_b.getHeight();
+  int render_width =
+      img_pick_t.getWidth() * 2 + frame_width + kPICKUP_TEXT_MARGIN;
 
   /* Add or remove determination */
   string chg_sep = "+";
@@ -770,9 +772,9 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
   render_width += pickup_txt.getWidth();
 
   /* Create rendering texture */
-  SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                           SDL_TEXTUREACCESS_TARGET,
-                                           render_width, render_height);
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, render_width, render_height);
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
   SDL_SetRenderTarget(renderer, texture);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -819,8 +821,8 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
   /* Render dialog image */
   x_index = img_pick_t.getWidth();
   y_index = img_pick_t.getHeight();
-  pickup.thing_image->render(renderer, x_index, y_index,
-                             frame_width, frame_height);
+  pickup.thing_image->render(renderer, x_index, y_index, frame_width,
+                             frame_height);
 
   /* Render text to indicate amount of pickup */
   x_index += frame_width + kPICKUP_TEXT_MARGIN;
@@ -857,8 +859,7 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
  * Output: none
  */
 void MapDialog::setupRenderText(
-                     vector<vector<vector<pair<string, TextProperty>>>> lines,
-                     bool delete_old)
+    vector<vector<vector<pair<string, TextProperty>>>> lines, bool delete_old)
 {
   /* Delete if line count of 0 is passed in */
   if(delete_old)
@@ -910,7 +911,7 @@ void MapDialog::clearAll(bool include_convo)
       setupRenderText();
       conversation_info = nullptr;
       conversation_inst = nullptr;
-      //setConversation();
+      // setConversation();
 
       dialog_mode = DISABLED;
       dialog_status = WindowStatus::OFF;
@@ -921,7 +922,6 @@ void MapDialog::clearAll(bool include_convo)
   {
     dialog_mode = DISABLED;
     dialog_status = WindowStatus::OFF;
-
   }
   notification_queue.clear();
   notification_waiting.clear();
@@ -958,7 +958,7 @@ vector<int> MapDialog::getConversationIDs()
 
   return thing_ids;
 }
-  
+
 /*
  * Description: Returns a unique list of notification map thing IDs from the
  *              stack of waiting notifications that has been set but are
@@ -980,14 +980,14 @@ vector<int> MapDialog::getNotificationIDs()
     {
       vector<int> id_set = calculateThingList(notification_waiting[i].text);
       if(id_set.size() > 0)
-        notification_ids.insert(notification_ids.end(),
-                                id_set.begin(), id_set.end());
+        notification_ids.insert(notification_ids.end(), id_set.begin(),
+                                id_set.end());
     }
 
     /* Remove duplicates */
-    notification_ids.erase(Helpers::uniqueSplit(notification_ids.begin(),
-                                                notification_ids.end()),
-                           notification_ids.end());
+    notification_ids.erase(
+        Helpers::uniqueSplit(notification_ids.begin(), notification_ids.end()),
+        notification_ids.end());
   }
 
   return notification_ids;
@@ -1039,7 +1039,7 @@ bool MapDialog::initConversation(ConvoPair convo_pair, MapPerson* target,
  * Output: bool - status if notification could be pushed onto queue.
  */
 bool MapDialog::initNotification(string notification, bool single_line,
-                                                      int time_visible)
+                                 int time_visible)
 {
   if(img_convo.isTextureSet() && !notification.empty())
   {
@@ -1089,10 +1089,10 @@ bool MapDialog::initNotification(string notification, bool single_line,
  * Output: bool - status if the pickup could be queued.
  */
 bool MapDialog::initPickup(Frame* thing_image, int thing_count,
-                                               int time_visible)
+                           int time_visible)
 {
-  if(thing_image != NULL && thing_image->isTextureSet() && thing_count != 0
-                         && isImagesSet(false, true))
+  if(thing_image != NULL && thing_image->isTextureSet() && thing_count != 0 &&
+     isImagesSet(false, true))
   {
     uint16_t notification_index = 0;
     bool notification_found = false;
@@ -1147,7 +1147,6 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
       /* Push onto stack */
       pickup_queue.push_back(pickup);
     }
-
 
     return true;
   }
@@ -1221,7 +1220,7 @@ bool MapDialog::isImagesSet(bool conversation, bool pickup)
 
   return loaded;
 }
-  
+
 /*
  * Description: Returns if there is a notificaiton waiting for final processing.
  *              This is finished with getNotificationIDs() and then getting the
@@ -1254,12 +1253,13 @@ bool MapDialog::isPaused()
  * Inputs: SDL_KeyboardEvent event - the keyboard event that fired
  * Output: none
  */
-void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
+void MapDialog::keyDownEvent(KeyHandler& key_handler)
 {
   if(!paused && dialog_alpha == kOPACITY_MAX)
   {
-    if(event.keysym.sym == SDLK_SPACE && event.repeat == 0)
+    if(key_handler.isDepressed(GameKey::ACTION))
     {
+      key_handler.setHeld(GameKey::ACTION);
       if(isConversationActive() && dialog_status == WindowStatus::ON)
       {
         uint16_t text_bottom = text_top + kTEXT_LINES;
@@ -1279,8 +1279,8 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
         else if(text_bottom < text_strings.size())
         {
           text_offset = 0.0;
-          text_offset_max = (TTF_FontHeight(font_normal) + (kLINE_SPACING))
-                          * (kTEXT_LINES - 1);
+          text_offset_max = (TTF_FontHeight(font_normal) + (kLINE_SPACING)) *
+                            (kTEXT_LINES - 1);
         }
         /* Otherwise, if end of conversation is reached, start hiding it */
         else if(conversation_info->next.size() == 0 ||
@@ -1324,8 +1324,10 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
                                       SoundChannels::MENUS);
       }
     }
-    else if(event.keysym.sym == SDLK_UP && text_index >= text_index_max)
+    if(key_handler.isDepressed(GameKey::MOVE_UP) &&
+       text_index >= text_index_max)
     {
+      key_handler.setHeld(GameKey::MOVE_UP);
       if(dialog_option > 0)
       {
         dialog_option--;
@@ -1336,14 +1338,16 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
       if(dialog_option < dialog_option_top)
         dialog_option_top = dialog_option;
     }
-    else if(event.keysym.sym == SDLK_DOWN && text_index >= text_index_max)
+    if(key_handler.isDepressed(GameKey::MOVE_DOWN) &&
+       text_index >= text_index_max)
     {
+      key_handler.setHeld(GameKey::MOVE_DOWN);
       if(dialog_option < (conversation_info->next.size() - 1))
       {
-       dialog_option++;
-       if(event_handler != nullptr)
-         event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
-                                     SoundChannels::MENUS);
+        dialog_option++;
+        if(event_handler != nullptr)
+          event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                      SoundChannels::MENUS);
       }
       if(dialog_option >= (dialog_option_top + kTEXT_OPTIONS))
         dialog_option_top = dialog_option - kTEXT_OPTIONS + 1;
@@ -1359,17 +1363,6 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
  */
 void MapDialog::keyFlush()
 {
-}
-
-/*
- * Description: Pass key up events into here. Not currently being used
- *
- * Inputs: SDL_KeyboardEvent event - the keyboard event that fired
- * Output: none
- */
-void MapDialog::keyUpEvent(SDL_KeyboardEvent event)
-{
-  (void)event;
 }
 
 /*
@@ -1401,8 +1394,7 @@ bool MapDialog::loadImageConversation(string path, SDL_Renderer* renderer)
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if set was successful (false if either fails)
  */
-bool MapDialog::loadImageDialogShifts(string path_next,
-                                      string path_more,
+bool MapDialog::loadImageDialogShifts(string path_next, string path_more,
                                       SDL_Renderer* renderer)
 {
   bool success = true;
@@ -1453,8 +1445,7 @@ bool MapDialog::loadImageNameLeftRight(string path, SDL_Renderer* renderer)
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if the set was successful on all 3
  */
-bool MapDialog::loadImageOptions(string path_circle,
-                                 string path_triangle,
+bool MapDialog::loadImageOptions(string path_circle, string path_triangle,
                                  SDL_Renderer* renderer)
 {
   bool success = true;
@@ -1542,8 +1533,8 @@ bool MapDialog::render(SDL_Renderer* renderer)
     {
       uint16_t index = text_top;
       uint16_t length = text_index;
-      while(index < (text_top + kTEXT_LINES) && index < text_lines.size()
-                                             && length > 0)
+      while(index < (text_top + kTEXT_LINES) && index < text_lines.size() &&
+            length > 0)
       {
         /* If length is >= string size, render whole string. Otherwise,
          * only render the portion visible */
@@ -1567,8 +1558,8 @@ bool MapDialog::render(SDL_Renderer* renderer)
 
     /* Compute y base index and proceed to render text */
     x_index += kMARGIN_SIDES;
-    y_index = system_options->getScreenHeight() - img_convo.getHeight()
-                                                + kMARGIN_TOP;
+    y_index =
+        system_options->getScreenHeight() - img_convo.getHeight() + kMARGIN_TOP;
     if(dialog_status == WindowStatus::ON)
     {
       /* Get the line offset, for alpha rendering */
@@ -1586,8 +1577,8 @@ bool MapDialog::render(SDL_Renderer* renderer)
           if(line_offset >= (index_rating + 1))
             text_lines[i]->setAlpha(0);
           else if(static_cast<int>(line_offset) == index_rating)
-            text_lines[i]->setAlpha(
-                               dialog_alpha*(1 - (line_offset - index_rating)));
+            text_lines[i]->setAlpha(dialog_alpha *
+                                    (1 - (line_offset - index_rating)));
         }
 
         /* Proceed to render the text, if it's in the valid range */
@@ -1647,15 +1638,17 @@ bool MapDialog::render(SDL_Renderer* renderer)
 
             /* Render the frame if non-null and set */
             if(frame != NULL)
-              frame->render(renderer, x_index + (kOPTION_OFFSET
-                                              - frame->getWidth() - 1) / 2,
-                            y_index + (text_options[index]->getHeight()
-                                    - frame->getHeight()) / 2);
+              frame->render(
+                  renderer,
+                  x_index + (kOPTION_OFFSET - frame->getWidth() - 1) / 2,
+                  y_index +
+                      (text_options[index]->getHeight() - frame->getHeight()) /
+                          2);
           }
 
           /* Finally, render the option text and increment index */
-          text_options[index]->render(renderer,
-                             x_index + kOPTION_OFFSET, y_index);
+          text_options[index]->render(renderer, x_index + kOPTION_OFFSET,
+                                      y_index);
           y_index += text_options[index]->getHeight() + (kLINE_SPACING << 1);
           index++;
         }
@@ -1683,9 +1676,9 @@ bool MapDialog::render(SDL_Renderer* renderer)
         else if(text_offset_max == 0)
         {
           img_convo_n.render(renderer, x_index - img_convo_n.getWidth() / 2,
-                             system_options->getScreenHeight()
-                                  - img_convo_n.getHeight()
-                                  - static_cast<int>(animation_cursor));
+                             system_options->getScreenHeight() -
+                                 img_convo_n.getHeight() -
+                                 static_cast<int>(animation_cursor));
         }
       }
     }
@@ -1705,9 +1698,8 @@ bool MapDialog::render(SDL_Renderer* renderer)
       pickup_update = false;
     }
 
-    frame_right.render(renderer,
-                       system_options->getScreenWidth() - pickup_offset,
-                       kPICKUP_Y);
+    frame_right.render(
+        renderer, system_options->getScreenWidth() - pickup_offset, kPICKUP_Y);
   }
 
   return true;
@@ -1779,7 +1771,7 @@ void MapDialog::setEventHandler(EventHandler* event_handler)
 {
   this->event_handler = event_handler;
 }
-  
+
 /*
  * Description: Sets the notification map things that are needed for rendering
  *              and referencing. These correspond to the IDs from
@@ -1794,8 +1786,8 @@ bool MapDialog::setNotificationThings(vector<MapThing*> things)
   /* Loop through all waiting notifications and clean-up thing references */
   for(uint32_t i = 0; i < notification_waiting.size(); i++)
   {
-    notification_waiting[i].text = replaceThingReferences(
-                                        notification_waiting[i].text, &things);
+    notification_waiting[i].text =
+        replaceThingReferences(notification_waiting[i].text, &things);
   }
 
   /* Load from waiting into main queue */
@@ -1857,9 +1849,9 @@ void MapDialog::update(int cycle_time)
 
       /* Complete the pickup animation sequence */
       if(pickup_status == WindowStatus::HIDING)
-       pickup_offset = 0.0;
+        pickup_offset = 0.0;
       else if(pickup_status == WindowStatus::SHOWING)
-       pickup_offset = frame_right.getWidth();
+        pickup_offset = frame_right.getWidth();
     }
   }
   else if(!paused && dialog_alpha < kOPACITY_MAX)
@@ -1894,7 +1886,7 @@ void MapDialog::update(int cycle_time)
           setupRenderText();
           conversation_info = nullptr;
           conversation_inst = nullptr;
-          //setConversation();
+          // setConversation();
         }
         /* Or clean up the notification */
         else if(dialog_mode == NOTIFICATION)
@@ -1902,8 +1894,8 @@ void MapDialog::update(int cycle_time)
           /* If a conversation caused this pause, minimize the time visible */
           if(conversation_ready)
           {
-            if((notification_queue.front().time_visible / 2)
-               > notification_time)
+            if((notification_queue.front().time_visible / 2) >
+               notification_time)
             {
               notification_queue.front().time_visible /= 2;
             }
@@ -1985,8 +1977,8 @@ void MapDialog::update(int cycle_time)
         /* Up motion */
         if(animation_cursor_up)
         {
-          animation_cursor += 1.0 * cycle_time * kCURSOR_HEIGHT
-                                               / kCURSOR_ANIMATE;
+          animation_cursor +=
+              1.0 * cycle_time * kCURSOR_HEIGHT / kCURSOR_ANIMATE;
           if(animation_cursor >= kCURSOR_HEIGHT)
           {
             animation_cursor = kCURSOR_HEIGHT;
@@ -1996,8 +1988,8 @@ void MapDialog::update(int cycle_time)
         /* Down motion */
         else
         {
-          animation_cursor -= 1.0 * cycle_time * kCURSOR_HEIGHT
-                                               / kCURSOR_ANIMATE;
+          animation_cursor -=
+              1.0 * cycle_time * kCURSOR_HEIGHT / kCURSOR_ANIMATE;
           if(animation_cursor <= 0)
           {
             animation_cursor = 0;

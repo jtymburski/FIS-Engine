@@ -230,7 +230,7 @@ void Application::handleEvents()
       if(mode == TITLESCREEN)
         title_screen.keyUpEvent(release_event);
       else if(mode == GAME)
-        game_handler->keyUpEvent(release_event);
+        game_handler->keyUpEvent();
     }
     else if(event.type == SDL_WINDOWEVENT)
     {

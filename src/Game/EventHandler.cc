@@ -242,17 +242,34 @@ SoundHandler* EventHandler::getSoundHandler()
   return sound_handler;
 }
 
-/* Log an error/warning if UDEBUG is set (cleans up macrocode elsewhere) */
-void EventHandler::logError(std::string raw, bool log_cerr)
+/* Print a value if debug is enabled */
+void EventHandler::log(std::string raw)
 {
 #ifdef UDEBUG
-  if(log_cerr)
-    std::cerr << "[ERROR] " << raw << std::endl;
-  else
-    std::cout << "[WARNING] " << raw << std::endl;
+  std::cout << raw << std::endl;
 #else
   (void)raw;
-  (void)log_cerr;
+#endif
+}
+
+/* Log an error/warning if UDEBUG is set (cleans up macrocode elsewhere) */
+void EventHandler::logError(std::string raw)
+{
+#ifdef UDEBUG
+  std::cerr << "[ERROR] " << raw << std::endl;
+#else
+  (void)raw;
+#endif
+}
+
+/* Log an error/warning if UDEBUG is set (cleans up macrocode elsewhere) */
+void EventHandler::logWarning(std::string raw)
+{
+#ifdef UDEBUG
+  std::cout << "[WARNING] " << raw << std::endl;
+#else
+  (void)raw;
+  ;
 #endif
 }
 

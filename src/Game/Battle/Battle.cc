@@ -120,6 +120,7 @@ Battle::Battle()
       config{nullptr},
       delay{0},
       event{nullptr},
+      eh{nullptr},
       flags_combat{static_cast<CombatState>(0)},
       flags_render{static_cast<RenderState>(0)},
       frame_enemy_backdrop{nullptr},
@@ -571,12 +572,12 @@ void Battle::loadBattleEvent()
   auto user = battle_buffer->getUser();
   auto targets = battle_buffer->getTargets();
 
-#ifdef UDEBUG
-  std::cout << "Action type? " << Helpers::actionTypeToStr(action_type)
-            << std::endl;
-  std::cout << "User? " << battle_buffer->getUser()->getBasePerson()->getName()
-            << std::endl;
-#endif
+  /* Log the action type and user */
+  if(eh)
+  {
+    eh->log("Action Type: " + Helpers::actionTypeToStr(action_type));
+    eh->log("User: " + battle_buffer->getUser()->getBasePerson()->getName());
+  }
 
   auto to_build = (action_type != ActionType::NONE);
   to_build &= (user != nullptr);
@@ -656,8 +657,7 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
                                      skill->getAnimationTime(), 1, {x, y});
 
     render_elements.push_back(element);
-    event_handler->triggerSound(Sound::kID_SOUND_BTL_PLEP,
-                                SoundChannels::TRIGGERS);
+    eh->triggerSound(Sound::kID_SOUND_BTL_PLEP, SoundChannels::TRIGGERS);
   }
   else if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
   {
@@ -802,8 +802,7 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
     if(this->outcome != OutcomeType::NONE)
       addDelay(1700, true);
 
-    event_handler->triggerSound(Sound::kID_SOUND_BTL_DEATH,
-                                SoundChannels::TRIGGERS);
+    eh->triggerSound(Sound::kID_SOUND_BTL_DEATH, SoundChannels::TRIGGERS);
     outcome.actor->startFlashing(FlashingType::KOING);
     outcome.actor->removeAilmentsKO();
   }
@@ -854,16 +853,10 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
 
   if(success && party_enemies)
   {
-    // TODO: Enemy items probably broken.
+    // TODO [05-25-16]: Enemy items probably broken.
     // success &=
     //     next_actor->buildBattleItems(party_enemies->getInventory(), actors);
     success &= next_actor->buildBattleSkills(actors);
-
-    // std::cout << "----- Enemy Valid Battle Skills ----- " << std::endl;
-    // auto battle_skills = next_actor->getBattleSkills();
-
-    // for(auto battle_skill : battle_skills)
-    //   battle_skill->print();
 
     // curr_module->setItems(next_actor->getBattleItems());
     curr_module->setSkills(next_actor->getBattleSkills());
@@ -1917,30 +1910,15 @@ void Battle::clearElementsTimedOut()
 void Battle::playInflictionSound(Infliction type)
 {
   if(type == Infliction::CONFUSE)
-  {
-    event_handler->triggerSound(Sound::kID_SOUND_BTL_CONFUSE,
-                                SoundChannels::TRIGGERS);
-  }
+    eh->triggerSound(Sound::kID_SOUND_BTL_CONFUSE, SoundChannels::TRIGGERS);
   else if(type == Infliction::POISON)
-  {
-    event_handler->triggerSound(Sound::kID_SOUND_BTL_POISON,
-                                SoundChannels::TRIGGERS);
-  }
+    eh->triggerSound(Sound::kID_SOUND_BTL_POISON, SoundChannels::TRIGGERS);
   else if(type == Infliction::HIBERNATION)
-  {
-    event_handler->triggerSound(Sound::kID_SOUND_BTL_HIBERNATE,
-                                SoundChannels::TRIGGERS);
-  }
+    eh->triggerSound(Sound::kID_SOUND_BTL_HIBERNATE, SoundChannels::TRIGGERS);
   else if(type == Infliction::SILENCE)
-  {
-    event_handler->triggerSound(Sound::kID_SOUND_BTL_SILENCE,
-                                SoundChannels::TRIGGERS);
-  }
+    eh->triggerSound(Sound::kID_SOUND_BTL_SILENCE, SoundChannels::TRIGGERS);
   else
-  {
-    event_handler->triggerSound(Sound::kID_SOUND_BTL_RAISE,
-                                SoundChannels::TRIGGERS);
-  }
+    eh->triggerSound(Sound::kID_SOUND_BTL_RAISE, SoundChannels::TRIGGERS);
 }
 
 void Battle::createLay(std::string path, int32_t anim_time, Floatinate velocity,
@@ -1964,7 +1942,7 @@ bool Battle::render()
     auto height = config->getScreenHeight();
     auto width = config->getScreenWidth();
 
-    if(turn_state != TurnState::BEGIN)
+    if(turn_state != TurnState::BEGIN && turn_state != TurnState::ENTER_DIM)
     {
       /* Bottom layer is the background */
       if(background)
@@ -2638,8 +2616,7 @@ void Battle::upkeepAilmentOutcome()
     else if(upkeep_actor->dealDamage(upkeep_ailment->getDamageAmount()) &&
             upkeep_ailment->getFlag(AilState::CURABLE_KO))
     {
-      event_handler->triggerSound(Sound::kID_SOUND_BTL_DEATH,
-                                  SoundChannels::TRIGGERS);
+      eh->triggerSound(Sound::kID_SOUND_BTL_DEATH, SoundChannels::TRIGGERS);
       upkeep_actor->startFlashing(FlashingType::KOING);
       upkeep_actor->removeAilmentsKO();
       addDelay(1200);
@@ -2725,27 +2702,10 @@ int32_t Battle::getActorY(BattleActor* actor)
  * PUBLIC FUNCTIONS - Battle Operations
  *============================================================================*/
 
-bool Battle::keyDownEvent(SDL_KeyboardEvent event)
+bool Battle::keyDownEvent()
 {
-  if(event.keysym.sym == SDLK_INSERT)
-  {
-#ifdef UDEBUG
-    if(party_allies && party_allies->getInventory())
-      party_allies->getInventory()->print(false);
-#endif
-  }
-
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
     battle_menu->keyDownEvent();
-  else
-  {
-#ifdef UDEBUG
-    if(event.keysym.sym == SDLK_DELETE && battle_buffer)
-      battle_buffer->print(false);
-    else if(event.keysym.sym == SDLK_INSERT && battle_buffer)
-      battle_buffer->print(true);
-#endif
-  }
 
   return false;
 }
@@ -2755,7 +2715,7 @@ bool Battle::startBattle(Party* friends, Party* foes)
   /* Assert  all essentials are not nullptr. We want Battle to fail */
   assert(battle_display_data);
   assert(config);
-  assert(event_handler);
+  assert(eh);
   assert(renderer);
   assert(friends);
   assert(foes);
@@ -2765,9 +2725,9 @@ bool Battle::startBattle(Party* friends, Party* foes)
 
   /* Music trigger */
   if(music_id >= 0)
-    event_handler->triggerMusic(music_id);
+    eh->triggerMusic(music_id);
   else
-    event_handler->triggerAudioStop(SoundChannels::MUSIC1);
+    eh->triggerAudioStop(SoundChannels::MUSIC1);
 
   /* Construct the Battle actor objects based on the persons in the parties */
   buildBattleActors(friends, foes);
@@ -2896,14 +2856,14 @@ bool Battle::setDisplayData(BattleDisplayData* battle_display_data)
   return success;
 }
 
-bool Battle::setEventHandler(EventHandler* event_handler)
+bool Battle::setEventHandler(EventHandler* eh)
 {
-  this->event_handler = event_handler;
+  this->eh = eh;
 
-  if(battle_menu && this->event_handler)
-    battle_menu->setEventHandler(event_handler);
+  if(battle_menu && this->eh)
+    battle_menu->setEventHandler(eh);
 
-  return this->event_handler;
+  return this->eh;
 }
 
 void Battle::setFlagCombat(CombatState flag, const bool& set_value)
@@ -2985,9 +2945,9 @@ void Battle::setNextTurnState()
   else if(turn_state == TurnState::OUTCOME)
     turn_state = TurnState::FINISHED;
 
-#ifdef UDEBUG
-  std::cout << "[Turn] " << Helpers::turnStateToStr(turn_state) << std::endl;
-#endif
+  /* Log the turn state */
+  if(eh)
+    eh->log("[Turn] " + Helpers::turnStateToStr(turn_state));
 }
 
 bool Battle::update(int32_t cycle_time)

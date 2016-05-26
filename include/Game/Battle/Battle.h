@@ -99,7 +99,7 @@ private:
   BattleEvent* event;
 
   /* The event handler for the game */
-  EventHandler* event_handler;
+  EventHandler* eh;
 
   /* Flags related to the combat state */
   CombatState flags_combat;
@@ -144,9 +144,6 @@ private:
 
   /* The victory screen */
   Victory* victory_screen;
-
-  // remove
-  Frame* test_arc;
 
   /*=============================================================================
    * CONSTANTS - Battle Operations
@@ -493,7 +490,7 @@ public:
       LayType lay_type);
 
   /* Processes a KeyDown event */
-  bool keyDownEvent(SDL_KeyboardEvent event);
+  bool keyDownEvent();
 
   /* Method to start a Battle */
   bool startBattle(Party* friends, Party* allies);

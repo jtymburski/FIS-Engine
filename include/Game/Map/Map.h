@@ -384,8 +384,8 @@ public:
   bool isModeNormal();
 
   /* The key up and down events to be handled by the class */
-  bool keyDownEvent(SDL_KeyboardEvent event);
-  void keyUpEvent(SDL_KeyboardEvent event);
+  bool keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler);
+  void keyUpEvent(KeyHandler& key_handler);
 
   /* Loads the map data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,

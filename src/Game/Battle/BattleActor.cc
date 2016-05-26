@@ -89,8 +89,9 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
  * Inputs:
  */
 BattleActor::BattleActor(Person* person_base, SDL_Renderer* renderer)
-  : BattleActor(person_base, 0, 0, true, false, renderer)
-{}
+    : BattleActor(person_base, 0, 0, true, false, renderer)
+{
+}
 
 /*
  * Description: Annihilates a BattleActor object
@@ -548,13 +549,10 @@ bool BattleActor::buildBattleSkills(std::vector<BattleActor*> a_targets)
         {
           battle_skill->valid_status = ValidStatus::VALID;
 
-          if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
-          {
-            //   std::cout << "[Silenced Skill!] " << std::endl;
-            battle_skill->valid_status = ValidStatus::SILENCED;
-          }
           if(battle_skill->true_cost > stats_actual.getValue(Attribute::QTDR))
             battle_skill->valid_status = ValidStatus::NOT_AFFORDABLE;
+          if(isInflicted(Infliction::SILENCE) && battle_skill->true_cost > 0)
+            battle_skill->valid_status = ValidStatus::SILENCED;
         }
         else
         {
@@ -611,9 +609,6 @@ bool BattleActor::dealDamage(int32_t damage_amount)
 void BattleActor::dealQtdr(int32_t dealt_amount)
 {
   (void)dealt_amount; // TODO
-
-
-
 }
 
 void BattleActor::restoreQtdr(int32_t amount)

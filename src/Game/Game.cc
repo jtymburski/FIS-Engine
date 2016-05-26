@@ -333,19 +333,17 @@ bool Game::changeMode(GameMode mode, bool map_change)
     mode_next = mode;
     updateMode(0);
 
-    /* PRINT - TEMPORARY */
+    /*  Log the game mode */
     if(mode == DISABLED)
-      std::cout << "GAME MODE: DISABLED" << std::endl;
+      event_handler.log("GAME MODE: DISABLED");
     else if(mode == MAP)
-      std::cout << "GAME MODE: MAP" << std::endl;
+      event_handler.log("GAME MODE: MAP");
     else if(mode == BATTLE)
-      std::cout << "GAME MODE: BATTLE" << std::endl;
-    else if(mode == VICTORY_SCREEN)
-      std::cout << "GAME MODE: VICTORY" << std::endl;
+      event_handler.log("GAME MODE: BATTLE");
     else if(mode == LOADING)
-      std::cout << "GAME MODE: LOADING" << std::endl;
+      event_handler.log("GAME MODE: LOADING");
     else if(mode == MENU)
-      std::cout << "GAME MODE: MENU" << std::endl;
+      event_handler.log("GAME MODE: MENU");
 
     /* Changes to execute on the view opening */
     if(mode == MAP)
@@ -658,12 +656,14 @@ void Game::updatePlayerSteps()
 }
 
 /* Load game - main function call */
-bool Game::load(std::string base_file, SDL_Renderer* renderer,
-                uint8_t slot, bool encryption, bool full_load)
+bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
+                bool encryption, bool full_load)
 {
   bool success = true;
-  std::cout << base_file << "," << slot << "," << full_load << ","
-            << map_lvl << std::endl;
+
+  /* Log the base file, slot, full load and map level statuses */
+  event_handler.log(base_file + "," + std::to_string(slot) + "," +
+                    std::to_string(full_load) + "," + std::to_string(map_lvl));
 
   /* Update the player step count */
   updatePlayerSteps();
@@ -691,7 +691,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
   /* Timer to calculate the game load time */
   Timer t;
 
-  //std::cout << "1: " << success << std::endl;
+  // std::cout << "1: " << success << std::endl;
 
   /* Core data first, if applicable */
   if(success && full_load)
@@ -699,20 +699,20 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
     /* Base file */
     success &= loadData(&fh_base, renderer, true, false);
 
-    //std::cout << "2: " << success << std::endl;
+    // std::cout << "2: " << success << std::endl;
 
     /* Player set-up */
     player_main->setSleuth(getParty(Party::kID_SLEUTH));
     player_main->setBearacks(getParty(Party::kID_BEARACKS));
 
-    //std::cout << "3: " << success << std::endl;
+    // std::cout << "3: " << success << std::endl;
 
     /* Slot file */
     if(slot_valid)
       success &= loadData(&fh_slot, renderer, true, true);
   }
 
-  //std::cout << "4: " << success << std::endl;
+  // std::cout << "4: " << success << std::endl;
 
   /* Map data to follow */
   if(success)
@@ -722,9 +722,9 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
     /* Base file */
     fh_base.xmlToHead();
     success &= loadData(&fh_base, renderer, false, false, level);
-    
-    //std::cout << "5: " << success << std::endl;
-    
+
+    // std::cout << "5: " << success << std::endl;
+
     /* Slot file */
     if(slot_valid)
     {
@@ -733,10 +733,10 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
     }
   }
 
-  //std::cout << "6: " << success << std::endl;
+  // std::cout << "6: " << success << std::endl;
 
-  /* Print the time to load out */
-  std::cout << "Game Load Time: " << t.elapsed() << "s" << std::endl;
+  /* Log the game load time */
+  event_handler.log("Game load time: " + std::to_string(t.elapsed()) + " s");
 
   /* Stop the handler */
   success &= fh_base.stop();
@@ -767,8 +767,8 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer,
 }
 
 /* Load game data */
-bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer,
-                    bool core_data, bool save_data, std::string level)
+bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer, bool core_data,
+                    bool save_data, std::string level)
 {
   XmlData data;
   bool done = false;
@@ -806,8 +806,8 @@ bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer,
         if(data.getElement(index + 1) == "map" &&
            data.getKeyValue(index + 1) == level)
         {
-          success &= map_ctrl.loadData(data, index + 2, renderer,
-                                       base_path, save_data);
+          success &= map_ctrl.loadData(data, index + 2, renderer, base_path,
+                                       save_data);
         }
       }
     }
@@ -1078,7 +1078,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     }
   }
 
-  //std::cout << "Core loadData: " << element << ","
+  // std::cout << "Core loadData: " << element << ","
   //          << data.getElement(index + 1) << "." << success << std::endl;
   return success;
 }
@@ -1762,46 +1762,17 @@ bool Game::isModeReady()
 /* The key down events to be handled by the class */
 bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
-  /* TESTING section - probably remove at end */
-  /* Inventory Testing */
-  if(event.keysym.sym == SDLK_ESCAPE && map_menu_enabled &&
-     (map_menu.getMenuLayer() == MenuLayer::TITLE ||
-      !map_menu.getFlag(MenuState::SHOWING)))
-  {
-    if(mode == MAP && !map_menu.getFlag(MenuState::SHOWING))
-      changeMode(MENU);
-    else if(mode == MENU && !map_menu.isMainSliding())
-      eventMenuHide();
-  }
-  else if(event.keysym.sym == SDLK_3)
+// =======================================================================
+// TESTING KEYS
+// ======================================================================= */
+#ifdef UDEBUG
+  if(event.keysym.sym == SDLK_3)
   {
     if(player_main != nullptr && player_main->getSleuth() != nullptr &&
        player_main->getSleuth()->getInventory() != nullptr)
     {
       player_main->getSleuth()->getInventory()->print(false);
     }
-  }
-  /* Show item store dialog in map */
-  else if(event.keysym.sym == SDLK_4)
-  {
-    std::cout << "TODO FUTURE: ITEM STORE TRIGGER" << std::endl;
-
-    // TODO: Future
-    // if (map_ctrl != nullptr)
-    //{
-    //  std::vector<Item*> items;
-    //  items.push_back(list_item[0]);
-    //  items.push_back(list_item[0]);
-    //  std::vector<uint32_t> counts;
-    //  counts.push_back(2);
-    //  counts.push_back(3);
-    //  std::vector<int32_t> cost_modifiers;
-    //  cost_modifiers.push_back(0);
-    //  cost_modifiers.push_back(10);
-    //
-    //  map_ctrl->initStore(ItemStore::BUY, items, counts,
-    //                      cost_modifiers, "Kevin's Store", false);
-    //}
   }
   /* Save test */
   else if(event.keysym.sym == SDLK_5)
@@ -1907,7 +1878,29 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       }
     }
   }
+#endif
 
+  // ======================= END TESTING SECTION ==============================
+
+  auto& key_handler = event_handler.getKeyHandler();
+
+  key_handler.update(0);
+
+  if(key_handler.isDepressed(GameKey::CANCEL) && map_menu_enabled &&
+     (map_menu.getMenuLayer() == MenuLayer::TITLE ||
+      !map_menu.getFlag(MenuState::SHOWING)))
+  {
+    if(mode == MAP && !map_menu.getFlag(MenuState::SHOWING))
+    {
+      changeMode(MENU);
+      key_handler.setHeld(GameKey::CANCEL);
+    }
+    else if(mode == MENU && !map_menu.isMainSliding())
+    {
+      eventMenuHide();
+      key_handler.setHeld(GameKey::MOVE_UP);
+    }
+  }
   /* Otherwise, send keys to the active view */
   else
   {
@@ -1918,13 +1911,13 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     /* -- MAP MODE -- */
     else if(mode == MAP)
     {
-      if(map_ctrl.keyDownEvent(event))
+      if(map_ctrl.keyDownEvent(event, key_handler))
         changeMode(DISABLED);
     }
     /* -- BATTLE MODE -- */
     else if(mode == BATTLE)
     {
-      if(battle_ctrl->keyDownEvent(event))
+      if(battle_ctrl->keyDownEvent())
         changeMode(DISABLED);
     }
   }
@@ -1933,16 +1926,15 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 }
 
 /* The key up events to be handled by the class */
-void Game::keyUpEvent(SDL_KeyboardEvent event)
+void Game::keyUpEvent()
 {
-  if(event.keysym.sym == SDLK_LCTRL)
+  auto& key_handler = event_handler.getKeyHandler();
+
+  key_handler.update(0);
+
+  if(mode == MAP)
   {
-    // if(battle != NULL)
-    //   battle->setShowInfo(false);
-  }
-  else if(mode == MAP)
-  {
-    map_ctrl.keyUpEvent(event);
+    map_ctrl.keyUpEvent(key_handler);
   }
 }
 
@@ -2029,7 +2021,7 @@ bool Game::save(uint8_t slot)
 
     /* Start file write */
     if(save_handle.isAvailable() && save_handle.getFilename() != save_path)
-       save_handle.stop(true);
+      save_handle.stop(true);
     if(!save_handle.isAvailable())
     {
       save_handle.setEncryptionEnabled(false);
@@ -2044,14 +2036,14 @@ bool Game::save(uint8_t slot)
     {
       /* Get a BMP of the current surface */
       SDL_Rect rect = map_ctrl.getSnapshotRect();
-      SDL_Surface* sshot = SDL_CreateRGBSurface(0, rect.w, rect.h, 32,
-                                                0x00ff0000, 0x0000ff00,
-                                                0x000000ff, 0xff000000);
+      SDL_Surface* sshot =
+          SDL_CreateRGBSurface(0, rect.w, rect.h, 32, 0x00ff0000, 0x0000ff00,
+                               0x000000ff, 0xff000000);
       SDL_RenderReadPixels(active_renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
                            sshot->pixels, sshot->pitch);
-      SDL_Surface* sshot2 = SDL_CreateRGBSurface(0, rect.w/4, rect.h/4, 32,
-                                                 0x00ff0000, 0x0000ff00,
-                                                 0x000000ff, 0xff000000);
+      SDL_Surface* sshot2 =
+          SDL_CreateRGBSurface(0, rect.w / 4, rect.h / 4, 32, 0x00ff0000,
+                               0x0000ff00, 0x000000ff, 0xff000000);
       SDL_BlitScaled(sshot, NULL, sshot2, NULL);
       SDL_SaveBMP(sshot2, save_path_img.c_str());
       SDL_FreeSurface(sshot);
@@ -2334,8 +2326,8 @@ bool Game::update(int32_t cycle_time)
     if(!map_menu.getFlag(MenuState::SHOWING))
       changeMode(MAP);
 
-    //TODO [05-22-16]: Update alterations for map JMT // JT // J MICHAEL T
-    return map_menu.update(cycle_time); //map_ctrl.update(cycle_time)
+    // TODO [05-22-16]: Update alterations for map JMT // JT // J MICHAEL T
+    return map_menu.update(cycle_time); // map_ctrl.update(cycle_time)
   }
 
   return false;

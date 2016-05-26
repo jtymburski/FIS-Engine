@@ -51,11 +51,10 @@ public:
   {
     DISABLED       = 0,
     MAP            = 1,
-    BATTLE         = 2,
-    VICTORY_SCREEN = 3,
-    LOADING        = 4,
-    MENU           = 5, /* Processing paused for Map */
-    NONE           = 6
+  BATTLE         = 2,
+    LOADING        = 3,
+    MENU           = 4, /* Processing paused for Map */
+    NONE           = 5
   };
 
 private:
@@ -278,7 +277,7 @@ public:
 
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
-  void keyUpEvent(SDL_KeyboardEvent event);
+  void keyUpEvent();
 
   /* Load game */
   bool load(SDL_Renderer* renderer, bool full_load = true, uint8_t slot = 0);

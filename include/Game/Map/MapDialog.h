@@ -265,9 +265,8 @@ public:
   bool isPaused();
 
   /* Key Down/Flush/Up events handled */
-  void keyDownEvent(SDL_KeyboardEvent event);
+  void keyDownEvent(KeyHandler& key_handler);
   void keyFlush();
-  void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Loads all appropriate image data for rendering */
   bool loadImageConversation(string path, SDL_Renderer* renderer);

@@ -27,7 +27,7 @@ const int8_t MapPerson::kDIR_SOUTH = 2;
 const int8_t MapPerson::kDIR_UNKNOWN = -1;
 const int8_t MapPerson::kDIR_WEST = 3;
 const uint8_t MapPerson::kTOTAL_DIRECTIONS = 4;
-const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
+const uint8_t MapPerson::kTOTAL_SURFACES = 1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -66,7 +66,7 @@ MapPerson::MapPerson() : MapThing()
  *         std::string description - a description of the person
  */
 MapPerson::MapPerson(int id, std::string name, std::string description)
-          : MapThing(id, name, description)
+    : MapThing(id, name, description)
 {
   running = false;
   starting_section = 0;
@@ -376,7 +376,7 @@ void MapPerson::removeDirection(Direction direction)
  *         const bool &save_event - true to save the base event set (thing)
  * Output: none
  */
-bool MapPerson::saveData(FileHandler* fh, const bool &save_event)
+bool MapPerson::saveData(FileHandler* fh, const bool& save_event)
 {
   bool success = true;
 
@@ -466,8 +466,8 @@ bool MapPerson::setTile(Tile* tile, TileSprite* frames, bool no_events)
  * Output: bool - true if the set was successful
  */
 void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
-                             uint8_t render_depth, bool reverse_last,
-                             bool no_events)
+                              uint8_t render_depth, bool reverse_last,
+                              bool no_events)
 {
   if(reverse_last)
   {
@@ -475,8 +475,8 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
     new_tile->unsetPerson(render_depth, no_events);
 
     /* Special events if person and thing is set on tile at render level 0 */
-    if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->isIOSet(0)
-                             && old_tile->getIO(0) != new_tile->getIO(0))
+    if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->isIOSet(0) &&
+       old_tile->getIO(0) != new_tile->getIO(0))
       new_tile->getIO(0)->triggerWalkOff(this);
   }
   else
@@ -484,8 +484,8 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
     old_tile->personMoveFinish(render_depth, no_events);
 
     /* Special events if person and thing is set on tile at render level 0 */
-    if(getID() == kPLAYER_ID && render_depth == 0 && old_tile->isIOSet(0)
-                             && old_tile->getIO(0) != new_tile->getIO(0))
+    if(getID() == kPLAYER_ID && render_depth == 0 && old_tile->isIOSet(0) &&
+       old_tile->getIO(0) != new_tile->getIO(0))
       old_tile->getIO(0)->triggerWalkOff(this);
   }
 }
@@ -502,7 +502,7 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
  * Output: bool - true if the set was successful
  */
 bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile,
-                            uint8_t render_depth, bool no_events)
+                             uint8_t render_depth, bool no_events)
 {
   /* Attempt and set the tile */
   if(new_tile != NULL && old_tile != NULL)
@@ -515,8 +515,8 @@ bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile,
       old_tile->personMoveStart(render_depth);
 
       /* Special events if person and thing is set on tile at render level 0 */
-      if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->isIOSet(0)
-                              && old_tile->getIO(0) != new_tile->getIO(0))
+      if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->isIOSet(0) &&
+         old_tile->getIO(0) != new_tile->getIO(0))
         new_tile->getIO(0)->triggerWalkOn(this);
 
       return true;
@@ -576,15 +576,14 @@ void MapPerson::unsetTile(uint32_t x, uint32_t y, bool no_events)
 
   /* Remove from main tile, if applicable */
   tile_main[x][y]->unsetPerson(render_depth, no_events);
-  if(getID() == kPLAYER_ID && render_depth == 0 &&
-     tile_main[x][y]->isIOSet(0))
+  if(getID() == kPLAYER_ID && render_depth == 0 && tile_main[x][y]->isIOSet(0))
     tile_main[x][y]->getIO(0)->triggerWalkOff(this);
 
   /* Remove from previous tile, if applicable */
   if(tile_prev.size() > 0)
   {
     tile_prev[x][y]->unsetPerson(render_depth, no_events);
-	if(getID() == kPLAYER_ID && render_depth == 0 &&
+    if(getID() == kPLAYER_ID && render_depth == 0 &&
        tile_prev[x][y]->isIOSet(0))
       tile_prev[x][y]->getIO(0)->triggerWalkOff(this);
   }
@@ -631,8 +630,8 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
     /* Only proceed if the direction was a valid direction */
     SpriteMatrix* matrix = getState(surface, direction);
     if(matrix != NULL)
-      success &= matrix->addFileInformation(data, file_index + 3,
-                                            renderer, base_path);
+      success &=
+          matrix->addFileInformation(data, file_index + 3, renderer, base_path);
     else
       success = false;
   }
@@ -989,23 +988,36 @@ bool MapPerson::isRunning()
  * Inputs: SDL_KeyboardEvent event - the the event triggered on the SDL engine
  * Output: none
  */
-void MapPerson::keyDownEvent(SDL_KeyboardEvent event)
+void MapPerson::keyDownEvent(KeyHandler& key_handler)
 {
   if(getTarget() == nullptr)
   {
-    if(event.keysym.sym == SDLK_DOWN)
+    if(key_handler.isDepressed(GameKey::MOVE_DOWN))
+    {
       addDirection(Direction::SOUTH);
-    else if(event.keysym.sym == SDLK_UP)
+      //key_handler.setHeld(GameKey::MOVE_DOWN);
+    }
+    if(key_handler.isDepressed(GameKey::MOVE_UP))
+    {
       addDirection(Direction::NORTH);
-    else if(event.keysym.sym == SDLK_RIGHT)
+      //key_handler.setHeld(GameKey::MOVE_UP);
+    }
+    if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
+    {
       addDirection(Direction::EAST);
-    else if(event.keysym.sym == SDLK_LEFT)
+      //key_handler.setHeld(GameKey::MOVE_RIGHT);
+    }
+    if(key_handler.isDepressed(GameKey::MOVE_LEFT))
+    {
       addDirection(Direction::WEST);
+      //key_handler.setHeld(GameKey::MOVE_LEFT);
+    }
+    if(key_handler.isDepressed(GameKey::DEBUG))
+    {
+      ignorePassability(!ignore_passability);
+      //key_handler.setHeld(GameKey::DEBUG);
+    }
   }
-
-  /* Other keys which transcend - TODO: testing remove */
-  if(event.keysym.sym == SDLK_F2)
-    ignorePassability(!ignore_passability);
 }
 
 /*
@@ -1026,15 +1038,15 @@ void MapPerson::keyFlush()
  * Inputs: SDL_KeyboardEvent event - the event triggered on the SDL engine
  * Output: none
  */
-void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
+void MapPerson::keyUpEvent(KeyHandler& key_handler)
 {
-  if(event.keysym.sym == SDLK_DOWN)
+  if(!key_handler.isDepressed(GameKey::MOVE_DOWN))
     removeDirection(Direction::SOUTH);
-  else if(event.keysym.sym == SDLK_UP)
+  if(!key_handler.isDepressed(GameKey::MOVE_UP))
     removeDirection(Direction::NORTH);
-  else if(event.keysym.sym == SDLK_RIGHT)
+  if(!key_handler.isDepressed(GameKey::MOVE_RIGHT))
     removeDirection(Direction::EAST);
-  else if(event.keysym.sym == SDLK_LEFT)
+  if(!key_handler.isDepressed(GameKey::MOVE_LEFT))
     removeDirection(Direction::WEST);
 }
 
@@ -1335,7 +1347,8 @@ Floatinate MapPerson::update(int cycle_time,
       animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
 
       /* Sound trigger for person/npc - for now, only player (TODO:FUTURE) */
-      if(getID() == 0 && base_category != ThingBase::ISBASE && getSoundID() >= 0)
+      if(getID() == 0 && base_category != ThingBase::ISBASE &&
+         getSoundID() >= 0)
       {
         if(sound_delay > 0)
         {

@@ -27,10 +27,13 @@ public:
 
   /* The surface classification, first layer of states 2D vector
    *  GROUND - is on a dirt like substance (where walking is possible) */
-  enum SurfaceClassifier{GROUND = 0};
+  enum SurfaceClassifier
+  {
+    GROUND = 0
+  };
 
 protected:
-/* The direction of the player */
+  /* The direction of the player */
   Direction direction;
 
   /* The surface that the person is walking on */
@@ -66,17 +69,17 @@ private:
   uint32_t steps;
 
   /* -------------------------- Constants ------------------------- */
-  const static int kDELAY_MAX; /* The maximum delay (in milliseconds) */
-  const static int kDELAY_MIN; /* The minimum delay (in milliseconds) */
-  const static int8_t kDIR_EAST;        /* The EAST direction for moving */
-  const static int8_t kDIR_NORTH;       /* The NORTH direction for moving */
-  const static int8_t kDIR_SOUTH;       /* The SOUTH direction for moving */
-  const static int8_t kDIR_UNKNOWN;     /* The unknown direction value */
-  const static int8_t kDIR_WEST;        /* The WEST direction for moving */
+  const static int kDELAY_MAX;      /* The maximum delay (in milliseconds) */
+  const static int kDELAY_MIN;      /* The minimum delay (in milliseconds) */
+  const static int8_t kDIR_EAST;    /* The EAST direction for moving */
+  const static int8_t kDIR_NORTH;   /* The NORTH direction for moving */
+  const static int8_t kDIR_SOUTH;   /* The SOUTH direction for moving */
+  const static int8_t kDIR_UNKNOWN; /* The unknown direction value */
+  const static int8_t kDIR_WEST;    /* The WEST direction for moving */
   const static uint8_t kTOTAL_DIRECTIONS; /* The max # of directions to move */
-  const static uint8_t kTOTAL_SURFACES; /* The max # of surfaces to walk on */
+  const static uint8_t kTOTAL_SURFACES;   /* The max # of surfaces to walk on */
 
-/*======================== PRIVATE FUNCTIONS ===============================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Deletes the states */
   void deleteStates();
@@ -87,7 +90,7 @@ private:
   /* Initializes the states stack to an empty set */
   void initializeStates();
 
-/*======================= PROTECTED FUNCTIONS ==============================*/
+  /*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
@@ -100,8 +103,8 @@ protected:
   virtual bool isDataToSave();
 
   /* Is move allowed, based on main tile and the next tile */
-  virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t
-                                 render_depth, Direction move_request);
+  virtual bool isTileMoveAllowed(Tile* previous, Tile* next,
+                                 uint8_t render_depth, Direction move_request);
 
   /* Determine the move amount of the person */
   float moveAmount(uint16_t cycle_time);
@@ -110,14 +113,13 @@ protected:
   void removeDirection(Direction direction);
 
   /* Saves the person data - virtualized */
-  virtual bool saveData(FileHandler* fh, const bool &save_event = true);
+  virtual bool saveData(FileHandler* fh, const bool& save_event = true);
 
   /* Sets the direction that the person is travelling in */
   virtual bool setDirection(Direction direction, bool set_movement = true);
 
   /* Sets the tile of the selected with the corresponding frames */
-  virtual bool setTile(Tile* tile, TileSprite* frames,
-                       bool no_events = true);
+  virtual bool setTile(Tile* tile, TileSprite* frames, bool no_events = true);
   virtual void setTileFinish(Tile* old_tile, Tile* new_tile,
                              uint8_t render_depth, bool reverse_last = false,
                              bool no_events = false);
@@ -131,7 +133,7 @@ protected:
   /* This unsets the tile, at the given frame coordinate */
   virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
-/*========================= PUBLIC FUNCTIONS ===============================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds person information from the XML file. Will be virtually re-called
    * by all children for proper operation */
@@ -202,9 +204,9 @@ public:
   bool isRunning();
 
   /* Key Down/Flush/Up events handled */
-  void keyDownEvent(SDL_KeyboardEvent event);
+  void keyDownEvent(KeyHandler& key_handler);
   void keyFlush();
-  void keyUpEvent(SDL_KeyboardEvent event);
+  void keyUpEvent(KeyHandler& key_handler);
 
   /* Resets the step count */
   void resetStepCount();
@@ -253,7 +255,7 @@ public:
   /* Unset the rendering tiles in the class */
   virtual void unsetTiles(bool no_events = false);
 
-/*===================== PUBLIC STATIC FUNCTIONS ============================*/
+  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Direction enumerator to/from integer converters */
   static int dirToInt(Direction dir);

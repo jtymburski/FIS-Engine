@@ -88,10 +88,7 @@ void Buffer::addItem(BattleActor* user, BattleItem* used_item,
 
   /* Create a copy of the item since it'll be removed from the inventory */
   if(used_item && used_item->item)
-  {
-    std::cout << "Creating a new owned item." << std::endl;
     item_action.owned_item = new Item(used_item->item);
-  }
 
   std::vector<BattleActor*> target_vec{targets};
   item_action.targets = target_vec;
@@ -137,7 +134,6 @@ void Buffer::clearItem()
     if(getIndex(index).owned_item)
     {
       auto owned_item = getIndex(index).owned_item;
-      std::cout << "Deleting an owned item. " << std::endl;
       delete owned_item;
       owned_item = nullptr;
     }
@@ -200,6 +196,7 @@ bool Buffer::isSorted()
 
 void Buffer::print(bool simple)
 {
+#ifdef UDEBUG
   std::cout << "===== [ Action Buffer ] ======\n"
             << "Size: " << action_buffer.size() << "Curr. Index: " << index
             << "\n";
@@ -251,6 +248,7 @@ void Buffer::print(bool simple)
   }
 
   std::cout << std::endl;
+#endif
 }
 
 void Buffer::removeAllByUser(BattleActor* user)
@@ -329,7 +327,6 @@ std::vector<BattleActor*> Buffer::getTargets()
   if(index < action_buffer.size())
     return getIndex(index).targets;
 
-  std::cerr << "[ERROR] - reaching invalid action buffer index" << std::endl;
   return getIndex(0).targets;
 }
 
@@ -337,11 +334,7 @@ bool Buffer::setNext()
 {
   if(index + 1 < action_buffer.size())
   {
-    std::cout << "Incrementing index!" << std::endl;
     index++;
-
-    std::cout << "Index new: " << index
-              << " Buffer size: " << action_buffer.size() << std::endl;
 
     if(index < action_buffer.size())
       return true;

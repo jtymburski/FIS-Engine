@@ -394,7 +394,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       modified_thing->setEventHandler(event_handler);
       new_thing = true;
       sub_map[section_index].ios.push_back(
-                           static_cast<MapInteractiveObject*>(modified_thing));
+          static_cast<MapInteractiveObject*>(modified_thing));
     }
 
     /* Attempt to add base, if applicable */
@@ -418,7 +418,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       }
       new_thing = true;
       sub_map[section_index].persons.push_back(
-                                      static_cast<MapPerson*>(modified_thing));
+          static_cast<MapPerson*>(modified_thing));
 
       /* If the ID is the player ID, tie to the player */
       if(id == kPLAYER_ID)
@@ -438,7 +438,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       modified_thing = new MapItem();
       new_thing = true;
       sub_map[section_index].items.push_back(
-                                        static_cast<MapItem*>(modified_thing));
+          static_cast<MapItem*>(modified_thing));
     }
 
     /* Attempt to add base, if applicable */
@@ -469,7 +469,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
         {
           section_old = modified_thing->getNextSection();
           modified_thing->setLocationNext(section_index,
-                        modified_thing->getNextX(), modified_thing->getNextY());
+                                          modified_thing->getNextX(),
+                                          modified_thing->getNextY());
         }
       }
       else
@@ -478,7 +479,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
         {
           section_old = modified_thing->getStartingSection();
           modified_thing->setLocationNext(section_index,
-                modified_thing->getStartingX(), modified_thing->getStartingY());
+                                          modified_thing->getStartingX(),
+                                          modified_thing->getStartingY());
         }
       }
     }
@@ -488,7 +490,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       {
         section_old = modified_thing->getStartingSection();
         modified_thing->setLocationStart(section_index,
-                modified_thing->getStartingX(), modified_thing->getStartingY());
+                                         modified_thing->getStartingX(),
+                                         modified_thing->getStartingY());
       }
     }
     if(section_old >= 0)
@@ -781,9 +784,8 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 
 /* Returns a matrix of tiles that match the frames in the thing */
 // TODO: Comment
-std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
-                                                   Direction direction,
-                                                   bool start_only)
+std::vector<std::vector<Tile*>>
+Map::getTileMatrix(MapThing* thing, Direction direction, bool start_only)
 {
   std::vector<std::vector<Tile*>> tile_set;
   if(thing != NULL)
@@ -1287,8 +1289,8 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
 }
 
 /* Save the passed in sub map based on the map ID */
-bool Map::saveSubMap(FileHandler* fh, const uint32_t &id,
-                     const std::string &wrapper, const bool &write_id)
+bool Map::saveSubMap(FileHandler* fh, const uint32_t& id,
+                     const std::string& wrapper, const bool& write_id)
 {
   if(fh != nullptr && id < sub_map.size())
   {
@@ -1361,11 +1363,11 @@ bool Map::saveTiles(FileHandler* fh, SubMap* sub_map)
 
     /* Push onto stack if relevant */
     if(col_enter.size() > 0)
-      tile_enters.push_back(std::pair<uint32_t, std::vector<uint32_t>>
-                            (i, col_enter));
+      tile_enters.push_back(
+          std::pair<uint32_t, std::vector<uint32_t>>(i, col_enter));
     if(col_exit.size() > 0)
-      tile_exits.push_back(std::pair<uint32_t, std::vector<uint32_t>>
-                           (i, col_exit));
+      tile_exits.push_back(
+          std::pair<uint32_t, std::vector<uint32_t>>(i, col_exit));
   }
 
   /* Write the changed enter events */
@@ -1378,9 +1380,10 @@ bool Map::saveTiles(FileHandler* fh, SubMap* sub_map)
 }
 
 /* Saves the passed calculated set of changed tiles */
-bool Map::saveTileSet(FileHandler* fh, SubMap* sub_map,
-            const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> &set,
-            const bool &enter, const std::string &type_txt)
+bool Map::saveTileSet(
+    FileHandler* fh, SubMap* sub_map,
+    const std::vector<std::pair<uint32_t, std::vector<uint32_t>>>& set,
+    const bool& enter, const std::string& type_txt)
 {
   bool success = true;
 
@@ -1473,12 +1476,12 @@ bool Map::setTiles(MapThing* ref)
   if(ref != nullptr)
   {
     /* Clean the matrix - fixes up the rendering box */
-    if((ref->getBase() != nullptr &&
-        ref->getBase()->getFrames().size() > 0) || ref->cleanMatrix())
+    if((ref->getBase() != nullptr && ref->getBase()->getFrames().size() > 0) ||
+       ref->cleanMatrix())
     {
       bool success = true;
-      std::vector<std::vector<Tile*>> start_set = getTileMatrix(
-                                         ref, Direction::DIRECTIONLESS, true);
+      std::vector<std::vector<Tile*>> start_set =
+          getTileMatrix(ref, Direction::DIRECTIONLESS, true);
 
       /* Depending on if next is valid, set the new tiles accordingly */
       if(ref->isNextLocation())
@@ -2131,14 +2134,16 @@ SDL_Rect Map::getSnapshotRect()
   if(player != nullptr)
   {
     /* X coordinate */
-    rect.x = player->getCenterX() - static_cast<int>(viewport.getX()) - (kSNAPSHOT_W / 2);
+    rect.x = player->getCenterX() - static_cast<int>(viewport.getX()) -
+             (kSNAPSHOT_W / 2);
     if(rect.x < 0)
       rect.x = 0;
     else if((rect.x + rect.w) >= viewport.getWidth())
       rect.x = viewport.getWidth() - rect.w - 1;
 
     /* Y coordinate */
-    rect.y = player->getCenterY() - static_cast<int>(viewport.getY()) - (kSNAPSHOT_H / 2);
+    rect.y = player->getCenterY() - static_cast<int>(viewport.getY()) -
+             (kSNAPSHOT_H / 2);
     if(rect.y < 0)
       rect.y = 0;
     else if((rect.y + rect.h) >= viewport.getHeight())
@@ -2312,23 +2317,12 @@ bool Map::isModeNormal()
 }
 
 /* The key up and down events to be handled by the class */
-bool Map::keyDownEvent(SDL_KeyboardEvent event)
+bool Map::keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler)
 {
-  /* Control is only permitted if the mode is normal */
+/* ---- START TEST CODE ---- */
+#ifdef UDEBUG
   if(isModeNormal())
   {
-    /* Exit the map, map has finished processing */
-    // if(event.keysym.sym == SDLK_ESCAPE)
-    // {
-    //   if(item_menu.isActive())
-    //     item_menu.close();
-    //   else
-    //   {
-    //     unfocus();
-    //     return true;
-    //   }
-    // }
-    /* ---- START TEST CODE ---- */
     /* Test: trigger grey scale */
     if(event.keysym.sym == SDLK_g)
     {
@@ -2470,36 +2464,37 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
         std::cout << "----" << std::endl;
       }
     }
-    /* ---- END TEST CODE ---- */
-    /* If item menu is active, send keys there */
-    else if(item_menu.isActive())
-      item_menu.keyDownEvent(event);
-    /* If conversation is active, send keys there */
-    else if(map_dialog.isConversationActive())
-      map_dialog.keyDownEvent(event);
-    /* Interact initiation from player */
-    else if(event.keysym.sym == SDLK_SPACE)
-      initiateThingInteraction(player);
-    /* Otherwise, send keys to player for control */
-    else if(player != nullptr)
+  }
+#endif
+  // ---- END TEST CODE ----
+
+  /* Key control is only permitted during Normal Mode */
+  if(isModeNormal())
+  {
+    if(key_handler.isDepressed(GameKey::ACTION))
     {
-      player->keyDownEvent(event);
+      initiateThingInteraction(player);
+      key_handler.setHeld(GameKey::ACTION);
+    }
+    if(map_dialog.isConversationActive())
+    {
+      map_dialog.keyDownEvent(key_handler);
+    }
+    if(player)
+    {
+      player->keyDownEvent(key_handler);
     }
   }
 
   return false;
 }
 
-void Map::keyUpEvent(SDL_KeyboardEvent event)
+void Map::keyUpEvent(KeyHandler& key_handler)
 {
   if(isModeNormal())
   {
-    if(item_menu.isActive())
-      item_menu.keyUpEvent(event);
-    else if(map_dialog.isConversationActive())
-      map_dialog.keyUpEvent(event);
-    else if(player != NULL)
-      player->keyUpEvent(event);
+    if(player != NULL)
+      player->keyUpEvent(key_handler);
   }
 }
 
@@ -2936,7 +2931,7 @@ bool Map::render(SDL_Renderer* renderer)
 
         /* Base map IO, if relevant */
         MapInteractiveObject* render_io =
-                                      sub_map[map_index].tiles[i][j]->getIO(0);
+            sub_map[map_index].tiles[i][j]->getIO(0);
         if(render_io != NULL)
           render_io->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                 x_offset, y_offset);
@@ -3479,15 +3474,15 @@ bool Map::update(int cycle_time)
         if(sub_map[i].persons[j]->isMoving() ||
            sub_map[i].persons[j]->isMoveRequested())
         {
-          tile_set = getTileMatrix(sub_map[i].persons[j],
-                             sub_map[i].persons[j]->getPredictedMoveRequest());
+          tile_set =
+              getTileMatrix(sub_map[i].persons[j],
+                            sub_map[i].persons[j]->getPredictedMoveRequest());
         }
       }
 
       /* Update person */
-      Floatinate person_move = sub_map[i].persons[j]->update(cycle_time,
-                                                             tile_set,
-                                                             active_map);
+      Floatinate person_move =
+          sub_map[i].persons[j]->update(cycle_time, tile_set, active_map);
 
       /* If player, record and store move distance */
       if(sub_map[i].persons[j] == player && active_map)

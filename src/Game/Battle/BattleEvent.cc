@@ -438,12 +438,10 @@ void BattleEvent::setFlagIgnore(IgnoreState flag, const bool& set_value)
 
 bool BattleEvent::setNextAction()
 {
-  std::cout << "Setting next action! " << std::endl;
   auto curr_skill = getCurrSkill();
 
   if(curr_skill && action_index + 1 < curr_skill->getEffects().size())
   {
-    std::cout << "Incrementing action index " << std::endl;
     action_index++;
     event_type = BattleEventType::NONE;
 
@@ -457,7 +455,6 @@ bool BattleEvent::setNextAction()
 // TODO: Crit level modifier
 bool BattleEvent::doesActionCrit(BattleActor* curr_target)
 {
-  std::cout << "Testing critical hit chance." << std::endl;
   auto curr_action = getCurrAction();
 
   if(actor && curr_target && curr_action)
@@ -477,10 +474,7 @@ bool BattleEvent::doesActionCrit(BattleActor* curr_target)
       uint32_t crit_pc_1000 = floor(crit_chance * 1000);
 
       if(Helpers::chanceHappens(crit_pc_1000, 1000))
-      {
-        std::cout << "Critical hit happens!" << std::endl;
         return true;
-      }
     }
   }
 
@@ -496,10 +490,7 @@ void BattleEvent::doesSkillHit()
   if(actor && curr_skill && event_skill)
   {
     if(actor->getFlag(ActorState::MISS_NEXT_TARGET))
-    {
-      std::cout << "[Skill Hit Status: DREAMSNARED]" << std::endl;
       status = SkillHitStatus::DREAMSNARED;
-    }
 
     if(status == SkillHitStatus::HIT)
     {
@@ -512,14 +503,7 @@ void BattleEvent::doesSkillHit()
       bool hits = Helpers::chanceHappens(static_cast<uint32_t>(hit_rate), 100);
 
       if(!hits)
-      {
-        std::cout << "[Skill Hit Status: MISS] " << std::endl;
         status = SkillHitStatus::MISS;
-      }
-      else
-      {
-        std::cout << "[Skill Hit Status: HIT]" << std::endl;
-      }
     }
   }
 
@@ -745,15 +729,9 @@ InflictionStatus BattleEvent::canInflictTarget(BattleActor* curr_target,
   if(curr_target && type != Infliction::INVALID)
   {
     if(curr_target->isInflicted(type))
-    {
-      std::cout << "Already inflicted!" << std::endl;
       return InflictionStatus::ALREADY_INFLICTED;
-    }
     if(curr_target->isImmune(type))
-    {
-      std::cout << "Target is immune!" << std::endl;
       return InflictionStatus::IMMUNE;
-    }
 
     if(curr_target->getAilments().size() < 5)
       return InflictionStatus::INFLICTION;
@@ -849,26 +827,22 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
     // TODO: Other attributes
     if(action->getTargetAttribute() == Attribute::VITA)
     {
-      std::cout << "Target attribute is vitality!" << std::endl;
       targ_value = curr_target->getStats().getValue(Attribute::VITA);
       targ_max_value = curr_target->getStats().getValue(Attribute::MVIT);
     }
     else if(action->getTargetAttribute() == Attribute::QTDR)
     {
-      std::cout << "Target attribute is quantum drive!" << std::endl;
       targ_value = curr_target->getStats().getValue(Attribute::QTDR);
       targ_max_value = curr_target->getStats().getValue(Attribute::MQTD);
     }
 
     // if(action->getUserAttribute() == Attribute::VITA)
     // {
-    //   std::cout << "User attribute is vitality!" << std::endl;
     //   targ_value = actor->getStats().getValue(Attribute::VITA);
     //   targ_max_value = actor->getStats().getValue(Attribute::MVIT);
     // }
     // else if(action->getUserAttribute() == Attribute::QTDR)
     // {
-    //   std::cout << "User attribute is quantum drive!" << std::endl;
     //   targ_value = actor->getStats().getValue(Attribute::QTDR);
     //   targ_max_value = actor->getStats().getValue(Attribute::MQTD);
     // }
@@ -887,8 +861,6 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
       variance = action_var;
 
     amount = Helpers::randU(amount - variance, amount + variance);
-
-    std::cout << "Alter amount: " << amount << std::endl;
 
     auto max_amount = targ_max_value - targ_value;
 

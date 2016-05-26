@@ -126,6 +126,7 @@ bool BattleStats::removeLinked(Ailment* linked_ailment)
 
 void BattleStats::print()
 {
+#ifdef UDEBUG
   /* Print out each of the base values */
   for(const auto& value : values)
   {
@@ -182,6 +183,7 @@ void BattleStats::print()
     else if(value.first == Attribute::MQTD)
       std::cout << "MQTD: " << final_value << std::endl;
   }
+#endif
 }
 
 void BattleStats::update(int32_t lifetime_update)

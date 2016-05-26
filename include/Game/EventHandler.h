@@ -105,11 +105,17 @@ public:
   /* Returns a reference to the sound handler */
   SoundHandler* getSoundHandler();
 
-  /* Check the name of an Item of a Given ID */
-  std::string peekItemName(int32_t id);
+  /* Log text */
+  void log(std::string raw);
 
   /* Log/debug an error if debugging is enabled */
-  void logError(std::string raw, bool log_cerr = true);
+  void logError(std::string raw);
+
+  /* Log warning */
+  void logWarning(std::string raw);
+
+  /* Check the name of an Item of a Given ID */
+  std::string peekItemName(int32_t id);
 
   /* Clears the event handling poll queue */
   void pollClear();
