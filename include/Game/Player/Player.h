@@ -21,6 +21,13 @@
 
 #include "Game/Player/Party.h"
 
+enum class Sex
+{
+  UNSET = 0,
+  FEMALE = 1,
+  MALE = 2
+};
+
 /* Struct to indicate time played by player */
 struct TimeStore
 {
@@ -41,6 +48,9 @@ private:
    * while the bearacks is the reserve party */
   Party* sleuth;
   Party* bearacks;
+
+  /* Is the player male? */
+  Sex player_sex;
 
   /* Current value of credits */
   uint32_t credits;

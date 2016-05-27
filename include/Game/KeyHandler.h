@@ -55,23 +55,21 @@ public:
   /* Constructs the Handler of Keys */
   KeyHandler();
 
-  ~KeyHandler() = default;
-
 private:
   /* Vector of Keys */
   std::vector<Key> keys;
 
   /* ------------ Constants --------------- */
-  static const SDL_Keycode kMOVE_LEFT_DEFAULT; /* Default moving left key */
+  static const SDL_Keycode kMOVE_LEFT_DEFAULT;  /* Default moving left key */
   static const SDL_Keycode kMOVE_RIGHT_DEFAULT; /* Default moving right key */
-  static const SDL_Keycode kMOVE_UP_DEFAULT; /* Default moving up key */
-  static const SDL_Keycode kMOVE_DOWN_DEFAULT; /* Default moving down key */
-  static const SDL_Keycode kMENU_DEFAULT; /* Default menu open key */
-  static const SDL_Keycode kACTION_DEFAULT; /* Default action key */
-  static const SDL_Keycode kCANCEL_DEFAULT; /* Default cancel/close key */
-  static const SDL_Keycode kRUN_DEFAULT; /* Default run key */
-  static const SDL_Keycode kDEBUG_DEFAULT; /* Default debug key */
-  static const SDL_Keycode kPAUSE_DEFAULT; /* Default pause key */
+  static const SDL_Keycode kMOVE_UP_DEFAULT;    /* Default moving up key */
+  static const SDL_Keycode kMOVE_DOWN_DEFAULT;  /* Default moving down key */
+  static const SDL_Keycode kMENU_DEFAULT;       /* Default menu open key */
+  static const SDL_Keycode kACTION_DEFAULT;     /* Default action key */
+  static const SDL_Keycode kCANCEL_DEFAULT;     /* Default cancel/close key */
+  static const SDL_Keycode kRUN_DEFAULT;        /* Default run key */
+  static const SDL_Keycode kDEBUG_DEFAULT;      /* Default debug key */
+  static const SDL_Keycode kPAUSE_DEFAULT;      /* Default pause key */
 
   static const int32_t kMIN_HELD_TIME; /* Amount of time for key to be 'Held' */
   static const bool kMULTIPLE_MAPPINGS; /* Can GameKeys be multi-mapped? */
@@ -85,11 +83,11 @@ private:
 public:
   /* Checks if a Certain Game key is in a 'held' state */
   bool isHeld(GameKey game_key);
-  bool isHeld(SDL_Keycode keycode, bool* found);
+  bool isHeld(SDL_Keycode keycode);
 
   /* Checks if a Certain Game key is in a depressed state */
   bool isDepressed(GameKey game_key);
-  bool isDepressed(SDL_Keycode keycode, bool* found);
+  bool isDepressed(SDL_Keycode keycode);
 
   /* Checks if a certain Key has an enabled use */
   bool isEnabled(GameKey game_key);

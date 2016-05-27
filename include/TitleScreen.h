@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "Game/KeyHandler.h"
 #include "Music.h"
 #include "Options.h"
 #include "SoundHandler.h"
@@ -127,8 +128,8 @@ public:
   MenuItems getAction();
 
   /* The key up and down events to be handled by the class */
-  void keyDownEvent(SDL_KeyboardEvent event);
-  void keyUpEvent(SDL_KeyboardEvent event);
+  void keyDownEvent(KeyHandler& key_handler);
+  void keyUpEvent(KeyHandler& key_handler);
 
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);

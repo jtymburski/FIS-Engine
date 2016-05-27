@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "FileHandler.h"
+#include "Game/KeyHandler.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/ItemStore.h"
 #include "Game/Map/MapDialog.h"
@@ -307,7 +308,7 @@ private:
   void updateMode(int cycle_time);
 
   /* Update the Running state of the Player */
-  void updatePlayerRunState();
+  void updatePlayerRunState(KeyHandler& key_handler);
 
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
@@ -384,7 +385,7 @@ public:
   bool isModeNormal();
 
   /* The key up and down events to be handled by the class */
-  bool keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler);
+  bool keyDownEvent(KeyHandler& key_handler);
   void keyUpEvent(KeyHandler& key_handler);
 
   /* Loads the map data */

@@ -490,7 +490,7 @@ public:
       LayType lay_type);
 
   /* Processes a KeyDown event */
-  bool keyDownEvent();
+  bool keyDownEvent(KeyHandler& key_handler);
 
   /* Method to start a Battle */
   bool startBattle(Party* friends, Party* allies);

@@ -367,7 +367,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   /* Check if it's base */
   if(data.getElement(kFILE_CLASSIFIER + 1) == "base" && !from_save)
     base_id = data.getDataInteger();
-  
+
   /* Identify which thing to be created */
   if(identifier == "mapthing")
   {
@@ -498,9 +498,9 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       moveThing(modified_thing, section_old);
 
     /* Update the data */
-    success &= modified_thing->addThingInformation(
-                           data, kFILE_CLASSIFIER + 1, section_index, renderer,
-                           base_path, from_save);
+    success &= modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1,
+                                                   section_index, renderer,
+                                                   base_path, from_save);
     return success;
   }
 
@@ -1862,12 +1862,10 @@ void Map::updateMode(int cycle_time)
 }
 
 /* Update the player Run State */
-void Map::updatePlayerRunState()
+void Map::updatePlayerRunState(KeyHandler& key_handler)
 {
-  if(event_handler && system_options && player)
+  if(system_options && player)
   {
-    auto& key_handler = event_handler->getKeyHandler();
-
     player->setRunning(false);
 
     if(key_handler.isDepressed(GameKey::RUN))
@@ -2318,24 +2316,24 @@ bool Map::isModeNormal()
 }
 
 /* The key up and down events to be handled by the class */
-bool Map::keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler)
+bool Map::keyDownEvent(KeyHandler& key_handler)
 {
 /* ---- START TEST CODE ---- */
 #ifdef UDEBUG
   if(isModeNormal())
   {
     /* Test: trigger grey scale */
-    if(event.keysym.sym == SDLK_g)
+    if(key_handler.isDepressed(SDLK_g))
     {
       bool enable = !tile_sprites[0]->isGreyScale();
       for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
         (*i)->useGreyScale(enable);
     }
     /* Test: Pause dialog */
-    else if(event.keysym.sym == SDLK_p)
+    if(key_handler.isDepressed(SDLK_p))
       map_dialog.setPaused(!map_dialog.isPaused());
     /* Test: Reset player location */
-    else if(event.keysym.sym == SDLK_r)
+    if(key_handler.isDepressed(SDLK_r))
     {
       if(player != nullptr)
       {
@@ -2349,23 +2347,23 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler)
       }
     }
     /* Test: Dialog Reset */
-    else if(event.keysym.sym == SDLK_7)
+    if(key_handler.isDepressed(SDLK_7))
       map_dialog.clearAll(true);
     /* Test: single line chop off notification */
-    else if(event.keysym.sym == SDLK_8)
+    if(key_handler.isDepressed(SDLK_8))
       map_dialog.initNotification("Hello sunshine, what a glorious day and "
                                   "I'll keep writing forever and forever and "
                                   "forever and forever and forever and forever "
                                   "and forFU.",
                                   true, 0);
     /* Test: multi line notification */
-    else if(event.keysym.sym == SDLK_9)
+    if(key_handler.isDepressed(SDLK_9))
       map_dialog.initNotification("Hello sunshine, what a glorious day and "
                                   "I'll keep writing forever and forever and "
                                   "forever and forever and forever and forever "
                                   "and forFU.");
     /* Test: full conversation */
-    else if(event.keysym.sym == SDLK_0)
+    if(key_handler.isDepressed(SDLK_0))
     {
       Event blank_event = EventSet::createBlankEvent();
 
@@ -2444,13 +2442,13 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler)
       // delete convo;
     }
     /* Test: Zoom back out */
-    else if(event.keysym.sym == SDLK_z)
+    if(key_handler.isDepressed(SDLK_z))
       zoom_out = true;
     /* Test: Zoom back in */
-    else if(event.keysym.sym == SDLK_x)
+    if(key_handler.isDepressed(SDLK_x))
       zoom_in = true;
     /* Test: Location of player */
-    else if(event.keysym.sym == SDLK_l)
+    if(key_handler.isDepressed(SDLK_l))
     {
       if(player != NULL)
       {
@@ -2468,6 +2466,8 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler)
   }
 #endif
   // ---- END TEST CODE ----
+
+  updatePlayerRunState(key_handler);
 
   /* Key control is only permitted during Normal Mode */
   if(isModeNormal())
@@ -2492,6 +2492,8 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event, KeyHandler& key_handler)
 
 void Map::keyUpEvent(KeyHandler& key_handler)
 {
+  updatePlayerRunState(key_handler);
+
   if(isModeNormal())
   {
     if(player != NULL)
@@ -3427,9 +3429,6 @@ bool Map::update(int cycle_time)
       player->getTarget()->clearTarget();
       player->clearTarget();
     }
-
-    /* Update the Running state of the Player */
-    updatePlayerRunState();
   }
 
   /* Check on dialog notifications */

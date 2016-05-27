@@ -19,6 +19,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "Game/KeyHandler.h"
 #include "Game/EventHandler.h"
 #include "Game/Battle/BattleActor.h"
 #include "Game/Battle/BattleDisplayData.h"
@@ -119,11 +120,11 @@ private:
   const static uint16_t kALLY_HEIGHT; /* Ally display section height */
 
   const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
-  const static float kBIGBAR_L; /* The percentage of the left section */
+  const static float kBIGBAR_L;         /* The percentage of the left section */
   const static float kBIGBAR_M1; /* The percentage of the middle section */
   const static float kBIGBAR_M2; /* The percentage of the second middle */
 
-  const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
+  const static uint16_t kBIGBAR_CHOOSE;   /* Additional offset for choice */
   const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
 
   const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
@@ -133,20 +134,20 @@ private:
 
   const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
   const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
-  const static uint8_t kSKILL_DESC_GAP; /* Gap between name and description */
+  const static uint8_t kSKILL_DESC_GAP;   /* Gap between name and description */
   const static uint8_t kSKILL_DESC_LINES; /* Max number of description lines */
-  const static uint8_t kSKILL_DESC_SEP; /* Gap between lines in description */
-  const static uint8_t kSKILL_FRAME_S; /* Small frame size on skill info */
-  const static uint8_t kSKILL_FRAME_L; /* Large frame size on skill info */
-  const static uint8_t kSKILL_QD_GAP; /* Gap between top edge and QD icon */
-  const static uint8_t kSKILL_SEP; /* Separator between image and text */
-  const static uint8_t kSKILL_SUCCESS; /* Gap between success and cooldown */
-  const static uint8_t kSKILL_TIME_GAP; /* Gap between cooldown and bottom */
+  const static uint8_t kSKILL_DESC_SEP;   /* Gap between lines in description */
+  const static uint8_t kSKILL_FRAME_S;    /* Small frame size on skill info */
+  const static uint8_t kSKILL_FRAME_L;    /* Large frame size on skill info */
+  const static uint8_t kSKILL_QD_GAP;     /* Gap between top edge and QD icon */
+  const static uint8_t kSKILL_SEP;        /* Separator between image and text */
+  const static uint8_t kSKILL_SUCCESS;    /* Gap between success and cooldown */
+  const static uint8_t kSKILL_TIME_GAP;   /* Gap between cooldown and bottom */
 
   const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
-  const static uint8_t kTYPE_MAX; /* Max number of action types to render */
+  const static uint8_t kTYPE_MAX;    /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
-  const static uint16_t kINFO_W; /* Width of enemy info bar */
+  const static uint16_t kINFO_W;     /* Width of enemy info bar */
 
   /* Text Colors */
   const static SDL_Color kTEXT_STANDARD;
@@ -240,7 +241,7 @@ public:
   void ready();
 
   /* Key press evnet for menu operation */
-  bool keyDownEvent();
+  bool keyDownEvent(KeyHandler& key_handler);
 
   /* Returns the current actor to the menu */
   BattleActor* getActor();

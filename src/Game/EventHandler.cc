@@ -230,12 +230,6 @@ void EventHandler::executePickup(MapItem* item, bool walkover)
   event_queue.back().item = item;
 }
 
-/* Returns a reference to the key handler */
-KeyHandler& EventHandler::getKeyHandler()
-{
-  return key_handler;
-}
-
 /* Returns a reference to the sound handler */
 SoundHandler* EventHandler::getSoundHandler()
 {

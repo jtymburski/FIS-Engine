@@ -2702,10 +2702,10 @@ int32_t Battle::getActorY(BattleActor* actor)
  * PUBLIC FUNCTIONS - Battle Operations
  *============================================================================*/
 
-bool Battle::keyDownEvent()
+bool Battle::keyDownEvent(KeyHandler& key_handler)
 {
   if(turn_state == TurnState::SELECT_ACTION_ALLY)
-    battle_menu->keyDownEvent();
+    battle_menu->keyDownEvent(key_handler);
 
   return false;
 }

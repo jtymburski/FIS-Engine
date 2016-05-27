@@ -60,9 +60,6 @@ private:
    * up cycle */
   std::vector<EventExecution> event_queue;
 
-  /* Handler for state of the keyboard */
-  KeyHandler key_handler;
-
   /* The event queue index, for parsing the queue */
   uint16_t queue_index;
 
@@ -98,9 +95,6 @@ public:
 
   /* Executes a pickup item event */
   void executePickup(MapItem* item, bool walkover = false);
-
-  /* Returns a reference to the Key Handler */
-  KeyHandler& getKeyHandler();
 
   /* Returns a reference to the sound handler */
   SoundHandler* getSoundHandler();

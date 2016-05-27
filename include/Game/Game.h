@@ -276,8 +276,8 @@ public:
   bool isModeReady();
 
   /* The key up and down events to be handled by the class */
-  bool keyDownEvent(SDL_KeyboardEvent event);
-  void keyUpEvent();
+  bool keyDownEvent(KeyHandler& key_handler);
+  void keyUpEvent(KeyHandler& key_handler);
 
   /* Load game */
   bool load(SDL_Renderer* renderer, bool full_load = true, uint8_t slot = 0);

@@ -12,9 +12,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t TitleScreen::kFONT_SIZE = 28;
-const std::string TitleScreen::kMENU_ITEMS[]   = {"Play Game",
-                                                  "Options",
-                                                  "Exit"};
+const std::string TitleScreen::kMENU_ITEMS[] = {"Play Game", "Options", "Exit"};
 const uint16_t TitleScreen::kNAV_TIME_LIMIT = 200;
 const uint8_t TitleScreen::kNUM_MENU_ITEMS = 3;
 const uint16_t TitleScreen::kTEXT_GAP = 65;
@@ -103,8 +101,8 @@ bool TitleScreen::setMenu(SDL_Renderer* renderer)
   {
     SDL_Color tinted_color = {20, 153, 78, 255};
     SDL_Color plain_color = {255, 255, 255, 255};
-    TTF_Font* new_font = Text::createFont(system_options->getFont(),
-                                          kFONT_SIZE, TTF_STYLE_BOLD);
+    TTF_Font* new_font =
+        Text::createFont(system_options->getFont(), kFONT_SIZE, TTF_STYLE_BOLD);
     if(new_font != NULL)
     {
       unsetMenu();
@@ -127,7 +125,7 @@ bool TitleScreen::setMenu(SDL_Renderer* renderer)
       }
 
       /* Proceed to update the render index */
-      render_index = kTEXT_MARGIN + kTEXT_GAP*(kNUM_MENU_ITEMS - 1) +
+      render_index = kTEXT_MARGIN + kTEXT_GAP * (kNUM_MENU_ITEMS - 1) +
                      selected_options[kNUM_MENU_ITEMS - 1]->getHeight();
       render_index = system_options->getScreenHeight() - render_index;
 
@@ -170,7 +168,8 @@ void TitleScreen::enableView(bool enable)
   }
   /* Disables all relevant control for the view */
   else
-  {}
+  {
+  }
 }
 
 /* First update call each time the view changes - must be called */
@@ -203,45 +202,59 @@ TitleScreen::MenuItems TitleScreen::getAction()
 
 /* The key up and down events to be handled by the class */
 /* The key down event handler */
-void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
+void TitleScreen::keyDownEvent(KeyHandler& key_handler)
 {
+  std::cout << "Key down event!" << std::endl;
   if(system_options != NULL)
   {
-    /* Testing code item - wrap */
-    if(event.keysym.sym == SDLK_F1 && event.repeat == 0)
-    {
+// =======================================================================
+// TESTING KEYS
+// ======================================================================= */
+#ifdef UDEBUG
+    if(key_handler.isDepressed(SDLK_F1))
       render_disable = !render_disable;
-    }
+#endif
+    // ==================== END TESTING SECTION ===========================
 
     /* Main code items */
-    if(event.keysym.sym == SDLK_DOWN && event.repeat == 0)
+    if(key_handler.isDepressed(GameKey::MOVE_DOWN))
     {
       incrementSelected();
       nav_down = true;
     }
-    else if(event.keysym.sym == SDLK_UP && event.repeat == 0)
+    if(key_handler.isDepressed(GameKey::MOVE_UP))
     {
       decrementSelected();
       nav_up = true;
     }
-    else if(event.keysym.sym == SDLK_RETURN || event.keysym.sym == SDLK_SPACE)
+    std::cout << "Checking action key state!" << std::endl;
+    if(key_handler.isDepressed(GameKey::ACTION))
     {
       /* Play sound */
       if(sound_handler != nullptr)
+      {
         sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
                                       SoundChannels::MENUS, true);
+      }
 
       /* Set action */
       setAction();
     }
-    else if(event.keysym.sym == SDLK_ESCAPE)
+    else
+    {
+      std::cout << "Action key is not set!" << std::endl;
+    }
+
+    if(key_handler.isDepressed(GameKey::CANCEL))
     {
       if(cursor_index != (kNUM_MENU_ITEMS - 1))
       {
         /* Play sound */
         if(sound_handler != nullptr)
-        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
-                                      SoundChannels::MENUS);
+        {
+          sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
+                                        SoundChannels::MENUS);
+        }
 
         /* Change index */
         cursor_index = kNUM_MENU_ITEMS - 1;
@@ -251,18 +264,15 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
 }
 
 /* The key up event handler */
-void TitleScreen::keyUpEvent(SDL_KeyboardEvent event)
+void TitleScreen::keyUpEvent(KeyHandler& key_handler)
 {
-  if(system_options != NULL)
+  if(!key_handler.isDepressed(GameKey::MOVE_DOWN))
   {
-    if(event.keysym.sym == SDLK_DOWN)
-    {
-      nav_down = false;
-    }
-    else if(event.keysym.sym == SDLK_UP)
-    {
-      nav_up = false;
-    }
+    nav_down = false;
+  }
+  if(!key_handler.isDepressed(GameKey::MOVE_UP))
+  {
+    nav_up = false;
   }
 }
 
@@ -310,10 +320,10 @@ bool TitleScreen::render(SDL_Renderer* renderer)
       {
         if(i == cursor_index)
           selected_options[i]->render(renderer, kTEXT_MARGIN,
-                                      render_index + kTEXT_GAP*i);
+                                      render_index + kTEXT_GAP * i);
         else
           unselected_options[i]->render(renderer, kTEXT_MARGIN,
-                                        render_index + kTEXT_GAP*i);
+                                        render_index + kTEXT_GAP * i);
       }
     }
 
@@ -332,16 +342,21 @@ bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
 
   background.insertFirst(base_path + "sprites/Title/title-backdrop.png",
                          renderer);
-  background2.insertFirst(base_path + "sprites/Title/title-dynaton.png", renderer);
-  background4.insertFirst(base_path + "sprites/Title/title-dynatonbooms1.png", renderer);
+  background2.insertFirst(base_path + "sprites/Title/title-dynaton.png",
+                          renderer);
+  background4.insertFirst(base_path + "sprites/Title/title-dynatonbooms1.png",
+                          renderer);
   background4.setOpacity(0);
-  background5.insertFirst(base_path + "sprites/Title/title-dynatonbooms2.png", renderer);
+  background5.insertFirst(base_path + "sprites/Title/title-dynatonbooms2.png",
+                          renderer);
   background5.setOpacity(0);
-  background3.insertFirst(base_path + "sprites/Title/title-dynatonatmosphere.png", renderer);
+  background3.insertFirst(
+      base_path + "sprites/Title/title-dynatonatmosphere.png", renderer);
   background3.setOpacity(196);
   background3.setColorBalance(255, 170, 170);
   background6.insertFirst(base_path + "sprites/Title/title-moon.png", renderer);
-  background7.insertFirst(base_path + "sprites/Title/title-waldo.png", renderer);
+  background7.insertFirst(base_path + "sprites/Title/title-waldo.png",
+                          renderer);
   title.setTexture(base_path + "sprites/Title/title.png", renderer);
 
   return true;
@@ -374,12 +389,12 @@ bool TitleScreen::update(int cycle_time)
   nav_time += cycle_time;
 
   /* Rotation testing */
-  //rotate1 += 0.03125;//0.0625;//0.001;
+  // rotate1 += 0.03125;//0.0625;//0.001;
   rotate2 += 0.03125;
   rotate3 += 0.05;
   rotate6 -= 0.075;
 
-  //background.setRotation(rotate1);
+  // background.setRotation(rotate1);
   background2.setRotation(rotate2);
   background3.setRotation(rotate3);
   background4.setRotation(rotate2);
@@ -442,9 +457,9 @@ bool TitleScreen::update(int cycle_time)
   }
 
   /* Brightness (flicker) concept */
-  //if(Helpers::randInt(10) < 2)
+  // if(Helpers::randInt(10) < 2)
   //  background.setBrightness(background.getBrightness() - 0.01);
-  //if(background.getBrightness() < 0.6)
+  // if(background.getBrightness() < 0.6)
   //  background.setBrightness(1.0);
 
   /* If the down key is pressed and not up */
@@ -473,4 +488,3 @@ bool TitleScreen::update(int cycle_time)
 
   return (action != NONE);
 }
-

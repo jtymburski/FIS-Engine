@@ -1113,12 +1113,8 @@ void BattleMenu::ready()
   setFlag(BattleMenuState::READY, true);
 }
 
-bool BattleMenu::keyDownEvent()
+bool BattleMenu::keyDownEvent(KeyHandler& key_handler)
 {
-  auto& key_handler = event_handler->getKeyHandler();
-
-  key_handler.update(0);
-
   if(key_handler.isDepressed(GameKey::MOVE_UP))
   {
     if(menu_layer != BattleMenuLayer::TARGET_SELECTION)

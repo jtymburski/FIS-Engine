@@ -3166,12 +3166,8 @@ bool Menu::isMainSliding()
 }
 
 /* Process key down event */
-bool Menu::keyDownEvent()
+bool Menu::keyDownEvent(KeyHandler& key_handler)
 {
-  if(event_handler)
-  {
-    auto& key_handler = event_handler->getKeyHandler();
-    key_handler.update(0);
 
     if(key_handler.isDepressed(GameKey::MOVE_UP))
     {
@@ -3203,7 +3199,6 @@ bool Menu::keyDownEvent()
       keyDownCancel();
       key_handler.setHeld(GameKey::CANCEL);
     }
-  }
 
   return false;
 }

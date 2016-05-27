@@ -13,6 +13,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
+#include "Game/KeyHandler.h"
 #include "Game/Player/Action.h"
 #include "Game/Game.h"
 #include "Helpers.h"
@@ -58,6 +59,9 @@ private:
 
   /* The base path, for accessing resources */
   std::string base_path;
+
+  /* Handler for state of the keyboard */
+  KeyHandler key_handler;
 
   /* The running game */
   Game* game_handler;

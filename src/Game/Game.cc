@@ -164,7 +164,7 @@ Item* Game::addItem(const int32_t& id, SortObjects type)
 
 /* Add Item to Inventory function */
 bool Game::addItemToInv(Inventory* inv, const int32_t& item_id,
-                        const int32_t& item_count, const bool &total)
+                        const int32_t& item_count, const bool& total)
 {
   bool success = false;
 
@@ -1769,13 +1769,13 @@ bool Game::isModeReady()
 }
 
 /* The key down events to be handled by the class */
-bool Game::keyDownEvent(SDL_KeyboardEvent event)
+bool Game::keyDownEvent(KeyHandler& key_handler)
 {
 // =======================================================================
 // TESTING KEYS
 // ======================================================================= */
 #ifdef UDEBUG
-  if(event.keysym.sym == SDLK_3)
+  if(key_handler.isDepressed(SDLK_3))
   {
     if(player_main != nullptr && player_main->getSleuth() != nullptr &&
        player_main->getSleuth()->getInventory() != nullptr)
@@ -1784,28 +1784,28 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     }
   }
   /* Save test */
-  else if(event.keysym.sym == SDLK_5)
+  else if(key_handler.isDepressed(SDLK_5))
   {
     save();
   }
-  else if(event.keysym.sym == SDLK_6)
+  else if(key_handler.isDepressed(SDLK_6))
   {
     save(3);
   }
-  else if(event.keysym.sym == SDLK_7)
+  else if(key_handler.isDepressed(SDLK_7))
   {
     save_slot = 1;
     changeMode(LOADING);
     mode_load = FULLLOAD;
   }
   /* Disable events Key */
-  else if(event.keysym.sym == SDLK_F1)
+  else if(key_handler.isDepressed(SDLK_F1))
   {
     event_disable = !event_disable;
     map_ctrl.disableInteraction(event_disable);
   }
   /* Level Up Key */
-  else if(event.keysym.sym == SDLK_F7 && mode != BATTLE)
+  else if(key_handler.isDepressed(SDLK_F7) && mode != BATTLE)
   {
     if(player_main && player_main->getSleuth())
     {
@@ -1816,13 +1816,13 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
         auto new_level = player_person->getLevel() - 1;
         player_person->loseExp(player_person->getTotalExp());
         player_person->addExp(player_person->getExpAt(new_level));
-        std::cout << "[DEBUG] Setting player level to: "
-                  << player_person->getLevel() << std::endl;
+        event_handler.log("[DEBUG] Setting player level to: " +
+                          player_person->getLevel());
       }
     }
   }
   /* Level Up Key */
-  else if(event.keysym.sym == SDLK_F8 && mode != BATTLE)
+  else if(key_handler.isDepressed(SDLK_F8) && mode != BATTLE)
   {
     if(player_main && player_main->getSleuth())
     {
@@ -1834,13 +1834,13 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
         auto new_level = player_person->getLevel() + 1;
         player_person->loseExp(player_person->getTotalExp());
         player_person->addExp(player_person->getExpAt(new_level));
-        std::cout << "[DEBUG] Setting player level to: "
-                  << player_person->getLevel() << std::endl;
+        event_handler.log("[DEBUG] Setting player level to: " +
+                          player_person->getLevel());
       }
     }
   }
   /* Give Rock Event */
-  else if(event.keysym.sym == SDLK_LEFTBRACKET && mode != BATTLE)
+  else if(key_handler.isDepressed(SDLK_LEFTBRACKET) && mode != BATTLE)
   {
     if(getItem(2, true) && player_main && player_main->getSleuth())
     {
@@ -1851,20 +1851,20 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
         auto new_item = new Item(getItem(2, true));
         if(inventory->add(new_item, 1) != AddStatus::FAIL)
         {
-          std::cout << "[DEBUG] Giving Player x1 Rock." << std::endl;
+          event_handler.log("[DEBUG] Giving player 1x Rock");
         }
         else
         {
           delete new_item;
           new_item = nullptr;
 
-          std::cout << "[DEBUG] Player Inventory Full" << std::endl;
+          event_handler.log("[DEBUG] Player Inventory Full");
         }
       }
     }
   }
   /* Given Rotten Fish Event */
-  else if(event.keysym.sym == SDLK_RIGHTBRACKET && mode != BATTLE)
+  else if(key_handler.isDepressed(SDLK_RIGHTBRACKET) && mode != BATTLE)
   {
     if(getItem(2, true) && player_main && player_main->getSleuth())
     {
@@ -1875,25 +1875,20 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
         auto new_item = new Item(getItem(3, true));
         if(inventory->add(new_item, 1) != AddStatus::FAIL)
         {
-          std::cout << "[DEBUG] Giving Player x1 Medkit." << std::endl;
+          event_handler.log("[DEBUG] Giving Player x1 Medkit.");
         }
         else
         {
           delete new_item;
           new_item = nullptr;
 
-          std::cout << "[DEBUG] Player Inventory Full" << std::endl;
+          event_handler.log("[DEBUG] Player Inventory Full");
         }
       }
     }
   }
 #endif
-
   // ======================= END TESTING SECTION ==============================
-
-  auto& key_handler = event_handler.getKeyHandler();
-
-  key_handler.update(0);
 
   if(key_handler.isDepressed(GameKey::CANCEL) && map_menu_enabled &&
      (map_menu.getMenuLayer() == MenuLayer::TITLE ||
@@ -1915,18 +1910,18 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(mode == MENU)
     {
-      map_menu.keyDownEvent();
+      map_menu.keyDownEvent(key_handler);
     }
     /* -- MAP MODE -- */
     else if(mode == MAP)
     {
-      if(map_ctrl.keyDownEvent(event, key_handler))
+      if(map_ctrl.keyDownEvent(key_handler))
         changeMode(DISABLED);
     }
     /* -- BATTLE MODE -- */
     else if(mode == BATTLE)
     {
-      if(battle_ctrl->keyDownEvent())
+      if(battle_ctrl->keyDownEvent(key_handler))
         changeMode(DISABLED);
     }
   }
@@ -1935,12 +1930,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 }
 
 /* The key up events to be handled by the class */
-void Game::keyUpEvent()
+void Game::keyUpEvent(KeyHandler& key_handler)
 {
-  auto& key_handler = event_handler.getKeyHandler();
-
-  key_handler.update(0);
-
   if(mode == MAP)
   {
     map_ctrl.keyUpEvent(key_handler);
@@ -2231,9 +2222,6 @@ bool Game::update(int32_t cycle_time)
   /* Poll System Events */
   // pollEvents();
 
-  /* Update the key handler */
-  event_handler.getKeyHandler().update(cycle_time);
-
   updateMenuEnabledState();
 
   // event_handler.getKeyHandler().print(false, true);
@@ -2312,7 +2300,7 @@ bool Game::update(int32_t cycle_time)
       if(mode_next == NONE)
         changeMode(MAP);
     }
-    else if(!event_handler.getKeyHandler().isDepressed(GameKey::PAUSE))
+    else
     {
       return battle_ctrl->update(cycle_time);
     }

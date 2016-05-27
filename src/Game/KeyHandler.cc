@@ -54,7 +54,7 @@ const SDL_Keycode KeyHandler::kDEBUG_DEFAULT = SDLK_f;
 const SDL_Keycode KeyHandler::kPAUSE_DEFAULT = SDLK_RCTRL;
 
 const bool KeyHandler::kMULTIPLE_MAPPINGS = false;
-const int32_t KeyHandler::kMIN_HELD_TIME = 1000;
+const int32_t KeyHandler::kMIN_HELD_TIME = 100;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -117,12 +117,14 @@ bool KeyHandler::isHeld(GameKey game_key)
  *         found - pointer assigned true if the keycode is found
  * Output: bool - true if the keycode is being held
  */
-bool KeyHandler::isHeld(SDL_Keycode keycode, bool* found)
+bool KeyHandler::isHeld(SDL_Keycode keycode)
 {
-  auto& key = getKey(keycode, found);
+  bool found{false};
 
-  if(*found && key.time_depressed >= kMIN_HELD_TIME)
-    return true;
+  auto& key = getKey(keycode, &found);
+
+  if(found)
+    return (key.time_depressed >= kMIN_HELD_TIME);
 
   return false;
 }
@@ -149,9 +151,11 @@ bool KeyHandler::isDepressed(GameKey game_key)
  *         bool* found - pointer will be true if a Key can be found
  * Output: bool - the depressed state of the matching key
  */
-bool KeyHandler::isDepressed(SDL_Keycode keycode, bool* found)
+bool KeyHandler::isDepressed(SDL_Keycode keycode)
 {
-  auto& key = getKey(keycode, found);
+  bool found{false};
+
+  auto& key = getKey(keycode, &found);
 
   if(found)
     return key.depressed;
@@ -293,10 +297,15 @@ bool KeyHandler::update(int32_t cycle_time)
       auto scan_code = SDL_GetScancodeFromKey(element.keycode);
 
       /* Determine if the state of the Keyboard if the scan code is depressed */
-      if(state[scan_code])
+      if(state[scan_code] && !element.depressed)
       {
+        std::cout << "Key is depressed!" << std::endl;
         /* Assign the element to be a depressed state */
         element.depressed = true;
+        element.time_depressed = 0;
+      }
+      else if(state[scan_code] && element.depressed)
+      {
         element.time_depressed += cycle_time;
       }
       else
@@ -340,7 +349,9 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
   {
     if(element.keycode == keycode)
     {
-      *found = true;
+      if(found)
+        *found = true;
+
       return element;
     }
   }

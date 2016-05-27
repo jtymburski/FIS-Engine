@@ -39,6 +39,7 @@ Application::Application(std::string base_path, std::string app_path,
     this->app_path = app_path;
     this->app_map = app_map;
   }
+
   this->base_path = base_path;
   initialized = false;
   renderer = NULL;
@@ -136,6 +137,9 @@ void Application::handleEvents()
 {
   SDL_Event event;
 
+  /* Pump events in the key handler to the get the current state of Keyboard */
+  key_handler.update(0);
+
   while(SDL_PollEvent(&event) != 0)
   {
     /* If quit initialized, end the game loop */
@@ -144,21 +148,10 @@ void Application::handleEvents()
       changeMode(EXIT);
     }
 
-    // PAUSE ON LOSS FOCUS (TOO WEIRD)
-    // else if (event.type == SDL_WINDOWEVENT && event.window.event ==
-    //     SDL_WINDOWEVENT_LEAVE)
-    // {
-    //   changeMode(PAUSED);
-    // }
-    // else if (event.type == SDL_WINDOWEVENT && event.window.event ==
-    //     SDL_WINDOWEVENT_ENTER)
-    // {
-    //   revertMode();
-    // }
-
-  /* Otherwise, pass the key down events on to the active view */
+    /* Otherwise, pass the key down events on to the active view */
     else if(event.type == SDL_KEYDOWN)
     {
+#ifdef UDEBUG
       SDL_KeyboardEvent press_event = event.key;
 
       /* -- Refresh config: cycle maps -- */
@@ -175,19 +168,6 @@ void Application::handleEvents()
           if(new_map > 2)
             new_map = 0;
           setPath(app_path, new_map);
-        }
-      }
-      /* -- Pause toggle -- */
-      else if(press_event.keysym.sym == SDLK_F6)
-      {
-        if(mode == PAUSED)
-        {
-          revertMode();
-        }
-        else
-        {
-          mode_temp = mode;
-          changeMode(PAUSED);
         }
       }
       /* -- Full Screen toggle -- */
@@ -208,41 +188,38 @@ void Application::handleEvents()
           SDL_SetWindowFullscreen(window, full_flag);
         }
       }
-      /* Send the key to the relevant view */
-      else if(mode == TITLESCREEN)
+#endif
+
+      /* -- Pause toggle -- */
+      if(key_handler.isDepressed(GameKey::PAUSE))
       {
-        title_screen.keyDownEvent(press_event);
+        if(mode == PAUSED)
+        {
+          revertMode();
+        }
+        else
+        {
+          mode_temp = mode;
+          changeMode(PAUSED);
+        }
+      }
+      /* Send the key to the relevant view */
+      if(mode == TITLESCREEN)
+      {
+        title_screen.keyDownEvent(key_handler);
       }
       else if(mode == GAME)
       {
-        game_handler->keyDownEvent(press_event);
-
-        /* If the key event returns true, exit the game view */
-        // if(game_handler.keyDownEvent(press_event))
-        //  changeMode(TITLESCREEN);
+        game_handler->keyDownEvent(key_handler);
       }
     }
     else if(event.type == SDL_KEYUP)
     {
-      SDL_KeyboardEvent release_event = event.key;
-
       /* Send the key to the relevant view */
       if(mode == TITLESCREEN)
-        title_screen.keyUpEvent(release_event);
+        title_screen.keyUpEvent(key_handler);
       else if(mode == GAME)
-        game_handler->keyUpEvent();
-    }
-    else if(event.type == SDL_WINDOWEVENT)
-    {
-      if(event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-      {
-      }
-      else if(event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
-      {
-      }
-      else if(event.window.event == SDL_WINDOWEVENT_MOVED)
-      {
-      }
+        game_handler->keyUpEvent(key_handler);
     }
   }
 }
@@ -436,6 +413,9 @@ int Application::updateCycleTime(int cycle_time)
 bool Application::updateViews(int cycle_time)
 {
   bool quit = false;
+
+  /* Update the key handler */
+  key_handler.update(cycle_time);
 
   /* Mode next handling */
   if(mode_next != NONE)

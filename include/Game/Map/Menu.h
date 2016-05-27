@@ -20,6 +20,7 @@
 #include "Game/Battle/BattleDisplayData.h"
 #include "Game/Battle/BattleActor.h"
 #include "Game/EventHandler.h"
+#include "Game/KeyHandler.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
 #include "Options.h"
@@ -620,7 +621,7 @@ public:
   bool isMainSliding();
 
   /* Key down event */
-  bool keyDownEvent();
+  bool keyDownEvent(KeyHandler& key_handler);
 
   /* Show the Menu */
   void show();
