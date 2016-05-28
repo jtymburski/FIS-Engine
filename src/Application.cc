@@ -155,7 +155,7 @@ void Application::handleEvents()
       SDL_KeyboardEvent press_event = event.key;
 
       /* -- Refresh config: cycle maps -- */
-      if(press_event.keysym.sym == SDLK_F5)
+      if(press_event.keysym.sym == SDLK_F10)
       {
         /* Decide on which reload */
         if(app_path != "maps/design_map.ugv")
@@ -187,6 +187,10 @@ void Application::handleEvents()
         {
           SDL_SetWindowFullscreen(window, full_flag);
         }
+      }
+      else if(mode == GAME)
+      {
+        game_handler->keyTestDownEvent(press_event);
       }
 #endif
 

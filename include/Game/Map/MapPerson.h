@@ -79,7 +79,7 @@ private:
   const static uint8_t kTOTAL_DIRECTIONS; /* The max # of directions to move */
   const static uint8_t kTOTAL_SURFACES;   /* The max # of surfaces to walk on */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Deletes the states */
   void deleteStates();
@@ -90,7 +90,7 @@ private:
   /* Initializes the states stack to an empty set */
   void initializeStates();
 
-  /*======================= PROTECTED FUNCTIONS ==============================*/
+/*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
@@ -133,7 +133,7 @@ protected:
   /* This unsets the tile, at the given frame coordinate */
   virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds person information from the XML file. Will be virtually re-called
    * by all children for proper operation */
@@ -185,8 +185,6 @@ public:
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
 
-  /* Ignore passability and just roam */
-  void ignorePassability(bool ignore);
 
   /* Returns if the NPC will force interaction - always false for player */
   virtual bool isForcedInteraction(bool false_if_active = true);
@@ -240,6 +238,11 @@ public:
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
 
+#ifdef UDEBUG
+  /* Toggle ignore passability and just roam */
+  void toggleIgnorePassability();
+#endif
+
   /* Updates the thing, based on the tick */
   virtual Floatinate update(int cycle_time,
                             std::vector<std::vector<Tile*>> tile_set,
@@ -255,7 +258,7 @@ public:
   /* Unset the rendering tiles in the class */
   virtual void unsetTiles(bool no_events = false);
 
-  /*===================== PUBLIC STATIC FUNCTIONS ============================*/
+/*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
   /* Direction enumerator to/from integer converters */
   static int dirToInt(Direction dir);

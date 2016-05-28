@@ -2318,22 +2318,46 @@ bool Map::isModeNormal()
 /* The key up and down events to be handled by the class */
 bool Map::keyDownEvent(KeyHandler& key_handler)
 {
-/* ---- START TEST CODE ---- */
+  updatePlayerRunState(key_handler);
+
+  /* Key control is only permitted during Normal Mode */
+  if(isModeNormal())
+  {
+    if(key_handler.isDepressed(GameKey::ACTION))
+    {
+      initiateThingInteraction(player);
+      key_handler.setHeld(GameKey::ACTION);
+    }
+    if(map_dialog.isConversationActive())
+    {
+      map_dialog.keyDownEvent(key_handler);
+    }
+    if(player)
+    {
+      player->keyDownEvent(key_handler);
+    }
+  }
+
+  return false;
+}
+/* Key down event for test keys - isolated from key handler system */
 #ifdef UDEBUG
+void Map::keyTestDownEvent(SDL_KeyboardEvent event)
+{
   if(isModeNormal())
   {
     /* Test: trigger grey scale */
-    if(key_handler.isDepressed(SDLK_g))
+    if(event.keysym.sym == SDLK_g)
     {
       bool enable = !tile_sprites[0]->isGreyScale();
       for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
         (*i)->useGreyScale(enable);
     }
     /* Test: Pause dialog */
-    if(key_handler.isDepressed(SDLK_p))
+    else if(event.keysym.sym == SDLK_p)
       map_dialog.setPaused(!map_dialog.isPaused());
     /* Test: Reset player location */
-    if(key_handler.isDepressed(SDLK_r))
+    else if(event.keysym.sym == SDLK_r)
     {
       if(player != nullptr)
       {
@@ -2346,24 +2370,30 @@ bool Map::keyDownEvent(KeyHandler& key_handler)
         }
       }
     }
+    /* Player: ignore passabilities */
+    else if(event.keysym.sym == SDLK_F2)
+    {
+      if(player != nullptr)
+        player->toggleIgnorePassability();
+    }
     /* Test: Dialog Reset */
-    if(key_handler.isDepressed(SDLK_7))
+    else if(event.keysym.sym == SDLK_7)
       map_dialog.clearAll(true);
     /* Test: single line chop off notification */
-    if(key_handler.isDepressed(SDLK_8))
+    else if(event.keysym.sym == SDLK_8)
       map_dialog.initNotification("Hello sunshine, what a glorious day and "
                                   "I'll keep writing forever and forever and "
                                   "forever and forever and forever and forever "
                                   "and forFU.",
                                   true, 0);
     /* Test: multi line notification */
-    if(key_handler.isDepressed(SDLK_9))
+    else if(event.keysym.sym == SDLK_9)
       map_dialog.initNotification("Hello sunshine, what a glorious day and "
                                   "I'll keep writing forever and forever and "
                                   "forever and forever and forever and forever "
                                   "and forFU.");
     /* Test: full conversation */
-    if(key_handler.isDepressed(SDLK_0))
+    else if(event.keysym.sym == SDLK_0)
     {
       Event blank_event = EventSet::createBlankEvent();
 
@@ -2442,13 +2472,13 @@ bool Map::keyDownEvent(KeyHandler& key_handler)
       // delete convo;
     }
     /* Test: Zoom back out */
-    if(key_handler.isDepressed(SDLK_z))
+    else if(event.keysym.sym == SDLK_z)
       zoom_out = true;
     /* Test: Zoom back in */
-    if(key_handler.isDepressed(SDLK_x))
+    else if(event.keysym.sym == SDLK_x)
       zoom_in = true;
     /* Test: Location of player */
-    if(key_handler.isDepressed(SDLK_l))
+    else if(event.keysym.sym == SDLK_l)
     {
       if(player != NULL)
       {
@@ -2464,32 +2494,10 @@ bool Map::keyDownEvent(KeyHandler& key_handler)
       }
     }
   }
-#endif
-  // ---- END TEST CODE ----
-
-  updatePlayerRunState(key_handler);
-
-  /* Key control is only permitted during Normal Mode */
-  if(isModeNormal())
-  {
-    if(key_handler.isDepressed(GameKey::ACTION))
-    {
-      initiateThingInteraction(player);
-      key_handler.setHeld(GameKey::ACTION);
-    }
-    if(map_dialog.isConversationActive())
-    {
-      map_dialog.keyDownEvent(key_handler);
-    }
-    if(player)
-    {
-      player->keyDownEvent(key_handler);
-    }
-  }
-
-  return false;
 }
+#endif
 
+/* Key up event triggers */
 void Map::keyUpEvent(KeyHandler& key_handler)
 {
   updatePlayerRunState(key_handler);

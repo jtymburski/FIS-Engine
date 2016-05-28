@@ -1772,125 +1772,6 @@ bool Game::isModeReady()
 /* The key down events to be handled by the class */
 bool Game::keyDownEvent(KeyHandler& key_handler)
 {
-// =======================================================================
-// TESTING KEYS
-// ======================================================================= */
-#ifdef UDEBUG
-  if(key_handler.isDepressed(SDLK_3))
-  {
-    if(player_main != nullptr && player_main->getSleuth() != nullptr &&
-       player_main->getSleuth()->getInventory() != nullptr)
-    {
-      player_main->getSleuth()->getInventory()->print(false);
-    }
-  }
-  /* Save test */
-  else if(key_handler.isDepressed(SDLK_5))
-  {
-    save();
-  }
-  else if(key_handler.isDepressed(SDLK_6))
-  {
-    save(3);
-  }
-  else if(key_handler.isDepressed(SDLK_7))
-  {
-    save_slot = 1;
-    changeMode(LOADING);
-    mode_load = FULLLOAD;
-  }
-  /* Disable events Key */
-  else if(key_handler.isDepressed(SDLK_F1))
-  {
-    event_disable = !event_disable;
-    map_ctrl.disableInteraction(event_disable);
-  }
-  /* Level Up Key */
-  else if(key_handler.isDepressed(SDLK_F7) && mode != BATTLE)
-  {
-    if(player_main && player_main->getSleuth())
-    {
-      auto player_person = player_main->getSleuth()->getMember(0);
-
-      if(player_person && player_person->getLevel() > 1)
-      {
-        auto new_level = player_person->getLevel() - 1;
-        player_person->loseExp(player_person->getTotalExp());
-        player_person->addExp(player_person->getExpAt(new_level));
-        event_handler.log("[DEBUG] Setting player level to: " +
-                          player_person->getLevel());
-      }
-    }
-  }
-  /* Level Up Key */
-  else if(key_handler.isDepressed(SDLK_F8) && mode != BATTLE)
-  {
-    if(player_main && player_main->getSleuth())
-    {
-      auto player_person = player_main->getSleuth()->getMember(0);
-
-      if(player_person &&
-         (size_t)(player_person->getLevel() + 1) <= Person::kNUM_LEVELS)
-      {
-        auto new_level = player_person->getLevel() + 1;
-        player_person->loseExp(player_person->getTotalExp());
-        player_person->addExp(player_person->getExpAt(new_level));
-        event_handler.log("[DEBUG] Setting player level to: " +
-                          player_person->getLevel());
-      }
-    }
-  }
-  /* Give Rock Event */
-  else if(key_handler.isDepressed(SDLK_LEFTBRACKET) && mode != BATTLE)
-  {
-    if(getItem(2, true) && player_main && player_main->getSleuth())
-    {
-      auto inventory = player_main->getSleuth()->getInventory();
-
-      if(inventory)
-      {
-        auto new_item = new Item(getItem(2, true));
-        if(inventory->add(new_item, 1) != AddStatus::FAIL)
-        {
-          event_handler.log("[DEBUG] Giving player 1x Rock");
-        }
-        else
-        {
-          delete new_item;
-          new_item = nullptr;
-
-          event_handler.log("[DEBUG] Player Inventory Full");
-        }
-      }
-    }
-  }
-  /* Given Rotten Fish Event */
-  else if(key_handler.isDepressed(SDLK_RIGHTBRACKET) && mode != BATTLE)
-  {
-    if(getItem(2, true) && player_main && player_main->getSleuth())
-    {
-      auto inventory = player_main->getSleuth()->getInventory();
-
-      if(inventory)
-      {
-        auto new_item = new Item(getItem(3, true));
-        if(inventory->add(new_item, 1) != AddStatus::FAIL)
-        {
-          event_handler.log("[DEBUG] Giving Player x1 Medkit.");
-        }
-        else
-        {
-          delete new_item;
-          new_item = nullptr;
-
-          event_handler.log("[DEBUG] Player Inventory Full");
-        }
-      }
-    }
-  }
-#endif
-  // ======================= END TESTING SECTION ==============================
-
   if(key_handler.isDepressed(GameKey::CANCEL) && map_menu_enabled &&
      (map_menu.getMenuLayer() == MenuLayer::TITLE ||
       !map_menu.getFlag(MenuState::SHOWING)))
@@ -1929,6 +1810,147 @@ bool Game::keyDownEvent(KeyHandler& key_handler)
 
   return false;
 }
+
+/* Key down event for test keys - isolated from key handler system */
+#ifdef UDEBUG
+void Game::keyTestDownEvent(SDL_KeyboardEvent event)
+{
+  /* Disable events Key */
+  if(event.keysym.sym == SDLK_F1)
+  {
+    event_disable = !event_disable;
+    map_ctrl.disableInteraction(event_disable);
+  }
+  /* ---- F2 USED BY MAP : PLAYER IGNORE PASSABILITY ---- */
+  /* Print sleuth inventory to debug console */
+  else if(event.keysym.sym == SDLK_F3)
+  {
+    if(player_main != nullptr && player_main->getSleuth() != nullptr &&
+       player_main->getSleuth()->getInventory() != nullptr)
+    {
+      player_main->getSleuth()->getInventory()->print(false);
+    }
+  }
+  /* Save test to slot 1 */
+  else if(event.keysym.sym == SDLK_F4)
+  {
+    save();
+  }
+  /* Save test to slot 3 */
+  else if(event.keysym.sym == SDLK_F5)
+  {
+    save(3);
+  }
+  /* Load test from slot 1 */
+  else if(event.keysym.sym == SDLK_F6)
+  {
+    save_slot = 1;
+    changeMode(LOADING);
+    mode_load = FULLLOAD;
+  }
+  /* Level Up Key */
+  else if(event.keysym.sym == SDLK_F7 && mode != BATTLE)
+  {
+    if(player_main && player_main->getSleuth())
+    {
+      auto player_person = player_main->getSleuth()->getMember(0);
+
+      if(player_person && player_person->getLevel() > 1)
+      {
+        auto new_level = player_person->getLevel() - 1;
+        player_person->loseExp(player_person->getTotalExp());
+        player_person->addExp(player_person->getExpAt(new_level));
+        event_handler.log("[DEBUG] Setting player level to: " +
+                          player_person->getLevel());
+      }
+    }
+  }
+  /* Level Up Key */
+  else if(event.keysym.sym == SDLK_F8 && mode != BATTLE)
+  {
+    if(player_main && player_main->getSleuth())
+    {
+      auto player_person = player_main->getSleuth()->getMember(0);
+
+      if(player_person &&
+         (size_t)(player_person->getLevel() + 1) <= Person::kNUM_LEVELS)
+      {
+        auto new_level = player_person->getLevel() + 1;
+        player_person->loseExp(player_person->getTotalExp());
+        player_person->addExp(player_person->getExpAt(new_level));
+        event_handler.log("[DEBUG] Setting player level to: " +
+                          player_person->getLevel());
+      }
+    }
+  }
+  /* Give Rock Event */
+  else if(event.keysym.sym == SDLK_LEFTBRACKET && mode != BATTLE)
+  {
+    if(getItem(2, true) && player_main && player_main->getSleuth())
+    {
+      auto inventory = player_main->getSleuth()->getInventory();
+
+      if(inventory)
+      {
+        auto new_item = new Item(getItem(2, true));
+        if(inventory->add(new_item, 1) != AddStatus::FAIL)
+        {
+          event_handler.log("[DEBUG] Giving player 1x Rock");
+        }
+        else
+        {
+          delete new_item;
+          new_item = nullptr;
+
+          event_handler.log("[DEBUG] Player Inventory Full");
+        }
+      }
+    }
+  }
+  /* Given Rotten Fish Event */
+  else if(event.keysym.sym == SDLK_RIGHTBRACKET && mode != BATTLE)
+  {
+    if(getItem(2, true) && player_main && player_main->getSleuth())
+    {
+      auto inventory = player_main->getSleuth()->getInventory();
+
+      if(inventory)
+      {
+        auto new_item = new Item(getItem(3, true));
+        if(inventory->add(new_item, 1) != AddStatus::FAIL)
+        {
+          event_handler.log("[DEBUG] Giving Player x1 Medkit.");
+        }
+        else
+        {
+          delete new_item;
+          new_item = nullptr;
+
+          event_handler.log("[DEBUG] Player Inventory Full");
+        }
+      }
+    }
+  }
+  /* Otherwise, send keys to the active view */
+  else
+  {
+    if(mode == MENU)
+    {
+      //map_menu.keyDownEvent(key_handler);
+    }
+    /* -- MAP MODE -- */
+    else if(mode == MAP)
+    {
+      map_ctrl.keyTestDownEvent(event);
+    }
+    /* -- BATTLE MODE -- */
+    else if(mode == BATTLE)
+    {
+      //battle_ctrl->keyDownEvent(key_handler);
+    }
+  }
+}
+#endif
 
 /* The key up events to be handled by the class */
 void Game::keyUpEvent(KeyHandler& key_handler)

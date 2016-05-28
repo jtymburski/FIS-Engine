@@ -910,17 +910,6 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
 }
 
 /*
- * Description: Set to ignore all passability and freely roam. Expect bugs!
- *
- * Inputs: bool ignore - true to ignore all passability. false otherwise
- * Output: none
- */
-void MapPerson::ignorePassability(bool ignore)
-{
-  ignore_passability = ignore;
-}
-
-/*
  * Description: Returns if the NPC will force interaction - always false when
  *              called on parent MapPerson class.
  *
@@ -1011,11 +1000,6 @@ void MapPerson::keyDownEvent(KeyHandler& key_handler)
     {
       addDirection(Direction::WEST);
       //key_handler.setHeld(GameKey::MOVE_LEFT);
-    }
-    if(key_handler.isDepressed(GameKey::DEBUG))
-    {
-      ignorePassability(!ignore_passability);
-      //key_handler.setHeld(GameKey::DEBUG);
     }
   }
 }
@@ -1254,6 +1238,19 @@ void MapPerson::setSurface(SurfaceClassifier surface)
   this->surface = surface;
   setMatrix(getState(surface, direction));
 }
+
+#ifdef UDEBUG
+/*
+ * Description: Toggles the ignore all passability to freely roam. Expect bugs!
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapPerson::toggleIgnorePassability()
+{
+  ignore_passability = !ignore_passability;
+}
+#endif
 
 /*
  * Description: Updates the state of the person. This can include animation
