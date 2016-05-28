@@ -270,15 +270,22 @@ void Battle::addDelay(int32_t delay_amount, bool for_outcomes)
 {
   if(delay_amount > 0)
   {
-    int32_t to_add = delay_amount * kDELAY_NORM_FACTOR;
-
-    if(for_outcomes && event && event->actor_outcomes.size() > 0)
+    if(config && config->getFlag(OptionState::FAST_BATTLE))
     {
-      to_add =
-          (int32_t)std::round((float)to_add / event->actor_outcomes.size());
+      delay += 5;
     }
+    else
+    {
+      int32_t to_add = delay_amount * kDELAY_NORM_FACTOR;
 
-    delay += (to_add * kDELAY_NORM_FACTOR);
+      if(for_outcomes && event && event->actor_outcomes.size() > 0)
+      {
+        to_add =
+            (int32_t)std::round((float)to_add / event->actor_outcomes.size());
+      }
+
+      delay += (to_add * kDELAY_NORM_FACTOR);
+    }
   }
 }
 
@@ -1976,7 +1983,8 @@ bool Battle::render()
     }
 
     /* Render the render elements (damage text values) etc. */
-    success &= renderElements();
+    if(!config->getFlag(OptionState::FAST_BATTLE))
+      success &= renderElements();
 
     if(victory_screen)
       victory_screen->render();

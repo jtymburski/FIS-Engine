@@ -278,6 +278,7 @@ private:
   AnalogOption option_music_level;
   DigitalOption option_auto_run;
   DigitalOption option_mute;
+  DigitalOption option_fast_battle;
 
   /* The Battle Actors for the sleuth */
   std::vector<BattleActor*> actors;

@@ -227,7 +227,7 @@ void TitleScreen::keyDownEvent(KeyHandler& key_handler)
       decrementSelected();
       nav_up = true;
     }
-    std::cout << "Checking action key state!" << std::endl;
+
     if(key_handler.isDepressed(GameKey::ACTION))
     {
       /* Play sound */
@@ -239,10 +239,6 @@ void TitleScreen::keyDownEvent(KeyHandler& key_handler)
 
       /* Set action */
       setAction();
-    }
-    else
-    {
-      std::cout << "Action key is not set!" << std::endl;
     }
 
     if(key_handler.isDepressed(GameKey::CANCEL))

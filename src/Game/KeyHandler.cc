@@ -299,7 +299,6 @@ bool KeyHandler::update(int32_t cycle_time)
       /* Determine if the state of the Keyboard if the scan code is depressed */
       if(state[scan_code] && !element.depressed)
       {
-        std::cout << "Key is depressed!" << std::endl;
         /* Assign the element to be a depressed state */
         element.depressed = true;
         element.time_depressed = 0;

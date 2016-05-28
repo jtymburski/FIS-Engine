@@ -31,7 +31,8 @@ enum class OptionState
   AUTO_RUN = 1 << 3, /* Do not change -- Linked to Menu */
   BATTLE_ANIMATIONS = 1 << 4,
   GUI_ENABLED = 1 << 5,
-  MUTE = 1 << 6 /* Do not change -- Linked to Menu */
+  MUTE = 1 << 6, /* Do not change -- Linked to Menu */
+  FAST_BATTLE = 1 << 7
 };
 
 class Options

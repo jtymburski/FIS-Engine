@@ -181,7 +181,7 @@ const float Menu::kINV_ITEM_MASS_Y{0.25};
 const float Menu::kINV_ITEM_DESC_Y{0};
 
 /* Options Section */
-const uint32_t Menu::kNUM_OPTIONS{4};
+const uint32_t Menu::kNUM_OPTIONS{5};
 const float Menu::kOPTIONS_X{0.025};
 const float Menu::kOPTIONS_Y{0.05};
 const float Menu::kOPTIONS_Y_BAR_GAP{0.04};
@@ -683,6 +683,12 @@ void Menu::buildOptions()
     option_mute.location.color_border_selected = {255, 255, 255, 255};
     option_mute.location.color_border = {255, 255, 255, 65};
 
+    /* Fast Battle - Digital */
+    option_fast_battle =
+        DigitalOption(config, {0, 0}, 20, 20, 7, "FAST BATTLE");
+    option_fast_battle.location.color_border_selected = {255, 255, 255, 255};
+    option_fast_battle.location.color_border = {255, 255, 255, 65};
+
     /* Audio Level - Analog */
     option_audio_level = AnalogOption("AUDIO LEVEL");
     option_audio_level.location = analog_box;
@@ -930,6 +936,8 @@ void Menu::selectOptionIndex()
     option_auto_run.location.setFlag(BoxState::SELECTED);
   else if(option_element_index == 3)
     option_mute.location.setFlag(BoxState::SELECTED);
+  else if(option_element_index == 4)
+    option_fast_battle.location.setFlag(BoxState::SELECTED);
 }
 
 void Menu::unselectInventoryIndex()
@@ -953,6 +961,8 @@ void Menu::unselectOptionIndex()
     option_auto_run.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 3)
     option_mute.location.setFlag(BoxState::SELECTED, false);
+  else if(option_element_index == 4)
+    option_fast_battle.location.setFlag(BoxState::SELECTED, false);
 }
 
 void Menu::unselectSleuthIndex()
@@ -1698,16 +1708,20 @@ void Menu::renderOptions()
   auto end = renderOptionAnalog(option_audio_level, ucurrent);
 
   /* Render the music level */
-  ucurrent.y = end.y + y_gap; // todo
+  ucurrent.y = end.y + y_gap;
   end = renderOptionAnalog(option_music_level, ucurrent);
 
   /* Render the auto run flag */
-  ucurrent.y = end.y + y_gap; // todo
+  ucurrent.y = end.y + y_gap;
   end = renderOptionDigital(option_auto_run, ucurrent);
 
   /* Render the mute flag */
   ucurrent.y = end.y + y_gap;
-  renderOptionDigital(option_mute, ucurrent);
+  end = renderOptionDigital(option_mute, ucurrent);
+
+  /* Render the fast battel flag */
+  ucurrent.y = end.y + y_gap;
+  renderOptionDigital(option_fast_battle, ucurrent);
 }
 
 /* Render a given option at a given point */
@@ -3067,6 +3081,13 @@ void Menu::keyDownAction()
                                     SoundChannels::MENUS);
         option_mute.toggle();
       }
+      else if(option_element_index == 4)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
+
+        option_fast_battle.toggle();
+      }
     }
     else if(getMainMenuType() == MenuType::INVENTORY && player_inventory)
     {
@@ -3169,36 +3190,36 @@ bool Menu::isMainSliding()
 bool Menu::keyDownEvent(KeyHandler& key_handler)
 {
 
-    if(key_handler.isDepressed(GameKey::MOVE_UP))
-    {
-      keyDownUp();
-      key_handler.setHeld(GameKey::MOVE_UP);
-    }
-    else if(key_handler.isDepressed(GameKey::MOVE_DOWN))
-    {
-      keyDownDown();
-      key_handler.setHeld(GameKey::MOVE_DOWN);
-    }
-    else if(key_handler.isDepressed(GameKey::MOVE_LEFT))
-    {
-      keyDownLeft();
-      key_handler.setHeld(GameKey::MOVE_LEFT);
-    }
-    else if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
-    {
-      keyDownRight();
-      key_handler.setHeld(GameKey::MOVE_RIGHT);
-    }
-    else if(key_handler.isDepressed(GameKey::ACTION))
-    {
-      keyDownAction();
-      key_handler.setHeld(GameKey::ACTION);
-    }
-    else if(key_handler.isDepressed(GameKey::CANCEL))
-    {
-      keyDownCancel();
-      key_handler.setHeld(GameKey::CANCEL);
-    }
+  if(key_handler.isDepressed(GameKey::MOVE_UP))
+  {
+    keyDownUp();
+    key_handler.setHeld(GameKey::MOVE_UP);
+  }
+  else if(key_handler.isDepressed(GameKey::MOVE_DOWN))
+  {
+    keyDownDown();
+    key_handler.setHeld(GameKey::MOVE_DOWN);
+  }
+  else if(key_handler.isDepressed(GameKey::MOVE_LEFT))
+  {
+    keyDownLeft();
+    key_handler.setHeld(GameKey::MOVE_LEFT);
+  }
+  else if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
+  {
+    keyDownRight();
+    key_handler.setHeld(GameKey::MOVE_RIGHT);
+  }
+  else if(key_handler.isDepressed(GameKey::ACTION))
+  {
+    keyDownAction();
+    key_handler.setHeld(GameKey::ACTION);
+  }
+  else if(key_handler.isDepressed(GameKey::CANCEL))
+  {
+    keyDownCancel();
+    key_handler.setHeld(GameKey::CANCEL);
+  }
 
   return false;
 }
