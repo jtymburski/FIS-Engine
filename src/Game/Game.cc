@@ -830,6 +830,7 @@ bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer, bool core_data,
 bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
                     bool from_save)
 {
+  (void)from_save;
   bool success = true;
   std::string element = data.getElement(index);
 
