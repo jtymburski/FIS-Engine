@@ -700,7 +700,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
   /* Timer to calculate the game load time */
   Timer t;
 
-  // std::cout << "1: " << success << std::endl;
+  //std::cout << "1: " << success << std::endl;
 
   /* Core data first, if applicable */
   if(success && full_load)
@@ -708,20 +708,20 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
     /* Base file */
     success &= loadData(&fh_base, renderer, true, false);
 
-    // std::cout << "2: " << success << std::endl;
+    //std::cout << "2: " << success << std::endl;
 
     /* Player set-up */
     player_main->setSleuth(getParty(Party::kID_SLEUTH));
     player_main->setBearacks(getParty(Party::kID_BEARACKS));
 
-    // std::cout << "3: " << success << std::endl;
+    //std::cout << "3: " << success << std::endl;
 
     /* Slot file */
     if(slot_valid)
       success &= loadData(&fh_slot, renderer, true, true);
   }
 
-  // std::cout << "4: " << success << std::endl;
+  //std::cout << "4: " << success << std::endl;
 
   /* Map data to follow */
   if(success)
@@ -732,7 +732,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
     fh_base.xmlToHead();
     success &= loadData(&fh_base, renderer, false, false, level);
 
-    // std::cout << "5: " << success << std::endl;
+    //std::cout << "5: " << success << std::endl;
 
     /* Slot file */
     if(slot_valid)
@@ -742,7 +742,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
     }
   }
 
-  // std::cout << "6: " << success << std::endl;
+  //std::cout << "6: " << success << std::endl;
 
   /* Log the game load time */
   event_handler.log("Game load time: " + std::to_string(t.elapsed()) + " s");
@@ -968,15 +968,15 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
       std::string index_str = data.getKeyValue(index + 2);
       if(base_id >= 0 && !index_str.empty())
       {
-        int index = std::stoi(index_str);
+        int party_index = std::stoi(index_str);
         if(index >= 0)
         {
           if(data.getElement(index + 1) == "sleuth")
             success &= addPersonToParty(player_main->getSleuth(), base_id,
-                                        static_cast<uint32_t>(index));
+                                        static_cast<uint32_t>(party_index));
           else
             success &= addPersonToParty(player_main->getBearacks(), base_id,
-                                        static_cast<uint32_t>(index));
+                                        static_cast<uint32_t>(party_index));
         }
       }
     }
@@ -1737,11 +1737,141 @@ Game::GameMode Game::getMode()
   return mode;
 }
 
-/* Is the game loaded */
-// bool Game::isLoaded()
-//{
-//  return loaded;
-//}
+/* Gets save data - used for rendering and information */
+std::vector<Save> Game::getSaveData(bool encryption)
+{
+  std::vector<Save> save_set;
+
+  /* Go through all slots up to range and find data */
+  for(uint8_t i = 1; i <= kSAVE_SLOT_MAX; i++)
+  {
+    std::string path = getSlotPath(i, base_path);
+    std::string path_img = getSlotPath(i, base_path, true);
+    Save slot(i, config);
+
+    /* Attempt to open the path with the file handling system */
+    FileHandler fh_slot(path, false, true, encryption);
+    if(FileHandler::fileExists(path) && fh_slot.start())
+    {
+      /* The snapshot path */
+      slot.setSnapshotPath(path_img);
+
+      /* The save date and time */
+      std::string save_date = fh_slot.getDate();
+      std::vector<std::string> split_date_time = Helpers::split(save_date, ' ');
+      if(split_date_time.size() == 2)
+      {
+        /* Year, Month, Day */
+        std::vector<std::string> split_date =
+                                   Helpers::split(split_date_time.front(), '/');
+        /* Hour, Minute, Second */
+        std::vector<std::string> split_time =
+                                    Helpers::split(split_date_time.back(), ':');
+        if(split_date.size() == 3 && split_time.size() == 3)
+        {
+          /* Try and complete the conversion to int and set in the slot */
+          try
+          {
+            int year = std::stoi(split_date[0]);
+            int month = std::stoi(split_date[1]);
+            int day = std::stoi(split_date[2]);
+            int hour = std::stoi(split_time[0]);
+            int minute = std::stoi(split_time[1]);
+            //int second = std::stoi(split_time[2]);
+            slot.setDate(year, month, day, hour, minute);
+          }
+          catch(std::exception& e)
+          {}
+        }
+      }
+
+      /* Parse the file for remaining information */
+      XmlData data;
+      bool done = false;
+      int index = 0;
+      bool read_success = true;
+      do
+      {
+        /* Read set of XML data */
+        data = fh_slot.readXmlData(&done, &read_success);
+        if(read_success)
+        {
+          /* Only proceed if inside game */
+          if(data.getElement(index) == "game")
+          {
+            /* Core data */
+            if(data.getElement(index + 1) == "core" &&
+               data.getElement(index + 2) == "player")
+            {
+              /* Credits */
+              if(data.getElement(index + 3) == "credits")
+              {
+                int credits = data.getDataInteger(&read_success);
+                if(read_success)
+                  slot.setCountCredits(credits);
+              }
+              /* Play time hours, minutes, seconds */
+              else if(data.getElement(index + 3) == "playtime")
+              {
+                int hours = slot.getTimeHours();
+                int minutes = slot.getTimeMinutes();
+                int seconds = slot.getTimeSeconds();
+
+                /* Read the time */
+                int new_time = data.getDataInteger(&read_success);
+                if(read_success)
+                {
+                  /* Determine the time allocation */
+                  if(data.getElement(index + 4) == "hours")
+                    hours = new_time;
+                  else if(data.getElement(index + 4) == "minutes")
+                    minutes = new_time;
+                  else if(data.getElement(index + 4) == "milliseconds")
+                    seconds = (new_time / 1000);
+
+                  /* Set to slot */
+                  slot.setTime(hours, minutes, seconds);
+                }
+              }
+              /* Sleuth information */
+              else if(data.getElement(index + 3) == "sleuth")
+              {
+                if(data.getElement(index + 4) == "person" &&
+                   data.getKeyValue(index + 4) == "0")
+                {
+                  if(data.getElement(index + 5) == "level")
+                  {
+                    int level = data.getDataInteger(&read_success);
+                    if(read_success && level >= 0)
+                      slot.setCountLevel(level);
+                  }
+                }
+              }
+              /* Steps */
+              else if(data.getElement(index + 3) == "steps")
+              {
+                int steps = data.getDataInteger(&read_success);
+                if(read_success)
+                  slot.setCountSteps(steps);
+              }
+            }
+            /* Current map name */
+            else if(data.getElement(index + 1) == "currentmapname")
+            {
+              std::string map_name = data.getDataString(&read_success);
+              if(read_success)
+                slot.setMapName(map_name);
+            }
+          }
+        }
+      } while(!done);
+    }
+
+    save_set.push_back(slot);
+  }
+
+  return save_set;
+}
 
 /* Is the game core data loaded */
 bool Game::isLoadedCore()
@@ -1840,6 +1970,10 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_F5)
   {
     save(3);
+    //std::cout << saveClear(3) << std::endl;
+    //std::vector<Save> save_data = getSaveData();
+    //for(uint32_t i = 0; i < save_data.size(); i++)
+    //  save_data[i].print();
   }
   /* Load test from slot 1 */
   else if(event.keysym.sym == SDLK_F6)
@@ -2088,6 +2222,18 @@ bool Game::save(uint8_t slot)
 
       if(map_ctrl.isLoaded())
       {
+        /* The current map index information */
+        XmlData data_map_curr(map_lvl);
+        data_map_curr.addElement("game");
+        data_map_curr.addElement("currentmap");
+        save_handle.writeXmlDataSet(data_map_curr);
+
+        /* The current map name information */
+        data_map_curr.removeLastElement();
+        data_map_curr.addElement("currentmapname");
+        data_map_curr.addDataOfType(map_ctrl.getName());
+        save_handle.writeXmlDataSet(data_map_curr);
+
         /* Setup the map data */
         XmlData data_map;
         data_map.addElement("game");
@@ -2107,6 +2253,30 @@ bool Game::save(uint8_t slot)
       save_slot = slot;
 
     return success;
+  }
+  return false;
+}
+
+/* Clears the passed in save slot number */
+bool Game::saveClear(uint8_t slot)
+{
+  /* Ensure the slot is in range */
+  if(slot <= kSAVE_SLOT_MAX)
+  {
+    /* Find the path and if it exists */
+    std::string delete_path = getSlotPath(slot, base_path);
+    if(FileHandler::fileExists(delete_path))
+    {
+      /* Delete the path */
+      bool success = FileHandler::fileDelete(delete_path);
+
+      /* Delete the image path, if it exists */
+      std::string save_path = getSlotPath(slot, base_path, true);
+      if(FileHandler::fileExists(save_path))
+        success &= FileHandler::fileDelete(save_path);
+
+      return success;
+    }
   }
   return false;
 }

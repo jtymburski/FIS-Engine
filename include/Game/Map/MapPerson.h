@@ -116,7 +116,8 @@ protected:
   virtual bool saveData(FileHandler* fh, const bool& save_event = true);
 
   /* Sets the direction that the person is travelling in */
-  virtual bool setDirection(Direction direction, bool set_movement = true);
+  virtual bool setDirection(Direction direction, bool set_movement = true,
+                            bool forced = false);
 
   /* Sets the tile of the selected with the corresponding frames */
   virtual bool setTile(Tile* tile, TileSprite* frames, bool no_events = true);

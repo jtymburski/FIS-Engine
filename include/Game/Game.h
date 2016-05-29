@@ -265,6 +265,9 @@ public:
   /* Get the game mode */
   GameMode getMode();
 
+  /* Gets save data - used for rendering and information */
+  std::vector<Save> getSaveData(bool encryption = false);
+
   /* Is the game loaded */
   //bool isLoaded();
   bool isLoadedCore();
@@ -293,6 +296,9 @@ public:
 
   /* Save game based on the current slot number */
   bool save(uint8_t slot = 0);
+
+  /* Clears the passed in save slot number */
+  bool saveClear(uint8_t slot);
 
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);

@@ -234,7 +234,7 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   else
   {
     success &= MapThing::addThingInformation(data, file_index, section_index,
-                                             renderer, base_path);
+                                             renderer, base_path, from_save);
   }
 
   /* If not from save, reset changed back to false */

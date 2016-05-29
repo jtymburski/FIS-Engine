@@ -1,9 +1,9 @@
 /*******************************************************************************
-* Class Name: Save
+* Class Name: Save [Header]
 * Date Created: May 22, 2016
 * Inheritance: None
-* Description:
-*
+* Description: Contains and processes save data for use in representation and
+*              compilation for the loading and saving process
 * Notes
 * -----
 *
@@ -59,6 +59,9 @@ private:
   /* Name of the map */
   std::string map_name;
 
+  /* The save snapshot path */
+  std::string snapshot_path;
+
   /* The play time data for the save file */
   uint32_t time_hrs;
   uint32_t time_min;
@@ -72,9 +75,9 @@ public:
   /* Location, width, height of the save title */
   Box location;
 
-  /*=============================================================================
-   * PRIVATE FUNCTIONS
-   *============================================================================*/
+/*=========================================================================
+ * PRIVATE FUNCTIONS
+ *========================================================================*/
 private:
   /* Format a number 0 --> 00, 1 --> 01, 11  --> 11 etc. */
   std::string formattedNumber(uint32_t n);
@@ -94,21 +97,32 @@ private:
   /* Formatting function for formatting the credit count */
   std::string formattedCredits();
 
-  /*=============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
+/*=========================================================================
+ * PUBLIC FUNCTIONS
+ *========================================================================*/
 public:
   /* Clear the data for the save file */
   bool clear();
 
-  /* Assigns configuration to the save file */
-  bool setConfig(Options* config);
-
   /* Return the value of a given SaveState flag */
   bool getFlag(const SaveState& test_flag);
 
+  /* Returns the save snapshot path */
+  std::string getSnapshotPath();
+
+  /* Returns the time data elements */
+  uint32_t getTimeHours();
+  uint32_t getTimeMinutes();
+  uint32_t getTimeSeconds();
+
+  /* Prints the class data - primarily for testing */
+  void print();
+
   /* Render the save object at a location */
   bool render(SDL_Renderer* renderer);
+  
+  /* Assigns configuration to the save file */
+  bool setConfig(Options* config);
 
   /* Assign game count information */
   void setCountLevel(uint32_t count_level);
@@ -125,12 +139,15 @@ public:
   /* Assign a map name to the save */
   void setMapName(std::string map_name);
 
+  /* Sets the save snapshot path */
+  void setSnapshotPath(std::string path);
+
   /* Assign time data to the object */
   void setTime(uint32_t time_hrs, uint32_t time_min, uint32_t time_sec);
 
-  /*=============================================================================
-   * PUBLIC STATIC FUNCTIONS
-   *============================================================================*/
+/*=========================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *========================================================================*/
 public:
 };
 

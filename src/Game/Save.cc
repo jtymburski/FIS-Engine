@@ -2,12 +2,8 @@
 * Class Name: Save [Implementation]
 * Date Created: May 22, 2016
 * Inheritance: None
-* Description:
-*
-* Notes
-* -----
-*
-* [1]:
+* Description: Contains and processes save data for use in representation and
+*              compilation for the loading and saving process
 *
 * See .h file for TODOs
 ******************************************************************************/
@@ -40,6 +36,7 @@ Save::Save()
       flags{static_cast<SaveState>(0)},
       id{kUNSET_ID},
       map_name{""},
+      snapshot_path{""},
       time_hrs{0},
       time_min{0},
       time_sec{0},
@@ -83,21 +80,21 @@ std::string Save::formattedNumber(uint32_t n)
 /* Formatting function for format a date (ex. 2016-03-06) */
 std::string Save::formattedDate()
 {
-  return std::to_string(date_year) + formattedNumber(date_month) +
+  return std::to_string(date_year) + "-" + formattedNumber(date_month) + "-" +
          formattedNumber(date_day);
 }
 
 /* Formatting function for format a play time (ex. 00:06:51) */
 std::string Save::formattedPlayTime()
 {
-  return formattedNumber(date_hour) + formattedNumber(date_minute);
+  return formattedNumber(time_hrs) + ":" + formattedNumber(time_min) + ":" +
+         formattedNumber(time_sec);
 }
 
 /* Formatting function for formatting the date time */
 std::string Save::formattedTime()
 {
-  return formattedNumber(time_hrs) + formattedNumber(time_min) +
-         formattedNumber(time_sec);
+  return formattedNumber(date_hour) + ":" + formattedNumber(date_minute);
 }
 
 /* Formatting function for formatting the step count */
@@ -131,6 +128,7 @@ bool Save::clear()
     date_minute = 0;
     setFlag(SaveState::EMPTY, true);
     map_name = "";
+    snapshot_path = "";
     time_hrs = 0;
     time_min = 0;
     time_sec = 0;
@@ -147,6 +145,60 @@ bool Save::getFlag(const SaveState& test_flag)
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
+/* Returns the save snapshot path */
+std::string Save::getSnapshotPath()
+{
+  return snapshot_path;
+}
+  
+/* Returns the time data elements */
+uint32_t Save::getTimeHours()
+{
+  return time_hrs;
+}
+
+/* Returns the time data elements */
+uint32_t Save::getTimeMinutes()
+{
+  return time_min;
+}
+
+/* Returns the time data elements */
+uint32_t Save::getTimeSeconds()
+{
+  return time_sec;
+}
+  
+/* Prints the class data - primarily for testing */
+void Save::print()
+{
+  std::cout << "Slot " << id << " --" << std::endl;
+  
+  /* Is empty? */
+  if(getFlag(SaveState::EMPTY))
+  {
+    std::cout << " Slot is empty" << std::endl;
+  }
+  /* Not empty */
+  else
+  {
+    std::cout << " Date: " << formattedDate() << " " << formattedTime()
+              << std::endl;
+    std::cout << " Play Time: " << formattedPlayTime() << std::endl
+              << std::endl;
+
+    std::cout << " Image Path: " << snapshot_path << std::endl;
+    std::cout << " Map Name:  " << map_name << std::endl << std::endl;
+
+    std::cout << " Credits: " << count_credits << std::endl;
+    std::cout << " Level: " << count_level << std::endl;
+    std::cout << " Steps: " << count_steps << std::endl;
+  }
+
+  std::cout << "End of Slot --" << std::endl;
+}
+
+/* Render the save object at a location */
 bool Save::render(SDL_Renderer* renderer)
 {
   if(renderer && config)
@@ -213,21 +265,7 @@ bool Save::render(SDL_Renderer* renderer)
   return false;
 }
 
-void Save::setCountLevel(uint32_t count_level)
-{
-  this->count_level = count_level;
-}
-
-void Save::setCountSteps(uint32_t count_steps)
-{
-  this->count_steps = count_steps;
-}
-
-void Save::setCountCredits(uint32_t count_credits)
-{
-  this->count_credits = count_credits;
-}
-
+/* Assigns configuration to the save file */
 bool Save::setConfig(Options* config)
 {
   this->config = config;
@@ -235,6 +273,28 @@ bool Save::setConfig(Options* config)
   return (this->config != nullptr);
 }
 
+/* Assign game count information */
+void Save::setCountLevel(uint32_t count_level)
+{
+  this->count_level = count_level;
+  setFlag(SaveState::EMPTY, false);
+}
+
+/* Assign game count information */
+void Save::setCountSteps(uint32_t count_steps)
+{
+  this->count_steps = count_steps;
+  setFlag(SaveState::EMPTY, false);
+}
+
+/* Assign game count information */
+void Save::setCountCredits(uint32_t count_credits)
+{
+  this->count_credits = count_credits;
+  setFlag(SaveState::EMPTY, false);
+}
+
+/* Assign the date data to the object */
 void Save::setDate(uint32_t date_year, uint32_t date_month, uint32_t date_day,
                    uint32_t date_hour, uint32_t date_minute)
 {
@@ -243,6 +303,7 @@ void Save::setDate(uint32_t date_year, uint32_t date_month, uint32_t date_day,
   this->date_day = date_day;
   this->date_hour = date_hour;
   this->date_minute = date_minute;
+  setFlag(SaveState::EMPTY, false);
 }
 
 /* Assign a MenuState flag a value */
@@ -251,16 +312,27 @@ void Save::setFlag(SaveState set_flags, const bool& set_value)
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
 }
 
+/* Assign a map name to the save */
 void Save::setMapName(std::string map_name)
 {
   this->map_name = map_name;
+  setFlag(SaveState::EMPTY, false);
+}
+  
+/* Sets the save snapshot path */
+void Save::setSnapshotPath(std::string path)
+{
+  this->snapshot_path = path;
+  setFlag(SaveState::EMPTY, false);
 }
 
+/* Assign time data to the object */
 void Save::setTime(uint32_t time_hrs, uint32_t time_min, uint32_t time_sec)
 {
   this->time_hrs = time_hrs;
   this->time_min = time_min;
   this->time_sec = time_sec;
+  setFlag(SaveState::EMPTY, false);
 }
 
 /*=============================================================================

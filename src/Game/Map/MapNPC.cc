@@ -827,9 +827,10 @@ bool MapNPC::saveData(FileHandler* fh, const bool &save_event)
  *
  * Inputs: Direction direction - the new direction to set
  *         bool set_movement - if the movement should be set as well
+ *         bool forced - set the state direction no matter what
  * Output: bool - indicates if the directional movement changed
  */
-bool MapNPC::setDirection(Direction direction, bool set_movement)
+bool MapNPC::setDirection(Direction direction, bool set_movement, bool forced)
 {
   //return MapPerson::setDirection(direction, set_movement);
 
@@ -838,19 +839,14 @@ bool MapNPC::setDirection(Direction direction, bool set_movement)
 
   /* If moving, set the direction in map thing */
   if(set_movement)
-  {
-    /* Update preferred movement direction */
     movement_changed = MapThing::setDirection(direction);
-  }
   else
-  {
     MapThing::setDirection(Direction::DIRECTIONLESS);
-  }
 
   /* Rotate direction */
-  if(set_movement || getTarget() != nullptr || forced_recent ||
+  if(forced || set_movement || getTarget() != nullptr || forced_recent ||
      node_current == nullptr || node_current->x == getTileX() ||
-     node_current->y == getTileY() )
+     node_current->y == getTileY())
   {
     /* If it's a movement direction, rotate the fellow */
     SpriteMatrix* state = getState(surface, direction);
@@ -1076,7 +1072,7 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   else
   {
     success &= MapPerson::addThingInformation(data, file_index, section_index,
-                                              renderer, base_path);
+                                              renderer, base_path, from_save);
     if(identifier == "startpoint")
       updateBound();
   }

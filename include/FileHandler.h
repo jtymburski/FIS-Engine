@@ -291,6 +291,9 @@ public:
   /* Rename the file, if it exists and the new name doesn't */
   static bool fileRename(std::string old_filename, std::string new_filename,
                          bool overwrite = false);
+
+  /* Returns the current date in a string form as per std::strftime */
+  static std::string getCurrentDate(std::string format = "%Y/%m/%d %H:%M:%S");
 };
 
 #endif // FILEHANDLER_H

@@ -2727,7 +2727,7 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
 
   /* Modify the map index */
   if(player != nullptr)
-    map_index = player->getStartingSection();
+    map_index = player->getMapSection();
   if(sub_map.size() > map_index && sub_map[map_index].tiles.size() > 0)
   {
     /* Update viewport */

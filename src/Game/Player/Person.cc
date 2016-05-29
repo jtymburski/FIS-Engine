@@ -1010,12 +1010,14 @@ bool Person::saveData(FileHandler* fh)
   {
     Person default_person;
 
-    /* Base reference */
+    /* Base reference and corresponding level */
     if(base_person != nullptr)
       fh->writeXmlData("base", base_person->getGameID());
 
-    /* Experience */
+    /* Experience and Level */
     fh->writeXmlData("exp", total_exp);
+    fh->writeXmlData("level", level);
+
 
     /* Damage and experience mods */
     if(getDmgMod() != default_person.getDmgMod())

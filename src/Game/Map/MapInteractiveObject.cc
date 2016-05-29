@@ -864,7 +864,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   {
     success &= MapThing::addThingInformation(data, file_index,
                                              section_index, renderer,
-                                             base_path);
+                                             base_path, from_save);
   }
 
   /* If not from save, reset changed back to false */

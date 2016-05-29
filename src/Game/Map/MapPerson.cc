@@ -407,10 +407,14 @@ bool MapPerson::saveData(FileHandler* fh, const bool& save_event)
  *
  * Inputs: Direction direction - the new direction to set
  *         bool set_movement - if the movement should be set as well
+ *         bool forced - set the state direction no matter what
  * Output: bool - indicates if the directional movement changed
  */
-bool MapPerson::setDirection(Direction direction, bool set_movement)
+bool MapPerson::setDirection(Direction direction, bool set_movement,
+                             bool forced)
 {
+  (void)forced;
+
   bool changed = (this->direction != direction);
   bool movement_changed = false;
 
@@ -640,7 +644,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
   {
     Direction dir = Helpers::directionFromString(data.getDataString(&success));
     if(success)
-      setDirection(dir, false);
+      setDirection(dir, false, from_save);
   }
   /*----------------- MOVE FREEZE -----------------*/
   else if(elements.size() == 1 && elements.front() == "movefreeze")
@@ -676,7 +680,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
   {
     /* Proceed to parent */
     success &= MapThing::addThingInformation(data, file_index, section_index,
-                                             renderer, base_path);
+                                             renderer, base_path, from_save);
   }
 
   /* If not from save, reset changed back to false */

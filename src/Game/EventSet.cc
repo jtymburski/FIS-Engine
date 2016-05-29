@@ -664,7 +664,7 @@ bool EventSet::loadData(XmlData data, int file_index, int section_index)
   std::string category = data.getElement(file_index);
 
   /* If base is set, unset */
-  if(isBaseSet())
+  if(isBaseSet() && data.getAllElements().back() != "executed")
     setBase(nullptr);
 
   /* Parse */

@@ -1407,9 +1407,7 @@ bool FileHandler::save()
     bool success = true;
 
     /* Update current date */
-    std::time_t current_time = time(0);
-    file_date = std::ctime(&current_time);
-    file_date.pop_back();
+    file_date = getCurrentDate();
     XmlData date_data(file_date);
     date_data.addElement("date");
     writeXmlDataSet(date_data);
@@ -1581,10 +1579,10 @@ bool FileHandler::start(bool read_before_write)
     /* Write starting date, if applicable */
     if(success && file_write)
     {
-      std::time_t current_time = time(0);
-      file_date = std::ctime(&current_time);
-      file_date.pop_back();
+      /* Access the date */
+      file_date = getCurrentDate();
 
+      /* Write the date */
       if(file_type == REGULAR)
       {
         success &= writeLine(file_date);
@@ -2039,4 +2037,28 @@ bool FileHandler::fileRename(std::string old_filename, std::string new_filename,
   if(fileExists(old_filename) && !fileExists(new_filename))
     return !std::rename(old_filename.c_str(), new_filename.c_str());
   return false;
+}
+
+/* 
+ * Description: Returns the current date in a string form as per std::strftime.
+ *
+ * Inputs: std::string format - the format as per std::strftime
+ * Output: std::string - time with string format input items filled in
+ */
+std::string FileHandler::getCurrentDate(std::string format)
+{
+  std::string time_string = "";
+
+  if(format.size() > 0)
+  {
+    std::time_t current_time = time(0);
+    std::size_t length = format.size() * 4;
+    struct tm * time_info = localtime(&current_time);
+    char time_buffer[length];
+
+    strftime(time_buffer, length, format.c_str(), time_info);
+    time_string = std::string(time_buffer);
+  }
+
+  return time_string;
 }

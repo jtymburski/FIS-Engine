@@ -152,7 +152,8 @@ protected:
   virtual bool saveData(FileHandler* fh, const bool &save_event = true);
 
   /* Sets the direction that the NPC is travelling in */
-  bool setDirection(Direction direction, bool set_movement = true);
+  bool setDirection(Direction direction, bool set_movement = true,
+                    bool forced = false);
 
 /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
