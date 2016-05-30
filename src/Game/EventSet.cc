@@ -2536,10 +2536,20 @@ bool EventSet::saveEvent(FileHandler* fh, const Event& event_ref,
         {
           if(event_ref.events.size() > kBATTLE_EVENT_LOSE)
           {
-            fh->writeXmlElement("startbattle");
-            saveEvent(fh, event_ref.events[kBATTLE_EVENT_WIN], "eventwin");
-            saveEvent(fh, event_ref.events[kBATTLE_EVENT_LOSE], "eventlose");
-            fh->writeXmlElementEnd();
+            bool win_save = isDataToSave(event_ref.events[kBATTLE_EVENT_WIN]);
+            bool lose_save = isDataToSave(event_ref.events[kBATTLE_EVENT_LOSE]);
+
+            if(win_save || lose_save)
+            {
+              fh->writeXmlElement("startbattle");
+              if(win_save)
+                saveEvent(fh, event_ref.events[kBATTLE_EVENT_WIN],
+                          "eventwin", false);
+              if(lose_save)
+                saveEvent(fh, event_ref.events[kBATTLE_EVENT_LOSE],
+                          "eventlose", false);
+              fh->writeXmlElementEnd();
+            }
           }
         }
         /* -- CONVERSATION -- */
@@ -2550,15 +2560,26 @@ bool EventSet::saveEvent(FileHandler* fh, const Event& event_ref,
         /* -- MULTIPLE -- */
         else if(event_ref.classification == EventClassifier::MULTIPLE)
         {
+          bool wrapped = false;
           for(uint32_t i = 0; i < event_ref.events.size(); i++)
           {
             if(isDataToSave(event_ref.events[i]))
             {
+              /* Check wrapping */
+              if(!wrapped)
+              {
+                fh->writeXmlElement("multiple");
+                wrapped = true;
+              }
+
+              /* Write event delta */
               fh->writeXmlElement("event", "id", i);
               saveEvent(fh, event_ref.events[i], "", false);
               fh->writeXmlElementEnd();
             }
           }
+          if(wrapped)
+            fh->writeXmlElementEnd();
         }
       }
 

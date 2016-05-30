@@ -450,9 +450,9 @@ bool MapInteractiveObject::isDataToSave()
   if(node_head != node_current)
     return true;
 
-  /* Check shifting forward state */
-  if(!shifting_forward)
-    return true;
+  /* Check shifting forward state - only valid if not on head */
+  //if(!shifting_forward)
+  //  return true;
 
   /* Check the elapsed return time status (elapsed) */
   if(isInactiveTimeValid() && time_elapsed > 0)
@@ -782,9 +782,14 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
         id--;
       }
       if(node_parse != nullptr)
+      {
         node_current = node_parse;
+        setParentFrames();
+      }
       else
+      {
         success = false;
+      }
     }
   }
   /*--------------- STATES FOR MIO -----------------*/

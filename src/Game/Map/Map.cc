@@ -2323,18 +2323,21 @@ bool Map::keyDownEvent(KeyHandler& key_handler)
   /* Key control is only permitted during Normal Mode */
   if(isModeNormal())
   {
-    if(key_handler.isDepressed(GameKey::ACTION))
-    {
-      initiateThingInteraction(player);
-      key_handler.setHeld(GameKey::ACTION);
-    }
     if(map_dialog.isConversationActive())
     {
       map_dialog.keyDownEvent(key_handler);
     }
-    if(player)
+    else
     {
-      player->keyDownEvent(key_handler);
+      if(key_handler.isDepressed(GameKey::ACTION))
+      {
+        initiateThingInteraction(player);
+        key_handler.setHeld(GameKey::ACTION);
+      }
+      if(player)
+      {
+        player->keyDownEvent(key_handler);
+      }
     }
   }
 

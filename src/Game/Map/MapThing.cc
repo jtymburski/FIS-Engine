@@ -713,18 +713,19 @@ bool MapThing::setTiles(std::vector<std::vector<Tile*>> tile_set,
     uint32_t end_x = 0;
     uint32_t end_y = 0;
 
-    /* Check if the thing can be placed */
-    if(getID() != kPLAYER_ID)
-      for(uint32_t i = 0; i < sprite_set->width(); i++)
-        for(uint32_t j = 0; j < sprite_set->height(); j++)
-          if(sprite_set->at(i, j) != NULL &&
-             sprite_set->at(i, j)->getSize() > 0)
-            success &= canSetTile(tile_set[i][j], sprite_set->at(i, j),
-                                  avoid_player);
-
-    /* Attempt to set the new tiles */
+    /* If not just storing, try and connect to tile */
     if(!just_store)
     {
+      /* Check if the thing can be placed */
+      if(getID() != kPLAYER_ID)
+        for(uint32_t i = 0; i < sprite_set->width(); i++)
+          for(uint32_t j = 0; j < sprite_set->height(); j++)
+            if(sprite_set->at(i, j) != NULL &&
+               sprite_set->at(i, j)->getSize() > 0)
+              success &= canSetTile(tile_set[i][j], sprite_set->at(i, j),
+                                    avoid_player);
+
+      /* Attempt to set the new tiles */
       for(uint32_t i = 0; success && (i < sprite_set->width()); i++)
       {
         for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
@@ -741,12 +742,9 @@ bool MapThing::setTiles(std::vector<std::vector<Tile*>> tile_set,
           }
         }
       }
-    }
 
-    /* If unsuccessful, unset all that were set */
-    if(!success)
-    {
-      if(!just_store)
+      /* If unsuccessful, unset all that were set */
+      if(!success)
       {
         bool finished = false;
 
@@ -764,10 +762,7 @@ bool MapThing::setTiles(std::vector<std::vector<Tile*>> tile_set,
           }
         }
       }
-    }
-    else
-    {
-      if(!just_store)
+      else
       {
         active = true;
         tile_main = tile_set;
@@ -997,7 +992,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   /*--------------------- ACTIVE -----------------*/
   if(identifier == "active" && elements.size() == 1)
   {
-    setActive(data.getDataBool(&success));
+    setActive(data.getDataBool(&success), false);
   }
   /* -------------------- ACTIVE ELAPSED -------------------- */
   else if(identifier == "activelapsed")
@@ -2280,8 +2275,10 @@ bool MapThing::save(FileHandler* fh)
  */
 bool MapThing::setActive(bool active, bool set_tiles)
 {
+  bool diff = (this->active != active);
+
   /* Check if the active status is changing and update accordingly */
-  if(this->active != active)
+  if(diff)
     changed = true;
 
   /* Change value */
@@ -2289,7 +2286,7 @@ bool MapThing::setActive(bool active, bool set_tiles)
   active_lapsed = 0;
 
   /* Update thing placement */
-  if(set_tiles)
+  if(diff && set_tiles)
   {
     bool reset = resetToStart(!active);
     if(active)
@@ -2518,6 +2515,9 @@ void MapThing::setLocationNext(uint16_t section_id, uint16_t x, uint16_t y)
 {
   /* Unset the tiles, currently in use */
   unsetTiles(true);
+
+  if(getID() == 10224)
+    std::cout << section_id << "," << x << "," << y << std::endl;
 
   /* Set the new tile coordinate */
   next_section = section_id;
