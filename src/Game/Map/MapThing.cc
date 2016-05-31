@@ -2277,21 +2277,24 @@ bool MapThing::setActive(bool active, bool set_tiles)
 {
   bool diff = (this->active != active);
 
-  /* Check if the active status is changing and update accordingly */
-  if(diff)
-    changed = true;
-
   /* Change value */
   this->active = active;
-  active_lapsed = 0;
 
-  /* Update thing placement */
-  if(diff && set_tiles)
+  /* Only proceed if different */
+  if(diff)
   {
-    bool reset = resetToStart(!active);
-    if(active)
-      this->active = reset;
-    // TODO: Implement fade instead of instant.
+    /* Reset the lapsed time and set changed */
+    active_lapsed = 0;
+    changed = true;
+
+    /* Update the thing placement */
+    if(set_tiles)
+    {
+      bool reset = resetToStart(!active);
+      if(active)
+        this->active = reset;
+      // TODO: Implement fade instead of instant.
+    }
   }
 
   return this->active;

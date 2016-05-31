@@ -74,6 +74,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   name = "Map Name";
   name_view = 0;
   player = NULL;
+  speed_factor = 1.0;
   system_options = NULL;
   view_acc = 0;
   view_section = 0;
@@ -2359,6 +2360,13 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     /* Test: Pause dialog */
     else if(event.keysym.sym == SDLK_p)
       map_dialog.setPaused(!map_dialog.isPaused());
+    else if(event.keysym.sym == SDLK_q)
+    {
+      if(speed_factor != 1.0)
+        speed_factor = 1.0;
+      else
+        speed_factor = 4;
+    }
     /* Test: Reset player location */
     else if(event.keysym.sym == SDLK_r)
     {
@@ -3132,6 +3140,17 @@ void Map::setEventHandler(EventHandler* event_handler)
   /* Secondary links */
   map_dialog.setEventHandler(event_handler);
 }
+  
+/* Sets the speed factor of update call on the map side */
+bool Map::setSpeedFactor(float factor)
+{
+  if(factor > 0.0)
+  {
+    speed_factor = factor;
+    return true;
+  }
+  return false;
+}
 
 // Possibly make the teleport add the ability of shifting map thing
 void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
@@ -3416,6 +3435,14 @@ bool Map::update(int cycle_time)
 {
   Floatinate player_move;
   std::vector<std::vector<Tile*>> tile_set;
+
+  /* Time modifier based on factor */
+  if(speed_factor != 1.0)
+  {
+    cycle_time *= speed_factor;
+    if(cycle_time <= 0)
+      cycle_time = 1;
+  }
 
   /* Check on music */
   if(music_id >= 0)

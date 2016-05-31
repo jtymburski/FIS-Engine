@@ -17,7 +17,7 @@ const uint16_t MapNPC::kMAX_RANGE = 10;
 const float MapNPC::kPYTH_APPROX = 0.4;
 const uint16_t MapNPC::kSPOTTED_FADE = 1000;
 const uint16_t MapNPC::kSPOTTED_INIT = 3000;
-const uint16_t MapNPC::kSTUCK_DELAY = 250;
+const uint16_t MapNPC::kSTUCK_DELAY = 400;
 const uint16_t MapNPC::kTRACK_DELAY = 250;
 const uint16_t MapNPC::kTRACK_DIST_MIN = 4;
 const uint16_t MapNPC::kTRACK_DIST_MAX = 8;
@@ -1628,6 +1628,13 @@ void MapNPC::setLocationNext(uint16_t section_id, uint16_t x, uint16_t y)
   /* Reset random location */
   node_random.x = x;
   node_random.y = y;
+
+  if(starting && (node_state == LOOPED || node_state == BACKANDFORTH ||
+     node_state == RANDOMRANGE))
+  {
+     if(node_current == &node_start && node_head != nullptr)
+       node_current = node_head;
+  }
 }
 
 /*

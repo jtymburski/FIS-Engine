@@ -805,7 +805,9 @@ bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer, bool core_data,
         /* Current Map Index */
         else if(data.getElement(index + 1) == "currentmap" && save_data)
         {
-          // TODO
+          int new_level = data.getDataInteger(&success);
+          if(success && new_level >= 0)
+            map_lvl = new_level;
         }
       }
       /* If map data load */
@@ -1955,24 +1957,21 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
   /* Print sleuth inventory to debug console */
   else if(event.keysym.sym == SDLK_F3)
   {
-    //if(player_main != nullptr && player_main->getSleuth() != nullptr &&
-    //   player_main->getSleuth()->getInventory() != nullptr)
-    //{
-    //  player_main->getSleuth()->getInventory()->print(false);
-    //}
-    save_slot = 2;
-    changeMode(LOADING);
-    mode_load = FULLLOAD;
+    if(player_main != nullptr && player_main->getSleuth() != nullptr &&
+       player_main->getSleuth()->getInventory() != nullptr)
+    {
+      player_main->getSleuth()->getInventory()->print(false);
+    }
   }
   /* Save test to slot 1 */
   else if(event.keysym.sym == SDLK_F4)
   {
-    save(2);
+    save(1);
   }
   /* Save test to slot 3 */
   else if(event.keysym.sym == SDLK_F5)
   {
-    save(3);
+    save(2);
     //std::cout << saveClear(3) << std::endl;
     //std::vector<Save> save_data = getSaveData();
     //for(uint32_t i = 0; i < save_data.size(); i++)

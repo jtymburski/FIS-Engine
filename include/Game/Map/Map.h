@@ -141,6 +141,9 @@ private:
   // /* The sectors on the map (for rooms, caves, houses etc) */
   // QList<Sector> sectors;
 
+  /* Speed factor - for map based elements */
+  float speed_factor;
+
   /* The set of map data */
   std::vector<SubMap> sub_map;
 
@@ -418,6 +421,9 @@ public:
 
   /* Sets the operational event handler */
   void setEventHandler(EventHandler* event_handler);
+
+  /* Sets the speed factor of update call on the map side */
+  bool setSpeedFactor(float factor = 1.0);
 
   /* Teleport a thing, based on the given coordinates */
   void teleportThing(int id, int tile_x, int tile_y, int section_id);

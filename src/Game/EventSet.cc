@@ -662,9 +662,10 @@ bool EventSet::isNoInteraction()
 bool EventSet::loadData(XmlData data, int file_index, int section_index)
 {
   std::string category = data.getElement(file_index);
+  std::string back_element = data.getAllElements().back();
 
   /* If base is set, unset */
-  if(isBaseSet() && data.getAllElements().back() != "executed")
+  if(isBaseSet() && back_element != "executed" && back_element != "locked")
     setBase(nullptr);
 
   /* Parse */
