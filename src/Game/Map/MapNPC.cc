@@ -1748,6 +1748,16 @@ void MapNPC::setTrackingState(TrackingState state)
   track_state = state;
   track_recent = false;
 
+  /* If it was tracking, cancel it */
+  if(tracking)
+  {
+    tracking = false;
+    track_delay = 0;
+    track_initial = false;
+    node_current = node_previous;
+    node_previous = nullptr;
+  }
+
   /* Check if it was changed */
   if(track_state != old_state)
     changed = true;
