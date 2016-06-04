@@ -473,6 +473,7 @@ bool Game::eventMenuShow()
     map_menu.setMap(&map_ctrl);
     map_menu.setInventory(getInvSleuth());
     map_menu.setPlayer(player_main);
+    map_menu.setSaveData(getSaveData());
     map_menu.show();
   }
 
@@ -657,6 +658,26 @@ void Game::eventUnlockTile(int section_id, int tile_x, int tile_y,
   map_ctrl.unlockTile(section_id, tile_x, tile_y, mode, mode_view, view_time);
 }
 
+/* Updates the menu enabled state as per the appropriate flag states */
+void Game::updateMenuEnabledState()
+{
+  map_menu_enabled = true;
+
+  /* If the higher game state allows the menu to be accessed, first check for
+   * other conditions to assert the menu can be accessed at this time */
+  if(map_ctrl.getDialogStatus() != WindowStatus::OFF)
+    map_menu_enabled = false;
+  else if(map_ctrl.getFadeStatus() != MapFade::VISIBLE)
+    map_menu_enabled = false;
+  else if(battle_ctrl && battle_ctrl->getTurnState() != TurnState::STOPPED)
+    map_menu_enabled = false;
+}
+
+void Game::updateMenuSaving()
+{
+  /* Update the state of the menu saving */
+}
+
 /* Updates the player steps with the map information */
 void Game::updatePlayerSteps()
 {
@@ -667,6 +688,7 @@ void Game::updatePlayerSteps()
     map_ctrl.resetPlayerSteps();
   }
 }
+
 
 /* Load game - main function call */
 bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
@@ -2523,21 +2545,6 @@ bool Game::update(int32_t cycle_time)
   }
 
   return false;
-}
-
-/* Updates the menu enabled state as per the appropriate flag states */
-void Game::updateMenuEnabledState()
-{
-  map_menu_enabled = true;
-
-  /* If the higher game state allows the menu to be accessed, first check for
-   * other conditions to assert the menu can be accessed at this time */
-  if(map_ctrl.getDialogStatus() != WindowStatus::OFF)
-    map_menu_enabled = false;
-  else if(map_ctrl.getFadeStatus() != MapFade::VISIBLE)
-    map_menu_enabled = false;
-  else if(battle_ctrl && battle_ctrl->getTurnState() != TurnState::STOPPED)
-    map_menu_enabled = false;
 }
 
 /*============================================================================

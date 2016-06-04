@@ -13,6 +13,10 @@
 ******************************************************************************/
 #include "Box.h"
 
+/*=============================================================================
+ * CONSTANTS
+ *============================================================================*/
+
 const SDL_Color Box::kDEFAULT_COLOR_BG{0, 0, 0, 0};
 const SDL_Color Box::kDEFAULT_COLOR_BORDER{255, 255, 255, 255};
 const SDL_Color Box::kDEFAULT_COLOR_SCROLL{255, 255, 255, 122};
@@ -28,17 +32,13 @@ const uint32_t Box::kDEFAULT_SCROLL_INSET_Y{4};
 const uint32_t Box::kDEFAULT_SCROLL_WIDTH{8};
 
 /*=============================================================================
- * CONSTANTS
- *============================================================================*/
-
-/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Creates a box object with default parameters.
  *
- * Inputs:
+ * Inputs: none
  */
 Box::Box()
 {
@@ -46,9 +46,11 @@ Box::Box()
 }
 
 /*
- * Description:
+ * Description: Constructs a basic box
  *
- * Inputs:
+ * Inputs: Coordinate point - top left point of the Box
+ *         int32_t width - the width of the box
+ *         int32_t height - the height of the box
  */
 Box::Box(Coordinate point, int32_t width, int32_t height) : Box()
 {
@@ -58,9 +60,12 @@ Box::Box(Coordinate point, int32_t width, int32_t height) : Box()
 }
 
 /*
- * Description:
+ * Description: Constructs a box with frame elements
  *
- * Inputs:
+ * Inputs: Coordinate point - the top left point of the box
+ *         int32_t width - the width of the box
+ *         int32_t height - the height of the box
+ *         std::vector<Frame*> elements - vector of Element frames
  */
 Box::Box(Coordinate point, int32_t width, int32_t height,
          std::vector<Frame*> elements)
@@ -70,6 +75,9 @@ Box::Box(Coordinate point, int32_t width, int32_t height,
   setElements(elements);
 }
 
+/*
+ * Description: Annihilates a box object
+ */
 Box::~Box()
 {
   clearElements();
@@ -114,6 +122,7 @@ void Box::loadDefaults()
   element_inset_x = kDEFAULT_ELEMENT_INSET_X;
   element_inset_y = kDEFAULT_ELEMENT_INSET_Y;
   flags = static_cast<BoxState>(0);
+  setFlag(BoxState::USES_FRAMES, true);
   point = Coordinate();
   height = 0;
   width = 0;
@@ -176,7 +185,7 @@ bool Box::renderBar(SDL_Renderer* renderer)
   return success;
 }
 
-// Render elements
+/* Render the elements of the box (if render elemetns flag is set) */
 bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
                          uint32_t num_viewable)
 {
@@ -226,8 +235,11 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
         success &= Frame::renderRect(rect, border_width, renderer);
 
         /* Render the element and update the running Y-Coordinate */
-        success &= elements.at(i)->render(renderer, curr_x, curr_y);
-        curr_y += elements.at(i)->getHeight() + element_gap;
+        if(getFlag(BoxState::USES_FRAMES))
+        {
+          success &= elements.at(i)->render(renderer, curr_x, curr_y);
+          curr_y += elements.at(i)->getHeight() + element_gap;
+        }
       }
     }
   }
@@ -366,24 +378,56 @@ void Box::clearIndex()
   element_index = -1;
 }
 
-/* Assign an index to the Box */
-bool Box::setIndex(uint32_t index)
+bool Box::getFlag(const BoxState& test_flag)
 {
-  bool success = false;
-
-  if(index < elements.size())
-  {
-    success = true;
-    view_index = 0;
-    element_index = 0;
-
-    for(uint32_t i = 0; i < index; i++)
-      success &= nextIndex();
-  }
-
-  return success;
+  return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
+uint32_t Box::getNumViewable()
+{
+  uint32_t num_viewable{0};
+
+  if(height > 0 && element_index > -1 && view_index > -1)
+  {
+    uint32_t curr_y{element_inset_y};
+    uint32_t end_y{(uint32_t)height - element_inset_y};
+    uint32_t temp_index{(uint32_t)view_index};
+    bool done{false};
+
+    while(temp_index < elements.size() && !done)
+    {
+      curr_y += (uint32_t)elements.at(temp_index)->getHeight();
+      temp_index++;
+
+      if(temp_index < elements.size())
+        if(curr_y + (uint32_t)elements.at(temp_index)->getHeight() >= end_y)
+          done = true;
+    }
+
+    num_viewable = temp_index - view_index;
+  }
+
+  return num_viewable;
+}
+
+/* Return the current element index */
+int32_t Box::getElementIndex()
+{
+  return element_index;
+}
+
+int32_t Box::getNumElements()
+{
+  return elements.size();
+}
+
+/*Return the current viewed index */
+int32_t Box::getViewIndex()
+{
+  return view_index;
+}
+
+/* Set the next index of the box */
 bool Box::nextIndex()
 {
   /* If it's a selectable box, update the view index (unless at the bottom) */
@@ -554,43 +598,6 @@ bool Box::render(SDL_Renderer* renderer)
   return success;
 }
 
-bool Box::getFlag(const BoxState& test_flag)
-{
-  return static_cast<bool>((flags & test_flag) == test_flag);
-}
-
-uint32_t Box::getNumViewable()
-{
-  uint32_t num_viewable{0};
-
-  if(height > 0 && element_index > -1 && view_index > -1)
-  {
-    uint32_t curr_y{element_inset_y};
-    uint32_t end_y{(uint32_t)height - element_inset_y};
-    uint32_t temp_index{(uint32_t)view_index};
-    bool done{false};
-
-    while(temp_index < elements.size() && !done)
-    {
-      curr_y += (uint32_t)elements.at(temp_index)->getHeight();
-      temp_index++;
-
-      if(temp_index < elements.size())
-        if(curr_y + (uint32_t)elements.at(temp_index)->getHeight() >= end_y)
-          done = true;
-    }
-
-    num_viewable = temp_index - view_index;
-  }
-
-  return num_viewable;
-}
-
-int32_t Box::getNumElements()
-{
-  return elements.size();
-}
-
 void Box::setElements(std::vector<Frame*> elements)
 {
   element_index = -1;
@@ -607,4 +614,22 @@ void Box::setElements(std::vector<Frame*> elements)
 void Box::setFlag(BoxState set_flags, const bool& set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
+}
+
+/* Assign an index to the Box */
+bool Box::setIndex(uint32_t index)
+{
+  bool success = false;
+
+  if(index < elements.size())
+  {
+    success = true;
+    view_index = 0;
+    element_index = 0;
+
+    for(uint32_t i = 0; i < index; i++)
+      success &= nextIndex();
+  }
+
+  return success;
 }

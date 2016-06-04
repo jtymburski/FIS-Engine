@@ -817,11 +817,6 @@ void Menu::buildPersonTitleElements()
   /* Person details screen (extra information) */
   person_title_elements.push_back(
       TitleElement("Details", true, MenuType::SLEUTH_DETAILS));
-
-  // TODO [05-21-16]: Future Record selection. Needed?
-  // /* Personal record screen (PersonRecord - Battles won etc.) */
-  // person_title_elements.push_back(
-  //     TitleElement("Record", true, MenuType::SLEUTH_RECORD));
 }
 
 void Menu::buildQuit()
@@ -1948,8 +1943,6 @@ void Menu::renderSleuth()
     renderSleuthSkills();
   else if(getSleuthMenuType() == MenuType::SLEUTH_DETAILS)
     renderSleuthDetails();
-  else if(getSleuthMenuType() == MenuType::SLEUTH_RECORD)
-    renderSleuthRecord();
 }
 
 void Menu::renderSleuthOverview()
@@ -2655,13 +2648,12 @@ void Menu::renderSleuthDetailsRank()
   }
 }
 
-void Menu::renderSleuthRecord()
-{
-}
-
 /* Renders the Save Screen */
 void Menu::renderSave()
 {
+  setupDefaultBox(save_scroll_box);
+
+
 }
 
 /* Renders the Quit Screen */
@@ -2812,9 +2804,6 @@ MenuType Menu::getSleuthMenuType()
     return MenuType::SLEUTH_SKILLS;
   else if(person_element_index == 2)
     return MenuType::SLEUTH_DETAILS;
-  // TODO [05-22-16]: Add record screen when personal record is ready
-  // else if(person_element_index == 4)
-  //   return MenuType::SLEUTH_RECORD;
 
   return MenuType::INVALID;
 }
@@ -3388,4 +3377,10 @@ void Menu::setPlayer(Player* new_player)
 void Menu::setRenderer(SDL_Renderer* renderer)
 {
   this->renderer = renderer;
+}
+
+/* Assigns the save data to the menu */
+void Menu::setSaveData(std::vector<Save> saves)
+{
+  this->save_data = saves;
 }

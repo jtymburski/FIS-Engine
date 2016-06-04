@@ -23,6 +23,7 @@
 #include "Game/KeyHandler.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
+#include "Game/Save.h"
 #include "Options.h"
 #include "Sprite.h"
 #include "Box.h"
@@ -35,7 +36,6 @@ enum class MenuType
   SLEUTH_EQUIPMENT,
   SLEUTH_SKILLS,
   SLEUTH_DETAILS,
-  SLEUTH_RECORD,
   INVENTORY,
   INVENTORY_BUBBIES,
   INVENTORY_EQUIP,
@@ -210,6 +210,7 @@ struct Window
 ENUM_FLAGS(MenuState)
 enum class MenuState
 {
+  CALL_SAVE = 1 << 1, /* Save the current menu */
   SHOWING = 1 << 2, /* Is the menu currently rendering */
   QUITTING = 1 << 3 /* Is the menu declaring to quit the game? */
 };
@@ -299,6 +300,12 @@ private:
   Box s_attributes_box;
   Box s_vita_bar;
   Box s_qtdr_bar;
+
+  /* Save file data */
+  std::vector<Save> save_data;
+
+  /* Save screen scroll box */
+  Box save_scroll_box;
 
   /* Skill Screen Boxes */
   Box skills_top_box;
@@ -578,7 +585,6 @@ private:
   void renderSleuthEquipment();
   void renderSleuthSkills();
   void renderSleuthSkillDetail(Coordinate start, int32_t icon_w, int32_t gap);
-  void renderSleuthRecord();
 
   /* Render the Save Screen */
   void renderSave();
@@ -662,6 +668,9 @@ public:
 
   /* Assign Renderer */
   void setRenderer(SDL_Renderer* renderer);
+
+  /* Save data */
+  void setSaveData(std::vector<Save> saves);
 };
 
 #endif // MENU_H

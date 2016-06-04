@@ -41,6 +41,7 @@ enum class BoxState
   ELEMENT_HOVER_CYCLE = 1 << 4,
   HOVER_CYCLE = 1 << 5,
   SELECTED = 1 << 7,
+  USES_FRAMES = 1 << 8
 };
 
 class Box
@@ -160,17 +161,8 @@ public:
   /* Clears the box index value */
   void clearIndex();
 
-  /* Updates the scroll box to the next index */
-  bool nextIndex();
-
-  /* Updates the scroll box to the previous index */
-  bool prevIndex();
-
-  /* Render the scroll box in its current state */
-  bool render(SDL_Renderer* renderer);
-
-  /* Assigns an index to the Box */
-  bool setIndex(uint32_t index);
+  /* Return the current element index */
+  int32_t getElementIndex();
 
   /* Returns the value of a given ActorState flag */
   bool getFlag(const BoxState& test_flag);
@@ -181,11 +173,26 @@ public:
   /* Calculate and return the number of viewable elements */
   uint32_t getNumViewable();
 
+  /* Return the current view index */
+  int32_t getViewIndex();
+
+  /* Updates the scroll box to the next index */
+  bool nextIndex();
+
+  /* Updates the scroll box to the previous index */
+  bool prevIndex();
+
+  /* Render the scroll box in its current state */
+  bool render(SDL_Renderer* renderer);
+
   /* Assign a vector of elements to the scroll box */
   void setElements(std::vector<Frame*> elements);
 
   /* Assigns a given ActorState flag to a given value */
   void setFlag(BoxState set_flags, const bool& set_value = true);
+
+  /* Assigns an index to the Box */
+  bool setIndex(uint32_t index);
 };
 
 #endif // BOX_H

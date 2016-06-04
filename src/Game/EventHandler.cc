@@ -263,7 +263,6 @@ void EventHandler::logWarning(std::string raw)
   std::cout << "[WARNING] " << raw << std::endl;
 #else
   (void)raw;
-  ;
 #endif
 }
 
