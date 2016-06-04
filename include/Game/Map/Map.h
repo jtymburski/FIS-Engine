@@ -226,29 +226,33 @@ private:
   bool changeMode(MapMode mode);
 
   /* Returns the interactive object, based on the ID */
-  MapInteractiveObject* getIO(uint16_t id, int sub_id = -1);
-  MapInteractiveObject* getIOBase(uint16_t id);
+  MapInteractiveObject* getIO(uint32_t id, int sub_id = -1);
+  MapInteractiveObject* getIOBase(uint32_t id);
 
   /* Returns the item, based on the ID */
-  MapItem* getItem(uint16_t id, int sub_id = -1);
-  MapItem* getItemBase(uint16_t id);
+  MapItem* getItem(uint32_t id, int sub_id = -1);
+  MapItem* getItemBase(uint32_t id);
 
   /* Returns the person, based on the ID */
-  MapPerson* getPersonBase(uint16_t id);
+  MapPerson* getPersonBase(uint32_t id);
 
   /* Returns the thing, based on the ID */
-  MapThing* getThing(uint16_t id, int sub_id = -1);
-  MapThing* getThing(uint16_t id, ThingBase type, int sub_id = -1);
-  MapThing* getThingBase(uint16_t id);
+  MapThing* getThing(uint32_t id, int sub_id = -1);
+  MapThing* getThingBase(uint32_t id);
+
+  /* Returns the general things based on type or ID. This searches all pools 
+   * of things */
+  MapThing* getThingGeneral(uint32_t id, int sub_id = -1);
+  MapThing* getThingGeneral(uint32_t id, ThingBase type, int sub_id = -1);
 
   /* Returns a stack of map things that correspond to the ID stack */
   std::vector<MapThing*> getThingData(std::vector<int> thing_ids);
 
   /* Returns a matrix of tiles that match the frames in the thing */
   std::vector<std::vector<Tile*>>
-           getTileMatrix(MapThing* thing,
-                         Direction direction = Direction::DIRECTIONLESS,
-                         bool start_only = false);
+                getTileMatrix(MapThing* thing,
+                              Direction direction = Direction::DIRECTIONLESS,
+                              bool start_only = false);
   std::vector<std::vector<Tile*>> getTileMatrix(uint16_t section, uint16_t x,
                                                 uint16_t y, uint16_t width,
                                                 uint16_t height);
@@ -271,7 +275,7 @@ private:
 
   /* Move thing sections. Strictly handles switching the array where a thing
    * can be found. This will not handle x, y changes of location */
-  MapThing* moveThing(uint16_t thing_id, uint16_t section_old);
+  MapThing* moveThing(uint32_t thing_id, uint16_t section_old);
   MapThing* moveThing(MapThing* thing_ref, uint16_t section_old);
 
   /* Parse coordinate info from file to give the designated tile coordinates
@@ -347,7 +351,7 @@ public:
   std::string getName();
 
   /* Return a MapPerson */
-  MapPerson* getPerson(uint16_t id, int sub_id = -1);
+  MapPerson* getPerson(uint32_t id, int sub_id = -1);
 
   /* Returns the number of steps the player has used on map */
   uint32_t getPlayerSteps();

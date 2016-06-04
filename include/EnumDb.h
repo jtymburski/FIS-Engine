@@ -18,7 +18,26 @@
 // uncomment to disable assert()
 // #define NDEBUG
 
-/*==============================================================================
+class EnumDb
+{
+  /*=========================================================================
+   * CONSTANTS
+   *========================================================================*/
+public:
+  const static int kBASE_ID_IOS = 50000; /* The instant base ID for MapIOs */
+  const static int kBASE_ID_ITEMS = 60000; /* The instant base ID for items */
+  const static int kBASE_ID_PERSON = 0; /* The instant base ID for persons */
+  const static int kBASE_ID_NPC = 10000; /* The instant base ID for npcs */
+  const static int kBASE_ID_THING = 20000; /* The base thing ID */
+  const static int kMAX_COUNT_BASES = 10000; /* Max count of base things */
+  const static int kMAX_COUNT_IOS = 10000; /* Max count of instance IOs */
+  const static int kMAX_COUNT_ITEMS = 5000; /* Max count of instance items */
+  const static int kMAX_COUNT_NPCS = 10000; /* Max count of instance npcs */
+  const static int kMAX_COUNT_PERSONS = 10000; /* Max count of inst persons */
+  const static int kMAX_COUNT_THINGS = 30000; /* Max count of inst things */
+};
+
+/*=============================================================================
  * GLOBAL ENUMS
  *============================================================================*/
 

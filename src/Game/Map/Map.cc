@@ -282,7 +282,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
 bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
 {
   std::string identifier = data.getElement(file_index);
-  uint16_t id = std::stoul(data.getKeyValue(file_index));
+  uint32_t id = std::stoul(data.getKeyValue(file_index));
   MapThing* modified_thing = NULL;
   bool new_thing = false;
 
@@ -360,7 +360,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
 {
   int32_t base_id = -1;
   std::string identifier = data.getElement(kFILE_CLASSIFIER);
-  uint16_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
+  uint32_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
   MapThing* modified_thing = nullptr;
   bool new_thing = false;
   bool success = true;
@@ -628,13 +628,13 @@ bool Map::changeMode(MapMode mode)
 }
 
 /* Returns the interactive object, based on the ID */
-MapInteractiveObject* Map::getIO(uint16_t id, int sub_id)
+MapInteractiveObject* Map::getIO(uint32_t id, int sub_id)
 {
   /* The specific sub-map */
   if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
   {
     for(uint32_t i = 0; i < sub_map[sub_id].ios.size(); i++)
-      if(sub_map[sub_id].ios[i]->getID() == id)
+      if(sub_map[sub_id].ios[i]->getID() == static_cast<int>(id))
         return sub_map[sub_id].ios[i];
   }
   /* All the sub-maps */
@@ -642,7 +642,7 @@ MapInteractiveObject* Map::getIO(uint16_t id, int sub_id)
   {
     for(uint32_t i = 0; i < sub_map.size(); i++)
       for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
-        if(sub_map[i].ios[j]->getID() == id)
+        if(sub_map[i].ios[j]->getID() == static_cast<int>(id))
           return sub_map[i].ios[j];
   }
 
@@ -650,22 +650,22 @@ MapInteractiveObject* Map::getIO(uint16_t id, int sub_id)
 }
 
 /* Returns the base interactive object, based on the ID */
-MapInteractiveObject* Map::getIOBase(uint16_t id)
+MapInteractiveObject* Map::getIOBase(uint32_t id)
 {
   for(uint32_t i = 0; i < base_ios.size(); i++)
-    if(base_ios[i]->getID() == id)
+    if(base_ios[i]->getID() == static_cast<int>(id))
       return base_ios[i];
   return NULL;
 }
 
 /* Returns the item, based on the ID */
-MapItem* Map::getItem(uint16_t id, int sub_id)
+MapItem* Map::getItem(uint32_t id, int sub_id)
 {
   /* The specific sub-map */
   if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
   {
     for(uint32_t i = 0; i < sub_map[sub_id].items.size(); i++)
-      if(sub_map[sub_id].items[i]->getID() == id)
+      if(sub_map[sub_id].items[i]->getID() == static_cast<int>(id))
         return sub_map[sub_id].items[i];
   }
   /* All the sub-maps */
@@ -673,7 +673,7 @@ MapItem* Map::getItem(uint16_t id, int sub_id)
   {
     for(uint32_t i = 0; i < sub_map.size(); i++)
       for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
-        if(sub_map[i].items[j]->getID() == id)
+        if(sub_map[i].items[j]->getID() == static_cast<int>(id))
           return sub_map[i].items[j];
   }
 
@@ -681,31 +681,31 @@ MapItem* Map::getItem(uint16_t id, int sub_id)
 }
 
 /* Returns the base item, based on the ID */
-MapItem* Map::getItemBase(uint16_t id)
+MapItem* Map::getItemBase(uint32_t id)
 {
   for(uint32_t i = 0; i < base_items.size(); i++)
-    if(base_items[i]->getID() == id)
+    if(base_items[i]->getID() == static_cast<int>(id))
       return base_items[i];
   return NULL;
 }
 
 /* Returns the base person, based on the ID */
-MapPerson* Map::getPersonBase(uint16_t id)
+MapPerson* Map::getPersonBase(uint32_t id)
 {
   for(uint32_t i = 0; i < base_persons.size(); i++)
-    if(base_persons[i]->getID() == id)
+    if(base_persons[i]->getID() == static_cast<int>(id))
       return base_persons[i];
   return NULL;
 }
 
 /* Returns the thing, based on the ID */
-MapThing* Map::getThing(uint16_t id, int sub_id)
+MapThing* Map::getThing(uint32_t id, int sub_id)
 {
   /* The specific sub-map */
   if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
   {
     for(uint32_t i = 0; i < sub_map[sub_id].things.size(); i++)
-      if(sub_map[sub_id].things[i]->getID() == id)
+      if(sub_map[sub_id].things[i]->getID() == static_cast<int>(id))
         return sub_map[sub_id].things[i];
   }
   /* All the sub-maps */
@@ -713,15 +713,47 @@ MapThing* Map::getThing(uint16_t id, int sub_id)
   {
     for(uint32_t i = 0; i < sub_map.size(); i++)
       for(uint32_t j = 0; j < sub_map[i].things.size(); j++)
-        if(sub_map[i].things[j]->getID() == id)
+        if(sub_map[i].things[j]->getID() == static_cast<int>(id))
           return sub_map[i].things[j];
   }
 
   return nullptr;
 }
 
-/* Returns the thing, based on the ID and the type */
-MapThing* Map::getThing(uint16_t id, ThingBase type, int sub_id)
+/* Returns the base thing, based on the ID */
+MapThing* Map::getThingBase(uint32_t id)
+{
+  for(uint32_t i = 0; i < base_things.size(); i++)
+    if(base_things[i]->getID() == static_cast<int>(id))
+      return base_things[i];
+  return NULL;
+}
+
+/* Returns the general things based on type or ID. This searches all pools 
+ * of things */
+MapThing* Map::getThingGeneral(uint32_t id, int sub_id)
+{
+  ThingBase type = ThingBase::ISBASE;
+
+  /* Determine the type */
+  if(id < EnumDb::kBASE_ID_NPC)
+    type = ThingBase::PERSON;
+  else if(id < EnumDb::kBASE_ID_THING)
+    type = ThingBase::NPC;
+  else if(id < EnumDb::kBASE_ID_IOS)
+    type = ThingBase::THING;
+  else if(id < EnumDb::kBASE_ID_ITEMS)
+    type = ThingBase::INTERACTIVE;
+  else
+    type = ThingBase::ITEM;
+
+  /* Get the thing */
+  return getThingGeneral(id, type, sub_id);
+}
+
+/* Returns the general things based on type or ID. This searches all pools 
+ * of things */
+MapThing* Map::getThingGeneral(uint32_t id, ThingBase type, int sub_id)
 {
   MapThing* found = nullptr;
 
@@ -737,17 +769,7 @@ MapThing* Map::getThing(uint16_t id, ThingBase type, int sub_id)
   return found;
 }
 
-/* Returns the base thing, based on the ID */
-MapThing* Map::getThingBase(uint16_t id)
-{
-  for(uint32_t i = 0; i < base_things.size(); i++)
-    if(base_things[i]->getID() == id)
-      return base_things[i];
-  return NULL;
-}
-
 /* Returns thing data by checking all types one after the other */
-// TODO: Comment
 std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 {
   std::vector<MapThing*> used_things;
@@ -758,25 +780,25 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
     /* Only continue if the ID is valid and >= 0 */
     if(*i >= 0)
     {
-      MapThing* found_thing = NULL;
+      MapThing* found_thing = nullptr;
 
       /* Check if is thing */
       found_thing = getThing(*i);
 
       /* Otherwise, check if IO */
-      if(found_thing == NULL)
+      if(found_thing == nullptr)
         found_thing = getIO(*i);
 
       /* Otherwise, check person */
-      if(found_thing == NULL)
+      if(found_thing == nullptr)
         found_thing = getPerson(*i);
 
       /* Otherwise, check if item */
-      if(found_thing == NULL)
+      if(found_thing == nullptr)
         found_thing = getItem(*i);
 
       /* If found, append to stack */
-      if(found_thing != NULL)
+      if(found_thing != nullptr)
         used_things.push_back(found_thing);
     }
   }
@@ -785,7 +807,6 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 }
 
 /* Returns a matrix of tiles that match the frames in the thing */
-// TODO: Comment
 std::vector<std::vector<Tile*>>
 Map::getTileMatrix(MapThing* thing, Direction direction, bool start_only)
 {
@@ -1003,13 +1024,13 @@ bool Map::initiateNPCInteraction()
   return false;
 }
 
-/* Initiates a thing action, based on the action key being hit */
+/* Initiates a thing action, based on the action key being hit
+ * Notes: FIND EACH AT 0. IF 0, check direction facing and tile adjacent for
+ *  if it's 0. If not, proceed. If found, interact
+ */
 void Map::initiateThingInteraction(MapPerson* initiator)
 {
-  // FIND EACH AT 0. IF 0, check direction facing and tile adjacent for
-  // if it's 0. If not, proceed. If found, interact
-
-  if(initiator != NULL)
+  if(initiator != nullptr)
   {
     std::vector<std::vector<Tile*>> thing_tiles = initiator->getTileRender(0);
     Direction direction = initiator->getDirection();
@@ -1020,9 +1041,9 @@ void Map::initiateThingInteraction(MapPerson* initiator)
 
     /* Things to look for */
     std::vector<MapItem*> items_found;
-    MapInteractiveObject* io_found = NULL;
-    MapPerson* person_found = NULL;
-    MapThing* thing_found = NULL;
+    MapInteractiveObject* io_found = nullptr;
+    MapPerson* person_found = nullptr;
+    MapThing* thing_found = nullptr;
 
     /* Check direction for tile that needs to be determined */
     if(direction == Direction::NORTH)
@@ -1044,7 +1065,7 @@ void Map::initiateThingInteraction(MapPerson* initiator)
         for(uint16_t j = 0; !finished && j < thing_tiles[i].size(); j++)
         {
           /* If thing is not NULL, this is rendering depth 0 tile to check */
-          if(thing_tiles[i][j] != NULL)
+          if(thing_tiles[i][j] != nullptr)
           {
             /* Get the x and y of tile to check and confirm validity */
             uint16_t x = starting_x + i;
@@ -1056,20 +1077,20 @@ void Map::initiateThingInteraction(MapPerson* initiator)
             {
               /* Check for person */
               person_found = sub_map[map_index].tiles[x][y]->getPersonMain(0);
-              if(person_found != NULL)
+              if(person_found != nullptr)
               {
                 if(person_found == initiator)
-                  person_found = NULL;
+                  person_found = nullptr;
                 else
                   finished = true;
               }
 
               /* Check for thing */
-              if(!finished && thing_found == NULL)
+              if(!finished && thing_found == nullptr)
                 thing_found = sub_map[map_index].tiles[x][y]->getThing(0);
 
               /* Check for IO */
-              if(!finished && io_found == NULL)
+              if(!finished && io_found == nullptr)
                 io_found = sub_map[map_index].tiles[x][y]->getIO(0);
             }
 
@@ -1081,15 +1102,15 @@ void Map::initiateThingInteraction(MapPerson* initiator)
       }
 
       /* Interact with the object found (in the order listed below) */
-      if(person_found != NULL)
+      if(person_found != nullptr)
       {
         person_found->interact(initiator);
       }
-      else if(io_found != NULL)
+      else if(io_found != nullptr)
       {
         io_found->interact(initiator);
       }
-      else if(thing_found != NULL)
+      else if(thing_found != nullptr)
       {
         thing_found->interact(initiator);
       }
@@ -1160,17 +1181,9 @@ bool Map::modeViewStop(int cycle_time, bool travel)
 
 /* Move thing sections. Strictly handles switching the array where a thing
  * can be found. This will not handle x, y changes of location */
-MapThing* Map::moveThing(uint16_t thing_id, uint16_t section_old)
+MapThing* Map::moveThing(uint32_t thing_id, uint16_t section_old)
 {
-  /* Find the thing */
-  MapThing* found_thing = getPerson(thing_id);
-  if(found_thing == nullptr)
-    found_thing = getThing(thing_id);
-  if(found_thing == nullptr)
-    found_thing = getIO(thing_id);
-
-  /* Process the move */
-  return moveThing(found_thing, section_old);
+  return moveThing(getThingGeneral(thing_id), section_old);
 }
 
 /* Move thing sections. Strictly handles switching the array where a thing
@@ -2094,13 +2107,13 @@ std::string Map::getName()
 }
 
 /* Returns the person, based on the ID */
-MapPerson* Map::getPerson(uint16_t id, int sub_id)
+MapPerson* Map::getPerson(uint32_t id, int sub_id)
 {
   /* The specific sub-map */
   if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
   {
     for(uint32_t i = 0; i < sub_map[sub_id].persons.size(); i++)
-      if(sub_map[sub_id].persons[i]->getID() == id)
+      if(sub_map[sub_id].persons[i]->getID() == static_cast<int>(id))
         return sub_map[sub_id].persons[i];
   }
   /* All the sub-maps */
@@ -2108,7 +2121,7 @@ MapPerson* Map::getPerson(uint16_t id, int sub_id)
   {
     for(uint32_t i = 0; i < sub_map.size(); i++)
       for(uint32_t j = 0; j < sub_map[i].persons.size(); j++)
-        if(sub_map[i].persons[j]->getID() == id)
+        if(sub_map[i].persons[j]->getID() == static_cast<int>(id))
           return sub_map[i].persons[j];
   }
 
@@ -2703,16 +2716,16 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
                                       renderer);
 
   /* Clean up base things */
-  for(uint16_t i = 0; i < base_things.size(); i++)
+  for(uint32_t i = 0; i < base_things.size(); i++)
     if(!base_things[i]->cleanMatrix())
       base_things[i]->unsetFrames(true);
-  for(uint16_t i = 0; i < base_items.size(); i++)
+  for(uint32_t i = 0; i < base_items.size(); i++)
     if(!base_items[i]->cleanMatrix())
       base_items[i]->unsetFrames(true);
-  for(uint16_t i = 0; i < base_persons.size(); i++)
+  for(uint32_t i = 0; i < base_persons.size(); i++)
     if(!base_persons[i]->cleanMatrix())
       base_persons[i]->unsetFrames(true);
-  for(uint16_t i = 0; i < base_ios.size(); i++)
+  for(uint32_t i = 0; i < base_ios.size(); i++)
     if(!base_ios[i]->cleanMatrix())
       base_ios[i]->unsetFrames(true);
 
@@ -2764,7 +2777,7 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
   /* Get the thing */
   MapThing* found_thing = nullptr;
   if(id >= 0)
-    found_thing = getThing(id, type);
+    found_thing = getThingGeneral(id, type);
   else
     found_thing = source;
 
@@ -3084,7 +3097,6 @@ void Map::resetPlayerSteps()
 }
 
 /* Saves the current map data to the active file handling pointer location */
-// TODO: Comment
 bool Map::saveData(FileHandler* fh)
 {
   if(fh != nullptr)
@@ -3170,11 +3182,7 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
        sub_map[section].tiles[x].size() > y)
     {
       /* Find the thing */
-      MapThing* found_thing = getPerson(id);
-      if(found_thing == nullptr)
-        found_thing = getThing(id);
-      if(found_thing == nullptr)
-        found_thing = getIO(id);
+      MapThing* found_thing = getThingGeneral(id);
 
       /* Change the starting tile for the thing */
       if(found_thing != nullptr)
@@ -3212,7 +3220,7 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
 void Map::unfocus()
 {
   /* If player is set, clear movement */
-  if(player != NULL)
+  if(player != nullptr)
     player->keyFlush();
 }
 
@@ -3297,7 +3305,7 @@ void Map::unloadMap()
   tile_sprites.clear();
 
   /* Delete the base interactive objects */
-  for(uint16_t i = 0; i < base_ios.size(); i++)
+  for(uint32_t i = 0; i < base_ios.size(); i++)
   {
     delete base_ios[i];
     base_ios[i] = NULL;
@@ -3305,7 +3313,7 @@ void Map::unloadMap()
   base_ios.clear();
 
   /* Delete the base items */
-  for(uint16_t i = 0; i < base_items.size(); i++)
+  for(uint32_t i = 0; i < base_items.size(); i++)
   {
     delete base_items[i];
     base_items[i] = NULL;
@@ -3313,7 +3321,7 @@ void Map::unloadMap()
   base_items.clear();
 
   /* Delete the base persons */
-  for(uint16_t i = 0; i < base_persons.size(); i++)
+  for(uint32_t i = 0; i < base_persons.size(); i++)
   {
     delete base_persons[i];
     base_persons[i] = NULL;
@@ -3321,7 +3329,7 @@ void Map::unloadMap()
   base_persons.clear();
 
   /* Delete the base things */
-  for(uint16_t i = 0; i < base_things.size(); i++)
+  for(uint32_t i = 0; i < base_things.size(); i++)
   {
     delete base_things[i];
     base_things[i] = NULL;
@@ -3377,15 +3385,13 @@ void Map::unlockThing(MapThing* source, int thing_id, UnlockView mode_view,
 {
   /* Find thing (or person or npc) ptr */
   MapThing* found;
-  if(thing_id < 0 && source != nullptr)
+  if(thing_id < 0)
   {
     found = source;
   }
   else
   {
-    found = getThing(thing_id);
-    if(found == nullptr)
-      found = getPerson(thing_id);
+    found = getThingGeneral(thing_id);
   }
 
   /* Unlock, if found */
@@ -3483,9 +3489,9 @@ bool Map::update(int cycle_time)
   /* Update the base things */
   // for(uint16_t i = 0; i < ios.size(); i++)
   //  base_ios[i]->update(cycle_time, tile_set);
-  for(uint16_t i = 0; i < base_items.size(); i++)
+  for(uint32_t i = 0; i < base_items.size(); i++)
     base_items[i]->update(cycle_time, tile_set);
-  for(uint16_t i = 0; i < base_things.size(); i++)
+  for(uint32_t i = 0; i < base_things.size(); i++)
     base_things[i]->update(cycle_time, tile_set);
 
   /* Update the sub-map information */
