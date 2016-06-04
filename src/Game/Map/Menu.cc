@@ -155,6 +155,11 @@ const float Menu::kQUIT_WIDTH{0.33};
 const float Menu::kSAVE_WIDTH{0.55};
 const float Menu::kSLEUTH_WIDTH{0.60};
 
+/* Save Section */
+const float Menu::kSAVE_GAP{0.016};
+const float Menu::kSAVE_ELEMENT_WIDTH{0.90};
+const float Menu::kSAVE_ELEMENT_HEIGHT{0.31};
+
 /* Sleuth Section */
 const float Menu::kSLEUTH_GAP{0.009};
 const float Menu::kSLEUTH_SPRITE_WIDTH{0.1505};
@@ -2651,9 +2656,26 @@ void Menu::renderSleuthDetailsRank()
 /* Renders the Save Screen */
 void Menu::renderSave()
 {
-  setupDefaultBox(save_scroll_box);
+  auto main = main_section.location;
+  auto gap = (int32_t)std::round(main.width * kSAVE_GAP);
+  auto save_width = (int32_t)std::round(main.width * kSAVE_ELEMENT_WIDTH);
+  auto save_height = (int32_t)std::round(main.height * kSAVE_ELEMENT_HEIGHT);
 
+  //setupDefaultBox(save_scroll_box);
 
+  current = {main.point.x + gap, main.point.y + gap};
+
+  for(auto& save : save_data)
+  {
+    setupDefaultBox(save.location);
+    save.location.width = save_width;
+    save.location.height = save_height;
+    save.location.point.x = current.x;
+    save.location.point.y = current.y;
+
+    current.y += save.location.height + gap;
+    save.render(renderer);
+  }
 }
 
 /* Renders the Quit Screen */
@@ -3329,6 +3351,14 @@ bool Menu::getFlag(const MenuState& test_flag)
 MenuLayer Menu::getMenuLayer()
 {
   return layer;
+}
+
+int32_t Menu::getSaveIndex()
+{
+  if(getMainMenuType() == MenuType::SAVE)
+    return save_scroll_box.getElementIndex();
+
+  return -1;
 }
 
 /* Assign the BattleDisplayData */

@@ -150,7 +150,7 @@ std::string Save::getSnapshotPath()
 {
   return snapshot_path;
 }
-  
+
 /* Returns the time data elements */
 uint32_t Save::getTimeHours()
 {
@@ -168,12 +168,12 @@ uint32_t Save::getTimeSeconds()
 {
   return time_sec;
 }
-  
+
 /* Prints the class data - primarily for testing */
 void Save::print()
 {
   std::cout << "Slot " << id << " --" << std::endl;
-  
+
   /* Is empty? */
   if(getFlag(SaveState::EMPTY))
   {
@@ -188,7 +188,8 @@ void Save::print()
               << std::endl;
 
     std::cout << " Image Path: " << snapshot_path << std::endl;
-    std::cout << " Map Name:  " << map_name << std::endl << std::endl;
+    std::cout << " Map Name:  " << map_name << std::endl
+              << std::endl;
 
     std::cout << " Credits: " << count_credits << std::endl;
     std::cout << " Level: " << count_level << std::endl;
@@ -220,10 +221,16 @@ bool Save::render(SDL_Renderer* renderer)
     Text t_credits(font_normal);
     Text t_map_name(font_normal);
 
-    t_title.setText(renderer, "SLOT " + std::to_string(id), kCOLOR_TEXT);
+    t_title.setText(renderer, "SLOT " + std::to_string(id) + " ", kCOLOR_TEXT);
 
-    //TODO [05-22-16] Assign location priorities
+    // TODO [05-22-16] Assign location priorities
     location.render(renderer);
+
+    auto height = Map::kSNAPSHOT_H / 4;
+    auto width = Map::kSNAPSHOT_W / 4;
+    auto gap = (int32_t)(std::round((location.height - height) / 2));
+
+    Coordinate current = {location.point.x + gap, location.point.y + gap};
 
     /* Render a blank save title if this save is an empty one */
     if(getFlag(SaveState::EMPTY))
@@ -231,32 +238,86 @@ bool Save::render(SDL_Renderer* renderer)
       Text t_empty(font_normal);
       t_empty.setText(renderer, "- Empty", kCOLOR_TEXT);
 
-      //TODO [05-22-16] Render blank title box
+      Box blank_tile(current, width, height);
+      // blank_tile.render(renderer);
+
+      current.x += blank_tile.height + gap;
+      current.y = location.point.y + location.height / 2;
+
+      /* Render the slot empty text */
+      t_title.render(renderer, current.x, current.y);
+      current.x += t_title.getWidth();
+      t_empty.render(renderer, current.x, current.y);
     }
     /* If the save data is set, render a normal save title */
     else
     {
-      /* Generate the map thumbnail */
-      //Frame* map_frame = nullptr;
-
-      //TODO [05-22-16]
-      //Check if the file exists for the frame
-      //Create the frame with the given file
-      //Render the frame at the location coordinate
-
       t_date.setText(renderer, formattedDate(), kCOLOR_TEXT);
       t_date_time.setText(renderer, formattedTime(), kCOLOR_TEXT);
       t_play_title.setText(renderer, "PLAY TIME", kCOLOR_TEXT);
       t_play_time.setText(renderer, formattedPlayTime(), kCOLOR_TEXT);
       t_steps_title.setText(renderer, "STEP COUNT", kCOLOR_TEXT);
       t_steps.setText(renderer, formattedSteps(), kCOLOR_TEXT);
+      t_level_title.setText(renderer, "PLAYER LEVEL", kCOLOR_TEXT);
+      t_level.setText(renderer, std::to_string(count_level), kCOLOR_TEXT);
       t_credits_title.setText(renderer, "CREDIT COUNT", kCOLOR_TEXT);
       t_credits.setText(renderer, formattedCredits(), kCOLOR_TEXT);
       t_map_name.setText(renderer, map_name, kCOLOR_TEXT);
 
-      //TOOD [05-22-16] Render text values
+      /* Generate the map thumbnail */
+      Frame* map_frame = nullptr;
 
-      //TODO [05-22-16] Render cross bars
+      map_frame = new Frame(snapshot_path, renderer);
+
+      if(map_frame)
+      {
+        map_frame->render(renderer, current.x, current.y);
+        current.x += map_frame->getWidth() + gap;
+      }
+
+      /* Render the first column of text - Slot Title, Date, Time, Map Name */
+      t_title.render(renderer, current.x, current.y);
+      current.y += 2 * t_title.getHeight();
+
+      t_date.render(renderer, current.x, current.y);
+      current.y += t_date.getHeight() + gap;
+
+      t_date_time.render(renderer, current.x, current.y);
+      current.y = location.point.y + location.height - t_map_name.getHeight() * 2;
+
+      t_map_name.render(renderer, current.x, current.y);
+
+      /* Render the second column of text - Play Time / Step Count */
+      current.x = location.point.x + 5 * location.width / 10;
+      current.y = location.point.y + gap;
+
+      t_play_title.render(renderer, current.x, current.y);
+      current.y += t_play_title.getHeight() + gap / 4;
+
+      t_play_time.render(renderer, current.x, current.y);
+      current.y += t_play_time.getHeight() + gap / 2;
+
+      t_steps_title.render(renderer, current.x, current.y);
+      current.y += t_steps_title.getHeight() + gap / 4;
+
+      t_steps.render(renderer, current.x, current.y);
+
+      /* Render the third column of text - Player Level and Credit Count */
+      current.x = location.point.x + 7 * location.width / 10;
+      current.y = location.point.y + gap;
+
+      t_level_title.render(renderer, current.x, current.y);
+      current.y += t_level_title.getHeight() + gap / 4;
+
+      t_level.render(renderer, current.x, current.y);
+      current.y += t_level.getHeight() + gap / 2;
+
+      t_credits_title.render(renderer, current.x, current.y);
+      current.y += t_credits_title.getHeight() + gap / 4;
+
+      t_credits.render(renderer, current.x, current.y);
+
+      /* Render the cross bars */
     }
 
     return true;
@@ -318,7 +379,7 @@ void Save::setMapName(std::string map_name)
   this->map_name = map_name;
   setFlag(SaveState::EMPTY, false);
 }
-  
+
 /* Sets the save snapshot path */
 void Save::setSnapshotPath(std::string path)
 {

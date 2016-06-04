@@ -199,9 +199,12 @@ private:
   const static uint16_t kNAME_X; /* The top left x location of text */
   const static uint16_t kNAME_Y; /* The top left y location of text */
   const static uint8_t kPLAYER_ID; /* The player ID for computer control */
+  const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
+
+public:
+    /*------------------- Public Constants -----------------------*/
   const static uint16_t kSNAPSHOT_W; /* The snapshot rect width */
   const static uint16_t kSNAPSHOT_H; /* The snapshot rect height */
-  const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 
 /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -240,7 +243,7 @@ private:
   MapThing* getThing(uint32_t id, int sub_id = -1);
   MapThing* getThingBase(uint32_t id);
 
-  /* Returns the general things based on type or ID. This searches all pools 
+  /* Returns the general things based on type or ID. This searches all pools
    * of things */
   MapThing* getThingGeneral(uint32_t id, int sub_id = -1);
   MapThing* getThingGeneral(uint32_t id, ThingBase type, int sub_id = -1);

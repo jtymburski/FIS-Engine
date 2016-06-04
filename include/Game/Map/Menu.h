@@ -211,8 +211,8 @@ ENUM_FLAGS(MenuState)
 enum class MenuState
 {
   CALL_SAVE = 1 << 1, /* Save the current menu */
-  SHOWING = 1 << 2, /* Is the menu currently rendering */
-  QUITTING = 1 << 3 /* Is the menu declaring to quit the game? */
+  SHOWING = 1 << 2,   /* Is the menu currently rendering */
+  QUITTING = 1 << 3   /* Is the menu declaring to quit the game? */
 };
 
 class Menu
@@ -379,6 +379,11 @@ private:
   static const float kQUIT_WIDTH;
   static const float kSAVE_WIDTH;
   static const float kSLEUTH_WIDTH;
+
+  /* Save Section */
+  static const float kSAVE_GAP;
+  static const float kSAVE_ELEMENT_WIDTH;
+  static const float kSAVE_ELEMENT_HEIGHT;
 
   /* Sleuth Section */
   static const float kSLEUTH_GAP;
@@ -621,6 +626,15 @@ public:
   /* Clear the Menu State */
   void clear();
 
+  /* Returns an evaluated MenuState flag */
+  bool getFlag(const MenuState& test_flag);
+
+  /* Enumerated menu layer */
+  MenuLayer getMenuLayer();
+
+  /* Return the current save index, or -1 if invalid index */
+  int32_t getSaveIndex();
+
   /* Hide the Menu */
   void hide();
 
@@ -635,15 +649,6 @@ public:
 
   /* Render the Menu in its current state */
   void render();
-
-  /* Update the menu with the current cycle time */
-  bool update(int32_t cycle_time);
-
-  /* Returns an evaluated MenuState flag */
-  bool getFlag(const MenuState& test_flag);
-
-  /* Enumerated menu layer */
-  MenuLayer getMenuLayer();
 
   /* Assign the Battle Display Data */
   void setBattleDisplayData(BattleDisplayData* battle_display_data);
@@ -671,6 +676,9 @@ public:
 
   /* Save data */
   void setSaveData(std::vector<Save> saves);
+
+  /* Update the menu with the current cycle time */
+  bool update(int32_t cycle_time);
 };
 
 #endif // MENU_H

@@ -15,6 +15,7 @@
 #ifndef SAVE_H
 #define SAVE_H
 
+#include "Game/Map/Map.h"
 #include "Box.h"
 #include "EnumFlags.h"
 #include "Options.h"
@@ -120,7 +121,7 @@ public:
 
   /* Render the save object at a location */
   bool render(SDL_Renderer* renderer);
-  
+
   /* Assigns configuration to the save file */
   bool setConfig(Options* config);
 
