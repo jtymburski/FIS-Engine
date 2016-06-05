@@ -533,11 +533,11 @@ Floatinate MapItem::update(int cycle_time,
   Floatinate delta_move;
   SpriteMatrix* sprite_set = getMatrix();
 
-  if(sprite_set != NULL)
+  if(sprite_set != nullptr && sprite_set->at(0, 0) != nullptr)
   {
     /* Proceed to update sprite rendering */
     SpriteMatrix* sprite_set = getMatrix();
-    if(base == NULL)
+    if(base == nullptr)
     {
       double brightness = sprite_set->at(0, 0)->getBrightness();
 

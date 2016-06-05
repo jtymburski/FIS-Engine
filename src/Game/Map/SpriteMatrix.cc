@@ -446,7 +446,9 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
  */
 TileSprite* SpriteMatrix::at(uint16_t x, uint16_t y)
 {
-  return sprite_matrix[x][y];
+  if(x < width() && y < height())
+    return sprite_matrix[x][y];
+  return nullptr;
 }
 
 /*

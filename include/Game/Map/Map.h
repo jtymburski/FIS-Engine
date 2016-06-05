@@ -58,7 +58,7 @@ class Map
 {
 public:
   /* Constructor function */
-  Map(Options* running_config = NULL, EventHandler* event_handler = NULL);
+  Map(Options* running_config = nullptr, EventHandler* event_handler = nullptr);
 
   /* Destructor function */
   ~Map();
@@ -422,6 +422,9 @@ public:
 
   /* Saves the current map data to the active file handling pointer location */
   bool saveData(FileHandler* fh);
+
+  /* Seta and correlates the base items within the map to the core data */
+  bool setBaseItems(std::vector<ItemData> items, SDL_Renderer* renderer);
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);

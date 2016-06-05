@@ -192,6 +192,10 @@ void Application::handleEvents()
       {
         game_handler->keyTestDownEvent(press_event);
       }
+      else if(mode == TITLESCREEN)
+      {
+        title_screen.keyTestDownEvent(press_event);
+      }
 #endif
 
       /* -- Pause toggle -- */

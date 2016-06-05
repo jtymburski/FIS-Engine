@@ -34,7 +34,7 @@ private:
   /* -------------------------- Constants ------------------------- */
   const static float kBASE_FRAME_COUNT; /* Base num frames for tuning anim */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const SpriteMatrix &source);
@@ -58,7 +58,7 @@ private:
   /* Remove sprite from the matrix */
   void removeSprite(uint16_t x, uint16_t y, bool delete_sprite = true);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds the matrix information from the XML data classifier from file */
   bool addFileInformation(XmlData data, int file_index, SDL_Renderer* renderer,
@@ -141,7 +141,7 @@ public:
   /* Returns the width of the sprite matrix */
   uint16_t width() const;
 
-  /*======================= OPERATOR FUNCTIONS ===============================*/
+/*======================= OPERATOR FUNCTIONS ===============================*/
 public:
   SpriteMatrix& operator= (const SpriteMatrix &source);
 };

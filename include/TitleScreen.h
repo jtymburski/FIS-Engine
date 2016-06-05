@@ -129,6 +129,9 @@ public:
 
   /* The key up and down events to be handled by the class */
   void keyDownEvent(KeyHandler& key_handler);
+#ifdef UDEBUG
+  void keyTestDownEvent(SDL_KeyboardEvent event);
+#endif
   void keyUpEvent(KeyHandler& key_handler);
 
   /* Renders the title screen */

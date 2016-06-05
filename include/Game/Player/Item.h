@@ -170,7 +170,7 @@ public:
   static const uint32_t kMIN_MASS;       /* Minimum mass */
   static const int32_t  kUNSET_ID;       /* The unset ID for the item */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Sets up the Item class with basic values */
   void setupClass();
@@ -178,7 +178,7 @@ private:
   /* Unsets all the Item data for deletion */
   void unsetAll();
 
-  /*======================== VIRTUAL FUNCTIONS ===============================*/
+/*======================== VIRTUAL FUNCTIONS ===============================*/
 public:
   /* Prints out the Item information */
   virtual void print();
@@ -192,7 +192,7 @@ public:
   /* Returns the value of the Item */
   virtual uint32_t getValue();
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Evaluates and returns whether the cur. object is a base item */
   bool isBaseItem();
@@ -224,6 +224,9 @@ public:
 
   /* Returns the unique ID of the Item */
   int32_t getID();
+
+  /* Returns the item data in struct form */
+  ItemData getItemData();
 
   /* Returns the enumerated ItemTier of the Item */
   ItemTier getItemTier();

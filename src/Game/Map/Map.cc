@@ -328,17 +328,18 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
       base_persons.push_back(static_cast<MapPerson*>(modified_thing));
     }
   }
-  else if(identifier == "mapitem")
-  {
-    /* Create a new item, if one doesn't exist */
-    modified_thing = getItemBase(id);
-    if(modified_thing == NULL)
-    {
-      modified_thing = new MapItem();
-      new_thing = true;
-      base_items.push_back(static_cast<MapItem*>(modified_thing));
-    }
-  }
+  // Note: removed for new bases controlled by core group - delete future?
+  //else if(identifier == "mapitem")
+  //{
+  //  /* Create a new item, if one doesn't exist */
+  //  modified_thing = getItemBase(id);
+  //  if(modified_thing == NULL)
+  //  {
+  //    modified_thing = new MapItem();
+  //    new_thing = true;
+  //    base_items.push_back(static_cast<MapItem*>(modified_thing));
+  //  }
+  //}
 
   /* If new, set the ID and event handler */
   if(new_thing)
@@ -348,7 +349,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
   }
 
   /* Proceed to update the thing information from the XML data */
-  if(modified_thing != NULL)
+  if(modified_thing != nullptr)
     return modified_thing->addThingInformation(data, file_index + 1, 0,
                                                renderer, base_path);
   return false;
@@ -729,7 +730,7 @@ MapThing* Map::getThingBase(uint32_t id)
   return NULL;
 }
 
-/* Returns the general things based on type or ID. This searches all pools 
+/* Returns the general things based on type or ID. This searches all pools
  * of things */
 MapThing* Map::getThingGeneral(uint32_t id, int sub_id)
 {
@@ -751,7 +752,7 @@ MapThing* Map::getThingGeneral(uint32_t id, int sub_id)
   return getThingGeneral(id, type, sub_id);
 }
 
-/* Returns the general things based on type or ID. This searches all pools 
+/* Returns the general things based on type or ID. This searches all pools
  * of things */
 MapThing* Map::getThingGeneral(uint32_t id, ThingBase type, int sub_id)
 {
@@ -2555,8 +2556,11 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
         addSpriteData(data, data.getKeyValue(index), index + 1, renderer);
   }
   /* ---- BASE THINGS ---- */
+  //else if((element == "mapthing" || element == "mapperson" ||
+  //      element == "mapnpc" || element == "mapitem" || element == "mapio") &&
+  //      !data.getKeyValue(index).empty())
   else if((element == "mapthing" || element == "mapperson" ||
-           element == "mapnpc" || element == "mapitem" || element == "mapio") &&
+           element == "mapnpc" || element == "mapio") &&
           !data.getKeyValue(index).empty())
   {
     success &= addThingBaseData(data, index, renderer);
@@ -2881,7 +2885,8 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
  * Default is invalid parameter which picks up all */
 bool Map::pickupItem(MapItem* item, int count)
 {
-  if(item != NULL && item->getCount() > 0 && count != 0)
+  if(item != nullptr && item->getBase() != nullptr &&
+     item->getCount() > 0 && count != 0)
   {
     /* Set the map count */
     if(count < 0 || count >= (int)item->getCount())
@@ -2898,8 +2903,8 @@ bool Map::pickupItem(MapItem* item, int count)
       {
         item_id = item->getSoundID();
       }
-      else if(item->getGameID() >= 0 &&
-              (uint32_t)item->getGameID() == Item::kID_MONEY)
+      else if(static_cast<uint32_t>(item->getBase()->getID()) == 
+              Item::kID_MONEY)
       {
         item_id = Sound::kID_SOUND_PICK_COIN;
       }
@@ -3117,6 +3122,47 @@ bool Map::saveData(FileHandler* fh)
   return false;
 }
 
+/* Seta and correlates the base items within the map to the core data */
+bool Map::setBaseItems(std::vector<ItemData> items, SDL_Renderer* renderer)
+{
+  if(renderer != nullptr)
+  {
+    /* Delete the instance items */
+    for(uint32_t i = 0; i < sub_map.size(); i++)
+    {
+      for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
+      {
+        delete sub_map[i].items[j];
+        sub_map[i].items[j] = nullptr;
+      }
+      sub_map[i].items.clear();
+    }
+
+    /* Delete the base items */
+    for(uint32_t i = 0; i < base_items.size(); i++)
+    {
+      delete base_items[i];
+      base_items[i] = nullptr;
+    }
+    base_items.clear();
+
+    /* Parse the items and add to the base stack */
+    for(uint32_t i = 0; i < items.size(); i++)
+    {
+      TileSprite* new_frame = nullptr;
+      if(!items[i].frame_path.empty())
+        new_frame = new TileSprite(items[i].frame_path, renderer);
+      MapItem* new_item = new MapItem(new_frame, items[i].id,
+                                      items[i].name, items[i].description);
+      new_item->setEventHandler(event_handler);
+      base_items.push_back(new_item);
+    }
+
+    return true;
+  }
+  return false;
+}
+
 /* Sets the running configuration, from the options class */
 bool Map::setConfiguration(Options* running_config)
 {
@@ -3152,7 +3198,7 @@ void Map::setEventHandler(EventHandler* event_handler)
   /* Secondary links */
   map_dialog.setEventHandler(event_handler);
 }
-  
+
 /* Sets the speed factor of update call on the map side */
 bool Map::setSpeedFactor(float factor)
 {
@@ -3251,14 +3297,15 @@ void Map::unloadMap()
   /* Delete all sub-maps and data within */
   for(uint32_t i = 0; i < sub_map.size(); i++)
   {
-    /* Delete theF= 0; j < sub_map[i].ios.size(); j++)
+    /* Delete the instance interactives objects */
+    for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
     {
       delete sub_map[i].ios[j];
       sub_map[i].ios[j] = nullptr;
     }
     sub_map[i].ios.clear();
 
-    Delete the instance items */
+    /* Delete the instance items */
     for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
     {
       delete sub_map[i].items[j];

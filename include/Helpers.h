@@ -106,6 +106,15 @@ struct Floatinate
 //   int32_t height;
 // };
 
+/* Item data for correlating the core items and the map items */
+struct ItemData
+{
+  std::string description;
+  std::string frame_path;
+  int id;
+  std::string name;
+};
+
 /* Structure for large lay over frames */
 struct LayOver
 {

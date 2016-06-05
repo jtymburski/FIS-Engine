@@ -30,10 +30,11 @@ Frame::Frame()
   flip = SDL_FLIP_NONE;
   grey_scale = false;
   height = 0;
-  next = NULL;
-  previous = NULL;
-  texture = NULL;
-  texture_grey = NULL;
+  next = nullptr;
+  path = "";
+  previous = nullptr;
+  texture = nullptr;
+  texture_grey = nullptr;
   width = 0;
 }
 
@@ -212,6 +213,19 @@ int Frame::getHeight()
 Frame* Frame::getNext()
 {
   return next;
+}
+
+/*
+ * Description: Returns the frame path that was used in the last setTexture()
+ *              call. If the texture is not set or it was set with the pointer
+ *              call, this will be blank.
+ *
+ * Inputs: none
+ * Output: std::string - the frame path
+ */
+std::string Frame::getPath()
+{
+  return path;
 }
 
 /*
@@ -446,10 +460,13 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
   SDL_Surface* loaded_surface = IMG_Load(path.c_str());
 
   /* If successful, unset previous and set the new texture */
-  if(loaded_surface != NULL && renderer != NULL)
+  if(loaded_surface != nullptr && renderer != nullptr)
   {
     /* Unset the previous texture */
     unsetTexture();
+
+    /* Set the path */
+    this->path = path;
 
     /* Angle surface modification - only works for %90 angles */
     if(angle > 0 && loaded_surface->h == loaded_surface->w &&
@@ -538,7 +555,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
     SDL_FreeSurface(loaded_surface);
   }
   /* If the renderer is NULL, unload the surface */
-  else if(loaded_surface != NULL)
+  else if(loaded_surface != nullptr)
   {
     SDL_FreeSurface(loaded_surface);
     if(!no_warnings)
@@ -628,18 +645,19 @@ bool Frame::setTexture(SDL_Texture* texture)
 void Frame::unsetTexture()
 {
   /* Delete main texture */
-  if(texture != NULL)
+  if(texture != nullptr)
     SDL_DestroyTexture(texture);
-  texture = NULL;
+  texture = nullptr;
 
   /* Delete greyscale texture */
-  if(texture_grey != NULL)
+  if(texture_grey != nullptr)
     SDL_DestroyTexture(texture_grey);
-  texture_grey = NULL;
+  texture_grey = nullptr;
 
   /* Clear class parameters */
   grey_scale = false;
   height = 0;
+  path = "";
   width = 0;
 }
 

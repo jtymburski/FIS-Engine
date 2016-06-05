@@ -199,6 +199,9 @@ private:
                        UnlockTileMode mode, UnlockView mode_view,
                        int view_time);
 
+  /* Returns the core struct item data for correlation purposes */
+  std::vector<ItemData> getItemData();
+
   /* Load game */
   bool load(std::string base_file, SDL_Renderer* renderer,
             uint8_t slot = 0, bool encryption = false,

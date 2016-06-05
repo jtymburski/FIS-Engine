@@ -626,6 +626,26 @@ int32_t Item::getID()
 }
 
 /*
+ * Description: Returns the item data extracted from the class in struct form
+ *
+ * Inputs: none
+ * Output: ItemData - the struct summary of the item
+ */
+ItemData Item::getItemData()
+{
+  ItemData data;
+
+  data.description = getBriefDescription();
+  data.frame_path = "";
+  if(getThumb() != nullptr)
+    data.frame_path = getThumb()->getPath();
+  data.id = getGameID();
+  data.name = getName();
+
+  return data;
+}
+
+/*
  * Description: Returns the assigned enumerated tier level for the item.
  *
  * Inputs:

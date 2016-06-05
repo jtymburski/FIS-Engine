@@ -441,9 +441,11 @@ void Game::eventInitNotification(std::string notification)
 /* The pickup item event - from walking over or triggering from action key */
 void Game::eventPickupItem(MapItem* item, bool walkover)
 {
-  if(item != nullptr && item->isWalkover() == walkover)
+  if(item != nullptr && item->getBase() != nullptr &&
+     item->isWalkover() == walkover)
   {
-    int insert_count = eventGiveItem(item->getGameID(), item->getCount());
+    int insert_count = eventGiveItem(item->getBase()->getID(),
+                                     item->getCount());
 
     /* If the insert was successful, pickup the item */
     if(insert_count > 0)
@@ -658,37 +660,17 @@ void Game::eventUnlockTile(int section_id, int tile_x, int tile_y,
   map_ctrl.unlockTile(section_id, tile_x, tile_y, mode, mode_view, view_time);
 }
 
-/* Updates the menu enabled state as per the appropriate flag states */
-void Game::updateMenuEnabledState()
+/* Returns the core struct item data for correlation purposes */
+std::vector<ItemData> Game::getItemData()
 {
-  map_menu_enabled = true;
+  std::vector<ItemData> data_set;
 
-  /* If the higher game state allows the menu to be accessed, first check for
-   * other conditions to assert the menu can be accessed at this time */
-  if(map_ctrl.getDialogStatus() != WindowStatus::OFF)
-    map_menu_enabled = false;
-  else if(map_ctrl.getFadeStatus() != MapFade::VISIBLE)
-    map_menu_enabled = false;
-  else if(battle_ctrl && battle_ctrl->getTurnState() != TurnState::STOPPED)
-    map_menu_enabled = false;
+  /* Loop through all core data and add to vector */
+  for(uint32_t i = 0; i < list_item.size(); i++)
+    data_set.push_back(list_item[i]->getItemData());
+
+  return data_set;
 }
-
-void Game::updateMenuSaving()
-{
-  /* Update the state of the menu saving */
-}
-
-/* Updates the player steps with the map information */
-void Game::updatePlayerSteps()
-{
-  /* Load in steps assuming valid states */
-  if(player_main != nullptr && loaded_core && loaded_sub)
-  {
-    player_main->addSteps(map_ctrl.getPlayerSteps());
-    map_ctrl.resetPlayerSteps();
-  }
-}
-
 
 /* Load game - main function call */
 bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
@@ -749,6 +731,9 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
   if(success)
   {
     std::string level = std::to_string(map_lvl);
+
+    /* Core item to map correlation */
+    map_ctrl.setBaseItems(getItemData(), renderer);
 
     /* Base file */
     fh_base.xmlToHead();
@@ -1500,6 +1485,38 @@ void Game::updateMode(int cycle_time)
       mode = mode_next;
       mode_next = NONE;
     }
+  }
+}
+
+/* Updates the menu enabled state as per the appropriate flag states */
+void Game::updateMenuEnabledState()
+{
+  map_menu_enabled = true;
+
+  /* If the higher game state allows the menu to be accessed, first check for
+   * other conditions to assert the menu can be accessed at this time */
+  if(map_ctrl.getDialogStatus() != WindowStatus::OFF)
+    map_menu_enabled = false;
+  else if(map_ctrl.getFadeStatus() != MapFade::VISIBLE)
+    map_menu_enabled = false;
+  else if(battle_ctrl && battle_ctrl->getTurnState() != TurnState::STOPPED)
+    map_menu_enabled = false;
+}
+
+/* Updates the state of the menu saving */
+void Game::updateMenuSaving()
+{
+  /* Update the state of the menu saving */
+}
+
+/* Updates the player steps with the map information */
+void Game::updatePlayerSteps()
+{
+  /* Load in steps assuming valid states */
+  if(player_main != nullptr && loaded_core && loaded_sub)
+  {
+    player_main->addSteps(map_ctrl.getPlayerSteps());
+    map_ctrl.resetPlayerSteps();
   }
 }
 

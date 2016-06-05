@@ -205,17 +205,8 @@ TitleScreen::MenuItems TitleScreen::getAction()
 void TitleScreen::keyDownEvent(KeyHandler& key_handler)
 {
   std::cout << "Key down event!" << std::endl;
-  if(system_options != NULL)
+  if(system_options != nullptr)
   {
-// =======================================================================
-// TESTING KEYS
-// ======================================================================= */
-#ifdef UDEBUG
-    if(key_handler.isDepressed(SDLK_F1))
-      render_disable = !render_disable;
-#endif
-    // ==================== END TESTING SECTION ===========================
-
     /* Main code items */
     if(key_handler.isDepressed(GameKey::MOVE_DOWN))
     {
@@ -258,6 +249,18 @@ void TitleScreen::keyDownEvent(KeyHandler& key_handler)
     }
   }
 }
+
+/* Key down event for test keys - isolated from key handler system */
+#ifdef UDEBUG
+void TitleScreen::keyTestDownEvent(SDL_KeyboardEvent event)
+{
+  /* Hide text and logo from title */
+  if(event.keysym.sym == SDLK_F1)
+  {
+    render_disable = !render_disable;
+  }
+}
+#endif
 
 /* The key up event handler */
 void TitleScreen::keyUpEvent(KeyHandler& key_handler)
