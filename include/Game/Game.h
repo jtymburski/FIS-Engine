@@ -123,6 +123,7 @@ private:
   /* ------------ Constants --------------- */
 public:
   static const std::string kSAVE_IMG_BACK; /* Back of save img path */
+  static const std::string kSAVE_PATH_AUTO; /* The auto path addition */
   static const std::string kSAVE_PATH_BACK; /* Back of save path */
   static const std::string kSAVE_PATH_FRONT; /* Front of save path */
   static const uint8_t kSAVE_SLOT_DEFAULT; /* The default save slot */
@@ -214,6 +215,9 @@ private:
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 bool from_save = false);
 
+  /* Menu preparation functionality */
+  void menuPreparation();
+
   /* Parse lock and attempt unlock */
   bool parseLock(Locked& lock_struct);
 
@@ -299,7 +303,7 @@ public:
   bool render(SDL_Renderer* renderer);
 
   /* Save game based on the current slot number */
-  bool save(uint8_t slot = 0);
+  bool save(uint8_t slot = 0, bool from_menu = false);
 
   /* Clears the passed in save slot number */
   bool saveClear(uint8_t slot);
@@ -331,7 +335,11 @@ public:
 public:
   /* Returns the save string based on the slot number */
   static std::string getSlotPath(uint8_t slot, std::string base_path = "",
-                                 bool image = false);
+                                 bool image = false, bool precall = false);
+
+  /* Saves screenshot of the current game as it stands */
+  static bool saveScreenshot(std::string path, SDL_Rect rect,
+                             SDL_Renderer* renderer, uint8_t factor = 4);
 };
 
 #endif // GAME_H

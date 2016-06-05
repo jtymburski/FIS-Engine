@@ -24,6 +24,7 @@
  *============================================================================*/
 
 const std::string Game::kSAVE_IMG_BACK = ".bmp";
+const std::string Game::kSAVE_PATH_AUTO = "_auto";
 const std::string Game::kSAVE_PATH_BACK = ".save";
 const std::string Game::kSAVE_PATH_FRONT = "saves/slot";
 const uint8_t Game::kSAVE_SLOT_DEFAULT = 1;
@@ -1102,6 +1103,14 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
   return success;
 }
 
+/* Menu preparation functionality */
+void Game::menuPreparation()
+{
+  /* Save screenshot */
+  saveScreenshot(getSlotPath(0, base_path, true, true),
+                 map_ctrl.getSnapshotRect(), active_renderer);
+}
+
 /* Parse lock and attempt unlock */
 bool Game::parseLock(Locked& lock_struct)
 {
@@ -2005,7 +2014,8 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
   /* Save test to slot 1 */
   else if(event.keysym.sym == SDLK_F4)
   {
-    save(1);
+    menuPreparation();
+    save(1, true);
   }
   /* Save test to slot 3 */
   else if(event.keysym.sym == SDLK_F5)
@@ -2190,7 +2200,7 @@ bool Game::render(SDL_Renderer* renderer)
 }
 
 /* Save game based on the current slot number */
-bool Game::save(uint8_t slot)
+bool Game::save(uint8_t slot, bool from_menu)
 {
   if(slot <= kSAVE_SLOT_MAX)
   {
@@ -2232,20 +2242,19 @@ bool Game::save(uint8_t slot)
     /* If handle is ready to go, proceed */
     if(save_handle.isAvailable() && success)
     {
-      /* Get a BMP of the current surface */
-      SDL_Rect rect = map_ctrl.getSnapshotRect();
-      SDL_Surface* sshot =
-          SDL_CreateRGBSurface(0, rect.w, rect.h, 32, 0x00ff0000, 0x0000ff00,
-                               0x000000ff, 0xff000000);
-      SDL_RenderReadPixels(active_renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
-                           sshot->pixels, sshot->pitch);
-      SDL_Surface* sshot2 =
-          SDL_CreateRGBSurface(0, rect.w / 4, rect.h / 4, 32, 0x00ff0000,
-                               0x0000ff00, 0x000000ff, 0xff000000);
-      SDL_BlitScaled(sshot, NULL, sshot2, NULL);
-      SDL_SaveBMP(sshot2, save_path_img.c_str());
-      SDL_FreeSurface(sshot);
-      SDL_FreeSurface(sshot2);
+      /* If from menu, use auto save image */
+      if(from_menu)
+      {
+        std::string save_auto_img = getSlotPath(0, base_path, true, true);
+        if(FileHandler::fileExists(save_auto_img))
+          FileHandler::fileCopy(save_auto_img, save_path_img, true);
+      }
+      /* Otherwise, generate it on the fly */
+      else
+      {
+        saveScreenshot(save_path_img, map_ctrl.getSnapshotRect(),
+                       active_renderer);
+      }
 
       /* Setup the core data */
       XmlData data_core;
@@ -2569,20 +2578,57 @@ bool Game::update(int32_t cycle_time)
  *===========================================================================*/
 
 /* Static: Returns the save string based on the slot number */
-std::string Game::getSlotPath(uint8_t slot, std::string base_path, bool image)
+std::string Game::getSlotPath(uint8_t slot, std::string base_path, bool image,
+                              bool precall)
 {
   std::string save_path = "";
 
   if(slot < 100)
   {
+    /* Front */
     save_path = base_path + kSAVE_PATH_FRONT;
-    if(slot < 10)
-      save_path += "0";
-    save_path += std::to_string(slot);
+
+    /* Mid */
+    if(precall)
+    {
+      save_path += kSAVE_PATH_AUTO;
+    }
+    else
+    {
+      if(slot < 10)
+        save_path += "0";
+      save_path += std::to_string(slot);
+    }
+
+    /* Tail */
     if(image)
       save_path += kSAVE_IMG_BACK;
     else
       save_path += kSAVE_PATH_BACK;
   }
   return save_path;
+}
+
+/* Saves screenshot of the current game as it stands - as a BMP */
+bool Game::saveScreenshot(std::string path, SDL_Rect rect,
+                          SDL_Renderer* renderer, uint8_t factor)
+{
+  if(!path.empty() && renderer != nullptr && factor > 0)
+  {
+    SDL_Surface* sshot =
+          SDL_CreateRGBSurface(0, rect.w, rect.h, 32, 0x00ff0000, 0x0000ff00,
+                               0x000000ff, 0xff000000);
+    SDL_RenderReadPixels(renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
+                         sshot->pixels, sshot->pitch);
+    SDL_Surface* sshot2 =
+          SDL_CreateRGBSurface(0, rect.w / factor, rect.h / factor, 32,
+                               0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    SDL_BlitScaled(sshot, nullptr, sshot2, nullptr);
+    SDL_SaveBMP(sshot2, path.c_str());
+    SDL_FreeSurface(sshot);
+    SDL_FreeSurface(sshot2);
+
+    return true;
+  }
+  return false;
 }
