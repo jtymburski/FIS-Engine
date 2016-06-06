@@ -12,7 +12,9 @@
 const uint8_t EventSet::kBATTLE_EVENT_WIN = 0;
 const uint8_t EventSet::kBATTLE_EVENT_LOSE = 1;
 const uint8_t EventSet::kBATTLE_FLAGS = 0;
+const uint8_t EventSet::kGIVE_ITEM_CHANCE = 3;
 const uint8_t EventSet::kGIVE_ITEM_COUNT = 1;
+const uint8_t EventSet::kGIVE_ITEM_FLAGS = 2;
 const uint8_t EventSet::kGIVE_ITEM_ID = 0;
 const uint8_t EventSet::kMAP_ID = 0;
 const uint8_t EventSet::kPROP_BOOLS = 3;
@@ -1136,6 +1138,24 @@ std::string EventSet::classifierToStr(const EventClassifier& classifier)
   return "None";
 }
 
+/* Copies a passed in conversation struct */
+// TODO: Comment
+Conversation EventSet::copyConversation(Conversation source, bool skeleton)
+{
+  /* Data */
+  Conversation convo = createBlankConversation();
+  convo.text = source.text;
+  convo.thing_id = source.thing_id;
+  convo.category = source.category;
+  convo.action_event = copyEvent(source.action_event, skeleton);
+
+  /* Go through all other conversations */
+  for(uint32_t i = 0; i < source.next.size(); i++)
+    convo.next.push_back(copyConversation(source.next[i]));
+
+  return convo;
+}
+
 /*
  * Description: Public static. Copies a past in event and returns the copied
  *              version as source. Function that calls it is in charge of
@@ -1175,9 +1195,12 @@ Event EventSet::copyEvent(Event source, bool skeleton)
     event.convo->action_event = copyEvent(source.convo->action_event,
                                           skeleton);
     event.convo->category = source.convo->category;
-    event.convo->next = source.convo->next;
     event.convo->text = source.convo->text;
     event.convo->thing_id = source.convo->thing_id;
+
+    for(uint32_t i = 0; i < source.convo->next.size(); i++)
+      event.convo->next.push_back(copyConversation(source.convo->next[i],
+                                                   skeleton));
 
     /* If skeleton mode, purge conversation */
     // TODO: FUTURE
@@ -1277,6 +1300,25 @@ BattleFlags EventSet::createEnumBattleFlags(bool win_disappear, bool lose_gg,
 
   /* Return the created enum */
   return static_cast<BattleFlags>(flags_enum);
+}
+
+/*
+ * Description: Public static. Creates the GiveItemFlags enum using the 1
+ *              boolean option.
+ *
+ * Inputs: bool auto_drop - true if the give should automatically drop
+ * Output: GiveItemFlags - the enum, as per the inputs
+ */
+GiveItemFlags EventSet::createEnumGiveFlags(bool auto_drop)
+{
+  int flags_enum = 0;
+
+  /* Parse bools */
+  if(auto_drop)
+    flags_enum |= static_cast<int>(GiveItemFlags::AUTODROP);
+
+  /* Return the created enum */
+  return static_cast<GiveItemFlags>(flags_enum);
 }
 
 /*
@@ -1457,14 +1499,18 @@ Event EventSet::createEventConversation(Conversation* new_conversation,
 
 /*
  * Description: Public static. Creates a new give item event with the passed
- *              ID and item count, with an optional connected sound ID.
+ *              ID, item count, flags, and chance, with an optional connected
+ *              sound ID.
  *
  * Inputs: int id - the give item reference ID
  *         int count - the give item reference count
+ *         GiveItemFlags flags - the flags for give item control
+ *         int chance - the percent chance (0-100) for the give item event
  *         int sound_id - the sound reference ID. Default to invalid
  * Output: Event - the give item event to utilize
  */
-Event EventSet::createEventGiveItem(int id, int count, int sound_id)
+Event EventSet::createEventGiveItem(int id, int count, GiveItemFlags flags,
+                                    int chance, int sound_id)
 {
   /* Create the event and identify */
   Event new_event = createBlankEvent();
@@ -1475,6 +1521,8 @@ Event EventSet::createEventGiveItem(int id, int count, int sound_id)
   /* Fill in the event specific information */
   new_event.ints.push_back(id);
   new_event.ints.push_back(count);
+  new_event.ints.push_back(static_cast<int>(flags));
+  new_event.ints.push_back(chance);
 
   return new_event;
 }
@@ -1890,6 +1938,22 @@ void EventSet::dataEnumBattleFlags(BattleFlags flags, bool& win_disappear,
 }
 
 /*
+ * Description: Extracts data from the GiveItemFlags enum, as defined by the
+ *              inputs.
+ *
+ * Inputs: GiveItemFlags flags - the enum to extract bitwise data from
+ *         bool auto_drop - the item should be automatically dropped on map
+ * Output: none
+ */
+void EventSet::dataEnumGiveFlags(GiveItemFlags flags, bool& auto_drop)
+{
+  int enum_int = static_cast<int>(flags);
+
+  /* Extract data */
+  auto_drop = ((enum_int & static_cast<int>(GiveItemFlags::AUTODROP)) > 0);
+}
+
+/*
  * Description: Extracts data from the UnlockIOEvent enum, as defined by the
  *              inputs.
  *
@@ -2007,16 +2071,22 @@ void EventSet::dataEnumView(UnlockView view_enum, bool& view, bool& scroll)
  * Inputs: Event event - the event to extract the data from
  *         int& item_id - the give item ID reference
  *         int& count - the give item count reference
+ *         GiveItemFlags& flags - the give item control flags
+ *         int& chance - the percent chance (0-100) of the give occurring
  * Output: bool - true if the data was extracted. Fails if the event is the
  *                wrong category
  */
-bool EventSet::dataEventGiveItem(Event event, int& item_id, int& count)
+bool EventSet::dataEventGiveItem(Event event, int& item_id, int& count,
+                                 GiveItemFlags& flags, int& chance)
 {
   if(event.classification == EventClassifier::ITEMGIVE &&
-     event.ints.size() > kGIVE_ITEM_COUNT)
+     event.ints.size() > kGIVE_ITEM_CHANCE)
   {
     item_id = event.ints[kGIVE_ITEM_ID];
     count = event.ints[kGIVE_ITEM_COUNT];
+    flags = static_cast<GiveItemFlags>(event.ints[kGIVE_ITEM_FLAGS]);
+    chance = event.ints[kGIVE_ITEM_CHANCE];
+
     return true;
   }
   return false;
@@ -2874,8 +2944,25 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   {
     if(element == "id")
       event.ints.at(kGIVE_ITEM_ID) = data.getDataInteger();
+    else if(element == "chance")
+      event.ints.at(kGIVE_ITEM_CHANCE) = data.getDataInteger();
     else if(element == "count")
       event.ints.at(kGIVE_ITEM_COUNT) = data.getDataInteger();
+    else if(element == "autodrop")
+    {
+      /* Get the current data */
+      GiveItemFlags item_flags =
+                   static_cast<GiveItemFlags>(event.ints.at(kGIVE_ITEM_FLAGS));
+      bool auto_drop;
+      dataEnumGiveFlags(item_flags, auto_drop);
+
+      /* Set the data */
+      auto_drop = data.getDataBool();
+
+      /* Set new enum data */
+      item_flags = createEnumGiveFlags(auto_drop);
+      event.ints.at(kGIVE_ITEM_FLAGS) = static_cast<int>(item_flags);
+    }
   }
   /* -- ITEM TAKE -- */
   else if(category == EventClassifier::ITEMTAKE)

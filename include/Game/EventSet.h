@@ -59,6 +59,15 @@ enum class EventClassifier : std::uint32_t
 };
 
 /*
+ * Description: The give item event flags
+ */
+enum class GiveItemFlags
+{
+  NONE = 0,
+  AUTODROP = 1
+};
+
+/*
  * Description: The locked state - properties in how to unlock
  */
 enum class LockedState
@@ -214,7 +223,9 @@ public:
   const static uint8_t kBATTLE_EVENT_WIN; /* The battle win event index */
   const static uint8_t kBATTLE_EVENT_LOSE; /* The battle lose event index */
   const static uint8_t kBATTLE_FLAGS; /* The battle flags index */
+  const static uint8_t kGIVE_ITEM_CHANCE; /* Give item chance percent index */
   const static uint8_t kGIVE_ITEM_COUNT; /* Give item count index */
+  const static uint8_t kGIVE_ITEM_FLAGS; /* Give item flags index */
   const static uint8_t kGIVE_ITEM_ID; /* Give item ID index */
   const static uint8_t kMAP_ID; /* The map ID location for the run event */
   const static uint8_t kPROP_BOOLS; /* Property bools index */
@@ -372,6 +383,10 @@ public:
   static EventClassifier classifierFromStr(const std::string& classifier);
   static std::string classifierToStr(const EventClassifier& classifier);
 
+  /* Copies a passed in conversation struct */
+  static Conversation copyConversation(Conversation source,
+                                       bool skeleton = false);
+
   /* Copies a passed in event */
   static Event copyEvent(Event source, bool skeleton = false);
 
@@ -389,6 +404,7 @@ public:
                                            bool lose_gg = false,
                                            bool restore_health = false,
                                            bool restore_qd = false);
+  static GiveItemFlags createEnumGiveFlags(bool auto_drop = false);
   static UnlockIOEvent createEnumIOEvent(bool enter = false, bool exit = false,
                                       bool use = false, bool walkover = false);
   static UnlockIOMode createEnumIOMode(bool lock = false, bool events = false);
@@ -406,7 +422,8 @@ public:
 
   /* Creates a give item event, with the appropriate parameters */
   static Event createEventGiveItem(int id = kUNSET_ID, int count = 0,
-                                   int sound_id = kUNSET_ID);
+                                   GiveItemFlags flags = GiveItemFlags::NONE,
+                                   int chance = 100, int sound_id = kUNSET_ID);
 
   /* Creates a multiple event with a set of events */
   static Event createEventMultiple(
@@ -472,6 +489,7 @@ public:
   static void dataEnumBattleFlags(BattleFlags flags, bool& win_disappear,
                                   bool& lose_gg, bool& restore_health,
                                   bool& restore_qd);
+  static void dataEnumGiveFlags(GiveItemFlags flags, bool& auto_drop);
   static void dataEnumIOEvent(UnlockIOEvent io_enum, bool& enter, bool& exit,
                               bool& use, bool& walkover);
   static void dataEnumIOMode(UnlockIOMode io_enum, bool& lock, bool& events);
@@ -483,7 +501,8 @@ public:
   static void dataEnumView(UnlockView view_enum, bool& view, bool& scroll);
 
   /* Extract data from event(s) */
-  static bool dataEventGiveItem(Event event, int& item_id, int& count);
+  static bool dataEventGiveItem(Event event, int& item_id, int& count,
+                                GiveItemFlags& flags, int& chance);
   static bool dataEventMultiple(Event event, std::vector<Event>& event_list);
   static bool dataEventMultiple(Event* event,
                                 std::vector<Event*>& event_list);

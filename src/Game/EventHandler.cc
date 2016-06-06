@@ -294,16 +294,15 @@ bool EventHandler::pollConversation(ConvoPair& convo_pair, MapThing** source)
 }
 
 /* Poll a give item event */
-bool EventHandler::pollGiveItem(int* id, int* count)
+bool EventHandler::pollGiveItem(int& id, int& count, GiveItemFlags& flags,
+                                int& chance)
 {
-  if(id != nullptr && count != nullptr)
+  Event event;
+  if(getEvent(event, true) &&
+     EventSet::dataEventGiveItem(event, id, count, flags, chance))
   {
-    Event event;
-    if(getEvent(event, true) && EventSet::dataEventGiveItem(event, *id, *count))
-    {
-      triggerQueueSound(event);
-      return true;
-    }
+    triggerQueueSound(event);
+    return true;
   }
   return false;
 }

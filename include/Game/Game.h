@@ -153,7 +153,8 @@ private:
   bool changeMode(GameMode mode, bool map_change = false);
 
   /* A give item event, based on an ID and count (triggered from stored event */
-  int eventGiveItem(int id, int count);
+  int eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
+                    bool from_pickup = false);
 
   /* Initiates a conversation event */
   void eventInitConversation(ConvoPair convo_pair, MapThing* source);

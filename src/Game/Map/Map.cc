@@ -1988,15 +1988,14 @@ void Map::battleWon()
       battle_thing->setActive(false);
       moveThing(battle_thing, section_old);
     }
-    else
+      
+    /* Trigger battle won event, if valid */
+    if(event_handler != nullptr)
     {
-      if(event_handler != nullptr)
-      {
-        event_handler->executeEventRef(battle_eventwin.base,
-                                       battle_eventwin.inst, battle_person,
-                                       battle_thing);
-        battle_eventwin.inst->has_exec = true;
-      }
+      event_handler->executeEventRef(battle_eventwin.base,
+                                     battle_eventwin.inst, battle_person,
+                                     battle_thing);
+      battle_eventwin.inst->has_exec = true;
     }
   }
 

@@ -368,9 +368,14 @@ bool Game::changeMode(GameMode mode, bool map_change)
 }
 
 /* A give item event, based on an ID and count (triggered from stored event */
-int Game::eventGiveItem(int id, int count)
+int Game::eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
+                        bool from_pickup)
 {
   int insert_count = 0;
+
+  // TODO: CHANCE, FLAGS, and FROM PICKUP (DO NOT DROP ON MAP IF PICKUP)
+  std::cout << "TODO: Chance and Flags - " << (int)flags << "," << chance
+            << "," << from_pickup << std::endl;
 
   /* Attempt to find the item and insert */
   Item* found_item = getItem(id);
@@ -445,8 +450,8 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
   if(item != nullptr && item->getBase() != nullptr &&
      item->isWalkover() == walkover)
   {
-    int insert_count = eventGiveItem(item->getBase()->getID(),
-                                     item->getCount());
+    int insert_count = eventGiveItem(item->getBase()->getID(), item->getCount(),
+                                     GiveItemFlags::NONE, 100, true);
 
     /* If the insert was successful, pickup the item */
     if(insert_count > 0)
@@ -1196,9 +1201,11 @@ void Game::pollEvents()
       else if(classification == EventClassifier::ITEMGIVE)
       {
         int id;
+        int chance;
         int count;
-        if(event_handler.pollGiveItem(&id, &count))
-          eventGiveItem(id, count);
+        GiveItemFlags flags;
+        if(event_handler.pollGiveItem(id, count, flags, chance))
+          eventGiveItem(id, count, flags, chance);
       }
       /* -- ITEM PICKUP -- */
       else if(classification == EventClassifier::ITEMPICKUP)

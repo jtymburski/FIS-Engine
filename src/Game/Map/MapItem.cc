@@ -347,8 +347,8 @@ bool MapItem::isActive()
  */
 bool MapItem::isWalkover()
 {
-  if(base != NULL && base_category == ThingBase::ITEM)
-    return static_cast<MapItem*>(base)->walkover;
+  //if(base != NULL && base_category == ThingBase::ITEM)
+  //  return static_cast<MapItem*>(base)->walkover;
   return walkover;
 }
 

@@ -118,7 +118,7 @@ public:
   bool pollConversation(ConvoPair& convo_pair, MapThing** source);
 
   /* Poll a give item event */
-  bool pollGiveItem(int* id, int* count);
+  bool pollGiveItem(int& id, int& count, GiveItemFlags& flags, int& chance);
 
   /* It goes to the next event in the poll sequence. Returns true if there is
    * one */
