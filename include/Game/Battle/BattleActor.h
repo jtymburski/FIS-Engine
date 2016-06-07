@@ -152,10 +152,10 @@ class BattleActor
 public:
   /* Constructs the Battle object by a given base person */
   BattleActor(Person* person_base, int32_t battle_index, int32_t menu_index,
-              bool is_ally, bool can_run, SDL_Renderer* renderer);
+              bool is_ally, bool can_run);
 
   /* Constructs a Battle actor for the Menu */
-  BattleActor(Person* person_base, SDL_Renderer* renderer);
+  BattleActor(Person* person_base);
 
   /* Default BattleActors may not be created */
   BattleActor() = delete;
@@ -275,7 +275,7 @@ private:
   void clearSprites();
 
   /* Creates the sprites for the BattleActor based on the base person */
-  void createSprites(SDL_Renderer* renderer);
+  void createSprites();
 
   /* Reset the action related flags */
   bool resetActionTypes();

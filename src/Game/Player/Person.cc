@@ -129,50 +129,6 @@ Person::~Person()
  *============================================================================*/
 
 /*
- * Description: Copies all data from source object to this object.
- *
- * Inputs: Person &source - the source to copy from
- * Output: none
- */
-// TODO: NOT FULLY COMPLETE. Relevant??
-void Person::copySelf(const Person& source)
-{
-  action_x = source.action_x;
-  action_y = source.action_y;
-
-  game_id = source.game_id;
-
-  base_person = source.base_person;
-  person_flags = source.person_flags;
-
-  battle_class = source.battle_class;
-  race_class = source.race_class;
-
-  name = source.name;
-  rank = source.rank;
-
-  primary = source.primary;
-  secondary = source.secondary;
-  primary_curve = source.primary_curve;
-  secondary_curve = source.secondary_curve;
-
-  equipments = source.equipments;
-
-  item_drops = source.item_drops;
-  credit_drop = source.credit_drop;
-  exp_drop = source.exp_drop;
-
-  level = source.level;
-  total_exp = source.total_exp;
-
-  path_face = source.path_face;
-  path_action_sprite = source.path_action_sprite;
-  path_dialog_sprite = source.path_dialog_sprite;
-  path_first_person = source.path_first_person;
-  path_third_person = source.path_third_person;
-}
-
-/*
  * Description: Loads the default settings for a Person
  *
  * Inputs: none
@@ -200,6 +156,7 @@ void Person::loadDefaults()
   secondary_curve = ElementCurve::D;
 
   total_exp = kMIN_LVL_EXP;
+
   updateLevel();
 
   updateBaseStats();
@@ -230,13 +187,11 @@ void Person::loadDefaults()
   credit_drop = 0;
   exp_drop = 0;
 
-  path_face = "";
-  path_action_sprite = "";
-  path_dialog_sprite = "";
-  path_first_person = "";
-  path_third_person = "";
-
-  dialog_sprite = nullptr;
+  sprite_action = nullptr;
+  sprite_dialog = nullptr;
+  sprite_face = nullptr;
+  sprite_first_person = nullptr;
+  sprite_third_person = nullptr;
 }
 
 /*
@@ -308,14 +263,12 @@ void Person::setupClass()
     level = base_person->level;
     total_exp = base_person->total_exp;
 
-    path_face = base_person->path_face;
-    path_action_sprite = base_person->path_action_sprite;
-    path_dialog_sprite = base_person->path_dialog_sprite;
-    path_first_person = base_person->path_first_person;
-    path_third_person = base_person->path_third_person;
-
     /* Comes from base person, if not null */
-    dialog_sprite = nullptr;
+    sprite_first_person = base_person->sprite_first_person;
+    sprite_third_person = base_person->sprite_third_person;
+    sprite_action = base_person->sprite_action;
+    sprite_face = base_person->sprite_face;
+    sprite_dialog = base_person->sprite_dialog;
 
     updateBaseStats();
     curr_stats = base_stats;
@@ -375,11 +328,43 @@ void Person::unsetAll(const bool& clear)
  */
 void Person::unsetSprites()
 {
-  if(dialog_sprite != nullptr)
-    if(base_person == nullptr || base_person->dialog_sprite != dialog_sprite)
-      delete dialog_sprite;
+  if(sprite_first_person &&
+     (base_person == nullptr ||
+      base_person->sprite_first_person != sprite_first_person))
+  {
+    delete sprite_first_person;
+  }
 
-  dialog_sprite = nullptr;
+  if(sprite_third_person &&
+     (base_person == nullptr ||
+      base_person->sprite_third_person != sprite_third_person))
+  {
+    delete sprite_third_person;
+  }
+
+  if(sprite_action &&
+     (base_person == nullptr || base_person->sprite_action != sprite_action))
+  {
+    delete sprite_action;
+  }
+
+  if(sprite_face &&
+     (base_person == nullptr || base_person->sprite_face != sprite_face))
+  {
+    delete sprite_face;
+  }
+
+  if(sprite_dialog != nullptr)
+    if(base_person == nullptr || base_person->sprite_dialog != sprite_dialog)
+    {
+      delete sprite_dialog;
+    }
+
+  sprite_first_person = nullptr;
+  sprite_third_person = nullptr;
+  sprite_action = nullptr;
+  sprite_face = nullptr;
+  sprite_dialog = nullptr;
 }
 
 /*
@@ -508,7 +493,7 @@ bool Person::addExp(const uint32_t& amount, const bool& update,
  */
 AttributeSet Person::calcEquipStats()
 {
-  //TODO: Fix this function
+  // TODO: Fix this function
   // auto equip_bonus = AttributeSet();
 
   // for(auto it = begin(equipments); it != end(equipments); ++it)
@@ -811,14 +796,20 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
   }
   else if(data.getElement(index) == "sprite_face")
   {
-    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
-      path_face = base_path + data.getDataString(&success);
+    if(sprite_face == nullptr)
+      sprite_face = new Sprite();
+
+    success &= sprite_face->addFileInformation(
+        data, index + 1, renderer, base_path, false, false);
   }
   /* ---- SPRITE ACTION ---- */
   else if(data.getElement(index) == "sprite_action")
   {
-    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
-      path_action_sprite = base_path + data.getDataString(&success);
+    if(sprite_action == nullptr)
+      sprite_action = new Sprite();
+
+    success &= sprite_action->addFileInformation(
+        data, index + 1, renderer, base_path, false, false);
   }
   /* ---- SPRITE ACTION X ---- */
   else if(data.getElement(index) == "sprite_action_x")
@@ -833,31 +824,30 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- SPRITE DIALOG ---- */
   else if(data.getElement(index) == "sprite_dialog")
   {
-    // TODO: have Dialog & Battle create this sprite as needed?.
-    //       Needs the properties
-    /* If null, create */
-    if(dialog_sprite == nullptr)
-      dialog_sprite = new Sprite();
+    if(sprite_dialog == nullptr)
+      sprite_dialog = new Sprite();
 
-    /* Add data */
-    success &=
-        dialog_sprite->addFileInformation(data, index + 1, renderer, base_path);
-
-    /* Path */
-    if(data.getElement(index + 1) == "path")
-      path_dialog_sprite = data.getDataString(&success);
+    success &= sprite_dialog->addFileInformation(
+        data, index + 1, renderer, base_path, false, false);
   }
   /* ---- SPRITE FIRST PERSON ---- */
   else if(data.getElement(index) == "sprite_fp")
   {
-    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
-      path_first_person = base_path + data.getDataString(&success);
+    if(sprite_first_person == nullptr)
+      sprite_first_person = new Sprite();
+
+    /* Add data */
+    success &= sprite_first_person->addFileInformation(
+        data, index + 1, renderer, base_path, false, false);
   }
   /* ---- SPRITE THIRD PERSON ---- */
   else if(data.getElement(index) == "sprite_tp")
   {
-    if(data.getElement(index + 1) == "path") // TODO: Negates all properties..
-      path_third_person = base_path + data.getDataString(&success);
+    if(sprite_third_person == nullptr)
+      sprite_third_person = new Sprite();
+
+    success &= sprite_third_person->addFileInformation(
+        data, index + 1, renderer, base_path, false, false);
   }
   /* ---- VITALITY CURRENT VALUE ---- */
   else if(data.getElement(index) == "vita")
@@ -1017,7 +1007,6 @@ bool Person::saveData(FileHandler* fh)
     /* Experience and Level */
     fh->writeXmlData("exp", total_exp);
     fh->writeXmlData("level", level);
-
 
     /* Damage and experience mods */
     if(getDmgMod() != default_person.getDmgMod())
@@ -1221,20 +1210,19 @@ void Person::updateStats()
   temp_max_stats.cleanUp();
 }
 
-/*
- * Description: Restures the path for the action sprite frames
- *
- * Inputs: none
- * Output: std::string - the path for the frames
- */
-std::string Person::getActionSpritePath()
+Sprite* Person::getSpriteThirdPerson()
 {
-  return path_action_sprite;
+  return sprite_third_person;
 }
 
-std::string Person::getFaceSpritePath()
+Sprite* Person::getSpriteAction()
 {
-  return path_face;
+  return sprite_action;
+}
+
+Sprite* Person::getSpriteFace()
+{
+  return sprite_face;
 }
 
 /*
@@ -1244,9 +1232,9 @@ std::string Person::getFaceSpritePath()
  * Inputs: none
  * Output: Sprite* - the sprite pointer
  */
-Sprite* Person::getDialogSprite()
+Sprite* Person::getSpriteDialog()
 {
-  return dialog_sprite;
+  return sprite_dialog;
 }
 
 /*
@@ -1642,26 +1630,9 @@ float Person::getVitaPercent()
  * Inputs: none
  * Output: Sprite* - pointer to the correct current first person sprite
  */
-std::string Person::getFirstPersonPath()
+Sprite* Person::getSpriteFirstPerson()
 {
-  return path_first_person;
-}
-
-/*
- * Description: Grabs the current assigned third person frame (based on the
- *              IS_BUBBY BState flag)
- *
- * Inputs: none
- * Output: Sprite* - pointer to the correct current third person sprite
- */
-std::string Person::getThirdPersonPath()
-{
-  return path_third_person;
-}
-
-std::string Person::getDialogSpritePath()
-{
-  return path_dialog_sprite;
+  return sprite_first_person;
 }
 
 /*
@@ -1956,26 +1927,6 @@ bool Person::setEquip(const EquipSlots& slot, Equipment* new_equip)
   return true;
 }
 
-void Person::setFirstPersonPath(std::string new_path)
-{
-  path_first_person = new_path;
-}
-
-void Person::setThirdPersonPath(std::string new_path)
-{
-  path_third_person = new_path;
-}
-
-void Person::setActionSpritePath(std::string new_path)
-{
-  path_action_sprite = new_path;
-}
-
-void Person::setDialogSpritePath(std::string new_path)
-{
-  path_dialog_sprite = new_path;
-}
-
 /*
  * Description: Sets the game ID for the person.
  *
@@ -2057,23 +2008,6 @@ void Person::setRace(Category* const category)
   // updateBaseSkills();
 }
 
-/*
- * Description: Assigns new sprite pointers for the Person
- *
- * Inputs: new_fp - pointer to a first person sprite
- *         new_tp - pointer to a third person sprite
- *         new_action - pointer to an action frame sprite
- * Output: none
- */
-void Person::setSprites(Sprite* new_dialog_sprite)
-{
-  /* Unset the current sprites */
-  unsetSprites();
-
-  /* Assign the new sprite pointers */
-  dialog_sprite = new_dialog_sprite;
-}
-
 /*============================================================================
  * OPERATOR FUNCTIONS
  *===========================================================================*/
@@ -2093,7 +2027,7 @@ Person& Person::operator=(const Person& source)
     return *this;
 
   /* Do the copy */
-  copySelf(source);
+  setupClass();
 
   /* Return the copied object */
   return *this;

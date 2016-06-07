@@ -46,8 +46,7 @@ const uint8_t BattleActor::kACTOR_KO_ALPHA{50};
  * Inputs:
  */
 BattleActor::BattleActor(Person* person_base, int32_t battle_index,
-                         int32_t menu_index, bool is_ally, bool can_run,
-                         SDL_Renderer* renderer)
+                         int32_t menu_index, bool is_ally, bool can_run)
     : ai{nullptr},
       action_element{ActionElement()},
       active_sprite{ActiveSprite::NONE},
@@ -80,7 +79,7 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
 
   /* Prepare the person for a Battle */
   battleSetup(is_ally, can_run);
-  createSprites(renderer);
+  createSprites();
 }
 
 /*
@@ -88,8 +87,8 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
  *
  * Inputs:
  */
-BattleActor::BattleActor(Person* person_base, SDL_Renderer* renderer)
-    : BattleActor(person_base, 0, 0, true, false, renderer)
+BattleActor::BattleActor(Person* person_base)
+    : BattleActor(person_base, 0, 0, true, false)
 {
 }
 
@@ -239,73 +238,34 @@ void BattleActor::clearSprites()
   sprite_third_person = nullptr;
 }
 
-void BattleActor::createSprites(SDL_Renderer* renderer)
+void BattleActor::createSprites()
 {
   if(person_base)
   {
     /* Build the action sprite */
-    if(person_base->getActionSpritePath() != "")
-    {
-      sprite_action = new Sprite(person_base->getActionSpritePath(), renderer);
-
-      if(sprite_action)
-      {
-        sprite_action->setNonUnique(true, 1);
-
-        sprite_action->createTexture(renderer);
-      }
-    }
+    if(person_base->getSpriteAction())
+      sprite_action = new Sprite(*(person_base->getSpriteAction()));
 
     /* Build the first person sprite, if one exists */
-    if(person_base->getFirstPersonPath() != "")
-    {
-      sprite_first_person =
-          new Sprite(person_base->getFirstPersonPath(), renderer);
-
-      if(sprite_first_person)
-      {
-        sprite_first_person->setNonUnique(true, 1);
-        sprite_first_person->createTexture(renderer);
-      }
-    }
+    if(person_base->getSpriteFirstPerson())
+      sprite_first_person = new Sprite(*(person_base->getSpriteFirstPerson()));
 
     /* Build the third person sprite, if one exists */
-    if(person_base->getThirdPersonPath() != "")
-    {
-      sprite_third_person =
-          new Sprite(person_base->getThirdPersonPath(), renderer);
+    if(person_base->getSpriteThirdPerson())
+      sprite_third_person = new Sprite(*(person_base->getSpriteThirdPerson()));
 
-      if(sprite_third_person)
-      {
-        sprite_third_person->setNonUnique(true, 1);
-        sprite_third_person->createTexture(renderer);
-      }
-    }
-
-    if(person_base->getDialogSpritePath() != "")
+    /* Construct the dialog sprite */
+    if(person_base->getSpriteDialog())
     {
       dialog_x = person_base->getActionX();
       dialog_y = person_base->getActionY();
 
-      sprite_dialog = new Sprite(person_base->getDialogSpritePath(), renderer);
-
-      if(sprite_dialog)
-      {
-        sprite_dialog->setNonUnique(true, 1);
-        sprite_dialog->createTexture(renderer);
-      }
+      sprite_dialog = new Sprite(*(person_base->getSpriteDialog()));
     }
 
-    if(person_base->getFaceSpritePath() != "")
-    {
-      sprite_face = new Sprite(person_base->getFaceSpritePath(), renderer);
-
-      if(sprite_face)
-      {
-        sprite_face->setNonUnique(true, 1);
-        sprite_face->createTexture(renderer);
-      }
-    }
+    /* Construct the space sprite */
+    if(person_base->getSpriteFace())
+      sprite_face = new Sprite(*(person_base->getSpriteDialog()));
   }
 }
 

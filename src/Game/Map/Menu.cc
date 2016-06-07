@@ -316,7 +316,7 @@ bool Menu::buildSleuthScreen()
         success &= (member != nullptr);
 
         if(success && member)
-          actors.push_back(new BattleActor(member, renderer));
+          actors.push_back(new BattleActor(member));
 
         success &= (actors.back() != nullptr);
       }

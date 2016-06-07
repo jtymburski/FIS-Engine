@@ -44,17 +44,17 @@ class AIModule;
 ENUM_FLAGS(PState)
 enum class PState
 {
-  SLEUTH = 1 << 0, /* Is this person in the main Sleuth? */
-  BEARACKS = 1 << 1, /* Is this person in the main Bearacks? */
-  MAIN = 1 << 2, /* Is this person the main character? */
-  FINAL = 1 << 3, /* Is this person a final boss? */
-  BOSS = 1 << 4, /* Is this person a boss? */
-  MINI_BOSS = 1 << 5, /* Is this person a mini boss? */
-  CAN_GAIN_EXP = 1 << 6, /* Can this person gain exp? */
-  CAN_LEVEL_UP = 1 << 7, /* Can this person level up? */
+  SLEUTH = 1 << 0,           /* Is this person in the main Sleuth? */
+  BEARACKS = 1 << 1,         /* Is this person in the main Bearacks? */
+  MAIN = 1 << 2,             /* Is this person the main character? */
+  FINAL = 1 << 3,            /* Is this person a final boss? */
+  BOSS = 1 << 4,             /* Is this person a boss? */
+  MINI_BOSS = 1 << 5,        /* Is this person a mini boss? */
+  CAN_GAIN_EXP = 1 << 6,     /* Can this person gain exp? */
+  CAN_LEVEL_UP = 1 << 7,     /* Can this person level up? */
   CAN_LEARN_SKILLS = 1 << 8, /* Can this person change skills? */
   CAN_CHANGE_EQUIP = 1 << 9, /* Can this person modify equipment? */
-  MAX_LVL = 1 << 10 /* Person reached max level? */
+  MAX_LVL = 1 << 10          /* Person reached max level? */
 };
 
 class Person
@@ -142,18 +142,15 @@ private:
   uint16_t level;
   uint32_t total_exp;
 
-  /* Path to sprites */
-  std::string path_face;
-  std::string path_action_sprite;
-  std::string path_dialog_sprite;
-  std::string path_first_person;
-  std::string path_third_person;
-
-  // TODO: Have map dialog destroy
-  Sprite* dialog_sprite;
+  /* Person related sprites (non-build copies) */
+  Sprite* sprite_action;
+  Sprite* sprite_dialog;
+  Sprite* sprite_face;
+  Sprite* sprite_first_person;
+  Sprite* sprite_third_person;
 
   /* ------------ Static Private Members --------------- */
-  static int id; /* Person unique ID counter */
+  static int id;                          /* Person unique ID counter */
   static std::vector<uint32_t> exp_table; /* Table of exp. values */
 
 public:
@@ -161,30 +158,27 @@ public:
   static const uint8_t kACTION_X; /* Action render X point */
   static const uint8_t kACTION_Y; /* Action render Y point */
   static const uint32_t kID_PLAYER;
-  static const size_t kNUM_LEVELS; /* Number of Levels for Persons */
-  static const size_t kNUM_EQUIP_SLOTS; /* Number of Equip Slots */
+  static const size_t kNUM_LEVELS;        /* Number of Levels for Persons */
+  static const size_t kNUM_EQUIP_SLOTS;   /* Number of Equip Slots */
   static const uint32_t kMAX_CREDIT_DROP; /* Maximum credit award */
-  static const uint32_t kMAX_EXP; /* Max. Exp possible */
-  static const uint32_t kMAX_EXP_DROP; /* Maximum award for one Exp */
-  static const size_t kMAX_ITEM_DROPS; /* Maximum # Item drops */
-  static const uint32_t kMAX_LVL_EXP; /* Exp to reach final level */
-  static const uint32_t kMIN_EXP; /* Minimum Exp possible */
-  static const uint32_t kMIN_LVL_EXP; /* Starting exp. */
+  static const uint32_t kMAX_EXP;         /* Max. Exp possible */
+  static const uint32_t kMAX_EXP_DROP;    /* Maximum award for one Exp */
+  static const size_t kMAX_ITEM_DROPS;    /* Maximum # Item drops */
+  static const uint32_t kMAX_LVL_EXP;     /* Exp to reach final level */
+  static const uint32_t kMIN_EXP;         /* Minimum Exp possible */
+  static const uint32_t kMIN_LVL_EXP;     /* Starting exp. */
   static const uint32_t kMIN_LVL_IMPLODE; /* The minimum lvl to implode at */
-  static const float kMIN_DMG_MODI; /* Min. Dmg modifier */
-  static const float kMAX_DMG_MODI; /* Max. Dmg modifier */
-  static const float kMIN_EXP_MODI; /* Min. experience modifier */
-  static const float kMAX_EXP_MODI; /* Max. experience modifier */
-  static const int32_t kUNSET_ID; /* The unset id of the person */
+  static const float kMIN_DMG_MODI;       /* Min. Dmg modifier */
+  static const float kMAX_DMG_MODI;       /* Max. Dmg modifier */
+  static const float kMIN_EXP_MODI;       /* Min. experience modifier */
+  static const float kMAX_EXP_MODI;       /* Max. experience modifier */
+  static const int32_t kUNSET_ID;         /* The unset id of the person */
 
   static const std::vector<float> kPRIM_MODS; /* Primary elm curv modifiers */
   static const std::vector<float> kSECD_MODS; /* Secondary elm curv mods */
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
-  /* Copy function, to be called by a copy or equal operator constructor */
-  void copySelf(const Person& source);
-
   /* Loads the default values for the Person */
   void loadDefaults();
 
@@ -377,12 +371,12 @@ public:
   /* Returns the total experience earned */
   uint32_t getTotalExp();
 
-  /* Methods to grab the sprite paths */
-  std::string getFaceSpritePath();
-  std::string getActionSpritePath();
-  std::string getDialogSpritePath();
-  std::string getFirstPersonPath();
-  std::string getThirdPersonPath();
+  /* Pointer to the unbuilt first person sprite */
+  Sprite* getSpriteFirstPerson();
+  Sprite* getSpriteThirdPerson();
+  Sprite* getSpriteDialog();
+  Sprite* getSpriteAction();
+  Sprite* getSpriteFace();
 
   /* Grabs the vector of item IDs the person can drop */
   std::vector<uint32_t> getItemDrops();
@@ -435,12 +429,6 @@ public:
   /* Attempts to assign a given equipment slot a given equipment pointer */
   bool setEquip(const EquipSlots& equip_slot, Equipment* new_equipment);
 
-  /* Methods to assign sprite paths */
-  void setDialogSpritePath(std::string new_path);
-  void setFirstPersonPath(std::string new_path);
-  void setThirdPersonPath(std::string new_path);
-  void setActionSpritePath(std::string new_path);
-
   /* Assigns the game ID for the person */
   void setGameID(int id);
 
@@ -453,9 +441,6 @@ public:
 
   /* Assigns a new race class */
   void setRace(Category* const category);
-
-  /* Assigns the sprite pointers for the person */
-  void setSprites(Sprite* new_dialog_sprite = nullptr);
 
   /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:

@@ -14,18 +14,25 @@
 *******************************************************************************/
 #include "Sprite.h"
 
-/* Constant Implementation - see header file for descriptions */
+/*=============================================================================
+ * SPRITE DATA CONSTRUCTORS / DESTRUCTORS
+ *============================================================================*/
+
+/*=============================================================================
+ * SPRITE CONSTANTS -- See .h file for details
+ *============================================================================*/
+
 const uint16_t Sprite::kDEFAULT_ANIMATE_TIME = 250;
 const float Sprite::kDEFAULT_BRIGHTNESS = 1.0;
 const uint8_t Sprite::kDEFAULT_COLOR = 255;
 const uint8_t Sprite::kDEFAULT_OPACITY = 255;
 const uint8_t Sprite::kDELTA_GREY_SCALE = 2;
 const uint8_t Sprite::kDOUBLE_DIGITS = 10;
-const float Sprite::kMAX_BRIGHTNESS = 2.0;
+const double Sprite::kMAX_BRIGHTNESS = 2.0;
 const int32_t Sprite::kUNSET_SOUND_ID = -1;
 
 /*=============================================================================
- * CONSTRUCTORS / DESTRUCTORS
+ * SPRITE CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
@@ -34,26 +41,30 @@ const int32_t Sprite::kUNSET_SOUND_ID = -1;
  * Input: none
  */
 Sprite::Sprite()
-    : animation_time{kDEFAULT_ANIMATE_TIME},
+    : animation_time{Sprite::kDEFAULT_ANIMATE_TIME},
+      brightness{Sprite::kDEFAULT_BRIGHTNESS},
+      built_texture{false},
+      build_path_head{""},
+      build_path_tail{""},
+      build_frames{0},
+      color_temp_red{Sprite::kDEFAULT_COLOR},
+      color_temp_green{Sprite::kDEFAULT_COLOR},
+      color_temp_blue{Sprite::kDEFAULT_COLOR},
+      color_red{Sprite::kDEFAULT_COLOR},
+      color_green{Sprite::kDEFAULT_COLOR},
+      color_blue{Sprite::kDEFAULT_COLOR},
       elapsed_time{0},
-      brightness{kDEFAULT_BRIGHTNESS},
-      temp_red{kDEFAULT_COLOR},
-      temp_green{kDEFAULT_COLOR},
-      temp_blue{kDEFAULT_COLOR},
-      color_red{kDEFAULT_COLOR},
-      color_green{kDEFAULT_COLOR},
-      color_blue{kDEFAULT_COLOR},
-      current{nullptr},
-      grey_scale_alpha{kDEFAULT_OPACITY},
+      grey_scale_alpha{Sprite::kDEFAULT_OPACITY},
       grey_scale_update{false},
+      loops{0},
+      non_unique{false},
+      opacity{Sprite::kDEFAULT_OPACITY},
+      rotation_angle{0},
+      sequence{FORWARD},
+      size{0},
+      current{nullptr},
       head{nullptr},
       id{0},
-      loops{0},
-      opacity{kDEFAULT_OPACITY},
-      non_unique{false},
-      rotation_angle{0.0},
-      size{0},
-      sequence{FORWARD},
       sound_id{kUNSET_SOUND_ID},
       src_rect_use{false},
       texture{nullptr},
@@ -72,6 +83,7 @@ Sprite::Sprite()
 Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
 {
   insertFirst(path, renderer);
+  built_texture = true;
 }
 
 /*
@@ -87,6 +99,7 @@ Sprite::Sprite(std::string head_path, int num_frames, std::string tail_path,
     : Sprite()
 {
   insertSequence(head_path, num_frames, tail_path, renderer);
+  built_texture = true;
 }
 
 /*
@@ -193,12 +206,19 @@ void Sprite::clear()
  */
 void Sprite::copySelf(const Sprite& source)
 {
-  // size = source.size;
-
   setAnimationTime(source.getAnimationTime());
   setBrightness(source.getBrightness());
+
+  build_path_head = source.build_path_head;
+  build_path_tail = source.build_path_tail;
+  build_frames = source.build_frames;
+
   setColorBalance(source.getColorRed(), source.getColorGreen(),
                   source.getColorBlue());
+  setTempColorBalance(source.getTempColorRed(), source.getTempColorGreen(),
+                      source.getTempColorBlue());
+
+  elapsed_time = source.elapsed_time;
 
   if(source.isDirectionForward())
     setDirectionForward();
@@ -211,6 +231,8 @@ void Sprite::copySelf(const Sprite& source)
   setOpacity(source.getOpacity());
   setRotation(source.getRotation());
   setSoundID(source.getSoundID());
+
+  // data.size = source.data.size;
 }
 
 /*============================================================================
@@ -230,7 +252,8 @@ void Sprite::copySelf(const Sprite& source)
  * Output: bool - true if the add was successful
  */
 bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
-                                std::string base_path, bool no_warnings)
+                                std::string base_path, bool no_warnings,
+                                bool build_data)
 {
   std::string element = data.getElement(index);
   bool success = true;
@@ -244,11 +267,11 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
   else if(element == "brightness")
     success &= setBrightness(data.getDataFloat());
   else if(element == "color_b")
-    setColorBalance(color_red, color_green, data.getDataInteger());
+    setColorBalance(this->color_red, this->color_green, data.getDataInteger());
   else if(element == "color_g")
-    setColorBalance(color_red, data.getDataInteger(), color_blue);
+    setColorBalance(this->color_red, data.getDataInteger(), this->color_blue);
   else if(element == "color_r")
-    setColorBalance(data.getDataInteger(), color_green, color_blue);
+    setColorBalance(data.getDataInteger(), this->color_green, this->color_blue);
   else if(element == "forward")
   {
     if(data.getDataBool())
@@ -260,17 +283,40 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
     setOpacity(data.getDataInteger());
   else if(split_element.at(0) == "path")
   {
-    uint16_t angle = parseAdjustments(split_element);
-    std::vector<Frame*> new_frames = insertFrames(
-        base_path + data.getDataString(), renderer, angle, no_warnings);
-
-    /* If there is element adjustments, do those changes */
-    if(split_element.size() > 1)
+    if(build_data)
     {
-      split_element.erase(split_element.begin());
+      uint16_t angle = parseAdjustments(split_element);
 
-      for(uint16_t i = 0; i < new_frames.size(); i++)
-        success &= new_frames[i]->execImageAdjustments(split_element);
+      std::vector<Frame*> new_frames = insertFrames(
+          base_path + data.getDataString(), renderer, angle, no_warnings);
+
+      /* If there is element adjustments, do those changes */
+      if(split_element.size() > 1)
+      {
+        split_element.erase(split_element.begin());
+
+        for(uint16_t i = 0; i < new_frames.size(); i++)
+          success &= new_frames[i]->execImageAdjustments(split_element);
+      }
+
+      built_texture = true;
+    }
+    else
+    {
+      std::vector<std::string> split_path =
+          Helpers::split(base_path + data.getDataString(), '|');
+
+      if(split_path.size() == 3)
+      {
+        build_path_head = split_path[0];
+        build_frames = std::stoi(split_path[1]);
+        build_path_tail = split_path[2];
+      }
+      else
+      {
+        build_path_head = base_path + data.getDataString();
+        build_frames = 1;
+      }
     }
   }
   else if(element == "rotation")
@@ -333,7 +379,7 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
  * Inputs: none
  * Output: short - the animation time in milliseconds
  */
-short Sprite::getAnimationTime() const
+uint16_t Sprite::getAnimationTime() const
 {
   return animation_time;
 }
@@ -364,7 +410,8 @@ uint8_t Sprite::getColorBlue() const
 }
 
 /*
- * Description: Returns the color distribution evenness, according to the green
+ * Description: Returns the color distribution evenness, according to the
+ *green
  *              RGB value. Rated from 0 to 255. (255 full saturation).
  *
  * Inputs: none
@@ -478,7 +525,8 @@ int Sprite::getPosition()
 }
 
 /*
- * Description: Returns the rotation angle for rendering the texture, in degrees
+ * Description: Returns the rotation angle for rendering the texture, in
+ *degrees
  *
  * Inputs: none
  * Output: float - the angle, in degrees
@@ -526,7 +574,8 @@ SDL_Rect* Sprite::getSourceRect()
 }
 
 /*
- * Description: Returns the color distribution evenness, according to the temp.
+ * Description: Returns the color distribution evenness, according to the
+ *temp.
  *              red RGB value. Rated from 0 to 255. (255 full saturation).
  *
  * Inputs: none
@@ -534,11 +583,12 @@ SDL_Rect* Sprite::getSourceRect()
  */
 uint8_t Sprite::getTempColorRed() const
 {
-  return temp_red;
+  return color_temp_red;
 }
 
 /*
- * Description: Returns the color distribution evenness, according to the temp.
+ * Description: Returns the color distribution evenness, according to the
+ *temp.
  *              green RGB value. Rated from 0 to 255. (255 full saturation).
  *
  * Inputs: none
@@ -546,11 +596,12 @@ uint8_t Sprite::getTempColorRed() const
  */
 uint8_t Sprite::getTempColorGreen() const
 {
-  return temp_green;
+  return color_temp_green;
 }
 
 /*
- * Description: Returns the color distribution evenness, according to the temp.
+ * Description: Returns the color distribution evenness, according to the
+ *temp.
  *              blue RGB value. Rated from 0 to 255. (255 full saturation).
  *
  * Inputs: none
@@ -558,7 +609,7 @@ uint8_t Sprite::getTempColorGreen() const
  */
 uint8_t Sprite::getTempColorBlue() const
 {
-  return temp_blue;
+  return color_temp_blue;
 }
 
 /*
@@ -832,9 +883,40 @@ bool Sprite::isFramesSet() const
  */
 bool Sprite::isGreyScale()
 {
-  if(head != NULL)
+  if(head != nullptr)
     return head->isGreyScale();
   return false;
+}
+
+/*
+ * Description: Loads the sprite data from data into the
+ *              Sprite class constructing the frames/textures as required.
+ *
+ * Inputs: none
+ * Output: bool - true if the data could have been loaded
+ */
+bool Sprite::loadData(SDL_Renderer* renderer)
+{
+  bool success = true;
+
+  if(renderer)
+  {
+    if(build_path_head != "" && build_path_tail == "")
+    {
+      insertFirst(build_path_head, renderer);
+      success = true;
+    }
+    else if(build_path_head != "" && build_path_tail != "")
+    {
+      insertSequence(build_path_head, build_frames, build_path_tail, renderer);
+
+      success = true;
+    }
+  }
+
+  built_texture = true;
+
+  return success;
 }
 
 /*
@@ -883,6 +965,7 @@ bool Sprite::remove(int position)
     {
       current = head;
     }
+
     texture_update = true;
 
     return true;
@@ -949,6 +1032,9 @@ void Sprite::resetLoops()
  */
 bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
+  if(!built_texture)
+    loadData(renderer);
+
   if(current != NULL && renderer != NULL)
   {
     /* Proceed to update the running texture if it's changed */
@@ -1018,14 +1104,15 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
  */
 void Sprite::revertColorBalance()
 {
-  color_red = temp_red;
-  color_green = temp_green;
-  color_blue = temp_blue;
+  color_red = color_temp_red;
+  color_green = color_temp_green;
+  color_blue = color_temp_blue;
   setColorMod();
 }
 
 /*
- * Description: Sets the animation time between frame changes. Gets called from
+ * Description: Sets the animation time between frame changes. Gets called
+ *from
  *              the update call below for updating the frames in the sequence.
  *
  * Inputs: uint16_t time - the update time in milliseconds
@@ -1066,24 +1153,16 @@ bool Sprite::setAtFirst()
  */
 bool Sprite::setBrightness(double brightness)
 {
-  bool in_limits = true;
+  /* Assign the brightness, check whether in limits */
+  brightness = brightness;
+  bool in_limits{Helpers::isInRange(brightness, 0.0, kMAX_BRIGHTNESS)};
 
-  /* Check to ensure that sprite brightness is within bounds */
-  if(brightness < 0.0)
-  {
-    brightness = 0.0;
-    in_limits = false;
-  }
-  else if(brightness > kMAX_BRIGHTNESS)
-  {
-    brightness = kMAX_BRIGHTNESS;
-    in_limits = false;
-  }
+  /* Ensure is within limits */
+  Helpers::setInRange(brightness, 0.0, kMAX_BRIGHTNESS);
 
   /* Update the class brightness */
-  if(this->brightness != brightness)
+  if(brightness != brightness)
   {
-    this->brightness = brightness;
     setColorMod();
     texture_update = true;
   }
@@ -1092,7 +1171,8 @@ bool Sprite::setBrightness(double brightness)
 }
 
 /*
- * Description: Sets the color balance of the rendered texture. If each value is
+ * Description: Sets the color balance of the rendered texture. If each value
+ *is
  *              at 255, that is full color saturation. As the numbers get
  *              lowered, the color is pulled from the rendered texture.
  *
@@ -1111,7 +1191,8 @@ void Sprite::setColorBalance(uint8_t red, uint8_t green, uint8_t blue)
 }
 
 /*
- * Description: Sets the color mask rating of blue for the rendered texture. If
+ * Description: Sets the color mask rating of blue for the rendered texture.
+ *If
  *              the value is at 255, that is full color saturation. As the
  *              number gets lowered, the color is pulled from the rendered
  *              texture.
@@ -1126,7 +1207,8 @@ void Sprite::setColorBlue(uint8_t color)
 }
 
 /*
- * Description: Sets the color mask rating of green for the rendered texture. If
+ * Description: Sets the color mask rating of green for the rendered texture.
+ *If
  *              the value is at 255, that is full color saturation. As the
  *              number gets lowered, the color is pulled from the rendered
  *              texture.
@@ -1204,16 +1286,16 @@ void Sprite::setId(uint16_t id)
 }
 
 // TODO: comments
-void Sprite::setNonUnique(bool new_value, int32_t new_size)
+void Sprite::setNonUnique(bool new_value, int32_t size)
 {
-  size = new_size;
+  size = size;
   non_unique = new_value;
 }
 
 // TODO: comments
 void Sprite::setNumLoops(int32_t loops)
 {
-  this->loops = loops;
+  loops = loops;
 }
 
 /*
@@ -1225,11 +1307,8 @@ void Sprite::setNumLoops(int32_t loops)
  */
 void Sprite::setOpacity(uint8_t opacity)
 {
-  // if(this->opacity != opacity)
-  //{
-  this->opacity = opacity;
+  opacity = opacity;
   SDL_SetTextureAlphaMod(texture, opacity);
-  //}
 }
 
 /*
@@ -1253,16 +1332,17 @@ void Sprite::setRotation(float angle)
 void Sprite::setSoundID(int32_t id)
 {
   if(id < 0)
-    sound_id = kUNSET_SOUND_ID;
+    this->sound_id = kUNSET_SOUND_ID;
   else
-    sound_id = id;
+    this->sound_id = id;
 }
 
 /*
  * Description: Sets the source rect for rendering the active current frame.
  *              This is based on the width and height of the source frame and
  *              how it associates with the destination render. See
- *              unsetSourceRect() for unsetting at which point the entire source
+ *              unsetSourceRect() for unsetting at which point the entire
+ *source
  *              frame will render.
  *
  * Inputs: SDL_Rect rect - the source rect for rendering
@@ -1270,8 +1350,8 @@ void Sprite::setSoundID(int32_t id)
  */
 void Sprite::setSourceRect(SDL_Rect rect)
 {
-  src_rect = rect;
-  src_rect_use = true;
+  this->src_rect = rect;
+  this->src_rect_use = true;
 }
 
 /*
@@ -1299,7 +1379,7 @@ void Sprite::setTempColorBalance(uint8_t temp_red, uint8_t temp_green,
  */
 void Sprite::setTempColorRed(uint8_t temp_red)
 {
-  this->temp_red = temp_red;
+  color_temp_red = temp_red;
 }
 
 /*
@@ -1310,7 +1390,7 @@ void Sprite::setTempColorRed(uint8_t temp_red)
  */
 void Sprite::setTempColorGreen(uint8_t temp_green)
 {
-  this->temp_green = temp_green;
+  color_temp_green = temp_green;
 }
 
 /*
@@ -1321,7 +1401,7 @@ void Sprite::setTempColorGreen(uint8_t temp_green)
  */
 void Sprite::setTempColorBlue(uint8_t temp_blue)
 {
-  this->temp_blue = temp_blue;
+  color_temp_blue = temp_blue;
 }
 
 /*
@@ -1427,7 +1507,8 @@ bool Sprite::switchDirection()
 }
 
 /*
- * Description: Unsets the source rect being used and returns back to default of
+ * Description: Unsets the source rect being used and returns back to default
+ *of
  *              just using the entire source frame for rendering. This relates
  *              to setSourceRect()
  *
@@ -1440,7 +1521,8 @@ void Sprite::unsetSourceRect()
 }
 
 /*
- * Description: Updates the sprite times for animation. Necessary for automated
+ * Description: Updates the sprite times for animation. Necessary for
+ *automated
  *              animation.
  *
  * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
@@ -1507,7 +1589,8 @@ bool Sprite::update(int cycle_time, bool skip_head)
 /*
  * Description: Sets if all the frames in the sequence of sprite should use
  *              the grey scale texture. This only succeeds if the grey scale
- *              texture is enabled and there are frames to set. This also starts
+ *              texture is enabled and there are frames to set. This also
+ *starts
  *              the blending process for showing the transition between color
  *              and grey scale.
  *

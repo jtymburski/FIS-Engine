@@ -41,9 +41,7 @@ const int32_t Skill::kUNSET_ID = -1;
  * Inputs: none
  */
 Skill::Skill()
-    : animation_path{""},
-      animation_frames{0},
-      animation_time{0},
+    : animation{nullptr},
       chance{0},
       cooldown{0},
       cost{0},
@@ -309,24 +307,11 @@ bool Skill::loadData(XmlData data, int index, SDL_Renderer* renderer,
   /* ---- ANIMATION ---- */
   if(data.getElement(index) == "animation")
   {
-    auto element = data.getElement(index + 1);
-    auto split_elements = Helpers::split(element, '_');
+    if(animation == nullptr)
+      animation = new Sprite();
 
-    if(element == "animation")
-      animation_time = data.getDataInteger();
-
-    // TODO: Negates all properties..
-    if(split_elements.at(0) == "path")
-    {
-      auto path = base_path + data.getDataString();
-      auto split_path = Helpers::split(path, '|');
-
-      if(split_path.size() == 3)
-      {
-        animation_path = split_path[0];
-        animation_frames = std::stoi(split_path[1]);
-      }
-    }
+    success &= animation->addFileInformation(data, index + 1, renderer,
+                                             base_path, false, false);
   }
   /* ---- CHANCE ---- */
   else if(data.getElement(index) == "chance")
@@ -469,22 +454,9 @@ bool Skill::removeAction(const uint32_t& index)
   return false;
 }
 
-std::string Skill::getAnimationPath()
+Sprite* Skill::getAnimation()
 {
-  return animation_path;
-}
-
-uint32_t Skill::getAnimationFrames()
-{
-  return animation_frames;
-}
-
-uint32_t Skill::getAnimationTime()
-{
-  if(animation_time == 0)
-    return 1;
-
-  return animation_time;
+  return animation;
 }
 
 /*
@@ -665,21 +637,6 @@ Frame* Skill::getThumbnail()
 uint32_t Skill::getValue()
 {
   return value;
-}
-
-void Skill::setAnimationPath(std::string new_animation_path)
-{
-  animation_path = new_animation_path;
-}
-
-void Skill::setAnimationFrames(uint32_t new_animation_frames)
-{
-  animation_frames = new_animation_frames;
-}
-
-void Skill::setAnimationTime(uint32_t new_animation_time)
-{
-  animation_time = new_animation_time;
 }
 
 /*

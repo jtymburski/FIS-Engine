@@ -51,8 +51,7 @@ public:
                 int32_t x, int32_t y);
 
   /* Plep constructor with sprite path */
-  RenderElement(SDL_Renderer* renderer, std::string sprite_path,
-                int32_t num_frames, int32_t animation_time, int32_t num_loops,
+  RenderElement(SDL_Renderer* renderer, Sprite* animation, int32_t num_loops,
                 Coordinate point);
 
   /* Overlay and Midlay constructor */

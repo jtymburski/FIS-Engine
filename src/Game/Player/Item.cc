@@ -341,7 +341,7 @@ bool Item::loadData(XmlData data, int index, SDL_Renderer *renderer,
 
     /* Add data */
     success &= using_animation->addFileInformation(data, index + 1, renderer,
-                                                   base_path);
+                                                   base_path, false, false);
   }
   /* ---- BRIEF DESCRIPTION ---- */
   else if(data.getElement(index) == "brief_desc")

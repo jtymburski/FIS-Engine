@@ -23,6 +23,7 @@
 #define SKILL_H
 
 #include "Game/Player/Action.h"
+#include "Sprite.h"
 #include "XmlData.h"
 #include "Frame.h"
 
@@ -66,9 +67,7 @@ public:
 
 private:
   /* Pointer to the animation played by the Skill during Battle */
-  std::string animation_path;
-  uint32_t animation_frames;
-  uint32_t animation_time;
+  Sprite* animation;
 
   /* Chance the skill has overall to hit (100 = always hit) */
   float chance;
@@ -127,11 +126,6 @@ private:
   static const uint16_t kMAX_VALUE;       /* Maximum assigned point value */
   static const int32_t  kUNSET_ID;        /* ID for an unset Skill */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
-private:
-  /* Add effect data */
-  bool addEffectData(); // TODO: Remove? Unimplemented...
-
   /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Attempts to add an action given a chance to the effect list */
@@ -142,6 +136,9 @@ public:
 
   /* Determines the Skill classification based on contained effects */
   void flagSetup();
+
+  /* Returns a pointer to the assigned animation */
+  Sprite* getAnimation();
 
   /* Determines if a Skill is able to be used with Berserk */
   bool isBerserkSkill();
@@ -211,11 +208,6 @@ public:
 
   /* Returns the point value */
   uint32_t getValue();
-
-  /* Assigns a new using animation */
-  void setAnimationPath(std::string new_animation_path);
-  void setAnimationFrames(uint32_t new_animation_frames);
-  void setAnimationTime(uint32_t new_animation_time);
 
   /* Assigns a new chance to the skill */
   bool setChance(const float &new_chance);

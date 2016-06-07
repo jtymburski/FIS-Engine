@@ -79,19 +79,17 @@ RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* plep_sprite,
   location.point.y = y;
 }
 
-RenderElement::RenderElement(SDL_Renderer* renderer, std::string sprite_path,
-                             int32_t num_frames, int32_t animation_time,
+RenderElement::RenderElement(SDL_Renderer* renderer, Sprite* animation,
                              int32_t num_loops, Coordinate point)
     : RenderElement()
 {
   this->renderer = renderer;
-  buildSprite(sprite_path, num_frames);
+
+  if(animation)
+    element_sprite = new Sprite(*(animation));
 
   if(element_sprite)
-  {
     element_sprite->resetLoops();
-    element_sprite->setAnimationTime(animation_time);
-  }
 
   loops_to_do = num_loops;
   status = initialStatusFade();

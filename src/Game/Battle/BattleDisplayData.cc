@@ -345,57 +345,50 @@ void BattleDisplayData::buildItemMap(std::vector<Item*> items)
 
 void BattleDisplayData::buildPlepsAilments()
 {
-  bool success = true;
+  // /* Set up the Ailment pleps */
+  // auto sprite_paralysis = new Sprite(
+  //     config->getBasePath() + "sprites/Battle/Pleps/paralysisplep_AA_A", 3,
+  //     ".png", renderer);
+  // sprite_paralysis->setAnimationTime(70);
+  // pleps_ailments.emplace(Infliction::PARALYSIS, sprite_paralysis);
 
-  /* Set up the Ailment pleps */
-  auto sprite_paralysis = new Sprite(
-      config->getBasePath() + "sprites/Battle/Pleps/paralysisplep_AA_A", 3,
-      ".png", renderer);
-  sprite_paralysis->setAnimationTime(70);
-  pleps_ailments.emplace(Infliction::PARALYSIS, sprite_paralysis);
+  // auto sprite_confusion = new Sprite(
+  //     config->getBasePath() + "sprites/Battle/Pleps/confusionplep_AA_A", 3,
+  //     ".png", renderer);
+  // sprite_confusion->setAnimationTime(80);
+  // pleps_ailments.emplace(Infliction::CONFUSE, sprite_confusion);
 
-  auto sprite_confusion = new Sprite(
-      config->getBasePath() + "sprites/Battle/Pleps/confusionplep_AA_A", 3,
-      ".png", renderer);
-  sprite_confusion->setAnimationTime(80);
-  pleps_ailments.emplace(Infliction::CONFUSE, sprite_confusion);
+  // auto sprite_poison =
+  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/poisonplep_AA_A",
+  //                4, ".png", renderer);
+  // sprite_poison->setAnimationTime(95);
+  // pleps_ailments.emplace(Infliction::POISON, sprite_poison);
 
-  auto sprite_poison =
-      new Sprite(config->getBasePath() + "sprites/Battle/Pleps/poisonplep_AA_A",
-                 4, ".png", renderer);
-  sprite_poison->setAnimationTime(95);
-  pleps_ailments.emplace(Infliction::POISON, sprite_poison);
+  // auto sprite_buff =
+  //     new Sprite(config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A",
+  //                9, ".png", renderer);
+  // sprite_buff->setAnimationTime(95);
+  // pleps_ailments.emplace(Infliction::ALLATKBUFF, sprite_buff);
+  // pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_buff);
+  // pleps_ailments.emplace(Infliction::LIMBUFF, sprite_buff);
 
-  auto sprite_buff =
-      new Sprite(config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A",
-                 9, ".png", renderer);
-  sprite_buff->setAnimationTime(95);
-  pleps_ailments.emplace(Infliction::ALLATKBUFF, sprite_buff);
-  pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_buff);
-  pleps_ailments.emplace(Infliction::LIMBUFF, sprite_buff);
-
-  auto sprite_hibernation = new Sprite(
-      config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A", 4,
-      ".png", renderer);
-  sprite_hibernation->insertTail(
-      config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A00.png",
-      renderer);
-  sprite_hibernation->insertTail(
-      config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A01.png",
-      renderer);
-  sprite_hibernation->insertTail(
-      config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A02.png",
-      renderer);
-  sprite_hibernation->insertTail(
-      config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A03.png",
-      renderer);
-  sprite_hibernation->setAnimationTime(70);
-  pleps_ailments.emplace(Infliction::HIBERNATION, sprite_hibernation);
-
-  if(!success)
-    std::cout << "[Error] Building ailment pleps." << std::endl;
-  else
-    std::cout << "Successfully built sprites " << std::endl;
+  // auto sprite_hibernation = new Sprite(
+  //     config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A", 4,
+  //     ".png", renderer);
+  // sprite_hibernation->insertTail(
+  //     config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A00.png",
+  //     renderer);
+  // sprite_hibernation->insertTail(
+  //     config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A01.png",
+  //     renderer);
+  // sprite_hibernation->insertTail(
+  //     config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A02.png",
+  //     renderer);
+  // sprite_hibernation->insertTail(
+  //     config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A03.png",
+  //     renderer);
+  // sprite_hibernation->setAnimationTime(70);
+  // pleps_ailments.emplace(Infliction::HIBERNATION, sprite_hibernation);
 }
 
 void BattleDisplayData::buildPlepsEvents()

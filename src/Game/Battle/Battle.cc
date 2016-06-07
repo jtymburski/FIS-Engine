@@ -386,18 +386,16 @@ void Battle::buildBattleActors(Party* allies, Party* enemies)
 {
   for(uint32_t i = 0; i < allies->getSize(); i++)
   {
-    auto new_ally =
-        new BattleActor(allies->getMember(i), getBattleIndex(i),
-                        getMenuIndex(i, true), true, true, renderer);
+    auto new_ally = new BattleActor(allies->getMember(i), getBattleIndex(i),
+                                    getMenuIndex(i, true), true, true);
 
     /* Add the new ally to the vector of actors of the Battle */
     actors.push_back(new_ally);
   }
   for(uint32_t i = 0; i < enemies->getSize(); i++)
   {
-    auto new_enemy =
-        new BattleActor(enemies->getMember(i), getBattleIndex(i),
-                        getMenuIndex(i, false), false, true, renderer);
+    auto new_enemy = new BattleActor(enemies->getMember(i), getBattleIndex(i),
+                                     getMenuIndex(i, false), false, true);
 
     /* Add the new enemy to the vector of actors of the Battle */
     actors.push_back(new_enemy);
@@ -656,25 +654,25 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
 
   /* Create the render element sprite */
   if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE) ||
-     event->getCurrAction()->actionFlag(ActionFlags::ALTER))
+     event->getCurrAction()->actionFlag(ActionFlags::ALTER) ||
+     event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
   {
     auto skill = event->getCurrSkill();
-    auto element = new RenderElement(renderer, skill->getAnimationPath(),
-                                     skill->getAnimationFrames(),
-                                     skill->getAnimationTime(), 1, {x, y});
+    auto element =
+        new RenderElement(renderer, skill->getAnimation(), 1, {x, y});
 
     render_elements.push_back(element);
-    eh->triggerSound(Sound::kID_SOUND_BTL_PLEP, SoundChannels::TRIGGERS);
-  }
-  else if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
-  {
-    auto type = event->getCurrAction()->getAilment();
-    auto animation = battle_display_data->getPlepAilment(type);
-    auto element = new RenderElement(renderer, animation, 1, x, y);
 
-    playInflictionSound(type);
-    render_elements.push_back(element);
-    outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+    if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
+    {
+      auto type = event->getCurrAction()->getAilment();
+      playInflictionSound(type);
+      outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+    }
+    else
+    {
+      eh->triggerSound(Sound::kID_SOUND_BTL_PLEP, SoundChannels::TRIGGERS);
+    }
   }
 
   /* Set the next state based on the action flag */
@@ -862,7 +860,8 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
   {
     // TODO [05-25-16]: Enemy items probably broken.
     // success &=
-    //     next_actor->buildBattleItems(party_enemies->getInventory(), actors);
+    //     next_actor->buildBattleItems(party_enemies->getInventory(),
+    //     actors);
     success &= next_actor->buildBattleSkills(actors);
 
     // curr_module->setItems(next_actor->getBattleItems());
@@ -1572,6 +1571,10 @@ void Battle::buildActionFrame(BattleActor* actor)
                           action_frames->getCurrent()->getWidth(),
                           action_frames->getCurrent()->getHeight());
   }
+  else if(action_frames)
+  {
+    action_frames->render(renderer, actor->getDialogX(), actor->getDialogY());
+  }
 
   /* Try and chop out the base of the person */
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -2114,8 +2117,9 @@ bool Battle::renderAllies()
   /* Render each ally */
   for(auto& ally : getAllies())
   {
-    success &= ally->getActiveSprite()->render(renderer, getActorX(ally),
-                                               getActorY(ally));
+    if(ally->getActiveSprite())
+      success &= ally->getActiveSprite()->render(renderer, getActorX(ally),
+                                                 getActorY(ally));
   }
 
   return success;
@@ -2209,17 +2213,23 @@ bool Battle::renderEnemies()
         y_factor = 1.07;
       }
 
-      if(active_sprite && active_sprite->getCurrent())
+      if(active_sprite)
       {
-        auto old_w = active_sprite->getCurrent()->getWidth();
-        auto old_h = active_sprite->getCurrent()->getHeight();
+        auto old_w = 0;
+        auto old_h = 0;
+
+        if(active_sprite->getCurrent())
+        {
+          old_w = active_sprite->getCurrent()->getWidth();
+          old_h = active_sprite->getCurrent()->getHeight();
+        }
 
         auto w = (int)(old_w * x_factor);
         auto h = (int)(old_h * y_factor);
 
-        success &= enemy->getActiveSprite()->render(
-            renderer, getActorX(enemy) - (w - old_w),
-            getActorY(enemy) + (h - old_h), w, h);
+        success &=
+            active_sprite->render(renderer, getActorX(enemy) - (w - old_w),
+                                  getActorY(enemy) + (h - old_h), w, h);
       }
     }
   }

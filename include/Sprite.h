@@ -19,6 +19,13 @@
 #include "Frame.h"
 #include "XmlData.h"
 
+/* Direction to pass through the sequence of frames */
+enum Sequencer
+{
+  REVERSE,
+  FORWARD
+};
+
 class Sprite
 {
 public:
@@ -38,13 +45,6 @@ public:
   /* Destructor function */
   ~Sprite();
 
-  /* Direction to pass through the sequence of frames */
-  enum Sequencer
-  {
-    REVERSE,
-    FORWARD
-  };
-
   /* NONE - the object isn't rotated
    * CLOCKWISE - rotate the object 90 degrees clockwise
    * COUNTERCLOCKWISE - rotate the object 90 degrees counterclockwise
@@ -58,51 +58,63 @@ public:
   };
 
 private:
-  /* Animation time */
+  /* Time to complete animation */
   uint16_t animation_time;
-  uint16_t elapsed_time;
 
   /* The stored brightness for rendering */
   double brightness;
 
-  /* Color values to indicate the composition of the image */
-  uint8_t temp_red;
-  uint8_t temp_green;
-  uint8_t temp_blue;
+  /* Has the sprite data been loaded already? */
+  bool built_texture;
+
+  /* Path to the load the sprite from */
+  std::string build_path_head;
+  std::string build_path_tail;
+  int32_t build_frames;
+
+  /* Temporary colours */
+  uint8_t color_temp_red;
+  uint8_t color_temp_green;
+  uint8_t color_temp_blue;
+
+  /* Colour values */
   uint8_t color_red;
   uint8_t color_green;
   uint8_t color_blue;
 
-  /* The current frame */
-  Frame* current;
+  /* Elapsed time of animation */
+  uint16_t elapsed_time;
 
   /* Grey scale control information */
   uint8_t grey_scale_alpha;
   bool grey_scale_update;
+
+  /* The number of loops the Sprite has gone through */
+  uint32_t loops;
+
+  /* Is this a non-unique Sprite? */
+  bool non_unique;
+
+  /* Sets the opacity of the rendered sprite */
+  uint8_t opacity;
+
+  /* The rotation angle for rendering */
+  float rotation_angle;
+
+  /* Direction */
+  Sequencer sequence;
+
+  /* The number of frames */
+  int size;
+
+  /* The current frame */
+  Frame* current;
 
   /* The first frame */
   Frame* head;
 
   /* The sprite ID, useful when keeping track of a large number of sprites */
   uint16_t id;
-
-  /* The number of loops the Sprite has gone through */
-  uint32_t loops;
-
-  /* Sets the opacity of the rendered sprite */
-  uint8_t opacity;
-
-  /* Is this a non-unique Sprite? */
-  bool non_unique;
-
-  /* The rotation angle for rendering */
-  float rotation_angle;
-
-  /* The number of frames */
-  int size;
-
-  /* Direction */
-  Sequencer sequence;
 
   /* Sound Reference */
   int32_t sound_id;
@@ -116,14 +128,17 @@ private:
   bool texture_update;
 
   /*------------------- Constants -----------------------*/
+  const static uint8_t kDOUBLE_DIGITS;  /* the borderline to double digits */
+  const static double kMAX_BRIGHTNESS;  /* The max brightness value */
+  const static int32_t kUNSET_SOUND_ID; /* The unset ID sound */
+
+public:
+  /*------------------- Public Constants -----------------------*/
   const static uint16_t kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
   const static uint8_t kDEFAULT_COLOR;    /* the default color rating */
   const static uint8_t kDEFAULT_OPACITY;  /* the default rendered alpha */
   const static uint8_t kDELTA_GREY_SCALE; /* Delta grey scale alpha */
-  const static uint8_t kDOUBLE_DIGITS;    /* the borderline to double digits */
-  const static float kMAX_BRIGHTNESS;     /* The max brightness value */
-  const static int32_t kUNSET_SOUND_ID;   /* The unset ID sound */
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -145,7 +160,8 @@ protected:
 public:
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
-                          std::string base_path = "", bool no_warnings = false);
+                          std::string base_path = "", bool no_warnings = false,
+                          bool build_data = true);
 
   /* Creates a texture for a sprite (for Pleps) */
   void createTexture(SDL_Renderer* renderer);
@@ -154,7 +170,7 @@ public:
   bool execImageAdjustments(std::vector<std::string> adjustments);
 
   /* Returns the total animation time between frame changes */
-  short getAnimationTime() const;
+  uint16_t getAnimationTime() const;
 
   /* Gets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   double getBrightness() const;
@@ -246,6 +262,9 @@ public:
   /* Returns if the grey scale mode is active */
   bool isGreyScale();
 
+  /* Load the sprite data, build textures/frames */
+  bool loadData(SDL_Renderer* renderer);
+
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
 
@@ -297,7 +316,7 @@ public:
 
   /* To prevent delete for sprites guaranteed to be destroyed before
      unique sprites */
-  void setNonUnique(bool non_unique, int32_t new_size);
+  void setNonUnique(bool non_unique, int32_t size);
 
   /* Sets the number of loops */
   void setNumLoops(int32_t loops);
@@ -345,7 +364,7 @@ public:
   /* Returns the degrees of the angle enumerator */
   static int getAngle(RotatedAngle angle);
 
-  /*========================= OPERATOR FUNCTIONS =============================*/
+  /* ========================= OPERATOR FUNCTIONS =========================== */
 public:
   Sprite& operator=(const Sprite& source);
 };
