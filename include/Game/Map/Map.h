@@ -236,6 +236,9 @@ private:
   MapItem* getItem(uint32_t id, int sub_id = -1);
   MapItem* getItemBase(uint32_t id);
 
+  /* Returns the next item drop ID */
+  int getNextItemID();
+
   /* Returns the person, based on the ID */
   MapPerson* getPersonBase(uint32_t id);
 
@@ -332,6 +335,9 @@ public:
 
   /* Disable interaction by NPCs with the player */
   void disableInteraction(bool disable);
+
+  /* Drops the selected item under the players feet */
+  bool dropItem(uint32_t id, uint32_t count);
 
   /* Enable view trigger */
   void enableView(bool enable, bool map_change = false);

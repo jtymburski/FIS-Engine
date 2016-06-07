@@ -689,6 +689,19 @@ MapItem* Map::getItemBase(uint32_t id)
       return base_items[i];
   return NULL;
 }
+  
+/* Returns the next item drop ID */
+int Map::getNextItemID()
+{
+  int ref_id = EnumDb::kBASE_ID_ITEMS + EnumDb::kMAX_COUNT_ITEMS;
+
+  /* Parse items to find next available ID */
+  for(uint32_t i = 0; i < sub_map.size(); i++)
+    if(sub_map[i].items.size() > 0 && sub_map[i].items.back()->getID() > ref_id)
+      ref_id = sub_map[i].items.back()->getID() + 1;
+
+  return ref_id;
+}
 
 /* Returns the base person, based on the ID */
 MapPerson* Map::getPersonBase(uint32_t id)
@@ -1988,7 +2001,7 @@ void Map::battleWon()
       battle_thing->setActive(false);
       moveThing(battle_thing, section_old);
     }
-      
+
     /* Trigger battle won event, if valid */
     if(event_handler != nullptr)
     {
@@ -2008,6 +2021,91 @@ void Map::disableInteraction(bool disable)
 {
   if(player != nullptr)
     player->disableInteraction(disable);
+}
+
+/* Drops the selected item under the players feet */
+bool Map::dropItem(uint32_t id, uint32_t count)
+{
+  if(player != nullptr)
+  {
+    /* Confirm base item exists */
+    MapItem* base_ref = nullptr;
+    for(uint32_t i = 0; (base_ref == nullptr) && (i < base_items.size()); i++)
+      if(base_items[i]->getID() == static_cast<int>(id))
+        base_ref = base_items[i];
+    if(base_ref != nullptr)
+    {
+      /* Get player tile information */
+      bool finished = false;
+      int ref_id = (EnumDb::kBASE_ID_ITEMS + EnumDb::kMAX_COUNT_ITEMS);
+      std::vector<std::vector<Tile*>> tiles = player->getTileRender(0);
+
+      /* Try and find any items within the valid tile set that the count can be
+       * increased */
+      for(uint32_t i = 0; !finished && (i < tiles.size()); i++)
+      {
+        for(uint32_t j = 0; !finished && (j < tiles[i].size()); j++)
+        {
+          if(tiles[i][j] != nullptr && tiles[i][j]->getItemCount() > 0)
+          {
+            std::vector<MapItem*> items = tiles[i][j]->getItems();
+            for(uint32_t k = 0; k < items.size(); k++)
+            {
+              if(items[k]->getID() >= ref_id &&
+                 items[k]->getBase() != nullptr &&
+                 items[k]->getBase()->getID() == static_cast<int>(id))
+              {
+                items[k]->setCount(items[k]->getCount() + count);
+                finished = true;
+              }
+            }
+          }
+        }
+      }
+
+      /* If none found, proceed to drop a new item */
+      if(!finished)
+      {
+        /* Create the new item */
+        MapItem* new_item = new MapItem();
+        new_item->setBase(base_ref);
+        new_item->setEventHandler(event_handler);
+        new_item->setID(getNextItemID());
+        new_item->setStartCount(count);
+        new_item->setWalkover(true);
+
+        /* Find location to drop item */
+        for(uint32_t i = 0; !finished && (i < tiles.size()); i++)
+        {
+          for(uint32_t j = 0; !finished && (j < tiles[i].size()); j++)
+          {
+            if(tiles[i][j] != nullptr && !tiles[i][j]->isItemsAtLimit())
+            {
+              /* Set the location */
+              new_item->setLocationStart(player->getMapSection(),
+                                         tiles[i][j]->getX(),
+                                         tiles[i][j]->getY());
+
+              /* Set the tiles */
+              std::vector<std::vector<Tile*>> tile_set;
+              std::vector<Tile*> tile_row;
+              tile_row.push_back(tiles[i][j]);
+              tile_set.push_back(tile_row);
+              if(new_item->setTilesStart(tile_set, player->getMapSection()))
+                finished = true;
+            }
+          }
+        }
+
+        /* If never found, delete new item */
+        if(!finished)
+          delete new_item;
+      }
+
+      return finished;
+    }
+  }
+  return false;
 }
 
 /* Enable view trigger */
@@ -2902,7 +3000,7 @@ bool Map::pickupItem(MapItem* item, int count)
       {
         item_id = item->getSoundID();
       }
-      else if(static_cast<uint32_t>(item->getBase()->getID()) == 
+      else if(static_cast<uint32_t>(item->getBase()->getID()) ==
               Item::kID_MONEY)
       {
         item_id = Sound::kID_SOUND_PICK_COIN;

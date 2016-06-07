@@ -12,7 +12,7 @@
 const uint8_t MapItem::kDEFAULT_COUNT = 1;
 const float MapItem::kDELTA_TIME_ONE_POINT = 3000.0;
 const float MapItem::kMAX_BRIGHTNESS = 1.2;
-const float MapItem::kMIN_BRIGHTNESS = 1.0;
+const float MapItem::kMIN_BRIGHTNESS = 0.9;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS

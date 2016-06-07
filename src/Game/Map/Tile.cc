@@ -1647,7 +1647,7 @@ bool Tile::unsetItem(MapItem* item)
   {
     if(items[i] == item)
     {
-      items[i] = NULL;
+      items[i] = nullptr;
       items.erase(items.begin()+i);
       return true;
     }

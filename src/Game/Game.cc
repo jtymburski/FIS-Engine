@@ -373,59 +373,86 @@ int Game::eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
 {
   int insert_count = 0;
 
-  // TODO: CHANCE, FLAGS, and FROM PICKUP (DO NOT DROP ON MAP IF PICKUP)
-  std::cout << "TODO: Chance and Flags - " << (int)flags << "," << chance
-            << "," << from_pickup << std::endl;
-
-  /* Attempt to find the item and insert */
-  Item* found_item = getItem(id);
-  if(found_item != nullptr && count > 0)
+  /* Determine if the give item occurs */
+  if(from_pickup || Helpers::chanceHappens(chance, 100))
   {
-    /* Try and insert into sleuth inventory */
-    if(player_main != nullptr)
+    /* Attempt to find the item in the core reference */
+    Item* found_item = getItem(id);
+    if(found_item != nullptr && count > 0)
     {
-      /* If ID matches item ID, add credits */
-      if(id == (int)Item::kID_MONEY)
+      /* Get the flag */
+      bool auto_drop;
+      EventSet::dataEnumGiveFlags(flags, auto_drop);
+
+      /* Try and insert into sleuth inventory */
+      if(player_main != nullptr && !auto_drop)
       {
-        if(player_main->addCredits(count))
-          insert_count = count;
+        /* If ID matches item ID, add credits */
+        if(id == (int)Item::kID_MONEY)
+        {
+          if(player_main->addCredits(count))
+            insert_count = count;
+        }
+        /* Otherwise, just general item */
+        else if(player_main->getSleuth() != nullptr &&
+                player_main->getSleuth()->getInventory() != nullptr)
+        {
+          Inventory* inv = player_main->getSleuth()->getInventory();
+
+          /* Create item and check room */
+          Item* new_item = new Item(found_item);
+          int room = inv->hasRoom(new_item, count);
+
+          /* Attempt add */
+          AddStatus status =
+              player_main->getSleuth()->getInventory()->add(new_item, room);
+          if(status == AddStatus::GOOD_DELETE)
+          {
+            delete new_item;
+            insert_count = room;
+          }
+          else if(status == AddStatus::GOOD_KEEP)
+          {
+            insert_count = room;
+          }
+        }
       }
-      /* Otherwise, just general item */
-      else if(player_main->getSleuth() != nullptr &&
-              player_main->getSleuth()->getInventory() != nullptr)
+
+      /* If inserted, notify that the pickup was a success */
+      if(insert_count > 0)
       {
-        Inventory* inv = player_main->getSleuth()->getInventory();
+        map_ctrl.initNotification(found_item->getThumb(), insert_count);
+      }
 
-        /* Create item and check room */
-        Item* new_item = new Item(found_item);
-        int room = inv->hasRoom(new_item, count);
+      /* Notify and drop that item could not be received - depending on
+       * properties */
+      if(count > insert_count)
+      {
+        int delta = (count - insert_count);
 
-        /* Attempt add */
-        AddStatus status =
-            player_main->getSleuth()->getInventory()->add(new_item, room);
-        if(status == AddStatus::GOOD_DELETE)
+        // TODO: Add colored highlight to item name!
+
+        /* From pickup - just notify */
+        if(from_pickup)
         {
-          delete new_item;
-          insert_count = room;
+          map_ctrl.initNotification(
+                        "Insufficient room in inventory to pickup " +
+                        std::to_string(delta) + " " + found_item->getName());
         }
-        else if(status == AddStatus::GOOD_KEEP)
+        /* Otherwise: notify and drop remaining items */
+        else
         {
-          insert_count = room;
+          /* Notify if not auto drop and items could not fit */
+          if(!auto_drop)
+            map_ctrl.initNotification(
+                        "Insufficient room in inventory to receive " +
+                        std::to_string(delta) + " " + found_item->getName() +
+                        ". Remaining will be dropped");
+
+          /* Drop onto map */
+          map_ctrl.dropItem(id, delta);
         }
       }
-    }
-
-    /* If inserted, notify that the pickup was a success */
-    if(insert_count > 0)
-    {
-      map_ctrl.initNotification(found_item->getThumb(), insert_count);
-    }
-    /* Notify that item could not be received */
-    if(count > insert_count)
-    {
-      map_ctrl.initNotification("Insufficient room in inventory to fit " +
-                                std::to_string(count - insert_count) + " " +
-                                found_item->getName());
     }
   }
 

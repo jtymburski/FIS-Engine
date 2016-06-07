@@ -410,8 +410,7 @@ uint8_t Sprite::getColorBlue() const
 }
 
 /*
- * Description: Returns the color distribution evenness, according to the
- *green
+ * Description: Returns the color distribution evenness, according to the green
  *              RGB value. Rated from 0 to 255. (255 full saturation).
  *
  * Inputs: none
@@ -526,7 +525,7 @@ int Sprite::getPosition()
 
 /*
  * Description: Returns the rotation angle for rendering the texture, in
- *degrees
+ *              degrees
  *
  * Inputs: none
  * Output: float - the angle, in degrees
@@ -575,8 +574,8 @@ SDL_Rect* Sprite::getSourceRect()
 
 /*
  * Description: Returns the color distribution evenness, according to the
- *temp.
- *              red RGB value. Rated from 0 to 255. (255 full saturation).
+ *              temp red RGB value. Rated from 0 to 255. (255 full 
+ *              saturation).
  *
  * Inputs: none
  * Output: uint8_t - the rated temp. RGB value
@@ -588,8 +587,8 @@ uint8_t Sprite::getTempColorRed() const
 
 /*
  * Description: Returns the color distribution evenness, according to the
- *temp.
- *              green RGB value. Rated from 0 to 255. (255 full saturation).
+ *              temp green RGB value. Rated from 0 to 255. (255 full
+ *              saturation).
  *
  * Inputs: none
  * Output: uint8_t - the rated temp. RGB value
@@ -601,8 +600,8 @@ uint8_t Sprite::getTempColorGreen() const
 
 /*
  * Description: Returns the color distribution evenness, according to the
- *temp.
- *              blue RGB value. Rated from 0 to 255. (255 full saturation).
+ *              temp blue RGB value. Rated from 0 to 255. (255 full
+ *              saturation).
  *
  * Inputs: none
  * Output: uint8_t - the rated temp RGB value
@@ -759,7 +758,7 @@ std::vector<Frame*> Sprite::insertFrames(std::string path,
 
 /*
  * Description: Inserts a sequence of images that are stored. This allows for
- * quick insertion of stored frames.
+ *              quick insertion of stored frames.
  * For example: head_path = ":/animation/image_"
  *              count = 5
  *              tail_path = ".png"
@@ -1111,9 +1110,9 @@ void Sprite::revertColorBalance()
 }
 
 /*
- * Description: Sets the animation time between frame changes. Gets called
- *from
- *              the update call below for updating the frames in the sequence.
+ * Description: Sets the animation time between frame changes. Gets called 
+ *              from the update call below for updating the frames in the
+ *              sequence.
  *
  * Inputs: uint16_t time - the update time in milliseconds
  * Output: none
@@ -1153,16 +1152,16 @@ bool Sprite::setAtFirst()
  */
 bool Sprite::setBrightness(double brightness)
 {
-  /* Assign the brightness, check whether in limits */
-  brightness = brightness;
+  /* Check whether in limits */
   bool in_limits{Helpers::isInRange(brightness, 0.0, kMAX_BRIGHTNESS)};
 
   /* Ensure is within limits */
   Helpers::setInRange(brightness, 0.0, kMAX_BRIGHTNESS);
 
   /* Update the class brightness */
-  if(brightness != brightness)
+  if(this->brightness != brightness)
   {
+    this->brightness = brightness;
     setColorMod();
     texture_update = true;
   }
@@ -1171,9 +1170,8 @@ bool Sprite::setBrightness(double brightness)
 }
 
 /*
- * Description: Sets the color balance of the rendered texture. If each value
- *is
- *              at 255, that is full color saturation. As the numbers get
+ * Description: Sets the color balance of the rendered texture. If each value 
+ *              is at 255, that is full color saturation. As the numbers get
  *              lowered, the color is pulled from the rendered texture.
  *
  * Inputs: uint8_t red - the red color 0-255 rating (255 full)
@@ -1192,8 +1190,7 @@ void Sprite::setColorBalance(uint8_t red, uint8_t green, uint8_t blue)
 
 /*
  * Description: Sets the color mask rating of blue for the rendered texture.
- *If
- *              the value is at 255, that is full color saturation. As the
+ *              If the value is at 255, that is full color saturation. As the
  *              number gets lowered, the color is pulled from the rendered
  *              texture.
  *
@@ -1208,8 +1205,7 @@ void Sprite::setColorBlue(uint8_t color)
 
 /*
  * Description: Sets the color mask rating of green for the rendered texture.
- *If
- *              the value is at 255, that is full color saturation. As the
+ *              If the value is at 255, that is full color saturation. As the
  *              number gets lowered, the color is pulled from the rendered
  *              texture.
  *
@@ -1342,8 +1338,7 @@ void Sprite::setSoundID(int32_t id)
  *              This is based on the width and height of the source frame and
  *              how it associates with the destination render. See
  *              unsetSourceRect() for unsetting at which point the entire
- *source
- *              frame will render.
+ *              source frame will render.
  *
  * Inputs: SDL_Rect rect - the source rect for rendering
  * Output: none
@@ -1508,9 +1503,8 @@ bool Sprite::switchDirection()
 
 /*
  * Description: Unsets the source rect being used and returns back to default
- *of
- *              just using the entire source frame for rendering. This relates
- *              to setSourceRect()
+ *              of just using the entire source frame for rendering. This
+ *              relates to setSourceRect()
  *
  * Inputs: none
  * Output: none
@@ -1522,8 +1516,7 @@ void Sprite::unsetSourceRect()
 
 /*
  * Description: Updates the sprite times for animation. Necessary for
- *automated
- *              animation.
+ *              automated animation.
  *
  * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
  *         bool skip_head - skip the head frame when updating?
@@ -1590,9 +1583,8 @@ bool Sprite::update(int cycle_time, bool skip_head)
  * Description: Sets if all the frames in the sequence of sprite should use
  *              the grey scale texture. This only succeeds if the grey scale
  *              texture is enabled and there are frames to set. This also
- *starts
- *              the blending process for showing the transition between color
- *              and grey scale.
+ *              starts the blending process for showing the transition between
+ *              color and grey scale.
  *
  * Inputs: bool enable - true for grey scale textures, false for color
  * bool - status if the set changed the grey scale setting
