@@ -360,6 +360,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
                        SDL_Renderer* renderer, bool from_save)
 {
   int32_t base_id = -1;
+  bool drop_item = false;
   std::string identifier = data.getElement(kFILE_CLASSIFIER);
   uint32_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
   MapThing* modified_thing = nullptr;
@@ -434,8 +435,9 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   else if(identifier == "mapitem")
   {
     /* Create a new item, if one doesn't exist */
+    drop_item = (id >= (EnumDb::kBASE_ID_ITEMS + EnumDb::kMAX_COUNT_ITEMS));
     modified_thing = getItem(id);
-    if(modified_thing == nullptr && !from_save)
+    if(modified_thing == nullptr && (!from_save || drop_item))
     {
       modified_thing = new MapItem();
       new_thing = true;
@@ -463,7 +465,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
 
     /* Make sure the section index is appropriately assigned */
     int section_old = -1;
-    if(from_save)
+    if(from_save && !drop_item)
     {
       if(modified_thing->isNextLocation())
       {
@@ -687,9 +689,9 @@ MapItem* Map::getItemBase(uint32_t id)
   for(uint32_t i = 0; i < base_items.size(); i++)
     if(base_items[i]->getID() == static_cast<int>(id))
       return base_items[i];
-  return NULL;
+  return nullptr;
 }
-  
+
 /* Returns the next item drop ID */
 int Map::getNextItemID()
 {
@@ -697,8 +699,9 @@ int Map::getNextItemID()
 
   /* Parse items to find next available ID */
   for(uint32_t i = 0; i < sub_map.size(); i++)
-    if(sub_map[i].items.size() > 0 && sub_map[i].items.back()->getID() > ref_id)
-      ref_id = sub_map[i].items.back()->getID() + 1;
+    for(uint32_t j = 0; j < sub_map[i].items.size(); j++)
+      if(sub_map[i].items[j]->getID() >= ref_id)
+        ref_id = (sub_map[i].items[j]->getID() + 1);
 
   return ref_id;
 }
@@ -2092,7 +2095,10 @@ bool Map::dropItem(uint32_t id, uint32_t count)
               tile_row.push_back(tiles[i][j]);
               tile_set.push_back(tile_row);
               if(new_item->setTilesStart(tile_set, player->getMapSection()))
+              {
                 finished = true;
+                sub_map[player->getMapSection()].items.push_back(new_item);
+              }
             }
           }
         }
@@ -3432,7 +3438,7 @@ void Map::unloadMap()
       for(uint32_t k = 0; k < sub_map[i].tiles[j].size(); k++)
       {
         delete sub_map[i].tiles[j][k];
-        sub_map[i].tiles[j][k] = NULL;
+        sub_map[i].tiles[j][k] = nullptr;
       }
       sub_map[i].tiles[j].clear();
     }
@@ -3452,7 +3458,7 @@ void Map::unloadMap()
   for(uint32_t i = 0; i < base_ios.size(); i++)
   {
     delete base_ios[i];
-    base_ios[i] = NULL;
+    base_ios[i] = nullptr;
   }
   base_ios.clear();
 
@@ -3460,7 +3466,7 @@ void Map::unloadMap()
   for(uint32_t i = 0; i < base_items.size(); i++)
   {
     delete base_items[i];
-    base_items[i] = NULL;
+    base_items[i] = nullptr;
   }
   base_items.clear();
 
@@ -3468,7 +3474,7 @@ void Map::unloadMap()
   for(uint32_t i = 0; i < base_persons.size(); i++)
   {
     delete base_persons[i];
-    base_persons[i] = NULL;
+    base_persons[i] = nullptr;
   }
   base_persons.clear();
 
@@ -3476,7 +3482,7 @@ void Map::unloadMap()
   for(uint32_t i = 0; i < base_things.size(); i++)
   {
     delete base_things[i];
-    base_things[i] = NULL;
+    base_things[i] = nullptr;
   }
   base_things.clear();
 

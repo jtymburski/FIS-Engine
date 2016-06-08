@@ -115,15 +115,31 @@ bool MapItem::isDataToSave()
  */
 bool MapItem::saveData(FileHandler* fh, const bool &save_event)
 {
-  (void)save_event;
   bool success = true;
+  int drop_id = EnumDb::kBASE_ID_ITEMS + EnumDb::kMAX_COUNT_ITEMS;
 
-  /* Parent property saves */
-  success &= MapThing::saveData(fh, false);
+  /* Is a dropped item by the active map */
+  if(getID() >= drop_id)
+  {
+    if(getBase() != nullptr)
+    {
+      fh->writeXmlData("base", getBase()->getID());
+      fh->writeXmlData("startpoint", std::to_string(getStartingX()) + "," +
+                                     std::to_string(getStartingY()));
+      fh->writeXmlData("startcount", getCount());
+      fh->writeXmlData("walkover", isWalkover());
+    }
+  }
+  /* Was there when the map was created by the designer */
+  else
+  {
+    /* Parent property saves */
+    success &= MapThing::saveData(fh, save_event);
 
-  /* Count */
-  if(count != start_count)
-    fh->writeXmlData("count", count);
+    /* Count */
+    if(count != start_count)
+      fh->writeXmlData("count", count);
+  }
 
   return success;
 }
@@ -363,12 +379,14 @@ bool MapItem::save(FileHandler* fh)
   if(fh != nullptr)
   {
     bool success = true;
+    bool drop_item = (getID() >= (EnumDb::kBASE_ID_ITEMS +
+                                  EnumDb::kMAX_COUNT_ITEMS));
 
     /* Only write if there is data to save */
-    if(isDataToSave())
+    if((drop_item && getCount() > 0) || (!drop_item && isDataToSave()))
     {
       fh->writeXmlElement("mapitem", "id", getID());
-      success &= saveData(fh);
+      success &= saveData(fh, false);
       fh->writeXmlElementEnd();
     }
 
