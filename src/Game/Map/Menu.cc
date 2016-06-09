@@ -2034,10 +2034,17 @@ void Menu::renderSleuthOverview()
 
   if(actor->getActiveSprite())
   {
-    actor->getActiveSprite()->render(
-        renderer, s_sprite_box.point.x,
-        s_sprite_box.point.y + s_sprite_box.height / 2 -
-            actor->getActiveSprite()->getCurrent()->getHeight() / 2);
+    if(actor->getActiveSprite()->getCurrent())
+    {
+      actor->getActiveSprite()->render(
+          renderer, s_sprite_box.point.x,
+          s_sprite_box.point.y + s_sprite_box.height / 2 -
+              actor->getActiveSprite()->getCurrent()->getHeight() / 2);
+    }
+    else
+    {
+      actor->getActiveSprite()->loadData(renderer);
+    }
   }
 
   /* Render the equipment icons */
@@ -2661,7 +2668,7 @@ void Menu::renderSave()
   auto save_width = (int32_t)std::round(main.width * kSAVE_ELEMENT_WIDTH);
   auto save_height = (int32_t)std::round(main.height * kSAVE_ELEMENT_HEIGHT);
 
-  //setupDefaultBox(save_scroll_box);
+  // setupDefaultBox(save_scroll_box);
 
   current = {main.point.x + gap, main.point.y + gap};
 

@@ -311,12 +311,10 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
         build_path_head = split_path[0];
         build_frames = std::stoi(split_path[1]);
         build_path_tail = split_path[2];
-        std::cout << "Build path tail " << build_path_tail << std::endl;
       }
       else
       {
         build_path_head = base_path + data.getDataString();
-        std::cout << "Build path head: " << build_path_head << std::endl;
         build_frames = 1;
       }
     }
@@ -904,13 +902,11 @@ bool Sprite::loadData(SDL_Renderer* renderer)
   {
     if(build_path_head != "" && build_path_tail == "")
     {
-      std::cout << "Inserting a lowly first frame" << std::endl;
       insertFirst(build_path_head, renderer);
       success = true;
     }
     else if(build_path_head != "" && build_path_tail != "")
     {
-      std::cout << "Inserting sequence" << std::endl;
       insertSequence(build_path_head, build_frames, build_path_tail, renderer);
 
       success = true;

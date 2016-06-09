@@ -250,8 +250,6 @@ void BattleActor::createSprites()
     if(person_base->getSpriteFirstPerson())
       sprite_first_person = new Sprite(*(person_base->getSpriteFirstPerson()));
 
-    std::cout << "Built first person sprite" << std::endl;
-
     /* Build the third person sprite, if one exists */
     if(person_base->getSpriteThirdPerson())
       sprite_third_person = new Sprite(*(person_base->getSpriteThirdPerson()));

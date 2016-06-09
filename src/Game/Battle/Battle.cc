@@ -208,9 +208,7 @@ void Battle::actionStateFadeInText()
 
 void Battle::actionStateSlideOut()
 {
-  if(event->actor->getFlag(ActorState::ALLY))
-    event->actor->setActiveSprite(ActiveSprite::ACTION);
-
+  event->actor->setActiveSprite(ActiveSprite::ACTION);
   event->action_state = ActionState::SWITCH_SPRITE;
   addDelay(250);
 }
@@ -1274,6 +1272,8 @@ void Battle::updateProcessing()
 
     if(event->actor && event->actor->getFlag(ActorState::ALLY))
       event->actor->setActiveSprite(ActiveSprite::FIRST_PERSON);
+    else if(event->actor)
+      event->actor->setActiveSprite(ActiveSprite::THIRD_PERSON);
 
     clearEvent();
   }
