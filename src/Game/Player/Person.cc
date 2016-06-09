@@ -129,6 +129,50 @@ Person::~Person()
  *============================================================================*/
 
 /*
+ * Description: Copies all data from source object to this object.
+ *
+ * Inputs: Person &source - the source to copy from
+ * Output: none
+ */
+// TODO: NOT FULLY COMPLETE. Relevant??
+void Person::copySelf(const Person& source)
+{
+  action_x = source.action_x;
+  action_y = source.action_y;
+
+  game_id = source.game_id;
+
+  base_person = source.base_person;
+  person_flags = source.person_flags;
+
+  battle_class = source.battle_class;
+  race_class = source.race_class;
+
+  name = source.name;
+  rank = source.rank;
+
+  primary = source.primary;
+  secondary = source.secondary;
+  primary_curve = source.primary_curve;
+  secondary_curve = source.secondary_curve;
+
+  equipments = source.equipments;
+
+  item_drops = source.item_drops;
+  credit_drop = source.credit_drop;
+  exp_drop = source.exp_drop;
+
+  level = source.level;
+  total_exp = source.total_exp;
+
+  sprite_action = source.sprite_action;
+  sprite_dialog = source.sprite_dialog;
+  sprite_face = source.sprite_face;
+  sprite_first_person = source.sprite_first_person;
+  sprite_third_person = source.sprite_third_person;
+}
+
+/*
  * Description: Loads the default settings for a Person
  *
  * Inputs: none
@@ -2027,7 +2071,7 @@ Person& Person::operator=(const Person& source)
     return *this;
 
   /* Do the copy */
-  setupClass();
+  copySelf(source);
 
   /* Return the copied object */
   return *this;

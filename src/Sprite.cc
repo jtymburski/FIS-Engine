@@ -1326,7 +1326,7 @@ void Sprite::setNumLoops(int32_t loops)
  */
 void Sprite::setOpacity(uint8_t opacity)
 {
-  opacity = opacity;
+  this->opacity = opacity;
   SDL_SetTextureAlphaMod(texture, opacity);
 }
 

@@ -262,6 +262,7 @@ public:
   const static uint8_t kHAVE_ITEM_COUNT; /* Have item count index */
   const static uint8_t kHAVE_ITEM_ID; /* Have item ID index */
   /* ---- */
+  const static int32_t kGIVE_DEF_CHANCE; /* Default give item chance */
   const static int32_t kVIEW_TIME; /* The default view time - for unlocks */
   const static int32_t kUNSET_ID; /* The unset ID - for all IDs */
 
@@ -423,7 +424,8 @@ public:
   /* Creates a give item event, with the appropriate parameters */
   static Event createEventGiveItem(int id = kUNSET_ID, int count = 0,
                                    GiveItemFlags flags = GiveItemFlags::NONE,
-                                   int chance = 100, int sound_id = kUNSET_ID);
+                                   int chance = kGIVE_DEF_CHANCE,
+                                   int sound_id = kUNSET_ID);
 
   /* Creates a multiple event with a set of events */
   static Event createEventMultiple(

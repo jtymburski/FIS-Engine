@@ -179,6 +179,9 @@ public:
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const Person& source);
+
   /* Loads the default values for the Person */
   void loadDefaults();
 

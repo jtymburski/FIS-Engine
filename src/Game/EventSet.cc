@@ -51,6 +51,7 @@ const uint8_t EventSet::kHAVE_ITEM_CONSUME = 0;
 const uint8_t EventSet::kHAVE_ITEM_COUNT = 1;
 const uint8_t EventSet::kHAVE_ITEM_ID = 0;
 /* ---- */
+const int32_t EventSet::kGIVE_DEF_CHANCE = 100;
 const int32_t EventSet::kVIEW_TIME = 1000;
 const int32_t EventSet::kUNSET_ID = -1;
 

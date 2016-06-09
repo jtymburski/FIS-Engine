@@ -360,16 +360,23 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
                        SDL_Renderer* renderer, bool from_save)
 {
   int32_t base_id = -1;
-  bool drop_item = false;
   std::string identifier = data.getElement(kFILE_CLASSIFIER);
   uint32_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
   MapThing* modified_thing = nullptr;
   bool new_thing = false;
   bool success = true;
 
+  /* Determine if drop item */
+  bool drop_item = false;
+  if(from_save)
+    drop_item = (id >= (EnumDb::kBASE_ID_ITEMS + EnumDb::kMAX_COUNT_ITEMS));
+
   /* Check if it's base */
-  if(data.getElement(kFILE_CLASSIFIER + 1) == "base" && !from_save)
+  if(data.getElement(kFILE_CLASSIFIER + 1) == "base" && 
+     (!from_save || drop_item))
+  {
     base_id = data.getDataInteger();
+  }
 
   /* Identify which thing to be created */
   if(identifier == "mapthing")
@@ -435,7 +442,6 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   else if(identifier == "mapitem")
   {
     /* Create a new item, if one doesn't exist */
-    drop_item = (id >= (EnumDb::kBASE_ID_ITEMS + EnumDb::kMAX_COUNT_ITEMS));
     modified_thing = getItem(id);
     if(modified_thing == nullptr && (!from_save || drop_item))
     {

@@ -2519,9 +2519,6 @@ void MapThing::setLocationNext(uint16_t section_id, uint16_t x, uint16_t y)
   /* Unset the tiles, currently in use */
   unsetTiles(true);
 
-  if(getID() == 10224)
-    std::cout << section_id << "," << x << "," << y << std::endl;
-
   /* Set the new tile coordinate */
   next_section = section_id;
   next_x = x;
