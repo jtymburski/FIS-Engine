@@ -250,6 +250,8 @@ void BattleActor::createSprites()
     if(person_base->getSpriteFirstPerson())
       sprite_first_person = new Sprite(*(person_base->getSpriteFirstPerson()));
 
+    std::cout << "Built first person sprite" << std::endl;
+
     /* Build the third person sprite, if one exists */
     if(person_base->getSpriteThirdPerson())
       sprite_third_person = new Sprite(*(person_base->getSpriteThirdPerson()));
@@ -745,8 +747,8 @@ bool BattleActor::update(int32_t cycle_time)
     updateSpriteFlashing(cycle_time);
   else if(state_active_sprite == SpriteState::BOBBING)
     updateSpriteBobbing(cycle_time);
-  // else
-  //   updateSpriteGeneral(cycle_time);
+  else if(getActiveSprite())
+    getActiveSprite()->update(cycle_time);
 
   return true;
 }

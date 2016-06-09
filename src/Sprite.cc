@@ -311,10 +311,12 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
         build_path_head = split_path[0];
         build_frames = std::stoi(split_path[1]);
         build_path_tail = split_path[2];
+        std::cout << "Build path tail " << build_path_tail << std::endl;
       }
       else
       {
         build_path_head = base_path + data.getDataString();
+        std::cout << "Build path head: " << build_path_head << std::endl;
         build_frames = 1;
       }
     }
@@ -574,7 +576,7 @@ SDL_Rect* Sprite::getSourceRect()
 
 /*
  * Description: Returns the color distribution evenness, according to the
- *              temp red RGB value. Rated from 0 to 255. (255 full 
+ *              temp red RGB value. Rated from 0 to 255. (255 full
  *              saturation).
  *
  * Inputs: none
@@ -898,15 +900,17 @@ bool Sprite::loadData(SDL_Renderer* renderer)
 {
   bool success = true;
 
-  if(renderer)
+  if(renderer && !built_texture)
   {
     if(build_path_head != "" && build_path_tail == "")
     {
+      std::cout << "Inserting a lowly first frame" << std::endl;
       insertFirst(build_path_head, renderer);
       success = true;
     }
     else if(build_path_head != "" && build_path_tail != "")
     {
+      std::cout << "Inserting sequence" << std::endl;
       insertSequence(build_path_head, build_frames, build_path_tail, renderer);
 
       success = true;
@@ -1110,7 +1114,7 @@ void Sprite::revertColorBalance()
 }
 
 /*
- * Description: Sets the animation time between frame changes. Gets called 
+ * Description: Sets the animation time between frame changes. Gets called
  *              from the update call below for updating the frames in the
  *              sequence.
  *
@@ -1168,9 +1172,32 @@ bool Sprite::setBrightness(double brightness)
 
   return in_limits;
 }
+/*
+ * Description: Assigns the build information for the sprite
+ *
+ * Inputs: std::string build_path_head - path to the head of the sprite
+ *         std::string build_path_tail - path to the tail of the sprite
+ *         int32_t build_frames - the number of frames to construct
+ * Output: bool - true if the information was able to be set
+ */
+bool Sprite::setBuildInformation(std::string build_path_head,
+                                 std::string build_path_tail,
+                                 int32_t build_frames)
+{
+  if(!built_texture)
+  {
+    this->build_path_head = build_path_head;
+    this->build_path_tail = build_path_tail;
+    this->build_frames = build_frames;
+
+    return true;
+  }
+
+  return false;
+}
 
 /*
- * Description: Sets the color balance of the rendered texture. If each value 
+ * Description: Sets the color balance of the rendered texture. If each value
  *              is at 255, that is full color saturation. As the numbers get
  *              lowered, the color is pulled from the rendered texture.
  *

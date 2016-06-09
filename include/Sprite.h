@@ -293,6 +293,11 @@ public:
   /* Sets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   bool setBrightness(double brightness);
 
+  /* Assigns the build information */
+  bool setBuildInformation(std::string build_path_head,
+                           std::string build_path_tail = "",
+                           int32_t build_frames = 1);
+
   /* Sets the color balance of the sprite */
   void setColorBalance(uint8_t red, uint8_t green, uint8_t blue);
   void setColorBlue(uint8_t color);

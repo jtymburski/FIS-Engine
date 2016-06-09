@@ -2665,7 +2665,7 @@ void Battle::upkeepAilmentPlep()
     playInflictionSound(type);
     auto x = getActorX(upkeep_actor);
     auto y = getActorY(upkeep_actor);
-    render_elements.push_back(new RenderElement(renderer, plep, 2, x, y));
+    render_elements.push_back(new RenderElement(renderer, plep, 2, {x, y}));
   }
 
   upkeep_ailment->setUpdateStatus(AilmentStatus::COMPLETED);
