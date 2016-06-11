@@ -21,8 +21,6 @@
 #include "Sound.h"
 #include "Text.h"
 
-using namespace std;
-
 /* Notification queue structure */
 struct Notification
 {
@@ -100,6 +98,9 @@ private:
   Frame img_pick_b; /* Bottom pickup display corner */
   Frame img_pick_t; /* Top pickup display corner */
 
+  /* Item data */
+  std::vector<ItemData> item_data;
+
   /* The queue that holds all bottom notifications that need to be displayed */
   vector<Notification> notification_queue;
   uint16_t notification_time;
@@ -148,6 +149,7 @@ private:
   const static uint16_t kCURSOR_ANIMATE; /* The cursor animation time */
   const static uint8_t kCURSOR_HEIGHT; /* The cursor height on animation */
   const static uint8_t kHIGHLIGHT_MARGIN; /* Highlighted option margin pixels */
+  const static std::string kITEM_COLOR; /* Hex color of item reference */
   const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
   const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
   const static uint8_t kMARGIN_TOP; /* The top margin size */
@@ -170,14 +172,11 @@ private:
   const static float kTEXT_SHIFT; /* The speed at which the text shifts up */
   const static string kTHING_COLOR; /* Hex color of thing reference in text */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Computes all IDs that are needed for displaying the conversation */
   vector<int> calculateThingList(Conversation* convo);
   vector<int> calculateThingList(string text);
-
-  /* Clears the vector conversation data */
-  //void clearConversation(Conversation* convo);
 
   /* Clears all stored pointer data within the class */
   void clearData();
@@ -191,6 +190,10 @@ private:
   /* Executes an event, triggered from a conversation */
   void executeEvent();
 
+  /* Get name if reference item */
+  std::string getItemName(int id);
+  std::string getItemName(std::string id);
+
   /* Functions to acquire thing data, for painting to the screen */
   string getThingName(int id, vector<MapThing*>* things = nullptr);
   MapThing* getThingReference(int id, vector<MapThing*>* things = nullptr);
@@ -200,8 +203,8 @@ private:
               vector<vector<vector<pair<string, TextProperty>>>> options = {});
 
   /* Takes the text and replaces {ID} references with name */
-  string replaceThingReferences(string text,
-                                vector<MapThing*>* things = nullptr);
+  string replaceIDReferences(string text,
+                             vector<MapThing*>* things = nullptr);
 
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
@@ -220,7 +223,7 @@ private:
                vector<vector<vector<pair<string, TextProperty>>>> lines = {},
                bool delete_old = false);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Clear all trigger - wipes out all queues and the current conversation */
   void clearAll(bool include_convo = false);
@@ -291,6 +294,9 @@ public:
 
   /* Sets the event handler */
   void setEventHandler(EventHandler* event_handler);
+
+  /* Set the item data as per all core items */
+  void setItemData(std::vector<ItemData> data);
 
   /* Sets the notification things as per the IDs from getNotificationIDs() */
   bool setNotificationThings(vector<MapThing*> things);

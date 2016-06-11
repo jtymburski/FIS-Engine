@@ -31,6 +31,7 @@ const SDL_Color MapDialog::kCOLOR_REM = {232, 0, 13, 255};
 const uint16_t MapDialog::kCURSOR_ANIMATE = 300;
 const uint8_t MapDialog::kCURSOR_HEIGHT = 8;
 const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
+const std::string MapDialog::kITEM_COLOR = "ffc400";
 const uint8_t MapDialog::kLINE_SPACING = 12;
 const uint8_t MapDialog::kMARGIN_SIDES = 50;
 const uint8_t MapDialog::kMARGIN_TOP = 35;
@@ -51,7 +52,7 @@ const uint8_t MapDialog::kTEXT_LINES = 4;
 const uint8_t MapDialog::kTEXT_OPTIONS = 3;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 33.33;
 const float MapDialog::kTEXT_SHIFT = 5.704;
-const string MapDialog::kTHING_COLOR = "00eaff";
+const std::string MapDialog::kTHING_COLOR = "00eaff";
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -109,11 +110,6 @@ vector<int> MapDialog::calculateThingList(Conversation* convo)
       vector<int> computed_list = calculateThingList(&(convo->next[i]));
       list.insert(list.end(), computed_list.begin(), computed_list.end());
     }
-    // for(auto i = convo->next.begin(); i != convo->next.end(); i++)
-    //{
-    //  vector<int> computed_list = calculateThingList(i);
-    //  list.insert(list.end(), computed_list.begin(), computed_list.end());
-    //}
 
     /* Determine if any IDs within the text */
     vector<int> text_list = calculateThingList(convo->text);
@@ -158,7 +154,7 @@ vector<int> MapDialog::calculateThingList(string text)
             int id = stoi(second_split.front());
             ids.push_back(id);
           }
-          catch(exception)
+          catch(std::exception)
           {
           }
         }
@@ -168,27 +164,6 @@ vector<int> MapDialog::calculateThingList(string text)
 
   return ids;
 }
-
-/*
- * Description: Takes a conversation reference and removes all data recursively
- *              throughout it. The primary purpose is that it clears all vectors
- *              stored in each segment of the conversation.
- *
- * Inputs: Conversation* convo - a convo reference pointer, to clean up
- * Output: none
- */
-// void MapDialog::clearConversation(Conversation* convo)
-//{
-//  if(convo != NULL)
-//  {
-//    /* Recursively get all other IDs from embedded conversations */
-//    for(auto i = convo->next.begin(); i != convo->next.end(); i++)
-//      clearConversation(&(*i));
-//    convo->text = "";
-//    convo->thing_id = -1;
-//    convo->next.clear();
-//  }
-//}
 
 /*
  * Description: Clears all data that is stored in the class. Primarily for
@@ -204,7 +179,6 @@ void MapDialog::clearData()
   animation_cursor = 0.0;
   animation_cursor_up = true;
   animation_shifter = 0.0;
-  // clearConversation(&conversation_info);
   conversation_info = nullptr;
   conversation_inst = nullptr;
   conversation_ready = false;
@@ -216,9 +190,9 @@ void MapDialog::clearData()
   dialog_offset = 0.0;
   dialog_option = 0;
   dialog_option_top = 0;
-  event_handler = NULL;
-  font_normal = NULL;
-  font_title = NULL;
+  event_handler = nullptr;
+  font_normal = nullptr;
+  font_title = nullptr;
   notification_queue.clear();
   notification_time = 0;
   notification_waiting.clear();
@@ -227,9 +201,9 @@ void MapDialog::clearData()
   pickup_status = WindowStatus::OFF;
   pickup_time = 0;
   pickup_update = false;
-  source = NULL;
-  system_options = NULL;
-  target = NULL;
+  source = nullptr;
+  system_options = nullptr;
+  target = nullptr;
   text_index = 0.0;
   text_index_max = 0;
   text_lines.clear();
@@ -239,7 +213,7 @@ void MapDialog::clearData()
   text_strings.clear();
   text_top = 0;
   text_update = false;
-  thing_active = NULL;
+  thing_active = nullptr;
   thing_data.clear();
 
   // img_convo->unsetTexture();
@@ -269,18 +243,18 @@ bool MapDialog::createFonts()
 {
   bool success = false;
 
-  if(system_options != NULL)
+  if(system_options != nullptr)
   {
     /* Try and create the new fonts */
     TTF_Font* regular_font = Text::createFont(
-        system_options->getBasePath() + system_options->getFont(), 20);
+        system_options->getBasePath() + system_options->getFont(3), 20);
     TTF_Font* title_font = Text::createFont(system_options->getBasePath() +
-                                                system_options->getFont(),
+                                                system_options->getFont(3),
                                             20, TTF_STYLE_BOLD);
 
     /* If successful, insert the new fonts. Otherwise, delete if any were
      * created */
-    if(regular_font != NULL && title_font != NULL)
+    if(regular_font != nullptr && title_font != nullptr)
     {
       deleteFonts();
       font_normal = regular_font;
@@ -290,10 +264,10 @@ bool MapDialog::createFonts()
     else
     {
       TTF_CloseFont(regular_font);
-      regular_font = NULL;
+      regular_font = nullptr;
 
       TTF_CloseFont(title_font);
-      title_font = NULL;
+      title_font = nullptr;
     }
   }
 
@@ -310,10 +284,10 @@ bool MapDialog::createFonts()
 void MapDialog::deleteFonts()
 {
   TTF_CloseFont(font_normal);
-  font_normal = NULL;
+  font_normal = nullptr;
 
   TTF_CloseFont(font_title);
-  font_title = NULL;
+  font_title = nullptr;
 }
 
 /*
@@ -336,6 +310,51 @@ void MapDialog::executeEvent()
     event_handler->executeEventRef(pair.base, pair.inst, target, source);
     pair.inst->has_exec = true;
   }
+}
+
+/*
+ * Description: Returns the item name correlating with the passed in ID. If no
+ *              ID found, returns the blank string.
+ *
+ * Inputs: int id - the item ID to find
+ * Output: std::string - the name of the item
+ */
+std::string MapDialog::getItemName(int id)
+{
+  if(id >= 0)
+  {
+    for(uint32_t i = 0; i < item_data.size(); i++)
+      if(item_data[i].id == id)
+        return item_data[i].name;
+  }
+  return "";
+}
+
+/*
+ * Description: Returns the item name correlating with the passed in string ID.
+ *              This can handle the ID straight from the conversation with I
+ *              in the front to tag item. If not found or fails, returns the
+ *              blank string.
+ *
+ * Inputs: std::string id - the item string ID to find
+ * Output: std::string - the name of the item
+ */
+std::string MapDialog::getItemName(std::string id)
+{
+  std::string name = "";
+
+  try
+  {
+    if(id.front() == 'I')
+      id.erase(id.begin());
+    name = getItemName(std::stoi(id));
+  }
+  catch(std::exception)
+  {
+    name = "";
+  }
+
+  return name;
 }
 
 /*
@@ -428,7 +447,7 @@ void MapDialog::renderOptions(
  *                                     stored conversation things
  * Output: string - the processed text
  */
-string MapDialog::replaceThingReferences(string text, vector<MapThing*>* things)
+string MapDialog::replaceIDReferences(string text, vector<MapThing*>* things)
 {
   string new_text = "";
 
@@ -449,11 +468,24 @@ string MapDialog::replaceThingReferences(string text, vector<MapThing*>* things)
           /* Process the first which would contain the relevant ID */
           try
           {
-            string name = getThingName(stoi(second_split.front()), things);
-            new_text +=
-                "[" + kTHING_COLOR + "]" + name + "[/" + kTHING_COLOR + "]";
+            std::string name = "";
+
+            /* If item, find item name */
+            if(second_split.front().front() == 'I')
+            {
+              name = getItemName(second_split.front());
+              new_text +=
+                  "[" + kITEM_COLOR + "]" + name + "[/" + kITEM_COLOR + "]";
+            }
+            /* Otherwise get thing name */
+            else
+            {
+              name = getThingName(std::stoi(second_split.front()), things);
+              new_text +=
+                  "[" + kTHING_COLOR + "]" + name + "[/" + kTHING_COLOR + "]";
+            }
           }
-          catch(exception)
+          catch(std::exception)
           {
             new_text += second_split.front();
           }
@@ -614,7 +646,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     frame_bottom.setTexture(texture);
 
     /* Determine the length of the viewing area and split text lines */
-    string txt_line = replaceThingReferences(conversation_info->text);
+    string txt_line = replaceIDReferences(conversation_info->text);
     if(font_normal != NULL)
     {
       if(conversation_info->next.size() > 1)
@@ -907,7 +939,7 @@ void MapDialog::clearAll(bool include_convo)
   {
     if(include_convo)
     {
-      renderOptions(NULL);
+      renderOptions(nullptr);
       setupRenderText();
       conversation_info = nullptr;
       conversation_inst = nullptr;
@@ -1062,7 +1094,7 @@ bool MapDialog::initNotification(string notification, bool single_line,
       queue_entry.text_lines = 1;
     else
       queue_entry.text_lines = kNOTIFY_MAX_LINES;
-    queue_entry.thing_image = NULL;
+    queue_entry.thing_image = nullptr;
     queue_entry.thing_count = 0;
     queue_entry.time_visible = time_visible;
 
@@ -1091,8 +1123,8 @@ bool MapDialog::initNotification(string notification, bool single_line,
 bool MapDialog::initPickup(Frame* thing_image, int thing_count,
                            int time_visible)
 {
-  if(thing_image != NULL && thing_image->isTextureSet() && thing_count != 0 &&
-     isImagesSet(false, true))
+  if(thing_image != nullptr && thing_image->isTextureSet() &&
+     thing_count != 0 && isImagesSet(false, true))
   {
     uint16_t notification_index = 0;
     bool notification_found = false;
@@ -1377,7 +1409,7 @@ void MapDialog::keyFlush()
 bool MapDialog::loadImageConversation(string path, SDL_Renderer* renderer)
 {
   string base_path = "";
-  if(system_options != NULL)
+  if(system_options != nullptr)
     base_path = system_options->getBasePath();
 
   return img_convo.setTexture(base_path + path, renderer);
@@ -1400,7 +1432,7 @@ bool MapDialog::loadImageDialogShifts(string path_next, string path_more,
   bool success = true;
 
   string base_path = "";
-  if(system_options != NULL)
+  if(system_options != nullptr)
     base_path = system_options->getBasePath();
 
   /* Set all the frame information */
@@ -1425,7 +1457,7 @@ bool MapDialog::loadImageNameLeftRight(string path, SDL_Renderer* renderer)
   bool success = true;
 
   string base_path = "";
-  if(system_options != NULL)
+  if(system_options != nullptr)
     base_path = system_options->getBasePath();
 
   img_name_r.flipHorizontal();
@@ -1451,7 +1483,7 @@ bool MapDialog::loadImageOptions(string path_circle, string path_triangle,
   bool success = true;
 
   string base_path = "";
-  if(system_options != NULL)
+  if(system_options != nullptr)
     base_path = system_options->getBasePath();
 
   /* Set all the frame information */
@@ -1477,7 +1509,7 @@ bool MapDialog::loadImagePickupTopBottom(string path, SDL_Renderer* renderer)
   bool success = true;
 
   string base_path = "";
-  if(system_options != NULL)
+  if(system_options != nullptr)
     base_path = system_options->getBasePath();
 
   img_pick_b.flipVertical();
@@ -1616,7 +1648,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
           /* Determine if there is more than the display options */
           if(conversation_info->next.size() > kTEXT_OPTIONS)
           {
-            Frame* frame = NULL;
+            Frame* frame = nullptr;
 
             /* If it's the top option, render beside */
             if(index == dialog_option_top)
@@ -1637,7 +1669,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
             }
 
             /* Render the frame if non-null and set */
-            if(frame != NULL)
+            if(frame != nullptr)
               frame->render(
                   renderer,
                   x_index + (kOPTION_OFFSET - frame->getWidth() - 1) / 2,
@@ -1773,6 +1805,18 @@ void MapDialog::setEventHandler(EventHandler* event_handler)
 }
 
 /*
+ * Description: Sets the item data to the list of all core items for use within
+ *              the dialog reference.
+ *
+ * Inputs: std::vector<ItemData> data - the set of item core data structs
+ * Output: none
+ */
+void MapDialog::setItemData(std::vector<ItemData> data)
+{
+  item_data = data;
+}
+
+/*
  * Description: Sets the notification map things that are needed for rendering
  *              and referencing. These correspond to the IDs from
  *              getNotificationIDs(). This call will only work if one or more
@@ -1787,7 +1831,7 @@ bool MapDialog::setNotificationThings(vector<MapThing*> things)
   for(uint32_t i = 0; i < notification_waiting.size(); i++)
   {
     notification_waiting[i].text =
-        replaceThingReferences(notification_waiting[i].text, &things);
+                    replaceIDReferences(notification_waiting[i].text, &things);
   }
 
   /* Load from waiting into main queue */

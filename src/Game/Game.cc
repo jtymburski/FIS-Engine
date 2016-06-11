@@ -430,14 +430,13 @@ int Game::eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
       {
         int delta = (count - insert_count);
 
-        // TODO: Add colored highlight to item name!
-
         /* From pickup - just notify */
         if(from_pickup)
         {
           map_ctrl.initNotification(
-                        "Insufficient room in inventory to pickup " +
-                        std::to_string(delta) + " " + found_item->getName());
+                            "Insufficient room in inventory to pickup " +
+                            std::to_string(delta) + " {I" +
+                            std::to_string(id) + "}.");
         }
         /* Otherwise: notify and drop remaining items */
         else
@@ -446,8 +445,8 @@ int Game::eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
           if(!auto_drop)
             map_ctrl.initNotification(
                         "Insufficient room in inventory to receive " +
-                        std::to_string(delta) + " " + found_item->getName() +
-                        ". Remaining will be dropped");
+                        std::to_string(delta) + " {I" + std::to_string(id) +
+                        "}. Remaining will be dropped");
 
           /* Drop onto map */
           map_ctrl.dropItem(id, delta);

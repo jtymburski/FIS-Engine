@@ -2537,7 +2537,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       convo->text = "This is the initial conversation point that will start ";
       convo->text += "it. How can this continue? It must pursue to complete ";
       convo->text += "embodiment. Ok, maybe I'll just keep typing until I ";
-      convo->text += "break the entire compiler.";
+      convo->text += "break the entire compiler: {I2} - {10000} - {-1}.";
       convo->thing_id = 0;
       Conversation convo2;
       convo2.category = DialogCategory::TEXT;
@@ -3234,6 +3234,10 @@ bool Map::saveData(FileHandler* fh)
 /* Seta and correlates the base items within the map to the core data */
 bool Map::setBaseItems(std::vector<ItemData> items, SDL_Renderer* renderer)
 {
+  /* The map dialog items */
+  map_dialog.setItemData(items);
+
+  /* The connected base items in map */
   if(renderer != nullptr)
   {
     /* Delete the instance items */
