@@ -434,9 +434,8 @@ int Game::eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
         if(from_pickup)
         {
           map_ctrl.initNotification(
-                            "Insufficient room in inventory to pickup " +
-                            std::to_string(delta) + " {I" +
-                            std::to_string(id) + "}.");
+              "Insufficient room in inventory to pickup " +
+              std::to_string(delta) + " {I" + std::to_string(id) + "}.");
         }
         /* Otherwise: notify and drop remaining items */
         else
@@ -444,9 +443,9 @@ int Game::eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
           /* Notify if not auto drop and items could not fit */
           if(!auto_drop)
             map_ctrl.initNotification(
-                        "Insufficient room in inventory to receive " +
-                        std::to_string(delta) + " {I" + std::to_string(id) +
-                        "}. Remaining will be dropped");
+                "Insufficient room in inventory to receive " +
+                std::to_string(delta) + " {I" + std::to_string(id) +
+                "}. Remaining will be dropped");
 
           /* Drop onto map */
           map_ctrl.dropItem(id, delta);
@@ -499,6 +498,9 @@ bool Game::eventMenuShow()
 {
   if(active_renderer && config)
   {
+    if(map_ctrl.getDialogMode() == DialogMode::NOTIFICATION)
+      map_ctrl.setDialogPaused(true);
+
     updatePlayerSteps();
     map_menu.setRenderer(active_renderer);
     map_menu.setBattleDisplayData(battle_display_data);
@@ -518,6 +520,7 @@ bool Game::eventMenuShow()
 bool Game::eventMenuHide()
 {
   map_menu.hide();
+  map_ctrl.setDialogPaused(false);
 
   return true;
 }
@@ -736,7 +739,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
   /* Timer to calculate the game load time */
   Timer t;
 
-  //std::cout << "1: " << success << std::endl;
+  // std::cout << "1: " << success << std::endl;
 
   /* Core data first, if applicable */
   if(success && full_load)
@@ -744,20 +747,20 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
     /* Base file */
     success &= loadData(&fh_base, renderer, true, false);
 
-    //std::cout << "2: " << success << std::endl;
+    // std::cout << "2: " << success << std::endl;
 
     /* Player set-up */
     player_main->setSleuth(getParty(Party::kID_SLEUTH));
     player_main->setBearacks(getParty(Party::kID_BEARACKS));
 
-    //std::cout << "3: " << success << std::endl;
+    // std::cout << "3: " << success << std::endl;
 
     /* Slot file */
     if(slot_valid)
       success &= loadData(&fh_slot, renderer, true, true);
   }
 
-  //std::cout << "4: " << success << std::endl;
+  // std::cout << "4: " << success << std::endl;
 
   /* Map data to follow */
   if(success)
@@ -771,7 +774,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
     fh_base.xmlToHead();
     success &= loadData(&fh_base, renderer, false, false, level);
 
-    //std::cout << "5: " << success << std::endl;
+    // std::cout << "5: " << success << std::endl;
 
     /* Slot file */
     if(slot_valid)
@@ -781,7 +784,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
     }
   }
 
-  //std::cout << "6: " << success << std::endl;
+  // std::cout << "6: " << success << std::endl;
 
   /* Log the game load time */
   event_handler.log("Game load time: " + std::to_string(t.elapsed()) + " s");
@@ -1537,7 +1540,7 @@ void Game::updateMenuEnabledState()
 
   /* If the higher game state allows the menu to be accessed, first check for
    * other conditions to assert the menu can be accessed at this time */
-  if(map_ctrl.getDialogStatus() != WindowStatus::OFF)
+  if(map_ctrl.getDialogMode() == DialogMode::CONVERSATION)
     map_menu_enabled = false;
   else if(map_ctrl.getFadeStatus() != MapFade::VISIBLE)
     map_menu_enabled = false;
@@ -1846,10 +1849,10 @@ std::vector<Save> Game::getSaveData(bool encryption)
       {
         /* Year, Month, Day */
         std::vector<std::string> split_date =
-                                   Helpers::split(split_date_time.front(), '/');
+            Helpers::split(split_date_time.front(), '/');
         /* Hour, Minute, Second */
         std::vector<std::string> split_time =
-                                    Helpers::split(split_date_time.back(), ':');
+            Helpers::split(split_date_time.back(), ':');
         if(split_date.size() == 3 && split_time.size() == 3)
         {
           /* Try and complete the conversion to int and set in the slot */
@@ -1860,11 +1863,12 @@ std::vector<Save> Game::getSaveData(bool encryption)
             int day = std::stoi(split_date[2]);
             int hour = std::stoi(split_time[0]);
             int minute = std::stoi(split_time[1]);
-            //int second = std::stoi(split_time[2]);
+            // int second = std::stoi(split_time[2]);
             slot.setDate(year, month, day, hour, minute);
           }
           catch(std::exception& e)
-          {}
+          {
+          }
         }
       }
 
@@ -2054,9 +2058,9 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_F5)
   {
     save(2);
-    //std::cout << saveClear(3) << std::endl;
-    //std::vector<Save> save_data = getSaveData();
-    //for(uint32_t i = 0; i < save_data.size(); i++)
+    // std::cout << saveClear(3) << std::endl;
+    // std::vector<Save> save_data = getSaveData();
+    // for(uint32_t i = 0; i < save_data.size(); i++)
     //  save_data[i].print();
   }
   /* Load test from slot 1 */
@@ -2079,7 +2083,7 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
         player_person->loseExp(player_person->getTotalExp());
         player_person->addExp(player_person->getExpAt(new_level));
         event_handler.log("[DEBUG] Setting player level to: " +
-                          player_person->getLevel());
+                          std::to_string(player_person->getLevel()));
       }
     }
   }
@@ -2097,7 +2101,7 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
         player_person->loseExp(player_person->getTotalExp());
         player_person->addExp(player_person->getExpAt(new_level));
         event_handler.log("[DEBUG] Setting player level to: " +
-                          player_person->getLevel());
+                          std::to_string(player_person->getLevel()));
       }
     }
   }
@@ -2113,7 +2117,7 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
         auto new_item = new Item(getItem(2, true));
         if(inventory->add(new_item, 1) != AddStatus::FAIL)
         {
-          event_handler.log("[DEBUG] Giving player 1x Rock");
+          event_handler.log("[DEBUG] Giving player 1x Item ID 2");
         }
         else
         {
@@ -2154,7 +2158,7 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
   {
     if(mode == MENU)
     {
-      //map_menu.keyDownEvent(key_handler);
+      // map_menu.keyDownEvent(key_handler);
     }
     /* -- MAP MODE -- */
     else if(mode == MAP)
@@ -2164,7 +2168,7 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
     /* -- BATTLE MODE -- */
     else if(mode == BATTLE)
     {
-      //battle_ctrl->keyDownEvent(key_handler);
+      // battle_ctrl->keyDownEvent(key_handler);
     }
   }
 }
@@ -2645,14 +2649,13 @@ bool Game::saveScreenshot(std::string path, SDL_Rect rect,
 {
   if(!path.empty() && renderer != nullptr && factor > 0)
   {
-    SDL_Surface* sshot =
-          SDL_CreateRGBSurface(0, rect.w, rect.h, 32, 0x00ff0000, 0x0000ff00,
-                               0x000000ff, 0xff000000);
+    SDL_Surface* sshot = SDL_CreateRGBSurface(
+        0, rect.w, rect.h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     SDL_RenderReadPixels(renderer, &rect, SDL_PIXELFORMAT_ARGB8888,
                          sshot->pixels, sshot->pitch);
     SDL_Surface* sshot2 =
-          SDL_CreateRGBSurface(0, rect.w / factor, rect.h / factor, 32,
-                               0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+        SDL_CreateRGBSurface(0, rect.w / factor, rect.h / factor, 32,
+                             0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     SDL_BlitScaled(sshot, nullptr, sshot2, nullptr);
     SDL_SaveBMP(sshot2, path.c_str());
     SDL_FreeSurface(sshot);

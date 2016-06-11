@@ -185,7 +185,7 @@ void MapDialog::clearData()
   conversation_update = false;
   conversation_waiting = false;
   dialog_alpha = kOPACITY_MAX;
-  dialog_mode = DISABLED;
+  dialog_mode = DialogMode::DISABLED;
   dialog_status = WindowStatus::OFF;
   dialog_offset = 0.0;
   dialog_option = 0;
@@ -678,7 +678,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     }
 
     /* Modify the offset if it's above the new limits */
-    dialog_mode = CONVERSATION;
+    dialog_mode = DialogMode::CONVERSATION;
     if(dialog_offset > 0.0)
       dialog_offset = frame_bottom.getHeight();
     dialog_option = 0;
@@ -743,7 +743,7 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
 
   /* Create the base frame display texture and set the mode */
   frame_bottom.setTexture(texture);
-  dialog_mode = NOTIFICATION;
+  dialog_mode = DialogMode::NOTIFICATION;
   dialog_offset = 0.0;
   dialog_status = WindowStatus::SHOWING;
   notification_time = to_display.time_visible;
@@ -935,7 +935,7 @@ void MapDialog::setupRenderText(
 void MapDialog::clearAll(bool include_convo)
 {
   /* If in conversation */
-  if(dialog_mode == CONVERSATION)
+  if(dialog_mode == DialogMode::CONVERSATION)
   {
     if(include_convo)
     {
@@ -945,14 +945,14 @@ void MapDialog::clearAll(bool include_convo)
       conversation_inst = nullptr;
       // setConversation();
 
-      dialog_mode = DISABLED;
+      dialog_mode = DialogMode::DISABLED;
       dialog_status = WindowStatus::OFF;
     }
   }
   /* Otherwise, not conversation */
   else
   {
-    dialog_mode = DISABLED;
+    dialog_mode = DialogMode::DISABLED;
     dialog_status = WindowStatus::OFF;
   }
   notification_queue.clear();
@@ -992,6 +992,17 @@ vector<int> MapDialog::getConversationIDs()
 }
 
 /*
+ * Description: Return the DialogMode enumerated value
+ *
+ * Inputs: none
+ * Output: DialogMode - enumerated DialogMode value
+ */
+DialogMode MapDialog::getDialogMode()
+{
+  return dialog_mode;
+}
+
+/*
  * Description: Returns a unique list of notification map thing IDs from the
  *              stack of waiting notifications that has been set but are
  *              waiting to be processed first. This is used in conjunction with
@@ -1026,6 +1037,17 @@ vector<int> MapDialog::getNotificationIDs()
 }
 
 /*
+ * Description: Return the enumerated state of this dialogs WindowStatus.
+ *
+ * Inputs: none
+ * Output: WindowStatus -- enumerated state of the WindowStatus
+ */
+WindowStatus MapDialog::getWindowStatus()
+{
+  return dialog_status;
+}
+
+/*
  * Description: Initializes a conversation with the current dialog. This is just
  *              a call that dereferences the pointer and passes it to the other
  *              initConversation(). Returns false if conversation was unable to
@@ -1040,7 +1062,8 @@ bool MapDialog::initConversation(ConvoPair convo_pair, MapPerson* target,
                                  MapThing* source)
 {
   if(convo_pair.base != nullptr && convo_pair.inst != nullptr &&
-     dialog_mode != CONVERSATION && target != nullptr && isImagesSet())
+     dialog_mode != DialogMode::CONVERSATION && target != nullptr &&
+     isImagesSet())
   {
     conversation_info = convo_pair.base;
     conversation_inst = convo_pair.inst;
@@ -1194,7 +1217,8 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
  */
 bool MapDialog::isConversationActive()
 {
-  return (conversation_info != nullptr && dialog_mode == CONVERSATION);
+  return (conversation_info != nullptr &&
+          dialog_mode == DialogMode::CONVERSATION);
 }
 
 /*
@@ -1532,7 +1556,8 @@ bool MapDialog::render(SDL_Renderer* renderer)
   uint16_t y_index = 0;
 
   /* If the conversation has changed, update the rendering sprites/data */
-  if((dialog_mode == DISABLED && conversation_ready) || conversation_update)
+  if((dialog_mode == DialogMode::DISABLED && conversation_ready) ||
+     conversation_update)
   {
     setupConversation(renderer);
 
@@ -1545,20 +1570,20 @@ bool MapDialog::render(SDL_Renderer* renderer)
     conversation_update = false;
   }
   /* Otherwise, try to initiate a notification */
-  else if(dialog_mode == DISABLED && !notification_queue.empty())
+  else if(dialog_mode == DialogMode::DISABLED && !notification_queue.empty())
   {
     setupNotification(renderer);
   }
 
   /* Render the main frame (same for both notificaiton and conversation */
   x_index = (system_options->getScreenWidth() - img_convo.getWidth()) / 2;
-  if(dialog_mode == CONVERSATION || dialog_mode == NOTIFICATION)
+  if(dialog_mode == DialogMode::CONVERSATION || dialog_mode == DialogMode::NOTIFICATION)
   {
     frame_bottom.render(renderer, x_index,
                         system_options->getScreenHeight() - dialog_offset);
   }
 
-  if(dialog_mode == CONVERSATION)
+  if(dialog_mode == DialogMode::CONVERSATION)
   {
     /* Compute the new parts of the rendering text */
     if(text_update)
@@ -1738,17 +1763,6 @@ bool MapDialog::render(SDL_Renderer* renderer)
 }
 
 /*
- * Description: Return the enumerated state of this dialogs WindowStatus.
- *
- * Inputs: none
- * Output: WindowStatus -- enumerated state of the WindowStatus
- */
-WindowStatus MapDialog::getWindowStatus()
-{
-  return dialog_status;
-}
-
-/*
  * Description: Sets the configuration options from the top level of the
  *              application. This is critical for operation or this class will
  *              crash immediately when the map is made visible.
@@ -1831,7 +1845,7 @@ bool MapDialog::setNotificationThings(vector<MapThing*> things)
   for(uint32_t i = 0; i < notification_waiting.size(); i++)
   {
     notification_waiting[i].text =
-                    replaceIDReferences(notification_waiting[i].text, &things);
+        replaceIDReferences(notification_waiting[i].text, &things);
   }
 
   /* Load from waiting into main queue */
@@ -1924,7 +1938,7 @@ void MapDialog::update(int cycle_time)
         dialog_offset = 0.0;
 
         /* Clean up conversation */
-        if(dialog_mode == CONVERSATION)
+        if(dialog_mode == DialogMode::CONVERSATION)
         {
           renderOptions(NULL);
           setupRenderText();
@@ -1933,7 +1947,7 @@ void MapDialog::update(int cycle_time)
           // setConversation();
         }
         /* Or clean up the notification */
-        else if(dialog_mode == NOTIFICATION)
+        else if(dialog_mode == DialogMode::NOTIFICATION)
         {
           /* If a conversation caused this pause, minimize the time visible */
           if(conversation_ready)
@@ -1950,7 +1964,7 @@ void MapDialog::update(int cycle_time)
           }
         }
 
-        dialog_mode = DISABLED;
+        dialog_mode = DialogMode::DISABLED;
       }
     }
     /* If showing, shift the display onto the screen */
@@ -1967,7 +1981,7 @@ void MapDialog::update(int cycle_time)
     else if(dialog_status == WindowStatus::ON)
     {
       /* This controls how long the notification box is displayed */
-      if(dialog_mode == NOTIFICATION)
+      if(dialog_mode == DialogMode::NOTIFICATION)
       {
         if(conversation_ready)
         {

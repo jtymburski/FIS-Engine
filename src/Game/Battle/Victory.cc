@@ -368,11 +368,11 @@ bool Victory::update(int32_t cycle_time)
 
         add_exp = std::max(1, add_exp);
 
-        std::cout << "EXP Remain: " << victory_actor.exp_left << ","
-                  << victory_actor.orig_exp << "," << victory_actor.orig_lvl
-                  << "Actor can gain exp: "
-                  << victory_actor.actor->getBasePerson()->getPFlag(
-                         PState::CAN_GAIN_EXP) << std::endl;
+        // std::cout << "EXP Remain: " << victory_actor.exp_left << ","
+        //           << victory_actor.orig_exp << "," << victory_actor.orig_lvl
+        //           << "Actor can gain exp: "
+        //           << victory_actor.actor->getBasePerson()->getPFlag(
+        //                  PState::CAN_GAIN_EXP) << std::endl;
 
         victory_actor.exp_left -= add_exp;
         victory_actor.base_person->addExp(add_exp);

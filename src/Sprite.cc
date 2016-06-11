@@ -15,10 +15,6 @@
 #include "Sprite.h"
 
 /*=============================================================================
- * SPRITE DATA CONSTRUCTORS / DESTRUCTORS
- *============================================================================*/
-
-/*=============================================================================
  * SPRITE CONSTANTS -- See .h file for details
  *============================================================================*/
 
@@ -231,8 +227,6 @@ void Sprite::copySelf(const Sprite& source)
   setOpacity(source.getOpacity());
   setRotation(source.getRotation());
   setSoundID(source.getSoundID());
-
-  // data.size = source.data.size;
 }
 
 /*============================================================================
@@ -907,6 +901,10 @@ bool Sprite::loadData(SDL_Renderer* renderer)
     }
     else if(build_path_head != "" && build_path_tail != "")
     {
+      // std::cout << "Inserting " << std::endl;
+      // std::cout << "Head: " << build_path_head << std::endl;
+      // std::cout << "# Frames: " << build_frames << std::endl;
+      // std::cout << "Tail: " << build_path_tail << std::endl;
       insertSequence(build_path_head, build_frames, build_path_tail, renderer);
 
       success = true;
@@ -1304,17 +1302,35 @@ void Sprite::setId(uint16_t id)
   this->id = id;
 }
 
-// TODO: comments
+/*
+ * Description: Assigns the sprite as a non-unique Sprite with a given number
+ *              of frames declared [since the Sprite copy constructor does not
+ *              copy the size of the old sprite over . This will allow the
+ *              Sprite to be used as an extension of an existing sprite which
+ *              wasn't loaded from file and won't be dynamically deleted upon
+ *              destruction.
+ *
+ * Inputs: bool new_value - true if the sprite is not to be deleted
+ *         int32_t size - the size of the Sprite to be set
+ * Output: none
+ */
 void Sprite::setNonUnique(bool new_value, int32_t size)
 {
   size = size;
   non_unique = new_value;
 }
 
-// TODO: comments
+/*
+ * Description: Assigns a number of loops to update the sprite for before
+ *              stopping. Useful for pleps / action sprites for Battle.
+ *
+ * Inputs: int32_t loops - the number loops to the loop the sprite for
+ * Output: none
+ */
 void Sprite::setNumLoops(int32_t loops)
 {
-  loops = loops;
+  if(loops >= 0)
+    this->loops = loops;
 }
 
 /*

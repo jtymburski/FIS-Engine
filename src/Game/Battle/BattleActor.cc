@@ -786,7 +786,14 @@ Sprite* BattleActor::getActiveSprite()
   if(active_sprite == ActiveSprite::THIRD_PERSON)
     return sprite_third_person;
   if(active_sprite == ActiveSprite::ACTION)
-    return sprite_action;
+  {
+    if(sprite_action)
+      return sprite_action;
+    if(getFlag(ActorState::ALLY))
+      return sprite_first_person;
+
+    return sprite_third_person;
+  }
 
   return nullptr;
 }
@@ -1015,6 +1022,14 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
                             old_active_sprite->getColorBlue());
 
     old_active_sprite->revertColorBalance();
+  }
+
+  /* Reset the animation timer and set for one loops for the active sprite
+   * to play one loop, if it is set and not nullptr */
+  if(active_sprite == ActiveSprite::ACTION && sprite_action)
+  {
+    sprite_action->setNumLoops(1);
+    sprite_action->resetLoops();
   }
 }
 

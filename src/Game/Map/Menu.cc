@@ -2868,7 +2868,12 @@ void Menu::keyDownUp()
   if(layer == MenuLayer::TITLE)
   {
     if(title_element_index > 0)
+    {
+              event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                      SoundChannels::MENUS);
+
       title_element_index--;
+    }
     else
       title_element_index = title_elements.size() - 1;
   }
@@ -2927,7 +2932,12 @@ void Menu::keyDownDown()
   if(layer == MenuLayer::TITLE)
   {
     if(title_element_index + 1 < (int32_t)title_elements.size())
+    {
+      event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                  SoundChannels::MENUS);
+
       title_element_index++;
+    }
     else
       title_element_index = 0;
   }

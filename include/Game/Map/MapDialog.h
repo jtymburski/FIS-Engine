@@ -42,14 +42,6 @@ public:
   /* Destructor function */
   ~MapDialog();
 
-  // TODO: add the shop implementation [2013-08-20]
-  /* The dialog mode classifier to define the running mode:
-   *  DISABLED - The dialog is not in use
-   *  CONVERSATION - A conversation is currently running
-   *  NOTIFICATION - A notification display, shifts up then down
-   *  SHOP - A numerical question for buying, in a shop for example */
-  enum DialogMode{DISABLED, CONVERSATION, NOTIFICATION, SHOP};
-
 private:
   /* Animation shifters */
   float animation_cursor;
@@ -87,16 +79,16 @@ private:
   Frame frame_right;
 
   /* Image frames to be loaded for rendering */
-  Frame img_convo; /* Main Dialog display */
+  Frame img_convo;   /* Main Dialog display */
   Frame img_convo_m; /* Conversation more to display indicator */
   Frame img_convo_n; /* Conversation next arrow */
-  Frame img_name_l; /* Left dialog name display corner */
-  Frame img_name_r; /* Right dialog name display corner */
-  Frame img_opt_c; /* Option Circle */
-  Frame img_opt_d; /* Option Down Arrow */
-  Frame img_opt_u; /* Option Up Arrow */
-  Frame img_pick_b; /* Bottom pickup display corner */
-  Frame img_pick_t; /* Top pickup display corner */
+  Frame img_name_l;  /* Left dialog name display corner */
+  Frame img_name_r;  /* Right dialog name display corner */
+  Frame img_opt_c;   /* Option Circle */
+  Frame img_opt_d;   /* Option Down Arrow */
+  Frame img_opt_u;   /* Option Up Arrow */
+  Frame img_pick_b;  /* Bottom pickup display corner */
+  Frame img_pick_t;  /* Top pickup display corner */
 
   /* Item data */
   std::vector<ItemData> item_data;
@@ -139,40 +131,40 @@ private:
   bool text_update;
 
   /* -------------------------- Constants ------------------------- */
-  const static uint8_t kBORDER_WIDTH; /* The border width around the dialogs */
+  const static uint8_t kBORDER_WIDTH;  /* The border width around the dialogs */
   const static float kBUBBLES_ANIMATE; /* The animation speed per bubble */
   const static uint8_t kBUBBLES_COUNT; /* The number of shifting bubbles */
-  const static uint8_t kBUBBLES_OFFSET; /* The offset from the bottom */
-  const static uint8_t kBUBBLES_SPACING; /* The spacing between bubbles */
-  const static SDL_Color kCOLOR_ADD; /* Add color for text - items */
-  const static SDL_Color kCOLOR_REM; /* Remove color for text - items */
-  const static uint16_t kCURSOR_ANIMATE; /* The cursor animation time */
-  const static uint8_t kCURSOR_HEIGHT; /* The cursor height on animation */
+  const static uint8_t kBUBBLES_OFFSET;   /* The offset from the bottom */
+  const static uint8_t kBUBBLES_SPACING;  /* The spacing between bubbles */
+  const static SDL_Color kCOLOR_ADD;      /* Add color for text - items */
+  const static SDL_Color kCOLOR_REM;      /* Remove color for text - items */
+  const static uint16_t kCURSOR_ANIMATE;  /* The cursor animation time */
+  const static uint8_t kCURSOR_HEIGHT;    /* The cursor height on animation */
   const static uint8_t kHIGHLIGHT_MARGIN; /* Highlighted option margin pixels */
-  const static std::string kITEM_COLOR; /* Hex color of item reference */
-  const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
-  const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
-  const static uint8_t kMARGIN_TOP; /* The top margin size */
-  const static uint16_t kMSEC_PER_WORD; /* The read speed per word */
+  const static std::string kITEM_COLOR;   /* Hex color of item reference */
+  const static uint8_t kLINE_SPACING;    /* The spacing between lines of font */
+  const static uint8_t kMARGIN_SIDES;    /* The left and right margin size */
+  const static uint8_t kMARGIN_TOP;      /* The top margin size */
+  const static uint16_t kMSEC_PER_WORD;  /* The read speed per word */
   const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
-  const static uint8_t kNAME_MARGIN; /* Name margin on each side */
+  const static uint8_t kNAME_MARGIN;     /* Name margin on each side */
   const static uint8_t kNOTIFY_MAX_LINES; /* Max number of lines for notify */
-  const static float kOPACITY_BACKEND; /* Backend display box opacity */
+  const static float kOPACITY_BACKEND;    /* Backend display box opacity */
   const static uint8_t kOPACITY_MAX; /* The max opacity rating (between 0-max */
   const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */
-  const static uint16_t kPAUSE_TIME; /* The time to hide or show the dialog */
+  const static uint16_t kPAUSE_TIME;   /* The time to hide or show the dialog */
   const static uint16_t kPICKUP_DISPLAY_TIME; /* Default pickup display time */
-  const static uint16_t kPICKUP_IMG_SIZE; /* Size of pickup image */
+  const static uint16_t kPICKUP_IMG_SIZE;     /* Size of pickup image */
   const static uint8_t kPICKUP_TEXT_MARGIN; /* Margin between image and text */
-  const static uint16_t kPICKUP_Y; /* The top left y coordinate */
-  const static float kSHIFT_TIME; /* Time to make the display visible */
-  const static uint8_t kTEXT_LINES; /* The max number of lines displayed */
+  const static uint16_t kPICKUP_Y;          /* The top left y coordinate */
+  const static float kSHIFT_TIME;     /* Time to make the display visible */
+  const static uint8_t kTEXT_LINES;   /* The max number of lines displayed */
   const static uint8_t kTEXT_OPTIONS; /* The max number of options displayed */
   const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
-  const static float kTEXT_SHIFT; /* The speed at which the text shifts up */
+  const static float kTEXT_SHIFT;   /* The speed at which the text shifts up */
   const static string kTHING_COLOR; /* Hex color of thing reference in text */
 
-/*======================== PRIVATE FUNCTIONS ===============================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Computes all IDs that are needed for displaying the conversation */
   vector<int> calculateThingList(Conversation* convo);
@@ -199,12 +191,12 @@ private:
   MapThing* getThingReference(int id, vector<MapThing*>* things = nullptr);
 
   /* Render the options. Deletes previous options, if they exist */
-  void renderOptions(SDL_Renderer* renderer,
-              vector<vector<vector<pair<string, TextProperty>>>> options = {});
+  void renderOptions(
+      SDL_Renderer* renderer,
+      vector<vector<vector<pair<string, TextProperty>>>> options = {});
 
   /* Takes the text and replaces {ID} references with name */
-  string replaceIDReferences(string text,
-                             vector<MapThing*>* things = nullptr);
+  string replaceIDReferences(string text, vector<MapThing*>* things = nullptr);
 
   /* Sets the alpha of all rendering textures on the dialog */
   void setAlpha(uint8_t alpha);
@@ -219,11 +211,11 @@ private:
   void setupPickup(SDL_Renderer* renderer, bool update = false);
 
   /* Setup the render text display. Also manages deletion of Text pointers */
-  void setupRenderText(
-               vector<vector<vector<pair<string, TextProperty>>>> lines = {},
-               bool delete_old = false);
+  void
+  setupRenderText(vector<vector<vector<pair<string, TextProperty>>>> lines = {},
+                  bool delete_old = false);
 
-/*========================= PUBLIC FUNCTIONS ===============================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Clear all trigger - wipes out all queues and the current conversation */
   void clearAll(bool include_convo = false);
@@ -231,6 +223,12 @@ public:
   /* Returns the thing IDs from the waiting conversation - return nothing if
    * the conversation isn't waiting */
   vector<int> getConversationIDs();
+
+  /* Return the DialogMode enumerated value */
+  DialogMode getDialogMode();
+
+  /* Retunr the WindowStatus enumerated value */
+  WindowStatus getWindowStatus();
 
   /* Returns the thing IDs from the queued notification(s) - returns nothing if
    * there are no notifications on the waiting stack */
@@ -242,12 +240,12 @@ public:
 
   /* Initializes a notification, using a string to be printed */
   bool initNotification(string notification, bool single_line = false,
-                                                  int time_visible = -1);
+                        int time_visible = -1);
 
   /* Initiailizes a pickup notification. These show up isolated from the
    * notification and conversation sequencing */
   bool initPickup(Frame* thing_image, int thing_count = 1,
-                                      int time_visible = -1);
+                  int time_visible = -1);
 
   /* Returns if there is an active conversation (needs key presses passed in) */
   bool isConversationActive();
@@ -282,9 +280,6 @@ public:
 
   /* Renders the Map Dialog */
   bool render(SDL_Renderer* renderer);
-
-  /* Return the Window status of the Dialog */
-  WindowStatus getWindowStatus();
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);

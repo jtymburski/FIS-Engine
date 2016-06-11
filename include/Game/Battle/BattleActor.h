@@ -42,7 +42,6 @@ using std::end;
 ENUM_FLAGS(ActorState)
 enum class ActorState
 {
-  // clang-format off
   ITM_ENABLED       = 1 << 0, /* Can the person use item in battle? */
   DEF_ENABLED       = 1 << 1, /* Can the person use 'Defend'? */
   GRD_ENABLED       = 1 << 2, /* Can theisin person use 'Guard?' */
@@ -56,7 +55,6 @@ enum class ActorState
   SELECTION_SKIP    = 1 << 10,
   MENU_HOVERED      = 1 << 11,
   MISS_NEXT_TARGET  = 1 << 12
-  // clang-format on
 };
 
 enum class ActiveSprite

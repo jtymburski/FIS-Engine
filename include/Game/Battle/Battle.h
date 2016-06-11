@@ -81,7 +81,7 @@ private:
   uint32_t bar_offset;
 
   /* Pointer to the BattleDisplayData */
-  BattleDisplayData* battle_display_data;
+  BattleDisplayData* display_data;
 
   /* The Battle Menu */
   BattleMenu* battle_menu;

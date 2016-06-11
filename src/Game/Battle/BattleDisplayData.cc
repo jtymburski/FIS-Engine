@@ -360,9 +360,9 @@ void BattleDisplayData::buildPlepsAilments()
   pleps_ailments.emplace(Infliction::CONFUSE, sprite_confusion);
 
   auto sprite_poison = new Sprite();
-  sprite_poison->setBuildInformation(
-      config->getBasePath() + "sprites/Battle/Pleps/poisonplep_AA_A", ".png",
-      4);
+  sprite_poison->setBuildInformation(config->getBasePath() +
+                                         "sprites/Battle/Pleps/poisonplep_AA_A",
+                                     ".png", 4);
   sprite_poison->setAnimationTime(95);
   pleps_ailments.emplace(Infliction::POISON, sprite_poison);
 
@@ -378,41 +378,21 @@ void BattleDisplayData::buildPlepsAilments()
   sprite_all_def_buff->setAnimationTime(95);
   pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_all_def_buff);
 
-  auto sprite_lim_buff = new Sprite();
-  sprite_lim_buff->setBuildInformation(
+  auto sprite_buff = new Sprite();
+  sprite_buff->setBuildInformation(
       config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A", ".png", 9);
-  sprite_lim_buff->setAnimationTime(95);
-  pleps_ailments.emplace(Infliction::LIMBUFF, sprite_lim_buff);
+  sprite_buff->setAnimationTime(95);
+  pleps_ailments.emplace(Infliction::LIMBUFF, sprite_buff);
+  pleps_ailments.emplace(Infliction::ALLATKBUFF, sprite_buff);
+  pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_buff);
+  pleps_ailments.emplace(Infliction::LIMBUFF, sprite_buff);
 
-  // auto sprite_buff =
-  //     new Sprite(,
-  //                9, ".png", renderer);
-  // sprite_buff->setAnimationTime(95);
-  // pleps_ailments.emplace(Infliction::ALLATKBUFF, sprite_buff);
-  // pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_buff);
-  // pleps_ailments.emplace(Infliction::LIMBUFF, sprite_buff);
-
-  // auto sprite_hibernation = new Sprite(
-  //     config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A", 4,
-  //     ".png", renderer);
-  // sprite_hibernation->insertTail(
-  //     config->getBasePath() +
-  //     "sprites/Battle/Pleps/hibernationplep_AA_A00.png",
-  //     renderer);
-  // sprite_hibernation->insertTail(
-  //     config->getBasePath() +
-  //     "sprites/Battle/Pleps/hibernationplep_AA_A01.png",
-  //     renderer);
-  // sprite_hibernation->insertTail(
-  //     config->getBasePath() +
-  //     "sprites/Battle/Pleps/hibernationplep_AA_A02.png",
-  //     renderer);
-  // sprite_hibernation->insertTail(
-  //     config->getBasePath() +
-  //     "sprites/Battle/Pleps/hibernationplep_AA_A03.png",
-  //     renderer);
-  // sprite_hibernation->setAnimationTime(70);
-  // pleps_ailments.emplace(Infliction::HIBERNATION, sprite_hibernation);
+  auto sprite_hibernation = new Sprite();
+  sprite_hibernation->setBuildInformation(
+      config->getBasePath() + "sprites/Battle/Pleps/hibernationplep_AA_A",
+      ".png", 9);
+  sprite_hibernation->setAnimationTime(70);
+  pleps_ailments.emplace(Infliction::HIBERNATION, sprite_hibernation);
 }
 
 void BattleDisplayData::buildPlepsEvents()

@@ -2195,7 +2195,14 @@ int Map::getBattleThingID()
 {
   if(battle_thing != nullptr)
     return battle_thing->getGameID();
+
   return -1;
+}
+
+/* Enumerated Dialog Mode */
+DialogMode Map::getDialogMode()
+{
+  return map_dialog.getDialogMode();
 }
 
 /* Enumerated state of WindowStatus of the MapDialog */
@@ -3300,6 +3307,12 @@ bool Map::setConfiguration(Options* running_config)
   }
 
   return false;
+}
+
+/* Sets the map dialog paused state */
+void Map::setDialogPaused(bool paused)
+{
+  map_dialog.setPaused(paused);
 }
 
 /* Sets the operational event handler */

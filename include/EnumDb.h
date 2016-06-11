@@ -322,6 +322,20 @@ enum class DialogCategory
   TEXTENTRY
 };
 
+// TODO: add the shop implementation [2013-08-20]
+/* The dialog mode classifier to define the running mode:
+ *  DISABLED - The dialog is not in use
+ *  CONVERSATION - A conversation is currently running
+ *  NOTIFICATION - A notification display, shifts up then down
+ *  SHOP - A numerical question for buying, in a shop for example */
+enum class DialogMode
+{
+  DISABLED,
+  CONVERSATION,
+  NOTIFICATION,
+  SHOP
+};
+
 /*
  * Description: Handler for all direction related calls for movement,
  *              passability, etc.

@@ -114,7 +114,7 @@ const uint16_t Battle::kPERSON_WIDTH = 256;
 Battle::Battle()
     : background{nullptr},
       bar_offset{0},
-      battle_display_data{nullptr},
+      display_data{nullptr},
       battle_menu{nullptr},
       battle_buffer{nullptr},
       config{nullptr},
@@ -655,22 +655,31 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
      event->getCurrAction()->actionFlag(ActionFlags::ALTER) ||
      event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
   {
+
     auto skill = event->getCurrSkill();
-    auto element =
-        new RenderElement(renderer, skill->getAnimation(), 1, {x, y});
+    auto action = event->getCurrAction();
 
-    render_elements.push_back(element);
+    if(skill && action)
+    {
+      Sprite* animation = event->getCurrSkill()->getAnimation();
 
-    if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
-    {
-      auto type = event->getCurrAction()->getAilment();
-      playInflictionSound(type);
-      outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+      if(action->actionFlag(ActionFlags::INFLICT) && !animation)
+        animation = display_data->getPlepAilment(action->getAilment());
+
+      render_elements.push_back(
+          new RenderElement(renderer, animation, 1, {x, y}));
     }
-    else
-    {
-      eh->triggerSound(Sound::kID_SOUND_BTL_PLEP, SoundChannels::TRIGGERS);
-    }
+  }
+
+  if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
+  {
+    auto type = event->getCurrAction()->getAilment();
+    playInflictionSound(type);
+    outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+  }
+  else
+  {
+    eh->triggerSound(Sound::kID_SOUND_BTL_PLEP, SoundChannels::TRIGGERS);
   }
 
   /* Set the next state based on the action flag */
@@ -1112,8 +1121,8 @@ void Battle::updateOutcome(int32_t cycle_time)
     else
     {
       /* If victory screen is not set, create it */
-      victory_screen = new Victory(config, battle_display_data, renderer,
-                                   getAllies(), getEnemies());
+      victory_screen = new Victory(config, display_data, renderer, getAllies(),
+                                   getEnemies());
       victory_screen->buildVictory();
 
       /* Dim the Battle a little - infinite render element */
@@ -2020,9 +2029,9 @@ bool Battle::renderActionFrame()
 
 bool Battle::renderBattleBar()
 {
-  if(renderer && battle_display_data && battle_display_data->isDataBuilt())
+  if(renderer && display_data && display_data->isDataBuilt())
   {
-    auto frame = battle_display_data->getBattleBar();
+    auto frame = display_data->getBattleBar();
 
     frame->render(renderer, 0,
                   config->getScreenHeight() - kBIGBAR_OFFSET - bar_offset,
@@ -2046,7 +2055,7 @@ bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
   if(ailments.size() > 0 && ailments.front())
   {
     /* Front ailment frame */
-    auto fr = battle_display_data->getFrameAilment(ailments.front()->getType());
+    auto fr = display_data->getFrameAilment(ailments.front()->getType());
 
     /* Sizing variables */
     uint16_t gap = kAILMENT_GAP;
@@ -2097,7 +2106,7 @@ bool Battle::renderAilmentsActor(BattleActor* actor, uint32_t x, uint32_t y,
     {
       if(ailment)
       {
-        auto f = battle_display_data->getFrameAilment(ailment->getType());
+        auto f = display_data->getFrameAilment(ailment->getType());
         f->render(renderer, rect.x, rect.y);
         rect.x += f->getWidth() + gap * 2;
       }
@@ -2454,7 +2463,7 @@ bool Battle::renderAllyInfo(BattleActor* ally, bool for_menu)
   /* Render ailments */
   if(for_menu && ally->getAilments().size() > 0)
   {
-    auto frame = battle_display_data->getFrameAilment(Infliction::SILENCE);
+    auto frame = display_data->getFrameAilment(Infliction::SILENCE);
     auto frame_size = 0;
 
     if(frame)
@@ -2657,7 +2666,7 @@ void Battle::upkeepAilmentOutcome()
 void Battle::upkeepAilmentPlep()
 {
   auto type = upkeep_ailment->getType();
-  auto plep = battle_display_data->getPlepAilment(type);
+  auto plep = display_data->getPlepAilment(type);
 
   /* Create the plep on the upkeep actor */
   if(plep)
@@ -2731,7 +2740,7 @@ bool Battle::keyDownEvent(KeyHandler& key_handler)
 bool Battle::startBattle(Party* friends, Party* foes)
 {
   /* Assert  all essentials are not nullptr. We want Battle to fail */
-  assert(battle_display_data);
+  assert(display_data);
   assert(config);
   assert(eh);
   assert(renderer);
@@ -2854,7 +2863,7 @@ bool Battle::setConfig(Options* config)
   return success;
 }
 
-bool Battle::setDisplayData(BattleDisplayData* battle_display_data)
+bool Battle::setDisplayData(BattleDisplayData* display_data)
 {
   bool success{config};
 
@@ -2863,12 +2872,12 @@ bool Battle::setDisplayData(BattleDisplayData* battle_display_data)
   if(battle_menu)
     success &= battle_menu->setConfig(config);
 
-  if(battle_display_data)
+  if(display_data)
   {
-    this->battle_display_data = battle_display_data;
+    this->display_data = display_data;
 
     if(battle_menu)
-      return battle_menu->setDisplayData(battle_display_data);
+      return battle_menu->setDisplayData(display_data);
   }
 
   return success;

@@ -350,6 +350,9 @@ public:
   int getBattleScene();
   int getBattleThingID();
 
+  /* Return the enumerated state of the DialogMode */
+  DialogMode getDialogMode();
+
   /* Returns the current enumerated WindowState of the Map dialog */
   WindowStatus getDialogStatus();
 
@@ -434,6 +437,9 @@ public:
 
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
+
+  /* Sets the MapDialog paused state */
+  void setDialogPaused(bool paused);
 
   /* Sets the operational event handler */
   void setEventHandler(EventHandler* event_handler);
