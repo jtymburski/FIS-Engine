@@ -31,6 +31,8 @@ const SDL_Color MapDialog::kCOLOR_REM = {232, 0, 13, 255};
 const uint16_t MapDialog::kCURSOR_ANIMATE = 300;
 const uint8_t MapDialog::kCURSOR_HEIGHT = 8;
 const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
+const uint16_t MapDialog::kHOLD_DELAY = 300;
+const uint8_t MapDialog::kHOLD_OFFSET = 10;
 const std::string MapDialog::kITEM_COLOR = "ffc400";
 const uint8_t MapDialog::kLINE_SPACING = 12;
 const uint8_t MapDialog::kMARGIN_SIDES = 50;
@@ -47,7 +49,7 @@ const uint16_t MapDialog::kPICKUP_DISPLAY_TIME = 5000;
 const uint16_t MapDialog::kPICKUP_IMG_SIZE = 64;
 const uint8_t MapDialog::kPICKUP_TEXT_MARGIN = 10;
 const uint16_t MapDialog::kPICKUP_Y = 50;
-const float MapDialog::kSHIFT_TIME = 3; //.704;
+const float MapDialog::kSHIFT_TIME = 3.0; //.704;
 const uint8_t MapDialog::kTEXT_LINES = 4;
 const uint8_t MapDialog::kTEXT_OPTIONS = 3;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 33.33;
@@ -179,6 +181,7 @@ void MapDialog::clearData()
   animation_cursor = 0.0;
   animation_cursor_up = true;
   animation_shifter = 0.0;
+  conversation_delay = 0;
   conversation_info = nullptr;
   conversation_inst = nullptr;
   conversation_ready = false;
@@ -529,6 +532,7 @@ void MapDialog::setAlpha(uint8_t alpha)
   /* Sets the frame alpha ratings */
   frame_bottom.setAlpha(alpha);
   frame_right.setAlpha(alpha);
+  img_convo_c.setOpacity(alpha);
   img_convo_m.setAlpha(alpha);
   img_convo_n.setAlpha(alpha);
   img_opt_c.setAlpha(alpha);
@@ -556,14 +560,14 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
 {
   if(conversation_info != nullptr)
   {
-    Frame* dialog_frame = NULL;
+    Frame* dialog_frame = nullptr;
     int render_height = img_convo.getHeight();
     int render_width = img_convo.getWidth();
     int txt_length = img_convo.getWidth() - (kMARGIN_SIDES << 1);
 
     /* Set the active thing data plus grab image frame */
     thing_active = getThingReference(conversation_info->thing_id);
-    if(thing_active != NULL)
+    if(thing_active != nullptr)
     {
       dialog_frame = thing_active->getDialogImage();
 
@@ -581,7 +585,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     /* Create the name information */
     string name = "";
     Text name_text;
-    if(thing_active != NULL)
+    if(thing_active != nullptr)
       name = thing_active->getName();
     if(!name.empty())
     {
@@ -604,7 +608,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     /* Render images onto texture */
     int convo_y = render_height - img_convo.getHeight();
     img_convo.render(renderer, 0, convo_y);
-    if(dialog_frame != NULL)
+    if(dialog_frame != nullptr)
       dialog_frame->render(renderer, render_width - dialog_frame->getWidth(),
                            render_height - dialog_frame->getHeight());
 
@@ -640,14 +644,14 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
                        src_rect.x + (src_rect.w - name_text.getWidth()) / 2,
                        src_rect.y + (src_rect.h - name_text.getHeight()) / 2);
     }
-    SDL_SetRenderTarget(renderer, NULL);
+    SDL_SetRenderTarget(renderer, nullptr);
 
     /* Create the base frame display texture */
     frame_bottom.setTexture(texture);
 
     /* Determine the length of the viewing area and split text lines */
     string txt_line = replaceIDReferences(conversation_info->text);
-    if(font_normal != NULL)
+    if(font_normal != nullptr)
     {
       if(conversation_info->next.size() > 1)
       {
@@ -671,11 +675,13 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
       {
         text_strings =
             Text::splitLineProperty(font_normal, txt_line, txt_length);
-        renderOptions(NULL);
+        renderOptions(nullptr);
       }
 
       setupRenderText(text_strings, true);
     }
+
+    conversation_delay = 0;
 
     /* Modify the offset if it's above the new limits */
     dialog_mode = DialogMode::CONVERSATION;
@@ -739,7 +745,7 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
 
     delete(*i);
   }
-  SDL_SetRenderTarget(renderer, NULL);
+  SDL_SetRenderTarget(renderer, nullptr);
 
   /* Create the base frame display texture and set the mode */
   frame_bottom.setTexture(texture);
@@ -1065,6 +1071,7 @@ bool MapDialog::initConversation(ConvoPair convo_pair, MapPerson* target,
      dialog_mode != DialogMode::CONVERSATION && target != nullptr &&
      isImagesSet())
   {
+    conversation_delay = 0;
     conversation_info = convo_pair.base;
     conversation_inst = convo_pair.inst;
     this->source = source;
@@ -1319,6 +1326,7 @@ void MapDialog::keyDownEvent(KeyHandler& key_handler)
       if(isConversationActive() && dialog_status == WindowStatus::ON)
       {
         uint16_t text_bottom = text_top + kTEXT_LINES;
+        bool multiple = (conversation_info->next.size() > 1);
 
         /* If the dialog letters are being shifted, finish the shift */
         if(text_offset_max != 0)
@@ -1338,40 +1346,41 @@ void MapDialog::keyDownEvent(KeyHandler& key_handler)
           text_offset_max = (TTF_FontHeight(font_normal) + (kLINE_SPACING)) *
                             (kTEXT_LINES - 1);
         }
-        /* Otherwise, if end of conversation is reached, start hiding it */
-        else if(conversation_info->next.size() == 0 ||
-                conversation_inst->next.size() == 0)
+        else if(multiple || (conversation_delay >= conversation_info->delay))
         {
-          dialog_status = WindowStatus::HIDING;
-          executeEvent();
-        }
-        /* Otherwise, there is a next conversation. Proceed */
-        else
-        {
-          bool multiple = (conversation_info->next.size() > 1);
-
-          /* Do the initial conversation shift */
-          executeEvent();
-          conversation_info = &(conversation_info->next[dialog_option]);
-          conversation_inst = &(conversation_inst->next[dialog_option]);
-
-          /* If multiple options, shift to the next one */
-          if(multiple)
+          /* If end of conversation is reached, start hiding it */
+          if(conversation_info->next.size() == 0 ||
+             conversation_inst->next.size() == 0)
           {
+            dialog_status = WindowStatus::HIDING;
             executeEvent();
-            if(conversation_info->next.size() == 0 ||
-               conversation_inst->next.size() == 0)
-            {
-              dialog_status = WindowStatus::HIDING;
-            }
-            else
-            {
-              conversation_info = &(conversation_info->next[0]);
-              conversation_inst = &(conversation_inst->next[0]);
-            }
           }
+          /* Otherwise, there is a next conversation. Proceed */
+          else
+          {
+            /* Do the initial conversation shift */
+            executeEvent();
+            conversation_info = &(conversation_info->next[dialog_option]);
+            conversation_inst = &(conversation_inst->next[dialog_option]);
 
-          conversation_update = true;
+            /* If multiple options, shift to the next one */
+            if(multiple)
+            {
+              executeEvent();
+              if(conversation_info->next.size() == 0 ||
+                 conversation_inst->next.size() == 0)
+              {
+                dialog_status = WindowStatus::HIDING;
+              }
+              else
+              {
+                conversation_info = &(conversation_info->next[0]);
+                conversation_inst = &(conversation_inst->next[0]);
+              }
+            }
+
+            conversation_update = true;
+          }
         }
 
         /* Play key sound */
@@ -1420,6 +1429,55 @@ void MapDialog::keyDownEvent(KeyHandler& key_handler)
 void MapDialog::keyFlush()
 {
 }
+ 
+/*
+ * Description: Loads the pie clock images for when one snapshot of the
+ *              conversation is displayed but delayed. 
+ *
+ * Inputs: std::string path_start - the start of the path sequence
+ *         int frames - the number of frames. First is empty. Last is full. 
+ *                      Rest is sequencing
+ *         std::string path_finish - the end of the path sequence
+ *         SDL_Renderer* renderer - the graphical rendering engine reference
+ * Output: bool - status if set was successful (false if either fails)
+ */
+bool MapDialog::loadImageClock(std::string path_start, int frames,
+                               std::string path_finish, SDL_Renderer* renderer)
+{
+  if(renderer != nullptr && frames > 0)
+  {
+    /* Remove all existing and set animation time */
+    img_convo_c.removeAll();
+    img_convo_c.setAnimationTime(kHOLD_DELAY);
+
+    /* Base path */
+    std::string base_path = "";
+    if(system_options != nullptr)
+      base_path = system_options->getBasePath();
+
+    /* Add normal sequence */
+    img_convo_c.insertSequence(base_path + path_start, frames,
+                               path_finish, renderer);
+
+    /* Add in reversed sequence */
+    for(int i = (frames - 2); i >= 1; i--)
+    {
+      /* Generate path */
+      std::string path = (base_path + path_start);
+      if(i < 10)
+        path += "0";
+      path += std::to_string(i) + path_finish;
+
+      /* Add frame and horizontally flip */
+      Frame* edit_frame = img_convo_c.insertTail(path, renderer);
+      if(edit_frame != nullptr)
+        edit_frame->flipHorizontal();
+    }
+
+    return (img_convo_c.getSize() > 0);
+  }
+  return false;
+}
 
 /*
  * Description: Loads the conversation image. This is the main bottom part that
@@ -1445,12 +1503,13 @@ bool MapDialog::loadImageConversation(string path, SDL_Renderer* renderer)
  *              for talking. The more is the indicator for that more text needs
  *              to be displayed.
  *
- * Inputs: string path_next - the path to the next indicator image
- *         string path_more - the path to the more text indicator image
+ * Inputs: std::string path_next - the path to the next indicator image
+ *         std::string path_more - the path to the more text indicator image
  *         SDL_Renderer* renderer - the graphical rendering engine reference
  * Output: bool - status if set was successful (false if either fails)
  */
-bool MapDialog::loadImageDialogShifts(string path_next, string path_more,
+bool MapDialog::loadImageDialogShifts(std::string path_next,
+                                      std::string path_more,
                                       SDL_Renderer* renderer)
 {
   bool success = true;
@@ -1732,10 +1791,23 @@ bool MapDialog::render(SDL_Renderer* renderer)
         /* Else, the words have ended. Show the next shifter arrow */
         else if(text_offset_max == 0)
         {
-          img_convo_n.render(renderer, x_index - img_convo_n.getWidth() / 2,
-                             system_options->getScreenHeight() -
-                                 img_convo_n.getHeight() -
-                                 static_cast<int>(animation_cursor));
+          if(conversation_delay >= conversation_info->delay)
+          {
+            img_convo_n.render(renderer, x_index - img_convo_n.getWidth() / 2,
+                               system_options->getScreenHeight() -
+                                   img_convo_n.getHeight() -
+                                   static_cast<int>(animation_cursor));
+          }
+          else
+          {
+            if(img_convo_c.isFramesSet())
+            {
+              img_convo_c.render(renderer, 
+                  x_index - img_convo_c.getFirstFrame()->getWidth() / 2,
+                  system_options->getScreenHeight() -
+                      img_convo_c.getFirstFrame()->getHeight() - kHOLD_OFFSET);
+            }
+          }
         }
       }
     }
@@ -2032,7 +2104,13 @@ void MapDialog::update(int cycle_time)
           text_update = true;
         }
 
-        /* Up motion */
+        /* If there is a conversation delay, add it up during operation */
+        if(conversation_delay < conversation_info->delay)
+        {
+          conversation_delay += cycle_time;
+        }
+
+        /* Up motion of next cursor */
         if(animation_cursor_up)
         {
           animation_cursor +=
@@ -2043,7 +2121,7 @@ void MapDialog::update(int cycle_time)
             animation_cursor_up = false;
           }
         }
-        /* Down motion */
+        /* Down motion of next cursor */
         else
         {
           animation_cursor -=
@@ -2054,6 +2132,9 @@ void MapDialog::update(int cycle_time)
             animation_cursor_up = true;
           }
         }
+
+        /* Update the hold clock cursor */
+        img_convo_c.update(cycle_time);
 
         /* The animating shifter, for text that is too long to fit in the
          * viewing window */

@@ -140,7 +140,7 @@ public:
   const static uint8_t kDEFAULT_OPACITY;  /* the default rendered alpha */
   const static uint8_t kDELTA_GREY_SCALE; /* Delta grey scale alpha */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns the angle, if one exists in the list of modifications */
   uint16_t parseAdjustments(std::vector<std::string> adjustments);
@@ -148,7 +148,7 @@ private:
   /* Sets the color modification with the texture */
   void setColorMod();
 
-  /*======================= PROTECTED FUNCTIONS ==============================*/
+/*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Contains the destructor implementation (so children can call it) */
   void clear();
@@ -156,7 +156,7 @@ protected:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const Sprite& source);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer,

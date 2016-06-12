@@ -51,6 +51,7 @@ const uint8_t EventSet::kHAVE_ITEM_CONSUME = 0;
 const uint8_t EventSet::kHAVE_ITEM_COUNT = 1;
 const uint8_t EventSet::kHAVE_ITEM_ID = 0;
 /* ---- */
+const int32_t EventSet::kCONVO_DELAY = -1;
 const int32_t EventSet::kGIVE_DEF_CHANCE = 100;
 const int32_t EventSet::kVIEW_TIME = 1000;
 const int32_t EventSet::kUNSET_ID = -1;
@@ -1139,20 +1140,28 @@ std::string EventSet::classifierToStr(const EventClassifier& classifier)
   return "None";
 }
 
-/* Copies a passed in conversation struct */
-// TODO: Comment
+/*
+ * Description: Public static. Copies the passed in conversation struct and
+ *              returns the copied version. This will recursively travel through
+ *              all layers.
+ *
+ * Inputs: Conversation source - the struct to copy
+ *         bool skeleton - only copy a skeleton of the data for reference use
+ * Output: Conversation - the copied struct
+ */
 Conversation EventSet::copyConversation(Conversation source, bool skeleton)
 {
   /* Data */
   Conversation convo = createBlankConversation();
+  convo.action_event = copyEvent(source.action_event, skeleton);
+  convo.category = source.category;
+  convo.delay = source.delay;
   convo.text = source.text;
   convo.thing_id = source.thing_id;
-  convo.category = source.category;
-  convo.action_event = copyEvent(source.action_event, skeleton);
 
   /* Go through all other conversations */
   for(uint32_t i = 0; i < source.next.size(); i++)
-    convo.next.push_back(copyConversation(source.next[i]));
+    convo.next.push_back(copyConversation(source.next[i], skeleton));
 
   return convo;
 }
@@ -1196,6 +1205,7 @@ Event EventSet::copyEvent(Event source, bool skeleton)
     event.convo->action_event = copyEvent(source.convo->action_event,
                                           skeleton);
     event.convo->category = source.convo->category;
+    event.convo->delay = source.convo->delay;
     event.convo->text = source.convo->text;
     event.convo->thing_id = source.convo->thing_id;
 
@@ -1205,8 +1215,6 @@ Event EventSet::copyEvent(Event source, bool skeleton)
 
     /* If skeleton mode, purge conversation */
     // TODO: FUTURE
-    //if(skeleton)
-    //  std::cout << "TODO: PURGE" << std::endl;
   }
 
   return event;
@@ -1221,11 +1229,12 @@ Event EventSet::copyEvent(Event source, bool skeleton)
 Conversation EventSet::createBlankConversation()
 {
   Conversation convo;
+  convo.action_event = createBlankEvent();
+  convo.category = DialogCategory::TEXT;
+  convo.delay = kCONVO_DELAY;
+  convo.next.clear();
   convo.text = "";
   convo.thing_id = kUNSET_ID;
-  convo.category = DialogCategory::TEXT;
-  convo.action_event = createBlankEvent();
-  convo.next.clear();
 
   return convo;
 }
@@ -1484,15 +1493,19 @@ Event EventSet::createEventConversation(Conversation* new_conversation,
 
   /* Use the existing conversation if it exists. Otherwise create new one */
   if(new_conversation != nullptr)
+  {
     new_event.convo = new_conversation;
+  }
   else
   {
     new_event.convo = new Conversation;
+    new_event.convo->action_event = createBlankEvent();
+    new_event.convo->category = DialogCategory::TEXT;
+    new_event.convo->delay = kCONVO_DELAY;
+    new_event.convo->next.clear();
     new_event.convo->text = "";
     new_event.convo->thing_id = kUNSET_ID;
-    new_event.convo->category = DialogCategory::TEXT;
-    new_event.convo->action_event = createBlankEvent();
-    new_event.convo->next.clear();
+
   }
 
   return new_event;
@@ -2764,13 +2777,23 @@ void EventSet::updateConversation(Conversation* reference, XmlData data,
     std::string element = data.getElement(index);
 
     /* Determine what part of the conversation to edit */
-    if(element == "text")
-      reference->text = data.getDataString();
-    else if(element == "id")
+    if(element == "id")
+    {
       reference->thing_id = data.getDataInteger();
+    }
+    else if(element == "delay")
+    {
+      reference->delay = data.getDataInteger();
+    }
     else if(element == "event")
+    {
       reference->action_event = updateEvent(reference->action_event, data,
                                             index + 1, section_index);
+    }
+    else if(element == "text")
+    {
+      reference->text = data.getDataString();
+    }
   }
 }
 

@@ -2474,6 +2474,7 @@ bool Map::keyDownEvent(KeyHandler& key_handler)
 
   return false;
 }
+
 /* Key down event for test keys - isolated from key handler system */
 #ifdef UDEBUG
 void Map::keyTestDownEvent(SDL_KeyboardEvent event)
@@ -2541,6 +2542,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       Conversation* convo = new Conversation;
       convo->category = DialogCategory::TEXT;
       convo->action_event = blank_event;
+      convo->delay = 1000;
       convo->text = "This is the initial conversation point that will start ";
       convo->text += "it. How can this continue? It must pursue to complete ";
       convo->text += "embodiment. Ok, maybe I'll just keep typing until I ";
@@ -2549,17 +2551,20 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       Conversation convo2;
       convo2.category = DialogCategory::TEXT;
       convo2.action_event = blank_event;
+      convo2.delay = 2500;
       convo2.text = "Pass the chips please.";
       convo2.thing_id = 24;
       Conversation test1, test2, test3, test4, test5;
       test1.category = DialogCategory::TEXT;
       test1.action_event = blank_event;
+      test1.delay = 2500;
       test1.text = "This is a test to see how data runs. The line will split ";
       test1.text += "once unless it is an option based selection in which ";
       test1.text += "case it will restrict.";
       test1.thing_id = 3;
       test2.category = DialogCategory::TEXT;
       test2.action_event = blank_event;
+      test2.delay = 2500;
       test2.text = "This is a no man case. See what happens!! Ok, this is the ";
       test2.text += "too long case where the lines never cease to exist and ";
       test2.text += "the points aren't for real. I'm feeling a bit hungry ";
@@ -2571,6 +2576,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       test2.next.push_back(test1);
       test3.category = DialogCategory::TEXT;
       test3.action_event = EventSet::createEventStartBattle();
+      test3.delay = 2500;
       test3.text = "Back to finish off with a clean case with a couple of ";
       test3.text += "lines. So this [i][b]requires me to write a bu[/i][/b]";
       test3.text += "nch of BS to try and fill these lines.";
@@ -2580,6 +2586,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       test3.next.push_back(test2);
       test4.category = DialogCategory::TEXT;
       test4.action_event = blank_event;
+      test4.delay = 2500;
       test4.text = "Option 1 - This goes [b]o[ff0000]n and[/ff0000] o[/b]n and "
                    "on and on and on and ";
       test4.text += "lorem ipsum. This is way too long to be an option. Loser";
@@ -2587,6 +2594,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       test4.next.push_back(test2);
       test5.category = DialogCategory::TEXT;
       test5.action_event = blank_event;
+      test5.delay = 2500;
       test5.text = "Option 2";
       test5.thing_id = -1;
       test5.next.push_back(test3);
@@ -2604,7 +2612,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       convo->next.push_back(convo2);
 
       /* Run the conversation and then delete */
-      if(map_dialog.initConversation({convo, convo}, player, NULL))
+      if(map_dialog.initConversation({convo, convo}, player, nullptr))
       {
         std::vector<int> list = map_dialog.getConversationIDs();
         map_dialog.setConversationThings(getThingData(list));
@@ -2621,7 +2629,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     /* Test: Location of player */
     else if(event.keysym.sym == SDLK_l)
     {
-      if(player != NULL)
+      if(player != nullptr)
       {
         SDL_Rect bbox = player->getBoundingBox();
         SDL_Rect bpixel = player->getBoundingPixels();
@@ -2824,6 +2832,8 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
                              "sprites/Overlay/item_store_right.png", renderer);
 
   /* Load map dialog sprites */
+  map_dialog.loadImageClock("sprites/Overlay/PieClock_AA_A", 5, ".png",
+                            renderer);
   map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
   map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png",
                                    "sprites/Overlay/dialog_extender.png",

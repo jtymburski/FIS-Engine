@@ -37,7 +37,7 @@ class MapDialog
 {
 public:
   /* Constructor function */
-  MapDialog(Options* running_config = NULL);
+  MapDialog(Options* running_config = nullptr);
 
   /* Destructor function */
   ~MapDialog();
@@ -49,6 +49,7 @@ private:
   float animation_shifter;
 
   /* The currently running conversation information */
+  int conversation_delay;
   Conversation* conversation_info;
   Conversation* conversation_inst;
   bool conversation_ready;
@@ -79,7 +80,8 @@ private:
   Frame frame_right;
 
   /* Image frames to be loaded for rendering */
-  Frame img_convo;   /* Main Dialog display */
+  Frame img_convo; /* Main Dialog display */
+  Sprite img_convo_c; /* Conversation delay to next indicator */
   Frame img_convo_m; /* Conversation more to display indicator */
   Frame img_convo_n; /* Conversation next arrow */
   Frame img_name_l;  /* Left dialog name display corner */
@@ -141,11 +143,13 @@ private:
   const static uint16_t kCURSOR_ANIMATE;  /* The cursor animation time */
   const static uint8_t kCURSOR_HEIGHT;    /* The cursor height on animation */
   const static uint8_t kHIGHLIGHT_MARGIN; /* Highlighted option margin pixels */
-  const static std::string kITEM_COLOR;   /* Hex color of item reference */
-  const static uint8_t kLINE_SPACING;    /* The spacing between lines of font */
-  const static uint8_t kMARGIN_SIDES;    /* The left and right margin size */
-  const static uint8_t kMARGIN_TOP;      /* The top margin size */
-  const static uint16_t kMSEC_PER_WORD;  /* The read speed per word */
+  const static uint16_t kHOLD_DELAY; /* The delay between frame sequencing */
+  const static uint8_t kHOLD_OFFSET; /* Offset from bottom of screen to mid */
+  const static std::string kITEM_COLOR; /* Hex color of item reference */
+  const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
+  const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
+  const static uint8_t kMARGIN_TOP; /* The top margin size */
+  const static uint16_t kMSEC_PER_WORD; /* The read speed per word */
   const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
   const static uint8_t kNAME_MARGIN;     /* Name margin on each side */
   const static uint8_t kNOTIFY_MAX_LINES; /* Max number of lines for notify */
@@ -164,7 +168,7 @@ private:
   const static float kTEXT_SHIFT;   /* The speed at which the text shifts up */
   const static string kTHING_COLOR; /* Hex color of thing reference in text */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Computes all IDs that are needed for displaying the conversation */
   vector<int> calculateThingList(Conversation* convo);
@@ -215,7 +219,7 @@ private:
   setupRenderText(vector<vector<vector<pair<string, TextProperty>>>> lines = {},
                   bool delete_old = false);
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Clear all trigger - wipes out all queues and the current conversation */
   void clearAll(bool include_convo = false);
@@ -270,8 +274,10 @@ public:
   void keyFlush();
 
   /* Loads all appropriate image data for rendering */
+  bool loadImageClock(std::string path_start, int frames,
+                      std::string path_finish, SDL_Renderer* renderer);
   bool loadImageConversation(string path, SDL_Renderer* renderer);
-  bool loadImageDialogShifts(string path_next, string path_more,
+  bool loadImageDialogShifts(std::string path_next, std::string path_more,
                              SDL_Renderer* renderer);
   bool loadImageNameLeftRight(string path, SDL_Renderer* renderer);
   bool loadImageOptions(string path_circle, string path_triangle,

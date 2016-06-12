@@ -172,11 +172,11 @@ struct Event
   Conversation* convo;
   std::vector<Event> events;
   std::vector<int> ints;
-  int32_t sound_id;
   std::vector<std::string> strings;
 
-  bool one_shot;
   bool has_exec;
+  bool one_shot;
+  int32_t sound_id;
 };
 
 /*
@@ -185,11 +185,12 @@ struct Event
  */
 struct Conversation
 {
+  Event action_event;
+  DialogCategory category;
+  int delay;
+  std::vector<Conversation> next;
   std::string text;
   int thing_id;
-  DialogCategory category;
-  Event action_event;
-  std::vector<Conversation> next;
 };
 
 /*
@@ -262,6 +263,7 @@ public:
   const static uint8_t kHAVE_ITEM_COUNT; /* Have item count index */
   const static uint8_t kHAVE_ITEM_ID; /* Have item ID index */
   /* ---- */
+  const static int32_t kCONVO_DELAY; /* The default conversation delay */
   const static int32_t kGIVE_DEF_CHANCE; /* Default give item chance */
   const static int32_t kVIEW_TIME; /* The default view time - for unlocks */
   const static int32_t kUNSET_ID; /* The unset ID - for all IDs */
