@@ -192,8 +192,8 @@ void EventHandler::executeEventSet(EventSet* set, MapPerson* initiator,
 }
 
 /* Executes an MIO trigger event */
-void EventHandler::executeIOTrigger(MapInteractiveObject* io,
-                                    int interaction_state, MapPerson* initiator)
+void EventHandler::executeIOShift(MapInteractiveObject* io,
+                                  int interaction_state, MapPerson* initiator)
 {
   /* Create the executed event queue entry */
   if(io != nullptr && interaction_state >= 0)
@@ -209,7 +209,7 @@ void EventHandler::executeIOTrigger(MapInteractiveObject* io,
     executed_event.source = (MapThing*)io;
 
     /* Specific event properties */
-    executed_event.event.classification = EventClassifier::TRIGGERIO;
+    executed_event.event.classification = EventClassifier::SHIFTIO;
     executed_event.event.ints.push_back(interaction_state);
 
     /* Push the event to the back of the queue */
@@ -483,6 +483,23 @@ bool EventHandler::pollPropMod(MapThing*& source, ThingBase& type, int& id,
   return false;
 }
 
+/* Poll a shift IO event */
+bool EventHandler::pollShiftIO(MapInteractiveObject** io, int* state,
+                               MapPerson** initiator)
+{
+  if(pollEventType() == EventClassifier::SHIFTIO && io != nullptr &&
+     state != nullptr && initiator != nullptr &&
+     event_queue[queue_index].event.ints.size() == 1)
+  {
+    *io = (MapInteractiveObject*)event_queue[queue_index].source;
+    *state = event_queue[queue_index].event.ints.front();
+    *initiator = event_queue[queue_index].initiator;
+
+    return true;
+  }
+  return false;
+}
+
 /* Poll a sound event */
 bool EventHandler::pollSound()
 {
@@ -571,17 +588,16 @@ bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
 }
 
 /* Poll a trigger IO event */
-bool EventHandler::pollTriggerIO(MapInteractiveObject** io, int* state,
-                                 MapPerson** initiator)
+bool EventHandler::pollTriggerIO(MapThing*& source, int& io_id,
+                                 MapPerson*& initiator)
 {
-  if(pollEventType() == EventClassifier::TRIGGERIO && io != nullptr &&
-     state != nullptr && initiator != nullptr &&
-     event_queue[queue_index].event.ints.size() == 1)
+  Event event;
+  if(getEvent(event, true) &&
+     EventSet::dataEventTriggerIO(event, io_id))
   {
-    *io = (MapInteractiveObject*)event_queue[queue_index].source;
-    *state = event_queue[queue_index].event.ints.front();
-    *initiator = event_queue[queue_index].initiator;
-
+    source = event_queue[queue_index].source;
+    initiator = event_queue[queue_index].initiator;
+    triggerQueueSound(event);
     return true;
   }
   return false;

@@ -30,12 +30,12 @@ const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
  */
 MapInteractiveObject::MapInteractiveObject() : MapThing()
 {
-  action_initiator = NULL;
+  action_initiator = nullptr;
   lock_struct = EventSet::createBlankLocked();
-  node_current = NULL;
-  node_head = NULL;
+  node_current = nullptr;
+  node_head = nullptr;
   nodes_delete = true;
-  person_on = NULL;
+  person_on = nullptr;
   shifting_forward = true;
   time_elapsed = 0;
   time_return = kRETURN_TIME_UNUSED;
@@ -54,10 +54,10 @@ MapInteractiveObject::MapInteractiveObject(int id, std::string name,
                                            std::string description)
                     : MapThing(id, name, description)
 {
-  action_initiator = NULL;
-  node_current = NULL;
-  node_head = NULL;
-  person_on = NULL;
+  action_initiator = nullptr;
+  node_current = nullptr;
+  node_head = nullptr;
+  person_on = nullptr;
   shifting_forward = true;
   time_elapsed = 0;
   time_return = kRETURN_TIME_UNUSED;
@@ -87,10 +87,10 @@ void MapInteractiveObject::appendEmptyNode()
   StateNode* node = new StateNode;
 
   /* Set the state parameters */
-  node->state = NULL;
-  node->transition = NULL;
-  node->previous = NULL;
-  node->next = NULL;
+  node->state = nullptr;
+  node->transition = nullptr;
+  node->previous = nullptr;
+  node->next = nullptr;
 
   /* Assign the node to the tail of the sequence */
   appendNode(node);
@@ -108,7 +108,7 @@ void MapInteractiveObject::appendNode(StateNode* node)
 
   /* Assign the node to the tail of the sequence */
   node->previous = tail_node;
-  if(tail_node == NULL)
+  if(tail_node == nullptr)
   {
     node_head = node;
     node_current = node_head;
@@ -131,17 +131,17 @@ bool MapInteractiveObject::clearNode(int id)
   StateNode* node_to_clear = getNode(id);
 
   /* Check if the node is valid */
-  if(node_to_clear != NULL)
+  if(node_to_clear != nullptr)
   {
     /* Delete state pointer, if relevant */
-    if(node_to_clear->state != NULL)
+    if(node_to_clear->state != nullptr)
       delete node_to_clear->state;
-    node_to_clear->state = NULL;
+    node_to_clear->state = nullptr;
 
     /* Delete transition pointer, if relevant */
-    if(node_to_clear->transition != NULL)
+    if(node_to_clear->transition != nullptr)
       delete node_to_clear->transition;
-    node_to_clear->transition = NULL;
+    node_to_clear->transition = nullptr;
 
     return true;
   }
@@ -157,7 +157,7 @@ bool MapInteractiveObject::clearNode(int id)
  */
 StateNode* MapInteractiveObject::getNode(int id)
 {
-  StateNode* selected = NULL;
+  StateNode* selected = nullptr;
 
   if(id >= 0 && id < getNodeLength())
   {
@@ -185,7 +185,7 @@ int MapInteractiveObject::getNodeLength()
   int length = 0;
 
   /* Determine the length of the node sequence by parsing through it */
-  while(parser != NULL)
+  while(parser != nullptr)
   {
     length++;
     parser = parser->next;
@@ -205,11 +205,11 @@ StateNode* MapInteractiveObject::getTailNode()
   StateNode* tail = node_head;
 
   /* If no nodes have been set, return null */
-  if(tail == NULL)
+  if(tail == nullptr)
     return tail;
 
   /* Otherwise, find the tail */
-  while(tail->next != NULL)
+  while(tail->next != nullptr)
     tail = tail->next;
 
   return tail;
@@ -243,18 +243,18 @@ void MapInteractiveObject::handlerInteract()
 void MapInteractiveObject::setParentFrames()
 {
   /* Only proceed if the current node is non-NULL */
-  if(node_current != NULL)
+  if(node_current != nullptr)
   {
     /* Determine if this is a transition sequence or a state sequence */
-    if(node_current->state != NULL)
+    if(node_current->state != nullptr)
     {
       setMatrix(node_current->state->getMatrix());
       animate(0, true, false);
     }
-    else if(node_current->transition != NULL)
+    else if(node_current->transition != nullptr)
     {
       setMatrix(node_current->transition);
-      if(base == NULL)
+      if(base == nullptr)
         node_current->transition->setDirectionForward();
       else
         base_control->forward = true;
@@ -264,7 +264,7 @@ void MapInteractiveObject::setParentFrames()
        * or not */
       if(!shifting_forward)
       {
-        if(base == NULL)
+        if(base == nullptr)
         {
           node_current->transition->setDirectionReverse();
           node_current->transition->shiftNext();
@@ -348,10 +348,10 @@ bool MapInteractiveObject::shiftAvailable()
  */
 bool MapInteractiveObject::shiftNext()
 {
-  if(node_current != NULL && node_current->next != NULL)
+  if(node_current != nullptr && node_current->next != nullptr)
   {
     /* Fire exit event */
-    if(node_current->state != NULL)
+    if(node_current->state != nullptr)
       node_current->state->triggerExitEvent(action_initiator, this);
 
     /* Shift the pointer and update the frames */
@@ -360,7 +360,7 @@ bool MapInteractiveObject::shiftNext()
     setParentFrames();
 
     /* Fire enter event */
-    if(node_current->state != NULL)
+    if(node_current->state != nullptr)
       node_current->state->triggerEnterEvent(action_initiator, this);
 
     return true;
@@ -379,10 +379,10 @@ bool MapInteractiveObject::shiftNext()
  */
 bool MapInteractiveObject::shiftPrevious()
 {
-  if(node_current != NULL && node_current->previous != NULL)
+  if(node_current != nullptr && node_current->previous != nullptr)
   {
     /* Fire exit event */
-    if(node_current->state != NULL)
+    if(node_current->state != nullptr)
       node_current->state->triggerExitEvent(action_initiator, this);
 
     node_current = node_current->previous;
@@ -390,12 +390,11 @@ bool MapInteractiveObject::shiftPrevious()
     setParentFrames();
 
     /* Fire enter event */
-    if(node_current->state != NULL)
+    if(node_current->state != nullptr)
       node_current->state->triggerEnterEvent(action_initiator, this);
 
     return true;
   }
-
   return false;
 }
 
@@ -492,7 +491,7 @@ bool MapInteractiveObject::isTileMoveAllowed(Tile* previous, Tile* next,
   bool move_allowed = true;
 
   /* If the next tile is NULL, move isn't allowed */
-  if(next == NULL)
+  if(next == nullptr)
     move_allowed = false;
 
   /* Check if the thing can move there */
@@ -612,7 +611,7 @@ bool MapInteractiveObject::setTile(Tile* tile, TileSprite* frames,
   uint8_t render_depth = frames->getRenderDepth();
 
   /* Attempt and set the tile */
-  if(tile != NULL)
+  if(tile != nullptr)
     return tile->setIO(this, render_depth);
 
   return false;
@@ -659,7 +658,7 @@ bool MapInteractiveObject::setTileStart(Tile* old_tile, Tile* new_tile,
   (void)old_tile;
 
   /* Attempt and set the tile */
-  if(new_tile != NULL)
+  if(new_tile != nullptr)
     return new_tile->setIO(this, render_depth);
 
   return false;
@@ -721,7 +720,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   bool success = true;
 
   /* Ensure there is at least one valid node */
-  if(node_head == NULL)
+  if(node_head == nullptr)
   {
     appendEmptyNode();
     node_head->state = new MapState(event_handler);
@@ -749,12 +748,12 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   else if(elements.size() == 1 && elements.front() == "rendermatrix")
   {
     StateNode* node = node_head;
-    while(node != NULL)
+    while(node != nullptr)
     {
       /* Set the render matrix */
-      if(node->state != NULL && node->state->getMatrix() != NULL)
+      if(node->state != nullptr && node->state->getMatrix() != nullptr)
         node->state->getMatrix()->setRenderMatrix(data.getDataString(&success));
-      else if(node->transition != NULL)
+      else if(node->transition != nullptr)
         node->transition->setRenderMatrix(data.getDataString(&success));
 
       /* Bump the node */
@@ -809,25 +808,25 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
 
     /* Proceed to determine if it was changed */
     StateNode* modified_node = getNode(index);
-    if(modified_node != NULL)
+    if(modified_node != nullptr)
     {
       /* Get the render matrix of the head node */
       std::string render_matrix = "";
-      if(node_head->state != NULL)
+      if(node_head->state != nullptr)
         render_matrix = node_head->state->getMatrix()->getRenderMatrix();
       else
         render_matrix = node_head->transition->getRenderMatrix();
 
       /* Clear the node if it has the wrong data in it */
-      if((elements[1] == "state" && modified_node->transition != NULL) ||
-         (elements[1] == "transition" && modified_node->state != NULL))
+      if((elements[1] == "state" && modified_node->transition != nullptr) ||
+         (elements[1] == "transition" && modified_node->state != nullptr))
         clearNode(index);
 
       /* Move forward with updating the given state/transiton sequence */
       if(elements[1] == "state")
       {
         /* Make the state if it doesn't exist */
-        if(modified_node->state == NULL)
+        if(modified_node->state == nullptr)
         {
           modified_node->state = new MapState(event_handler);
           modified_node->state->getMatrix()->setRenderMatrix(render_matrix);
@@ -843,7 +842,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
       else if(elements[1] == "transition")
       {
         /* Make the transition if it doesn't exist */
-        if(modified_node->transition == NULL)
+        if(modified_node->transition == nullptr)
         {
           modified_node->transition = new SpriteMatrix();
           modified_node->transition->setRenderMatrix(render_matrix);
@@ -888,7 +887,6 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
  */
 ThingBase MapInteractiveObject::classDescriptor()
 {
-  //return "MapInteractiveObject";
   return ThingBase::INTERACTIVE;
 }
 
@@ -910,17 +908,17 @@ bool MapInteractiveObject::cleanMatrix(bool first_call)
   StateNode* node = node_head;
 
   /* Parse through each node and check/clean the data involved */
-  while(node != NULL)
+  while(node != nullptr)
   {
-    SpriteMatrix* matrix = NULL;
+    SpriteMatrix* matrix = nullptr;
 
     /* Get the matrix corresponding to the node */
-    if(node->state != NULL)
+    if(node->state != nullptr)
       matrix = node->state->getMatrix();
     else
       matrix = node->transition;
 
-    if(matrix != NULL)
+    if(matrix != nullptr)
     {
       /* Clean the matrix */
       matrix->cleanMatrix();
@@ -953,9 +951,9 @@ bool MapInteractiveObject::cleanMatrix(bool first_call)
 void MapInteractiveObject::clear()
 {
   /* Clears action initiator pointer */
-  action_initiator = NULL;
+  action_initiator = nullptr;
   lock_struct = EventSet::createBlankLocked();
-  person_on = NULL;
+  person_on = nullptr;
   shifting_forward = true;
   time_elapsed = 0;
   time_return = kRETURN_TIME_UNUSED;
@@ -976,9 +974,18 @@ void MapInteractiveObject::clear()
  */
 int MapInteractiveObject::getInactiveTime() const
 {
-  if(base != NULL && !time_valid)
+  if(base != nullptr && !time_valid)
     return static_cast<MapInteractiveObject*>(base)->time_return;
   return time_return;
+}
+  
+/* Returns the interaction at the current state */
+MapState::InteractionState MapInteractiveObject::getInteraction()
+{
+  StateNode* node_curr = getStateCurrent();
+  if(node_curr != nullptr && node_curr->state != nullptr)
+    return node_curr->state->getInteraction();
+  return MapState::NOINTERACTION;
 }
 
 /*
@@ -1028,11 +1035,18 @@ bool MapInteractiveObject::handlerTrigger(int interaction_state,
   bool success = false;
   (void)initiator;
 
-  if(node_current != NULL && node_current->state != NULL)
+  if(node_current != nullptr && node_current->state != nullptr)
   {
-    /* Determine state - Walk On Trigger */
-    if(interaction_state == (int)MapState::WALKON &&
-       node_current->state->getInteraction() == MapState::WALKON)
+    /* Determine state - Event Trigger */
+    if(interaction_state == (int)MapState::TRIGGER &&
+       node_current->state->getInteraction() == MapState::TRIGGER)
+    {
+      handlerInteract();
+      success = true;
+    }
+    /* Walk On Trigger */
+    else if(interaction_state == (int)MapState::WALKON &&
+            node_current->state->getInteraction() == MapState::WALKON)
     {
       handlerInteract();
       success = true;
@@ -1069,7 +1083,7 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
   bool status = false;
 
   /* Only proceed if the node is available */
-  if(node_current != NULL && node_current->state != NULL)
+  if(node_current != nullptr && node_current->state != nullptr)
   {
     /* Set the action initiator for the state */
     action_initiator = initiator;
@@ -1081,7 +1095,8 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
     if(node_current->state->getInteraction() == MapState::USE &&
        shiftAvailable() && event_handler != nullptr)
     {
-      event_handler->executeIOTrigger(this, (int)MapState::USE, initiator);
+      event_handler->executeIOShift(this, static_cast<int>(MapState::USE),
+                                    initiator);
       status = true;
     }
 
@@ -1169,7 +1184,7 @@ bool MapInteractiveObject::setBase(MapThing* base)
 
   if(classDescriptor() == ThingBase::INTERACTIVE)
   {
-    if(base != NULL && base->classDescriptor() == ThingBase::INTERACTIVE)
+    if(base != nullptr && base->classDescriptor() == ThingBase::INTERACTIVE)
     {
       /* Status */
       this->base = base;
@@ -1177,7 +1192,7 @@ bool MapInteractiveObject::setBase(MapThing* base)
       setVisibility(base->isVisible());
 
       /* States */
-      if(node_head == NULL)
+      if(node_head == nullptr)
       {
         /* Starting data */
         MapInteractiveObject* io_ref = static_cast<MapInteractiveObject*>(base);
@@ -1221,9 +1236,9 @@ bool MapInteractiveObject::setBase(MapThing* base)
 
       success = true;
     }
-    else if(base == NULL)
+    else if(base == nullptr)
     {
-      this->base = NULL;
+      this->base = nullptr;
       base_category = ThingBase::ISBASE;
       lock_struct = EventSet::createBlankLocked();
       success = true;
@@ -1285,7 +1300,7 @@ bool MapInteractiveObject::setLock(Locked new_locked)
  */
 bool MapInteractiveObject::setState(MapState* state)
 {
-  if(state != NULL && state->getMatrix() != NULL)
+  if(state != nullptr && state->getMatrix() != nullptr)
   {
     /* Check to make sure the base nodes aren't being used */
     if(!nodes_delete)
@@ -1295,9 +1310,9 @@ bool MapInteractiveObject::setState(MapState* state)
 
     /* Set the state parameters */
     node->state = state;
-    node->transition = NULL;
-    node->previous = NULL;
-    node->next = NULL;
+    node->transition = nullptr;
+    node->previous = nullptr;
+    node->next = nullptr;
 
     /* Assign the node to the tail of the sequence */
     appendNode(node);
@@ -1317,7 +1332,7 @@ bool MapInteractiveObject::setState(MapState* state)
  */
 bool MapInteractiveObject::setState(SpriteMatrix* transition)
 {
-  if(transition != NULL)
+  if(transition != nullptr)
   {
     /* Check to make sure the base nodes aren't being used */
     if(!nodes_delete)
@@ -1326,10 +1341,10 @@ bool MapInteractiveObject::setState(SpriteMatrix* transition)
     StateNode* node = new StateNode;
 
     /* Set the state parameters */
-    node->state = NULL;
+    node->state = nullptr;
     node->transition = transition;
-    node->previous = NULL;
-    node->next = NULL;
+    node->previous = nullptr;
+    node->next = nullptr;
 
     /* Assign the node to the tail of the sequence */
     appendNode(node);
@@ -1349,17 +1364,17 @@ bool MapInteractiveObject::setState(SpriteMatrix* transition)
  */
 void MapInteractiveObject::triggerWalkOff(MapPerson* trigger)
 {
-  if(trigger != NULL && person_on == trigger)
+  if(trigger != nullptr && person_on == trigger)
   {
     /* Trigger walk off interaction */
-    if(node_current != NULL && node_current->state != NULL &&
+    if(node_current != nullptr && node_current->state != nullptr &&
        node_current->state->getInteraction() == MapState::WALKOFF)
     {
       if(event_handler != nullptr)
-        event_handler->executeIOTrigger(this, (int)MapState::WALKOFF, trigger);
+        event_handler->executeIOShift(this, (int)MapState::WALKOFF, trigger);
     }
 
-    person_on = NULL;
+    person_on = nullptr;
   }
 }
 
@@ -1372,11 +1387,11 @@ void MapInteractiveObject::triggerWalkOff(MapPerson* trigger)
  */
 void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
 {
-  if(trigger != NULL && person_on == NULL)
+  if(trigger != nullptr && person_on == nullptr)
   {
     person_on = trigger;
 
-    if(node_current != NULL && node_current->state != NULL)
+    if(node_current != nullptr && node_current->state != nullptr)
     {
       /* Trigger walkover event, if valid */
       node_current->state->triggerWalkoverEvent(person_on, this);
@@ -1385,7 +1400,7 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
       if(node_current->state->getInteraction() == MapState::WALKON)
       {
         if(event_handler != nullptr)
-          event_handler->executeIOTrigger(this, (int)MapState::WALKON, trigger);
+          event_handler->executeIOShift(this, (int)MapState::WALKON, trigger);
       }
     }
   }
@@ -1471,11 +1486,11 @@ Floatinate MapInteractiveObject::update(int cycle_time,
       bool frames_changed = animate(cycle_time, false, false);
 
       /* Check if base is set or not */
-      if(base != NULL)
+      if(base != nullptr)
       {
         /* Only proceed if frames are changed and a transitional sequence */
-        if(frames_changed && node_current != NULL &&
-           node_current->transition != NULL)
+        if(frames_changed && node_current != nullptr &&
+           node_current->transition != nullptr)
         {
           if(base_control->forward &&
              base_control->curr_frame == 0)
@@ -1506,8 +1521,8 @@ Floatinate MapInteractiveObject::update(int cycle_time,
       else
       {
         /* Only proceed if frames are changed and a transitional sequence */
-        if(frames_changed && node_current != NULL &&
-           node_current->transition != NULL)
+        if(frames_changed && node_current != nullptr &&
+           node_current->transition != nullptr)
         {
           if(node_current->transition->isDirectionForward() &&
              node_current->transition->isAtFirst())
@@ -1538,7 +1553,7 @@ Floatinate MapInteractiveObject::update(int cycle_time,
 
       /* Determine if the cycle time has passed on activity response */
       if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head
-                                                  && node_current->state != NULL)
+                                                  && node_current->state != nullptr)
       {
         time_elapsed += cycle_time;
         if(time_elapsed > getInactiveTime())
@@ -1571,7 +1586,7 @@ void MapInteractiveObject::unsetFrames(bool delete_frames)
   unsetMatrix();
 
   /* Proceed to delete all nodes */
-  while(node != NULL)
+  while(node != nullptr)
   {
     StateNode* temp_node = node;
     node = node->next;
@@ -1579,16 +1594,16 @@ void MapInteractiveObject::unsetFrames(bool delete_frames)
     /* Proceed to delete all relevant data */
     if(delete_frames)
     {
-      if(temp_node->state != NULL)
+      if(temp_node->state != nullptr)
         delete temp_node->state;
-      else if(temp_node->transition != NULL && nodes_delete)
+      else if(temp_node->transition != nullptr && nodes_delete)
         delete temp_node->transition;
       delete temp_node;
     }
   }
 
   /* Clear the class data */
-  node_current = NULL;
-  node_head = NULL;
+  node_current = nullptr;
+  node_head = nullptr;
   nodes_delete = true;
 }

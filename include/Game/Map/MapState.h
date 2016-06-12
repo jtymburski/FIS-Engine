@@ -15,7 +15,7 @@ class MapState
 {
 public:
   /* Constructor functions */
-  MapState(EventHandler* event_handler = NULL);
+  MapState(EventHandler* event_handler = nullptr);
 
   /* Destructor function */
   ~MapState();
@@ -23,8 +23,10 @@ public:
   /* NOINTERACTION - no interaction to transfer states
    * WALKON - walk on by person to initiate interaction
    * WALKOFF - walk off by person to initiate interaction
-   * USE - use key to initiate interaction */
-  enum InteractionState{NOINTERACTION = 0, WALKON = 1, WALKOFF = 2, USE = 3};
+   * USE - use key to initiate interaction
+   * TRIGGER - trigger event key to initiate interaction */
+  enum InteractionState{NOINTERACTION = 0, WALKON = 1, WALKOFF = 2, USE = 3,
+                        TRIGGER = 4};
 
 private:
   /* Base map state */
@@ -48,9 +50,8 @@ private:
 
 /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
-  /* Returns the interaction, based on the string. Returns NOINTERACTION if
-   * nothing found */
-  InteractionState getInteraction(std::string interaction);
+  /* Returns the interaction, based on the string. Returns NOINTERACTION if */
+  //InteractionState getInteraction(std::string interaction);
 
 /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
@@ -123,7 +124,15 @@ public:
 
   /* Unsets the matrix internally from the state */
   void unsetMatrix();
+
+/*===================== PUBLIC STATIC FUNCTIONS ============================*/
+public:
+  /* Returns the interaction, based on the string. Returns NOINTERACTION if
+   * nothing found */
+  static InteractionState getInteraction(std::string interaction);
 };
+
+/*============================= STRUCTURES ================================*/
 
 /*
  * Structure which handles the node based selection for states that are used

@@ -50,12 +50,13 @@ enum class EventClassifier : std::uint32_t
   PROPERTY        = 1 << 7,
   SOUNDONLY       = 1 << 8,
   TELEPORTTHING   = 1 << 9,
-  UNLOCKIO        = 1 << 10,
-  UNLOCKTHING     = 1 << 11,
-  UNLOCKTILE      = 1 << 12, /* Used in Editor to define last in combo */
+  TRIGGERIO       = 1 << 10,
+  UNLOCKIO        = 1 << 11,
+  UNLOCKTHING     = 1 << 12,
+  UNLOCKTILE      = 1 << 13, /* Used in Editor to define last in combo */
   /* Separator: All categories lower are not editable by game designer */
-  ITEMPICKUP      = 1 << 13,
-  TRIGGERIO       = 1 << 14,
+  ITEMPICKUP      = 1 << 14,
+  SHIFTIO         = 1 << 15,
 };
 
 /*
@@ -243,6 +244,7 @@ public:
   const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
   const static uint8_t kTELEPORT_X; /* Teleport thing X index */
   const static uint8_t kTELEPORT_Y; /* Teleport thing Y index */
+  const static uint8_t kTRIGGER_ID; /* Trigger IO: ID */
   const static uint8_t kUNIO_ID; /* Unlock IO: ID */
   const static uint8_t kUNIO_MODE; /* Unlock IO: Mode */
   const static uint8_t kUNIO_MODE_EVENT; /* Unlock IO: Which events in state */
@@ -467,6 +469,10 @@ public:
                                 uint16_t tile_y = 0, int section_id = kUNSET_ID,
                                 int sound_id = kUNSET_ID);
 
+  /* Creates a trigger IO event */
+  static Event createEventTriggerIO(int io_id = kUNSET_ID,
+                                    int sound_id = kUNSET_ID);
+
   /* Create unlock events (thing, tile, or IO) */
   static Event createEventUnlockIO(int io_id = 0,
                 UnlockIOMode mode = UnlockIOMode::NONE, int state_num = -1,
@@ -521,6 +527,7 @@ public:
   static bool dataEventTakeItem(Event event, int& item_id, int& count);
   static bool dataEventTeleport(Event event, int& thing_id, int& x, int& y,
                                 int& section_id);
+  static bool dataEventTriggerIO(Event event, int& io_id);
   static bool dataEventUnlockIO(Event event, int& io_id, UnlockIOMode& mode,
                                 int& state_num, UnlockIOEvent& mode_events,
                                 UnlockView& mode_view, int& view_time);
@@ -532,6 +539,9 @@ public:
 
   /* Extract data from lock(s) */
   static bool dataLockedItem(Locked lock, int& id, int& count, bool& consume);
+
+  /* Deletes the given conversation in entirety - recursive */
+  static void deleteConversation(Conversation* convo, bool first = true);
 
   /* Deletes the given event. Just clears the relevant memory */
   static Event deleteEvent(Event event);

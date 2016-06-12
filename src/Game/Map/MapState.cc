@@ -24,7 +24,7 @@
 MapState::MapState(EventHandler* event_handler)
 {
   base = nullptr;
-  this->event_handler = NULL;
+  this->event_handler = nullptr;
   interaction = NOINTERACTION;
   sprite_set = new SpriteMatrix();
 
@@ -38,29 +38,6 @@ MapState::MapState(EventHandler* event_handler)
 MapState::~MapState()
 {
   clear();
-}
-
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
-
-/*
- * Description: Returns the interaction, based on the passed in string. Returns
- *              NOINTERACTION if the string doesn't match any.
- *
- * Inputs: std::string interaction - the interacting string from file
- * Output: InteractionState - the corresponding enum for interaction
- */
-MapState::InteractionState MapState::getInteraction(std::string interaction)
-{
-  if(interaction == "use")
-    return USE;
-  else if(interaction == "walkoff")
-    return WALKOFF;
-  else if(interaction == "walkon")
-    return WALKON;
-  else
-    return NOINTERACTION;
 }
 
 /*============================================================================
@@ -90,7 +67,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
   /*--------------------- SPRITE INFO -----------------*/
   if(identifier == "sprites" && base == nullptr)
   {
-    if(sprite_set == NULL)
+    if(sprite_set == nullptr)
       sprite_set = new SpriteMatrix();
 
     success &= sprite_set->addFileInformation(data, file_index + 1,
@@ -472,16 +449,8 @@ bool MapState::setInteraction(InteractionState interaction)
  */
 bool MapState::setInteraction(std::string interaction)
 {
-  if(base == nullptr)
-  {
-    InteractionState new_interaction = getInteraction(interaction);
-    if(!interaction.empty())
-    {
-      this->interaction = new_interaction;
-      return true;
-    }
-  }
-
+  if(!interaction.empty())
+    return setInteraction(getInteraction(interaction));
   return false;
 }
 
@@ -494,7 +463,7 @@ bool MapState::setInteraction(std::string interaction)
  */
 bool MapState::setMatrix(SpriteMatrix* matrix)
 {
-  if(base == nullptr && matrix != NULL)
+  if(base == nullptr && matrix != nullptr)
   {
     unsetMatrix();
     sprite_set = matrix;
@@ -519,7 +488,7 @@ bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y,
   if(base == nullptr)
   {
     /* Make the matrix, if it doesn't exist */
-    if(sprite_set == NULL)
+    if(sprite_set == nullptr)
       sprite_set = new SpriteMatrix();
 
     /* Add the frame */
@@ -538,7 +507,7 @@ bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y,
 bool MapState::triggerEnterEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL && !event_enter.isEmpty())
+  if(event_handler != nullptr && !event_enter.isEmpty())
   {
     event_handler->executeEventSet(getEnterEvent(), initiator, source);
     return true;
@@ -557,7 +526,7 @@ bool MapState::triggerEnterEvent(MapPerson* initiator, MapThing* source)
 bool MapState::triggerExitEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL && !event_exit.isEmpty())
+  if(event_handler != nullptr && !event_exit.isEmpty())
   {
     event_handler->executeEventSet(getExitEvent(), initiator, source);
     return true;
@@ -576,7 +545,7 @@ bool MapState::triggerExitEvent(MapPerson* initiator, MapThing* source)
 bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL && !event_use.isEmpty())
+  if(event_handler != nullptr && !event_use.isEmpty())
   {
     event_handler->executeEventSet(getUseEvent(), initiator, source);
     return true;
@@ -595,7 +564,7 @@ bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
 bool MapState::triggerWalkoverEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != NULL && !event_walkover.isEmpty())
+  if(event_handler != nullptr && !event_walkover.isEmpty())
   {
     event_handler->executeEventSet(getWalkoverEvent(), initiator, source);
     return true;
@@ -638,7 +607,32 @@ bool MapState::unlockTrigger(UnlockIOEvent mode_events)
  */
 void MapState::unsetMatrix()
 {
-  if(sprite_set != NULL)
+  if(sprite_set != nullptr)
     delete sprite_set;
-  sprite_set = NULL;
+  sprite_set = nullptr;
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Public static. Returns the interaction, based on the passed in
+ *              string. Returns NOINTERACTION if the string doesn't match any.
+ *
+ * Inputs: std::string interaction - the interacting string from file
+ * Output: InteractionState - the corresponding enum for interaction
+ */
+MapState::InteractionState MapState::getInteraction(std::string interaction)
+{
+  if(interaction == "trigger")
+    return TRIGGER;
+  else if(interaction == "use")
+    return USE;
+  else if(interaction == "walkoff")
+    return WALKOFF;
+  else if(interaction == "walkon")
+    return WALKON;
+  else
+    return NOINTERACTION;
 }

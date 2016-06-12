@@ -442,10 +442,12 @@ int Game::eventGiveItem(int id, int count, GiveItemFlags flags, int chance,
         {
           /* Notify if not auto drop and items could not fit */
           if(!auto_drop)
+          {
             map_ctrl.initNotification(
                 "Insufficient room in inventory to receive " +
                 std::to_string(delta) + " {I" + std::to_string(id) +
                 "}. Remaining will be dropped");
+          }
 
           /* Drop onto map */
           map_ctrl.dropItem(id, delta);
@@ -523,6 +525,26 @@ bool Game::eventMenuHide()
   map_ctrl.setDialogPaused(false);
 
   return true;
+}
+
+/* Trigger IO event, based on the IO object and interaction state */
+void Game::eventShiftIO(MapInteractiveObject* io, int interaction_state,
+                        MapPerson* initiator, bool check_lock)
+{
+  if(io != nullptr && io->getInteraction() != MapState::NOINTERACTION &&
+     static_cast<int>(io->getInteraction()) == interaction_state)
+  {
+    /* Handle lock struct */
+    if(check_lock)
+    {
+      Locked lock_struct = io->getLock();
+      if(parseLock(lock_struct))
+        io->setLock(lock_struct);
+    }
+
+    /* Handle trigger */
+    io->handlerTrigger(interaction_state, initiator);
+  }
 }
 
 /* Starts a battle event. Using the given information */
@@ -654,20 +676,24 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 {
   map_ctrl.teleportThing(thing_id, x, y, section_id);
 }
-
-/* Trigger IO event, based on the IO object and interaction state */
-void Game::eventTriggerIO(MapInteractiveObject* io, int interaction_state,
-                          MapPerson* initiator)
+  
+/* Trigger IO event, based on ID */
+void Game::eventTriggerIO(MapThing* source, int io_id, MapPerson* initiator)
 {
-  if(io != nullptr)
+  /* If the reference ID is less than 0, use source */
+  if(io_id < 0)
   {
-    /* Handle lock struct */
-    Locked lock_struct = io->getLock();
-    if(parseLock(lock_struct))
-      io->setLock(lock_struct);
+    if(source != nullptr && source->classDescriptor() == ThingBase::INTERACTIVE)
+      eventShiftIO(static_cast<MapInteractiveObject*>(source),
+                   static_cast<int>(MapState::TRIGGER), initiator);
 
-    /* Handle trigger */
-    io->handlerTrigger(interaction_state, initiator);
+  }
+  /* Otherwise, find the ID and begin processing */
+  else
+  {
+    MapInteractiveObject* found_io = map_ctrl.getIO(io_id);
+    if(found_io != nullptr)
+      eventShiftIO(found_io, static_cast<int>(MapState::TRIGGER), initiator);
   }
 }
 
@@ -1169,12 +1195,19 @@ bool Game::parseLock(Locked& lock_struct)
         else
           count_avail = inv->getItemCount(id);
 
-        /* Attempt unlock */
+        /* Attempt unlock - has items */
         if(count_avail >= count)
         {
           if(EventSet::unlockItem(lock_struct, id, count_avail))
             eventTakeItem(id, count);
           return true;
+        }
+        /* Does not have items - notify */
+        else
+        {
+          map_ctrl.initNotification("Locked. Requires " +
+                                    std::to_string(count) + " {I" +
+                                    std::to_string(id) +"} to unlock."); 
         }
       }
     }
@@ -1294,6 +1327,15 @@ void Game::pollEvents()
           eventPropMod(source, type, id, props, bools, respawn, speed, track,
                        inactive);
       }
+      /* -- SHIFT IO -- */
+      else if(classification == EventClassifier::SHIFTIO)
+      {
+        MapPerson* initiator;
+        int interaction_state;
+        MapInteractiveObject* source;
+        if(event_handler.pollShiftIO(&source, &interaction_state, &initiator))
+          eventShiftIO(source, interaction_state, initiator);
+      }
       /* -- SOUND ONLY -- */
       else if(classification == EventClassifier::SOUNDONLY)
       {
@@ -1309,11 +1351,11 @@ void Game::pollEvents()
       /* -- TRIGGER IO -- */
       else if(classification == EventClassifier::TRIGGERIO)
       {
+        int io_id;
         MapPerson* initiator;
-        int interaction_state;
-        MapInteractiveObject* source;
-        if(event_handler.pollTriggerIO(&source, &interaction_state, &initiator))
-          eventTriggerIO(source, interaction_state, initiator);
+        MapThing* source;
+        if(event_handler.pollTriggerIO(source, io_id, initiator))
+          eventTriggerIO(source, io_id, initiator);
       }
       /* -- UNLOCK IO -- */
       else if(classification == EventClassifier::UNLOCKIO)

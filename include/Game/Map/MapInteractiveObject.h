@@ -137,6 +137,9 @@ public:
   /* Returns the inactive time before returning down the state path */
   int getInactiveTime() const;
 
+  /* Returns the interaction at the current state */
+  MapState::InteractionState getInteraction();
+
   /* Returns the locked state struct */
   Locked getLock();
 

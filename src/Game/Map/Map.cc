@@ -636,28 +636,6 @@ bool Map::changeMode(MapMode mode)
   return allow;
 }
 
-/* Returns the interactive object, based on the ID */
-MapInteractiveObject* Map::getIO(uint32_t id, int sub_id)
-{
-  /* The specific sub-map */
-  if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
-  {
-    for(uint32_t i = 0; i < sub_map[sub_id].ios.size(); i++)
-      if(sub_map[sub_id].ios[i]->getID() == static_cast<int>(id))
-        return sub_map[sub_id].ios[i];
-  }
-  /* All the sub-maps */
-  else
-  {
-    for(uint32_t i = 0; i < sub_map.size(); i++)
-      for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
-        if(sub_map[i].ios[j]->getID() == static_cast<int>(id))
-          return sub_map[i].ios[j];
-  }
-
-  return nullptr;
-}
-
 /* Returns the base interactive object, based on the ID */
 MapInteractiveObject* Map::getIOBase(uint32_t id)
 {
@@ -2215,6 +2193,28 @@ WindowStatus Map::getDialogStatus()
 MapFade Map::getFadeStatus()
 {
   return fade_status;
+}
+
+/* Returns the interactive object, based on the ID */
+MapInteractiveObject* Map::getIO(uint32_t id, int sub_id)
+{
+  /* The specific sub-map */
+  if(sub_id >= 0 && static_cast<uint32_t>(sub_id) < sub_map.size())
+  {
+    for(uint32_t i = 0; i < sub_map[sub_id].ios.size(); i++)
+      if(sub_map[sub_id].ios[i]->getID() == static_cast<int>(id))
+        return sub_map[sub_id].ios[i];
+  }
+  /* All the sub-maps */
+  else
+  {
+    for(uint32_t i = 0; i < sub_map.size(); i++)
+      for(uint32_t j = 0; j < sub_map[i].ios.size(); j++)
+        if(sub_map[i].ios[j]->getID() == static_cast<int>(id))
+          return sub_map[i].ios[j];
+  }
+
+  return nullptr;
 }
 
 /* Returns the string name of the map */

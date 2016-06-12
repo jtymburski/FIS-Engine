@@ -175,6 +175,10 @@ private:
   bool eventMenuShow();
   bool eventMenuHide();
 
+  /* Trigger IO event, based on the IO object and interaction state */
+  void eventShiftIO(MapInteractiveObject* io, int interaction_state,
+                    MapPerson* initiator, bool check_lock = true);
+
   /* Starts a battle event. Using the given information */
   bool eventStartBattle(int person_id, int source_id);
 
@@ -187,9 +191,8 @@ private:
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
 
-  /* Trigger IO event, based on the IO object and interaction state */
-  void eventTriggerIO(MapInteractiveObject* io, int interaction_state,
-                      MapPerson* initiator);
+  /* Trigger IO event, based on ID */
+  void eventTriggerIO(MapThing* source, int io_id, MapPerson* initiator);
 
   /* Unlock events, based on parameter information */
   void eventUnlockIO(MapThing* source, int io_id, UnlockIOMode mode,

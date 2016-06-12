@@ -31,6 +31,7 @@ const uint8_t EventSet::kTELEPORT_ID = 0;
 const uint8_t EventSet::kTELEPORT_SECTION = 3;
 const uint8_t EventSet::kTELEPORT_X = 1;
 const uint8_t EventSet::kTELEPORT_Y = 2;
+const uint8_t EventSet::kTRIGGER_ID = 0;
 const uint8_t EventSet::kUNIO_ID = 0;
 const uint8_t EventSet::kUNIO_MODE = 1;
 const uint8_t EventSet::kUNIO_MODE_EVENT = 3;
@@ -1094,6 +1095,8 @@ EventClassifier EventSet::classifierFromStr(const std::string& classifier)
     return EventClassifier::SOUNDONLY;
   else if(class_up == "TELEPORT THING")
     return EventClassifier::TELEPORTTHING;
+  else if(class_up == "TRIGGER IO")
+    return EventClassifier::TRIGGERIO;
   else if(class_up == "UNLOCK: IO")
     return EventClassifier::UNLOCKIO;
   else if(class_up == "UNLOCK: THING")
@@ -1131,6 +1134,8 @@ std::string EventSet::classifierToStr(const EventClassifier& classifier)
     return "Sound Only";
   else if(classifier == EventClassifier::TELEPORTTHING)
     return "Teleport Thing";
+  else if(classifier == EventClassifier::TRIGGERIO)
+    return "Trigger IO";
   else if(classifier == EventClassifier::UNLOCKIO)
     return "Unlock: IO";
   else if(classifier == EventClassifier::UNLOCKTHING)
@@ -1754,7 +1759,7 @@ Event EventSet::createEventTakeItem(int id, int count, int sound_id)
  *         uint16_t tile_x - the X tile location (horizontal)
  *         uint16_t tile_y - the Y tile location (vertical)
  *         int section_id - the section ID to teleport within the map
- *         uint16_t sound_id - the sound reference ID. Default to invalid
+ *         int sound_id - the sound reference ID. Default to invalid
  * Output: Event - the teleport thing event to utilize
  */
 Event EventSet::createEventTeleport(int thing_id, uint16_t tile_x,
@@ -1772,6 +1777,28 @@ Event EventSet::createEventTeleport(int thing_id, uint16_t tile_x,
   new_event.ints.push_back(tile_x);
   new_event.ints.push_back(tile_y);
   new_event.ints.push_back(section_id);
+
+  return new_event;
+}
+
+/*
+ * Description: Public static. Creates a new trigger IO event with the connected
+ *              IO ID to step states and an option sound ID.
+ *
+ * Inputs: int io_id - the IO instance ID to step states
+ *         int sound_id - the sound reference ID. Default to invalid
+ * Output: Event - the trigger IO event to utilize
+ */
+Event EventSet::createEventTriggerIO(int io_id, int sound_id)
+{
+  /* Create the event and identify */
+  Event new_event = createBlankEvent();
+  new_event.classification = EventClassifier::TRIGGERIO;
+  if(sound_id >= 0)
+    new_event.sound_id = sound_id;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(io_id);
 
   return new_event;
 }
@@ -2302,6 +2329,26 @@ bool EventSet::dataEventTeleport(Event event, int& thing_id, int& x, int& y,
 }
 
 /*
+ * Description: Extracts data from the passed in event if its a trigger IO
+ *              event.
+ *
+ * Inputs: Event event - the event to extract the data from
+ *         int& io_id - the IO id to unlock
+ * Output: bool - true if the data was extracted. Fails if event is the wrong
+ *                category
+ */
+bool EventSet::dataEventTriggerIO(Event event, int& io_id)
+{
+  if(event.classification == EventClassifier::TRIGGERIO &&
+     event.ints.size() > kTRIGGER_ID)
+  {
+    io_id = event.ints[kTRIGGER_ID];
+    return true;
+  }
+  return false;
+}
+
+/*
  * Description: Extracts data from the passed in event if its an unlock IO
  *              event.
  *
@@ -2415,6 +2462,31 @@ bool EventSet::dataLockedItem(Locked lock, int& id, int& count, bool& consume)
 }
 
 /*
+ * Description: Public static. Deletes the given conversation in entirety. This
+ *              will parse through all entries to delete embedded events.
+ *
+ * Inputs: Conversation* convo - the conversation struct to delete all memory
+ *         bool first - true if first call > deletes convo pointer
+ * Output: none
+ */
+void EventSet::deleteConversation(Conversation* convo, bool first)
+{
+  if(convo != nullptr)
+  {
+    /* Delete event */
+    deleteEvent(convo->action_event);
+
+    /* Parse remamining conversations */
+    for(uint32_t i = 0; i < convo->next.size(); i++)
+      deleteConversation(&convo->next[i], false);
+
+    /* Delete conversation */
+    if(first)
+      delete convo;
+  }
+}
+
+/*
  * Description: Public static. Deletes the passed in event of all dynamic
  *              memory. Returns a blank event, as replacement.
  *
@@ -2424,15 +2496,12 @@ bool EventSet::dataLockedItem(Locked lock, int& id, int& count, bool& consume)
 Event EventSet::deleteEvent(Event event)
 {
   /* Delete the existing conversation within the event, if relevant */
-  if(event.convo != nullptr)
-    delete event.convo;
+  deleteConversation(event.convo);
   event.convo = nullptr;
 
   /* Delete the existing events within the event, if relevant */
   for(uint32_t i = 0; i < event.events.size(); i++)
-  {
     deleteEvent(event.events[i]);
-  }
   event.events.clear();
 
   return createBlankEvent();
@@ -2837,6 +2906,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
     category = EventClassifier::SOUNDONLY;
   else if(category_str == "teleportthing")
     category = EventClassifier::TELEPORTTHING;
+  else if(category_str == "triggerio")
+    category = EventClassifier::TRIGGERIO;
   else if(category_str == "unlockio")
     category = EventClassifier::UNLOCKIO;
   else if(category_str == "unlockthing")
@@ -2870,6 +2941,8 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event = createEventSound();
     else if(category == EventClassifier::TELEPORTTHING)
       event = createEventTeleport();
+    else if(category == EventClassifier::TRIGGERIO)
+      event = createEventTriggerIO();
     else if(category == EventClassifier::UNLOCKIO)
       event = createEventUnlockIO();
     else if(category == EventClassifier::UNLOCKTHING)
@@ -2881,12 +2954,14 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
   }
 
   /* Proceed to set up the event with the marked changes */
+  /* -- EXECUTED -- */
   if(category_str == "executed")// && category != EventClassifier::NOEVENT)
   {
     bool executed = data.getDataBool(&read_success);
     if(read_success)
       event.has_exec = executed;
   }
+  /* -- ONE SHOT -- */
   else if(element == "one_shot")
   {
     bool one_shot = data.getDataBool(&read_success);
@@ -3134,6 +3209,12 @@ Event EventSet::updateEvent(Event event, XmlData data, int file_index,
       event.ints.at(kTELEPORT_Y) = data.getDataInteger();
     else if(element == "section")
       event.ints.at(kTELEPORT_SECTION) = data.getDataInteger();
+  }
+  /* -- TRIGGER IO -- */
+  else if(category == EventClassifier::TRIGGERIO)
+  {
+    if(element == "id")
+      event.ints.at(kTRIGGER_ID) = data.getDataInteger();
   }
   /* -- UNLOCK IO -- */
   else if(category == EventClassifier::UNLOCKIO)

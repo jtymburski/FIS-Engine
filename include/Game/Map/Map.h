@@ -229,7 +229,6 @@ private:
   bool changeMode(MapMode mode);
 
   /* Returns the interactive object, based on the ID */
-  MapInteractiveObject* getIO(uint32_t id, int sub_id = -1);
   MapInteractiveObject* getIOBase(uint32_t id);
 
   /* Returns the item, based on the ID */
@@ -358,6 +357,9 @@ public:
 
   /* The fade status of the map */
   MapFade getFadeStatus();
+
+  /* Returns the interactive object, based on the ID */
+  MapInteractiveObject* getIO(uint32_t id, int sub_id = -1);
 
   /* Returns the string name of the map */
   std::string getName();

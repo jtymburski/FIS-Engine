@@ -79,7 +79,8 @@ private:
   /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Execute the given event */
-  void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
+  void executeEvent(Event event, MapPerson* initiator,
+                    MapThing* source = nullptr);
   void executeEventRef(Event* event, MapPerson* initiator,
                        MapThing* source = nullptr);
   void executeEventRef(Event* event, Event* event_inst, MapPerson* initiator,
@@ -90,8 +91,8 @@ public:
                        MapThing* source = nullptr);
 
   /* Executes an MIO trigger event */
-  void executeIOTrigger(MapInteractiveObject* io, int interaction_state,
-                        MapPerson* initiator);
+  void executeIOShift(MapInteractiveObject* io, int interaction_state,
+                      MapPerson* initiator);
 
   /* Executes a pickup item event */
   void executePickup(MapItem* item, bool walkover = false);
@@ -156,6 +157,10 @@ public:
                    int& respawn, int& speed, TrackingState& track,
                    int& inactive);
 
+  /* Poll a shift IO event */
+  bool pollShiftIO(MapInteractiveObject** io, int* state,
+                   MapPerson** initiator);
+
   /* Poll a sound event */
   bool pollSound();
 
@@ -174,8 +179,7 @@ public:
   bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id);
 
   /* Poll a trigger IO event */
-  bool pollTriggerIO(MapInteractiveObject** io, int* state,
-                     MapPerson** initiator);
+  bool pollTriggerIO(MapThing*& source, int& io_id, MapPerson*& initiator);
 
   /* Poll the unlock event(s) */
   bool pollUnlockIO(MapThing*& source, int* io_id, UnlockIOMode* mode,
