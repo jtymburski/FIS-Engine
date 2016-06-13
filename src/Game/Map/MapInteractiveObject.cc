@@ -1553,7 +1553,7 @@ Floatinate MapInteractiveObject::update(int cycle_time,
 
       /* Determine if the cycle time has passed on activity response */
       if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head
-                                                  && node_current->state != nullptr)
+                                            && node_current->state != nullptr)
       {
         time_elapsed += cycle_time;
         if(time_elapsed > getInactiveTime())

@@ -875,9 +875,9 @@ bool Sprite::isFramesSet() const
  * Output: bool - status if the frame sequence grey scale mode is enabled
  */
 bool Sprite::isGreyScale()
-{
-  if(head != nullptr)
-    return head->isGreyScale();
+{ // TODO: Fix
+//  if(head != nullptr)
+//    return head->isGreyScale();
   return false;
 }
 
@@ -1044,15 +1044,16 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
       SDL_RenderClear(renderer);
 
       /* Render current frame */
-      if(grey_scale_update)
-      {
-        current->renderBoth(renderer, grey_scale_alpha, 0, 0, 0, 0,
-                            getSourceRect(), true);
-      }
-      else
-      {
+      // TODO: FIX
+      //if(grey_scale_update)
+      //{
+      //  current->renderBoth(renderer, grey_scale_alpha, 0, 0, 0, 0,
+      //                      getSourceRect(), true);
+      //}
+      //else
+      //{
         current->render(renderer, 0, 0, 0, 0, getSourceRect(), true);
-      }
+      //}
 
       /* Render white mask, if relevant */
       SDL_Texture* white_mask = Helpers::getMaskWhite();
@@ -1573,35 +1574,36 @@ bool Sprite::update(int cycle_time, bool skip_head)
   }
 
   /* Do grey scale checking, for animation */
-  if(grey_scale_update)
-  {
-    if(head->isGreyScale())
-    {
-      if(grey_scale_alpha - kDELTA_GREY_SCALE <= 0)
-      {
-        grey_scale_alpha = 0;
-        grey_scale_update = false;
-        texture_update = true;
-      }
-      else
-      {
-        grey_scale_alpha -= kDELTA_GREY_SCALE;
-      }
-    }
-    else
-    {
-      if(grey_scale_alpha + kDELTA_GREY_SCALE >= kDEFAULT_OPACITY)
-      {
-        grey_scale_alpha = kDEFAULT_OPACITY;
-        grey_scale_update = false;
-        texture_update = true;
-      }
-      else
-      {
-        grey_scale_alpha += kDELTA_GREY_SCALE;
-      }
-    }
-  }
+  // TODO: FIX
+//  if(grey_scale_update)
+//  {
+//    if(head->isGreyScale())
+//    {
+//      if(grey_scale_alpha - kDELTA_GREY_SCALE <= 0)
+//      {
+//        grey_scale_alpha = 0;
+//        grey_scale_update = false;
+//        texture_update = true;
+//      }
+//      else
+//      {
+//        grey_scale_alpha -= kDELTA_GREY_SCALE;
+//      }
+//    }
+//    else
+//    {
+//      if(grey_scale_alpha + kDELTA_GREY_SCALE >= kDEFAULT_OPACITY)
+//      {
+//        grey_scale_alpha = kDEFAULT_OPACITY;
+//        grey_scale_update = false;
+//        texture_update = true;
+//      }
+//      else
+//      {
+//        grey_scale_alpha += kDELTA_GREY_SCALE;
+//      }
+//    }
+//  }
 
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
@@ -1630,28 +1632,29 @@ bool Sprite::update(int cycle_time, bool skip_head)
  */
 bool Sprite::useGreyScale(bool enable)
 {
-  if(head != NULL && head->isGreyScale() != enable)
-  {
-    bool success = true;
-    Frame* temp = head;
-
-    do
-    {
-      success &= temp->useGreyScale(enable);
-      temp = temp->getNext();
-    } while(temp != head);
-
-    if(success)
-    {
-      grey_scale_update = true;
-      if(enable)
-        grey_scale_alpha = kDEFAULT_OPACITY;
-      else
-        grey_scale_alpha = 0;
-    }
-
-    return success;
-  }
+  // TODO: FIX
+//  if(head != nullptr && head->isGreyScale() != enable)
+//  {
+//    bool success = true;
+//    Frame* temp = head;
+//
+//    do
+//    {
+//      success &= temp->useGreyScale(enable);
+//      temp = temp->getNext();
+//    } while(temp != head);
+//
+//    if(success)
+//    {
+//      grey_scale_update = true;
+//      if(enable)
+//        grey_scale_alpha = kDEFAULT_OPACITY;
+//      else
+//        grey_scale_alpha = 0;
+//    }
+//
+//    return success;
+//  }
   return false;
 }
 

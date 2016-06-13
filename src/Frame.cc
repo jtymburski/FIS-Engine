@@ -25,10 +25,10 @@ const uint8_t Frame::kDEFAULT_ALPHA = 255;
  */
 Frame::Frame()
 {
-  /* Initialize variables */
   alpha = kDEFAULT_ALPHA;
+  color_alpha = 0;
+  color_mode = ColorMode::COLOR;
   flip = SDL_FLIP_NONE;
-  grey_scale = false;
   height = 0;
   next = nullptr;
   path = "";
@@ -84,8 +84,8 @@ Frame::Frame(std::string path, std::vector<std::string> adjustments,
  */
 Frame::~Frame()
 {
-  next = NULL;
-  previous = NULL;
+  next = nullptr;
+  previous = nullptr;
   unsetTexture();
 }
 
@@ -180,6 +180,29 @@ uint8_t Frame::getAlpha()
 {
   return alpha;
 }
+  
+/*
+ * Description: Returns the color delta alpha for the transitioning frame.
+ *
+ * Inputs: none
+ * Output: uint8_t - the alpha value from 0-255
+ */
+uint8_t Frame::getColorAlpha()
+{
+  return color_alpha;
+}
+
+/* 
+ * Description: Returns the colod mode for how the frame is rendered on a call
+ *              to render().
+ *
+ * Inputs: none
+ * Output: ColorMode - the mode of how the frames get handled
+ */
+ColorMode Frame::getColorMode()
+{
+  return color_mode;
+}
 
 /*
  * Description: Returns the flip rating of the frame (from SDL).
@@ -249,7 +272,7 @@ Frame* Frame::getPrevious()
  */
 SDL_Texture* Frame::getTexture(bool grey_scale)
 {
-  if(grey_scale)
+  if(color_mode == ColorMode::GREY || color_mode == ColorMode::GREYING)
     return texture_grey;
   return texture;
 }
@@ -266,7 +289,7 @@ SDL_Texture* Frame::getTexture(bool grey_scale)
  */
 SDL_Texture* Frame::getTextureActive()
 {
-  if(grey_scale)
+  if(color_mode == ColorMode::GREY || color_mode == ColorMode::GREYING)
     return texture_grey;
   return texture;
 }
@@ -284,17 +307,6 @@ int Frame::getWidth()
 }
 
 /*
- * Description: Checks if the grey scale texture is the active texture.
- *
- * Inputs: none
- * Output: bool - status if the grey scale texture is the active texture
- */
-bool Frame::isGreyScale()
-{
-  return grey_scale;
-}
-
-/*
  * Description: Returns if a texture is stored in this frame
  *
  * Inputs: bool grey_scale - set to true to check the grey scale texture
@@ -303,8 +315,8 @@ bool Frame::isGreyScale()
 bool Frame::isTextureSet(bool grey_scale)
 {
   if(grey_scale)
-    return (texture_grey != NULL);
-  return (texture != NULL);
+    return (texture_grey != nullptr);
+  return (texture != nullptr);
 }
 
 /*
@@ -325,7 +337,8 @@ bool Frame::isTextureSet(bool grey_scale)
 bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
                    SDL_Rect* src_rect, bool for_sprite)
 {
-  if(isTextureSet(grey_scale) && renderer != NULL)
+  // TODO: Merge with both
+  if(isTextureSet() && renderer != nullptr)
   {
     SDL_Rect rect;
     rect.x = x;
@@ -346,8 +359,8 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
     else
       SDL_SetTextureBlendMode(render_texture, SDL_BLENDMODE_BLEND);
 
-    return (SDL_RenderCopyEx(renderer, render_texture, src_rect, &rect, 0, NULL,
-                             flip) == 0);
+    return (SDL_RenderCopyEx(renderer, render_texture, src_rect, &rect, 0,
+                             nullptr, flip) == 0);
   }
 
   return false;
@@ -370,35 +383,44 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
  *         bool for_sprite - true if called from sprite render. Used to change
  *                           the SDL blend mode for rendering in texture
  * Output: bool - status if the render occurred
- */
-bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
-                       int w, int h, SDL_Rect* src_rect, bool for_sprite)
-{
-  if(isTextureSet() && isTextureSet(true) && renderer != NULL)
-  {
-    uint8_t old_alpha = getAlpha();
-    bool grey_scale = isGreyScale();
-    bool success = true;
-
-    /* Render grey scale texture */
-    useGreyScale(true);
-    setAlpha(kDEFAULT_ALPHA - alpha);
-    success &= render(renderer, x, y, w, h, src_rect, for_sprite);
-
-    /* Render colored texture */
-    useGreyScale(false);
-    setAlpha(alpha);
-    success &= render(renderer, x, y, w, h, src_rect);
-
-    /* Return to normal parameters */
-    useGreyScale(grey_scale);
-    setAlpha(old_alpha);
-
-    return success;
-  }
-
-  return false;
-}
+ */ // TODO: Integrate into main render
+//bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
+//                       int w, int h, SDL_Rect* src_rect, bool for_sprite)
+//{
+//  if(isTextureSet() && isTextureSet(true) && renderer != nullptr)
+//  {
+//    uint8_t old_alpha = getAlpha();
+//    bool grey_scale = isGreyScale();
+//    bool success = true;
+//
+//    /* If still blending */
+//    if(alpha < old_alpha)
+//    {
+//      /* Render grey scale texture */
+//      useGreyScale(true);
+//      setAlpha(old_alpha - alpha);
+//      success &= render(renderer, x, y, w, h, src_rect, for_sprite);
+//
+//      /* Render colored texture */
+//      useGreyScale(false);
+//      setAlpha(alpha);
+//      success &= render(renderer, x, y, w, h, src_rect);
+//
+//      /* Return to normal parameters */
+//      useGreyScale(grey_scale);
+//      setAlpha(old_alpha);
+//    }
+//    /* Otherwise, just render active */
+//    else
+//    {
+//      success &= render(renderer, x, y, w, h, src_rect, for_sprite);
+//    }
+//
+//    return success;
+//  }
+//
+//  return false;
+//}
 
 /*
  * Description: Sets the rendering alpha modification. Needs to be set for each
@@ -412,6 +434,84 @@ void Frame::setAlpha(uint8_t alpha)
   this->alpha = alpha;
   SDL_SetTextureAlphaMod(texture, alpha);
   SDL_SetTextureAlphaMod(texture_grey, alpha);
+}
+  
+/*
+ * Description: Sets the color alpha delta. If COLORING, this is the alpha of
+ *              the color frame as it transitions and vice versa for the grey
+ *              frame.
+ *
+ * Inputs: uint8_t alpha - the new alpha for the transition frame
+ * Output: bool - true if successfully changed
+ */
+bool Frame::setColorAlpha(uint8_t alpha)
+{
+  /* Only settable if in transition */
+  if(color_mode == ColorMode::COLORING || color_mode == ColorMode::GREYING)
+  {
+    color_alpha = alpha;
+    return true;
+  }
+  
+  /* Otherwise, reset alpha */
+  color_alpha = 0;
+  return false;
+}
+
+/*
+ * Description: This sets the color mode based on the enumerator. This can
+ *              control the grey scale and how it blends/transitions.
+ *
+ * Inputs: ColorMode mode - the new mode to update the mode
+ * Output: bool - status if set was successful
+ */
+bool Frame::setColorMode(ColorMode mode)
+{
+  bool set = false;
+
+  if(mode != color_mode)
+  {
+    /* Color enabled mode - default */
+    if(mode == ColorMode::COLOR)
+    {
+      color_mode = mode;
+      color_alpha = 0;
+      set = true;
+    }
+    /* All other color modes */
+    else
+    {
+      /* Check if grey scale texture is valid */
+      if(isTextureSet(true))
+      {
+        /* Check if this was a coloring to greying or vice versa */
+        bool full_switch = false;
+        if((color_mode == ColorMode::COLORING && mode == ColorMode::GREYING) ||
+           (color_mode == ColorMode::GREYING && mode == ColorMode::COLORING))
+        {
+          full_switch = true;
+        }
+
+        /* Set the mode */
+        color_mode = mode;
+        set = true;
+
+        /* Update the alpha accordingly */
+        if(full_switch)
+          color_alpha = (kDEFAULT_ALPHA - color_alpha);
+        else
+          color_alpha = 0;
+      }
+      /* Otherwise, just return to normal mode */
+      else
+      {
+        color_mode = ColorMode::COLOR;
+        color_alpha = 0;
+      }
+    }
+  }
+
+  return set;
 }
 
 /*
@@ -615,7 +715,7 @@ bool Frame::setTexture(std::string path, std::vector<std::string> adjustments,
  */
 bool Frame::setTexture(SDL_Texture* texture)
 {
-  if(texture != NULL)
+  if(texture != nullptr)
   {
     uint32_t format;
 
@@ -624,7 +724,7 @@ bool Frame::setTexture(SDL_Texture* texture)
 
     /* Set the new texture and appropriate parameters */
     this->texture = texture;
-    SDL_QueryTexture(texture, &format, NULL, &width, &height);
+    SDL_QueryTexture(texture, &format, nullptr, &width, &height);
 
     setAlpha(alpha);
 
@@ -655,35 +755,11 @@ void Frame::unsetTexture()
   texture_grey = nullptr;
 
   /* Clear class parameters */
-  grey_scale = false;
+  color_mode = ColorMode::COLOR;
+  color_alpha = 0;
   height = 0;
   path = "";
   width = 0;
-}
-
-/*
- * Description: The enable to use the grey scale texture or the colored texture
- *              as the active one. If enable is true, the grey scale texture is
- *              selected and if false, the colored texture is selected. Fails
- *              if the grey scale texture is not set.
- *
- * Inputs: bool enable - true for grey scale texture, false for colored texture
- * Output: bool - status if set was successful
- */
-bool Frame::useGreyScale(bool enable)
-{
-  if(enable && isTextureSet(true))
-  {
-    grey_scale = true;
-    return true;
-  }
-  else if(!enable)
-  {
-    grey_scale = false;
-    return true;
-  }
-
-  return false;
 }
 
 /*=============================================================================
@@ -957,7 +1033,7 @@ bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length, uint16_t height,
                       float slope, SDL_Renderer* renderer)
 {
   /* Prechecks */
-  if(renderer != NULL && length > 0 && height > 0)
+  if(renderer != nullptr && length > 0 && height > 0)
   {
     for(uint16_t i = 0; i < height; i++)
     {
@@ -987,7 +1063,7 @@ bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length, uint16_t height,
 bool Frame::renderCircle(int center_x, int center_y, uint16_t radius,
                          SDL_Renderer* renderer)
 {
-  if(renderer != NULL)
+  if(renderer != nullptr)
   {
     int x0 = center_x;
     int y0 = center_y;
@@ -1074,7 +1150,7 @@ bool Frame::renderCircle(int center_x, int center_y, uint16_t radius,
 bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
                                SDL_Renderer* renderer)
 {
-  if(renderer != NULL)
+  if(renderer != nullptr)
   {
     int x = radius;
     int x0 = center_x;
@@ -1181,7 +1257,7 @@ bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius,
 bool Frame::renderRect(SDL_Rect rect, uint16_t border_width,
                        SDL_Renderer* renderer, bool reverse)
 {
-  if(renderer != NULL)
+  if(renderer != nullptr)
   {
     /* Render the multiple border rects */
     while(border_width > 0 && rect.w >= 0 && rect.h >= 0)
@@ -1257,7 +1333,7 @@ bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
                            bool aliasing)
 {
   /* Only attempt to paint the triangle if renderer is valid */
-  if(renderer != NULL)
+  if(renderer != nullptr)
   {
     bool success = true;
     int32_t x12_diff = x2 - x1;
@@ -1282,7 +1358,7 @@ bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
 
       /* Get alpha */
       uint8_t alpha = 255;
-      SDL_GetRenderDrawColor(renderer, NULL, NULL, NULL, &alpha);
+      SDL_GetRenderDrawColor(renderer, nullptr, nullptr, nullptr, &alpha);
 
       /* Sort the vertices ascending by y */
       if(y2 < y1)

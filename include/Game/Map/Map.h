@@ -177,8 +177,8 @@ private:
   // Weather* weather_effect;
 
   /* Status of the zoom on the map */
-  bool zoom_in;
-  bool zoom_out;
+  bool zooming;
+  uint16_t zoom_size;
 
   /*------------------- Constants -----------------------*/
   const static float kFADE_FACTOR; /* 1/x fade factor for ms cycle time */
@@ -324,6 +324,10 @@ private:
 
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
+
+  /* Zoom trigger */
+  void zoom(uint16_t tile_size = kZOOM_TILE_SIZE);
+  void zoomRestore();
 
 /*========================= PUBLIC FUNCTIONS ===============================*/
 public:

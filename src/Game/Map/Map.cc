@@ -58,7 +58,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   battle_person = nullptr;
   battle_thing = nullptr;
   battle_trigger = false;
-  this->event_handler = NULL;
+  this->event_handler = nullptr;
   fade_alpha = 255;
   fade_delay = 0;
   fade_delta = 0.0;
@@ -73,9 +73,9 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   music_runtime = -1;
   name = "Map Name";
   name_view = 0;
-  player = NULL;
+  player = nullptr;
   speed_factor = 1.0;
-  system_options = NULL;
+  system_options = nullptr;
   view_acc = 0;
   view_section = 0;
   view_start = false;
@@ -87,8 +87,8 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   /* Configure the width / height of tiles and sets default zooming */
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
-  zoom_in = false;
-  zoom_out = false;
+  zooming = false;
+  zoom_size = tile_height;
   viewport.setTileSize(tile_width, tile_height);
 
   /* Set options and event handler */
@@ -110,9 +110,9 @@ bool Map::addSpriteData(XmlData data, std::string id, int file_index,
                         SDL_Renderer* renderer)
 {
   int32_t access_id = -1;
-  Sprite* access_sprite = NULL;
+  Sprite* access_sprite = nullptr;
   int32_t copy_id = -1;
-  Sprite* copy_sprite = NULL;
+  Sprite* copy_sprite = nullptr;
 
   /* Get the ID information */
   std::vector<std::string> id_set = Helpers::split(id, '>');
@@ -137,14 +137,14 @@ bool Map::addSpriteData(XmlData data, std::string id, int file_index,
     }
 
     /* If the sprite doesn't exist, create it */
-    if(access_sprite == NULL)
+    if(access_sprite == nullptr)
     {
       access_sprite = new Sprite();
       access_sprite->setId(access_id);
       tile_sprites.push_back(access_sprite);
 
       /* If the copy sprite isn't null, copy the data into the new sprite */
-      if(copy_sprite != NULL)
+      if(copy_sprite != nullptr)
         *access_sprite = *copy_sprite;
     }
 
@@ -175,7 +175,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
     {
       for(uint16_t j = 0; j < id_matrix[i].size(); j++)
       {
-        Sprite* found_sprite = NULL;
+        Sprite* found_sprite = nullptr;
 
         /* Try and find the id */
         if(id_matrix[i][j] >= 0)
@@ -189,7 +189,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
 
         /* If the sprite is found, add it to the tile */
         // TODO: Review revising to incorporate new helper function.
-        if(found_sprite != NULL)
+        if(found_sprite != nullptr)
         {
           std::vector<std::string> col_list =
               Helpers::split(data.getKeyValue(kFILE_TILE_COLUMN), ',');
@@ -283,7 +283,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
 {
   std::string identifier = data.getElement(file_index);
   uint32_t id = std::stoul(data.getKeyValue(file_index));
-  MapThing* modified_thing = NULL;
+  MapThing* modified_thing = nullptr;
   bool new_thing = false;
 
   /* Identify which thing to be created */
@@ -291,7 +291,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
   {
     /* Create a new thing, if one doesn't exist */
     modified_thing = getThingBase(id);
-    if(modified_thing == NULL)
+    if(modified_thing == nullptr)
     {
       modified_thing = new MapThing();
       new_thing = true;
@@ -302,7 +302,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
   {
     /* Create a new map interactive object, if one doesn't exist */
     modified_thing = getIOBase(id);
-    if(modified_thing == NULL)
+    if(modified_thing == nullptr)
     {
       modified_thing = new MapInteractiveObject();
       new_thing = true;
@@ -313,7 +313,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
   {
     /* Create a new person, if one doesn't exist */
     modified_thing = getPersonBase(id);
-    if(modified_thing == NULL)
+    if(modified_thing == nullptr)
     {
       if(identifier == "mapperson")
       {
@@ -333,7 +333,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
   //{
   //  /* Create a new item, if one doesn't exist */
   //  modified_thing = getItemBase(id);
-  //  if(modified_thing == NULL)
+  //  if(modified_thing == nullptr)
   //  {
   //    modified_thing = new MapItem();
   //    new_thing = true;
@@ -642,7 +642,7 @@ MapInteractiveObject* Map::getIOBase(uint32_t id)
   for(uint32_t i = 0; i < base_ios.size(); i++)
     if(base_ios[i]->getID() == static_cast<int>(id))
       return base_ios[i];
-  return NULL;
+  return nullptr;
 }
 
 /* Returns the item, based on the ID */
@@ -696,7 +696,7 @@ MapPerson* Map::getPersonBase(uint32_t id)
   for(uint32_t i = 0; i < base_persons.size(); i++)
     if(base_persons[i]->getID() == static_cast<int>(id))
       return base_persons[i];
-  return NULL;
+  return nullptr;
 }
 
 /* Returns the thing, based on the ID */
@@ -727,7 +727,7 @@ MapThing* Map::getThingBase(uint32_t id)
   for(uint32_t i = 0; i < base_things.size(); i++)
     if(base_things[i]->getID() == static_cast<int>(id))
       return base_things[i];
-  return NULL;
+  return nullptr;
 }
 
 /* Returns the general things based on type or ID. This searches all pools
@@ -812,7 +812,7 @@ std::vector<std::vector<Tile*>>
 Map::getTileMatrix(MapThing* thing, Direction direction, bool start_only)
 {
   std::vector<std::vector<Tile*>> tile_set;
-  if(thing != NULL)
+  if(thing != nullptr)
   {
     SDL_Rect render_box = thing->getBoundingBox(start_only);
 
@@ -1895,53 +1895,60 @@ void Map::updateTileSize()
 {
   bool updated = false;
 
-  /* Try and zoom out the map */
-  if(zoom_out)
+  /* Try and zoom in the map */
+  if(tile_height < zoom_size && tile_width < zoom_size)
   {
-    /* Modify the tile height and width, limited by the constants */
-    tile_height--;
-    tile_width--;
-    if(tile_height < kZOOM_TILE_SIZE || tile_width < kZOOM_TILE_SIZE)
-    {
-      tile_height = kZOOM_TILE_SIZE;
-      tile_width = kZOOM_TILE_SIZE;
-      zoom_out = false;
-    }
-
-    updated = true;
-  }
-  /* Otherwise, try and zoom back in */
-  else if(zoom_in)
-  {
-    /* Modify the tile height and width, limited by the constants */
     tile_height++;
     tile_width++;
-    if(tile_height > Helpers::getTileSize() ||
-       tile_width > Helpers::getTileSize())
-    {
-      tile_height = Helpers::getTileSize();
-      tile_width = Helpers::getTileSize();
-      zoom_in = false;
-    }
-
+    zooming = true;
     updated = true;
   }
+  /* Try and zoom out the map */
+  else if(tile_height > zoom_size && tile_width > zoom_size)
+  {
+    tile_height--;
+    tile_width--;
+    zooming = true;
+    updated = true;
+  }
+
+  /* Check zooming status */
+  if(zooming)
+    if(tile_height == zoom_size || tile_width == zoom_size)
+      zooming = false;
 
   /* If updated, update the height and width everywhere */
   if(updated)
   {
     /* Update map tiles */
     for(uint16_t i = 0; i < sub_map.size(); i++)
+    {
       for(uint16_t j = 0; j < sub_map[i].tiles.size(); j++)
+      {
         for(uint16_t k = 0; k < sub_map[i].tiles[j].size(); k++)
         {
           sub_map[i].tiles[j][k]->setHeight(tile_height);
           sub_map[i].tiles[j][k]->setWidth(tile_width);
         }
+      }
+    }
 
     /* Update viewport */
     viewport.setTileSize(tile_width, tile_height);
   }
+}
+  
+/* Zoom trigger */
+void Map::zoom(uint16_t tile_size)
+{
+  if(tile_size > 0)
+    zoom_size = tile_size;
+}
+  
+/* Zoom trigger */
+void Map::zoomRestore()
+{
+  zoom_size = Helpers::getTileSize();
 }
 
 /*============================================================================
@@ -2325,7 +2332,7 @@ bool Map::initConversation(ConvoPair convo_pair, MapThing* source)
 
     /* Set the targets */
     player->setTarget(source);
-    if(source != NULL)
+    if(source != nullptr)
       source->setTarget(player);
 
     return true;
@@ -2622,10 +2629,10 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     }
     /* Test: Zoom back out */
     else if(event.keysym.sym == SDLK_z)
-      zoom_out = true;
+      zoom();
     /* Test: Zoom back in */
     else if(event.keysym.sym == SDLK_x)
-      zoom_in = true;
+      zoomRestore();
     /* Test: Location of player */
     else if(event.keysym.sym == SDLK_l)
     {
@@ -2653,7 +2660,7 @@ void Map::keyUpEvent(KeyHandler& key_handler)
 
   if(isModeNormal())
   {
-    if(player != NULL)
+    if(player != nullptr)
       player->keyUpEvent(key_handler);
   }
 }
@@ -3091,14 +3098,14 @@ bool Map::render(SDL_Renderer* renderer)
 
         /* Base map thing, if relevant */
         MapThing* render_thing = sub_map[map_index].tiles[i][j]->getThing(0);
-        if(render_thing != NULL)
+        if(render_thing != nullptr)
           render_thing->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                    x_offset, y_offset);
 
         /* Base map IO, if relevant */
         MapInteractiveObject* render_io =
             sub_map[map_index].tiles[i][j]->getIO(0);
-        if(render_io != NULL)
+        if(render_io != nullptr)
           render_io->renderMain(renderer, sub_map[map_index].tiles[i][j], 0,
                                 x_offset, y_offset);
       }
@@ -3111,9 +3118,9 @@ bool Map::render(SDL_Renderer* renderer)
       {
         for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         {
-          MapInteractiveObject* render_io = NULL;
-          MapPerson* render_person = NULL;
-          MapThing* render_thing = NULL;
+          MapInteractiveObject* render_io = nullptr;
+          MapPerson* render_person = nullptr;
+          MapThing* render_thing = nullptr;
 
           /* Acquire render things and continue forward if some are not null
            */
@@ -3124,7 +3131,7 @@ bool Map::render(SDL_Renderer* renderer)
              * If base index, render order is top item, thing, then person */
             if(index == 0)
             {
-              if(render_person != NULL)
+              if(render_person != nullptr)
               {
                 if(render_person->getMovement() == Direction::EAST ||
                    render_person->getMovement() == Direction::SOUTH)
@@ -3144,7 +3151,7 @@ bool Map::render(SDL_Renderer* renderer)
             /* Otherwise, render order is person, then thing */
             else
             {
-              if(render_person != NULL)
+              if(render_person != nullptr)
               {
                 if(render_person->getMovement() == Direction::EAST ||
                    render_person->getMovement() == Direction::SOUTH)
@@ -3161,12 +3168,12 @@ bool Map::render(SDL_Renderer* renderer)
                 }
               }
 
-              if(render_thing != NULL)
+              if(render_thing != nullptr)
                 render_thing->renderMain(renderer,
                                          sub_map[map_index].tiles[i][j], index,
                                          x_offset, y_offset);
 
-              if(render_io != NULL)
+              if(render_io != nullptr)
                 render_io->renderMain(renderer, sub_map[map_index].tiles[i][j],
                                       index, x_offset, y_offset);
             }
@@ -3198,7 +3205,7 @@ bool Map::render(SDL_Renderer* renderer)
     if(fade_status != MapFade::VISIBLE)
     {
       SDL_SetTextureAlphaMod(Helpers::getMaskBlack(), fade_alpha);
-      SDL_RenderCopy(renderer, Helpers::getMaskBlack(), NULL, NULL);
+      SDL_RenderCopy(renderer, Helpers::getMaskBlack(), nullptr, nullptr);
     }
 
     /* Map name on top of overlay */
@@ -3296,7 +3303,7 @@ bool Map::setBaseItems(std::vector<ItemData> items, SDL_Renderer* renderer)
 /* Sets the running configuration, from the options class */
 bool Map::setConfiguration(Options* running_config)
 {
-  if(running_config != NULL)
+  if(running_config != nullptr)
   {
     system_options = running_config;
     base_path = system_options->getBasePath();

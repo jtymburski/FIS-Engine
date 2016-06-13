@@ -289,6 +289,23 @@ enum class CellState : std::uint32_t
 };
 
 /*
+ * Description: Color mode enumerations for possible states of color within a
+ *              sprite
+ *
+ * GREY - fully grey scale
+ * GREYING - transitioning from color to grey scale
+ * COLORING - transitioning from grey scale to color
+ * COLOR - fully colored (default)
+ */
+enum class ColorMode
+{
+  GREY,
+  GREYING,
+  COLORING,
+  COLOR
+};
+
+/*
  * Description: Types of damage that a BattleActor can receive. Aids in
  *              determining colours of damage or other effects.
  */

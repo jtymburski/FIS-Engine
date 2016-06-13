@@ -29,12 +29,12 @@ public:
 
   /* Constructor function - path and next pointer initialization */
   Frame(std::string path, SDL_Renderer* renderer, uint16_t angle = 0,
-        Frame* previous = NULL, Frame* next = NULL);
+        Frame* previous = nullptr, Frame* next = nullptr);
 
   /* Constructor function - path, adjustments, and previous/next inits */
   Frame(std::string path, std::vector<std::string> adjustments,
-        SDL_Renderer* renderer, uint16_t angle = 0, Frame* previous = NULL,
-        Frame* next = NULL);
+        SDL_Renderer* renderer, uint16_t angle = 0, Frame* previous = nullptr,
+        Frame* next = nullptr);
 
   /* Destructor function */
   ~Frame();
@@ -43,11 +43,15 @@ private:
   /* The stored alpha value for rendering */
   uint8_t alpha;
 
+  /* The frame control color mode */
+  uint8_t color_alpha;
+  ColorMode color_mode;
+
   /* How the SDL texture should be flipped while rendering */
   SDL_RendererFlip flip;
 
   /* Indicator if the grey scale texture is active */
-  bool grey_scale;
+  //bool grey_scale;
 
   /* The height of the stored texture */
   int height;
@@ -88,6 +92,10 @@ public:
   /* Returns the alpha setting of the stored texture */
   uint8_t getAlpha();
 
+  /* Returns the color information */
+  uint8_t getColorAlpha();
+  ColorMode getColorMode();
+
   /* Returns the flip indication, for rendering */
   SDL_RendererFlip getFlip();
 
@@ -110,21 +118,19 @@ public:
   /* Returns the width of the texture */
   int getWidth();
 
-  /* Returns if the grey scale mode is active */
-  bool isGreyScale();
-
   /* Returns if an image is set */
   bool isTextureSet(bool grey_scale = false);
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0, int w = 0,
               int h = 0, SDL_Rect* src_rect = nullptr, bool for_sprite = false);
-  bool renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x = 0, int y = 0,
-                  int w = 0, int h = 0, SDL_Rect* src_rect = nullptr,
-                  bool for_sprite = false);
 
   /* Sets the alpha rating of the texture rendering */
   void setAlpha(uint8_t alpha = 255);
+
+  /* Sets the color information handling */
+  bool setColorAlpha(uint8_t alpha = 0);
+  bool setColorMode(ColorMode mode);
 
   /* Set next frame */
   bool setNext(Frame* next);
@@ -142,9 +148,6 @@ public:
 
   /* Unsets the texture, if one is set */
   void unsetTexture();
-
-  /* Sets if the greyscale texture is active and returned on getTexture() */
-  bool useGreyScale(bool enable);
 
 /*===================== PRIVATE STATIC  FUNCTIONS ==========================*/
 private:

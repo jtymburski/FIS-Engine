@@ -361,7 +361,7 @@ public:
   /* Sets if the greyscale texture is active and returned on getTexture() */
   bool useGreyScale(bool enable);
 
-  /*====================== PUBLIC STATIC FUNCTIONS ===========================*/
+/*====================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Returns the degrees of the string identifier */
   static int getAngle(std::string identifier);
@@ -369,7 +369,7 @@ public:
   /* Returns the degrees of the angle enumerator */
   static int getAngle(RotatedAngle angle);
 
-  /* ========================= OPERATOR FUNCTIONS =========================== */
+/* ========================= OPERATOR FUNCTIONS =========================== */
 public:
   Sprite& operator=(const Sprite& source);
 };
