@@ -43,6 +43,8 @@ Sprite::Sprite()
       build_path_head{""},
       build_path_tail{""},
       build_frames{0},
+      color_alpha{0},
+      color_mode{ColorMode::COLOR},
       color_temp_red{Sprite::kDEFAULT_COLOR},
       color_temp_green{Sprite::kDEFAULT_COLOR},
       color_temp_blue{Sprite::kDEFAULT_COLOR},
@@ -50,8 +52,6 @@ Sprite::Sprite()
       color_green{Sprite::kDEFAULT_COLOR},
       color_blue{Sprite::kDEFAULT_COLOR},
       elapsed_time{0},
-      grey_scale_alpha{Sprite::kDEFAULT_OPACITY},
-      grey_scale_update{false},
       loops{0},
       non_unique{false},
       opacity{Sprite::kDEFAULT_OPACITY},
@@ -389,6 +389,29 @@ uint16_t Sprite::getAnimationTime() const
 double Sprite::getBrightness() const
 {
   return brightness;
+}
+
+/*
+ * Description: Returns the color delta alpha for the sprite.
+ *
+ * Inputs: none
+ * Output: uint8_t - the alpha value from 0-255
+ */
+uint8_t Sprite::getColorAlpha()
+{
+  return color_alpha;
+}
+
+/*
+ * Description: Returns the color mode for how the sprite is rendered on a call
+ *              to render().
+ *
+ * Inputs: none
+ * Output: ColorMode - the mode of how the sprite gets handled
+ */
+ColorMode Sprite::getColorMode()
+{
+  return color_mode;
 }
 
 /*
@@ -848,6 +871,18 @@ bool Sprite::isAtEnd()
     return isAtFirst();
   return (head->getPrevious() == current);
 }
+  
+/* 
+ * Description: Returns if the color is transitioning between color and grey
+ *
+ * Inputs: none
+ * Output: bool - true if in transition
+ */
+bool Sprite::isColorTransitioning() const
+{
+  return (color_mode == ColorMode::GREYING ||
+          color_mode == ColorMode::COLORING);
+}
 
 /*
  * Description: Returns if the parsing direction through the frame sequence
@@ -861,24 +896,15 @@ bool Sprite::isDirectionForward() const
   return (sequence == FORWARD);
 }
 
-bool Sprite::isFramesSet() const
-{
-  return (head != NULL);
-}
-
 /*
- * Description: Checks if the sprite sequence is grey scale enabled. This
- *              operates by only checking the head frame (which should be the
- *              same as all the others).
+ * Description: Returns if any frames are set within the sprite class
  *
  * Inputs: none
- * Output: bool - status if the frame sequence grey scale mode is enabled
+ * Output: bool - true if set
  */
-bool Sprite::isGreyScale()
-{ // TODO: Fix
-//  if(head != nullptr)
-//    return head->isGreyScale();
-  return false;
+bool Sprite::isFramesSet() const
+{
+  return (head != nullptr);
 }
 
 /*
@@ -1032,10 +1058,11 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
   if(!built_texture)
     loadData(renderer);
 
-  if(current != NULL && renderer != NULL)
+  if(current != nullptr && renderer != nullptr)
   {
     /* Proceed to update the running texture if it's changed */
-    if(texture_update || grey_scale_update)
+    if(texture_update || color_mode == ColorMode::GREYING ||
+       color_mode == ColorMode::COLORING)
     {
       SDL_Texture* previous_renderer = SDL_GetRenderTarget(renderer);
 
@@ -1044,16 +1071,8 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
       SDL_RenderClear(renderer);
 
       /* Render current frame */
-      // TODO: FIX
-      //if(grey_scale_update)
-      //{
-      //  current->renderBoth(renderer, grey_scale_alpha, 0, 0, 0, 0,
-      //                      getSourceRect(), true);
-      //}
-      //else
-      //{
-        current->render(renderer, 0, 0, 0, 0, getSourceRect(), true);
-      //}
+      current->setColorAlpha(color_alpha);
+      current->render(renderer, 0, 0, 0, 0, getSourceRect(), true);
 
       /* Render white mask, if relevant */
       SDL_Texture* white_mask = Helpers::getMaskWhite();
@@ -1256,6 +1275,72 @@ void Sprite::setColorRed(uint8_t color)
 }
 
 /*
+ * Description: This sets the color mode based on the enumerator. This can
+ *              control the grey scale and how it blends/transitions for all
+ *              frames.
+ *
+ * Inputs: ColorMode mode - the new mode to update the mode
+ * Output: bool - status if set was successful
+ */
+bool Sprite::setColorMode(ColorMode mode)
+{
+  bool set = false;
+
+  if(mode != color_mode && head != nullptr)
+  {
+    /* Color enabled mode - default */
+    if(mode == ColorMode::COLOR ||
+       (color_mode == ColorMode::COLOR && mode == ColorMode::COLORING))
+    {
+      color_mode = ColorMode::COLOR;
+      color_alpha = 0;
+      set = true;
+    }
+    else if(mode == ColorMode::GREY ||
+            (color_mode == ColorMode::GREY && mode == ColorMode::GREYING))
+    {
+      color_mode = ColorMode::GREY;
+      color_alpha = 0;
+      set = true;
+    }
+    /* All other color modes */
+    else
+    {
+      /* Check if this was a coloring to greying or vice versa */
+      bool full_switch = false;
+      if((color_mode == ColorMode::COLORING && mode == ColorMode::GREYING) ||
+         (color_mode == ColorMode::GREYING && mode == ColorMode::COLORING))
+      {
+        full_switch = true;
+      }
+
+      /* Set the mode */
+      color_mode = mode;
+      set = true;
+
+      /* Update the alpha accordingly */
+      if(full_switch)
+        color_alpha = (kDEFAULT_OPACITY - color_alpha);
+      else
+        color_alpha = 0;
+    }
+
+    /* Update all frames with the new color mode values */
+    Frame* parse = head;
+    do
+    {
+      parse->setColorMode(color_mode);
+      parse->setColorAlpha(color_alpha);
+      parse = parse->getNext();
+    } while(parse != head && parse != nullptr);
+
+    texture_update = true;
+  }
+
+  return set;
+}
+
+/*
  * Description: Sets the direction that the linked list is navigated to
  *              FORWARD. In other words, accessing the *next pointer when
  *              parsing it.
@@ -1283,7 +1368,12 @@ bool Sprite::setDirectionReverse()
   return true;
 }
 
-// TODO: comments
+/*
+ * Description: Sets the head frame as per the passed parameter
+ *
+ * Inputs: Frame* head - the new head frame
+ * Output: none
+ */
 void Sprite::setHead(Frame* head)
 {
   this->head = head;
@@ -1574,36 +1664,21 @@ bool Sprite::update(int cycle_time, bool skip_head)
   }
 
   /* Do grey scale checking, for animation */
-  // TODO: FIX
-//  if(grey_scale_update)
-//  {
-//    if(head->isGreyScale())
-//    {
-//      if(grey_scale_alpha - kDELTA_GREY_SCALE <= 0)
-//      {
-//        grey_scale_alpha = 0;
-//        grey_scale_update = false;
-//        texture_update = true;
-//      }
-//      else
-//      {
-//        grey_scale_alpha -= kDELTA_GREY_SCALE;
-//      }
-//    }
-//    else
-//    {
-//      if(grey_scale_alpha + kDELTA_GREY_SCALE >= kDEFAULT_OPACITY)
-//      {
-//        grey_scale_alpha = kDEFAULT_OPACITY;
-//        grey_scale_update = false;
-//        texture_update = true;
-//      }
-//      else
-//      {
-//        grey_scale_alpha += kDELTA_GREY_SCALE;
-//      }
-//    }
-//  }
+  if(color_mode == ColorMode::GREYING || color_mode == ColorMode::COLORING)
+  {
+    int val = color_alpha + kDELTA_GREY_SCALE;
+    if(val >= kDEFAULT_OPACITY)
+    {
+      if(color_mode == ColorMode::GREYING)
+        setColorMode(ColorMode::GREY);
+      else
+        setColorMode(ColorMode::COLOR);
+    }
+    else
+    {
+      color_alpha = val;
+    }
+  }
 
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
@@ -1618,44 +1693,6 @@ bool Sprite::update(int cycle_time, bool skip_head)
   }
 
   return shift;
-}
-
-/*
- * Description: Sets if all the frames in the sequence of sprite should use
- *              the grey scale texture. This only succeeds if the grey scale
- *              texture is enabled and there are frames to set. This also
- *              starts the blending process for showing the transition between
- *              color and grey scale.
- *
- * Inputs: bool enable - true for grey scale textures, false for color
- * bool - status if the set changed the grey scale setting
- */
-bool Sprite::useGreyScale(bool enable)
-{
-  // TODO: FIX
-//  if(head != nullptr && head->isGreyScale() != enable)
-//  {
-//    bool success = true;
-//    Frame* temp = head;
-//
-//    do
-//    {
-//      success &= temp->useGreyScale(enable);
-//      temp = temp->getNext();
-//    } while(temp != head);
-//
-//    if(success)
-//    {
-//      grey_scale_update = true;
-//      if(enable)
-//        grey_scale_alpha = kDEFAULT_OPACITY;
-//      else
-//        grey_scale_alpha = 0;
-//    }
-//
-//    return success;
-//  }
-  return false;
 }
 
 /*=============================================================================

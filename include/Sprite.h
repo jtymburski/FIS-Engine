@@ -72,6 +72,10 @@ private:
   std::string build_path_tail;
   int32_t build_frames;
 
+  /* The frame control color mode */
+  uint8_t color_alpha;
+  ColorMode color_mode;
+
   /* Temporary colours */
   uint8_t color_temp_red;
   uint8_t color_temp_green;
@@ -84,10 +88,6 @@ private:
 
   /* Elapsed time of animation */
   uint16_t elapsed_time;
-
-  /* Grey scale control information */
-  uint8_t grey_scale_alpha;
-  bool grey_scale_update;
 
   /* The number of loops the Sprite has gone through */
   uint32_t loops;
@@ -175,6 +175,10 @@ public:
   /* Gets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   double getBrightness() const;
 
+  /* Returns the color information */
+  uint8_t getColorAlpha();
+  ColorMode getColorMode();
+
   /* Gets the color balance in the spectrum */
   uint8_t getColorBlue() const;
   uint8_t getColorGreen() const;
@@ -253,14 +257,14 @@ public:
   bool isAtFirst();
   bool isAtEnd();
 
+  /* Returns if the color is transitioning between color and grey */
+  bool isColorTransitioning() const;
+
   /* Returns if the direction parsing the frames is forward */
   bool isDirectionForward() const;
 
   /* Check if there are set frames in the sprite */
   bool isFramesSet() const;
-
-  /* Returns if the grey scale mode is active */
-  bool isGreyScale();
 
   /* Load the sprite data, build textures/frames */
   bool loadData(SDL_Renderer* renderer);
@@ -303,6 +307,9 @@ public:
   void setColorBlue(uint8_t color);
   void setColorGreen(uint8_t color);
   void setColorRed(uint8_t color);
+
+  /* Sets the color information handling */
+  bool setColorMode(ColorMode mode); // TODO
 
   /* Asserts the direction is forward for when accessing the linked list */
   bool setDirectionForward();
@@ -357,9 +364,6 @@ public:
 
   /* Updates the frames within the sprite */
   bool update(int cycle_time, bool skip_head = false);
-
-  /* Sets if the greyscale texture is active and returned on getTexture() */
-  bool useGreyScale(bool enable);
 
 /*====================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:

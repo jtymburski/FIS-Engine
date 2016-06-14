@@ -180,7 +180,7 @@ uint8_t Frame::getAlpha()
 {
   return alpha;
 }
-  
+
 /*
  * Description: Returns the color delta alpha for the transitioning frame.
  *
@@ -192,8 +192,8 @@ uint8_t Frame::getColorAlpha()
   return color_alpha;
 }
 
-/* 
- * Description: Returns the colod mode for how the frame is rendered on a call
+/*
+ * Description: Returns the color mode for how the frame is rendered on a call
  *              to render().
  *
  * Inputs: none
@@ -272,7 +272,7 @@ Frame* Frame::getPrevious()
  */
 SDL_Texture* Frame::getTexture(bool grey_scale)
 {
-  if(color_mode == ColorMode::GREY || color_mode == ColorMode::GREYING)
+  if(grey_scale)
     return texture_grey;
   return texture;
 }
@@ -337,90 +337,102 @@ bool Frame::isTextureSet(bool grey_scale)
 bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
                    SDL_Rect* src_rect, bool for_sprite)
 {
-  // TODO: Merge with both
-  if(isTextureSet() && renderer != nullptr)
+  if(renderer != nullptr)
   {
+    /* Render destination rect */
     SDL_Rect rect;
     rect.x = x;
     rect.y = y;
     rect.h = height;
-    rect.w = width;
-
-    /* Use parameter height and width if both are viable */
     if(h > 0)
       rect.h = h;
+    rect.w = width;
     if(w > 0)
       rect.w = w;
 
-    /* Render and return status */
-    SDL_Texture* render_texture = getTextureActive();
-    if(for_sprite)
-      SDL_SetTextureBlendMode(render_texture, SDL_BLENDMODE_NONE);
-    else
-      SDL_SetTextureBlendMode(render_texture, SDL_BLENDMODE_BLEND);
+    /* Render and return status - based on status */
+    /* -- GREYING : color bottom, grey top -- */
+    if(color_mode == ColorMode::GREYING && color_alpha < alpha)
+    {
+      if(texture != nullptr && texture_grey != nullptr)
+      {
+        bool success = true;
 
-    return (SDL_RenderCopyEx(renderer, render_texture, src_rect, &rect, 0,
-                             nullptr, flip) == 0);
+        /* Color */
+        if(for_sprite)
+          SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
+        else
+          SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        //SDL_SetTextureAlphaMod(texture, this->alpha - color_alpha);
+        success &= (SDL_RenderCopyEx(renderer, texture, src_rect, &rect, 0,
+                                     nullptr, flip) == 0);
+
+        /* Grey */
+        SDL_SetTextureBlendMode(texture_grey, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(texture_grey, color_alpha);
+        success &= (SDL_RenderCopyEx(renderer, texture_grey, src_rect, &rect, 0,
+                                     nullptr, flip) == 0);
+
+        setAlpha(this->alpha);
+        return success;
+      }
+    }
+    /* -- COLORING : grey bottom, color top -- */
+    else if(color_mode == ColorMode::COLORING && color_alpha < alpha)
+    {
+      if(texture != nullptr && texture_grey != nullptr)
+      {
+        bool success = true;
+
+        /* Grey */
+        if(for_sprite)
+          SDL_SetTextureBlendMode(texture_grey, SDL_BLENDMODE_NONE);
+        else
+          SDL_SetTextureBlendMode(texture_grey, SDL_BLENDMODE_BLEND);
+        //SDL_SetTextureAlphaMod(texture_grey, this->alpha - color_alpha);
+        success &= (SDL_RenderCopyEx(renderer, texture_grey, src_rect, &rect, 0,
+                                     nullptr, flip) == 0);
+
+        /* Color */
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(texture, color_alpha);
+        success &= (SDL_RenderCopyEx(renderer, texture, src_rect, &rect, 0,
+                                     nullptr, flip) == 0);
+
+        setAlpha(this->alpha);
+        return success;
+      }
+    }
+    /* -- GREY ONLY (or GREYING if color alpha exceeds class alpha) -- */
+    else if(color_mode == ColorMode::GREY || color_mode == ColorMode::GREYING)
+    {
+      if(texture_grey != nullptr)
+      {
+        if(for_sprite)
+          SDL_SetTextureBlendMode(texture_grey, SDL_BLENDMODE_NONE);
+        else
+          SDL_SetTextureBlendMode(texture_grey, SDL_BLENDMODE_BLEND);
+        return (SDL_RenderCopyEx(renderer, texture_grey, src_rect, &rect, 0,
+                                 nullptr, flip) == 0);
+      }
+    }
+    /* -- COLOR ONLY (or COLORING if color alpha exceeds class alpha) -- */
+    else if(color_mode == ColorMode::COLOR || color_mode == ColorMode::COLORING)
+    {
+      if(texture != nullptr)
+      {
+        if(for_sprite)
+          SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
+        else
+          SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        return (SDL_RenderCopyEx(renderer, texture, src_rect, &rect, 0,
+                                 nullptr, flip) == 0);
+      }
+    }
   }
 
   return false;
 }
-
-/*
- * Description: Renders the grey scale texture at the base and then renders the
- *              colored texture above that at the given alpha value. This is
- *              used for blending the greyscale to color and vice versa. Fails
- *              if there is no grey scale texture.
- *
- * Inputs: SDL_Renderer* renderer - the rendering context for the GPU
- *         uint8_t alpha - the alpha rating of the colored texture
- *         int x - the x pixel location of the top left
- *         int y - the y pixel location of the top left
- *         int w - the width to render (in pixels)
- *         int h - the height to render (in pixels)
- *         SDL_Rect* src_rect - the source rect. If NULL, just renders entire
- *                              frame
- *         bool for_sprite - true if called from sprite render. Used to change
- *                           the SDL blend mode for rendering in texture
- * Output: bool - status if the render occurred
- */ // TODO: Integrate into main render
-//bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
-//                       int w, int h, SDL_Rect* src_rect, bool for_sprite)
-//{
-//  if(isTextureSet() && isTextureSet(true) && renderer != nullptr)
-//  {
-//    uint8_t old_alpha = getAlpha();
-//    bool grey_scale = isGreyScale();
-//    bool success = true;
-//
-//    /* If still blending */
-//    if(alpha < old_alpha)
-//    {
-//      /* Render grey scale texture */
-//      useGreyScale(true);
-//      setAlpha(old_alpha - alpha);
-//      success &= render(renderer, x, y, w, h, src_rect, for_sprite);
-//
-//      /* Render colored texture */
-//      useGreyScale(false);
-//      setAlpha(alpha);
-//      success &= render(renderer, x, y, w, h, src_rect);
-//
-//      /* Return to normal parameters */
-//      useGreyScale(grey_scale);
-//      setAlpha(old_alpha);
-//    }
-//    /* Otherwise, just render active */
-//    else
-//    {
-//      success &= render(renderer, x, y, w, h, src_rect, for_sprite);
-//    }
-//
-//    return success;
-//  }
-//
-//  return false;
-//}
 
 /*
  * Description: Sets the rendering alpha modification. Needs to be set for each
@@ -435,7 +447,7 @@ void Frame::setAlpha(uint8_t alpha)
   SDL_SetTextureAlphaMod(texture, alpha);
   SDL_SetTextureAlphaMod(texture_grey, alpha);
 }
-  
+
 /*
  * Description: Sets the color alpha delta. If COLORING, this is the alpha of
  *              the color frame as it transitions and vice versa for the grey
@@ -452,7 +464,7 @@ bool Frame::setColorAlpha(uint8_t alpha)
     color_alpha = alpha;
     return true;
   }
-  
+
   /* Otherwise, reset alpha */
   color_alpha = 0;
   return false;
@@ -472,35 +484,50 @@ bool Frame::setColorMode(ColorMode mode)
   if(mode != color_mode)
   {
     /* Color enabled mode - default */
-    if(mode == ColorMode::COLOR)
+    if(mode == ColorMode::COLOR ||
+       (color_mode == ColorMode::COLOR && mode == ColorMode::COLORING))
     {
-      color_mode = mode;
+      color_mode = ColorMode::COLOR;
       color_alpha = 0;
       set = true;
     }
-    /* All other color modes */
+    /* All other color modes - anything involving grey */
     else
     {
       /* Check if grey scale texture is valid */
       if(isTextureSet(true))
       {
-        /* Check if this was a coloring to greying or vice versa */
-        bool full_switch = false;
-        if((color_mode == ColorMode::COLORING && mode == ColorMode::GREYING) ||
-           (color_mode == ColorMode::GREYING && mode == ColorMode::COLORING))
+        /* Grey */
+        if(mode == ColorMode::GREY ||
+           (color_mode == ColorMode::GREY && mode == ColorMode::GREYING))
         {
-          full_switch = true;
-        }
-
-        /* Set the mode */
-        color_mode = mode;
-        set = true;
-
-        /* Update the alpha accordingly */
-        if(full_switch)
-          color_alpha = (kDEFAULT_ALPHA - color_alpha);
-        else
+          color_mode = ColorMode::GREY;
           color_alpha = 0;
+          set = true;
+        }
+        /* Transitioning */
+        else
+        {
+          /* Check if this was a coloring to greying or vice versa */
+          bool full_switch = false;
+          if((color_mode == ColorMode::COLORING &&
+              mode == ColorMode::GREYING) ||
+             (color_mode == ColorMode::GREYING &&
+              mode == ColorMode::COLORING))
+          {
+            full_switch = true;
+          }
+
+          /* Set the mode */
+          color_mode = mode;
+          set = true;
+
+          /* Update the alpha accordingly */
+          if(full_switch)
+            color_alpha = (kDEFAULT_ALPHA - color_alpha);
+          else
+            color_alpha = 0;
+        }
       }
       /* Otherwise, just return to normal mode */
       else

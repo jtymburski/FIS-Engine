@@ -50,9 +50,6 @@ private:
   /* How the SDL texture should be flipped while rendering */
   SDL_RendererFlip flip;
 
-  /* Indicator if the grey scale texture is active */
-  //bool grey_scale;
-
   /* The height of the stored texture */
   int height;
 

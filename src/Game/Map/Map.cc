@@ -2491,9 +2491,15 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     /* Test: trigger grey scale */
     if(event.keysym.sym == SDLK_g)
     {
-      bool enable = !tile_sprites[0]->isGreyScale();
+      //bool enable = !tile_sprites[0]->isGreyScale();
       for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
-        (*i)->useGreyScale(enable);
+        (*i)->setColorMode(ColorMode::GREYING);
+    }
+    else if(event.keysym.sym == SDLK_h)
+    {
+      //bool enable = !tile_sprites[0]->isGreyScale();
+      for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
+        (*i)->setColorMode(ColorMode::COLORING); 
     }
     /* Test: Pause dialog */
     else if(event.keysym.sym == SDLK_p)
