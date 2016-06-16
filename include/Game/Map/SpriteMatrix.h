@@ -86,6 +86,9 @@ public:
   /* Returns the sprite at a given coordinate - protected */
   TileSprite* getSprite(uint16_t x, uint16_t y);
 
+  /* Returns the first valid sprite within the matrix */
+  TileSprite* getSpriteValid();
+
   /* Returns the height of the sprite matrix */
   uint16_t height() const;
 
@@ -106,6 +109,9 @@ public:
 
   /* Sets all sprites in the matrix at the first frame */
   bool setAtFirst();
+
+  /* Sets the color mode of all sprites within the matrix */
+  void setColorMode(ColorMode mode);
 
   /* Sets the direction of movement for the entire matrix */
   bool setDirectionForward();

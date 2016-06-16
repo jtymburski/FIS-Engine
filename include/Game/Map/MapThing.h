@@ -250,6 +250,7 @@ public:
   TileSprite* getFrameMain(Tile* tile);
   TileSprite* getFramePrevious(Tile* tile);
   std::vector<std::vector<TileSprite*>> getFrames();
+  TileSprite* getFrameValid();
 
   /* Returns the connected game object ID */
   int getGameID() const;
@@ -371,6 +372,9 @@ public:
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
+
+  /* Sets the color mode of all sprites within the thing */
+  virtual void setColorMode(ColorMode mode);
 
   /* Sets the things description */
   void setDescription(std::string new_description);

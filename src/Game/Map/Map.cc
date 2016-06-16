@@ -58,6 +58,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   battle_person = nullptr;
   battle_thing = nullptr;
   battle_trigger = false;
+  color_mode = ColorMode::COLOR;
   this->event_handler = nullptr;
   fade_alpha = 255;
   fade_delay = 0;
@@ -635,6 +636,20 @@ bool Map::changeMode(MapMode mode)
 
   return allow;
 }
+  
+/* Returns the color mode from the active set of data */
+ColorMode Map::getColorMode()
+{
+  Sprite* found_sprite = nullptr;
+
+  /* Check tile sprites */
+  if(tile_sprites.size() > 0)
+    found_sprite = tile_sprites.front();
+
+  /* Check map things */
+  //if(found_sprite == nullptr && base_things.size() > 0)
+  // TODO
+}
 
 /* Returns the base interactive object, based on the ID */
 MapInteractiveObject* Map::getIOBase(uint32_t id)
@@ -1131,6 +1146,13 @@ void Map::initiateThingInteraction(MapPerson* initiator)
     }
   }
 }
+  
+/* Returns if the color is currently in a transition status */
+bool Map::isColorTransitioning()
+{
+  ColorMode mode = getColorMode();
+  return (mode == ColorMode::GREYING || mode == ColorMode::COLORING);
+}
 
 /* Mode view update */
 bool Map::modeViewStart(int cycle_time, bool travel)
@@ -1432,6 +1454,12 @@ bool Map::saveTileSet(
   }
 
   return success;
+}
+  
+/* Sets and updates the color mode as per input and status available */
+void Map::setColorMode(ColorMode mode)
+{
+  // TODO!
 }
 
 /* Changes the map section index - what is displayed */
@@ -3430,6 +3458,7 @@ void Map::unloadMap()
   battle_scenes.clear();
   battle_thing = nullptr;
   battle_trigger = false;
+  color_mode = ColorMode::COLOR;
   map_index = 0;
   // map_dialog = MapDialog();
   // map_dialog.setEventHandler

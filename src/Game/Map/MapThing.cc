@@ -1436,6 +1436,17 @@ std::vector<std::vector<TileSprite*>> MapThing::getFrames()
 }
 
 /*
+ * Description: Returns the first valid frame pointer. NULL if none found.
+ *
+ * Inputs: none
+ * Output: TileSprite* - the first valid frame reference
+ */
+TileSprite* MapThing::getFrameValid()
+{
+  // TODO
+}
+
+/*
  * Description: Returns the connected game object ID. The connected object is
  *              stored at the top level.
  *
@@ -2358,6 +2369,18 @@ bool MapThing::setBase(MapThing* base)
   }
 
   return success;
+}
+  
+/*
+ * Description: Sets the color mode of all sprites within the matrix of the
+ *              thing. Virtualized for the purpose of children.
+ *
+ * Inputs: ColorMode mode - the mode of how to color the thing
+ * Output: none
+ */
+void MapThing::setColorMode(ColorMode mode)
+{
+  // TODO
 }
 
 /*

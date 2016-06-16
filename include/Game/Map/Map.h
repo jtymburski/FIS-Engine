@@ -92,6 +92,9 @@ private:
   MapThing* battle_thing;
   bool battle_trigger;
 
+  /* The overall color control mode - only applies map side */
+  ColorMode color_mode;
+
   /* A reference blank event for setting events in the game */
   EventHandler* event_handler;
 
@@ -228,6 +231,9 @@ private:
   /* Change the mode that the game is running */
   bool changeMode(MapMode mode);
 
+  /* Returns the color mode from the active set of data */
+  ColorMode getColorMode();
+
   /* Returns the interactive object, based on the ID */
   MapInteractiveObject* getIOBase(uint32_t id);
 
@@ -274,6 +280,9 @@ private:
   /* Initiates a thing action, based on the action key being hit */
   void initiateThingInteraction(MapPerson* initiator);
 
+  /* Returns if the color is currently in a transition status */
+  bool isColorTransitioning();
+
   /* Mode view updates */
   bool modeViewStart(int cycle_time, bool travel);
   bool modeViewStop(int cycle_time, bool travel);
@@ -297,6 +306,9 @@ private:
   bool saveTileSet(FileHandler* fh, SubMap* sub_map,
             const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> &set,
             const bool &enter = true, const std::string &type_txt = "set");
+
+  /* Sets and updates the color mode as per input and status available */
+  void setColorMode(ColorMode mode);
 
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(uint16_t index);

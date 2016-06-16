@@ -620,6 +620,17 @@ TileSprite* SpriteMatrix::getSprite(uint16_t x, uint16_t y)
 }
 
 /*
+ * Description: Returns the first valid sprite pointer. NULL if none found.
+ *
+ * Inputs: none
+ * Output: TileSprite* - the first valid sprite reference
+ */
+TileSprite* SpriteMatrix::getSpriteValid()
+{
+  // TODO
+}
+
+/*
  * Description: Returns the height of the matrix (Y coordinate).
  *
  * Inputs: none
@@ -769,10 +780,21 @@ bool SpriteMatrix::setAtFirst()
 
   for(uint16_t i = 0; i < sprite_matrix.size(); i++)
     for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
-      if(sprite_matrix[i][j] != NULL)
+      if(sprite_matrix[i][j] != nullptr)
         success &= sprite_matrix[i][j]->setAtFirst();
   
   return success;
+}
+
+/*
+ * Description: Sets the color mode of all sprites within the matrix.
+ *
+ * Inputs: ColorMode mode - the mode of how to color the matrix
+ * Output: none
+ */
+void SpriteMatrix::setColorMode(ColorMode mode)
+{
+  // TODO
 }
 
 /*
