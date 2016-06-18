@@ -142,23 +142,23 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
   return false;
 }
 
-bool RenderElement::buildSprite(std::string path, int32_t num_frames)
-{
-  if(renderer && path != "" && !element_sprite)
-  {
-    if(num_frames > 1)
-      element_sprite = new Sprite(path, num_frames, ".png", renderer);
-    else
-      element_sprite = new Sprite(path, renderer);
+// bool RenderElement::buildSprite(std::string path, int32_t num_frames)
+// {
+//   if(renderer && path != "" && !element_sprite)
+//   {
+//     if(num_frames > 1)
+//       element_sprite = new Sprite(path, num_frames, ".png", renderer);
+//     else
+//       element_sprite = new Sprite(path, renderer);
 
-    element_sprite->setNonUnique(true, num_frames);
-    element_sprite->createTexture(renderer);
+//     element_sprite->setNonUnique(true, num_frames);
+//     element_sprite->createTexture(renderer);
 
-    return true;
-  }
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS

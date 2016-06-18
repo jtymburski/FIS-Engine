@@ -40,9 +40,6 @@ Sprite::Sprite()
     : animation_time{Sprite::kDEFAULT_ANIMATE_TIME},
       brightness{Sprite::kDEFAULT_BRIGHTNESS},
       built_texture{false},
-      build_path_head{""},
-      build_path_tail{""},
-      build_frames{0},
       color_alpha{0},
       color_mode{ColorMode::COLOR},
       color_temp_red{Sprite::kDEFAULT_COLOR},
@@ -51,6 +48,7 @@ Sprite::Sprite()
       color_red{Sprite::kDEFAULT_COLOR},
       color_green{Sprite::kDEFAULT_COLOR},
       color_blue{Sprite::kDEFAULT_COLOR},
+      data{},
       elapsed_time{0},
       loops{0},
       non_unique{false},
@@ -205,15 +203,12 @@ void Sprite::copySelf(const Sprite& source)
   setAnimationTime(source.getAnimationTime());
   setBrightness(source.getBrightness());
 
-  build_path_head = source.build_path_head;
-  build_path_tail = source.build_path_tail;
-  build_frames = source.build_frames;
-
   setColorBalance(source.getColorRed(), source.getColorGreen(),
                   source.getColorBlue());
   setTempColorBalance(source.getTempColorRed(), source.getTempColorGreen(),
                       source.getTempColorBlue());
 
+  data = source.data;
   elapsed_time = source.elapsed_time;
 
   if(source.isDirectionForward())
@@ -277,6 +272,7 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
     setOpacity(data.getDataInteger());
   else if(split_element.at(0) == "path")
   {
+    /* If the sprite data is set to be built from path immediately */
     if(build_data)
     {
       uint16_t angle = parseAdjustments(split_element);
@@ -295,21 +291,24 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
 
       built_texture = true;
     }
+    /* If the sprite data is set to be stored and loaded upon first render */
     else
     {
       std::vector<std::string> split_path =
           Helpers::split(base_path + data.getDataString(), '|');
 
+      this->data.push_back(SpriteData());
+
       if(split_path.size() == 3)
       {
-        build_path_head = split_path[0];
-        build_frames = std::stoi(split_path[1]);
-        build_path_tail = split_path[2];
+        this->data.back().build_path_head = split_path[0];
+        this->data.back().build_frames = std::stoi(split_path[1]);
+        this->data.back().build_path_tail = split_path[2];
       }
       else
       {
-        build_path_head = base_path + data.getDataString();
-        build_frames = 1;
+        this->data.back().build_path_head = base_path + data.getDataString();
+        this->data.back().build_frames = 1;
       }
     }
   }
@@ -871,8 +870,8 @@ bool Sprite::isAtEnd()
     return isAtFirst();
   return (head->getPrevious() == current);
 }
-  
-/* 
+
+/*
  * Description: Returns if the color is transitioning between color and grey
  *
  * Inputs: none
@@ -920,20 +919,25 @@ bool Sprite::loadData(SDL_Renderer* renderer)
 
   if(renderer && !built_texture)
   {
-    if(build_path_head != "" && build_path_tail == "")
+    for(auto& element : data)
     {
-      insertFirst(build_path_head, renderer);
-      success = true;
-    }
-    else if(build_path_head != "" && build_path_tail != "")
-    {
-      // std::cout << "Inserting " << std::endl;
-      // std::cout << "Head: " << build_path_head << std::endl;
-      // std::cout << "# Frames: " << build_frames << std::endl;
-      // std::cout << "Tail: " << build_path_tail << std::endl;
-      insertSequence(build_path_head, build_frames, build_path_tail, renderer);
-
-      success = true;
+      if(element.build_path_head != "" && element.build_path_tail == "")
+      {
+        // std::cout << "Inserting 1 Frame: " << element.build_path_head
+        //                  << std::endl;
+        insertFirst(element.build_path_head, renderer);
+        success = true;
+      }
+      else if(element.build_path_head != "" && element.build_path_tail != "")
+      {
+        // std::cout << "Inserting " << std::endl;
+        // std::cout << "Head: " << element.build_path_head << std::endl;
+        // std::cout << "# Frames: " << element.build_frames << std::endl;
+        // std::cout << "Tail: " << element.build_path_tail << std::endl;
+        insertSequence(element.build_path_head, element.build_frames,
+                       element.build_path_tail, renderer);
+        success = true;
+      }
     }
   }
 
@@ -1200,14 +1204,13 @@ bool Sprite::setBuildInformation(std::string build_path_head,
 {
   if(!built_texture)
   {
-    this->build_path_head = build_path_head;
-    this->build_path_tail = build_path_tail;
-    this->build_frames = build_frames;
-
-    return true;
+    data.push_back(SpriteData());
+    data.back().build_path_head = build_path_head;
+    data.back().build_path_tail = build_path_tail;
+    data.back().build_frames = build_frames;
   }
 
-  return false;
+  return !built_texture;
 }
 
 /*

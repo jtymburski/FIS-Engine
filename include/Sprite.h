@@ -26,6 +26,22 @@ enum Sequencer
   FORWARD
 };
 
+/* SpriteData Structure */
+struct SpriteData
+{
+  /* Construct a SpriteData object */
+  SpriteData() : build_path_head{""}, build_path_tail{""}, build_frames{0} {};
+
+  /* Path to the head of the frames */
+  std::string build_path_head;
+
+  /* Extension for the frames */
+  std::string build_path_tail;
+
+  /* Number of frames to construct */
+  int32_t build_frames;
+};
+
 class Sprite
 {
 public:
@@ -67,11 +83,6 @@ private:
   /* Has the sprite data been loaded already? */
   bool built_texture;
 
-  /* Path to the load the sprite from */
-  std::string build_path_head;
-  std::string build_path_tail;
-  int32_t build_frames;
-
   /* The frame control color mode */
   uint8_t color_alpha;
   ColorMode color_mode;
@@ -85,6 +96,9 @@ private:
   uint8_t color_red;
   uint8_t color_green;
   uint8_t color_blue;
+
+  /* Data to build the Sprite from */
+  std::vector<SpriteData> data;
 
   /* Elapsed time of animation */
   uint16_t elapsed_time;
@@ -140,7 +154,7 @@ public:
   const static uint8_t kDEFAULT_OPACITY;  /* the default rendered alpha */
   const static uint8_t kDELTA_GREY_SCALE; /* Delta grey scale alpha */
 
-/*======================== PRIVATE FUNCTIONS ===============================*/
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns the angle, if one exists in the list of modifications */
   uint16_t parseAdjustments(std::vector<std::string> adjustments);
@@ -148,7 +162,7 @@ private:
   /* Sets the color modification with the texture */
   void setColorMod();
 
-/*======================= PROTECTED FUNCTIONS ==============================*/
+  /*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Contains the destructor implementation (so children can call it) */
   void clear();
@@ -156,7 +170,7 @@ protected:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const Sprite& source);
 
-/*========================= PUBLIC FUNCTIONS ===============================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
@@ -365,7 +379,7 @@ public:
   /* Updates the frames within the sprite */
   bool update(int cycle_time, bool skip_head = false);
 
-/*====================== PUBLIC STATIC FUNCTIONS ===========================*/
+  /*====================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Returns the degrees of the string identifier */
   static int getAngle(std::string identifier);
@@ -373,7 +387,7 @@ public:
   /* Returns the degrees of the angle enumerator */
   static int getAngle(RotatedAngle angle);
 
-/* ========================= OPERATOR FUNCTIONS =========================== */
+  /* ========================= OPERATOR FUNCTIONS =========================== */
 public:
   Sprite& operator=(const Sprite& source);
 };

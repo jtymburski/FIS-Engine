@@ -138,7 +138,7 @@ private:
 
   /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
-  bool buildSprite(std::string sprite_path, int32_t num_frames = 1);
+  // bool buildSprite(std::string sprite_path, int32_t num_frames = 1);
   bool buildSpriteLay(std::string sprite_path);
 
   /* Creates the render element as an action text*/

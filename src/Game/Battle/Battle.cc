@@ -650,6 +650,9 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   auto x = getActorX(outcome.actor);
   auto y = getActorY(outcome.actor);
 
+  /* Default beginning delay amount for processing */
+  int32_t delay_amount = 25;
+
   /* Create the render element sprite */
   if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE) ||
      event->getCurrAction()->actionFlag(ActionFlags::ALTER) ||
@@ -662,6 +665,10 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
     if(skill && action)
     {
       Sprite* animation = event->getCurrSkill()->getAnimation();
+
+      /* Increase the delay by the Sprite's total animation time */
+      if(animation)
+        delay_amount += animation->getSize() * animation->getAnimationTime();
 
       if(action->actionFlag(ActionFlags::INFLICT) && !animation)
         animation = display_data->getPlepAilment(action->getAilment());
@@ -676,10 +683,14 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
     auto type = event->getCurrAction()->getAilment();
     playInflictionSound(type);
     outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
+
+    /* Increase the delay by the flashing amount of time */
+    delay_amount += 100;
   }
   else
   {
     eh->triggerSound(Sound::kID_SOUND_BTL_PLEP, SoundChannels::TRIGGERS);
+    delay_amount += 100;
   }
 
   /* Set the next state based on the action flag */
@@ -690,7 +701,8 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
     outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
 
-  addDelay(150, true);
+  /* Add the delay to the buffer, based on the speed mode of the Battle */
+  addDelay(delay_amount, true);
 }
 
 void Battle::outcomeStateDamageValue(ActorOutcome& outcome)

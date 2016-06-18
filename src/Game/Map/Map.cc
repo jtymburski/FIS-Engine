@@ -373,7 +373,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     drop_item = (id >= (EnumDb::kBASE_ID_ITEMS + EnumDb::kMAX_COUNT_ITEMS));
 
   /* Check if it's base */
-  if(data.getElement(kFILE_CLASSIFIER + 1) == "base" && 
+  if(data.getElement(kFILE_CLASSIFIER + 1) == "base" &&
      (!from_save || drop_item))
   {
     base_id = data.getDataInteger();
@@ -636,7 +636,7 @@ bool Map::changeMode(MapMode mode)
 
   return allow;
 }
-  
+
 /* Returns the color mode from the active set of data */
 ColorMode Map::getColorMode()
 {
@@ -1146,7 +1146,7 @@ void Map::initiateThingInteraction(MapPerson* initiator)
     }
   }
 }
-  
+
 /* Returns if the color is currently in a transition status */
 bool Map::isColorTransitioning()
 {
@@ -1455,7 +1455,7 @@ bool Map::saveTileSet(
 
   return success;
 }
-  
+
 /* Sets and updates the color mode as per input and status available */
 void Map::setColorMode(ColorMode mode)
 {
@@ -1965,14 +1965,14 @@ void Map::updateTileSize()
     viewport.setTileSize(tile_width, tile_height);
   }
 }
-  
+
 /* Zoom trigger */
 void Map::zoom(uint16_t tile_size)
 {
   if(tile_size > 0)
     zoom_size = tile_size;
 }
-  
+
 /* Zoom trigger */
 void Map::zoomRestore()
 {
@@ -2527,7 +2527,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     {
       //bool enable = !tile_sprites[0]->isGreyScale();
       for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
-        (*i)->setColorMode(ColorMode::COLORING); 
+        (*i)->setColorMode(ColorMode::COLORING);
     }
     /* Test: Pause dialog */
     else if(event.keysym.sym == SDLK_p)
