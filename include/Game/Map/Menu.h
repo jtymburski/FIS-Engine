@@ -15,8 +15,6 @@
 
 #include <SDL2/SDL.h>
 
-#include "EnumFlags.h"
-#include "Helpers.h"
 #include "Game/Battle/BattleDisplayData.h"
 #include "Game/Battle/BattleActor.h"
 #include "Game/EventHandler.h"
@@ -26,7 +24,7 @@
 #include "Game/Save.h"
 #include "Options.h"
 #include "Sprite.h"
-#include "Box.h"
+#include "Window.h"
 
 /* Enumerated MenuType */
 enum class MenuType
@@ -181,30 +179,6 @@ struct TitleElement
 
   /* Enumerated type */
   MenuType menu_type;
-};
-
-struct Window
-{
-  Window()
-      : alpha{0},
-        point{Coordinate(0, 0)},
-        status{WindowStatus::OFF},
-        backdrop{nullptr} {};
-
-  /* Current alpha for rendering the window */
-  uint8_t alpha;
-
-  /* Resting point for the Window */
-  Coordinate point;
-
-  /* The location of the Window */
-  Box location;
-
-  /* Enumerated status of the Window */
-  WindowStatus status;
-
-  /* Window background */
-  Frame* backdrop;
 };
 
 ENUM_FLAGS(MenuState)

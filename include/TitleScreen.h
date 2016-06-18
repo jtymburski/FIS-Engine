@@ -18,6 +18,7 @@
 #include "SoundHandler.h"
 #include "Sprite.h"
 #include "Text.h"
+#include "Window.h"
 
 #define TITLE_SKIP
 
@@ -41,7 +42,7 @@ private:
    * usage */
   MenuItems action;
 
-  /* The background frame to render */
+  /* TODO The background frame to render */
   Sprite background; // TODO: Fix - base
   float rotate1;
   Sprite background2; // TODO: Remove - temporary - planet

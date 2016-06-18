@@ -1,6 +1,6 @@
 /*******************************************************************************
-* Class Name: RenderElement
-* Date Created: June 22, 2015
+* Class Name: Window
+* Date Created: June 18, 2016
 * Inheritance: None
 * Description:
 *
@@ -13,8 +13,33 @@
 * ----
 *****************************************************************************/
 
-#ifndef CLASSNAME_H
-#define CLASSNAME_H
+#ifndef WINDOW_H
+#define WINDOW_H
+
+struct Window
+{
+  Window()
+      : alpha{0},
+        point{Coordinate(0, 0)},
+        status{WindowStatus::OFF},
+        backdrop{nullptr} {};
+
+  /* Current alpha for rendering the window */
+  uint8_t alpha;
+
+  /* Resting point for the Window */
+  Coordinate point;
+
+  /* The location of the Window */
+  Box location;
+
+  /* Enumerated status of the Window */
+  WindowStatus status;
+
+  /* Window background */
+  Frame* backdrop;
+};
+
 
 class ClassName
 {
@@ -56,4 +81,4 @@ public:
 
 };
 
-#endif //CLASSNAME_H
+#endif //WINDOW_H
