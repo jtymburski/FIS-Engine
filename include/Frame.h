@@ -10,15 +10,18 @@
 #ifndef FRAME_H
 #define FRAME_H
 
+#include <cmath>
 #include <cstdio>
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <string>
 #include <vector>
-#include <cmath>
 
 #include "Helpers.h"
+
+/* PI */
+#define PI 3.14159265359
 
 /* Class for frame handling */
 class Frame

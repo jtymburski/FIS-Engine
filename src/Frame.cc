@@ -1501,8 +1501,8 @@ bool Frame::renderHexagon(Coordinate start, int32_t w, SDL_Renderer* renderer)
   if(w % 2 != 0)
     w -= 1;
 
-  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
-  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto cos60 = std::cos(60 * PI / 180.0);
+  auto sin60 = std::sin(60 * PI / 180.0);
   auto l = (int32_t)std::round(w / (1 + 2 * cos60));
   auto h = (int32_t)std::round(l * sin60);
 
@@ -1531,8 +1531,8 @@ bool Frame::renderHexagonBorder(Coordinate start, int32_t w,
   if(w % 2 != 0)
     w -= 1;
 
-  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
-  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto cos60 = std::cos(60 * PI / 180.0);
+  auto sin60 = std::sin(60 * PI / 180.0);
   auto l = (int32_t)std::round(w / (1 + 2 * cos60));
   auto h = (int32_t)std::round(l * sin60);
 
@@ -1573,8 +1573,8 @@ bool Frame::renderTrapezoidNormalTop(Coordinate start, int32_t l,
   if(l == 0 || renderer == nullptr)
     return false;
 
-  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
-  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto cos60 = std::cos(60 * PI / 180.0);
+  auto sin60 = std::sin(60 * PI / 180.0);
 
   auto alpha = (int32_t)std::round(cos60 * l);
   auto height = (int32_t)std::round(sin60 * l);
@@ -1604,8 +1604,8 @@ bool Frame::renderTrapezoidNormalTopBorder(Coordinate start, int32_t l,
   if(l == 0 || renderer == nullptr)
     return false;
 
-  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
-  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto cos60 = std::cos(60 * PI / 180.0);
+  auto sin60 = std::sin(60 * PI / 180.0);
 
   auto alpha = (int32_t)std::round(cos60 * l);
   auto height = (int32_t)std::round(sin60 * l);
@@ -1651,8 +1651,8 @@ bool Frame::renderTrapezoidNormalBottom(Coordinate start, int32_t l,
   if(l == 0 || renderer == nullptr)
     return false;
 
-  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
-  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto cos60 = std::cos(60 * PI / 180.0);
+  auto sin60 = std::sin(60 * PI / 180.0);
 
   auto alpha = (int32_t)std::round(cos60 * l);
   auto height = (int32_t)std::round(sin60 * l);
@@ -1684,8 +1684,8 @@ bool Frame::renderTrapezoidNormalBottomBorder(Coordinate start, int32_t l,
   if(l == 0 || renderer == nullptr)
     return false;
 
-  auto cos60 = std::cos(60 * 3.14159265 / 180.0);
-  auto sin60 = std::sin(60 * 3.14159265 / 180.0);
+  auto cos60 = std::cos(60 * PI / 180.0);
+  auto sin60 = std::sin(60 * PI / 180.0);
 
   auto alpha = (int32_t)std::round(cos60 * l);
   auto height = (int32_t)std::round(sin60 * l);
@@ -1769,9 +1769,9 @@ bool Frame::renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
 {
   orig_exp_pc = 0.25;
 
-  double cos60 = std::cos(60 * 3.14159265358 / 180.0);
-  double sin60 = std::sin(60 * 3.14159265358 / 180.0);
-  double tan30 = std::tan(30.0 * 3.14159265358 / 180.0);
+  double cos60 = std::cos(60 * PI / 180.0);
+  double sin60 = std::sin(60 * PI / 180.0);
+  double tan30 = std::tan(30.0 * PI / 180.0);
 
   auto l = (int32_t)std::round(w / (1 + 2 * cos60));
   auto h = (int32_t)std::round(l * sin60);
@@ -1885,7 +1885,7 @@ bool Frame::renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,
 bool Frame::renderExpHexBlank(Coordinate start, uint32_t w,
                               SDL_Renderer* renderer)
 {
-  // double cos60 = std::cos(60 * 3.14159265358 / 180.0);
+  // double cos60 = std::cos(60 * PI / 180.0);
   auto inset = (int32_t)std::round(w * 0.15);
 
   /*  OUTER HEXAGON

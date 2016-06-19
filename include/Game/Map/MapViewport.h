@@ -58,10 +58,23 @@ private:
   /* Travel to new point */
   bool travel;
 
+  /* Vibration handling */
+  bool vibrating;
+  uint16_t vib_delta_deg; /* delta degrees per 1000 ms */
+  uint16_t vib_peak_x;
+  uint16_t vib_peak_y;
+  uint32_t vib_time_peak;
+  uint32_t vib_time_total;
+
   /*------------------- Constants -----------------------*/
   const static int kMIN_HEIGHT; /* Minimum viewport height, in pixels */
   const static int kMIN_WIDTH;  /* Minimum viewport length, in pixels */
   const static int kTRAVEL_DIFF; /* Differential for travelling */
+  const static uint16_t kVIB_DEG_DEFAULT; /* Vibrate degree delta default */
+  const static uint32_t kVIB_PEAK_DEFAULT; /* Vibrate peak time default */
+  const static uint32_t kVIB_TOTAL_DEFAULT; /* Vibrate total time default */
+  const static uint16_t kVIB_X_DEFAULT; /* Vibrate peak x default */
+  const static uint16_t kVIB_Y_DEFAULT; /* Vibrate peak y default */
 
   /*========================= PUBLIC FUNCTIONS ===============================*/
 public:

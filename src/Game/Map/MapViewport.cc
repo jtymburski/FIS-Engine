@@ -15,25 +15,46 @@
 const int MapViewport::kMIN_HEIGHT = 1;
 const int MapViewport::kMIN_WIDTH = 1;
 const int MapViewport::kTRAVEL_DIFF = 40;
+const uint16_t MapViewport::kVIB_DEG_DEFAULT = 360;
+const uint32_t MapViewport::kVIB_PEAK_DEFAULT = 4000;
+const uint32_t MapViewport::kVIB_TOTAL_DEFAULT = 5000;
+const uint16_t MapViewport::kVIB_X_DEFAULT = 100;
+const uint16_t MapViewport::kVIB_Y_DEFAULT = 0;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
+/*
+ * Description: Default constructor. Just sets up the viewport with blank data.
+ *
+ * Inputs: none
+ */
 MapViewport::MapViewport()
 {
   clear();
 }
 
+/*
+ * Description: Constructor with width and height of viewport along with tile
+ *              width and tile height.
+ *
+ * Inputs: uint16_t width - width in pixels of the game viewport
+ *         uint16_t height - height in pixels of the game viewport
+ *         uint16_t tile_width - width of map tile in pixels
+ *         uint16_t tile_height - height of map tile in pixels
+ */
 MapViewport::MapViewport(uint16_t width, uint16_t height,
                          uint16_t tile_width, uint16_t tile_height)
            : MapViewport()
 {
-  /* Set the new parameters */
   setSize(width, height);
   setTileSize(tile_width, tile_height);
 }
 
+/*
+ * Description: Destructor function
+ */
 MapViewport::~MapViewport()
 {
   clear();
@@ -43,6 +64,12 @@ MapViewport::~MapViewport()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/*
+ * Description: Clears all data and resets it within the viewport.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapViewport::clear()
 {
   travel = false;
@@ -54,72 +81,135 @@ void MapViewport::clear()
 
   /* Reset the lock on status */
   lockOn(0.0, 0.0);
+
+  /* Reset the vibrating status */
+  vibrating = false;
+  vib_delta_deg = kVIB_DEG_DEFAULT;
+  vib_peak_x = kVIB_X_DEFAULT;
+  vib_peak_y = kVIB_Y_DEFAULT;
+  vib_time_peak = kVIB_PEAK_DEFAULT;
+  vib_time_total = kVIB_TOTAL_DEFAULT;
 }
-  
-/* Clears out the information in the class and sets it to default */
+
+/*
+ * Description: Clears out the information in the class and sets it to default.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapViewport::clearLocation()
 {
   x = 0.0;
   y = 0.0;
 }
 
-/* Gets the size of the viewport and related information */
+/*
+ * Description: Gets the height of the game viewport in pixels.
+ *
+ * Inputs: none
+ * Output: uint16_t - height in pixels
+ */
 uint16_t MapViewport::getHeight()
 {
   return height;
 }
- 
-/* Returns the lock on thing. Null if not locked on thing */
+
+/*
+ * Description: Returns the lock on thing. Null if not locked on thing.
+ *
+ * Inputs: none
+ * Output: MapThing* - the thing reference that is locked on
+ */
 MapThing* MapViewport::getLockThing()
 {
   return lock_on_thing;
 }
 
-/* Returns the lock on tile. Null if not locked on tile */
+/*
+ * Description: Returns the lock on tile. Null if not locked on tile.
+ *
+ * Inputs: none
+ * Output: Tile* - the tile reference that is locked on
+ */
 Tile* MapViewport::getLockTile()
 {
   return lock_on_tile;
 }
 
-/* Gets the size of the viewport and related information */
+/*
+ * Description: Gets the height of the map in pixels.
+ *
+ * Inputs: none
+ * Output: int - height in pixels
+ */
 int MapViewport::getMapHeight()
 {
   return map_height;
 }
 
-/* Gets the size of the viewport and related information */
+/*
+ * Description: Gets the width of the map in pixels.
+ *
+ * Inputs: none
+ * Output: int - width in pixels
+ */
 int MapViewport::getMapWidth()
 {
   return map_width;
 }
 
-/* Gets the size of the viewport and related information */
+/*
+ * Description: Gets the tile height of each tile captured by the viewport
+ *
+ * Inputs: none
+ * Output: uint16_t - height in pixels
+ */
 uint16_t MapViewport::getTileHeight()
 {
   return tile_height;
 }
 
-/* Gets the size of the viewport and related information */
+/*
+ * Description: Gets the tile width of each tile captured by the viewport
+ *
+ * Inputs: none
+ * Output: uint16_t - width in pixels
+ */
 uint16_t MapViewport::getTileWidth()
 {
   return tile_width;
 }
 
-/* Gets the size of the viewport and related information */
+/*
+ * Description: Gets the width of the game viewport in pixels.
+ *
+ * Inputs: none
+ * Output: uint16_t - width in pixels
+ */
 uint16_t MapViewport::getWidth()
 {
   return width;
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Gets the X location relative to the map in pixels of the top
+ *              left location of the viewport.
+ *
+ * Inputs: none
+ * Output: float - the X location decimal
+ */
 float MapViewport::getX()
 {
-  //int x_rounded = x * 10;
-  //return (x_rounded / 10.0);
   return x;
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer of the end x pixel location of the render
+ *              limit of the viewport relative to the map space
+ *
+ * Inputs: none
+ * Output: int - x pixel location on map for viewport end
+ */
 int MapViewport::getXEnd()
 {
   /* Perform the end x coordinate calculation */
@@ -134,7 +224,13 @@ int MapViewport::getXEnd()
   return end_x;
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer of the start x pixel location of the render
+ *              limit of the viewport relative to the map space
+ *
+ * Inputs: none
+ * Output: int - x pixel location on map for viewport start
+ */
 int MapViewport::getXStart()
 {
   int start_x = (((int)x / tile_width) * tile_width) - tile_width;
@@ -146,27 +242,51 @@ int MapViewport::getXStart()
   return start_x;
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer representing the x pixel end location of the
+ *              viewport in map tiles according to the internally set variable
+ *              sizes.
+ *
+ * Inputs: none
+ * Output: uint16_t - the number of tiles at the x end
+ */
 uint16_t MapViewport::getXTileEnd()
 {
   return (getXEnd() / tile_width);
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer representing the x pixel start location of
+ *              the viewport in map tiles according to the internally set
+ *              variable sizes.
+ *
+ * Inputs: none
+ * Output: uint16_t - the number of tiles at the x start
+ */
 uint16_t MapViewport::getXTileStart()
 {
   return (getXStart() / tile_width);
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Gets the Y location relative to the map in pixels of the top
+ *              left location of the viewport.
+ *
+ * Inputs: none
+ * Output: float - the Y location decimal
+ */
 float MapViewport::getY()
 {
-  //int y_rounded = y * 10;
-  //return (y_rounded / 10.0);
   return y;
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer of the end y pixel location of the render
+ *              limit of the viewport relative to the map space
+ *
+ * Inputs: none
+ * Output: int - y pixel location on map for viewport end
+ */
 int MapViewport::getYEnd()
 {
   /* Perform the end y coordinate calculation */
@@ -181,7 +301,13 @@ int MapViewport::getYEnd()
   return end_y;
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer of the start y pixel location of the render
+ *              limit of the viewport relative to the map space
+ *
+ * Inputs: none
+ * Output: int - y pixel location on map for viewport start
+ */
 int MapViewport::getYStart()
 {
   int start_y = (((int)y / tile_height) * tile_height) - tile_height;
@@ -193,24 +319,52 @@ int MapViewport::getYStart()
   return start_y;
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer representing the y pixel end location of the
+ *              viewport in map tiles according to the internally set variable
+ *              sizes.
+ *
+ * Inputs: none
+ * Output: uint16_t - the number of tiles at the y end
+ */
 uint16_t MapViewport::getYTileEnd()
 {
   return (getYEnd() / tile_height);
 }
 
-/* Gets the ranges for the map of the valid visible range and the offset */
+/*
+ * Description: Returns an integer representing the y pixel start location of
+ *              the viewport in map tiles according to the internally set
+ *              variable sizes.
+ *
+ * Inputs: none
+ * Output: uint16_t - the number of tiles at the y start
+ */
 uint16_t MapViewport::getYTileStart()
 {
   return (getYStart() / tile_height);
 }
-  
-/* Returns if travelling */
+
+/*
+ * Description: Returns if the viewport is in a traveling state.
+ *
+ * Inputs: none
+ * Output: bool - true if the viewport is moving
+ */
 bool MapViewport::isTravelling()
 {
   return travel;
 }
 
+/*
+ * Description: Modifies the lock on state of the viewport to a new location
+ *              based on the x and y location relative to the map pixels.
+ *
+ * Inputs: float x - the x location in pixels to lock
+ *         float y - the y location in pixels to lock
+ *         bool travel - true to travel to new location. default true
+ * Output: bool - true if set was successful
+ */
 bool MapViewport::lockOn(float x, float y, bool travel)
 {
   if((static_cast<int>(x) == 0 && static_cast<int>(y) == 0) ||
@@ -221,8 +375,8 @@ bool MapViewport::lockOn(float x, float y, bool travel)
     /* Ensure no repeat call */
     if(x != lock_on_x || y != lock_on_y)
     {
-      lock_on_thing = NULL;
-      lock_on_tile = NULL;
+      lock_on_thing = nullptr;
+      lock_on_tile = nullptr;
       lock_on_x = x;
       lock_on_y = y;
       lock_on = PIXEL;
@@ -234,12 +388,20 @@ bool MapViewport::lockOn(float x, float y, bool travel)
   return false;
 }
 
+/*
+ * Description: Modifies the lock on state of the viewport to a new location
+ *              based on a reference map thing object
+ *
+ * Inputs: MapThing* thing - the reference thing pointer
+ *         bool travel - true to travel to new location. default true
+ * Output: bool - true if set was successful
+ */
 bool MapViewport::lockOn(MapThing* thing, bool travel)
 {
-  if(thing != NULL && thing != lock_on_thing)
+  if(thing != nullptr && thing != lock_on_thing)
   {
     lock_on_thing = thing;
-    lock_on_tile = NULL;
+    lock_on_tile = nullptr;
     lock_on_x = 0.0;
     lock_on_y = 0.0;
     lock_on = THING;
@@ -250,11 +412,19 @@ bool MapViewport::lockOn(MapThing* thing, bool travel)
   return false;
 }
 
+/*
+ * Description: Modifies the lock on state of the viewport to a new location
+ *              based on a reference map tile object
+ *
+ * Inputs: Tile* map_tile - the reference tile pointer
+ *         bool travel - true to travel to new location. default true
+ * Output: bool - true if set was successful
+ */
 bool MapViewport::lockOn(Tile* map_tile, bool travel)
 {
-  if(map_tile != NULL && map_tile != lock_on_tile)
+  if(map_tile != nullptr && map_tile != lock_on_tile)
   {
-    lock_on_thing = NULL;
+    lock_on_thing = nullptr;
     lock_on_tile = map_tile;
     lock_on_x = 0.0;
     lock_on_y = 0.0;
@@ -266,6 +436,14 @@ bool MapViewport::lockOn(Tile* map_tile, bool travel)
   return false;
 }
 
+/*
+ * Description: Sets the map size the viewport is handling in tiles.
+ *
+ * Inputs: uint16_t tile_width - the map section width in tiles
+ *         uint16_t tile_height - the map section height in tiles
+ *         int map_index - the map index of the section being viewed
+ * Output: none
+ */
 void MapViewport::setMapSize(uint16_t tile_width, uint16_t tile_height,
                              int map_index)
 {
@@ -285,10 +463,15 @@ void MapViewport::setMapSize(uint16_t tile_width, uint16_t tile_height,
 
   /* Set the map index */
   this->map_index = map_index;
-  //x = 0.0;
-  //y = 0.0;
 }
 
+/*
+ * Description: Sets the viewport width and height in pixels
+ *
+ * Inputs: uint16_t pixel_width - the pixel viewport width (aka resolution)
+ *         uint16_t pixel_height - the pixel viewport height (aka resolution)
+ * Output: none
+ */
 void MapViewport::setSize(uint16_t pixel_width, uint16_t pixel_height)
 {
   /* Set the new width */
@@ -304,6 +487,15 @@ void MapViewport::setSize(uint16_t pixel_width, uint16_t pixel_height)
     height = kMIN_HEIGHT;
 }
 
+/*
+ * Description: Sets the individual tile width and height of the map. This
+ *              correlates with map width and height of tiles to determine
+ *              overall map size
+ *
+ * Inputs: uint16_t pixel_width - the width of the tile in pixels
+ *         uint16_t pixel_height - the height of the tile in pixels
+ * Output: none
+ */
 void MapViewport::setTileSize(uint16_t pixel_width, uint16_t pixel_height)
 {
   /* Set the new width */
@@ -320,13 +512,26 @@ void MapViewport::setTileSize(uint16_t pixel_width, uint16_t pixel_height)
     tile_height = kMIN_HEIGHT;
   map_height = map_height_tiles * tile_height;
 }
-  
-/* Sets if the movement should travel to the new location */
+
+/*
+ * Description: Sets if the movement should travel between locations on drastic
+ *              changes.
+ *
+ * Inputs: bool travel - true to travel between location changes
+ * Output: none
+ */
 void MapViewport::setToTravel(bool travel)
 {
   this->travel = travel;
 }
 
+/*
+ * Description: Updates the viewport and all pertinent information. Controls
+ *              visualization of the map data for the game view
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapViewport::update()
 {
   float center_x = 0.0;
@@ -334,6 +539,8 @@ void MapViewport::update()
   float delta_x = 0.0;
   float delta_y = 0.0;
   bool modify = false;
+
+  //std::cout << sin(PI) << "," << sin(PI/2.0) << std::endl;
 
   /* If the locked on information is a coordinate pair (x,y) */
   if(lock_on == PIXEL)
@@ -355,9 +562,9 @@ void MapViewport::update()
   /* Else if the locked on information is a tile */
   else if(lock_on == TILE)
   {
-    center_x = lock_on_tile->getX() * lock_on_tile->getWidth() + 
+    center_x = lock_on_tile->getX() * lock_on_tile->getWidth() +
                (lock_on_tile->getWidth() / 2.0);
-    center_y = lock_on_tile->getY() * lock_on_tile->getHeight() + 
+    center_y = lock_on_tile->getY() * lock_on_tile->getHeight() +
                (lock_on_tile->getHeight() / 2.0);
     modify = true;
   }
@@ -409,7 +616,7 @@ void MapViewport::update()
       float diff_y_abs = diff_y;
       if(diff_y < 0)
         diff_y_abs = -diff_y;
-      
+
       /* Determine if out of range */
       if(diff_x_abs > kTRAVEL_DIFF || diff_y_abs > kTRAVEL_DIFF)
       {
@@ -442,7 +649,7 @@ void MapViewport::update()
         travel = false;
       }
     }
-    
+
     /* Add differential */
     this->x += diff_x;
     this->y += diff_y;
