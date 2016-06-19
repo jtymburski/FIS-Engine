@@ -801,6 +801,29 @@ Direction MapPerson::getDirection()
 }
 
 /*
+ * Description: Returns the first valid frame pointer. NULL if none found. This
+ *              overrides the default map thing functionality.
+ *
+ * Inputs: none
+ * Output: TileSprite* - the first valid frame reference
+ */
+TileSprite* MapPerson::getFrameValid()
+{
+  for(uint32_t i = 0; i < states.size(); i++)
+  {
+    for(uint32_t j = 0; j < states[i].size(); j++)
+    {
+      TileSprite* found_sprite = nullptr;
+      if(states[i][j] != nullptr)
+        found_sprite = states[i][j]->getSpriteValid();
+      if(found_sprite != nullptr)
+        return found_sprite;
+    }
+  }
+  return nullptr;
+}
+
+/*
  * Description: This is a reimplemented call from MapThing, gets the actual
  *              move request which will be the last key pressed by the
  *              keyboard, since it's utilized as a stack.
@@ -880,7 +903,7 @@ SpriteMatrix* MapPerson::getState(SurfaceClassifier surface,
   int dir_index = dirToInt(direction);
 
   /* Check if it's a base and the frames from it should be used instead */
-  if(include_base && base != NULL &&
+  if(include_base && base != nullptr &&
      (base_category == ThingBase::PERSON || base_category == ThingBase::NPC))
   {
     MapPerson* ref_base = static_cast<MapPerson*>(base);
@@ -898,7 +921,7 @@ SpriteMatrix* MapPerson::getState(SurfaceClassifier surface,
       return states[surface_index][dir_index];
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /*
@@ -1127,6 +1150,21 @@ bool MapPerson::setBase(MapThing* base)
   }
 
   return success;
+}
+
+/*
+ * Description: Sets the color mode of all sprites within the matrix of the
+ *              thing. Virtualized for the purpose of children.
+ *
+ * Inputs: ColorMode mode - the mode of how to color the thing
+ * Output: none
+ */
+void MapPerson::setColorMode(ColorMode mode)
+{
+  for(uint32_t i = 0; i < states.size(); i++)
+    for(uint32_t j = 0; j < states[i].size(); j++)
+      if(states[i][j] != nullptr)
+        states[i][j]->setColorMode(mode);
 }
 
 /*
@@ -1364,6 +1402,15 @@ Floatinate MapPerson::update(int cycle_time,
       }
     }
   }
+  /* Base Person */
+  else if(base == nullptr)
+  {
+    for(uint32_t i = 0; i < states.size(); i++)
+      for(uint32_t j = 0; j < states[i].size(); j++)
+        if(states[i][j] != nullptr)
+          states[i][j]->update(cycle_time, false, true);
+  }
+  /* Not active or tiles not set but instant thing */
   else
   {
     delta_move = MapThing::update(cycle_time, tile_set, active_map);

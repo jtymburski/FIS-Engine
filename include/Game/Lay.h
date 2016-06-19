@@ -105,6 +105,9 @@ public:
   /* Evaluates and returns the state of a given LayState flag */
   bool getFlag(const LayState& test_flag);
 
+  /* Returns the reference sprite within the lay */
+  Sprite* getLaySprite();
+
   /* Renders the lay */
   bool render(SDL_Renderer* renderer);
 

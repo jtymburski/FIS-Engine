@@ -164,6 +164,9 @@ public:
   /* Returns the direction that this person is travelling in */
   Direction getDirection();
 
+  /* Returns the map frames that's defined */
+  TileSprite* getFrameValid();
+
   /* Returns the move request in the class (virtual reimplemented) */
   Direction getMoveRequest();
 
@@ -218,6 +221,9 @@ public:
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
+
+  /* Sets the color mode of all sprites within the thing */
+  void setColorMode(ColorMode mode); // TODO
 
   /* Sets if the person movement is frozen at the current tile */
   void setMoveFreeze(bool freeze);

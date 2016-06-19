@@ -363,7 +363,7 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
           SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
         else
           SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-        //SDL_SetTextureAlphaMod(texture, this->alpha - color_alpha);
+        SDL_SetTextureAlphaMod(texture, this->alpha - color_alpha);
         success &= (SDL_RenderCopyEx(renderer, texture, src_rect, &rect, 0,
                                      nullptr, flip) == 0);
 
@@ -389,7 +389,7 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
           SDL_SetTextureBlendMode(texture_grey, SDL_BLENDMODE_NONE);
         else
           SDL_SetTextureBlendMode(texture_grey, SDL_BLENDMODE_BLEND);
-        //SDL_SetTextureAlphaMod(texture_grey, this->alpha - color_alpha);
+        SDL_SetTextureAlphaMod(texture_grey, this->alpha - color_alpha);
         success &= (SDL_RenderCopyEx(renderer, texture_grey, src_rect, &rect, 0,
                                      nullptr, flip) == 0);
 

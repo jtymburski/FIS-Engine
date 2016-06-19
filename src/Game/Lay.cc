@@ -304,6 +304,17 @@ bool Lay::getFlag(const LayState& test_flag)
 }
 
 /*
+ * Description: Returns the reference sprite within the lay.
+ *
+ * Inputs: none
+ * Output: Sprite* - lay sprite
+ */
+Sprite* Lay::getLaySprite()
+{
+  return lay_sprite;
+}
+
+/*
  * Description: Renders the lay at its given position. If the lay flag
  *              is set to screen_size, the configuration screen width will be
  *              used as the size to render the lay.
@@ -347,7 +358,7 @@ bool Lay::render(SDL_Renderer* renderer)
 bool Lay::render(SDL_Renderer* renderer, Coordinate player_position)
 {
   /* Check to see if the range is within bounds */
-  if(!getFlag(LayState::RANGE_BOUND) || 
+  if(!getFlag(LayState::RANGE_BOUND) ||
      Helpers::isWithinRange(player_position, range_top_left, range_bot_right))
   {
     return render(renderer);

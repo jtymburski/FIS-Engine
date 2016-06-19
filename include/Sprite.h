@@ -323,7 +323,7 @@ public:
   void setColorRed(uint8_t color);
 
   /* Sets the color information handling */
-  bool setColorMode(ColorMode mode); // TODO
+  bool setColorMode(ColorMode mode);
 
   /* Asserts the direction is forward for when accessing the linked list */
   bool setDirectionForward();
@@ -377,7 +377,7 @@ public:
   void unsetSourceRect();
 
   /* Updates the frames within the sprite */
-  bool update(int cycle_time, bool skip_head = false);
+  bool update(int cycle_time, bool skip_head = false, bool color_only = false);
 
   /*====================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:

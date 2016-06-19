@@ -302,7 +302,8 @@ enum class ColorMode
   GREY,
   GREYING,
   COLORING,
-  COLOR
+  COLOR,
+  INVALID
 };
 
 /*

@@ -133,7 +133,10 @@ public:
   /* Clears all information from the class (including deleting necessary
    * pointers) */
   virtual void clear();
-
+  
+  /* Returns the map frames that's defined */
+  TileSprite* getFrameValid();
+  
   /* Returns the inactive time before returning down the state path */
   int getInactiveTime() const;
 
@@ -167,6 +170,9 @@ public:
 
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
+
+  /* Sets the color mode of all sprites within the thing */
+  void setColorMode(ColorMode mode);
 
   /* Sets the inactive time before returning down the state path (ms) */
   void setInactiveTime(int time);

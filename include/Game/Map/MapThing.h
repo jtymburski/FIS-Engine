@@ -250,7 +250,7 @@ public:
   TileSprite* getFrameMain(Tile* tile);
   TileSprite* getFramePrevious(Tile* tile);
   std::vector<std::vector<TileSprite*>> getFrames();
-  TileSprite* getFrameValid();
+  virtual TileSprite* getFrameValid();
 
   /* Returns the connected game object ID */
   int getGameID() const;

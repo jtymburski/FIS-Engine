@@ -647,8 +647,31 @@ ColorMode Map::getColorMode()
     found_sprite = tile_sprites.front();
 
   /* Check map things */
-  //if(found_sprite == nullptr && base_things.size() > 0)
-  // TODO
+  for(uint32_t i = 0; found_sprite == nullptr && i < base_things.size(); i++)
+    found_sprite = base_things[i]->getFrameValid();
+
+  /* Check map persons / npcs */
+  for(uint32_t i = 0; found_sprite == nullptr && i < base_persons.size(); i++)
+    found_sprite = base_persons[i]->getFrameValid();
+
+  /* Check map items */
+  for(uint32_t i = 0; found_sprite == nullptr && i < base_items.size(); i++)
+    found_sprite = base_items[i]->getFrameValid();
+
+  /* Check map interactive objects */
+  for(uint32_t i = 0; found_sprite == nullptr && i < base_ios.size(); i++)
+    found_sprite = base_ios[i]->getFrameValid();
+
+  /* Check lay overs and unders */
+  for(uint32_t i = 0; found_sprite == nullptr && i < lay_overs.size(); i++)
+    found_sprite = lay_overs[i]->getLaySprite();
+  for(uint32_t i = 0; found_sprite == nullptr && i < lay_unders.size(); i++)
+    found_sprite = lay_unders[i]->getLaySprite();
+
+  /* Check the sprite if found */
+  if(found_sprite != nullptr)
+    return found_sprite->getColorMode();
+  return ColorMode::INVALID;
 }
 
 /* Returns the base interactive object, based on the ID */
@@ -1459,7 +1482,39 @@ bool Map::saveTileSet(
 /* Sets and updates the color mode as per input and status available */
 void Map::setColorMode(ColorMode mode)
 {
-  // TODO!
+  ColorMode curr_mode = getColorMode();
+
+  /* Check if change */
+  if(mode != ColorMode::INVALID && mode != curr_mode)
+  {
+    /* Tile Sprites */
+    for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
+      (*i)->setColorMode(mode);
+
+    /* Map Things */
+    for(auto i = base_things.begin(); i != base_things.end(); i++)
+      (*i)->setColorMode(mode);
+
+    /* Map Persons / NPCs */
+    for(auto i = base_persons.begin(); i != base_persons.end(); i++)
+      (*i)->setColorMode(mode);
+
+    /* Map Items */
+    for(auto i = base_items.begin(); i != base_items.end(); i++)
+      (*i)->setColorMode(mode);
+
+    /* Map Interactive Objects */
+    for(auto i = base_ios.begin(); i != base_ios.end(); i++)
+      (*i)->setColorMode(mode);
+
+    /* Lay overs and unders */
+    for(auto i = lay_overs.begin(); i != lay_overs.end(); i++)
+      if((*i)->getLaySprite() != nullptr)
+        (*i)->getLaySprite()->setColorMode(mode);
+    for(auto i = lay_unders.begin(); i != lay_unders.end(); i++)
+      if((*i)->getLaySprite() != nullptr)
+        (*i)->getLaySprite()->setColorMode(mode);
+  }
 }
 
 /* Changes the map section index - what is displayed */
@@ -2519,15 +2574,11 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     /* Test: trigger grey scale */
     if(event.keysym.sym == SDLK_g)
     {
-      //bool enable = !tile_sprites[0]->isGreyScale();
-      for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
-        (*i)->setColorMode(ColorMode::GREYING);
-    }
-    else if(event.keysym.sym == SDLK_h)
-    {
-      //bool enable = !tile_sprites[0]->isGreyScale();
-      for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
-        (*i)->setColorMode(ColorMode::COLORING);
+      ColorMode mode = getColorMode();
+      if(mode == ColorMode::GREY || mode == ColorMode::GREYING)
+        setColorMode(ColorMode::COLORING);
+      else
+        setColorMode(ColorMode::GREYING);
     }
     /* Test: Pause dialog */
     else if(event.keysym.sym == SDLK_p)
@@ -2661,12 +2712,14 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
 
       // delete convo;
     }
-    /* Test: Zoom back out */
+    /* Test: Zoom toggle */
     else if(event.keysym.sym == SDLK_z)
-      zoom();
-    /* Test: Zoom back in */
-    else if(event.keysym.sym == SDLK_x)
-      zoomRestore();
+    {
+      if(zoom_size != Helpers::getTileSize())
+        zoomRestore();
+      else
+        zoom();
+    }
     /* Test: Location of player */
     else if(event.keysym.sym == SDLK_l)
     {
@@ -3712,10 +3765,12 @@ bool Map::update(int cycle_time)
     tile_sprites[i]->update(cycle_time);
 
   /* Update the base things */
-  // for(uint16_t i = 0; i < ios.size(); i++)
-  //  base_ios[i]->update(cycle_time, tile_set);
+  for(uint32_t i = 0; i < base_ios.size(); i++)
+    base_ios[i]->update(cycle_time, tile_set);
   for(uint32_t i = 0; i < base_items.size(); i++)
     base_items[i]->update(cycle_time, tile_set);
+  for(uint32_t i = 0; i < base_persons.size(); i++)
+    base_persons[i]->update(cycle_time, tile_set);
   for(uint32_t i = 0; i < base_things.size(); i++)
     base_things[i]->update(cycle_time, tile_set);
 

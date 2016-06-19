@@ -144,6 +144,9 @@ public:
   /* Unsets the entire matrix of sprites in the matrix */
   void unsetSprites(bool delete_sprites = true);
 
+  /* Updates the frames within the sprite matrix */
+  bool update(int cycle_time, bool skip_head = false, bool color_only = false);
+
   /* Returns the width of the sprite matrix */
   uint16_t width() const;
 

@@ -171,7 +171,7 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
     {
       for(uint16_t j = 0; j < sprite_set->height(); j++)
       {
-        if(sprite_set->at(i, j) != NULL)
+        if(sprite_set->at(i, j) != nullptr)
         {
           /* Reset back to head */
           if(reset && !skip_head && !sprite_set->at(i, j)->isAtFirst())
@@ -1429,7 +1429,7 @@ std::vector<std::vector<TileSprite*>> MapThing::getFrames()
   std::vector<std::vector<TileSprite*>> set;
   SpriteMatrix* sprite_set = getMatrix();
 
-  if(sprite_set != NULL)
+  if(sprite_set != nullptr)
     set = sprite_set->getMatrix();
 
   return set;
@@ -1443,7 +1443,9 @@ std::vector<std::vector<TileSprite*>> MapThing::getFrames()
  */
 TileSprite* MapThing::getFrameValid()
 {
-  // TODO
+  if(sprite_set != nullptr)
+    return sprite_set->getSpriteValid();
+  return nullptr;
 }
 
 /*
@@ -2380,7 +2382,8 @@ bool MapThing::setBase(MapThing* base)
  */
 void MapThing::setColorMode(ColorMode mode)
 {
-  // TODO
+  if(sprite_set != nullptr)
+    sprite_set->setColorMode(mode);
 }
 
 /*

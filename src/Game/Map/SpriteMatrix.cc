@@ -17,7 +17,7 @@ const float SpriteMatrix::kBASE_FRAME_COUNT = 2.0;
 
 /*
  * Description: Base constructor function - initial clean setup
- * 
+ *
  * Inputs: none
  */
 SpriteMatrix::SpriteMatrix()
@@ -27,7 +27,7 @@ SpriteMatrix::SpriteMatrix()
 
 /*
  * Description: Constructor function - sets up the base tile sprites using
- *              a passed in matrix of sprites. This does take control of 
+ *              a passed in matrix of sprites. This does take control of
  *              deleting the sprites in the matrix, unless the sprites are
  *              removed during clean-up using a 'don't delete' flag.
  *
@@ -86,7 +86,7 @@ void SpriteMatrix::copySelf(const SpriteMatrix &source)
 
 /*
  * Description: Counts the number of valid sprites within the matrix. The
- *              definition of valid sprites is non-NULL and each TileSprite 
+ *              definition of valid sprites is non-NULL and each TileSprite
  *              has some frames set within it.
  *
  * Inputs: none
@@ -95,23 +95,23 @@ void SpriteMatrix::copySelf(const SpriteMatrix &source)
 uint16_t SpriteMatrix::countValidSprites()
 {
   uint16_t count = 0;
-  
+
   for(uint16_t i = 0; i < sprite_matrix.size(); i++)
     for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
       if(sprite_matrix[i][j] != NULL && sprite_matrix[i][j]->isFramesSet())
         count++;
-  
+
   return count;
 }
 
 /*
  * Description: Flips the string matrix of paths, based on the adjustment value.
- *              This takes in a horizontal flip (HF or hf), which flips all the 
- *              paths on the X direction over the middle or a vertical flip (VF 
- *              or vf), which flips all the paths on the Y direction over the 
+ *              This takes in a horizontal flip (HF or hf), which flips all the
+ *              paths on the X direction over the middle or a vertical flip (VF
+ *              or vf), which flips all the paths on the Y direction over the
  *              middle.
  *
- * Inputs: std::vector<std::vector<std::string>> original - the original 2D 
+ * Inputs: std::vector<std::vector<std::string>> original - the original 2D
  *             matrix of paths.
  *         std::vector<std::string> adjustments - adjustment codes for flipping
  * Output: std::vector<std::vector<std::string>> - returned flipped array
@@ -170,12 +170,12 @@ std::vector<std::vector<std::string>> SpriteMatrix::flipArray(
   return original;
 }
 
-/* 
+/*
  * Description: Finds a valid TileSprite in the matrix of sprites, stored
  *              within the matrix. If there are no sprites set, it will create
- *              a blank one and place it at the origin of the matrix. 
+ *              a blank one and place it at the origin of the matrix.
  * Note: Do not delete the pointer. It'll cause issues in the class.
- * 
+ *
  * Inputs: none
  * Output: TileSprite* - the sprite pointer found with data
  */
@@ -201,7 +201,7 @@ TileSprite* SpriteMatrix::getValidSprite()
     }
     i++;
   }
-    
+
   /* Ensure there is at least one valid frame */
   if(valid_sprite == NULL)
   {
@@ -212,11 +212,11 @@ TileSprite* SpriteMatrix::getValidSprite()
   return valid_sprite;
 }
 
-/* 
+/*
  * Description: Grow the matrix to be capable of addressing a sprite at
- *              the indicated size. If the matrix is already big enough, 
+ *              the indicated size. If the matrix is already big enough,
  *              nothing happens.
- * 
+ *
  * Inputs: uint32_t x - matrix X coordinate (horizontal)
  *         uint32_t y = matrix Y coordinate (vertical)
  * Output: none
@@ -268,9 +268,9 @@ void SpriteMatrix::growMatrix(uint16_t x, uint16_t y)
 }
 
 /*
- * Description: Removes sprite from the given matrix at the given X and Y 
+ * Description: Removes sprite from the given matrix at the given X and Y
  *              coordinate. If delete sprite boolean is true, sprite is also
- *              removed from memory. 
+ *              removed from memory.
  * Note: this does not check to make sure it's in range or resize matrix after
  *       removal.
  *
@@ -301,8 +301,8 @@ void SpriteMatrix::removeSprite(uint16_t x, uint16_t y, bool delete_sprite)
  *         std::string base_path - the base path for resources
  * Output: bool - true if the add was successful
  */
-bool SpriteMatrix::addFileInformation(XmlData data, int file_index, 
-                                      SDL_Renderer* renderer, 
+bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
+                                      SDL_Renderer* renderer,
                                       std::string base_path)
 {
   bool success = true;
@@ -312,20 +312,20 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
 
   /* Only proceed if there are elements within the sprites element */
   /*--------------------- MATRIX SPRITE -----------------*/
-  if(elements.size() == 2 && elements.front() == "multiple" && 
+  if(elements.size() == 2 && elements.front() == "multiple" &&
                              data.getKey(file_index) == "range")
   {
     uint32_t x_max = 0;
     uint32_t x_min = 0;
     uint32_t y_max = 0;
     uint32_t y_min = 0;
-    bool good_data = Helpers::parseRange(data.getKeyValue(file_index), 
+    bool good_data = Helpers::parseRange(data.getKeyValue(file_index),
                                          x_min, x_max, y_min, y_max);
 
     /* Check what the element inside the multiple encapsulator is */
     if(good_data && base_tag.front() == "path")
     {
-      std::vector<std::vector<std::string>> str_matrix = 
+      std::vector<std::vector<std::string>> str_matrix =
                          Helpers::frameSeparator(data.getDataString(&success));
 
       /* Modify x_max and y_max if matrix of strings is not large enough */
@@ -345,7 +345,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
           else if(sprite_matrix[i][j]->isFramesSet())
             sprite_matrix[i][j]->removeAll();
           data.addDataOfType(str_matrix[i-x_min][j-y_min]);
-          sprite_matrix[i][j]->addFileInformation(data, file_index + 1, 
+          sprite_matrix[i][j]->addFileInformation(data, file_index + 1,
                                                   renderer, base_path, true);
         }
       }
@@ -354,7 +354,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
     {
       /* Ensure the range is within the range of existing sprites */
       growMatrix(x_max, y_max);
-      
+
       /* Fill the range with the passability indicated */
       for(uint32_t i = x_min; i <= x_max; i++)
       {
@@ -362,7 +362,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
         {
           if(sprite_matrix[i][j] == NULL)
             setSprite(new TileSprite(*valid_sprite), i, j);
-          
+
           sprite_matrix[i][j]->resetPassability();
           sprite_matrix[i][j]->addPassability(data.getDataString());
         }
@@ -370,15 +370,15 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
     }
   }
   /*------------------PATH RANGE SPRITE -----------------*/
-  else if(elements.size() == 3 && elements.front() == "x" && 
+  else if(elements.size() == 3 && elements.front() == "x" &&
                                   elements[1] == "y")
   {
     uint32_t index = 0;
-    
+
     /* Get the x and y coordinate */
-    std::vector<std::vector<uint16_t>> x_set = 
+    std::vector<std::vector<uint16_t>> x_set =
                           Helpers::parseRangeSet(data.getKeyValue(file_index));
-    std::vector<std::vector<uint16_t>> y_set = 
+    std::vector<std::vector<uint16_t>> y_set =
                       Helpers::parseRangeSet(data.getKeyValue(file_index + 1));
 
     /* Run through all the coordinates */
@@ -386,7 +386,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
     {
       /* Ensure that the range is sufficient */
       growMatrix(x_set[index].back(), y_set[index].back());
-      
+
       /* Loop through the range and add it to each one */
       for(uint32_t i = x_set[index].front(); i <= x_set[index].back(); i++)
       {
@@ -407,7 +407,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
           else if(base_tag.front() == "passability")
           {
             sprite_matrix[i][j]->resetPassability();
-            sprite_matrix[i][j]->addPassability(data.getDataString()); 
+            sprite_matrix[i][j]->addPassability(data.getDataString());
           }
         }
       }
@@ -415,10 +415,10 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
       index++;
     }
   }
-  /*----------------- PATH SPRITE -----------------*/ 
+  /*----------------- PATH SPRITE -----------------*/
   else if(elements.size() == 1 && base_tag.front() == "path")
   {
-    sprite_matrix.front().front()->addFileInformation(data, file_index, 
+    sprite_matrix.front().front()->addFileInformation(data, file_index,
                                                       renderer, base_path);
   }
   /*-----------------SPRITE DETAILS -----------------*/
@@ -428,7 +428,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
     for(uint32_t i = 0; i < sprite_matrix.size(); i++)
       for(uint32_t j = 0; j < sprite_matrix[i].size(); j++)
         if(sprite_matrix[i][j] != NULL)
-          sprite_matrix[i][j]->addFileInformation(data, file_index + 1, 
+          sprite_matrix[i][j]->addFileInformation(data, file_index + 1,
                                                   renderer, base_path);
   }
 
@@ -452,9 +452,9 @@ TileSprite* SpriteMatrix::at(uint16_t x, uint16_t y)
 }
 
 /*
- * Description: Takes the sprite matrix, as it's been set up and removes any 
+ * Description: Takes the sprite matrix, as it's been set up and removes any
  *              rows or columns at the end that have no valid sprites set. A
- *              sprite is classified as valid if it's not NULL and has 
+ *              sprite is classified as valid if it's not NULL and has
  *              renderable frames stored within it.
  *
  * Inputs: none
@@ -466,7 +466,7 @@ void SpriteMatrix::cleanMatrix()
   uint16_t max_y = 0;
   uint16_t new_height = 1;
   uint16_t new_width = 1;
-  
+
   /* Take into account all frames and trim edges of matrix */
   if(countValidSprites() > 0)
   {
@@ -474,7 +474,7 @@ void SpriteMatrix::cleanMatrix()
     for(uint16_t i = 0; i < sprite_matrix.size(); i++)
     {
       int count = -1;
-      
+
       for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
       {
         if(sprite_matrix[i][j] != NULL)
@@ -485,12 +485,12 @@ void SpriteMatrix::cleanMatrix()
             removeSprite(i, j);
         }
       }
-      
+
       if(count > max_y)
         max_y = count;
       sprite_depth.push_back(count);
     }
-    
+
     /* Set up width and height check parameters */
     bool finished = false;
     new_height = max_y + 1; /* Increment for size, not ref */
@@ -506,16 +506,16 @@ void SpriteMatrix::cleanMatrix()
     }
     new_width = i + 1; /* Increment for size, not ref */
   }
-  
+
   /* Remove parts of matrix, if new dimension is smaller */
   if(sprite_matrix.size() > new_width)
     sprite_matrix.erase(sprite_matrix.begin() + new_width, sprite_matrix.end());
   for(uint16_t i = 0; i < sprite_matrix.size(); i++)
     if(sprite_matrix[i].size() > new_height)
-      sprite_matrix[i].erase(sprite_matrix[i].begin() + new_height, 
+      sprite_matrix[i].erase(sprite_matrix[i].begin() + new_height,
                              sprite_matrix[i].end());
 }
-  
+
 /*
  * Description: Returns the animation time of the first valid sprite in the
  *              matrix.
@@ -559,7 +559,7 @@ std::vector<std::vector<TileSprite*>> SpriteMatrix::getMatrix() const
 }
 
 /*
- * Description: Returns the render matrix of the frames in the matrix, as a 
+ * Description: Returns the render matrix of the frames in the matrix, as a
  *              single string. The 'y' direction is separated by '.' and the
  *              'x' direction is separated by ','.
  *              For example: "2,2.0,0" is 2 2 based on map rendering
@@ -589,7 +589,7 @@ std::string SpriteMatrix::getRenderMatrix()
 
         /* Find the render value */
         if(sprite_matrix[j][i] != NULL)
-          linear_matrix += 
+          linear_matrix +=
                           std::to_string(sprite_matrix[j][i]->getRenderDepth());
         else
           linear_matrix += "-1";
@@ -627,7 +627,11 @@ TileSprite* SpriteMatrix::getSprite(uint16_t x, uint16_t y)
  */
 TileSprite* SpriteMatrix::getSpriteValid()
 {
-  // TODO
+  for(uint32_t i = 0; i < sprite_matrix.size(); i++)
+    for(uint32_t j = 0; j < sprite_matrix[i].size(); j++)
+      if(sprite_matrix[i][j] != nullptr && sprite_matrix[i][j]->isFramesSet())
+        return sprite_matrix[i][j];
+  return nullptr;
 }
 
 /*
@@ -642,7 +646,7 @@ uint16_t SpriteMatrix::height() const
     return sprite_matrix.back().size();
   return 0;
 }
-  
+
 /*
  * Description: Checks if the matrix set of sprites is at the tail of the frame
  *              stack.
@@ -659,7 +663,7 @@ bool SpriteMatrix::isAtEnd()
 }
 
 /*
- * Description: Checks if the matrix set of sprites is at the front of the 
+ * Description: Checks if the matrix set of sprites is at the front of the
  *              frame stack.
  *
  * Inputs: none
@@ -705,8 +709,8 @@ bool SpriteMatrix::isDirectionReverse()
 
 /*
  * Description: Render the entire matrix, at the given X and Y (corresponding
- *              to the top left) and with the width, height defined of the 
- *              tile. This does no rendering with rendering depths and just 
+ *              to the top left) and with the width, height defined of the
+ *              tile. This does no rendering with rendering depths and just
  *              renders the matrix flat.
  *
  * Inputs: SDL_Renderer* renderer - the rendering engine
@@ -716,21 +720,21 @@ bool SpriteMatrix::isDirectionReverse()
  *         int height - height of the tile to render
  * Output: bool - true if the matrix rendered
  */
-bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y, 
+bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y,
                           int width, int height)
 {
   bool rendered = false;
-  
+
 	for(uint32_t i = 0; i < sprite_matrix.size(); i++)
 	{
 	  int render_x = x + width * i;
-	  
+
 	  for(uint32_t j = 0; j < sprite_matrix[i].size(); j++)
 	  {
 	    if(sprite_matrix[i][j] != NULL)
 		  {
 		    int render_y = y + height * j;
-		    sprite_matrix[i][j]->render(renderer, render_x, render_y, 
+		    sprite_matrix[i][j]->render(renderer, render_x, render_y,
 		                                width, height);
         rendered = true;
 		  }
@@ -742,8 +746,8 @@ bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y,
 
 /*
  * Description: Render the entire matrix, at the given X and Y (corresponding
- *              to the top left) and with the width, height defined of the 
- *              tile. This does no rendering with rendering depths and just 
+ *              to the top left) and with the width, height defined of the
+ *              tile. This does no rendering with rendering depths and just
  *              renders the matrix flat. This renders at the given frame index.
  *
  * Inputs: uint16_t frame - the index of the frame to render
@@ -754,7 +758,7 @@ bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y,
  *         int height - height of the tile to render
  * Output: bool - true if the matrix rendered
  */
-bool SpriteMatrix::render(uint16_t frame, SDL_Renderer* renderer, int x, 
+bool SpriteMatrix::render(uint16_t frame, SDL_Renderer* renderer, int x,
                           int y, int width, int height)
 {
   bool success = true;
@@ -782,7 +786,7 @@ bool SpriteMatrix::setAtFirst()
     for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
       if(sprite_matrix[i][j] != nullptr)
         success &= sprite_matrix[i][j]->setAtFirst();
-  
+
   return success;
 }
 
@@ -794,7 +798,10 @@ bool SpriteMatrix::setAtFirst()
  */
 void SpriteMatrix::setColorMode(ColorMode mode)
 {
-  // TODO
+  for(uint32_t i = 0; i < sprite_matrix.size(); i++)
+    for(uint32_t j = 0; j < sprite_matrix[i].size(); j++)
+      if(sprite_matrix[i][j] != nullptr)
+        sprite_matrix[i][j]->setColorMode(mode);
 }
 
 /*
@@ -810,9 +817,9 @@ bool SpriteMatrix::setDirectionForward()
 
   for(uint16_t i = 0; i < sprite_matrix.size(); i++)
     for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
-      if(sprite_matrix[i][j] != NULL)
+      if(sprite_matrix[i][j] != nullptr)
         success &= sprite_matrix[i][j]->setDirectionForward();
-  
+
   return success;
 }
 
@@ -831,7 +838,7 @@ bool SpriteMatrix::setDirectionReverse()
     for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
       if(sprite_matrix[i][j] != NULL)
         success &= sprite_matrix[i][j]->setDirectionReverse();
-  
+
   return success;
 }
 
@@ -891,14 +898,14 @@ void SpriteMatrix::setRenderMatrix(std::string render_str)
  *
  * Inputs: TileSprite* sprite - the new sprite to insert into the matrix.
  *                              Must actually have a sprite set.
- *         uint32_t x - the x coordinate, relative to the top left of the 
+ *         uint32_t x - the x coordinate, relative to the top left of the
  *                      render matrix.
  *         uint32_t y - the y coordinate, relative to the top left of the
  *                      render matrix.
  *         bool delete_old - delete the old frames from memory?
  * Output: bool - returns if the new sprite was set successfully
  */
-bool SpriteMatrix::setSprite(TileSprite* sprite, uint16_t x, uint16_t y, 
+bool SpriteMatrix::setSprite(TileSprite* sprite, uint16_t x, uint16_t y,
                              bool delete_old)
 {
   /* Only proceed if frame isn't NULL */
@@ -925,7 +932,7 @@ bool SpriteMatrix::setSprite(TileSprite* sprite, uint16_t x, uint16_t y,
  *         bool delete_old - delete the old sprites from memory?
  * Output: none
  */
-void SpriteMatrix::setSprites(std::vector<std::vector<TileSprite*>> sprites, 
+void SpriteMatrix::setSprites(std::vector<std::vector<TileSprite*>> sprites,
                               bool delete_old)
 {
   unsetSprites(delete_old);
@@ -947,10 +954,10 @@ bool SpriteMatrix::shiftNext(bool skip_head)
     for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
       if(sprite_matrix[i][j] != NULL)
         success &= sprite_matrix[i][j]->shiftNext(skip_head);
-  
+
   return success;
 }
-  
+
 /*
  * Description: Shifts all frames in the matrix to the given frame index.
  *              0 corresponds to head, 1 to next after head, etc.
@@ -977,9 +984,9 @@ bool SpriteMatrix::shiftTo(uint16_t index)
 }
 
 /*
- * Description: Takes the animation speed and modifies it, based on the 
- *              number of frames. This is only used for persons who have 
- *              a base animation speed common across the class and modified 
+ * Description: Takes the animation speed and modifies it, based on the
+ *              number of frames. This is only used for persons who have
+ *              a base animation speed common across the class and modified
  *              for side animations (with different num of frames).
  *
  * Inputs: none
@@ -1010,7 +1017,7 @@ void SpriteMatrix::tuneAnimationSpeed()
  * Inputs: uint32_t x - x coordinate of sprite to delete
  *         uint32_t y - y coordinate of sprite to delete
  *         bool delete_sprite - should the old sprite be deleted?
- * Output: none 
+ * Output: none
  */
 void SpriteMatrix::unsetSprite(uint16_t x, uint16_t y, bool delete_sprite)
 {
@@ -1022,7 +1029,7 @@ void SpriteMatrix::unsetSprite(uint16_t x, uint16_t y, bool delete_sprite)
  * Description: Unsets the sprites from the entire matrix.
  *
  * Inputs: bool delete_sprites - should the old sprites be deleted?
- * Output: none 
+ * Output: none
  */
 void SpriteMatrix::unsetSprites(bool delete_sprites)
 {
@@ -1034,6 +1041,29 @@ void SpriteMatrix::unsetSprites(bool delete_sprites)
   }
 
   sprite_matrix.clear();
+}
+  
+/* Updates the frames within the sprite matrix */
+/*
+ * Description: Updates the sprite times for animation that fill the matrix.
+ *              Necessary for automated animation.
+ *
+ * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
+ *         bool skip_head - skip the head frame when updating?
+ *         bool color_only - only updates coloring/greying. Default false
+ * Output: bool - returns if the frame changed
+ */
+bool SpriteMatrix::update(int cycle_time, bool skip_head, bool color_only)
+{
+  bool frame_changed = false;
+
+  for(uint16_t i = 0; i < sprite_matrix.size(); i++)
+    for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
+      if(sprite_matrix[i][j] != nullptr)
+        frame_changed |= sprite_matrix[i][j]->update(cycle_time, skip_head,
+                                                     color_only);
+
+  return frame_changed;
 }
 
 /*
@@ -1053,7 +1083,7 @@ uint16_t SpriteMatrix::width() const
 
 /*
  * Description: Copy operator construction. This is called when the variable
- *              already exists and equal operator used with another 
+ *              already exists and equal operator used with another
  *              SpriteMatrix.
  *
  * Inputs: const SpriteMatrix &source - the source class constructor
@@ -1064,7 +1094,7 @@ SpriteMatrix& SpriteMatrix::operator= (const SpriteMatrix &source)
   /* Check for self assignment */
   if(this == &source)
     return *this;
-  
+
   /* Do the copy */
   copySelf(source);
 

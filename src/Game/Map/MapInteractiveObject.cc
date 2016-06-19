@@ -966,6 +966,41 @@ void MapInteractiveObject::clear()
 }
 
 /*
+ * Description: Returns the first valid frame pointer. NULL if none found. This
+ *              overrides the default map thing functionality.
+ *
+ * Inputs: none
+ * Output: TileSprite* - the first valid frame reference
+ */
+TileSprite* MapInteractiveObject::getFrameValid()
+{
+  StateNode* node = node_head;
+
+  /* Parse through each node and check/clean the data involved */
+  while(node != nullptr)
+  {
+    SpriteMatrix* matrix = nullptr;
+
+    /* Get the matrix corresponding to the node */
+    if(node->state != nullptr)
+      matrix = node->state->getMatrix();
+    else
+      matrix = node->transition;
+
+    if(matrix != nullptr)
+    {
+      TileSprite* found_sprite = matrix->getSpriteValid();
+      if(found_sprite != nullptr)
+        return found_sprite;
+    }
+
+    /* Shift to the next */
+    node = node->next;
+  }
+  return nullptr;
+}
+
+/*
  * Description: Returns the inactive time before returning back down the state
  *              path.
  *
@@ -1249,6 +1284,36 @@ bool MapInteractiveObject::setBase(MapThing* base)
   }
 
   return success;
+}
+
+/*
+ * Description: Sets the color mode of all sprites within the matrix of the
+ *              thing. Virtualized for the purpose of children.
+ *
+ * Inputs: ColorMode mode - the mode of how to color the thing
+ * Output: none
+ */
+void MapInteractiveObject::setColorMode(ColorMode mode)
+{
+  StateNode* node = node_head;
+
+  /* Parse through each node and check/clean the data involved */
+  while(node != nullptr)
+  {
+    SpriteMatrix* matrix = nullptr;
+
+    /* Get the matrix corresponding to the node */
+    if(node->state != nullptr)
+      matrix = node->state->getMatrix();
+    else
+      matrix = node->transition;
+
+    if(matrix != nullptr)
+      matrix->setColorMode(mode);
+
+    /* Shift to the next */
+    node = node->next;
+  }
 }
 
 /*
@@ -1562,6 +1627,29 @@ Floatinate MapInteractiveObject::update(int cycle_time,
           shiftPrevious();
         }
       }
+    }
+  }
+  /* Base Interactive Object */
+  else if(base == nullptr)
+  {
+    StateNode* node = node_head;
+
+    /* Parse through each node and check/clean the data involved */
+    while(node != nullptr)
+    {
+      SpriteMatrix* matrix = nullptr;
+
+      /* Get the matrix corresponding to the node */
+      if(node->state != nullptr)
+        matrix = node->state->getMatrix();
+      else
+        matrix = node->transition;
+
+      if(matrix != nullptr)
+        matrix->update(cycle_time, false, true);
+
+      /* Shift to the next */
+      node = node->next;
     }
   }
   /* Otherwise, just pass to parent */
