@@ -22,6 +22,16 @@
 
 #define TITLE_SKIP
 
+// enum class TitleType
+// {
+//   PLAYER_SELECT,
+//   NEW_GAME,
+//   LOAD_GAME,
+//   OPTIONS,
+//   EXIT,
+//   NONE
+// };
+
 class TitleScreen
 {
 public:

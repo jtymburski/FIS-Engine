@@ -49,6 +49,7 @@ const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT = SDLK_DOWN;
 const SDL_Keycode KeyHandler::kMENU_DEFAULT = SDLK_d;
 const SDL_Keycode KeyHandler::kACTION_DEFAULT = SDLK_SPACE;
 const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_ESCAPE;
+const SDL_Keycode KeyHandler::kBACKSPACE_DEFAULT = SDLK_BACKSPACE;
 const SDL_Keycode KeyHandler::kRUN_DEFAULT = SDLK_LSHIFT;
 const SDL_Keycode KeyHandler::kDEBUG_DEFAULT = SDLK_f;
 const SDL_Keycode KeyHandler::kPAUSE_DEFAULT = SDLK_RCTRL;
@@ -65,7 +66,7 @@ const int32_t KeyHandler::kMIN_HELD_TIME = 100;
  *
  * Inputs: none
  */
-KeyHandler::KeyHandler()
+KeyHandler::KeyHandler() : mode{KeyMode::INPUT}
 {
   loadDefaults();
 }
@@ -88,9 +89,113 @@ void KeyHandler::printIndex(Key key)
             << std::endl;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
+{
+  /* Grab the SDL_Scancode matching the current element's Keycode */
+  auto scan_code = SDL_GetScancodeFromKey(key.keycode);
+  auto bp_keycode = getKey(GameKey::BACKSPACE).keycode;
+  auto state = SDL_GetKeyboardState(nullptr);
+
+  if(state)
+  {
+    /* Determine if the state of the Keyboard if scan code is depressed */
+    if(state[scan_code] && !key.depressed)
+    {
+      /* Assign the element to be a depressed state */
+      key.depressed = true;
+      key.time_depressed = 0;
+
+      if(call_mode == KeyMode::TEXT_ENTRY)
+        addKeyEntry(key);
+      else if(call_mode == KeyMode::INPUT && key.keycode == bp_keycode)
+        removeKeyEntry();
+    }
+    else if(state[scan_code] && key.depressed)
+    {
+      key.time_depressed += cycle_time;
+    }
+    else
+    {
+      /* Assign the element to be an unpressed state */
+      key.depressed = false;
+      key.time_depressed = 0;
+    }
+  }
+}
+
+/*
+ * Description: Adds the given Key's key name to the running text string
+ *              stored for text entry, if found.
+ *
+ * Inputs: Key - reference to the key object being added
+ * Output: none
+ */
+void KeyHandler::addKeyEntry(Key& key)
+{
+  /* Check if the key is valid within the parameters of text entry keys */
+  bool found = false;
+
+  for(auto& element : text_keys)
+    if(element.keycode == key.keycode)
+      found = true;
+
+  if(found)
+  {
+    auto key_name = SDL_GetKeyName(key.keycode);
+
+    if(key_name)
+    {
+      if(key.keycode == SDLK_SPACE)
+        text += " ";
+      else
+        text += key_name;
+    }
+  }
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void KeyHandler::removeKeyEntry()
+{
+  if(text.size())
+    text.pop_back();
+}
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void KeyHandler::clearTextEntry()
+{
+  text = "";
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+KeyMode KeyHandler::getMode()
+{
+  return mode;
+}
 
 /*
  * Description: Determines whether a Key matching a given GameKey enumeration
@@ -227,7 +332,9 @@ bool KeyHandler::isKeycodeMapped(SDL_Keycode keycode)
 void KeyHandler::loadDefaults()
 {
   keys.clear();
+  text_keys.clear();
 
+  /* Game Keys */
   keys.push_back(Key(GameKey::MOVE_LEFT, kMOVE_LEFT_DEFAULT));
   keys.push_back(Key(GameKey::MOVE_RIGHT, kMOVE_RIGHT_DEFAULT));
   keys.push_back(Key(GameKey::MOVE_UP, kMOVE_UP_DEFAULT));
@@ -235,9 +342,39 @@ void KeyHandler::loadDefaults()
   keys.push_back(Key(GameKey::MENU, kMENU_DEFAULT));
   keys.push_back(Key(GameKey::ACTION, kACTION_DEFAULT));
   keys.push_back(Key(GameKey::CANCEL, kCANCEL_DEFAULT));
+  keys.push_back(Key(GameKey::BACKSPACE, kBACKSPACE_DEFAULT));
   keys.push_back(Key(GameKey::RUN, kRUN_DEFAULT));
   keys.push_back(Key(GameKey::DEBUG, kDEBUG_DEFAULT));
   keys.push_back(Key(GameKey::PAUSE, kPAUSE_DEFAULT));
+
+  /* Text Entry Keys */
+  text_keys.push_back(Key(GameKey::NONE, SDLK_a));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_b));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_c));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_d));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_e));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_f));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_g));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_h));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_i));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_j));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_k));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_l));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_m));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_n));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_o));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_p));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_q));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_r));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_s));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_t));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_u));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_v));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_w));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_x));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_y));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_z));
+  text_keys.push_back(Key(GameKey::NONE, SDLK_SPACE));
 }
 
 /*
@@ -272,6 +409,8 @@ void KeyHandler::print(bool only_depressed, bool only_held)
     }
   }
 
+  std::cout << "Text Entry: " << text << std::endl;
+
   if(printed_once)
     std::cout << std::endl;
 }
@@ -287,33 +426,19 @@ bool KeyHandler::update(int32_t cycle_time)
 {
   /* Update the state of Keys */
   SDL_PumpEvents();
-  auto state = SDL_GetKeyboardState(nullptr);
 
-  for(auto& element : keys)
+  if(mode == KeyMode::INPUT)
   {
-    if(state != nullptr)
-    {
-      /* Grab the SDL_Scancode matching the current element's Keycode */
-      auto scan_code = SDL_GetScancodeFromKey(element.keycode);
+    for(auto& element : keys)
+      updateKey(element, cycle_time, KeyMode::INPUT);
+  }
+  else if(mode == KeyMode::TEXT_ENTRY)
+  {
+    for(auto& element : keys)
+      updateKey(element, cycle_time, KeyMode::INPUT);
 
-      /* Determine if the state of the Keyboard if the scan code is depressed */
-      if(state[scan_code] && !element.depressed)
-      {
-        /* Assign the element to be a depressed state */
-        element.depressed = true;
-        element.time_depressed = 0;
-      }
-      else if(state[scan_code] && element.depressed)
-      {
-        element.time_depressed += cycle_time;
-      }
-      else
-      {
-        /* Assign the element to be an unpressed state */
-        element.depressed = false;
-        element.time_depressed = 0;
-      }
-    }
+    for(auto& element : text_keys)
+      updateKey(element, cycle_time, KeyMode::TEXT_ENTRY);
   }
 
   return false;
@@ -380,6 +505,17 @@ bool KeyHandler::setKey(GameKey game_key, SDL_Keycode new_keycode)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void KeyHandler::setMode(KeyMode mode)
+{
+  this->mode = mode;
+}
+
+/*
  * Description: Assigns a Key matching a given GameKey enumerated to the desired
  *              enabled State, as well as all other Keys matching the GameKey.
  *
@@ -436,6 +572,17 @@ bool KeyHandler::setHeld(GameKey key)
   }
 
   return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+std::string KeyHandler::getTextEntry()
+{
+  return text;
 }
 
 /*=============================================================================

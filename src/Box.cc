@@ -122,7 +122,7 @@ void Box::loadDefaults()
   element_inset_x = kDEFAULT_ELEMENT_INSET_X;
   element_inset_y = kDEFAULT_ELEMENT_INSET_Y;
   flags = static_cast<BoxState>(0);
-  setFlag(BoxState::USES_FRAMES, true);
+  //setFlag(BoxState::USES_FRAMES, true);
   point = Coordinate();
   height = 0;
   width = 0;
@@ -235,11 +235,11 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
         success &= Frame::renderRect(rect, border_width, renderer);
 
         /* Render the element and update the running Y-Coordinate */
-        if(getFlag(BoxState::USES_FRAMES))
-        {
+        //if(getFlag(BoxState::USES_FRAMES))
+        //{
           success &= elements.at(i)->render(renderer, curr_x, curr_y);
           curr_y += elements.at(i)->getHeight() + element_gap;
-        }
+        //}
       }
     }
   }

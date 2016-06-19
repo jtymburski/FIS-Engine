@@ -437,6 +437,7 @@ enum class GameKey
   MENU,
   ACTION,
   CANCEL,
+  BACKSPACE,
   RUN,
   DEBUG,
   PAUSE,

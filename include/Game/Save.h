@@ -119,8 +119,8 @@ public:
   /* Prints the class data - primarily for testing */
   void print();
 
-  /* Render the save object at a location */
-  bool render(SDL_Renderer* renderer);
+  /* Return the Render frame for this Save */
+  Frame* createRenderFrame(SDL_Renderer* renderer);
 
   /* Assigns configuration to the save file */
   bool setConfig(Options* config);

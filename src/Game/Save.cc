@@ -199,10 +199,10 @@ void Save::print()
   std::cout << "End of Slot --" << std::endl;
 }
 
-/* Render the save object at a location */
-bool Save::render(SDL_Renderer* renderer)
+/* Return a Frame to render for the Save file */
+Frame* Save::createRenderFrame(SDL_Renderer* renderer)
 {
-  if(renderer && config)
+  if(config)
   {
     auto font_title = config->getFontTTF(FontName::M_VALUE);
     auto font_header = config->getFontTTF(FontName::M_ITEM_HEADER);
@@ -223,14 +223,21 @@ bool Save::render(SDL_Renderer* renderer)
 
     t_title.setText(renderer, "SLOT " + std::to_string(id) + " ", kCOLOR_TEXT);
 
-    // TODO [05-22-16] Assign location priorities
-    location.render(renderer);
-
     auto height = Map::kSNAPSHOT_H / 4;
     auto width = Map::kSNAPSHOT_W / 4;
     auto gap = (int32_t)(std::round((location.height - height) / 2));
 
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                          SDL_TEXTUREACCESS_TARGET, width, height);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
     Coordinate current = {location.point.x + gap, location.point.y + gap};
+
+    // TODO [05-22-16] Assign location priorities
+    location.render(renderer);
 
     /* Render a blank save title if this save is an empty one */
     if(getFlag(SaveState::EMPTY))
@@ -283,7 +290,8 @@ bool Save::render(SDL_Renderer* renderer)
       current.y += t_date.getHeight() + gap;
 
       t_date_time.render(renderer, current.x, current.y);
-      current.y = location.point.y + location.height - t_map_name.getHeight() * 2;
+      current.y =
+          location.point.y + location.height - t_map_name.getHeight() * 2;
 
       t_map_name.render(renderer, current.x, current.y);
 
@@ -320,10 +328,15 @@ bool Save::render(SDL_Renderer* renderer)
       /* Render the cross bars */
     }
 
-    return true;
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    auto save_frame = new Frame();
+    save_frame->setTexture(texture);
+
+    return save_frame;
   }
 
-  return false;
+  return nullptr;
 }
 
 /* Assigns configuration to the save file */

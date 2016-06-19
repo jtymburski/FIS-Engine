@@ -2668,9 +2668,14 @@ void Menu::renderSave()
   auto save_width = (int32_t)std::round(main.width * kSAVE_ELEMENT_WIDTH);
   auto save_height = (int32_t)std::round(main.height * kSAVE_ELEMENT_HEIGHT);
 
-  // setupDefaultBox(save_scroll_box);
+  save_scroll_box.setFlag(BoxState::SCROLL_BOX);
+  save_scroll_box.setFlag(BoxState::SELECTABLE);
+  setupDefaultBox(save_scroll_box);
 
   current = {main.point.x + gap, main.point.y + gap};
+
+  std::vector<Frame*> save_frames;
+  save_scroll_box.clearElements();
 
   for(auto& save : save_data)
   {
@@ -2681,8 +2686,12 @@ void Menu::renderSave()
     save.location.point.y = current.y;
 
     current.y += save.location.height + gap;
-    save.render(renderer);
+
+    save_frames.push_back(save.createRenderFrame(renderer));
   }
+
+  save_scroll_box.setElements(save_frames);
+  save_scroll_box.render(renderer);
 }
 
 /* Renders the Quit Screen */
@@ -2869,8 +2878,8 @@ void Menu::keyDownUp()
   {
     if(title_element_index > 0)
     {
-              event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
-                                      SoundChannels::MENUS);
+      event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                  SoundChannels::MENUS);
 
       title_element_index--;
     }
@@ -3217,6 +3226,9 @@ bool Menu::isMainSliding()
 /* Process key down event */
 bool Menu::keyDownEvent(KeyHandler& key_handler)
 {
+  key_handler.setMode(KeyMode::TEXT_ENTRY);
+
+  std::cout << "TextEntry: " << key_handler.getTextEntry() << std::endl;
 
   if(key_handler.isDepressed(GameKey::MOVE_UP))
   {

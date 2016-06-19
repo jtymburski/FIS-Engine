@@ -27,6 +27,13 @@
 #include "EnumDb.h"
 #include "Helpers.h"
 
+enum class KeyMode
+{
+  DISABLED,
+  INPUT,
+  TEXT_ENTRY
+};
+
 /* Key Map Structure */
 struct Key
 {
@@ -59,6 +66,15 @@ private:
   /* Vector of Keys */
   std::vector<Key> keys;
 
+  /* Keys which are valid for text entry */
+  std::vector<Key> text_keys;
+
+  /* Current mode of the KeyHandler */
+  KeyMode mode;
+
+  /* The running text entry string */
+  std::string text;
+
   /* ------------ Constants --------------- */
   static const SDL_Keycode kMOVE_LEFT_DEFAULT;  /* Default moving left key */
   static const SDL_Keycode kMOVE_RIGHT_DEFAULT; /* Default moving right key */
@@ -67,6 +83,7 @@ private:
   static const SDL_Keycode kMENU_DEFAULT;       /* Default menu open key */
   static const SDL_Keycode kACTION_DEFAULT;     /* Default action key */
   static const SDL_Keycode kCANCEL_DEFAULT;     /* Default cancel/close key */
+  static const SDL_Keycode kBACKSPACE_DEFAULT;  /* Default backspace key */
   static const SDL_Keycode kRUN_DEFAULT;        /* Default run key */
   static const SDL_Keycode kDEBUG_DEFAULT;      /* Default debug key */
   static const SDL_Keycode kPAUSE_DEFAULT;      /* Default pause key */
@@ -79,8 +96,23 @@ private:
   /* Prints out the information of of one Key */
   void printIndex(Key key);
 
+  /* Updates the state of a given Key */
+  void updateKey(Key& key, int32_t cycle_time, KeyMode call_mode);
+
+  /* Add the current key depression to the string */
+  void addKeyEntry(Key& key);
+
+  /* Remove the last key entry on the KeyHandler */
+  void removeKeyEntry();
+
   /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
+  /* Clears the current state of text entry */
+  void clearTextEntry();
+
+  /* Returns the enumerated mode of the KeyHandler */
+  KeyMode getMode();
+
   /* Checks if a Certain Game key is in a 'held' state */
   bool isHeld(GameKey game_key);
   bool isHeld(SDL_Keycode keycode);
@@ -116,12 +148,18 @@ public:
   /* Set Keys */
   bool setKey(GameKey game_key, SDL_Keycode new_keycode);
 
+  /* Assign a new enumerated mode to the KeyHandler */
+  void setMode(KeyMode mode);
+
   /* Sets a Key to be enabled/disabled */
   void setEnabled(GameKey game_key, bool enabled = true);
   bool setEnabled(SDL_Keycode keycode, bool enabled = true);
 
   /* Set a given GameKey to be held */
   bool setHeld(GameKey key);
+
+  /* Returns the current state of text entry */
+  std::string getTextEntry();
 
   /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:
