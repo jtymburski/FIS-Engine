@@ -9,8 +9,11 @@
  ******************************************************************************/
 #include "Frame.h"
 
-/* Constant Implementation - see header file for descriptions */
+/* Private Constant Implementation - see header file for descriptions */
 const uint8_t Frame::kDEFAULT_ALPHA = 255;
+const float Frame::kGREY_FOR_BLUE = 0.07;
+const float Frame::kGREY_FOR_GREEN = 0.71;
+const float Frame::kGREY_FOR_RED = 0.21;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -660,7 +663,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle,
                       &color.b, &color.a);
 
           /* Modify the color data -> to greyscale */
-          color.r = 0.21 * color.r + 0.71 * color.g + 0.07 * color.b;
+          color.r = getGreyValue(color.r, color.g, color.b);
           color.g = color.r;
           color.b = color.r;
 
@@ -835,19 +838,6 @@ void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x, SDL_Renderer* renderer)
   rect.w = 1;
 
   SDL_RenderFillRect(renderer, &rect);
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Frame::drawLine(std::vector<Coordinate> line_points,
-                     SDL_Renderer* renderer)
-{
-  for(auto& point : line_points)
-    SDL_RenderDrawPoint(renderer, point.x, point.y);
 }
 
 /*
@@ -1042,6 +1032,35 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Takes a series of coordinates and draws the line between all.
+ *
+ * Inputs: std::vector<Coordinate> line_points - the points to draw lines 
+ *                                               between
+ *         SDL_Renderer* renderer - the rendering engine pointer
+ * Output: none
+ */
+void Frame::drawLine(std::vector<Coordinate> line_points,
+                     SDL_Renderer* renderer)
+{
+  for(auto& point : line_points)
+    SDL_RenderDrawPoint(renderer, point.x, point.y);
+}
+  
+/* 
+ * Description: Converts RGB to grey scale value
+ *
+ * Inputs: uint8_t red - the red color value
+ *         uint8_t green - the green color value
+ *         uint8_t blue - the blue color value
+ * Output: uint8_t - the grey color value
+ */
+uint8_t Frame::getGreyValue(uint8_t red, uint8_t green, uint8_t blue)
+{
+  return static_cast<uint8_t>(kGREY_FOR_RED * red + kGREY_FOR_GREEN * green +
+                              kGREY_FOR_BLUE * blue);
+}
 
 /*
  * Description: Renders a shifted rectangle bar. This allows for a slope to be

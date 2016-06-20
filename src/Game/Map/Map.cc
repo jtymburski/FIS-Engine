@@ -1997,8 +1997,18 @@ void Map::updateTileSize()
 
   /* Check zooming status */
   if(zooming)
+  {
     if(tile_height == zoom_size || tile_width == zoom_size)
+    {
       zooming = false;
+      //viewport.setTravelForce(false);
+    }
+    else
+    {
+      //viewport.setTravelForce(true);
+      //viewport.setToTravel(true);
+    }
+  }
 
   /* If updated, update the height and width everywhere */
   if(updated)
@@ -2711,6 +2721,11 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
       }
 
       // delete convo;
+    }
+    /* Test: Vibration trigger */
+    else if(event.keysym.sym == SDLK_v)
+    {
+      viewport.triggerVibration(5000, 4000, 50, 0, 2000);
     }
     /* Test: Zoom toggle */
     else if(event.keysym.sym == SDLK_z)
@@ -3898,7 +3913,7 @@ bool Map::update(int cycle_time)
   map_dialog.update(cycle_time);
   updateMode(cycle_time);
   updateTileSize();
-  viewport.update();
+  viewport.update(cycle_time);
 
   return false;
 }

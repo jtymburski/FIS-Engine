@@ -152,14 +152,48 @@ uint16_t Sprite::parseAdjustments(std::vector<std::string> adjustments)
  */
 void Sprite::setColorMod()
 {
+  uint8_t red = color_red;
+  uint8_t green = color_green;
+  uint8_t blue = color_blue;
+
+  /* Complete grey scale analysis if changing color */
+  if((red < 255 || green < 255 || blue < 255) && 
+     (color_mode == ColorMode::GREY || color_mode == ColorMode::COLORING ||
+      color_mode == ColorMode::GREYING))
+  {
+    /* Get grey value */
+    uint8_t grey_value = Frame::getGreyValue(red, green, blue);
+
+    /* Determine scaling of color values based on transition */
+    if(color_mode == ColorMode::GREY)
+    {
+      red = grey_value;
+      green = grey_value;
+      blue = grey_value;
+    }
+    else if(color_mode == ColorMode::GREYING)
+    {
+      red += (grey_value - red) * (color_alpha / 255.0);
+      green += (grey_value - green) * (color_alpha / 255.0);
+      blue += (grey_value - blue) * (color_alpha / 255.0);
+    }
+    else if(color_mode == ColorMode::COLORING)
+    {
+      red += (grey_value - red) * (1.0 - color_alpha / 255.0);
+      green += (grey_value - green) * (1.0 - color_alpha / 255.0);
+      blue += (grey_value - blue) * (1.0 - color_alpha / 255.0);
+    }
+  }
+
+  /* Proceed to set mod based on brightness values */
   if(brightness < kDEFAULT_BRIGHTNESS)
   {
-    SDL_SetTextureColorMod(texture, brightness * color_red,
-                           brightness * color_green, brightness * color_blue);
+    SDL_SetTextureColorMod(texture, brightness * red,
+                           brightness * green, brightness * blue);
   }
   else
   {
-    SDL_SetTextureColorMod(texture, color_red, color_green, color_blue);
+    SDL_SetTextureColorMod(texture, red, green, blue);
   }
 }
 
@@ -1682,6 +1716,7 @@ bool Sprite::update(int cycle_time, bool skip_head, bool color_only)
     {
       color_alpha = val;
     }
+    setColorMod();
   }
 
   /* Start by updating the animation and shifting, if necessary */

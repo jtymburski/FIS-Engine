@@ -14,12 +14,14 @@
 /* Constant Implementation - see header file for descriptions */
 const int MapViewport::kMIN_HEIGHT = 1;
 const int MapViewport::kMIN_WIDTH = 1;
-const int MapViewport::kTRAVEL_DIFF = 40;
+const int MapViewport::kTRAVEL_DIFF = 156;
+const int MapViewport::kTRAVEL_DIV = 100000;
+const float MapViewport::kTRAVEL_MIN = 2.0;
 const uint16_t MapViewport::kVIB_DEG_DEFAULT = 360;
 const uint32_t MapViewport::kVIB_PEAK_DEFAULT = 4000;
 const uint32_t MapViewport::kVIB_TOTAL_DEFAULT = 5000;
-const uint16_t MapViewport::kVIB_X_DEFAULT = 100;
-const uint16_t MapViewport::kVIB_Y_DEFAULT = 0;
+const int16_t MapViewport::kVIB_X_DEFAULT = 100;
+const int16_t MapViewport::kVIB_Y_DEFAULT = 0;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -61,6 +63,32 @@ MapViewport::~MapViewport()
 }
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Correlate the values with modifications to tile size and map
+ *              size.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapViewport::correlateSize()
+{
+  /* X correlation */
+  int old_width = map_width;
+  map_width = map_width_tiles * tile_width;
+  if(old_width > 0 && old_width != map_width)
+    x = map_width * x / old_width;
+
+  /* Y correlation */
+  int old_height = map_height;
+  map_height = map_height_tiles * tile_height;
+  if(old_height > 0 && old_height != map_height)
+    y = map_height * y / old_height;
+}
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -73,6 +101,7 @@ MapViewport::~MapViewport()
 void MapViewport::clear()
 {
   travel = false;
+  travel_force = false;
 
   /* Reset the map and viewport coordinates */
   setMapSize(0, 0);
@@ -200,6 +229,8 @@ uint16_t MapViewport::getWidth()
  */
 float MapViewport::getX()
 {
+  if(vibrating)
+    return (x + vibrating_x);
   return x;
 }
 
@@ -213,13 +244,15 @@ float MapViewport::getX()
 int MapViewport::getXEnd()
 {
   /* Perform the end x coordinate calculation */
-  int end_x = (((int)x + width) / tile_width) * tile_width + tile_width;
-  if((int)x % tile_width != 0)
+  int end_x = (((int)getX() + width) / tile_width) * tile_width + tile_width;
+  if((int)getX() % tile_width != 0)
     end_x += tile_width;
 
   /* Check to see if the end_x is in the valid range */
   if(end_x > map_width)
     end_x = map_width;
+  else if(end_x < 0)
+    end_x = 0;
 
   return end_x;
 }
@@ -233,7 +266,7 @@ int MapViewport::getXEnd()
  */
 int MapViewport::getXStart()
 {
-  int start_x = (((int)x / tile_width) * tile_width) - tile_width;
+  int start_x = (((int)getX() / tile_width) * tile_width) - tile_width;
 
   /* Check to see if the start_x is in the valid range */
   if(start_x < 0)
@@ -277,6 +310,8 @@ uint16_t MapViewport::getXTileStart()
  */
 float MapViewport::getY()
 {
+  if(vibrating)
+    return (y + vibrating_y);
   return y;
 }
 
@@ -290,13 +325,16 @@ float MapViewport::getY()
 int MapViewport::getYEnd()
 {
   /* Perform the end y coordinate calculation */
-  int end_y = (((int)y + height) / tile_height) * tile_height + tile_height;
-  if((int)y % tile_height != 0)
+  int end_y = (((int)getY() + height) / tile_height) * tile_height
+            + tile_height;
+  if((int)getY() % tile_height != 0)
     end_y += tile_height;
 
   /* Check to see if the end_x is in the valid range */
   if(end_y > map_height)
     end_y = map_height;
+  else if(end_y < 0)
+    end_y = 0;
 
   return end_y;
 }
@@ -310,7 +348,7 @@ int MapViewport::getYEnd()
  */
 int MapViewport::getYStart()
 {
-  int start_y = (((int)y / tile_height) * tile_height) - tile_height;
+  int start_y = (((int)getY() / tile_height) * tile_height) - tile_height;
 
   /* Check to see if the start_x is in the valid range */
   if(start_y < 0)
@@ -346,6 +384,18 @@ uint16_t MapViewport::getYTileStart()
 }
 
 /*
+ * Description: Returns if the travel is forced. If true, once travel is enabled
+ *              it will not reset until travel force is disabled
+ *
+ * Inputs: none
+ * Output: bool - true if travel force is enabled
+ */
+bool MapViewport::isTravelForce()
+{
+  return travel_force;
+}
+
+/*
  * Description: Returns if the viewport is in a traveling state.
  *
  * Inputs: none
@@ -354,6 +404,17 @@ uint16_t MapViewport::getYTileStart()
 bool MapViewport::isTravelling()
 {
   return travel;
+}
+
+/*
+ * Description: Returns if it is vibrating.
+ *
+ * Inputs: none
+ * Output: bool - true if it is vibrating
+ */
+bool MapViewport::isVibrating()
+{
+  return vibrating;
 }
 
 /*
@@ -452,14 +513,15 @@ void MapViewport::setMapSize(uint16_t tile_width, uint16_t tile_height,
     map_width_tiles = tile_width;
   else
     map_width_tiles = 0;
-  map_width = map_width_tiles * this->tile_width;
 
   /* Set the new height */
   if(tile_height > 0)
     map_height_tiles = tile_height;
   else
     map_height_tiles = 0;
-  map_height = map_height_tiles * this->tile_height;
+
+  /* Size correlation */
+  correlateSize();
 
   /* Set the map index */
   this->map_index = map_index;
@@ -503,14 +565,15 @@ void MapViewport::setTileSize(uint16_t pixel_width, uint16_t pixel_height)
     tile_width = pixel_width;
   else
     tile_width = kMIN_WIDTH;
-  map_width = map_width_tiles * tile_width;
 
   /* Set the new height */
   if(pixel_height > kMIN_HEIGHT)
     tile_height = pixel_height;
   else
     tile_height = kMIN_HEIGHT;
-  map_height = map_height_tiles * tile_height;
+
+  /* Size correlation */
+  correlateSize();
 }
 
 /*
@@ -526,21 +589,66 @@ void MapViewport::setToTravel(bool travel)
 }
 
 /*
+ * Description: Sets if the movement travel should be forced on until manually
+ *              reset.
+ *
+ * Inputs: bool force - true to force the travel shift
+ * Output: none
+ */
+void MapViewport::setTravelForce(bool force)
+{
+  travel_force = force;
+}
+
+/*
+ * Description: Triggers vibration initiation using the passed input parameters.
+ *              This will fail if it already vibrating
+ *
+ * Inputs: uint32_t time_total - the total time in ms of the vibration
+ *         uint32_t time_peak - the total time at peak vibration
+ *         int16_t peak_x - the peak delta x change
+ *         int16_t peak_y - the peak delta y change
+ *         uint16_t degree_delta - the delta degree per 1000 ms
+ * Output: bool - true if vibration started with passed in parameters
+ */
+bool MapViewport::triggerVibration(uint32_t time_total, uint32_t time_peak,
+                                   int16_t peak_x, int16_t peak_y,
+                                   uint16_t degree_delta)
+{
+  if(!vibrating && time_total > 0 && time_total >= time_peak &&
+     (peak_x != 0 || peak_y != 0) && degree_delta > 0)
+  {
+    vibrating = true;
+    vibrating_deg = 0.0;
+    vibrating_time = 0;
+    vibrating_x = 0.0;
+    vibrating_y = 0.0;
+
+    vib_delta_deg = degree_delta;
+    vib_peak_x = peak_x;
+    vib_peak_y = peak_y;
+    vib_time_peak = time_peak;
+    vib_time_total = time_total;
+
+    return true;
+  }
+  return false;
+}
+
+/*
  * Description: Updates the viewport and all pertinent information. Controls
  *              visualization of the map data for the game view
  *
- * Inputs: none
+ * Inputs: int cycle_time - the ms update cycle for the viewport
  * Output: none
  */
-void MapViewport::update()
+void MapViewport::update(int cycle_time)
 {
   float center_x = 0.0;
   float center_y = 0.0;
   float delta_x = 0.0;
   float delta_y = 0.0;
   bool modify = false;
-
-  //std::cout << sin(PI) << "," << sin(PI/2.0) << std::endl;
 
   /* If the locked on information is a coordinate pair (x,y) */
   if(lock_on == PIXEL)
@@ -603,6 +711,7 @@ void MapViewport::update()
     /* Base differential */
     float diff_x = delta_x - this->x;
     float diff_y = delta_y - this->y;
+    //float travel_delta = cycle_time * kTRAVEL_DIFF / 1000;
 
     /* Travel: slowly go to point */
     if(travel)
@@ -618,20 +727,19 @@ void MapViewport::update()
         diff_y_abs = -diff_y;
 
       /* Determine if out of range */
-      if(diff_x_abs > kTRAVEL_DIFF || diff_y_abs > kTRAVEL_DIFF)
+      if(travel_force || diff_x_abs > kTRAVEL_MIN || diff_y_abs > kTRAVEL_MIN)
       {
-        /* Determine scale - X dominant */
-        if(diff_x_abs >= diff_y_abs)
-        {
-          diff_y_abs = (diff_y_abs / diff_x_abs) * kTRAVEL_DIFF;
-          diff_x_abs = kTRAVEL_DIFF;
-        }
-        /* Y dominant */
-        else
-        {
-          diff_x_abs = (diff_x_abs / diff_y_abs) * kTRAVEL_DIFF;
-          diff_y_abs = kTRAVEL_DIFF;
-        }
+        /* Determine calculated scaled x and y move */
+        if(travel_force)
+          diff_x_abs = (cycle_time * diff_x_abs * kTRAVEL_DIFF / kTRAVEL_DIV);
+        else if(diff_x_abs > kTRAVEL_MIN)
+          diff_x_abs = (cycle_time * diff_x_abs * kTRAVEL_DIFF / kTRAVEL_DIV)
+                     + kTRAVEL_MIN;
+        if(travel_force)
+          diff_y_abs = (cycle_time * diff_y_abs * kTRAVEL_DIFF / kTRAVEL_DIV);
+        else if(diff_y_abs > kTRAVEL_MIN)
+          diff_y_abs = (cycle_time * diff_y_abs * kTRAVEL_DIFF / kTRAVEL_DIV)
+                     + kTRAVEL_MIN;
 
         /* Final calculation */
         if(diff_x < 0)
@@ -653,5 +761,41 @@ void MapViewport::update()
     /* Add differential */
     this->x += diff_x;
     this->y += diff_y;
+  }
+
+  /* Vibrating handling */
+  if(vibrating)
+  {
+    /* Degree update */
+    vibrating_deg += cycle_time * vib_delta_deg / 1000.0;
+    if(vibrating_deg >= 360.0)
+      vibrating_deg -= 360.0;
+
+    /* Sine value */
+    float sin_val = sin(vibrating_deg * PI / 180.0);
+
+    /* The peaking factor */
+    uint32_t time_scale = (vib_time_total - vib_time_peak) / 2;
+    float peak_factor = 1.0;
+    if(vibrating_time < time_scale)
+    {
+      peak_factor = 1.0 * vibrating_time / time_scale;
+    }
+    else if(vibrating_time > (time_scale + vib_time_peak))
+    {
+      peak_factor = 1.0 - 1.0 *
+                    (vibrating_time - time_scale - vib_time_peak) / time_scale;
+      if(peak_factor < 0.0)
+        peak_factor = 0.0;
+    }
+
+    /* Vibrating X and Y */
+    vibrating_x = sin_val * peak_factor * vib_peak_x;
+    vibrating_y = sin_val * peak_factor * vib_peak_y;
+
+    /* Add to delta vibrating time */
+    vibrating_time += cycle_time;
+    if(vibrating_time > vib_time_total)
+      vibrating = false;
   }
 }

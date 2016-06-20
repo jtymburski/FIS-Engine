@@ -76,8 +76,11 @@ private:
   /* The width of the stored texture */
   int width;
 
-  /*------------------- Constants -----------------------*/
+  /*------------------- Private Constants -----------------------*/
   const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
+  const static float kGREY_FOR_BLUE; /* Grey scale convert for blue factor */
+  const static float kGREY_FOR_GREEN; /* Grey scale convert for green factor */
+  const static float kGREY_FOR_RED; /* Grey scale convert for red factor */
 
 /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
@@ -174,6 +177,9 @@ public:
   /* Draws a line given a vector of coordinates */
   static void drawLine(std::vector<Coordinate> line_points,
                        SDL_Renderer* renderer);
+
+  /* Converts RGB to grey scale value */
+  static uint8_t getGreyValue(uint8_t red, uint8_t green, uint8_t blue);
 
   /* Creates a bar, given the parameters and a renderer */
   static bool renderBar(uint16_t x, uint16_t y, uint16_t length,

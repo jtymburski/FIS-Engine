@@ -57,26 +57,40 @@ private:
 
   /* Travel to new point */
   bool travel;
+  bool travel_force;
 
   /* Vibration handling */
   bool vibrating;
+  float vibrating_deg;
+  uint32_t vibrating_time;
+  float vibrating_x;
+  float vibrating_y;
+
+  /* Vibration properties */
   uint16_t vib_delta_deg; /* delta degrees per 1000 ms */
-  uint16_t vib_peak_x;
-  uint16_t vib_peak_y;
+  int16_t vib_peak_x;
+  int16_t vib_peak_y;
   uint32_t vib_time_peak;
   uint32_t vib_time_total;
 
   /*------------------- Constants -----------------------*/
   const static int kMIN_HEIGHT; /* Minimum viewport height, in pixels */
   const static int kMIN_WIDTH;  /* Minimum viewport length, in pixels */
-  const static int kTRAVEL_DIFF; /* Differential for travelling */
+  const static int kTRAVEL_DIFF; /* Pixels per 1000ms travel */
+  const static int kTRAVEL_DIV; /* Factor to scale the calculated value */
+  const static float kTRAVEL_MIN; /* Minimum travel required before reset */
   const static uint16_t kVIB_DEG_DEFAULT; /* Vibrate degree delta default */
   const static uint32_t kVIB_PEAK_DEFAULT; /* Vibrate peak time default */
   const static uint32_t kVIB_TOTAL_DEFAULT; /* Vibrate total time default */
-  const static uint16_t kVIB_X_DEFAULT; /* Vibrate peak x default */
-  const static uint16_t kVIB_Y_DEFAULT; /* Vibrate peak y default */
+  const static int16_t kVIB_X_DEFAULT; /* Vibrate peak x default */
+  const static int16_t kVIB_Y_DEFAULT; /* Vibrate peak y default */
 
-  /*========================= PUBLIC FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
+private:
+  /* Correlate the values with modifications to tile size and map size */
+  void correlateSize();
+
+/*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Clears out the information in the class and sets it to default */
   void clear();
@@ -105,7 +119,11 @@ public:
   uint16_t getYTileStart();
 
   /* Returns if travelling */
+  bool isTravelForce();
   bool isTravelling();
+
+  /* Returns if it is vibrating */
+  bool isVibrating();
 
   /* To change what the viewport locks to, when the update is called */
   bool lockOn(float x, float y, bool travel = true);
@@ -120,9 +138,17 @@ public:
 
   /* Sets if the movement should travel to the new location */
   void setToTravel(bool travel);
+  void setTravelForce(bool force);
+
+  /* Trigger vibration call */
+  bool triggerVibration(uint32_t time_total = kVIB_TOTAL_DEFAULT,
+                        uint32_t time_peak = kVIB_PEAK_DEFAULT,
+                        int16_t peak_x = kVIB_X_DEFAULT,
+                        int16_t peak_y = kVIB_Y_DEFAULT,
+                        uint16_t degree_delta = kVIB_DEG_DEFAULT);
 
   /* Updates the viewport, call at the end of the update call in the map */
-  void update();
+  void update(int cycle_time);
 };
 
 #endif // MAPVIEWPORT_H
