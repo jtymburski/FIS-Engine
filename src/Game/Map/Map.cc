@@ -1691,7 +1691,7 @@ bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
   /* Parse and check view data */
   bool view, scroll;
   EventSet::dataEnumView(view_mode, view, scroll);
-  if(view && view_time > 0)
+  if(view)// && view_time > 0)
   {
     /* Set data */
     this->view_acc = 0;
@@ -1708,6 +1708,17 @@ bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
   }
   return false;
 }
+  
+/* Triggers a view of the passed in data */
+bool Map::triggerViewFinish()
+{
+  if(mode_curr == MapMode::VIEW && view_time < 0)
+  {
+    view_time = 0;
+    return true;
+  }
+  return false;
+}
 
 /* Triggers a view of the passed in data */
 bool Map::triggerViewTile(Tile* view_tile, uint16_t view_section,
@@ -1716,7 +1727,7 @@ bool Map::triggerViewTile(Tile* view_tile, uint16_t view_section,
   /* Parse and check view data */
   bool view, scroll;
   EventSet::dataEnumView(view_mode, view, scroll);
-  if(view && view_time > 0)
+  if(view)// && view_time > 0)
   {
     /* Set data */
     this->view_acc = 0;
@@ -1926,7 +1937,7 @@ void Map::updateMode(int cycle_time)
       /* Time accumulated or finished */
       else
       {
-        if(!viewport.isTravelling())
+        if(!viewport.isTravelling() && view_time >= 0)
         {
           /* Still timing */
           if(view_acc < view_time)
@@ -2722,6 +2733,15 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
 
       // delete convo;
     }
+    /* Test: track to location */
+    else if(event.keysym.sym == SDLK_b)
+    {
+      UnlockView view_mode = EventSet::createEnumView(true, false);
+      //triggerViewTile(sub_map[map_index].tiles[5][5], map_index, view_mode,
+      //                10000);
+      triggerViewTile(sub_map[0].tiles[5][5], 0, view_mode,
+                      -1);
+    }
     /* Test: Vibration trigger */
     else if(event.keysym.sym == SDLK_v)
     {
@@ -2750,6 +2770,22 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
         std::cout << "Height: " << bbox.h << " - " << bpixel.h << std::endl;
         std::cout << "----" << std::endl;
       }
+    }
+  }
+  else if(mode_curr == MapMode::VIEW)
+  {
+    /* Test: track to location end */
+    if(event.keysym.sym == SDLK_b)
+    {
+      triggerViewFinish();
+    }
+    else if(event.keysym.sym == SDLK_n)
+    {
+      UnlockView view_mode = EventSet::createEnumView(true, false);
+      //triggerViewTile(sub_map[map_index].tiles[5][5], map_index, view_mode,
+      //                10000);
+      triggerViewTile(sub_map[2].tiles[5][5], 2, view_mode,
+                      -1);
     }
   }
 }

@@ -322,6 +322,7 @@ private:
                                                   bool matrix = false);
 
   /* Triggers a view of the passed in data */
+  bool triggerViewFinish();
   bool triggerViewThing(MapThing* view_thing, UnlockView view_mode,
                         int view_time);
   bool triggerViewTile(Tile* view_tile, uint16_t view_section,
