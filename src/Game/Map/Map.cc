@@ -65,6 +65,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   fade_delta = 0.0;
   fade_main = false;
   fade_status = MapFade::BLACK;
+  lay_fade = MapFade::BLACK;
   loaded = false;
   map_index = 0;
   map_index_next = -1;
@@ -1683,6 +1684,31 @@ std::vector<std::vector<int32_t>> Map::splitIdString(std::string id,
 
   return id_stack;
 }
+  
+/* Lay triggers based on passed in information */
+bool Map::triggerLay(std::string path, int anim_time,
+                     float velocity_x, float velocity_y)
+{
+  // TODO
+}
+
+/* Lay triggers based on passed in information */
+bool Map::triggerLayFinish()
+{
+  // TODO
+}
+
+/* Lay triggers based on passed in information */
+bool Map::triggerLays(std::vector<LayOver> lay_data)
+{
+  // TODO
+}
+
+/* Lay triggers based on passed in information */
+bool Map::triggerLays(std::vector<Lay*> lay_ptrs)
+{
+  // TODO
+}
 
 /* Triggers a view of the passed in data */
 bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
@@ -1909,8 +1935,18 @@ void Map::updateMode(int cycle_time)
   /* -- CURRENT MODE VIEW -- */
   else if(mode_curr == VIEW)
   {
+    /* -- NEXT MODE DISABLED -- */
+    if(mode_next == DISABLED)
+    {
+      fade_status = MapFade::FADINGOUT;
+      if(updateFade(cycle_time))
+      {
+        mode_curr = mode_next;
+        mode_next = NONE;
+      }
+    }
     /* First half - going to view point */
-    if(view_start)
+    else if(view_start)
     {
       /* Same sub-section */
       if(view_section == map_index)
@@ -2550,11 +2586,18 @@ bool Map::isModeDisabled()
 }
 
 /* Mode checks - only returns true if NORMAL current mode and fade status is
- * VISIBLE */
+ * VISIBLE and not travelling between points */
 bool Map::isModeNormal()
 {
   return (mode_curr == NORMAL && fade_status == MapFade::VISIBLE &&
           !viewport.isTravelling());
+}
+
+/* Mode checks - only returns true if VIEW current mode. Negates fade status
+ *               and returns based on view regardless */
+bool Map::isModeView()
+{
+  return (mode_curr == VIEW);
 }
 
 /* The key up and down events to be handled by the class */
@@ -2736,7 +2779,7 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     /* Test: track to location */
     else if(event.keysym.sym == SDLK_b)
     {
-      UnlockView view_mode = EventSet::createEnumView(true, false);
+      UnlockView view_mode = EventSet::createEnumView(true, true);
       //triggerViewTile(sub_map[map_index].tiles[5][5], map_index, view_mode,
       //                10000);
       triggerViewTile(sub_map[0].tiles[5][5], 0, view_mode,
@@ -2781,9 +2824,9 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     }
     else if(event.keysym.sym == SDLK_n)
     {
-      UnlockView view_mode = EventSet::createEnumView(true, false);
-      //triggerViewTile(sub_map[map_index].tiles[5][5], map_index, view_mode,
-      //                10000);
+      UnlockView view_mode = EventSet::createEnumView(true, true);
+      //triggerViewTile(sub_map[map_index].tiles[25][25], map_index, view_mode,
+      //                -1);
       triggerViewTile(sub_map[2].tiles[5][5], 2, view_mode,
                       -1);
     }

@@ -111,6 +111,10 @@ private:
   /* The item store menu */
   ItemStore item_menu;
 
+  /* Lay data from animation triggers */
+  MapFade lay_fade; // TODO
+  std::vector<Lay*> lay_images; // TODO
+
   /* Map lays */
   std::vector<Lay*> lay_overs;
   std::vector<Lay*> lay_unders;
@@ -321,6 +325,14 @@ private:
   std::vector<std::vector<int32_t>> splitIdString(std::string id,
                                                   bool matrix = false);
 
+  /* Lay triggers based on passed in information */
+  bool triggerLay(std::string path,
+                  int anim_time = Sprite::kDEFAULT_ANIMATE_TIME,
+                  float velocity_x = 0.0, float velocity_y = 0.0);
+  bool triggerLayFinish();
+  bool triggerLays(std::vector<LayOver> lay_data);
+  bool triggerLays(std::vector<Lay*> lay_ptrs);
+
   /* Triggers a view of the passed in data */
   bool triggerViewFinish();
   bool triggerViewThing(MapThing* view_thing, UnlockView view_mode,
@@ -421,6 +433,7 @@ public:
    * for disabled */
   bool isModeDisabled();
   bool isModeNormal();
+  bool isModeView();
 
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(KeyHandler& key_handler);

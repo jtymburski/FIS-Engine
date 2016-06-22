@@ -154,7 +154,7 @@ public:
   const static uint8_t kDEFAULT_OPACITY;  /* the default rendered alpha */
   const static uint8_t kDELTA_GREY_SCALE; /* Delta grey scale alpha */
 
-  /*======================== PRIVATE FUNCTIONS ===============================*/
+/*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Returns the angle, if one exists in the list of modifications */
   uint16_t parseAdjustments(std::vector<std::string> adjustments);
@@ -162,7 +162,7 @@ private:
   /* Sets the color modification with the texture */
   void setColorMod();
 
-  /*======================= PROTECTED FUNCTIONS ==============================*/
+/*======================= PROTECTED FUNCTIONS ==============================*/
 protected:
   /* Contains the destructor implementation (so children can call it) */
   void clear();
@@ -379,7 +379,7 @@ public:
   /* Updates the frames within the sprite */
   bool update(int cycle_time, bool skip_head = false, bool color_only = false);
 
-  /*====================== PUBLIC STATIC FUNCTIONS ===========================*/
+/*====================== PUBLIC STATIC FUNCTIONS ===========================*/
 public:
   /* Returns the degrees of the string identifier */
   static int getAngle(std::string identifier);
@@ -387,7 +387,7 @@ public:
   /* Returns the degrees of the angle enumerator */
   static int getAngle(RotatedAngle angle);
 
-  /* ========================= OPERATOR FUNCTIONS =========================== */
+/* ========================= OPERATOR FUNCTIONS =========================== */
 public:
   Sprite& operator=(const Sprite& source);
 };
