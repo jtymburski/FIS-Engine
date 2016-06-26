@@ -58,7 +58,7 @@ Application::Application(std::string base_path, std::string app_path,
   game_handler->setSoundHandler(&sound_handler);
 
   /* Title Screen */
-  title_screen.setConfiguration(system_options);
+  title_screen.setConfig(system_options);
   title_screen.setSoundHandler(&sound_handler);
 
   /* Sets the current mode - paused mode */
@@ -92,9 +92,9 @@ bool Application::changeMode(AppMode mode)
   if(allow && this->mode != mode)
   {
     /* Changes to execute on the views closing */
-    if(this->mode == TITLESCREEN)
-      title_screen.enableView(false);
-    else if(this->mode == GAME)
+    // if(this->mode == TITLESCREEN)
+    //   title_screen.enableView(false);
+    if(this->mode == GAME)
       game_handler->enableView(false);
     else if(this->mode == PAUSED)
       Sound::resumeAllChannels();
@@ -103,9 +103,9 @@ bool Application::changeMode(AppMode mode)
     // this->mode = mode;
 
     /* Changes to execute on the views opening */
-    if(mode == TITLESCREEN)
-      title_screen.enableView(true);
-    else if(mode == GAME)
+    // if(mode == TITLESCREEN)
+    //   title_screen.enableView(true);
+    if(mode == GAME)
       game_handler->enableView(true);
     else if(mode == PAUSED)
       Sound::pauseAllChannels();
@@ -224,9 +224,7 @@ void Application::handleEvents()
     else if(event.type == SDL_KEYUP)
     {
       /* Send the key to the relevant view */
-      if(mode == TITLESCREEN)
-        title_screen.keyUpEvent(key_handler);
-      else if(mode == GAME)
+      if(mode == GAME)
         game_handler->keyUpEvent(key_handler);
     }
   }
@@ -451,15 +449,12 @@ bool Application::updateViews(int cycle_time)
     if(title_screen.update(cycle_time))
     {
       /* If action is available, get it, and parse it to change the mode */
-      TitleScreen::MenuItems action_item = title_screen.getAction();
-      if(action_item == TitleScreen::EXIT)
-      {
-        changeMode(EXIT);
-      }
-      else if(action_item == TitleScreen::GAME)
-      {
+      MenuType menu_type = title_screen.getActiveTitleMenu();
+
+      // if(menu_type == MenuType::TITLE_QUIT)
+      //   changeMode(EXIT);
+      // else if(menu_type == MenuType::TITLE_NEW_GAME)
         changeMode(GAME);
-      }
     }
   }
   /* Otherwise, update the game and check if the game is finished */
@@ -644,8 +639,8 @@ bool Application::initialize()
   {
     // success &= load();
 
-    /* Set the title screen background - TODO: Encapsulate in load?? */
-    title_screen.setBackground("sprites/Title/old_title.png", renderer);
+    // /* Set the title screen background - TODO: Encapsulate in load?? */
+    // title_screen.setBackground("sprites/Title/old_title.png", renderer);
 
     if(success)
     {

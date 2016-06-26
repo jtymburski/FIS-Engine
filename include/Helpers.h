@@ -216,6 +216,9 @@ public:
   static std::string elementToDisplayString(const Element& element);
   static std::string elementToString(const Element& element);
 
+  /* Convers an enumerated MenuType to a string */
+  static std::string menuTypeToStr(const MenuType& menu_type);
+
   /* Flush the console with [blank] input */
   static void flushConsole(const char& c = ' ');
 

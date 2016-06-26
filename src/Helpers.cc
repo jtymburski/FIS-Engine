@@ -897,6 +897,58 @@ std::string Helpers::elementToString(const Element& element)
 }
 
 /*
+ * Description: Returns the string equivalent of a given MenuType enum.
+ *
+ * Inputs: const MenuType& menu_type - enumerated MenuType object
+ * Output: std::string the string equivalent of the MenuType
+ */
+std::string Helpers::menuTypeToStr(const MenuType& menu_type)
+{
+  if(menu_type == MenuType::SLEUTH)
+    return "Sleuth";
+  if(menu_type == MenuType::SLEUTH_OVERVIEW)
+    return "Overview";
+  if(menu_type == MenuType::SLEUTH_EQUIPMENT)
+    return "Equipment";
+  if(menu_type == MenuType::SLEUTH_SKILLS)
+    return "Skills";
+  if(menu_type == MenuType::SLEUTH_DETAILS)
+    return "Details";
+  if(menu_type == MenuType::INVENTORY)
+    return "Inventory";
+  if(menu_type == MenuType::INVENTORY_BUBBIES)
+    return "Bubbies";
+  if(menu_type == MenuType::INVENTORY_EQUIP)
+    return "Equipment";
+  if(menu_type == MenuType::INVENTORY_ITEMS)
+    return "Items";
+  if(menu_type == MenuType::INVENTORY_KEY)
+    return "Key Items";
+  if(menu_type == MenuType::OPTIONS)
+    return "Options";
+  if(menu_type == MenuType::SAVE)
+    return "Save";
+  if(menu_type == MenuType::LOAD)
+    return "Load";
+  if(menu_type == MenuType::QUIT)
+    return "Quit";
+  if(menu_type == MenuType::TITLE_PLAYER_SELECT)
+    return "New Game";
+  if(menu_type == MenuType::TITLE_NEW_GAME)
+    return "-------";
+  if(menu_type == MenuType::TITLE_LOAD_GAME)
+    return "Load Game";
+  if(menu_type == MenuType::TITLE_OPTIONS)
+    return "Options";
+  if(menu_type == MenuType::TITLE_QUIT)
+    return "Quit";
+  if(menu_type == MenuType::INVALID)
+    return "INVALID";
+
+  return "";
+}
+
+/*
  * Description: Flushes some whitespace (or whatever) into the console window.
  *
  * Inputs: char c - character to put on each line, ex. ' '

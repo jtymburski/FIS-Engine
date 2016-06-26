@@ -157,7 +157,7 @@ void Sprite::setColorMod()
   uint8_t blue = color_blue;
 
   /* Complete grey scale analysis if changing color */
-  if((red < 255 || green < 255 || blue < 255) && 
+  if((red < 255 || green < 255 || blue < 255) &&
      (color_mode == ColorMode::GREY || color_mode == ColorMode::COLORING ||
       color_mode == ColorMode::GREYING))
   {

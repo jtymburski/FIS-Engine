@@ -783,23 +783,28 @@ void Menu::buildMainSection(MenuType menu_type)
 /* Constructs TitleElements on the Title Menu Section */
 void Menu::buildTitleElements()
 {
+  /* Clear the title elements to begin */
   title_elements.clear();
 
   /* Party TitleElement */
-  title_elements.push_back(TitleElement("Sleuth", true, MenuType::SLEUTH));
+  title_elements.push_back(TitleElement(
+      Helpers::menuTypeToStr(MenuType::SLEUTH), true, MenuType::SLEUTH));
 
   /* Inventory TitleElement */
   title_elements.push_back(
       TitleElement("Inventory", true, MenuType::INVENTORY));
 
   /* Options TitleElement */
-  title_elements.push_back(TitleElement("Options", true, MenuType::OPTIONS));
+  title_elements.push_back(TitleElement(
+      Helpers::menuTypeToStr(MenuType::OPTIONS), true, MenuType::OPTIONS));
 
   /* Save TitleElement */
-  title_elements.push_back(TitleElement("Save", true, MenuType::SAVE));
+  title_elements.push_back(TitleElement(Helpers::menuTypeToStr(MenuType::SAVE),
+                                        true, MenuType::SAVE));
 
   /* Quit (Return to title) TitleElement */
-  title_elements.push_back(TitleElement("Quit", true, MenuType::QUIT));
+  title_elements.push_back(TitleElement(Helpers::menuTypeToStr(MenuType::QUIT),
+                                        true, MenuType::QUIT));
 }
 
 void Menu::buildPersonTitleElements()
@@ -2878,7 +2883,7 @@ void Menu::keyDownUp()
   {
     if(title_element_index > 0)
     {
-      event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+      event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
                                   SoundChannels::MENUS);
 
       title_element_index--;
@@ -2942,7 +2947,7 @@ void Menu::keyDownDown()
   {
     if(title_element_index + 1 < (int32_t)title_elements.size())
     {
-      event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+      event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
                                   SoundChannels::MENUS);
 
       title_element_index++;

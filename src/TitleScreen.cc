@@ -10,382 +10,79 @@
  ******************************************************************************/
 #include "TitleScreen.h"
 
-/* Constant Implementation - see header file for descriptions */
-const uint8_t TitleScreen::kFONT_SIZE = 28;
-const std::string TitleScreen::kMENU_ITEMS[] = {"Play Game", "Options", "Exit"};
-const uint16_t TitleScreen::kNAV_TIME_LIMIT = 200;
-const uint8_t TitleScreen::kNUM_MENU_ITEMS = 3;
-const uint16_t TitleScreen::kTEXT_GAP = 65;
-const uint16_t TitleScreen::kTEXT_MARGIN = 75;
-
 /*=============================================================================
- * CONSTRUCTORS / DESTRUCTORS
+ * TITLE_BACKGROUND - If defined
  *============================================================================*/
 
-/* Constructor function */
-TitleScreen::TitleScreen(Options* running_config)
+#ifndef TITLE_SKIP
+/* Construct the TitleBackground Class */
+TitleBackground::TitleBackground(Options* config, SDL_Renderer* renderer)
+    : delay{0},
+      delay2{0},
+      elapsed_time{0},
+      render_disabled{false},
+      rotate1{0},
+      rotate2{0},
+      rotate3{0},
+      rotate6{0}
 {
-  /* Initial parameter setup */
-  action = NONE;
-  base_path = "";
-  cursor_index = 0;
-  font = nullptr;
-  nav_down = false;
-  nav_time = 0;
-  nav_up = false;
-  render_disable = false;
-  render_index = 0;
-  sound_handler = nullptr;
-  system_options = nullptr;
-
-  // TODO: TESTING - FIX
-  rotate1 = 0;
-  rotate2 = 0;
-  rotate3 = 0;
-  rotate6 = 0;
-  delay = 0;
-  delay2 = 0;
-
-  /* Set up the configuration, if applicable */
-  setConfiguration(running_config);
-}
-
-/* Destructor function */
-TitleScreen::~TitleScreen()
-{
-  system_options = NULL;
-  unsetMenu();
-}
-
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
-
-/* Decrements the selected option */
-void TitleScreen::decrementSelected()
-{
-  if(cursor_index == 0)
-    cursor_index = kNUM_MENU_ITEMS;
-  cursor_index--;
-
-  /* Play sound */
-  if(sound_handler != nullptr)
-    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                  SoundChannels::MENUS);
-}
-
-/* Increments the selected option */
-void TitleScreen::incrementSelected()
-{
-  cursor_index++;
-  if(cursor_index == kNUM_MENU_ITEMS)
-    cursor_index = 0;
-
-  /* Play sound */
-  if(sound_handler != nullptr)
-    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                  SoundChannels::MENUS);
-}
-
-/* Sets the selected item. This gets polled by another class */
-void TitleScreen::setAction()
-{
-  if(action == NONE)
-    action = static_cast<MenuItems>(cursor_index);
-}
-
-/* Set up the menu display text, for painting */
-bool TitleScreen::setMenu(SDL_Renderer* renderer)
-{
-  if(system_options != NULL)
+  if(config && renderer)
   {
-    SDL_Color tinted_color = {20, 153, 78, 255};
-    SDL_Color plain_color = {255, 255, 255, 255};
-    TTF_Font* new_font =
-        Text::createFont(system_options->getFont(), kFONT_SIZE, TTF_STYLE_BOLD);
-    if(new_font != NULL)
-    {
-      unsetMenu();
+    auto path = config->getBasePath();
 
-      /* Set the class font */
-      font = new_font;
-
-      /* Set up the labels */
-      for(int i = 0; i < kNUM_MENU_ITEMS; i++)
-      {
-        /* The selected text */
-        Text* selected = new Text(font);
-        selected->setText(renderer, kMENU_ITEMS[i], tinted_color);
-        selected_options.push_back(selected);
-
-        /* The unselected text */
-        Text* unselected = new Text(font);
-        unselected->setText(renderer, kMENU_ITEMS[i], plain_color);
-        unselected_options.push_back(unselected);
-      }
-
-      /* Proceed to update the render index */
-      render_index = kTEXT_MARGIN + kTEXT_GAP * (kNUM_MENU_ITEMS - 1) +
-                     selected_options[kNUM_MENU_ITEMS - 1]->getHeight();
-      render_index = system_options->getScreenHeight() - render_index;
-
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void TitleScreen::unsetMenu()
-{
-  /* Clears selected labels */
-  for(uint8_t i = 0; i < selected_options.size(); i++)
-    delete selected_options[i];
-  selected_options.clear();
-
-  /* Clears unselected labels */
-  for(uint8_t i = 0; i < unselected_options.size(); i++)
-    delete unselected_options[i];
-  unselected_options.clear();
-
-  /* Destroy the font */
-  TTF_CloseFont(font);
-  font = NULL;
-}
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
-
-/* Enables or disables the view. This includes any initialization for before
- * or after it was visible */
-void TitleScreen::enableView(bool enable)
-{
-  /* Enables all relevant control for the view - not used */
-  if(enable)
-  {
-    firstUpdate();
-  }
-  /* Disables all relevant control for the view */
-  else
-  {
+    background.insertFirst(path + "sprites/Title/title-backdrop.png", renderer);
+    background2.insertFirst(path + "sprites/Title/title-dynaton.png", renderer);
+    background4.insertFirst(path + "sprites/Title/title-dynatonbooms1.png",
+                            renderer);
+    background4.setOpacity(0);
+    background5.insertFirst(path + "sprites/Title/title-dynatonbooms2.png",
+                            renderer);
+    background5.setOpacity(0);
+    background3.insertFirst(path + "sprites/Title/title-dynatonatmosphere.png",
+                            renderer);
+    background3.setOpacity(196);
+    background3.setColorBalance(255, 170, 170);
+    background6.insertFirst(path + "sprites/Title/title-moon.png", renderer);
+    background7.insertFirst(path + "sprites/Title/title-waldo.png", renderer);
+    title.setTexture(path + "sprites/Title/title.png", renderer);
   }
 }
 
-/* First update call each time the view changes - must be called */
-void TitleScreen::firstUpdate()
+bool TitleBackground::render(SDL_Renderer* renderer)
 {
-  /* Music trigger, if relevant. Otherwise, stop tunes */
-  if(sound_handler != nullptr)
+  bool success = false;
+
+  if(renderer)
   {
-    Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
-    if(title_music != nullptr)
-      sound_handler->addPlayToQueue(Sound::kID_MUSIC_TITLE,
-                                    SoundChannels::MUSIC1);
-    else
-      sound_handler->addStopToQueue(SoundChannels::MUSIC1);
-  }
-}
+    success = true;
 
-/* Returns the active action */
-TitleScreen::MenuItems TitleScreen::getAction()
-{
-  if(action != NONE)
-  {
-    MenuItems triggered_action = action;
-    action = NONE;
-    return triggered_action;
-  }
-
-  return action;
-}
-
-/* The key up and down events to be handled by the class */
-/* The key down event handler */
-void TitleScreen::keyDownEvent(KeyHandler& key_handler)
-{
-  std::cout << "Key down event!" << std::endl;
-  if(system_options != nullptr)
-  {
-    /* Main code items */
-    if(key_handler.isDepressed(GameKey::MOVE_DOWN))
-    {
-      incrementSelected();
-      nav_down = true;
-    }
-    if(key_handler.isDepressed(GameKey::MOVE_UP))
-    {
-      decrementSelected();
-      nav_up = true;
-    }
-
-    if(key_handler.isDepressed(GameKey::ACTION))
-    {
-      /* Play sound */
-      if(sound_handler != nullptr)
-      {
-        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
-                                      SoundChannels::MENUS, true);
-      }
-
-      /* Set action */
-      setAction();
-    }
-
-    if(key_handler.isDepressed(GameKey::CANCEL))
-    {
-      if(cursor_index != (kNUM_MENU_ITEMS - 1))
-      {
-        /* Play sound */
-        if(sound_handler != nullptr)
-        {
-          sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
-                                        SoundChannels::MENUS);
-        }
-
-        /* Change index */
-        cursor_index = kNUM_MENU_ITEMS - 1;
-      }
-    }
-  }
-}
-
-/* Key down event for test keys - isolated from key handler system */
-#ifdef UDEBUG
-void TitleScreen::keyTestDownEvent(SDL_KeyboardEvent event)
-{
-  /* Hide text and logo from title */
-  if(event.keysym.sym == SDLK_F1)
-  {
-    render_disable = !render_disable;
-  }
-}
-#endif
-
-/* The key up event handler */
-void TitleScreen::keyUpEvent(KeyHandler& key_handler)
-{
-  if(!key_handler.isDepressed(GameKey::MOVE_DOWN))
-  {
-    nav_down = false;
-  }
-  if(!key_handler.isDepressed(GameKey::MOVE_UP))
-  {
-    nav_up = false;
-  }
-}
-
-/* Renders the title screen */
-bool TitleScreen::render(SDL_Renderer* renderer)
-{
-  if(renderer != NULL)
-  {
-    /* Create font and labels, if NULL. Typically, this will only be called
-     * once the first time */
-    if(font == NULL)
-      setMenu(renderer);
-
-#ifdef TITLE_SKIP
     /* Render the background */
-    background.render(renderer);
-#else
-    /* Render the background */
-    background.render(renderer, 0, 0);
-    background6.render(renderer, -220, -48);
-    background2.render(renderer, 153, 314);
+    success &= background.render(renderer, 0, 0);
+    success &= background6.render(renderer, -220, -48);
+    success &= background2.render(renderer, 153, 314);
 
     /* Waldo show - TODO: Only certain hours? */
-    if(true)
-    {
-      background7.render(renderer, 153, 314);
-    }
+    success &= background7.render(renderer, 153, 314);
 
     /* The flash and bangs */
-    background4.render(renderer, 153, 314);
-    background5.render(renderer, 153, 314);
+    success &= background4.render(renderer, 153, 314);
+    success &= background5.render(renderer, 153, 314);
 
     /* Render atmosphere */
-    background3.render(renderer, 153, 314);
+    success &= background3.render(renderer, 153, 314);
 
-    /* Render title */
-    if(!render_disable)
-      title.render(renderer, 50, 50);
-#endif
-
-    /* Paint the selected options on the screen */
-    if(!render_disable)
-    {
-      for(uint8_t i = 0; i < selected_options.size(); i++)
-      {
-        if(i == cursor_index)
-          selected_options[i]->render(renderer, kTEXT_MARGIN,
-                                      render_index + kTEXT_GAP * i);
-        else
-          unselected_options[i]->render(renderer, kTEXT_MARGIN,
-                                        render_index + kTEXT_GAP * i);
-      }
-    }
-
-    return true;
+    if(!render_disabled)
+      success &= title.render(renderer, 50, 50);
   }
 
-  return false;
-}
-
-bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
-{
-#ifdef TITLE_SKIP
-  return background.insertFirst(base_path + path, renderer);
-#else
-  (void)path;
-
-  background.insertFirst(base_path + "sprites/Title/title-backdrop.png",
-                         renderer);
-  background2.insertFirst(base_path + "sprites/Title/title-dynaton.png",
-                          renderer);
-  background4.insertFirst(base_path + "sprites/Title/title-dynatonbooms1.png",
-                          renderer);
-  background4.setOpacity(0);
-  background5.insertFirst(base_path + "sprites/Title/title-dynatonbooms2.png",
-                          renderer);
-  background5.setOpacity(0);
-  background3.insertFirst(
-      base_path + "sprites/Title/title-dynatonatmosphere.png", renderer);
-  background3.setOpacity(196);
-  background3.setColorBalance(255, 170, 170);
-  background6.insertFirst(base_path + "sprites/Title/title-moon.png", renderer);
-  background7.insertFirst(base_path + "sprites/Title/title-waldo.png",
-                          renderer);
-  title.setTexture(base_path + "sprites/Title/title.png", renderer);
-
-  return true;
-#endif
-}
-
-/* Sets the running configuration, from the options class */
-bool TitleScreen::setConfiguration(Options* running_config)
-{
-  if(running_config != NULL)
-  {
-    system_options = running_config;
-    base_path = system_options->getBasePath();
-    return true;
-  }
-
-  return false;
-}
-
-/* Sets the sound handler used. If unset, no sounds will play */
-void TitleScreen::setSoundHandler(SoundHandler* new_handler)
-{
-  sound_handler = new_handler;
+  return success;
 }
 
 /* Updates the title screen. Necessary for visual updates */
-bool TitleScreen::update(int cycle_time)
+bool TitleBackground::update(int32_t cycle_time)
 {
   /* Increment the nav time */
-  nav_time += cycle_time;
+  elapsed_time += cycle_time;
 
   /* Rotation testing */
   // rotate1 += 0.03125;//0.0625;//0.001;
@@ -403,12 +100,15 @@ bool TitleScreen::update(int cycle_time)
 
   /* Poof Number 1 */
   if(delay < 5000)
+  {
     delay += cycle_time;
+  }
   else if(delay < 10000)
   {
     delay = 10000;
     background4.setOpacity(255);
   }
+
   if(delay == 10000)
   {
     background4.setBrightness(background4.getBrightness() - 0.03125);
@@ -430,12 +130,15 @@ bool TitleScreen::update(int cycle_time)
 
   /* Poof Number 2 */
   if(delay2 < 7500)
+  {
     delay2 += cycle_time;
+  }
   else if(delay2 < 10000)
   {
     delay2 = 10000;
     background5.setOpacity(255);
   }
+
   if(delay2 == 10000)
   {
     background5.setBrightness(background5.getBrightness() - 0.03125);
@@ -461,29 +164,341 @@ bool TitleScreen::update(int cycle_time)
   // if(background.getBrightness() < 0.6)
   //  background.setBrightness(1.0);
 
-  /* If the down key is pressed and not up */
-  if(nav_down && !nav_up)
-  {
-    if(nav_time >= kNAV_TIME_LIMIT)
-    {
-      incrementSelected();
-      nav_time -= kNAV_TIME_LIMIT;
-    }
-  }
-  /* If the up key is pressed but not down */
-  else if(nav_up && !nav_down)
-  {
-    if(nav_time >= kNAV_TIME_LIMIT)
-    {
-      decrementSelected();
-      nav_time -= kNAV_TIME_LIMIT;
-    }
-  }
-  /* Otherwise, just clear the buffers */
-  else
-  {
-    nav_time = 0;
-  }
-
-  return (action != NONE);
+  return false;
 }
+#endif
+
+/*=============================================================================
+ * CONSTANTS
+ *============================================================================*/
+
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *============================================================================*/
+
+TitleScreen::TitleScreen(Options* config)
+    : config{config},
+      menu_layer{MenuLayer::TITLE},
+      menu_type{MenuType::INVALID},
+      sound_handler{nullptr},
+      title_elements{},
+      title_menu_index{-1}
+{
+}
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
+/* Create the main menu title elements */
+void TitleScreen::buildTitleElements()
+{
+  /* Clear the title elements to begin */
+  title_elements.clear();
+
+  /* Create tNew Game element */
+  auto elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_NEW_GAME),
+                          true, MenuType::TITLE_NEW_GAME);
+  title_elements.push_back(elm);
+
+  /* Create the Load Title element */
+  elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_LOAD_GAME), true,
+                     MenuType::TITLE_LOAD_GAME);
+  title_elements.push_back(elm);
+
+  /* Creates the Options */
+  elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_OPTIONS), true,
+                     MenuType::TITLE_OPTIONS);
+  title_elements.push_back(elm);
+
+  /* Create the Quit title element */
+  elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_QUIT), true,
+                     MenuType::TITLE_QUIT);
+  title_elements.push_back(elm);
+
+  /* Assign the current index and menu type after building title elements */
+  title_menu_index = 0;
+  menu_type = MenuType::TITLE_NEW_GAME;
+}
+
+/* Processing for the Action key */
+void TitleScreen::keyDownAction()
+{
+  if(menu_layer == MenuLayer::MAIN)
+  {
+    if(title_menu_index != -1 &&
+       (uint32_t)title_menu_index < title_elements.size())
+    {
+      /* Play sound */
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS, true);
+
+      menu_type = title_elements.at(title_menu_index).menu_type;
+    }
+  }
+}
+
+/* Processing for the Cancel key */
+void TitleScreen::keyDownCancel()
+{
+  if(menu_layer == MenuLayer::TITLE)
+  {
+    /* Play sound */
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
+                                  SoundChannels::MENUS);
+  }
+}
+
+/* Processing for the Down key */
+void TitleScreen::keyDownDown()
+{
+  if(menu_layer == MenuLayer::TITLE)
+  {
+    if(title_menu_index + 1 < (int32_t)title_elements.size())
+    {
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
+
+      title_menu_index++;
+    }
+  }
+  else
+    title_menu_index = 0;
+}
+
+/* Processing for the Left key */
+void TitleScreen::keyDownLeft()
+{
+}
+
+/* Processing for the Right key */
+void TitleScreen::keyDownRight()
+{
+}
+
+/* Processing for the Up key */
+void TitleScreen::keyDownUp()
+{
+  if(menu_layer == MenuLayer::TITLE)
+  {
+    if(title_menu_index > 0)
+    {
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
+
+      title_menu_index--;
+    }
+    else
+      title_menu_index = title_elements.size() - 1;
+  }
+}
+
+/* Render the TitleElements */
+void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
+{
+  // TODO
+  SDL_Color kCOLOR_TEXT = {255, 255, 255, 255};
+
+  if(config)
+  {
+    auto height = config->getScreenHeight();
+    auto width = config->getScreenWidth();
+    auto font = config->getFontTTF(FontName::M_TITLE_ELM);
+
+    // TODO
+    Coordinate current{(int32_t)std::round(height * 0.7),
+                       (int32_t)std::round(width * 0.2)};
+
+    if(font)
+    {
+      int32_t i = 0;
+
+      for(auto& element : title_elements)
+      {
+        Text t_element(font);
+        t_element.setText(renderer, element.name, kCOLOR_TEXT);
+        t_element.render(renderer, current.x, current.y);
+        current.y += (int32_t)std::round(t_element.getHeight() * 1.2);
+
+        // TODO
+        if(i != -1 && i == title_menu_index)
+        {
+          SDL_Rect rect;
+          rect.x = current.x -= 10;
+          rect.y = current.y -= 10;
+          rect.w = t_element.getWidth() + 20;
+          rect.h = t_element.getHeight() + 20;
+          Frame::setRenderDrawColor(renderer, {150, 150, 150, 255});
+          SDL_RenderFillRect(renderer, &rect);
+        }
+
+        /* Increment the index */
+        i++;
+      }
+    }
+  }
+}
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
+/* Enables or disables the view. This includes any initialization for before
+ * or after it was visible */
+void TitleScreen::enableView(bool enable)
+{
+  /* Enables all relevant control for the view - not used */
+  if(enable)
+  {
+    firstUpdate();
+  }
+}
+
+/* First update call each time the view changes - must be called */
+void TitleScreen::firstUpdate()
+{
+  /* Music trigger, if relevant. Otherwise, stop tunes */
+  if(sound_handler)
+  {
+    Sound* title_music = sound_handler->getAudioMusic(Sound::kID_MUSIC_TITLE);
+
+    if(title_music)
+    {
+      sound_handler->addPlayToQueue(Sound::kID_MUSIC_TITLE,
+                                    SoundChannels::MUSIC1);
+    }
+    else
+      sound_handler->addStopToQueue(SoundChannels::MUSIC1);
+  }
+}
+
+/* Current main MenuType enumerated value */
+MenuType TitleScreen::getActiveTitleMenu()
+{
+  return this->menu_type;
+}
+
+/* The KeyDown event handler -- sends keys to specific functions */
+void TitleScreen::keyDownEvent(KeyHandler& key_handler)
+{
+  if(config && sound_handler)
+  {
+    /* Main code items */
+    if(key_handler.isDepressed(GameKey::ACTION))
+      keyDownAction();
+    if(key_handler.isDepressed(GameKey::CANCEL))
+      keyDownCancel();
+    if(key_handler.isDepressed(GameKey::MOVE_DOWN))
+      keyDownDown();
+    if(key_handler.isDepressed(GameKey::MOVE_LEFT))
+      keyDownLeft();
+    if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
+      keyDownRight();
+    if(key_handler.isDepressed(GameKey::MOVE_UP))
+      keyDownUp();
+  }
+}
+
+/* Key down event for test keys - isolated from key handler system */
+#ifdef UDEBUG
+void TitleScreen::keyTestDownEvent(SDL_KeyboardEvent event)
+{
+#ifndef TITLE_SKIP
+  /* Hide Text & logo from title */
+  if(event.keysym.sym == SDLK_F1)
+    title_background.render_disabled = !title_background.render_disabled;
+#else
+  /* Process warning if TitleSkip is not assigned */
+  (void)event;
+#endif
+}
+#endif
+
+/* Renders the title screen */
+bool TitleScreen::render(SDL_Renderer* renderer)
+{
+/* Update the title background if it's enabled */
+#ifndef TITLE_SKIP
+  title_background.render(renderer);
+#endif
+
+  renderTitleElements(renderer);
+
+  return true;
+}
+
+/* Sets the running configuration, from the options class */
+bool TitleScreen::setConfig(Options* config)
+{
+  this->config = config;
+
+  return (this->config != nullptr);
+}
+
+/* Sets the sound handler used. If unset, no sounds will play */
+bool TitleScreen::setSoundHandler(SoundHandler* sound_handler)
+{
+  this->sound_handler = sound_handler;
+
+  return (this->sound_handler != nullptr);
+}
+
+/* Updates the title screen. Necessary for visual updates */
+bool TitleScreen::update(int32_t cycle_time)
+{
+/* Update the tile screen if it's enabled */
+#ifndef TITLE_SKIP
+  title_background.update(cycle_time);
+#else
+  (void)cycle_time; // TODO
+#endif
+  return true;
+  //return menu_type != MenuType::INVALID;
+}
+
+/*============================================================================
+  TO REFACTOR
+ *============================================================================*/
+
+// /* Set up the menu display text, for painting */
+// bool TitleScreen::setMenu(SDL_Renderer* renderer)
+// {
+//   if(system_options != NULL)
+//   {
+//     SDL_Color tinted_color = {20, 153, 78, 255};
+//     SDL_Color plain_color = {255, 255, 255, 255};
+//     TTF_Font* new_font =
+//         Text::createFont(system_options->getFont(), kFONT_SIZE,
+//         TTF_STYLE_BOLD);
+//     if(new_font != NULL)
+//     {
+//       unsetMenu();
+
+//       /* Set the class font */
+//       font = new_font;
+
+//       /* Set up the labels */
+//       for(int i = 0; i < kNUM_MENU_ITEMS; i++)
+//       {
+//         /* The selected text */
+//         Text* selected = new Text(font);
+//         selected->setText(renderer, kMENU_ITEMS[i], tinted_color);
+//         selected_options.push_back(selected);
+
+//         /* The unselected text */
+//         Text* unselected = new Text(font);
+//         unselected->setText(renderer, kMENU_ITEMS[i], plain_color);
+//         unselected_options.push_back(unselected);
+//       }
+
+//       /* Proceed to update the render index */
+//       render_index = kTEXT_MARGIN + kTEXT_GAP * (kNUM_MENU_ITEMS - 1) +
+//                      selected_options[kNUM_MENU_ITEMS - 1]->getHeight();
+//       render_index = system_options->getScreenHeight() - render_index;
+
+//       return true;
+//     }
+//   }
+
+//   return false;
+// }

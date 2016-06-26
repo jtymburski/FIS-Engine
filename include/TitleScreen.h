@@ -20,113 +20,101 @@
 #include "Text.h"
 #include "Window.h"
 
-#define TITLE_SKIP
+// SKIP THE TITLE BACKGROUND LOADING / RENDERING
+// #define TITLE_SKIP
 
-// enum class TitleType
-// {
-//   PLAYER_SELECT,
-//   NEW_GAME,
-//   LOAD_GAME,
-//   OPTIONS,
-//   EXIT,
-//   NONE
-// };
-
-class TitleScreen
+/* TitleBackground Elements */
+#ifndef TITLE_SKIP
+class TitleBackground
 {
 public:
-  /* Constructor function */
-  TitleScreen(Options* running_config = NULL);
+  TitleBackground(Options* config = nullptr, SDL_Renderer* renderer = nullptr);
 
-  /* Destructor function */
-  ~TitleScreen();
-
-  /* Enumerator: Application options to be selected */
-  enum MenuItems{GAME    = 0,
-                 OPTIONS = 1,
-                 EXIT    = 2,
-                 NONE    = 3};
-
-private:
-  /* The menu item that has been initiated. Gets polled by a parent class for
-   * usage */
-  MenuItems action;
-
+public:
   /* TODO The background frame to render */
-  Sprite background; // TODO: Fix - base
-  float rotate1;
+  Sprite background;  // TODO: Fix - base
   Sprite background2; // TODO: Remove - temporary - planet
-  float rotate2;
   Sprite background3; // TODO: Remove - temporary - planet shroud
-  float rotate3;
   Sprite background4; // TODO: Remove - temporary - booms 1
   Sprite background5; // TODO: Remove - temporary - booms 2
   Sprite background6; // TODO: Remove - temporary - moon
-  float rotate6;
   Sprite background7; // TODO: Remove - temporary - waldo
-  uint16_t delay; // TODO: Remove or fix - for displaying poofs
+
+  /* Delay values */
+  uint16_t delay;  // TODO: Remove or fix - for displaying poofs
   uint16_t delay2; // TODO: Remove or fix - for displaying poofs
 
-  /* The base path, for all rendering */
-  std::string base_path;
+  /* Elapsed time of the TitleBackground */
+  uint32_t elapsed_time;
 
-  /* Indication for the title screen menu's position */
-  uint8_t cursor_index;
+  /* Title render is disabled */
+  bool render_disabled;
 
-  /* The font that is being used throughout the program */
-  TTF_Font* font;
-
-  /* The navigation direction keys indicator */
-  bool nav_down;
-  uint16_t nav_time;
-  bool nav_up;
-
-  /* Render text and other items on top of title screen disable */
-  bool render_disable;
-
-  /* The render index of the top left of the title screen options */
-  int render_index;
+  /* Rotation values */
+  float rotate1;
+  float rotate2;
+  float rotate3;
+  float rotate6;
 
   /* Title in corner */
   Frame title;
 
-  /* The options at the first menu level */
-  std::vector<Text*> selected_options;
-  std::vector<Text*> unselected_options;
+public:
+  /* Render the TitleBackground */
+  bool render(SDL_Renderer* renderer);
 
-  /* Sound handling class */
+  /* Update the TitleBackground */
+  bool update(int32_t cycle_time);
+};
+#endif
+
+/* TitleScreen Class */
+class TitleScreen
+{
+public:
+  TitleScreen(Options* running_config = nullptr);
+
+private:
+  /* Running configuration assigned to the TitleScreen */
+  Options* config;
+
+  /* Current layer to the menu */
+  MenuLayer menu_layer;
+
+  /* Current main MenuType enumerated value */
+  MenuType menu_type;
+
+  /* Pointer to the SoundHandler */
   SoundHandler* sound_handler;
 
-  /* The configuration for display of the game */
-  Options* system_options;
+#ifndef TITLE_SKIP
+  /* The TitleBackground, if it is defined */
+  TitleBackground title_background;
+#endif
 
-  /* ------------------ Constants ------------------ */
-  const static uint8_t kFONT_SIZE; /* The size of the font for rendering */
-  const static std::string kMENU_ITEMS[]; /* The stored menu items */
-  const static uint16_t kNAV_TIME_LIMIT; /* The key click time */
-  const static uint8_t kNUM_MENU_ITEMS; /* Number of menu items in screen */
-  const static uint16_t kTEXT_GAP; /* The gap between the rows of text */
-  const static uint16_t kTEXT_MARGIN; /* The margin between the text and edge
-                                       * of the screen */
+  /* Vector of TitleElements */
+  std::vector<TitleElement> title_elements;
 
-/*======================== PRIVATE FUNCTIONS ===============================*/
+  /* Current title mennu index */
+  int32_t title_menu_index;
+
+  /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
-  /* Decrements the selected option */
-  void decrementSelected();
+  /* Constructs the menu options */
+  void buildTitleElements();
 
-  /* Increments the selected option */
-  void incrementSelected();
+  /* KeyDown Events */
+  void keyDownAction();
+  void keyDownCancel();
+  void keyDownDown();
+  void keyDownLeft();
+  void keyDownRight();
+  void keyDownUp();
 
-  /* Sets the selected item. This gets polled by another class */
-  void setAction();
+  /* Render Title Elements */
+  void renderTitleElements(SDL_Renderer* renderer);
 
-  /* Set up the menu display text, for painting */
-  bool setMenu(SDL_Renderer* renderer);
-
-  /* Unsets all the menu related data, such as font and labels */
-  void unsetMenu();
-
-/*========================= PUBLIC FUNCTIONS ===============================*/
+  /*======================== PUBLIC FUNCTIONS ================================*/
 public:
   /* Enables or disables the view. This includes any initialization for before
    * or after it was visible */
@@ -135,27 +123,25 @@ public:
   /* First update call each time the view changes - must be called */
   void firstUpdate();
 
-  /* Returns the active action */
-  MenuItems getAction();
+  /* Returns the enumerated active title menu - polled by application */
+  MenuType getActiveTitleMenu();
 
-  /* The key up and down events to be handled by the class */
+  /* Key down event, called with the KeyHandler */
   void keyDownEvent(KeyHandler& key_handler);
+
+/* If in debug mode, activate test keys */
 #ifdef UDEBUG
   void keyTestDownEvent(SDL_KeyboardEvent event);
 #endif
-  void keyUpEvent(KeyHandler& key_handler);
 
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
 
-  /* Sets the background frames to be rendered */
-  bool setBackground(std::string path, SDL_Renderer* renderer);
+  /* Assigns the running configuration for the Class */
+  bool setConfig(Options* config);
 
-  /* Sets the running configuration, from the options class */
-  bool setConfiguration(Options* running_config);
-
-  /* Sets the sound handler used. If unset, no sounds will play */
-  void setSoundHandler(SoundHandler* new_handler);
+  /* Assigns the running sound handler */
+  bool setSoundHandler(SoundHandler* sound_hanler);
 
   /* Updates the title screen. Necessary for visual updates */
   bool update(int32_t cycle_time);

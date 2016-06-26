@@ -20,6 +20,44 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+struct TitleElement
+{
+  /* Default TitleElement Constructor */
+  TitleElement()
+      : name{""},
+        enabled{false},
+        hovered{false},
+        hover_time{0},
+        menu_type{MenuType::INVALID} {};
+
+  /* General TitleElement Constructor */
+  TitleElement(std::string name, bool enabled, MenuType menu_type)
+      : TitleElement()
+  {
+    this->name = name;
+    this->enabled = enabled;
+    this->menu_type = menu_type;
+  };
+
+  /* Location of the title element */
+  Box title_box;
+
+  /* Name of the TitleElement */
+  std::string name;
+
+  /* Is the TitleElement selectable? */
+  bool enabled;
+
+  /* Whether this TitleElement is being hovered over */
+  bool hovered;
+
+  /* Time since this TitleElement is hovered on */
+  int32_t hover_time;
+
+  /* Enumerated type */
+  MenuType menu_type;
+};
+
 class Window
 {
 public:

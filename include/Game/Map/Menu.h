@@ -26,26 +26,6 @@
 #include "Sprite.h"
 #include "Window.h"
 
-/* Enumerated MenuType */
-enum class MenuType
-{
-  SLEUTH,
-  SLEUTH_OVERVIEW,
-  SLEUTH_EQUIPMENT,
-  SLEUTH_SKILLS,
-  SLEUTH_DETAILS,
-  INVENTORY,
-  INVENTORY_BUBBIES,
-  INVENTORY_EQUIP,
-  INVENTORY_ITEMS,
-  INVENTORY_KEY,
-  OPTIONS,
-  SAVE,
-  LOAD,
-  QUIT,
-  INVALID,
-};
-
 enum class InventoryIndex : uint8_t
 {
   NONE = 0,
@@ -60,15 +40,6 @@ enum class QuitIndex : uint8_t
   NONE = 0,
   NO = 1,
   YES = 2
-};
-
-/* Enumerated MenuLayer */
-enum class MenuLayer
-{
-  TITLE,
-  MAIN,
-  MAIN_INDENT,
-  INVALID
 };
 
 /* Option Box Construction for Analog Values */
@@ -141,44 +112,6 @@ struct DigitalOption
 
   /* Returns whether the Option is Set */
   bool isSet();
-};
-
-struct TitleElement
-{
-  /* Default TitleElement Constructor */
-  TitleElement()
-      : name{""},
-        enabled{false},
-        hovered{false},
-        hover_time{0},
-        menu_type{MenuType::INVALID} {};
-
-  /* General TitleElement Constructor */
-  TitleElement(std::string name, bool enabled, MenuType menu_type)
-      : TitleElement()
-  {
-    this->name = name;
-    this->enabled = enabled;
-    this->menu_type = menu_type;
-  };
-
-  /* Location of the title element */
-  Box title_box;
-
-  /* Name of the TitleElement */
-  std::string name;
-
-  /* Is the TitleElement selectable? */
-  bool enabled;
-
-  /* Whether this TitleElement is being hovered over */
-  bool hovered;
-
-  /* Time since this TitleElement is hovered on */
-  int32_t hover_time;
-
-  /* Enumerated type */
-  MenuType menu_type;
 };
 
 ENUM_FLAGS(MenuState)

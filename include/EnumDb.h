@@ -24,17 +24,17 @@ class EnumDb
    * CONSTANTS
    *========================================================================*/
 public:
-  const static int kBASE_ID_IOS = 50000; /* The instant base ID for MapIOs */
+  const static int kBASE_ID_IOS = 50000;   /* The instant base ID for MapIOs */
   const static int kBASE_ID_ITEMS = 60000; /* The instant base ID for items */
-  const static int kBASE_ID_PERSON = 0; /* The instant base ID for persons */
-  const static int kBASE_ID_NPC = 10000; /* The instant base ID for npcs */
+  const static int kBASE_ID_PERSON = 0;    /* The instant base ID for persons */
+  const static int kBASE_ID_NPC = 10000;   /* The instant base ID for npcs */
   const static int kBASE_ID_THING = 20000; /* The base thing ID */
-  const static int kMAX_COUNT_BASES = 10000; /* Max count of base things */
-  const static int kMAX_COUNT_IOS = 10000; /* Max count of instance IOs */
-  const static int kMAX_COUNT_ITEMS = 5000; /* Max count of instance items */
-  const static int kMAX_COUNT_NPCS = 10000; /* Max count of instance npcs */
+  const static int kMAX_COUNT_BASES = 10000;   /* Max count of base things */
+  const static int kMAX_COUNT_IOS = 10000;     /* Max count of instance IOs */
+  const static int kMAX_COUNT_ITEMS = 5000;    /* Max count of instance items */
+  const static int kMAX_COUNT_NPCS = 10000;    /* Max count of instance npcs */
   const static int kMAX_COUNT_PERSONS = 10000; /* Max count of inst persons */
-  const static int kMAX_COUNT_THINGS = 30000; /* Max count of inst things */
+  const static int kMAX_COUNT_THINGS = 30000;  /* Max count of inst things */
 };
 
 /*=============================================================================
@@ -561,6 +561,40 @@ enum class LayIndex
   SOUTH_WEST = 7,
   SOUTH = 8,
   SOUTH_EAST = 9
+};
+
+/* Enumerated MenuLayer */
+enum class MenuLayer
+{
+  TITLE,
+  MAIN,
+  MAIN_INDENT,
+  INVALID
+};
+
+/* Enumerated MenuType */
+enum class MenuType
+{
+  SLEUTH,
+  SLEUTH_OVERVIEW,
+  SLEUTH_EQUIPMENT,
+  SLEUTH_SKILLS,
+  SLEUTH_DETAILS,
+  INVENTORY,
+  INVENTORY_BUBBIES,
+  INVENTORY_EQUIP,
+  INVENTORY_ITEMS,
+  INVENTORY_KEY,
+  OPTIONS,
+  SAVE,
+  LOAD,
+  QUIT,
+  TITLE_PLAYER_SELECT,
+  TITLE_NEW_GAME,
+  TITLE_LOAD_GAME,
+  TITLE_OPTIONS,
+  TITLE_QUIT,
+  INVALID
 };
 
 /*
