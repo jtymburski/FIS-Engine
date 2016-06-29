@@ -43,6 +43,9 @@ public:
   Lay(std::string path, uint32_t animation_time, Floatinate velocity,
       LayType lay_type, Coordinate screen_size);
 
+  /* Lay struct constructor */
+  Lay(LayOver data, LayType lay_type, Coordinate screen_size);
+
   /* Annihilate a Lay object */
   ~Lay();
 

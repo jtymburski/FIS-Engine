@@ -65,7 +65,10 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   fade_delta = 0.0;
   fade_main = false;
   fade_status = MapFade::BLACK;
+  lay_acc = -1;
   lay_fade = MapFade::BLACK;
+  lay_fade_index = -1;
+  lay_time = -1;
   loaded = false;
   map_index = 0;
   map_index_next = -1;
@@ -108,6 +111,7 @@ Map::~Map()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
+/* Add data based on the XML load information */
 bool Map::addSpriteData(XmlData data, std::string id, int file_index,
                         SDL_Renderer* renderer)
 {
@@ -157,6 +161,7 @@ bool Map::addSpriteData(XmlData data, std::string id, int file_index,
   return false;
 }
 
+/* Add tile data based on the XML load information */
 bool Map::addTileData(XmlData data, uint16_t section_index)
 {
   std::string classifier = data.getElement(kFILE_CLASSIFIER);

@@ -56,7 +56,6 @@ Lay::Lay()
  *         Floatinate velocity - velocity relative to the player
  *         LayType lay_type - the enumerated lay type (over, under, mid etc.)
  *         Coordinate screen_size - the size of the screen
- *         SDL_Renderer* renderer - pointer to the renderer
  */
 Lay::Lay(std::string path, Floatinate velocity, LayType lay_type,
          Coordinate screen_size) : Lay()
@@ -75,10 +74,10 @@ Lay::Lay(std::string path, Floatinate velocity, LayType lay_type,
  *              a floatinate velocity, animation time, and type.
  *
  * Inputs: std::string path - the path to the lay's sprite to tile
+ *         uint32_t animation_time - the animation time cycle for the sprite
  *         Floatinate velocity - (x, y) velocity to stream the sprite
  *         LayType lay_type - enumerated type of the lay (under, over, etc.)
  *         Coordinate screen_size - the size of the scren
- *         SDL_Renderer* renderer - pointer to the renderer
  */
 Lay::Lay(std::string path, uint32_t animation_time, Floatinate velocity,
          LayType lay_type, Coordinate screen_size)
@@ -91,6 +90,20 @@ Lay::Lay(std::string path, uint32_t animation_time, Floatinate velocity,
   setVelocity(velocity);
 
   setFlag(LayState::SCREEN_SIZE, true);
+}
+  
+/*
+ * Description: General Lay constructor. Constructs a normal Lay with
+ *              LayOver struct, type, and screen size.
+ *
+ * Inputs: LayOver data - the path, velocity, animation time data
+ *         LayType lay_type - enumerated type of the lay (under, over, etc.)
+ *         Coordinate screen_size - the size of the scren
+ */
+Lay::Lay(LayOver data, LayType lay_type, Coordinate screen_size)
+{
+  Lay(data.path, data.anim_time, {data.velocity_x, data.velocity_y},
+      lay_type, screen_size);
 }
 
 /*

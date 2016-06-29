@@ -112,8 +112,11 @@ private:
   ItemStore item_menu;
 
   /* Lay data from animation triggers */
+  int lay_acc; // TODO
   MapFade lay_fade; // TODO
+  int lay_fade_index; // TODO
   std::vector<Lay*> lay_images; // TODO
+  int lay_time; // TODO
 
   /* Map lays */
   std::vector<Lay*> lay_overs;
