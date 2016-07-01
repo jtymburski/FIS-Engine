@@ -425,6 +425,17 @@ enum class EquipSlots : std::uint8_t
 };
 
 /*
+ * Description: FadeState of an object.
+ */
+enum class FadeState
+{
+  FADING_IN,
+  DISPLAYING,
+  FADING_OUT,
+  NOT_SHOWN
+};
+
+/*
  * Description: Enumerated GameKey values. For KeyHandler to process what
  *              key corresponds to what game action.
  */
@@ -442,26 +453,6 @@ enum class GameKey
   DEBUG,
   PAUSE,
   NONE
-};
-
-/* The map fade operator, for controlling how the screen appears */
-enum class MapFade
-{
-  BLACK = 0,
-  VISIBLE = 1,
-  FADINGIN = 2,
-  FADINGOUT = 3
-};
-
-/*
- * Description: FadeState of an object.
- */
-enum class FadeState
-{
-  FADING_IN,
-  DISPLAYING,
-  FADING_OUT,
-  NOT_SHOWN
 };
 
 /*
@@ -561,6 +552,17 @@ enum class LayIndex
   SOUTH_WEST = 7,
   SOUTH = 8,
   SOUTH_EAST = 9
+};
+
+/* 
+ * Description: The map fade operator, for controlling how the screen appears
+ */
+enum class MapFade
+{
+  BLACK = 0,
+  VISIBLE = 1,
+  FADINGIN = 2,
+  FADINGOUT = 3
 };
 
 /* Enumerated MenuLayer */

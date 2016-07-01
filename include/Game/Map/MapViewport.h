@@ -146,6 +146,7 @@ public:
                         int16_t peak_x = kVIB_X_DEFAULT,
                         int16_t peak_y = kVIB_Y_DEFAULT,
                         uint16_t degree_delta = kVIB_DEG_DEFAULT);
+  bool triggerVibrationFinish(bool force = false);
 
   /* Updates the viewport, call at the end of the update call in the map */
   void update(int cycle_time);

@@ -636,6 +636,36 @@ bool MapViewport::triggerVibration(uint32_t time_total, uint32_t time_peak,
 }
 
 /*
+ * Description: Takes the vibration and puts it into the finishing wind down
+ *              sequence or proceeds to end it abruptly based on the input.
+ *
+ * Inputs: bool force - true to force the finish. False default (smooth)
+ * Output: bool - true if there was a vibration to end
+ */
+bool MapViewport::triggerVibrationFinish(bool force)
+{
+  if(vibrating)
+  {
+    /* If force, just abruptly end the vibration and return to base state */
+    if(force)
+    {
+      vibrating = false;
+    }
+    /* Otherwise, transition to the wind down sequence for ending it */
+    else
+    {
+      uint32_t vib_finish_time = (vib_time_total - vib_time_peak) / 2;
+      vib_finish_time += vib_time_peak;
+      if(vibrating_time < vib_finish_time)
+        vibrating_time = vib_finish_time;
+    }
+
+    return true;
+  }
+  return false;
+}
+
+/*
  * Description: Updates the viewport and all pertinent information. Controls
  *              visualization of the map data for the game view
  *

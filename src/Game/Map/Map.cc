@@ -1692,27 +1692,99 @@ std::vector<std::vector<int32_t>> Map::splitIdString(std::string id,
   
 /* Lay triggers based on passed in information */
 bool Map::triggerLay(std::string path, int anim_time,
-                     float velocity_x, float velocity_y)
+                     float velocity_x, float velocity_y, int lay_time,
+                     bool force)
 {
-  // TODO
+  if(!path.empty() && system_options != nullptr)
+  {
+    /* Set up the lay struct */
+    LayOver lay_data;
+    lay_data.path = path;
+    lay_data.anim_time = anim_time;
+    lay_data.velocity_x = velocity_x;
+    lay_data.velocity_y = velocity_y;
+
+    /* Compile in the vector */
+    std::vector<LayOver> lay_combined;
+    lay_combined.push_back(lay_data);
+
+    /* Send to the other function */
+    return triggerLays(lay_combined, lay_time, force);
+  }
+  return false;
 }
 
 /* Lay triggers based on passed in information */
-bool Map::triggerLayFinish()
+bool Map::triggerLayFinish(bool force)
 {
-  // TODO
+  /* On force, just end all lays, clean up memory, and reset data */
+  if(force)
+  {
+    lay_acc = -1;
+    lay_fade = MapFade::BLACK;
+    lay_fade_index = -1;
+    for(uint32_t i = 0; i < lay_images.size(); i++)
+      delete lay_images[i];
+    lay_images.clear();
+    lay_time = -1;
+  }
+  /* On non-force, just set to fading out status and let the update call
+   * process it accordingly */
+  else
+  {
+    lay_fade = MapFade::FADINGOUT;
+  }
+
+  return true;
 }
 
 /* Lay triggers based on passed in information */
-bool Map::triggerLays(std::vector<LayOver> lay_data)
+bool Map::triggerLays(std::vector<LayOver> lay_data, int lay_time, bool force)
 {
-  // TODO
+  if(lay_data.size() > 0 && system_options != nullptr)
+  {
+    /* Create lay information */
+    std::vector<Lay*> lay_ptrs;
+    for(uint32_t i = 0; i < lay_data.size(); i++)
+      lay_ptrs.push_back(new Lay(lay_data[i], LayType::OVERLAY,
+                                 {system_options->getScreenWidth(),
+                                 system_options->getScreenHeight()}));
+
+    /* Try and generate using the given lay pointers */
+    bool success = triggerLays(lay_data, lay_time, force);
+    if(!success)
+    {
+      /* If failed, delete lay pointers */
+      for(uint32_t i = 0; i < lay_ptrs.size(); i++)
+        delete lay_ptrs[i];
+      lay_ptrs.clear();
+    }
+
+    return success;
+  }
+  return false;
 }
 
 /* Lay triggers based on passed in information */
-bool Map::triggerLays(std::vector<Lay*> lay_ptrs)
+bool Map::triggerLays(std::vector<Lay*> lay_ptrs, int lay_time, bool force)
 {
-  // TODO
+  if(lay_ptrs.size() > 0)
+  {
+    /* Deal with the finish of lay based on the forced status */
+    if(force)
+      triggerLayFinish(force);
+
+    /* Set up the new lay properties */
+    lay_acc = 0;
+    lay_fade = MapFade::FADINGIN;
+    lay_fade_index = lay_images.size();
+    this->lay_time = lay_time;
+
+    /* Append to current set and finish */
+    lay_images.insert(lay_images.end(), lay_ptrs.begin(), lay_ptrs.end());
+    return true;
+  }
+  return false;
 }
 
 /* Triggers a view of the passed in data */
@@ -2026,15 +2098,23 @@ void Map::updatePlayerRunState(KeyHandler& key_handler)
 }
 
 /* Updates the height and width, based on zoom factors */
-void Map::updateTileSize()
+void Map::updateTileSize(bool force)
 {
   bool updated = false;
 
+  /* If force, changes directly to the size indicated */
+  if(force)
+  {
+    tile_height = zoom_size;
+    tile_width = zoom_size;
+    zooming = false;
+    updated = true;
+  }
   /* Try and zoom in the map */
-  if(tile_height < zoom_size && tile_width < zoom_size)
+  else if(tile_height < zoom_size && tile_width < zoom_size)
   {
     tile_height++;
-    tile_width++;
+    tile_width = tile_height;
     zooming = true;
     updated = true;
   }
@@ -2042,7 +2122,7 @@ void Map::updateTileSize()
   else if(tile_height > zoom_size && tile_width > zoom_size)
   {
     tile_height--;
-    tile_width--;
+    tile_width = tile_height;
     zooming = true;
     updated = true;
   }
@@ -2084,16 +2164,22 @@ void Map::updateTileSize()
 }
 
 /* Zoom trigger */
-void Map::zoom(uint16_t tile_size)
+void Map::zoom(uint16_t tile_size, bool force)
 {
   if(tile_size > 0)
+  {
     zoom_size = tile_size;
+    if(force)
+      updateTileSize(force);
+  }
 }
 
 /* Zoom trigger */
-void Map::zoomRestore()
+void Map::zoomRestore(bool force)
 {
   zoom_size = Helpers::getTileSize();
+  if(force)
+    updateTileSize(force);
 }
 
 /*============================================================================
@@ -2793,15 +2879,18 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     /* Test: Vibration trigger */
     else if(event.keysym.sym == SDLK_v)
     {
-      viewport.triggerVibration(5000, 4000, 50, 0, 2000);
+      if(viewport.isVibrating())
+        viewport.triggerVibrationFinish();
+      else
+        viewport.triggerVibration(10000, 9000, 250, 0, 4000);
     }
     /* Test: Zoom toggle */
     else if(event.keysym.sym == SDLK_z)
     {
       if(zoom_size != Helpers::getTileSize())
-        zoomRestore();
+        zoomRestore();//true);
       else
-        zoom();
+        zoom(16);//, true);
     }
     /* Test: Location of player */
     else if(event.keysym.sym == SDLK_l)
@@ -3623,6 +3712,11 @@ void Map::unloadMap()
 
   /* Reset music references */
   audioStop();
+
+  /* End all animation sequencing */
+  triggerLayFinish(true);
+  viewport.triggerVibrationFinish(true);
+  zoomRestore(true);
 
   /* Delete all sub-maps and data within */
   for(uint32_t i = 0; i < sub_map.size(); i++)

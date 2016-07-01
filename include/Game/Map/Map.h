@@ -331,10 +331,13 @@ private:
   /* Lay triggers based on passed in information */
   bool triggerLay(std::string path,
                   int anim_time = Sprite::kDEFAULT_ANIMATE_TIME,
-                  float velocity_x = 0.0, float velocity_y = 0.0);
-  bool triggerLayFinish();
-  bool triggerLays(std::vector<LayOver> lay_data);
-  bool triggerLays(std::vector<Lay*> lay_ptrs);
+                  float velocity_x = 0.0, float velocity_y = 0.0,
+                  int lay_time = -1, bool force = false);
+  bool triggerLayFinish(bool force = false);
+  bool triggerLays(std::vector<LayOver> lay_data, int lay_time = -1,
+                   bool force = false);
+  bool triggerLays(std::vector<Lay*> lay_ptrs, int lay_time = -1,
+                   bool force = false);
 
   /* Triggers a view of the passed in data */
   bool triggerViewFinish();
@@ -351,11 +354,11 @@ private:
   void updatePlayerRunState(KeyHandler& key_handler);
 
   /* Updates the height and width, based on zoom factors */
-  void updateTileSize();
+  void updateTileSize(bool force = false);
 
   /* Zoom trigger */
-  void zoom(uint16_t tile_size = kZOOM_TILE_SIZE);
-  void zoomRestore();
+  void zoom(uint16_t tile_size = kZOOM_TILE_SIZE, bool force = false);
+  void zoomRestore(bool force = false);
 
 /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
