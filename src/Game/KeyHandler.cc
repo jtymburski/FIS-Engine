@@ -424,6 +424,7 @@ void KeyHandler::print(bool only_depressed, bool only_held)
  */
 bool KeyHandler::update(int32_t cycle_time)
 {
+  //std::cout << "Updating the key handler: " << cycle_time << std::endl;
   /* Update the state of Keys */
   SDL_PumpEvents();
 

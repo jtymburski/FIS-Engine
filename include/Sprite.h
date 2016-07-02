@@ -105,6 +105,7 @@ private:
 
   /* The number of loops the Sprite has gone through */
   uint32_t loops;
+  uint32_t loops_to_do;
 
   /* Is this a non-unique Sprite? */
   bool non_unique;
@@ -344,8 +345,8 @@ public:
      unique sprites */
   void setNonUnique(bool non_unique, int32_t size);
 
-  /* Sets the number of loops */
-  void setNumLoops(int32_t loops);
+  /* Sets the number of loops to be performed by the Sprite */
+  void setNumLoops(uint32_t loops_to_do);
 
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(float angle);

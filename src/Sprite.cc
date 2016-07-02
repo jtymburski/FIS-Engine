@@ -51,6 +51,7 @@ Sprite::Sprite()
       data{},
       elapsed_time{0},
       loops{0},
+      loops_to_do{0},
       non_unique{false},
       opacity{Sprite::kDEFAULT_OPACITY},
       rotation_angle{0},
@@ -188,8 +189,8 @@ void Sprite::setColorMod()
   /* Proceed to set mod based on brightness values */
   if(brightness < kDEFAULT_BRIGHTNESS)
   {
-    SDL_SetTextureColorMod(texture, brightness * red,
-                           brightness * green, brightness * blue);
+    SDL_SetTextureColorMod(texture, brightness * red, brightness * green,
+                           brightness * blue);
   }
   else
   {
@@ -532,7 +533,7 @@ uint16_t Sprite::getId() const
 }
 
 /*
- * Description: Returns the number of loops the sprite has completed
+ * Description: Returns the number of loops the sprite has left to do
  *
  * Inputs: none
  * Output: uint32_t - an integer from 0 - 2^32 - 1 (32 bit unsigned integer)
@@ -1455,10 +1456,9 @@ void Sprite::setNonUnique(bool new_value, int32_t size)
  * Inputs: int32_t loops - the number loops to the loop the sprite for
  * Output: none
  */
-void Sprite::setNumLoops(int32_t loops)
+void Sprite::setNumLoops(uint32_t loops_to_do)
 {
-  if(loops >= 0)
-    this->loops = loops;
+  this->loops_to_do = loops_to_do;
 }
 
 /*
@@ -1645,7 +1645,7 @@ bool Sprite::shiftNext(bool skip_head)
     /* Every time the next element is the head, increase loops, if size is 1,
      * every step is a loop, if size is greater than one, every head touch is
      * a loop. If head is skipped, no loops take place. */
-    if(current->getNext() == head)
+    if(current == head)
       loops++;
 
     return true;
@@ -1697,7 +1697,9 @@ bool Sprite::update(int cycle_time, bool skip_head, bool color_only)
   /* If skip head is triggered, but it is at head, skip to next */
   if(!color_only && skip_head && isAtFirst())
   {
-    shiftNext(skip_head);
+    if(loops_to_do == 0 || loops < loops_to_do)
+      shiftNext(skip_head);
+
     shift = true;
   }
 
@@ -1726,7 +1728,9 @@ bool Sprite::update(int cycle_time, bool skip_head, bool color_only)
     if(elapsed_time > animation_time)
     {
       elapsed_time -= animation_time;
-      shiftNext(skip_head);
+
+      if(loops_to_do == 0 || loops < loops_to_do)
+        shiftNext(skip_head);
       shift = true;
     }
   }

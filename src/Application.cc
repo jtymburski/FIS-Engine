@@ -697,8 +697,8 @@ bool Application::run(bool skip_title)
         cycle_time = 200 / count;
 
         // TODO: Cycle fix hack!
-        // if(cycle_time > 33)
-        //   cycle_time = 16;
+        if(cycle_time > 33)
+          cycle_time = 16;
 
         count = 0;
         ticks = new_ticks;

@@ -2991,6 +2991,10 @@ void Battle::setNextTurnState()
 
 bool Battle::update(int32_t cycle_time)
 {
+  //TODO: Cycle hack?
+  if(cycle_time > 33)
+    cycle_time = 16;
+
   time_elapsed += cycle_time;
 
   updateDelay(cycle_time);
