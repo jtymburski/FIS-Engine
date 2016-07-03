@@ -143,11 +143,14 @@ private:
   uint32_t total_exp;
 
   /* Person related sprites (non-build copies) */
-  Sprite* sprite_action;
+  Sprite* sprite_ally;
+  Sprite* sprite_ally_defensive;
+  Sprite* sprite_ally_offensive;
   Sprite* sprite_dialog;
   Sprite* sprite_face;
-  Sprite* sprite_first_person;
-  Sprite* sprite_third_person;
+  Sprite* sprite_foe;
+  Sprite* sprite_foe_defensive;
+  Sprite* sprite_foe_offensive;
 
   /* ------------ Static Private Members --------------- */
   static int id;                          /* Person unique ID counter */
@@ -281,7 +284,14 @@ public:
   void updateStats();
 
   /* Returns the action frames */
-  Sprite* getDialogSprite();
+  Sprite* getSpriteAlly();
+  Sprite* getSpriteAllyDefensive();
+  Sprite* getSpriteAllyOffensive();
+  Sprite* getSpriteDialog();
+  Sprite* getSpriteFace();
+  Sprite* getSpriteFoe();
+  Sprite* getSpriteFoeDefensive();
+  Sprite* getSpriteFoeOffensive();
 
   /* The action X and Y render location in battle */
   int16_t getActionX();
@@ -375,11 +385,6 @@ public:
   uint32_t getTotalExp();
 
   /* Pointer to the unbuilt first person sprite */
-  Sprite* getSpriteFirstPerson();
-  Sprite* getSpriteThirdPerson();
-  Sprite* getSpriteDialog();
-  Sprite* getSpriteAction();
-  Sprite* getSpriteFace();
 
   /* Grabs the vector of item IDs the person can drop */
   std::vector<uint32_t> getItemDrops();

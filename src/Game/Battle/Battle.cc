@@ -208,7 +208,28 @@ void Battle::actionStateFadeInText()
 
 void Battle::actionStateSlideOut()
 {
-  event->actor->setActiveSprite(ActiveSprite::ACTION);
+  if(event->isOffensive())
+  {
+    if(event->actor->getFlag(ActorState::ALLY))
+      event->actor->setActiveSprite(ActiveSprite::ALLY_OFFENSIVE);
+    else
+      event->actor->setActiveSprite(ActiveSprite::FOE_OFFENSIVE);
+  }
+  else if(event->isDefensive())
+  {
+    if(event->actor->getFlag(ActorState::ALLY))
+      event->actor->setActiveSprite(ActiveSprite::ALLY_DEFENSIVE);
+    else
+      event->actor->setActiveSprite(ActiveSprite::FOE_DEFENSIVE);
+  }
+  else
+  {
+    if(event->actor->getFlag(ActorState::ALLY))
+      event->actor->setActiveSprite(ActiveSprite::ALLY);
+    else
+      event->actor->setActiveSprite(ActiveSprite::FOE);
+  }
+
   event->action_state = ActionState::SWITCH_SPRITE;
   addDelay(250);
 }
@@ -1292,9 +1313,9 @@ void Battle::updateProcessing()
     battle_buffer->setProcessed();
 
     if(event->actor && event->actor->getFlag(ActorState::ALLY))
-      event->actor->setActiveSprite(ActiveSprite::FIRST_PERSON);
+      event->actor->setActiveSprite(ActiveSprite::ALLY);
     else if(event->actor)
-      event->actor->setActiveSprite(ActiveSprite::THIRD_PERSON);
+      event->actor->setActiveSprite(ActiveSprite::FOE);
 
     clearEvent();
   }
@@ -2991,7 +3012,7 @@ void Battle::setNextTurnState()
 
 bool Battle::update(int32_t cycle_time)
 {
-  //TODO: Cycle hack?
+  // TODO: Cycle hack?
   if(cycle_time > 33)
     cycle_time = 16;
 

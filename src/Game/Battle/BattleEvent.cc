@@ -383,6 +383,26 @@ bool BattleEvent::isActorAmongTargets(BattleActor* check_actor)
   return false;
 }
 
+bool BattleEvent::isDefensive()
+{
+  if(event_item && event_item->getUseSkill())
+    return event_item->getUseSkill()->getFlag(SkillFlags::DEFENSIVE);
+  if(event_skill)
+    return event_skill->isDefensive();
+
+  return false;
+}
+
+bool BattleEvent::isOffensive()
+{
+  if(event_item && event_item->getUseSkill())
+    return event_item->getUseSkill()->getFlag(SkillFlags::OFFENSIVE);
+  if(event_skill)
+    return event_skill->isOffensive();
+
+  return false;
+}
+
 void BattleEvent::updateStats()
 {
   /* Update the user of the events stats to their current values */

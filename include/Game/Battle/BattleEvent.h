@@ -276,6 +276,12 @@ public:
   /* Determines whether a given actor is among the targets */
   bool isActorAmongTargets(BattleActor* check_actor);
 
+  /* Is the battle event defensive? */
+  bool isDefensive();
+
+  /* Is the battle event offensive? */
+  bool isOffensive();
+
   /* Method for updating the stats for computing a new action outcome */
   void updateStats();
 

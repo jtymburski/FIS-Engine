@@ -10,6 +10,22 @@ BattleItem::BattleItem()
 
 }
 
+bool BattleItem::isDefensive()
+{
+  if(item && item->getUseSkill())
+    return item->getUseSkill()->getFlag(SkillFlags::DEFENSIVE);
+
+  return false;
+}
+
+bool BattleItem::isOffensive()
+{
+  if(item && item->getUseSkill())
+    return item->getUseSkill()->getFlag(SkillFlags::OFFENSIVE);
+
+  return false;
+}
+
 void BattleItem::print()
 {
   std::cout << "-- Battle Skill --" << std::endl;

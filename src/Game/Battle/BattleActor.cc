@@ -55,11 +55,14 @@ BattleActor::BattleActor(Person* person_base, int32_t battle_index,
       frame_info{nullptr},
       menu_index{menu_index},
       person_base{person_base},
-      sprite_action{nullptr},
+      sprite_ally{nullptr},
+      sprite_ally_defensive{nullptr},
+      sprite_ally_offensive{nullptr},
       sprite_dialog{nullptr},
       sprite_face{nullptr},
-      sprite_first_person{nullptr},
-      sprite_third_person{nullptr},
+      sprite_foe{nullptr},
+      sprite_foe_defensive{nullptr},
+      sprite_foe_offensive{nullptr},
       state_active_sprite{SpriteState::HIDDEN},
       state_death_fade{FadeState::NOT_SHOWN},
       state_elapsed_time{0},
@@ -141,13 +144,15 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   if(is_ally)
   {
     setFlag(ActorState::ALLY, true);
-    active_sprite = ActiveSprite::FIRST_PERSON;
+    active_sprite = ActiveSprite::ALLY;
   }
   /* Set up for enemies */
   else
   {
     setFlag(ActorState::ALLY, false);
-    active_sprite = ActiveSprite::THIRD_PERSON;
+    active_sprite = ActiveSprite::FOE;
+
+    std::cout << "Setting active sprite to foe" << std::endl;
   }
 
   /* Reset the action types useable by the battle actor */
@@ -220,39 +225,50 @@ void BattleActor::clearFlashing()
 
 void BattleActor::clearSprites()
 {
-  if(sprite_action)
-    delete sprite_action;
+  if(sprite_ally)
+    delete sprite_ally;
+  if(sprite_ally_defensive)
+    delete sprite_ally_defensive;
+  if(sprite_ally_offensive)
+    delete sprite_ally_offensive;
   if(sprite_dialog)
     delete sprite_dialog;
   if(sprite_face)
     delete sprite_face;
-  if(sprite_first_person)
-    delete sprite_first_person;
-  if(sprite_third_person)
-    delete sprite_third_person;
+  if(sprite_foe_defensive)
+    delete sprite_foe_defensive;
+  if(sprite_foe_offensive)
+    delete sprite_foe_offensive;
 
-  sprite_action = nullptr;
+  sprite_ally = nullptr;
+  sprite_ally_defensive = nullptr;
+  sprite_ally_offensive = nullptr;
   sprite_dialog = nullptr;
   sprite_face = nullptr;
-  sprite_first_person = nullptr;
-  sprite_third_person = nullptr;
+  sprite_foe_defensive = nullptr;
+  sprite_foe_offensive = nullptr;
 }
 
+// Construct copies of the base person's sprites for each sprite needed (if
+// available) for the battle actor.
 void BattleActor::createSprites()
 {
   if(person_base)
   {
-    /* Build the action sprite */
-    if(person_base->getSpriteAction())
-      sprite_action = new Sprite(*(person_base->getSpriteAction()));
+    if(person_base->getSpriteAlly())
+      sprite_ally = new Sprite(*(person_base->getSpriteAlly()));
 
-    /* Build the first person sprite, if one exists */
-    if(person_base->getSpriteFirstPerson())
-      sprite_first_person = new Sprite(*(person_base->getSpriteFirstPerson()));
+    if(person_base->getSpriteAllyDefensive())
+    {
+      sprite_ally_defensive =
+          new Sprite(*(person_base->getSpriteAllyDefensive()));
+    }
 
-    /* Build the third person sprite, if one exists */
-    if(person_base->getSpriteThirdPerson())
-      sprite_third_person = new Sprite(*(person_base->getSpriteThirdPerson()));
+    if(person_base->getSpriteAllyOffensive())
+    {
+      sprite_ally_offensive =
+          new Sprite(*(person_base->getSpriteAllyOffensive()));
+    }
 
     /* Construct the dialog sprite */
     if(person_base->getSpriteDialog())
@@ -266,6 +282,23 @@ void BattleActor::createSprites()
     /* Construct the space sprite */
     if(person_base->getSpriteFace())
       sprite_face = new Sprite(*(person_base->getSpriteDialog()));
+
+    if(person_base->getSpriteFoe())
+    {
+      sprite_foe =
+          new Sprite(*(person_base->getSpriteFoe()));
+    }
+    if(person_base->getSpriteFoeDefensive())
+    {
+      sprite_foe_defensive =
+          new Sprite(*(person_base->getSpriteFoeDefensive()));
+    }
+
+    if(person_base->getSpriteFoeOffensive())
+    {
+      sprite_foe_offensive =
+          new Sprite(*(person_base->getSpriteFoeOffensive()));
+    }
   }
 }
 
@@ -781,19 +814,35 @@ int32_t BattleActor::getActionFrameY()
 
 Sprite* BattleActor::getActiveSprite()
 {
-  if(active_sprite == ActiveSprite::FIRST_PERSON)
-    return sprite_first_person;
-  if(active_sprite == ActiveSprite::THIRD_PERSON)
-    return sprite_third_person;
-  if(active_sprite == ActiveSprite::ACTION)
-  {
-    if(sprite_action)
-      return sprite_action;
-    if(getFlag(ActorState::ALLY))
-      return sprite_first_person;
+  /* Grab the defensive ally sprite, unless it's nullptr */
+  if(active_sprite == ActiveSprite::ALLY_DEFENSIVE && sprite_ally_defensive)
+    return sprite_ally_defensive;
+  else if(active_sprite == ActiveSprite::ALLY_DEFENSIVE)
+    return sprite_ally;
 
-    return sprite_third_person;
-  }
+  /* Grab the offensive ally sprite, unless it's nullptr */
+  if(active_sprite == ActiveSprite::ALLY_OFFENSIVE && sprite_ally_offensive)
+    return sprite_ally_offensive;
+  else if(active_sprite == ActiveSprite::ALLY_OFFENSIVE)
+    return sprite_ally;
+
+  if(active_sprite == ActiveSprite::ALLY)
+    return sprite_ally;
+
+  /* Grab the defensive foe sprite, unless it's nullptr */
+  if(active_sprite == ActiveSprite::FOE_DEFENSIVE && sprite_foe_defensive)
+    return sprite_foe_defensive;
+  else if(active_sprite == ActiveSprite::FOE_DEFENSIVE)
+    return sprite_foe;
+
+  /* Grab the offensive foe sprite, unless it's nullptr */
+  if(active_sprite == ActiveSprite::FOE_OFFENSIVE && sprite_foe_offensive)
+    return sprite_foe_offensive;
+  else if(active_sprite == ActiveSprite::FOE_OFFENSIVE)
+    return sprite_foe;
+
+  if(active_sprite == ActiveSprite::FOE)
+    return sprite_foe;
 
   return nullptr;
 }
@@ -1026,10 +1075,27 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
 
   /* Reset the animation timer and set for one loops for the active sprite
    * to play one loop, if it is set and not nullptr */
-  if(active_sprite == ActiveSprite::ACTION && sprite_action)
+  if(active_sprite == ActiveSprite::ALLY_OFFENSIVE && sprite_ally_offensive)
   {
-    sprite_action->setNumLoops(1);
-    sprite_action->resetLoops();
+    sprite_ally_offensive->setNumLoops(1);
+    sprite_ally_offensive->resetLoops();
+  }
+  else if(active_sprite == ActiveSprite::ALLY_DEFENSIVE &&
+          sprite_ally_defensive)
+  {
+    sprite_ally_defensive->setNumLoops(1);
+    sprite_ally_defensive->resetLoops();
+  }
+  else if(active_sprite == ActiveSprite::ALLY_OFFENSIVE && sprite_foe_offensive)
+  {
+    sprite_foe_offensive->setNumLoops(1);
+    sprite_foe_offensive->resetLoops();
+  }
+  else if(active_sprite == ActiveSprite::ALLY_DEFENSIVE &&
+          sprite_ally_defensive)
+  {
+    sprite_ally_defensive->setNumLoops(1);
+    sprite_ally_defensive->resetLoops();
   }
 }
 

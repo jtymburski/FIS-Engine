@@ -10,6 +10,22 @@ BattleSkill::BattleSkill()
 
 }
 
+bool BattleSkill::isDefensive()
+{
+  if(skill)
+    return skill->getFlag(SkillFlags::DEFENSIVE);
+
+  return false;
+}
+
+bool BattleSkill::isOffensive()
+{
+  if(skill)
+    return skill->getFlag(SkillFlags::OFFENSIVE);
+
+  return false;
+}
+
 void BattleSkill::print()
 {
   std::cout << "-- Battle Skill --" << std::endl;

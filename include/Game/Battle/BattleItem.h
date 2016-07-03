@@ -43,6 +43,12 @@ public:
   std::vector<BattleActor*> targets;
 
 public:
+  /* Is the BattleItem defensive? */
+  bool isDefensive();
+
+  /* Is the BattleItem offensvie? */
+  bool isOffensive();
+
   /* Print out the BattleItem information */
   void print();
 };

@@ -59,9 +59,12 @@ enum class ActorState
 
 enum class ActiveSprite
 {
-  FIRST_PERSON,
-  THIRD_PERSON,
-  ACTION,
+  ALLY_DEFENSIVE,
+  ALLY_OFFENSIVE,
+  FOE_DEFENSIVE,
+  FOE_OFFENSIVE,
+  ALLY,
+  FOE,
   BUBBIFIED_FIRST_PERSON,
   BUBBIFIED_THIRD_PERSON,
   NONE
@@ -196,11 +199,14 @@ private:
   Person* person_base;
 
   /* Sprite pointers - See active_sprite enum */
-  Sprite* sprite_action;
+  Sprite* sprite_ally;
+  Sprite* sprite_ally_defensive;
+  Sprite* sprite_ally_offensive;
   Sprite* sprite_dialog;
   Sprite* sprite_face;
-  Sprite* sprite_first_person;
-  Sprite* sprite_third_person;
+  Sprite* sprite_foe;
+  Sprite* sprite_foe_defensive;
+  Sprite* sprite_foe_offensive;
 
   /* The enumerated SpriteState for the active sprite */
   SpriteState state_active_sprite;

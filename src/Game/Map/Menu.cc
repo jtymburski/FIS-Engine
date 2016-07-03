@@ -2035,7 +2035,7 @@ void Menu::renderSleuthOverview()
   s_sprite_box.render(renderer);
 
   /* Render the person's sprite in the sleuth sprite box */
-  actor->setActiveSprite(ActiveSprite::THIRD_PERSON);
+  actor->setActiveSprite(ActiveSprite::FOE);
 
   if(actor->getActiveSprite())
   {

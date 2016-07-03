@@ -165,11 +165,14 @@ void Person::copySelf(const Person& source)
   level = source.level;
   total_exp = source.total_exp;
 
-  sprite_action = source.sprite_action;
+  sprite_ally = source.sprite_ally;
+  sprite_ally_defensive = source.sprite_ally_defensive;
+  sprite_ally_offensive = source.sprite_ally_offensive;
   sprite_dialog = source.sprite_dialog;
   sprite_face = source.sprite_face;
-  sprite_first_person = source.sprite_first_person;
-  sprite_third_person = source.sprite_third_person;
+  sprite_foe = source.sprite_foe;
+  sprite_foe_defensive = source.sprite_foe_defensive;
+  sprite_foe_offensive = source.sprite_foe_offensive;
 }
 
 /*
@@ -231,11 +234,14 @@ void Person::loadDefaults()
   credit_drop = 0;
   exp_drop = 0;
 
-  sprite_action = nullptr;
+  sprite_ally = nullptr;
+  sprite_ally_defensive = nullptr;
+  sprite_ally_offensive = nullptr;
   sprite_dialog = nullptr;
   sprite_face = nullptr;
-  sprite_first_person = nullptr;
-  sprite_third_person = nullptr;
+  sprite_foe = nullptr;
+  sprite_foe_defensive = nullptr;
+  sprite_foe_offensive = nullptr;
 }
 
 /*
@@ -308,11 +314,14 @@ void Person::setupClass()
     total_exp = base_person->total_exp;
 
     /* Comes from base person, if not null */
-    sprite_first_person = base_person->sprite_first_person;
-    sprite_third_person = base_person->sprite_third_person;
-    sprite_action = base_person->sprite_action;
-    sprite_face = base_person->sprite_face;
+    sprite_ally = base_person->sprite_ally;
+    sprite_ally_defensive = base_person->sprite_ally_defensive;
+    sprite_ally_offensive = base_person->sprite_ally_offensive;
     sprite_dialog = base_person->sprite_dialog;
+    sprite_face = base_person->sprite_face;
+    sprite_foe = base_person->sprite_foe;
+    sprite_foe_defensive = base_person->sprite_foe_defensive;
+    sprite_foe_offensive = base_person->sprite_foe_offensive;
 
     updateBaseStats();
     curr_stats = base_stats;
@@ -372,24 +381,30 @@ void Person::unsetAll(const bool& clear)
  */
 void Person::unsetSprites()
 {
-  if(sprite_first_person &&
-     (base_person == nullptr ||
-      base_person->sprite_first_person != sprite_first_person))
+  if(sprite_ally &&
+     (base_person == nullptr || base_person->sprite_ally != sprite_ally))
   {
-    delete sprite_first_person;
+    delete sprite_ally;
   }
 
-  if(sprite_third_person &&
+  if(sprite_ally_defensive &&
      (base_person == nullptr ||
-      base_person->sprite_third_person != sprite_third_person))
+      base_person->sprite_ally_defensive != sprite_ally_defensive))
   {
-    delete sprite_third_person;
+    delete sprite_ally_defensive;
   }
 
-  if(sprite_action &&
-     (base_person == nullptr || base_person->sprite_action != sprite_action))
+  if(sprite_ally_offensive &&
+     (base_person == nullptr ||
+      base_person->sprite_ally_offensive != sprite_ally_offensive))
   {
-    delete sprite_action;
+    delete sprite_ally_offensive;
+  }
+
+  if(sprite_dialog &&
+     (base_person == nullptr || base_person->sprite_dialog != sprite_dialog))
+  {
+    delete sprite_dialog;
   }
 
   if(sprite_face &&
@@ -398,17 +413,33 @@ void Person::unsetSprites()
     delete sprite_face;
   }
 
-  if(sprite_dialog != nullptr)
-    if(base_person == nullptr || base_person->sprite_dialog != sprite_dialog)
-    {
-      delete sprite_dialog;
-    }
+  if(sprite_foe &&
+     (base_person == nullptr || base_person->sprite_foe != sprite_foe))
+  {
+    delete sprite_foe;
+  }
 
-  sprite_first_person = nullptr;
-  sprite_third_person = nullptr;
-  sprite_action = nullptr;
+  if(sprite_foe_defensive &&
+     (base_person == nullptr ||
+      base_person->sprite_foe_defensive != sprite_foe_defensive))
+  {
+    delete sprite_ally;
+  }
+
+  if(sprite_foe_offensive &&
+     (base_person == nullptr ||
+      base_person->sprite_foe_offensive != sprite_foe_offensive))
+  {
+    delete sprite_foe_offensive;
+  }
+
+  sprite_ally = nullptr;
+  sprite_ally_defensive = nullptr;
+  sprite_ally_offensive = nullptr;
   sprite_face = nullptr;
-  sprite_dialog = nullptr;
+  sprite_foe = nullptr;
+  sprite_foe_defensive = nullptr;
+  sprite_foe_offensive = nullptr;
 }
 
 /*
@@ -488,7 +519,8 @@ float Person::getCurveModifier(const ElementCurve& curve, const bool primary)
  *============================================================================*/
 
 /*
- * Description: Adds an unsigned amount of experience to the Person and a levels
+ * Description: Adds an unsigned amount of experience to the Person and a
+ *levels
  *              them up (if necessary) if the update bool is assigned.
  *
  * Inputs: amount - the amount of experience to be added
@@ -671,7 +703,8 @@ uint16_t Person::findExpThisLevel()
 }
 
 /*
- * Description: Determines whether the person is a power defender (whether they
+ * Description: Determines whether the person is a power defender (whether
+ *they
  *              can persist in defending against multiple attacks)
  *
  * Inputs: none
@@ -843,16 +876,61 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(sprite_face == nullptr)
       sprite_face = new Sprite();
 
-    success &= sprite_face->addFileInformation(
+    success &= sprite_face->addFileInformation(data, index + 1, renderer,
+                                               base_path, false, false);
+  }
+  /* ---- SPRITE ALLY ---- */
+  else if(data.getElement(index) == "sprite_ally")
+  {
+    if(sprite_ally == nullptr)
+      sprite_ally = new Sprite();
+
+    success &= sprite_ally->addFileInformation(data, index + 1, renderer,
+                                               base_path, false, false);
+  }
+  /* ---- SPRITE ALLY OFFENSIVE---- */
+  else if(data.getElement(index) == "sprite_ally_off")
+  {
+    if(sprite_ally_offensive == nullptr)
+      sprite_ally_offensive = new Sprite();
+
+    success &= sprite_ally_offensive->addFileInformation(
         data, index + 1, renderer, base_path, false, false);
   }
-  /* ---- SPRITE ACTION ---- */
-  else if(data.getElement(index) == "sprite_action")
+  /* ---- SPRITE ALLY DEFENSIVE ---- */
+  else if(data.getElement(index) == "sprite_ally_def")
   {
-    if(sprite_action == nullptr)
-      sprite_action = new Sprite();
+    if(sprite_ally_defensive == nullptr)
+      sprite_ally_defensive = new Sprite();
 
-    success &= sprite_action->addFileInformation(
+    success &= sprite_ally_defensive->addFileInformation(
+        data, index + 1, renderer, base_path, false, false);
+  }
+   /* ---- SPRITE FOE ---- */
+  else if(data.getElement(index) == "sprite_foe")
+  {
+    if(sprite_foe == nullptr)
+      sprite_foe = new Sprite();
+
+    success &= sprite_foe->addFileInformation(data, index + 1, renderer,
+                                               base_path, false, false);
+  }
+  /* ---- SPRITE FOE OFFENSIVE---- */
+  else if(data.getElement(index) == "sprite_foe_off")
+  {
+    if(sprite_foe_offensive == nullptr)
+      sprite_foe_offensive = new Sprite();
+
+    success &= sprite_foe_offensive->addFileInformation(
+        data, index + 1, renderer, base_path, false, false);
+  }
+  /* ---- SPRITE FOE DEFENSIVE ---- */
+  else if(data.getElement(index) == "sprite_foe_def")
+  {
+    if(sprite_foe_defensive == nullptr)
+      sprite_foe_defensive = new Sprite();
+
+    success &= sprite_foe_defensive->addFileInformation(
         data, index + 1, renderer, base_path, false, false);
   }
   /* ---- SPRITE ACTION X ---- */
@@ -871,27 +949,8 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(sprite_dialog == nullptr)
       sprite_dialog = new Sprite();
 
-    success &= sprite_dialog->addFileInformation(
-        data, index + 1, renderer, base_path, false, false);
-  }
-  /* ---- SPRITE FIRST PERSON ---- */
-  else if(data.getElement(index) == "sprite_fp")
-  {
-    if(sprite_first_person == nullptr)
-      sprite_first_person = new Sprite();
-
-    /* Add data */
-    success &= sprite_first_person->addFileInformation(
-        data, index + 1, renderer, base_path, false, false);
-  }
-  /* ---- SPRITE THIRD PERSON ---- */
-  else if(data.getElement(index) == "sprite_tp")
-  {
-    if(sprite_third_person == nullptr)
-      sprite_third_person = new Sprite();
-
-    success &= sprite_third_person->addFileInformation(
-        data, index + 1, renderer, base_path, false, false);
+    success &= sprite_dialog->addFileInformation(data, index + 1, renderer,
+                                                 base_path, false, false);
   }
   /* ---- VITALITY CURRENT VALUE ---- */
   else if(data.getElement(index) == "vita")
@@ -1032,7 +1091,8 @@ void Person::restoreQtdr()
 }
 
 /*
- * Description: Saves the data of this person to the file handler pointer. This
+ * Description: Saves the data of this person to the file handler pointer.
+ *This
  *              assumes the person wrapper xml is written before the call.
  *
  * Inputs: FileHandler* fh - the saving file handler
@@ -1082,7 +1142,8 @@ bool Person::saveData(FileHandler* fh)
 }
 
 /*
- * Description: Updates the base skills of the Person based on the battle class
+ * Description: Updates the base skills of the Person based on the battle
+ *class
  *              and the race class.
  *
  * Inputs: none
@@ -1252,33 +1313,6 @@ void Person::updateStats()
   curr_stats.cleanUp();
   curr_max_stats.cleanUp();
   temp_max_stats.cleanUp();
-}
-
-Sprite* Person::getSpriteThirdPerson()
-{
-  return sprite_third_person;
-}
-
-Sprite* Person::getSpriteAction()
-{
-  return sprite_action;
-}
-
-Sprite* Person::getSpriteFace()
-{
-  return sprite_face;
-}
-
-/*
- * Description: Returns the action frames for the person - for the rendering
- *              swipe-away.
- *
- * Inputs: none
- * Output: Sprite* - the sprite pointer
- */
-Sprite* Person::getSpriteDialog()
-{
-  return sprite_dialog;
 }
 
 /*
@@ -1667,16 +1701,44 @@ float Person::getVitaPercent()
   return calcVitaPercentAtVal(getCurr().getStat(Attribute::VITA));
 }
 
-/*
- * Description: Grabs the currentassigned first person frame (based on the
- *              IS_BUBBY BState flag)
- *
- * Inputs: none
- * Output: Sprite* - pointer to the correct current first person sprite
- */
-Sprite* Person::getSpriteFirstPerson()
+Sprite* Person::getSpriteAlly()
 {
-  return sprite_first_person;
+  return sprite_ally;
+}
+
+Sprite* Person::getSpriteAllyDefensive()
+{
+  return sprite_ally_defensive;
+}
+
+Sprite* Person::getSpriteAllyOffensive()
+{
+  return sprite_ally_offensive;
+}
+
+Sprite* Person::getSpriteDialog()
+{
+  return sprite_dialog;
+}
+
+Sprite* Person::getSpriteFace()
+{
+  return sprite_face;
+}
+
+Sprite* Person::getSpriteFoe()
+{
+  return sprite_foe;
+}
+
+Sprite* Person::getSpriteFoeDefensive()
+{
+  return sprite_foe_defensive;
+}
+
+Sprite* Person::getSpriteFoeOffensive()
+{
+  return sprite_foe_offensive;
 }
 
 /*
