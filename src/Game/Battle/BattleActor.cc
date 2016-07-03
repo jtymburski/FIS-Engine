@@ -1057,6 +1057,10 @@ void BattleActor::setStateLiving(LivingState new_state)
 void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
 {
   auto old_active_sprite = getActiveSprite();
+
+  if(old_active_sprite)
+    old_active_sprite->setAtFirst();
+
   active_sprite = new_active_sprite;
   auto sprite = getActiveSprite();
 
@@ -1083,8 +1087,8 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
   else if(active_sprite == ActiveSprite::ALLY_DEFENSIVE &&
           sprite_ally_defensive)
   {
-    sprite_ally_defensive->setNumLoops(1);
-    sprite_ally_defensive->resetLoops();
+    // sprite_ally_defensive->setNumLoops(1);
+    // sprite_ally_defensive->resetLoops();
   }
   else if(active_sprite == ActiveSprite::FOE_OFFENSIVE && sprite_foe_offensive)
   {
@@ -1094,8 +1098,8 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
   else if(active_sprite == ActiveSprite::FOE_DEFENSIVE &&
           sprite_ally_defensive)
   {
-    sprite_foe_defensive->setNumLoops(1);
-    sprite_foe_defensive->resetLoops();
+    // sprite_foe_defensive->setNumLoops(1);
+    // sprite_foe_defensive->resetLoops();
   }
 }
 

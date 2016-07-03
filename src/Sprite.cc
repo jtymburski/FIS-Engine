@@ -960,7 +960,7 @@ bool Sprite::loadData(SDL_Renderer* renderer)
       {
         // std::cout << "Inserting 1 Frame: " << element.build_path_head
         //                  << std::endl;
-        insertFirst(element.build_path_head, renderer);
+        insertTail(element.build_path_head, renderer);
         success = true;
       }
       else if(element.build_path_head != "" && element.build_path_tail != "")
