@@ -1689,6 +1689,7 @@ bool MapThing::getPassabilityExiting(Tile* frame_tile, Direction dir)
   TileSprite* frame = getFrameMain(frame_tile);
   if(frame != NULL)
     return frame->getPassability(dir);
+
   return true;
 }
 
@@ -1702,6 +1703,7 @@ int32_t MapThing::getSoundID() const
 {
   if(base != nullptr)
     return base->getSoundID();
+
   return sound_id;
 }
 
@@ -1713,10 +1715,11 @@ int32_t MapThing::getSoundID() const
  */
 uint16_t MapThing::getSpeed() const
 {
-  if(base != NULL)
+  if(base != nullptr)
   {
     if(speed != base->getSpeed())
       return speed;
+
     return base->getSpeed();
   }
 

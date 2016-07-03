@@ -184,6 +184,7 @@ TitleScreen::TitleScreen(Options* config)
       title_elements{},
       title_menu_index{-1}
 {
+  buildTitleElements();
 }
 
 /*=============================================================================
@@ -296,6 +297,7 @@ void TitleScreen::keyDownUp()
 /* Render the TitleElements */
 void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
 {
+  std::cout << "Render title elements" << std::endl;
   // TODO
   SDL_Color kCOLOR_TEXT = {255, 255, 255, 255};
 

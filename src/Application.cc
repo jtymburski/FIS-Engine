@@ -363,7 +363,7 @@ void Application::uninitialize()
 void Application::unload()
 {
   /* Change mode back to title screen */
-  // changeMode(TITLESCREEN);
+  changeMode(TITLESCREEN);
 
   /* Clean up game */
   game_handler->unload();
@@ -451,9 +451,9 @@ bool Application::updateViews(int cycle_time)
       /* If action is available, get it, and parse it to change the mode */
       MenuType menu_type = title_screen.getActiveTitleMenu();
 
-      // if(menu_type == MenuType::TITLE_QUIT)
-      //   changeMode(EXIT);
-      // else if(menu_type == MenuType::TITLE_NEW_GAME)
+      if(menu_type == MenuType::TITLE_QUIT)
+        changeMode(EXIT);
+      else if(menu_type == MenuType::TITLE_NEW_GAME)
         changeMode(GAME);
     }
   }
