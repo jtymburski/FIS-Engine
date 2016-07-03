@@ -1720,8 +1720,7 @@ uint16_t MapThing::getSpeed() const
     return base->getSpeed();
   }
 
-  return 5;
-  //return speed;
+  return speed;
 }
 
 /*
