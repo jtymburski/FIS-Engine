@@ -444,16 +444,15 @@ bool Application::updateViews(int cycle_time)
   /* Handle any appropriate actions of the individual views */
   if(mode == TITLESCREEN)
   {
-
     /* Update the title screen, which returns if an action is available */
     if(title_screen.update(cycle_time))
     {
       /* If action is available, get it, and parse it to change the mode */
       MenuType menu_type = title_screen.getActiveTitleMenu();
 
-      if(menu_type == MenuType::TITLE_QUIT)
+      if(title_screen.getFlag(TitleState::EXIT_GAME))
         changeMode(EXIT);
-      else if(menu_type == MenuType::TITLE_NEW_GAME)
+      else if(title_screen.getFlag(TitleState::GO_TO_GAME))
         changeMode(GAME);
     }
   }
@@ -613,6 +612,8 @@ bool Application::initialize()
 
       /* Set game handler renderer */
       game_handler->setRenderer(renderer);
+      std::cout << "Construct the title background" << std::endl;
+      title_screen.buildTitleBackground(renderer);
 
       /* Create helper graphical portions */
       Helpers::createMaskBlack(renderer);

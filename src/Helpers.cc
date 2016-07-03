@@ -935,7 +935,7 @@ std::string Helpers::menuTypeToStr(const MenuType& menu_type)
   if(menu_type == MenuType::TITLE_PLAYER_SELECT)
     return "New Game";
   if(menu_type == MenuType::TITLE_NEW_GAME)
-    return "-------";
+    return "New Game";
   if(menu_type == MenuType::TITLE_LOAD_GAME)
     return "Load Game";
   if(menu_type == MenuType::TITLE_OPTIONS)

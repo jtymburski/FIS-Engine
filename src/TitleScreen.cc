@@ -16,7 +16,7 @@
 
 #ifndef TITLE_SKIP
 /* Construct the TitleBackground Class */
-TitleBackground::TitleBackground(Options* config, SDL_Renderer* renderer)
+TitleBackground::TitleBackground()
     : delay{0},
       delay2{0},
       elapsed_time{0},
@@ -26,26 +26,6 @@ TitleBackground::TitleBackground(Options* config, SDL_Renderer* renderer)
       rotate3{0},
       rotate6{0}
 {
-  if(config && renderer)
-  {
-    auto path = config->getBasePath();
-
-    background.insertFirst(path + "sprites/Title/title-backdrop.png", renderer);
-    background2.insertFirst(path + "sprites/Title/title-dynaton.png", renderer);
-    background4.insertFirst(path + "sprites/Title/title-dynatonbooms1.png",
-                            renderer);
-    background4.setOpacity(0);
-    background5.insertFirst(path + "sprites/Title/title-dynatonbooms2.png",
-                            renderer);
-    background5.setOpacity(0);
-    background3.insertFirst(path + "sprites/Title/title-dynatonatmosphere.png",
-                            renderer);
-    background3.setOpacity(196);
-    background3.setColorBalance(255, 170, 170);
-    background6.insertFirst(path + "sprites/Title/title-moon.png", renderer);
-    background7.insertFirst(path + "sprites/Title/title-waldo.png", renderer);
-    title.setTexture(path + "sprites/Title/title.png", renderer);
-  }
 }
 
 bool TitleBackground::render(SDL_Renderer* renderer)
@@ -76,6 +56,30 @@ bool TitleBackground::render(SDL_Renderer* renderer)
   }
 
   return success;
+}
+
+void TitleBackground::buildSprites(Options* config, SDL_Renderer* renderer)
+{
+  if(config && renderer)
+  {
+    auto path = config->getBasePath();
+
+    background.insertFirst(path + "sprites/Title/title-backdrop.png", renderer);
+    background2.insertFirst(path + "sprites/Title/title-dynaton.png", renderer);
+    background4.insertFirst(path + "sprites/Title/title-dynatonbooms1.png",
+                            renderer);
+    background4.setOpacity(0);
+    background5.insertFirst(path + "sprites/Title/title-dynatonbooms2.png",
+                            renderer);
+    background5.setOpacity(0);
+    background3.insertFirst(path + "sprites/Title/title-dynatonatmosphere.png",
+                            renderer);
+    background3.setOpacity(196);
+    background3.setColorBalance(255, 170, 170);
+    background6.insertFirst(path + "sprites/Title/title-moon.png", renderer);
+    background7.insertFirst(path + "sprites/Title/title-waldo.png", renderer);
+    title.setTexture(path + "sprites/Title/title.png", renderer);
+  }
 }
 
 /* Updates the title screen. Necessary for visual updates */
@@ -178,6 +182,7 @@ bool TitleBackground::update(int32_t cycle_time)
 
 TitleScreen::TitleScreen(Options* config)
     : config{config},
+      flags{static_cast<TitleState>(0)},
       menu_layer{MenuLayer::TITLE},
       menu_type{MenuType::INVALID},
       sound_handler{nullptr},
@@ -225,7 +230,7 @@ void TitleScreen::buildTitleElements()
 /* Processing for the Action key */
 void TitleScreen::keyDownAction()
 {
-  if(menu_layer == MenuLayer::MAIN)
+  if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index != -1 &&
        (uint32_t)title_menu_index < title_elements.size())
@@ -233,9 +238,14 @@ void TitleScreen::keyDownAction()
       /* Play sound */
       sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
                                     SoundChannels::MENUS, true);
-
-      menu_type = title_elements.at(title_menu_index).menu_type;
     }
+
+    menu_type = title_elements.at(title_menu_index).menu_type;
+
+    if(menu_type == MenuType::TITLE_NEW_GAME)
+      setFlag(TitleState::GO_TO_GAME);
+    else if(menu_type == MenuType::TITLE_QUIT)
+      setFlag(TitleState::EXIT_GAME);
   }
 }
 
@@ -262,9 +272,9 @@ void TitleScreen::keyDownDown()
 
       title_menu_index++;
     }
+    else
+      title_menu_index = 0;
   }
-  else
-    title_menu_index = 0;
 }
 
 /* Processing for the Left key */
@@ -297,19 +307,29 @@ void TitleScreen::keyDownUp()
 /* Render the TitleElements */
 void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
 {
-  std::cout << "Render title elements" << std::endl;
   // TODO
   SDL_Color kCOLOR_TEXT = {255, 255, 255, 255};
 
   if(config)
   {
-    auto height = config->getScreenHeight();
-    auto width = config->getScreenWidth();
     auto font = config->getFontTTF(FontName::M_TITLE_ELM);
+    auto centre_x = config->getScreenWidth() / 2;
+    auto centre_y = 2 * config->getScreenHeight() / 3;
 
     // TODO
-    Coordinate current{(int32_t)std::round(height * 0.7),
-                       (int32_t)std::round(width * 0.2)};
+    Coordinate current{centre_x, centre_y};
+
+    /* Title Element Box Rendering */
+    title_element_box.width = 1 * config->getScreenWidth() / 7;
+    title_element_box.height = 1 * config->getScreenHeight() / 4;
+    title_element_box.point.x = centre_x - title_element_box.width / 2;
+    title_element_box.point.y = centre_y - title_element_box.height / 5;
+    title_element_box.color_border = {255, 255, 255, 255};
+    title_element_box.color_bg = {0, 0, 0, 200};
+    title_element_box.render(renderer);
+
+    /* */
+    current.y -= 5;
 
     if(font)
     {
@@ -319,20 +339,22 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
       {
         Text t_element(font);
         t_element.setText(renderer, element.name, kCOLOR_TEXT);
-        t_element.render(renderer, current.x, current.y);
-        current.y += (int32_t)std::round(t_element.getHeight() * 1.2);
+        t_element.render(renderer, current.x - t_element.getWidth() / 2,
+                         current.y - t_element.getHeight() / 2);
 
         // TODO
         if(i != -1 && i == title_menu_index)
         {
           SDL_Rect rect;
-          rect.x = current.x -= 10;
-          rect.y = current.y -= 10;
-          rect.w = t_element.getWidth() + 20;
-          rect.h = t_element.getHeight() + 20;
-          Frame::setRenderDrawColor(renderer, {150, 150, 150, 255});
+          rect.w = t_element.getWidth() + 10;
+          rect.h = t_element.getHeight() + 10;
+          rect.x = current.x - rect.w / 2;
+          rect.y = current.y - rect.h / 2;
+          Frame::setRenderDrawColor(renderer, {150, 150, 150, 125});
           SDL_RenderFillRect(renderer, &rect);
         }
+
+        current.y += (int32_t)std::round(t_element.getHeight() * 1.425);
 
         /* Increment the index */
         i++;
@@ -344,6 +366,13 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+void TitleScreen::buildTitleBackground(SDL_Renderer* renderer)
+{
+#ifndef TITLE_SKIP
+  title_background.buildSprites(config, renderer);
+#endif
+}
 
 /* Enables or disables the view. This includes any initialization for before
  * or after it was visible */
@@ -378,6 +407,11 @@ void TitleScreen::firstUpdate()
 MenuType TitleScreen::getActiveTitleMenu()
 {
   return this->menu_type;
+}
+
+bool TitleScreen::getFlag(const TitleState& test_flag)
+{
+  return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
 /* The KeyDown event handler -- sends keys to specific functions */
@@ -437,6 +471,11 @@ bool TitleScreen::setConfig(Options* config)
   return (this->config != nullptr);
 }
 
+void TitleScreen::setFlag(TitleState set_flags, const bool& set_value)
+{
+  (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
+}
+
 /* Sets the sound handler used. If unset, no sounds will play */
 bool TitleScreen::setSoundHandler(SoundHandler* sound_handler)
 {
@@ -455,52 +494,5 @@ bool TitleScreen::update(int32_t cycle_time)
   (void)cycle_time; // TODO
 #endif
   return true;
-  //return menu_type != MenuType::INVALID;
+  // return menu_type != MenuType::INVALID;
 }
-
-/*============================================================================
-  TO REFACTOR
- *============================================================================*/
-
-// /* Set up the menu display text, for painting */
-// bool TitleScreen::setMenu(SDL_Renderer* renderer)
-// {
-//   if(system_options != NULL)
-//   {
-//     SDL_Color tinted_color = {20, 153, 78, 255};
-//     SDL_Color plain_color = {255, 255, 255, 255};
-//     TTF_Font* new_font =
-//         Text::createFont(system_options->getFont(), kFONT_SIZE,
-//         TTF_STYLE_BOLD);
-//     if(new_font != NULL)
-//     {
-//       unsetMenu();
-
-//       /* Set the class font */
-//       font = new_font;
-
-//       /* Set up the labels */
-//       for(int i = 0; i < kNUM_MENU_ITEMS; i++)
-//       {
-//         /* The selected text */
-//         Text* selected = new Text(font);
-//         selected->setText(renderer, kMENU_ITEMS[i], tinted_color);
-//         selected_options.push_back(selected);
-
-//         /* The unselected text */
-//         Text* unselected = new Text(font);
-//         unselected->setText(renderer, kMENU_ITEMS[i], plain_color);
-//         unselected_options.push_back(unselected);
-//       }
-
-//       /* Proceed to update the render index */
-//       render_index = kTEXT_MARGIN + kTEXT_GAP * (kNUM_MENU_ITEMS - 1) +
-//                      selected_options[kNUM_MENU_ITEMS - 1]->getHeight();
-//       render_index = system_options->getScreenHeight() - render_index;
-
-//       return true;
-//     }
-//   }
-
-//   return false;
-// }
