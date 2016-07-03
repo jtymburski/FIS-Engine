@@ -1087,6 +1087,7 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
   else if(active_sprite == ActiveSprite::ALLY_DEFENSIVE &&
           sprite_ally_defensive)
   {
+    sprite_ally_defensive->setFreezeAtTail(true);
     // sprite_ally_defensive->setNumLoops(1);
     // sprite_ally_defensive->resetLoops();
   }
@@ -1098,8 +1099,9 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
   else if(active_sprite == ActiveSprite::FOE_DEFENSIVE &&
           sprite_ally_defensive)
   {
-    // sprite_foe_defensive->setNumLoops(1);
-    // sprite_foe_defensive->resetLoops();
+    //sprite_ally_defensive->setFreezeAtTail(true);
+    sprite_foe_defensive->setNumLoops(1);
+    sprite_foe_defensive->resetLoops();
   }
 }
 

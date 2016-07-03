@@ -50,6 +50,7 @@ Sprite::Sprite()
       color_blue{Sprite::kDEFAULT_COLOR},
       data{},
       elapsed_time{0},
+      freeze_tail{false},
       loops{0},
       loops_to_do{0},
       non_unique{false},
@@ -1407,6 +1408,17 @@ bool Sprite::setDirectionReverse()
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Sprite::setFreezeAtTail(bool freeze_at_tail)
+{
+  this->freeze_tail = freeze_at_tail;
+}
+
+/*
  * Description: Sets the head frame as per the passed parameter
  *
  * Inputs: Frame* head - the new head frame
@@ -1694,44 +1706,51 @@ bool Sprite::update(int cycle_time, bool skip_head, bool color_only)
 {
   bool shift = false;
 
-  /* If skip head is triggered, but it is at head, skip to next */
-  if(!color_only && skip_head && isAtFirst())
+  if(freeze_tail && isAtEnd())
   {
-    if(loops_to_do == 0 || loops < loops_to_do)
-      shiftNext(skip_head);
-
-    shift = true;
+    std::cout << "HELLO" << std::endl;
   }
-
-  /* Do grey scale checking, for animation */
-  if(color_mode == ColorMode::GREYING || color_mode == ColorMode::COLORING)
+  else
   {
-    int val = color_alpha + kDELTA_GREY_SCALE;
-    if(val >= kDEFAULT_OPACITY)
+    /* If skip head is triggered, but it is at head, skip to next */
+    if(!color_only && skip_head && isAtFirst())
     {
-      if(color_mode == ColorMode::GREYING)
-        setColorMode(ColorMode::GREY);
-      else
-        setColorMode(ColorMode::COLOR);
-    }
-    else
-    {
-      color_alpha = val;
-    }
-    setColorMod();
-  }
-
-  /* Start by updating the animation and shifting, if necessary */
-  if(!color_only && size > 1 && cycle_time > 0 && animation_time > 0)
-  {
-    elapsed_time += cycle_time;
-    if(elapsed_time > animation_time)
-    {
-      elapsed_time -= animation_time;
-
       if(loops_to_do == 0 || loops < loops_to_do)
         shiftNext(skip_head);
+
       shift = true;
+    }
+
+    /* Do grey scale checking, for animation */
+    if(color_mode == ColorMode::GREYING || color_mode == ColorMode::COLORING)
+    {
+      int val = color_alpha + kDELTA_GREY_SCALE;
+      if(val >= kDEFAULT_OPACITY)
+      {
+        if(color_mode == ColorMode::GREYING)
+          setColorMode(ColorMode::GREY);
+        else
+          setColorMode(ColorMode::COLOR);
+      }
+      else
+      {
+        color_alpha = val;
+      }
+      setColorMod();
+    }
+
+    /* Start by updating the animation and shifting, if necessary */
+    if(!color_only && size > 1 && cycle_time > 0 && animation_time > 0)
+    {
+      elapsed_time += cycle_time;
+      if(elapsed_time > animation_time)
+      {
+        elapsed_time -= animation_time;
+
+        if(loops_to_do == 0 || loops < loops_to_do)
+          shiftNext(skip_head);
+        shift = true;
+      }
     }
   }
 
