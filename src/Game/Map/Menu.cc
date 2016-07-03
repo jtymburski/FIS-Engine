@@ -3233,8 +3233,6 @@ bool Menu::keyDownEvent(KeyHandler& key_handler)
 {
   key_handler.setMode(KeyMode::TEXT_ENTRY);
 
-  std::cout << "TextEntry: " << key_handler.getTextEntry() << std::endl;
-
   if(key_handler.isDepressed(GameKey::MOVE_UP))
   {
     keyDownUp();
@@ -3265,6 +3263,8 @@ bool Menu::keyDownEvent(KeyHandler& key_handler)
     keyDownCancel();
     key_handler.setHeld(GameKey::CANCEL);
   }
+
+  key_handler.setMode(KeyMode::INPUT);
 
   return false;
 }

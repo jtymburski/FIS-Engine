@@ -1011,22 +1011,22 @@ void MapPerson::keyDownEvent(KeyHandler& key_handler)
     if(key_handler.isDepressed(GameKey::MOVE_DOWN))
     {
       addDirection(Direction::SOUTH);
-      //key_handler.setHeld(GameKey::MOVE_DOWN);
+      // key_handler.setHeld(GameKey::MOVE_DOWN);
     }
     if(key_handler.isDepressed(GameKey::MOVE_UP))
     {
       addDirection(Direction::NORTH);
-      //key_handler.setHeld(GameKey::MOVE_UP);
+      // key_handler.setHeld(GameKey::MOVE_UP);
     }
     if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
     {
       addDirection(Direction::EAST);
-      //key_handler.setHeld(GameKey::MOVE_RIGHT);
+      // key_handler.setHeld(GameKey::MOVE_RIGHT);
     }
     if(key_handler.isDepressed(GameKey::MOVE_LEFT))
     {
       addDirection(Direction::WEST);
-      //key_handler.setHeld(GameKey::MOVE_LEFT);
+      // key_handler.setHeld(GameKey::MOVE_LEFT);
     }
   }
 }
@@ -1059,6 +1059,14 @@ void MapPerson::keyUpEvent(KeyHandler& key_handler)
     removeDirection(Direction::EAST);
   if(!key_handler.isDepressed(GameKey::MOVE_LEFT))
     removeDirection(Direction::WEST);
+
+  if(!key_handler.isDepressed(GameKey::MOVE_DOWN) &&
+     !key_handler.isDepressed(GameKey::MOVE_UP) &&
+     !key_handler.isDepressed(GameKey::MOVE_RIGHT) &&
+     !key_handler.isDepressed(GameKey::MOVE_LEFT))
+  {
+    keyFlush();
+  }
 }
 
 /*

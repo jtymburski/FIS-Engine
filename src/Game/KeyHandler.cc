@@ -409,8 +409,6 @@ void KeyHandler::print(bool only_depressed, bool only_held)
     }
   }
 
-  std::cout << "Text Entry: " << text << std::endl;
-
   if(printed_once)
     std::cout << std::endl;
 }
@@ -425,6 +423,7 @@ void KeyHandler::print(bool only_depressed, bool only_held)
 bool KeyHandler::update(int32_t cycle_time)
 {
   //std::cout << "Updating the key handler: " << cycle_time << std::endl;
+
   /* Update the state of Keys */
   SDL_PumpEvents();
 

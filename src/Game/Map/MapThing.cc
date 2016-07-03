@@ -451,6 +451,7 @@ bool MapThing::renderAdditional(SDL_Renderer* renderer, Tile* tile,
 float MapThing::moveAmount(uint16_t cycle_time)
 {
   float move_amount = (cycle_time * getSpeed()) / kMOVE_FACTOR;
+
   if(move_amount > 1.0)
     move_amount = 1.0;
 
@@ -1718,7 +1719,9 @@ uint16_t MapThing::getSpeed() const
       return speed;
     return base->getSpeed();
   }
-  return speed;
+
+  return 5;
+  //return speed;
 }
 
 /*
@@ -2372,7 +2375,7 @@ bool MapThing::setBase(MapThing* base)
 
   return success;
 }
-  
+
 /*
  * Description: Sets the color mode of all sprites within the matrix of the
  *              thing. Virtualized for the purpose of children.
