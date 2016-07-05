@@ -21,7 +21,7 @@
 #include "Window.h"
 
 // SKIP THE TITLE BACKGROUND LOADING / RENDERING
-// #define TITLE_SKIP
+#define TITLE_SKIP
 
 /* BState Flags - Flags which describe only battle-related flags */
 ENUM_FLAGS(TitleState)
