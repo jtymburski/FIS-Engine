@@ -302,7 +302,7 @@ void Application::render(uint32_t cycle_time)
   /* Handle the individual action items, depending on whats running */
   if(mode == TITLESCREEN)
   {
-    title_screen.render(renderer);
+    title_screen.render(renderer, key_handler);
   }
   else if(mode == GAME)
   {

@@ -176,6 +176,10 @@ bool TitleBackground::update(int32_t cycle_time)
  * CONSTANTS
  *============================================================================*/
 
+const SDL_Color TitleScreen::kCOLOR_BACKGROUND{0, 0, 0, 200};
+const SDL_Color TitleScreen::kCOLOR_BORDER{255, 255, 255, 255};
+const SDL_Color TitleScreen::kCOLOR_TEXT{255, 255, 255, 255};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -203,7 +207,7 @@ void TitleScreen::buildTitleElements()
   title_elements.clear();
 
   /* Create tNew Game element */
-  auto elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_NEW_GAME),
+  auto elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_PLAYER_SELECT),
                           true, MenuType::TITLE_NEW_GAME);
   title_elements.push_back(elm);
 
@@ -227,36 +231,77 @@ void TitleScreen::buildTitleElements()
   menu_type = MenuType::TITLE_NEW_GAME;
 }
 
+/* Checks if the entered player name is valid for game selection */
+bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
+{
+  auto player_name = key_handler.getTextEntry();
+  bool valid{true};
+
+  valid &= player_name != "";
+  valid &= player_name.length() < 15;
+
+  return valid;
+}
+
 /* Processing for the Action key */
-void TitleScreen::keyDownAction()
+void TitleScreen::keyDownAction(KeyHandler& key_handler)
 {
   if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index != -1 &&
        (uint32_t)title_menu_index < title_elements.size())
     {
+      auto title_menu_type = title_elements.at(title_menu_index).menu_type;
+
+      menu_layer = MenuLayer::MAIN;
+
+      /* If new game was selected, set the KeyHandler to text entry mode */
+      if(title_menu_type == MenuType::TITLE_NEW_GAME)
+      {
+        menu_type = MenuType::TITLE_PLAYER_SELECT;
+        key_handler.setMode(KeyMode::TEXT_ENTRY);
+      }
+      else
+      {
+        menu_type = title_menu_type;
+      }
+
       /* Play sound */
       sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
                                     SoundChannels::MENUS, true);
     }
 
-    menu_type = title_elements.at(title_menu_index).menu_type;
-
-    if(menu_type == MenuType::TITLE_NEW_GAME)
-      setFlag(TitleState::GO_TO_GAME);
-    else if(menu_type == MenuType::TITLE_QUIT)
+    /* If the current menu type is now TITLE_QUIT, set flag to quit the game */
+    if(menu_type == MenuType::TITLE_QUIT)
       setFlag(TitleState::EXIT_GAME);
+  }
+  else if(menu_layer == MenuLayer::MAIN)
+  {
+    /* Start the Game if at player selection and the player has a name */
+    if(menu_type == MenuType::TITLE_PLAYER_SELECT &&
+       isPlayerNameValid(key_handler))
+    {
+      setFlag(TitleState::GO_TO_GAME);
+    }
   }
 }
 
 /* Processing for the Cancel key */
-void TitleScreen::keyDownCancel()
+void TitleScreen::keyDownCancel(KeyHandler& key_handler)
 {
   if(menu_layer == MenuLayer::TITLE)
   {
     /* Play sound */
     sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
                                   SoundChannels::MENUS);
+  }
+  else if(menu_layer == MenuLayer::MAIN)
+  {
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
+                                  SoundChannels::MENUS);
+
+    menu_type = MenuType::INVALID;
+    menu_layer = MenuLayer::TITLE;
   }
 }
 
@@ -307,28 +352,23 @@ void TitleScreen::keyDownUp()
 /* Render the TitleElements */
 void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
 {
-  // TODO
-  SDL_Color kCOLOR_TEXT = {255, 255, 255, 255};
-
   if(config)
   {
     auto font = config->getFontTTF(FontName::M_TITLE_ELM);
     auto centre_x = config->getScreenWidth() / 2;
     auto centre_y = 2 * config->getScreenHeight() / 3;
 
-    // TODO
-    Coordinate current{centre_x, centre_y};
+    current = Coordinate{centre_x, centre_y};
 
     /* Title Element Box Rendering */
     title_element_box.width = 1 * config->getScreenWidth() / 7;
     title_element_box.height = 1 * config->getScreenHeight() / 4;
     title_element_box.point.x = centre_x - title_element_box.width / 2;
     title_element_box.point.y = centre_y - title_element_box.height / 5;
-    title_element_box.color_border = {255, 255, 255, 255};
-    title_element_box.color_bg = {0, 0, 0, 200};
+    title_element_box.color_border = kCOLOR_BORDER;
+    title_element_box.color_bg = kCOLOR_BACKGROUND;
     title_element_box.render(renderer);
 
-    /* */
     current.y -= 5;
 
     if(font)
@@ -359,6 +399,49 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
         /* Increment the index */
         i++;
       }
+    }
+  }
+}
+
+void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
+                                        KeyHandler& key_handler)
+{
+  /* Grab the current player name entered */
+  auto player_name = key_handler.getTextEntry();
+
+  if(config)
+  {
+    auto font = config->getFontTTF(FontName::M_TITLE_ELM);
+    auto centre_x = config->getScreenWidth() / 2;
+    auto centre_y = config->getScreenHeight() / 2;
+
+    player_selection_box.width = config->getScreenWidth() / 2;
+    player_selection_box.height = config->getScreenHeight() / 4;
+    player_selection_box.point.x = centre_x - player_selection_box.width / 2;
+    player_selection_box.point.y = centre_y - player_selection_box.height / 2;
+    player_selection_box.color_border = kCOLOR_BORDER;
+    player_selection_box.color_bg = kCOLOR_BACKGROUND;
+    player_selection_box.render(renderer);
+
+    current = Coordinate{centre_x, centre_y};
+    current.y -= 5;
+
+    if(font)
+    {
+      std::cout << "Rendering player selection: " << current.x << ", "
+                << current.y << std::endl;
+      Text t_player_title(font);
+      Text t_player_name(font);
+
+      t_player_title.setText(renderer, "Player Name: ", kCOLOR_TEXT);
+      t_player_name.setText(renderer, player_name, kCOLOR_TEXT);
+
+      t_player_title.render(renderer, current.x - t_player_title.getWidth(),
+                            current.y);
+
+      current.x += t_player_title.getWidth();
+      t_player_name.render(renderer, current.x - t_player_title.getWidth(),
+                           current.y);
     }
   }
 }
@@ -421,9 +504,9 @@ void TitleScreen::keyDownEvent(KeyHandler& key_handler)
   {
     /* Main code items */
     if(key_handler.isDepressed(GameKey::ACTION))
-      keyDownAction();
+      keyDownAction(key_handler);
     if(key_handler.isDepressed(GameKey::CANCEL))
-      keyDownCancel();
+      keyDownCancel(key_handler);
     if(key_handler.isDepressed(GameKey::MOVE_DOWN))
       keyDownDown();
     if(key_handler.isDepressed(GameKey::MOVE_LEFT))
@@ -451,14 +534,25 @@ void TitleScreen::keyTestDownEvent(SDL_KeyboardEvent event)
 #endif
 
 /* Renders the title screen */
-bool TitleScreen::render(SDL_Renderer* renderer)
+bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
 /* Update the title background if it's enabled */
 #ifndef TITLE_SKIP
   title_background.render(renderer);
 #endif
 
-  renderTitleElements(renderer);
+  if(menu_layer == MenuLayer::TITLE)
+  {
+    renderTitleElements(renderer);
+  }
+  else if(menu_layer == MenuLayer::MAIN)
+  {
+    if(menu_type == MenuType::TITLE_PLAYER_SELECT)
+    {
+      std::cout << "Rendering player selection" << std::endl;
+      renderPlayerSelection(renderer, key_handler);
+    }
+  }
 
   return true;
 }
@@ -494,5 +588,4 @@ bool TitleScreen::update(int32_t cycle_time)
   (void)cycle_time; // TODO
 #endif
   return true;
-  // return menu_type != MenuType::INVALID;
 }

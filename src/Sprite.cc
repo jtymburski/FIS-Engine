@@ -1706,11 +1706,7 @@ bool Sprite::update(int cycle_time, bool skip_head, bool color_only)
 {
   bool shift = false;
 
-  if(freeze_tail && isAtEnd())
-  {
-    std::cout << "HELLO" << std::endl;
-  }
-  else
+  if(!(freeze_tail && isAtEnd()))
   {
     /* If skip head is triggered, but it is at head, skip to next */
     if(!color_only && skip_head && isAtFirst())

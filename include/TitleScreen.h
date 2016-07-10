@@ -72,7 +72,7 @@ public:
   void buildSprites(Options* config, SDL_Renderer* renderer);
 
   /* Render the TitleBackground */
-  bool render(SDL_Renderer* renderer);
+  bool render(SDL_Renderer* renderer, KeyHandler& key_handler);
 
   /* Update the TitleBackground */
   bool update(int32_t cycle_time);
@@ -88,6 +88,9 @@ public:
 private:
   /* Running configuration assigned to the TitleScreen */
   Options* config;
+
+  /* Current working coordinate for TitleScreen rendering */
+  Coordinate current;
 
   /* Enumerated flags for the TitleScreen */
   TitleState flags;
@@ -116,18 +119,29 @@ private:
   /* Current title mennu index */
   int32_t title_menu_index;
 
+  /* ----------------- CONSTANTS -------------------- */
+  static const SDL_Color kCOLOR_BACKGROUND;
+  static const SDL_Color kCOLOR_BORDER;
+  static const SDL_Color kCOLOR_TEXT;
+
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Constructs the menu options */
   void buildTitleElements();
 
+  /* Checks if the Player name is valid */
+  bool isPlayerNameValid(KeyHandler& key_handler);
+
   /* KeyDown Events */
-  void keyDownAction();
-  void keyDownCancel();
+  void keyDownAction(KeyHandler& key_handler);
+  void keyDownCancel(KeyHandler& key_handler);
   void keyDownDown();
   void keyDownLeft();
   void keyDownRight();
   void keyDownUp();
+
+  /* Render the Player Section Box */
+  void renderPlayerSelection(SDL_Renderer* renderer, KeyHandler& key_handler);
 
   /* Render Title Elements */
   void renderTitleElements(SDL_Renderer* renderer);
@@ -159,7 +173,7 @@ public:
 #endif
 
   /* Renders the title screen */
-  bool render(SDL_Renderer* renderer);
+  bool render(SDL_Renderer* renderer, KeyHandler& key_handler);
 
   /* Assigns the running configuration for the Class */
   bool setConfig(Options* config);
