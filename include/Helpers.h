@@ -248,6 +248,9 @@ public:
   static std::string tierToStr(const ItemTier& tier);
   static std::string tierToDisplayStr(const ItemTier& tier);
 
+  /* Returns the title case of a given string */
+  static std::string titleCase(const std::string &str);
+
   /* Returns the enumerated tracking state to/from string form */
   static TrackingState trackingFromStr(const std::string& track);
   static std::string trackingToStr(const TrackingState& track);

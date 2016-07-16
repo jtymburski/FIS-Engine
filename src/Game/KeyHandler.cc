@@ -113,6 +113,11 @@ void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
 
       if(call_mode == KeyMode::TEXT_ENTRY)
         addKeyEntry(key);
+      else if(call_mode == KeyMode::NAME_ENTRY &&
+              text.size() < StringDb::kMAX_NAME)
+      {
+        addKeyEntry(key);
+      }
       else if(call_mode == KeyMode::INPUT && key.keycode == bp_keycode)
         removeKeyEntry();
     }
@@ -422,7 +427,7 @@ void KeyHandler::print(bool only_depressed, bool only_held)
  */
 bool KeyHandler::update(int32_t cycle_time)
 {
-  //std::cout << "Updating the key handler: " << cycle_time << std::endl;
+  // std::cout << "Updating the key handler: " << cycle_time << std::endl;
 
   /* Update the state of Keys */
   SDL_PumpEvents();
@@ -439,6 +444,14 @@ bool KeyHandler::update(int32_t cycle_time)
 
     for(auto& element : text_keys)
       updateKey(element, cycle_time, KeyMode::TEXT_ENTRY);
+  }
+  else if(mode == KeyMode::NAME_ENTRY)
+  {
+      for(auto& element : keys)
+      updateKey(element, cycle_time, KeyMode::INPUT);
+
+    for(auto& element : text_keys)
+      updateKey(element, cycle_time, KeyMode::NAME_ENTRY);
   }
 
   return false;

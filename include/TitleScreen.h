@@ -101,6 +101,10 @@ private:
   /* Current main MenuType enumerated value */
   MenuType menu_type;
 
+  /* Player Information Selection */
+  std::string player_name_select;
+  Sex player_sex_select;
+
   /* Pointer to the SoundHandler */
   SoundHandler* sound_handler;
 
@@ -118,6 +122,7 @@ private:
 
   /* Current title mennu index */
   int32_t title_menu_index;
+  int32_t player_menu_index;
 
   /* ----------------- CONSTANTS -------------------- */
   static const SDL_Color kCOLOR_BACKGROUND;
@@ -129,22 +134,28 @@ private:
   /* Constructs the menu options */
   void buildTitleElements();
 
+  /* Build the standard hover rectancular given coordinate information */
+  SDL_Rect getRect(Coordinate current, int32_t height, int32_t width);
+
   /* Checks if the Player name is valid */
   bool isPlayerNameValid(KeyHandler& key_handler);
 
   /* KeyDown Events */
   void keyDownAction(KeyHandler& key_handler);
   void keyDownCancel(KeyHandler& key_handler);
-  void keyDownDown();
-  void keyDownLeft();
-  void keyDownRight();
-  void keyDownUp();
+  void keyDownDown(KeyHandler& key_handler);
+  void keyDownLeft(KeyHandler& key_handler);
+  void keyDownRight(KeyHandler& key_handler);
+  void keyDownUp(KeyHandler& key_handler);
 
   /* Render the Player Section Box */
   void renderPlayerSelection(SDL_Renderer* renderer, KeyHandler& key_handler);
 
   /* Render Title Elements */
   void renderTitleElements(SDL_Renderer* renderer);
+
+  /* Updates the state of the KeyHandler (INPUT vs. TEXT_ENTRY) */
+  bool updateKeyHandler(KeyHandler& key_handler);
 
   /*======================== PUBLIC FUNCTIONS ================================*/
 public:
@@ -185,7 +196,7 @@ public:
   bool setSoundHandler(SoundHandler* sound_hanler);
 
   /* Updates the title screen. Necessary for visual updates */
-  bool update(int32_t cycle_time);
+  bool update(int32_t cycle_time, KeyHandler& key_handler);
 };
 
 #endif // TITLESCREEN_H

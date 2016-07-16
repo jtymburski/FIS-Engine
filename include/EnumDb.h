@@ -554,7 +554,7 @@ enum class LayIndex
   SOUTH_EAST = 9
 };
 
-/* 
+/*
  * Description: The map fade operator, for controlling how the screen appears
  */
 enum class MapFade
@@ -670,6 +670,13 @@ enum class RegenRate : std::uint16_t
   NORMAL = 2,
   STRONG = 3,
   GRAND = 4
+};
+
+enum class Sex
+{
+  UNSET = 0,
+  FEMALE = 1,
+  MALE = 2
 };
 
 /*

@@ -21,13 +21,6 @@
 
 #include "Game/Player/Party.h"
 
-enum class Sex
-{
-  UNSET = 0,
-  FEMALE = 1,
-  MALE = 2
-};
-
 /* Struct to indicate time played by player */
 struct TimeStore
 {

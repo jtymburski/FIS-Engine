@@ -445,7 +445,7 @@ bool Application::updateViews(int cycle_time)
   if(mode == TITLESCREEN)
   {
     /* Update the title screen, which returns if an action is available */
-    if(title_screen.update(cycle_time))
+    if(title_screen.update(cycle_time, key_handler))
     {
       /* If action is available, get it, and parse it to change the mode */
       MenuType menu_type = title_screen.getActiveTitleMenu();

@@ -1270,6 +1270,33 @@ std::string Helpers::tierToDisplayStr(const ItemTier& tier)
   return "";
 }
 
+std::string Helpers::titleCase(const std::string& str)
+{
+  std::string title_case;
+
+  if(str.size())
+  {
+    for(uint32_t index = 0; index < str.size(); index++)
+    {
+      auto curr_char = str.at(index);
+
+      if(index > 0)
+      {
+        if(str.at(index - 1) == ' ')
+          curr_char = toupper(curr_char);
+        else
+          curr_char = tolower(curr_char);
+      }
+      else
+        curr_char = toupper(curr_char);
+
+      title_case.push_back(curr_char);
+    }
+  }
+
+  return title_case;
+}
+
 /*
  * Description: Returns the enum form of a tracking state (string)
  *
@@ -1435,7 +1462,8 @@ std::string Helpers::victoryStateToStr(VictoryState victory_state)
  *============================================================================*/
 
 /*
- * Description: Returns the pair of corresponding offensive/defensive attributes
+ * Description: Returns the pair of corresponding offensive/defensive
+ *attributes
  *              which related to a given enumerated element
  *
  * Inputs: element - Enumerated element type to find attributes for
@@ -1528,7 +1556,8 @@ std::string Helpers::alignRight(std::string s, uint32_t length)
  *
  * Inputs: const int &min - const ref int of the minimum value for the table
  *         const int &max - const ref int of the maximum value for the table
- *         const int &iter - const ref int of the # of iterations for the table
+ *         const int &iter - const ref int of the # of iterations for the
+ *table
  * Output: std::vector<int> - the vector containing the constructed table
  */
 std::vector<uint32_t> Helpers::buildExpTable(const uint32_t& min,
@@ -1724,7 +1753,8 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(std::string path)
     }
     else if(second_split.size() >= 1)
     {
-      /* Check if the first string in the set is valid in the 'A-B' category */
+      /* Check if the first string in the set is valid in the 'A-B' category
+       */
       std::vector<std::string> range_split = split(second_split.front(), '-');
       if(range_count < 2 && range_split.size() == 2 &&
          range_split.front().size() == 1 && range_split.back().size() == 1 &&
@@ -1899,7 +1929,8 @@ uint32_t Helpers::getDistance(Coordinate a, Coordinate b)
 
 /*
  * Description: Returns the render depth of the count of things that can be
- *              stacked on top of each other. Relevant for thing motion control
+ *              stacked on top of each other. Relevant for thing motion
+ *control
  *              and rendering.
  *
  * Inputs: none
@@ -2147,7 +2178,8 @@ std::string& Helpers::trim(std::string& s)
  * Inputs: LayOver lay_over - the lay over to modify with the new data
  *         XmlData data - the load data element
  *         int file_index - the current index within the data set
- * Output: LayOver - the updated lay over with the load data. No changes if the
+ * Output: LayOver - the updated lay over with the load data. No changes if
+ *the
  *                   load failed.
  */
 LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index)
@@ -2175,7 +2207,8 @@ LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index)
 }
 
 /*
- * Description: Updates the battle scene structure passed in with the load data
+ * Description: Updates the battle scene structure passed in with the load
+ *data
  *              as defined by XmlData with the associated index
  *
  * Inputs: BattleScene scene - the battle scene to modify with the new data
@@ -2314,7 +2347,8 @@ std::vector<Coordinate> Helpers::bresenhamPoints(Coordinate begin,
 }
 
 /*
- * Description: Update the position of a value given its current position and a
+ * Description: Update the position of a value given its current position and
+ *a
  *              velocity and cycle_time, towards its end position, by at least
  *              one unit per function call.
  *
@@ -2352,7 +2386,8 @@ int32_t Helpers::updatePosition(int32_t cycle_time, int32_t curr_pos,
 
 /*
  * Description: Updates an (X, Y) coordinate given a cycle time, starting and
- *              ending coordinates and a velocity (in units / ms). This function
+ *              ending coordinates and a velocity (in units / ms). This
+ *function
  *              will update the object by at least one pixel.
  *
  * Inputs: int32_t cycle_time - given time of the cycle to update object on
@@ -2389,7 +2424,8 @@ float Helpers::updateHoverBrightness(int32_t time_elapsed, float cycle_rate,
 /*
  * Description: Calculates and returns a new alpha value for fading in,
  *              determined from a given cycle time as a portion of a fade in
- *              time. This function will increment the alpha fade in by at least
+ *              time. This function will increment the alpha fade in by at
+ *least
  *              one point.
  *
  * Inputs: int32_t cycle_time - time for the cycle
@@ -2542,7 +2578,8 @@ void Helpers::createMaskWhite(SDL_Renderer* renderer)
 
 /*
  * Description: Deletes the white mask, created on an earlier step. Only
- *              needs to be done once upon the entire close of the application.
+ *              needs to be done once upon the entire close of the
+ *application.
  *
  * Inputs: none
  * Output: none

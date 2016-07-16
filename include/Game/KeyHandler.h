@@ -23,7 +23,7 @@
 
 #include <SDL2/SDL.h>
 #include <vector>
-
+#include "StringDb.h"
 #include "EnumDb.h"
 #include "Helpers.h"
 
@@ -31,7 +31,8 @@ enum class KeyMode
 {
   DISABLED,
   INPUT,
-  TEXT_ENTRY
+  TEXT_ENTRY,
+  NAME_ENTRY
 };
 
 /* Key Map Structure */

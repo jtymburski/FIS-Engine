@@ -18,6 +18,8 @@
 #ifndef STRINGDB_H
 #define STRINGDB_H
 
+#include <string>
+
 namespace StringDb
 {
 
@@ -65,7 +67,7 @@ static const std::string kDEFAULT_CAT_DESC = "A generic Battle Class";
 static const size_t kMAX_BRIEF_DESC = 80;
 static const size_t kMAX_DESC = 500;
 static const size_t kMAX_PREFIX = 15;
-static const size_t kMAX_NAME = 20;
+static const size_t kMAX_NAME = 15;
 static const size_t kMAX_USE_MSG = 40;
 };
 
