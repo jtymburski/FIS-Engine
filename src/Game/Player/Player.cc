@@ -38,6 +38,8 @@ const uint32_t Player::kMAX_CREDITS{3141592654};
 Player::Player(Party* sleuth, Party* bearacks)
     : sleuth{sleuth}
     , bearacks{bearacks}
+    , player_sex{Sex::FEMALE}
+ //   , player_name{StringDb::kDEFAULT_PLAYER}
     , credits{kSTARTING_CREDITS}
     , gravity{kDEFAULT_GRAVITY}
     , steps{0}
@@ -314,6 +316,11 @@ bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
                   data.getDataInteger(&success));
     }
   }
+  else if(data.getElement(index) == "sex")
+  {
+    //TODO: Set player sex [08-21-16]
+    //success &= player_sex = Helpers::sexFromStr(data.getDataString(&success));
+  }
   /* ---- SLEUTH PARTY ---- */
   else if(data.getElement(index) == "sleuth")
   {
@@ -438,6 +445,8 @@ bool Player::saveData(FileHandler* fh)
       fh->writeXmlData("gravity", gravity);
     fh->writeXmlElement("playtime");
     fh->writeXmlData("hours", play_time.hours);
+    //fh->writeXmlData("sex", Helpers::sexToStr(player_sex));
+    //fh->writeXmlData("name", player_name);
     fh->writeXmlData("minutes", play_time.minutes);
     fh->writeXmlData("milliseconds", play_time.milliseconds);
     fh->writeXmlElementEnd();

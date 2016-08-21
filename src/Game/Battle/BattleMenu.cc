@@ -1299,6 +1299,14 @@ void BattleMenu::setSelectableTypes(std::vector<ActionType> valid_action_types)
 void BattleMenu::setSelectableSkills(std::vector<BattleSkill*> menu_skills)
 {
   this->valid_battle_skills = menu_skills;
+
+  /* Stable sort the selected Skill by their OFFENSIVE property */
+  std::stable_sort(begin(valid_battle_skills), end(valid_battle_skills),
+                   [&](BattleSkill* a, BattleSkill* b)
+                   {
+                     return a->skill->getFlag(SkillFlags::OFFENSIVE) >
+                            b->skill->getFlag(SkillFlags::OFFENSIVE);
+                   });
 }
 
 void BattleMenu::setSelectableItems(std::vector<BattleItem*> menu_items)

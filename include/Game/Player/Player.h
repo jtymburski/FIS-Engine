@@ -44,6 +44,7 @@ private:
 
   /* Is the player male? */
   Sex player_sex;
+  //std::string player_name;
 
   /* Current value of credits */
   uint32_t credits;

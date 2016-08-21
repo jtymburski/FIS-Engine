@@ -447,13 +447,18 @@ bool Application::updateViews(int cycle_time)
     /* Update the title screen, which returns if an action is available */
     if(title_screen.update(cycle_time, key_handler))
     {
-      /* If action is available, get it, and parse it to change the mode */
-      MenuType menu_type = title_screen.getActiveTitleMenu();
-
+      /* If TitleScreen has declared an exit game, change app mode to exit */
       if(title_screen.getFlag(TitleState::EXIT_GAME))
         changeMode(EXIT);
-      else if(title_screen.getFlag(TitleState::GO_TO_GAME))
+      /* If the game has been set to load but is not currently loading,
+         set the game loading flag and change mode to loading */
+      else if(title_screen.getFlag(TitleState::GO_TO_GAME) &&
+              !title_screen.getFlag(TitleState::GAME_LOADING))
+      {
+        /* Disable Go To Game to send title screen to useable state */
+        title_screen.setFlag(TitleState::GAME_LOADING, true);
         changeMode(GAME);
+      }
     }
   }
   /* Otherwise, update the game and check if the game is finished */
@@ -558,7 +563,6 @@ bool Application::initialize()
 
         if(error_index > -1 && renderer_info != nullptr)
         {
-          std::cout << "Checking Driver: " << renderer_info->name << std::endl;
           if(std::strcmp(open_gl.c_str(), renderer_info->name) == 0)
             driver_index = i;
         }
@@ -581,11 +585,13 @@ bool Application::initialize()
         SDL_GetRenderDriverInfo(0, renderer_info);
         auto error_index = SDL_GetRendererInfo(renderer, renderer_info);
 
+#ifdef UDEBUG
         if(error_index > -1 && renderer_info != nullptr)
           std::cout << "Rendering Driver: " << renderer_info->name << std::endl;
         else
           std::cerr << "[ERROR] Unable to get rendering driver info."
                     << std::endl;
+#endif
 
         delete renderer_info;
       }
@@ -612,7 +618,6 @@ bool Application::initialize()
 
       /* Set game handler renderer */
       game_handler->setRenderer(renderer);
-      std::cout << "Construct the title background" << std::endl;
       title_screen.buildTitleBackground(renderer);
 
       /* Create helper graphical portions */

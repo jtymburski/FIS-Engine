@@ -130,6 +130,9 @@ public:
   void setCountSteps(uint32_t count_steps);
   void setCountCredits(uint32_t count_credits);
 
+  /* Assign custom player information to the save file */
+  void setCustomPlayerInfo(std::string player_name, Sex player_sex);
+
   /* Assign the date data to the object */
   void setDate(uint32_t date_year, uint32_t date_month, uint32_t date_day,
                uint32_t date_hour, uint32_t date_minute);

@@ -60,7 +60,7 @@ Item::Item()
  *
  * Inputs: Flavour* - pointer to a flavour object for the item's likeness
  */
-Item::Item(Flavour *const source)
+Item::Item(Flavour* const source)
     : game_id{source->game_id},
       my_id{++id},
       base_item{nullptr},
@@ -84,7 +84,7 @@ Item::Item(Flavour *const source)
  *
  * Inputs: Item* - pointer to an item object to be copied
  */
-Item::Item(Item *const source)
+Item::Item(Item* const source)
     : game_id{source->game_id}, my_id{++id}, base_item{source}
 {
   setupClass();
@@ -100,9 +100,9 @@ Item::Item(Item *const source)
  *         thumbnail - icon for the Item
  *         mass - base mass for the Item
  */
-Item::Item(const int32_t &game_id, const std::string &name,
-           const uint32_t &value, Frame *thumbnail, const uint32_t &mass,
-           const uint32_t &dura)
+Item::Item(const int32_t& game_id, const std::string& name,
+           const uint32_t& value, Frame* thumbnail, const uint32_t& mass,
+           const uint32_t& dura)
     : game_id{game_id},
       my_id{++id},
       base_item{nullptr},
@@ -122,7 +122,7 @@ Item::Item(const int32_t &game_id, const std::string &name,
  *         name - the name to be assigned to the Item
  *         thumbnail - icon for the Item
  */
-Item::Item(const int32_t &game_id, const std::string &name, Frame *thumbnail)
+Item::Item(const int32_t& game_id, const std::string& name, Frame* thumbnail)
     : game_id{game_id},
       my_id{++id},
       base_item{nullptr},
@@ -327,7 +327,7 @@ bool Item::isBaseItem()
  *         SDL_Renderer* renderer - the rendering engine
  * Output: bool - true if load was successful
  */
-bool Item::loadData(XmlData data, int index, SDL_Renderer *renderer,
+bool Item::loadData(XmlData data, int index, SDL_Renderer* renderer,
                     std::string base_path)
 {
   bool success = true;
@@ -536,7 +536,7 @@ void Item::printFlags()
 * Inputs: basic - boolean whether to display a simple format or not
 * Output: none
 */
-void Item::printInfo(const bool &basic)
+void Item::printInfo(const bool& basic)
 {
   if(basic)
   {
@@ -728,7 +728,7 @@ ActionOccasion Item::getOccasion()
 * Inputs: none
 * Output: Frame* - ptr to the thumbnail of the Item
 */
-Frame *Item::getThumb()
+Frame* Item::getThumb()
 {
   return thumbnail;
 }
@@ -739,7 +739,7 @@ Frame *Item::getThumb()
 * Inputs: none
 * Output: Sprite* - ptr to the animation of the use effect of the Item
 */
-Sprite *Item::getUseAnimation()
+Sprite* Item::getUseAnimation()
 {
   return using_animation;
 }
@@ -761,7 +761,7 @@ std::string Item::getUseMessage()
 * Inputs:
 * Output:
 */
-Skill *Item::getUseSkill()
+Skill* Item::getUseSkill()
 {
   return using_skill;
 }
@@ -772,7 +772,7 @@ Skill *Item::getUseSkill()
 * Inputs: none
 * Output: Sound* - ptr to the sound effect of the Item
 */
-Sound *Item::getUseSound()
+Sound* Item::getUseSound()
 {
   return using_sound;
 }
@@ -783,7 +783,7 @@ Sound *Item::getUseSound()
 * Inputs: new_buff_set - new AttributeSet to assign to the Item
 * Output: none
 */
-void Item::setBuffSet(const AttributeSet &new_buff_set)
+void Item::setBuffSet(const AttributeSet& new_buff_set)
 {
   buff_set = new_buff_set;
 }
@@ -795,7 +795,7 @@ void Item::setBuffSet(const AttributeSet &new_buff_set)
 * Inputs: new_brief_description - new string to assign br. desc for
 * Output: bool - outcome of the assignment
 */
-bool Item::setBriefDescription(const std::string &new_brief_description)
+bool Item::setBriefDescription(const std::string& new_brief_description)
 {
   if(new_brief_description.size() <= StringDb::kMAX_BRIEF_DESC)
   {
@@ -814,7 +814,7 @@ bool Item::setBriefDescription(const std::string &new_brief_description)
  * Inputs: new_description - descripion of the Item
  * Output: bool - outcome of the description assignment
  */
-bool Item::setDescription(const std::string &new_description)
+bool Item::setDescription(const std::string& new_description)
 {
   if(new_description.size() <= StringDb::kMAX_DESC)
   {
@@ -835,7 +835,7 @@ bool Item::setDescription(const std::string &new_description)
  *         bool max - set the max as well with the durability
  * Output: bool- outcome of the description assignment
  */
-bool Item::setDurability(const uint32_t &new_durability, const bool &max)
+bool Item::setDurability(const uint32_t& new_durability, const bool& max)
 {
   /* Max first */
   if(max && new_durability <= kMAX_DURABILITY)
@@ -858,7 +858,7 @@ bool Item::setDurability(const uint32_t &new_durability, const bool &max)
 *         set_value - value to set the given flag to
 * Output: none
 */
-void Item::setFlag(ItemFlags flag, const bool &set_value)
+void Item::setFlag(ItemFlags flag, const bool& set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
@@ -883,7 +883,7 @@ void Item::setGameID(int32_t id)
  * Inputs: new_item_tier - new tier level for the item.
  * Output: none
  */
-void Item::setItemTier(const ItemTier &new_item_tier)
+void Item::setItemTier(const ItemTier& new_item_tier)
 {
   item_tier = new_item_tier;
 }
@@ -895,7 +895,7 @@ void Item::setItemTier(const ItemTier &new_item_tier)
  *         set_value - value to assign to the flag
  * Output: none
  */
-void Item::setMaterial(Material flag, const bool &set_value)
+void Item::setMaterial(Material flag, const bool& set_value)
 {
   (set_value) ? (composition |= flag) : (composition &= ~flag);
 }
@@ -906,13 +906,18 @@ void Item::setMaterial(Material flag, const bool &set_value)
 * Inputs: new_name - new string name to assign to the Item
 * Output: bool - the outcome of the name assignment
 */
-bool Item::setName(const std::string &new_name)
+bool Item::setName(const std::string& new_name)
 {
   if(new_name.size() <= StringDb::kMAX_ITEM_NAME)
   {
     name = new_name;
 
     return true;
+  }
+  else
+  {
+    std::cerr << "[ERROR]: Maximum item name exceeded with " <<
+        new_name << std::endl;
   }
 
   return false;
@@ -925,7 +930,7 @@ bool Item::setName(const std::string &new_name)
 * Inputs: new_prefix - string prefix for the Item
 * Output: bool - the outcome of the assignment
 */
-bool Item::setPrefix(const std::string &new_prefix)
+bool Item::setPrefix(const std::string& new_prefix)
 {
   if(new_prefix.size() <= StringDb::kMAX_PREFIX)
   {
@@ -943,7 +948,7 @@ bool Item::setPrefix(const std::string &new_prefix)
 * Inputs: new_occasion - action occasion (conditions of use) of the Item
 * Output: none
 */
-void Item::setOccasion(const ActionOccasion &new_occasion)
+void Item::setOccasion(const ActionOccasion& new_occasion)
 {
   occasion = new_occasion;
 }
@@ -974,7 +979,7 @@ bool Item::setMass(uint32_t new_mass)
 * Inputs: new_thumbnail - ptr to a new thumb frame for the Item
 * Output: bool - true if the new Frame ptr is not null
 */
-bool Item::setThumbnail(Frame *new_thumbnail)
+bool Item::setThumbnail(Frame* new_thumbnail)
 {
   /* If not null, delete */
   if(thumbnail != nullptr)
@@ -993,7 +998,7 @@ bool Item::setThumbnail(Frame *new_thumbnail)
 * Inputs: new_animation - new animation to be assigned
 * Output: bool - true if the new animation is not null
 */
-bool Item::setUseAnimation(Sprite *new_animation)
+bool Item::setUseAnimation(Sprite* new_animation)
 {
   /* If not null, delete */
   if(using_animation != nullptr)
@@ -1012,7 +1017,7 @@ bool Item::setUseAnimation(Sprite *new_animation)
 * Inputs: new_message - new message to attempted to be assigned
 * Output: bool - true if the new message was assigned
 */
-bool Item::setUseMessage(const std::string &new_message)
+bool Item::setUseMessage(const std::string& new_message)
 {
   if(new_message.size() <= StringDb::kMAX_USE_MSG)
   {
@@ -1031,7 +1036,7 @@ bool Item::setUseMessage(const std::string &new_message)
 * Inputs: new_skill - ptr to the new usage skill for the Item
 * Output: bool - true if the new usage skill is not null
 */
-bool Item::setUseSkill(Skill *new_skill)
+bool Item::setUseSkill(Skill* new_skill)
 {
   using_skill = new_skill;
 
@@ -1045,7 +1050,7 @@ bool Item::setUseSkill(Skill *new_skill)
 * Inputs: new_sound - ptr to a new sound effect for the Item
 * Output: bool = true if the new soun ptr is not null
 */
-bool Item::setUseSound(Sound *new_sound)
+bool Item::setUseSound(Sound* new_sound)
 {
   using_sound = new_sound;
 
@@ -1059,7 +1064,7 @@ bool Item::setUseSound(Sound *new_sound)
  * Inputs: new_value - new value to assign for the Item
  * Output: bool - true if the value was assigned
  */
-bool Item::setValue(const uint32_t &new_value)
+bool Item::setValue(const uint32_t& new_value)
 {
   if(new_value <= kMAX_VALUE)
   {
@@ -1079,7 +1084,7 @@ bool Item::setValue(const uint32_t &new_value)
  * Inputs: new_value - new value to assign for the Item
  * Output: bool - true if the value was assigned
  */
-void Item::setValueModifier(const int32_t &new_value)
+void Item::setValueModifier(const int32_t& new_value)
 {
   value_modifier = new_value;
 }

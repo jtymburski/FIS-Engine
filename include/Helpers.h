@@ -243,6 +243,10 @@ public:
   static RegenRate regenRateFromStr(const std::string& regen_rate);
   static std::string regenRateToStr(const RegenRate& regen_rate);
 
+  /* Returns the string equivalent for a given enumerated Sex */
+  static std::string sexToStr(const Sex& player_sex);
+  static Sex sexFromStr(const std::string& player_sex);
+
   /* Returns the enumerated tier to/from string form */
   static ItemTier tierFromStr(const std::string& tier);
   static std::string tierToStr(const ItemTier& tier);

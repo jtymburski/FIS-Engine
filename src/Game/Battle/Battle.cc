@@ -60,7 +60,6 @@ const uint8_t Battle::kALLY_QD_W = 94;
 
 const uint16_t Battle::kANIMATION_PROCESS = 2000;
 
-// const uint16_t Battle::kBIGBAR_CHOOSE = 100;
 const float Battle::kBIGBAR_L = 0.2;
 const float Battle::kBIGBAR_M1 = 0.1;
 const float Battle::kBIGBAR_M2 = 0.3;
@@ -98,18 +97,15 @@ const uint8_t Battle::kMAX_LAYERS = 10;
 const uint16_t Battle::kPERSON_SPREAD = 200;
 const uint16_t Battle::kPERSON_WIDTH = 256;
 
-// const uint8_t Battle::kTYPE_MARGIN = 7;
-// const uint8_t Battle::kTYPE_MAX = 5;
-// const uint8_t Battle::kTYPE_SELECT = 3;
-
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs a default Battle object started with no party in an
+ *              empty state.
  *
- * Inputs:
+ * Inputs: none
  */
 Battle::Battle()
     : background{nullptr},
@@ -142,7 +138,8 @@ Battle::Battle()
 }
 
 /*
- * Description:
+ * Description: Annihilates a battle object. Calls sub-methods to clear all
+ *              dynamic objects,  deletes the buffer and menu objects.
  */
 Battle::~Battle()
 {
@@ -166,6 +163,7 @@ Battle::~Battle()
  * PRIVATE FUNCTIONS - Battle Operations
  *============================================================================*/
 
+/* Starts the current event actor's action frame to begin sliding in */
 void Battle::actionStateBegin()
 {
   event->actor->setStateActionFrame(SpriteState::SLIDING_IN);
@@ -173,6 +171,8 @@ void Battle::actionStateBegin()
   addDelay(250);
 }
 
+/* While the current event actor's action frame starts sliding in, start the
+ * event processing (skill / item skill) and create the action text */
 void Battle::actionStateSlideIn()
 {
   /* Define whether the skill is going to be a hit or a miss */
@@ -805,7 +805,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
 
     outcome.actor->startFlashing(flashing_type, 750);
     outcome.actor_outcome_state = ActionState::OUTCOME;
-    addDelay(100, true);
+    addDelay(15, true);
   }
   else if(outcome.infliction_status == InflictionStatus::IMMUNE)
   {

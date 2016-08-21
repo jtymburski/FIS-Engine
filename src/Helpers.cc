@@ -1200,6 +1200,26 @@ std::string Helpers::regenRateToStr(const RegenRate& regen_rate)
   return "";
 }
 
+std::string Helpers::sexToStr(const Sex& player_sex)
+{
+  if(player_sex == Sex::FEMALE)
+    return "FEMALE";
+  else if(player_sex == Sex::MALE)
+    return "MALE";
+
+  return "UNSET";
+}
+
+Sex Helpers::sexFromStr(const std::string& player_sex)
+{
+  if(player_sex == "FEMALE")
+    return Sex::FEMALE;
+  else if(player_sex == "MALE")
+    return Sex::MALE;
+
+  return Sex::UNSET;
+}
+
 /*
  * Description: Returns the enum form of an item tier (string)
  *

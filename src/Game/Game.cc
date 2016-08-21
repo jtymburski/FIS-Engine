@@ -676,7 +676,7 @@ void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 {
   map_ctrl.teleportThing(thing_id, x, y, section_id);
 }
-  
+
 /* Trigger IO event, based on ID */
 void Game::eventTriggerIO(MapThing* source, int io_id, MapPerson* initiator)
 {
@@ -1207,7 +1207,7 @@ bool Game::parseLock(Locked& lock_struct)
         {
           map_ctrl.initNotification("Locked. Requires " +
                                     std::to_string(count) + " {I" +
-                                    std::to_string(id) +"} to unlock."); 
+                                    std::to_string(id) +"} to unlock.");
         }
       }
     }
@@ -2627,6 +2627,8 @@ bool Game::update(int32_t cycle_time)
   /* LOADING MODE */
   else if(mode == LOADING)
   {
+
+
   }
   /* If DISABLED - processing complete: exit */
   else if(mode == DISABLED)

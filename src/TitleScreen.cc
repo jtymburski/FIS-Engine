@@ -292,6 +292,8 @@ void TitleScreen::keyDownAction(KeyHandler& key_handler)
 /* Processing for the Cancel key */
 void TitleScreen::keyDownCancel(KeyHandler& key_handler)
 {
+  (void)key_handler;//WARNING
+
   if(menu_layer == MenuLayer::TITLE)
   {
     /* Play sound */
@@ -312,6 +314,8 @@ void TitleScreen::keyDownCancel(KeyHandler& key_handler)
 /* Processing for the Down key */
 void TitleScreen::keyDownDown(KeyHandler& key_handler)
 {
+  (void)key_handler;//WARNING
+
   if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index + 1 < (int32_t)title_elements.size())
@@ -336,6 +340,8 @@ void TitleScreen::keyDownDown(KeyHandler& key_handler)
 /* Processing for the Left key */
 void TitleScreen::keyDownLeft(KeyHandler& key_handler)
 {
+  (void)key_handler;//WARNING
+
   if(menu_layer == MenuLayer::MAIN)
   {
     if(player_menu_index == 1)
@@ -346,6 +352,8 @@ void TitleScreen::keyDownLeft(KeyHandler& key_handler)
 /* Processing for the Right key */
 void TitleScreen::keyDownRight(KeyHandler& key_handler)
 {
+  (void)key_handler;//WARNING
+
   if(menu_layer == MenuLayer::MAIN)
   {
     if(player_menu_index == 1)
@@ -356,6 +364,7 @@ void TitleScreen::keyDownRight(KeyHandler& key_handler)
 /* Processing for the Up key */
 void TitleScreen::keyDownUp(KeyHandler& key_handler)
 {
+  (void)key_handler;//WARNING
   if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index > 0)

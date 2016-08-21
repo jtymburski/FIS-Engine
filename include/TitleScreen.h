@@ -28,7 +28,8 @@ ENUM_FLAGS(TitleState)
 enum class TitleState
 {
   GO_TO_GAME = 1 << 0, /* Can the person use item in battle? */
-  EXIT_GAME = 1 << 1   /* Can the person use 'Defend'? */
+  GAME_LOADING = 1 << 1,
+  EXIT_GAME = 1 << 2   /* Can the person use 'Defend'? */
 };
 
 /* TitleBackground Elements */
