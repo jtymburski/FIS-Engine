@@ -32,7 +32,7 @@ const std::vector<int> Category::kMIN_VALUES =
     5,  3,  5,  3,
     5,  3,  5,  3,
     5,  3,  5,  3,
-    4,  4,  4,  0}; 
+    4,  4,  4,  0};
 const std::vector<int> Category::kMAX_VALUES =
  { 50000, 5000, 7000, 7000,
     5500, 5500, 5500, 5500,
@@ -92,8 +92,8 @@ Category::Category(const int32_t &my_id, const std::string &name)
  *         skills - pointer to the SkillSet the Category graints to a person
  *         my_id - ID of the Category
  */
-Category::Category(const int32_t &my_id, const std::string &name, 
-    const std::string &denonym, const AttributeSet &base_stats, 
+Category::Category(const int32_t &my_id, const std::string &name,
+    const std::string &denonym, const AttributeSet &base_stats,
     const AttributeSet &top_stats, SkillSet* const skills)
       : base_stats{base_stats}
       , top_stats{top_stats}
@@ -226,7 +226,7 @@ bool Category::addImmunity(const Infliction &new_immunity)
  *              based on the EquipState flags like Staff and Sword, etc. Some
  *              categories should not be able to equip all types of equipment.
  *
- * Inputs: Equipment* const check - equipment to check 
+ * Inputs: Equipment* const check - equipment to check
  * Output: bool - whether persons of the category can equip the equipment
  */
 bool Category::canEquip(Equipment* const check)
@@ -260,7 +260,7 @@ bool Category::isImmune(const Infliction &check_immunity)
 
  return false;
 }
-  
+
 /*
  * Description: Loads the data from file associated with the category.
  *
@@ -420,7 +420,7 @@ void Category::print(const bool &simple, const bool &flags)
  *              the immunties of the Category. Returns true if the infliction
  *              was remove successfully.
  *
- * Inputs: Infliction - enumerated infliction to be removed from immunities. 
+ * Inputs: Infliction - enumerated infliction to be removed from immunities.
  * Output: bool - true if the immunity was found and removed
  */
 bool Category::removeImmunity(const Infliction &rem_immunity)
@@ -536,7 +536,7 @@ RegenRate Category::getQDRegenRate() const
  *              of this Category.
  *
  * Inputs: none
- * Output: AttributeSet& - top attribute set values 
+ * Output: AttributeSet& - top attribute set values
  */
 AttributeSet& Category::getTopSet()
 {
@@ -573,7 +573,7 @@ SkillSet* Category::getSkills()
  */
 bool Category::setDenonym(const std::string &new_denonym)
 {
-  if (new_denonym.size() <= StringDb::kMAX_NAME)
+  if (new_denonym.size() <= StringDb::kMAX_TITLE_NAME)
   {
     denonym = new_denonym;
 
@@ -626,9 +626,9 @@ void Category::setID(int32_t id)
   else
     this->id = id;
 }
-  
+
 /*
- * Description: Sets the immunity to either enabled or disabled. 
+ * Description: Sets the immunity to either enabled or disabled.
  *
  * Inputs: Infliction immunity - the infliction to modify the enabled state
  *         bool enabled - true if immune. false if not. default to true.
@@ -663,7 +663,7 @@ void Category::setQDRegenRate(const RegenRate &new_regen_rate)
 {
   qtdr_regen_rate = new_regen_rate;
 }
-  
+
 /*
  * Description: Sets the skill set which the category unlocks.
  *
@@ -692,7 +692,7 @@ void Category::setVitaRegenRate(const RegenRate &new_regen_rate)
  *============================================================================*/
 
 /*
- * Description: Returns a reference to the absolute maximum stats for a 
+ * Description: Returns a reference to the absolute maximum stats for a
  *              Category.
  *
  * Inputs: none

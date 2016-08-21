@@ -114,7 +114,7 @@ void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
       if(call_mode == KeyMode::TEXT_ENTRY)
         addKeyEntry(key);
       else if(call_mode == KeyMode::NAME_ENTRY &&
-              text.size() < StringDb::kMAX_NAME)
+              text.size() < StringDb::kMAX_TITLE_NAME)
       {
         addKeyEntry(key);
       }

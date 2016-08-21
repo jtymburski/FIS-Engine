@@ -908,7 +908,7 @@ void Item::setMaterial(Material flag, const bool &set_value)
 */
 bool Item::setName(const std::string &new_name)
 {
-  if(new_name.size() <= StringDb::kMAX_NAME)
+  if(new_name.size() <= StringDb::kMAX_ITEM_NAME)
   {
     name = new_name;
 
