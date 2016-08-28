@@ -368,20 +368,20 @@ void BattleDisplayData::buildPlepsAilments()
 
   auto sprite_all_atk_buff = new Sprite();
   sprite_all_atk_buff->setBuildInformation(
-      config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A", ".png", 9);
-  sprite_all_atk_buff->setAnimationTime(95);
+      config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A", ".png", 88);
+  sprite_all_atk_buff->setAnimationTime(20);
   pleps_ailments.emplace(Infliction::ALLATKBUFF, sprite_all_atk_buff);
 
   auto sprite_all_def_buff = new Sprite();
   sprite_all_def_buff->setBuildInformation(
-      config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A", ".png", 9);
-  sprite_all_def_buff->setAnimationTime(95);
+      config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A", ".png", 88);
+  sprite_all_def_buff->setAnimationTime(20);
   pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_all_def_buff);
 
   auto sprite_buff = new Sprite();
   sprite_buff->setBuildInformation(
-      config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A", ".png", 9);
-  sprite_buff->setAnimationTime(95);
+      config->getBasePath() + "sprites/Battle/Pleps/raiseplep_AA_A", ".png", 88);
+  sprite_buff->setAnimationTime(20);
   pleps_ailments.emplace(Infliction::LIMBUFF, sprite_buff);
   pleps_ailments.emplace(Infliction::ALLATKBUFF, sprite_buff);
   pleps_ailments.emplace(Infliction::ALLDEFBUFF, sprite_buff);
