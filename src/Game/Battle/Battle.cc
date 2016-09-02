@@ -203,7 +203,7 @@ void Battle::actionStateFadeInText()
     event->action_state = ActionState::SLIDE_OUT;
   }
 
-  addDelay(400);
+  addDelay(300);
 }
 
 void Battle::actionStateSlideOut()
@@ -231,7 +231,7 @@ void Battle::actionStateSlideOut()
   }
 
   event->action_state = ActionState::SWITCH_SPRITE;
-  addDelay(250);
+  addDelay(1);
 }
 
 void Battle::actionStateSwitchSprite()
@@ -246,7 +246,7 @@ void Battle::actionStateSwitchSprite()
     event->action_state = ActionState::DONE;
   }
 
-  addDelay(200);
+  addDelay(1);
 }
 
 void Battle::actionStateActionStart()
