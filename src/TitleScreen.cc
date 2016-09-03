@@ -246,6 +246,13 @@ bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
 
   valid &= player_name != "";
   valid &= (player_name == trim_name);
+  valid &= (player_name != "Arcadius");
+  valid &= (player_name != "Malgidus");
+  valid &= (player_name != "Frosty");
+  valid &= (player_name != "Atkst");
+  valid &= (player_name != "Chubby");
+  valid &= (player_name != "Kevin");
+  valid &= (player_name != "Dave");
 
   return valid;
 }
@@ -280,6 +287,7 @@ void TitleScreen::keyDownAction(KeyHandler& key_handler)
       sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
                                     SoundChannels::MENUS, true);
     }
+
 
     /* If the current menu type is now TITLE_QUIT, set flag to quit the game */
     if(menu_type == MenuType::TITLE_QUIT)
@@ -743,7 +751,6 @@ bool TitleScreen::update(int32_t cycle_time, KeyHandler& key_handler)
   if(getFlag(TitleState::CLEAR_NAME) &&
      !key_handler.isDepressed(GameKey::ACTION))
   {
-    std::cout << "Clearing name entry" << std::endl;
     key_handler.clearTextEntry();
     setFlag(TitleState::CLEAR_NAME, false);
   }

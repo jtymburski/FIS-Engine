@@ -306,6 +306,8 @@ void Battle::addDelay(int32_t delay_amount, bool for_outcomes)
       delay += (to_add * kDELAY_NORM_FACTOR);
     }
   }
+
+  std::cout << "Delay: " << delay << std::endl;
 }
 
 bool Battle::bufferMenuSelection()
@@ -706,7 +708,7 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
     outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
 
     /* Increase the delay by the flashing amount of time */
-    delay_amount += 100;
+    //delay_amount += 100;
   }
   else
   {
@@ -720,7 +722,7 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   if(event->getCurrAction()->actionFlag(ActionFlags::ALTER))
     outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
   if(event->getCurrAction()->actionFlag(ActionFlags::INFLICT))
-    outcome.actor_outcome_state = ActionState::DAMAGE_VALUE;
+    outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
 
   /* Add the delay to the buffer, based on the speed mode of the Battle */
   addDelay(delay_amount, true);
@@ -805,7 +807,8 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
 
     outcome.actor->startFlashing(flashing_type, 750);
     outcome.actor_outcome_state = ActionState::OUTCOME;
-    addDelay(15, true);
+
+    addDelay(1, true);
   }
   else if(outcome.infliction_status == InflictionStatus::IMMUNE)
   {
@@ -862,9 +865,7 @@ void Battle::outcomeStateActionOutcome(ActorOutcome& outcome)
 int32_t Battle::outnumberedVal()
 {
   if(getEnemies().size() > getAllies().size())
-  {
     return getEnemies().size() - getAllies().size();
-  }
 
   return 0;
 }
