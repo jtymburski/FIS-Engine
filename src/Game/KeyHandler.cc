@@ -380,6 +380,8 @@ void KeyHandler::loadDefaults()
   text_keys.push_back(Key(GameKey::NONE, SDLK_y));
   text_keys.push_back(Key(GameKey::NONE, SDLK_z));
   text_keys.push_back(Key(GameKey::NONE, SDLK_SPACE));
+
+  text = "";
 }
 
 /*

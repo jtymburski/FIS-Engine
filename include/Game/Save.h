@@ -60,6 +60,10 @@ private:
   /* Name of the map */
   std::string map_name;
 
+  /* Player customizations */
+  std::string player_name;
+  Sex player_sex;
+
   /* The save snapshot path */
   std::string snapshot_path;
 
@@ -130,8 +134,11 @@ public:
   void setCountSteps(uint32_t count_steps);
   void setCountCredits(uint32_t count_credits);
 
-  /* Assign custom player information to the save file */
-  void setCustomPlayerInfo(std::string player_name, Sex player_sex);
+  /* Assign custom player name */
+  void setCustomPlayerName(std::string player_name);
+
+  /* Assign custom player sex */
+  void setCustomPlayerSex(Sex player_sex);
 
   /* Assign the date data to the object */
   void setDate(uint32_t date_year, uint32_t date_month, uint32_t date_day,

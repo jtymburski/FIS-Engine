@@ -110,8 +110,10 @@ private:
   LoadMode mode_load;
   GameMode mode_next;
 
-  /* The player */
+  /* The player and loaded player customizations */
   Player* player_main;
+  std::string player_name;
+  Sex player_sex;
 
   /* Current save properties */
   FileHandler save_handle;
@@ -317,6 +319,10 @@ public:
 
   /* Sets the path of the game */
   bool setPath(std::string path, int level = 0, bool load = false);
+
+  /* Assign the Player name / sex */
+  void setPlayerName(std::string player_name);
+  void setPlayerSex(Sex player_sex);
 
   /* Sets the active renderer to be used */
   void setRenderer(SDL_Renderer* renderer);

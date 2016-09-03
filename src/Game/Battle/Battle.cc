@@ -762,7 +762,7 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
 
   render_elements.push_back(element);
   outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
-  addDelay(300, true);
+  addDelay(1, true);
 }
 
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)

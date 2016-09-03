@@ -28,6 +28,7 @@ ENUM_FLAGS(TitleState)
 enum class TitleState
 {
   GO_TO_GAME = 1 << 0, /* Can the person use item in battle? */
+  CLEAR_NAME = 1 << 1,
   GAME_LOADING = 1 << 1,
   EXIT_GAME = 1 << 2   /* Can the person use 'Defend'? */
 };
@@ -129,6 +130,7 @@ private:
   static const SDL_Color kCOLOR_BACKGROUND;
   static const SDL_Color kCOLOR_BORDER;
   static const SDL_Color kCOLOR_TEXT;
+  static const SDL_Color kCOLOR_TEXT_INVALID;
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -175,6 +177,12 @@ public:
 
   /* Returns the value of a given ActorState flag */
   bool getFlag(const TitleState& test_flag);
+
+  /* Return the selected player name */
+  std::string getPlayerNameSelect();
+
+  /* Return the selected player sex */
+  Sex getPlayerSexSelect();
 
   /* Key down event, called with the KeyHandler */
   void keyDownEvent(KeyHandler& key_handler);

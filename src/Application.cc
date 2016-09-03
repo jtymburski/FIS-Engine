@@ -106,7 +106,16 @@ bool Application::changeMode(AppMode mode)
     // if(mode == TITLESCREEN)
     //   title_screen.enableView(true);
     if(mode == GAME)
+    {
       game_handler->enableView(true);
+
+      if(title_screen.getFlag(TitleState::GAME_LOADING))
+      {
+        game_handler->setPlayerName(title_screen.getPlayerNameSelect());
+        game_handler->setPlayerSex(title_screen.getPlayerSexSelect());
+        title_screen.setFlag(TitleState::GAME_LOADING, false);
+      }
+    }
     else if(mode == PAUSED)
       Sound::pauseAllChannels();
     // else if(mode == LOADING)

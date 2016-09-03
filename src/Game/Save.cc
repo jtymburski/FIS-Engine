@@ -36,6 +36,8 @@ Save::Save()
       flags{static_cast<SaveState>(0)},
       id{kUNSET_ID},
       map_name{""},
+      player_name{"Player"},
+      player_sex{Sex::FEMALE},
       snapshot_path{""},
       time_hrs{0},
       time_min{0},
@@ -193,6 +195,8 @@ void Save::print()
 
     std::cout << " Credits: " << count_credits << std::endl;
     std::cout << " Level: " << count_level << std::endl;
+    std::cout << " Name: " << player_name << std::endl;
+    std::cout << " Sex: " << Helpers::sexToStr(player_sex) << std::endl;
     std::cout << " Steps: " << count_steps << std::endl;
   }
 
@@ -365,6 +369,19 @@ void Save::setCountSteps(uint32_t count_steps)
 void Save::setCountCredits(uint32_t count_credits)
 {
   this->count_credits = count_credits;
+  setFlag(SaveState::EMPTY, false);
+}
+
+/* Assign custom player information */
+void Save::setCustomPlayerName(std::string player_name)
+{
+  this->player_name = player_name;
+  setFlag(SaveState::EMPTY, false);
+}
+
+void Save::setCustomPlayerSex(Sex player_sex)
+{
+  this->player_sex = player_sex;
   setFlag(SaveState::EMPTY, false);
 }
 

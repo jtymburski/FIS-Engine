@@ -44,7 +44,7 @@ private:
 
   /* Is the player male? */
   Sex player_sex;
-  //std::string player_name;
+  std::string player_name;
 
   /* Current value of credits */
   uint32_t credits;
@@ -137,6 +137,12 @@ public:
 
   /* Assigns the gravity the player is experiencing */
   bool setGravity(const uint32_t &new_value);
+
+  /* Assign the Player name */
+  void setName(std::string player_name);
+
+  /* Assign the Player sex */
+  void setSex(Sex player_sex);
 
   /* Sets the TOTAL time played of the player */
   void setPlayTime(const uint32_t &hours = 0, const uint32_t &minutes = 0,

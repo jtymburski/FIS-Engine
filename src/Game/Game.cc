@@ -55,6 +55,8 @@ Game::Game(Options* running_config)
   mode_load = NOLOAD;
   mode_next = NONE;
   player_main = nullptr;
+  player_name = "Player";
+  player_sex = Sex::FEMALE;
   save_slot = 0;
 
   /* Set up map class */
@@ -826,6 +828,12 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
     /* Clean up map */
     map_ctrl.loadDataFinish(renderer);
     map_ctrl.disableInteraction(event_disable);
+
+    if(player_main)
+    {
+      player_main->setName(player_name);
+      player_main->setSex(player_sex);
+    }
     changeMode(MAP, true);
   }
   /* If failed, unload */
@@ -900,7 +908,8 @@ bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer, bool core_data,
 bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
                     bool from_save)
 {
-  (void)from_save;
+  (void)from_save;//TODO
+
   bool success = true;
   std::string element = data.getElement(index);
 
@@ -1939,6 +1948,13 @@ std::vector<Save> Game::getSaveData(bool encryption)
                 if(read_success)
                   slot.setCountCredits(credits);
               }
+              else if(data.getElement(index + 3) == "name")
+              {
+                std::string name = data.getDataString(&read_success);
+
+                if(read_success)
+                  slot.setCustomPlayerName(name);
+              }
               /* Play time hours, minutes, seconds */
               else if(data.getElement(index + 3) == "playtime")
               {
@@ -1948,6 +1964,7 @@ std::vector<Save> Game::getSaveData(bool encryption)
 
                 /* Read the time */
                 int new_time = data.getDataInteger(&read_success);
+
                 if(read_success)
                 {
                   /* Determine the time allocation */
@@ -1961,6 +1978,13 @@ std::vector<Save> Game::getSaveData(bool encryption)
                   /* Set to slot */
                   slot.setTime(hours, minutes, seconds);
                 }
+              }
+              else if(data.getElement(index + 3) == "sex")
+              {
+                std::string sex = data.getDataString(&read_success);
+
+                if(read_success)
+                  slot.setCustomPlayerSex(Helpers::sexFromStr(sex));
               }
               /* Sleuth information */
               else if(data.getElement(index + 3) == "sleuth")
@@ -2478,6 +2502,17 @@ bool Game::setPath(std::string path, int level, bool load)
   }
   return false;
 }
+
+void Game::setPlayerName(std::string player_name)
+{
+  this->player_name = player_name;
+}
+
+void Game::setPlayerSex(Sex player_sex)
+{
+  this->player_sex = player_sex;
+}
+
 
 /* Sets the active renderer to be used */
 void Game::setRenderer(SDL_Renderer* renderer)

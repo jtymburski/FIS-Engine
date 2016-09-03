@@ -179,6 +179,7 @@ bool TitleBackground::update(int32_t cycle_time)
 const SDL_Color TitleScreen::kCOLOR_BACKGROUND{0, 0, 0, 200};
 const SDL_Color TitleScreen::kCOLOR_BORDER{255, 255, 255, 255};
 const SDL_Color TitleScreen::kCOLOR_TEXT{255, 255, 255, 255};
+const SDL_Color TitleScreen::kCOLOR_TEXT_INVALID{200, 100, 100, 255};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -238,9 +239,13 @@ void TitleScreen::buildTitleElements()
 bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
 {
   auto player_name = key_handler.getTextEntry();
+  auto trim_name = key_handler.getTextEntry();
+  Helpers::trim(trim_name);
+
   bool valid{true};
 
   valid &= player_name != "";
+  valid &= (player_name == trim_name);
 
   return valid;
 }
@@ -262,6 +267,9 @@ void TitleScreen::keyDownAction(KeyHandler& key_handler)
       {
         menu_type = MenuType::TITLE_PLAYER_SELECT;
         player_menu_index = 0;
+
+        /* Set the clear name to true to purge first key press (this one) */
+        setFlag(TitleState::CLEAR_NAME);
       }
       else
       {
@@ -283,7 +291,8 @@ void TitleScreen::keyDownAction(KeyHandler& key_handler)
     if(menu_type == MenuType::TITLE_PLAYER_SELECT &&
        isPlayerNameValid(key_handler) && player_menu_index == 2)
     {
-      player_name_select = key_handler.getTextEntry();
+      player_name_select = Helpers::titleCase(key_handler.getTextEntry());
+      key_handler.clearTextEntry();
       setFlag(TitleState::GO_TO_GAME);
     }
   }
@@ -292,7 +301,7 @@ void TitleScreen::keyDownAction(KeyHandler& key_handler)
 /* Processing for the Cancel key */
 void TitleScreen::keyDownCancel(KeyHandler& key_handler)
 {
-  (void)key_handler;//WARNING
+  (void)key_handler; // WARNING
 
   if(menu_layer == MenuLayer::TITLE)
   {
@@ -314,7 +323,7 @@ void TitleScreen::keyDownCancel(KeyHandler& key_handler)
 /* Processing for the Down key */
 void TitleScreen::keyDownDown(KeyHandler& key_handler)
 {
-  (void)key_handler;//WARNING
+  (void)key_handler; // WARNING
 
   if(menu_layer == MenuLayer::TITLE)
   {
@@ -340,7 +349,7 @@ void TitleScreen::keyDownDown(KeyHandler& key_handler)
 /* Processing for the Left key */
 void TitleScreen::keyDownLeft(KeyHandler& key_handler)
 {
-  (void)key_handler;//WARNING
+  (void)key_handler; // WARNING
 
   if(menu_layer == MenuLayer::MAIN)
   {
@@ -352,7 +361,7 @@ void TitleScreen::keyDownLeft(KeyHandler& key_handler)
 /* Processing for the Right key */
 void TitleScreen::keyDownRight(KeyHandler& key_handler)
 {
-  (void)key_handler;//WARNING
+  (void)key_handler; // WARNING
 
   if(menu_layer == MenuLayer::MAIN)
   {
@@ -364,7 +373,7 @@ void TitleScreen::keyDownRight(KeyHandler& key_handler)
 /* Processing for the Up key */
 void TitleScreen::keyDownUp(KeyHandler& key_handler)
 {
-  (void)key_handler;//WARNING
+  (void)key_handler; // WARNING
   if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index > 0)
@@ -397,7 +406,7 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
     current = Coordinate{centre_x, centre_y};
 
     /* Title Element Box Rendering */
-    title_element_box.width = 1 * config->getScreenWidth() / 7;
+    title_element_box.width = 1 * config->getScreenWidth() / 6;
     title_element_box.height = 1 * config->getScreenHeight() / 4;
     title_element_box.point.x = centre_x - title_element_box.width / 2;
     title_element_box.point.y = centre_y - title_element_box.height / 5;
@@ -452,7 +461,9 @@ bool TitleScreen::updateKeyHandler(KeyHandler& key_handler)
   if(menu_layer == MenuLayer::MAIN)
   {
     if(player_menu_index == 0)
+    {
       key_handler.setMode(KeyMode::NAME_ENTRY);
+    }
     else
       key_handler.setMode(KeyMode::INPUT);
   }
@@ -467,6 +478,7 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
 {
   /* Grab the current player name entered */
   auto player_name = Helpers::titleCase(key_handler.getTextEntry());
+  auto name_valid = isPlayerNameValid(key_handler);
 
   if(config)
   {
@@ -495,7 +507,12 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
       Text t_male(font);
       Text t_begin(font);
 
-      t_player_title.setText(renderer, "Player Name: ", kCOLOR_TEXT);
+      SDL_Color name_color = kCOLOR_TEXT;
+
+      if(!name_valid)
+        name_color = kCOLOR_TEXT_INVALID;
+
+      t_player_title.setText(renderer, "Player Name: ", name_color);
       t_player_name.setText(renderer, player_name, kCOLOR_TEXT);
       t_player_title.render(renderer, current.x, current.y);
       current.x += t_player_title.getWidth();
@@ -618,10 +635,22 @@ bool TitleScreen::getFlag(const TitleState& test_flag)
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
+/* Return player Name selection */
+std::string TitleScreen::getPlayerNameSelect()
+{
+  return player_name_select;
+}
+
+/* Return player Sex selection */
+Sex TitleScreen::getPlayerSexSelect()
+{
+  return player_sex_select;
+}
+
 /* The KeyDown event handler -- sends keys to specific functions */
 void TitleScreen::keyDownEvent(KeyHandler& key_handler)
 {
-  if(config && sound_handler)
+  if(config && sound_handler && !getFlag(TitleState::CLEAR_NAME))
   {
     /* Main code items */
     if(key_handler.isDepressed(GameKey::ACTION))
@@ -667,8 +696,15 @@ bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
     renderTitleElements(renderer);
   }
   else if(menu_layer == MenuLayer::MAIN)
+  {
     if(menu_type == MenuType::TITLE_PLAYER_SELECT)
-      renderPlayerSelection(renderer, key_handler);
+    {
+      if(!getFlag(TitleState::CLEAR_NAME))
+        renderPlayerSelection(renderer, key_handler);
+      else
+        renderTitleElements(renderer);
+    }
+  }
 
   return true;
 }
@@ -703,6 +739,14 @@ bool TitleScreen::update(int32_t cycle_time, KeyHandler& key_handler)
 #else
   (void)cycle_time; // TODO
 #endif
+
+  if(getFlag(TitleState::CLEAR_NAME) &&
+     !key_handler.isDepressed(GameKey::ACTION))
+  {
+    std::cout << "Clearing name entry" << std::endl;
+    key_handler.clearTextEntry();
+    setFlag(TitleState::CLEAR_NAME, false);
+  }
 
   /* Update Key Handler state - INPUT vs. TEXT_ENTRY state */
   updateKeyHandler(key_handler);

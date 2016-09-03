@@ -36,13 +36,14 @@ const uint32_t Player::kMAX_CREDITS{3141592654};
  *         Party* bearacks - pointer to the bearacks party for the player.
  */
 Player::Player(Party* sleuth, Party* bearacks)
-    : sleuth{sleuth}
-    , bearacks{bearacks}
-    , player_sex{Sex::FEMALE}
- //   , player_name{StringDb::kDEFAULT_PLAYER}
-    , credits{kSTARTING_CREDITS}
-    , gravity{kDEFAULT_GRAVITY}
-    , steps{0}
+    : sleuth{sleuth},
+      bearacks{bearacks},
+      player_sex{Sex::FEMALE} //
+      ,
+      player_name{StringDb::kDEFAULT_PLAYER},
+      credits{kSTARTING_CREDITS},
+      gravity{kDEFAULT_GRAVITY},
+      steps{0}
 {
   play_time = {0, 0, 0};
 }
@@ -57,11 +58,11 @@ Player::Player(Party* sleuth, Party* bearacks)
  * Inputs: uint32_t value - the number of credits to add
  * Output: bool - true if credits added (even if max limit reached)
  */
-bool Player::addCredits(const uint32_t &value)
+bool Player::addCredits(const uint32_t& value)
 {
   auto added = false;
 
-  if (value < kMAX_CREDITS)
+  if(value < kMAX_CREDITS)
   {
     if(kMAX_CREDITS - value >= credits)
       credits += value;
@@ -84,7 +85,8 @@ bool Player::addCredits(const uint32_t &value)
  * Output: bool - true if the skill was added to the learned set
  */
 bool Player::addLearnedSkill(std::string party_type, Skill* skill,
-                       const uint32_t &person_index, const uint32_t &req_level)
+                             const uint32_t& person_index,
+                             const uint32_t& req_level)
 {
   bool success = false;
 
@@ -100,8 +102,9 @@ bool Player::addLearnedSkill(std::string party_type, Skill* skill,
     /* Access the party */
     if(ref_party != nullptr && ref_party->getMember(person_index) != nullptr)
     {
-      success = ref_party->getMember(person_index)->getLearnedSet(true)
-                                                  ->addSkill(skill, req_level);
+      success = ref_party->getMember(person_index)
+                    ->getLearnedSet(true)
+                    ->addSkill(skill, req_level);
     }
   }
 
@@ -115,7 +118,7 @@ bool Player::addLearnedSkill(std::string party_type, Skill* skill,
  * Inputs: const uint32_t &milliseconds - the delta time in milliseconds
  * Output: none
  */
-void Player::addPlayTime(const uint32_t &milliseconds)
+void Player::addPlayTime(const uint32_t& milliseconds)
 {
   /* Add time */
   play_time.milliseconds += milliseconds;
@@ -142,7 +145,7 @@ void Player::addPlayTime(const uint32_t &milliseconds)
  * Inputs: const uint32_t &value - the value of steps in tiles to add
  * Output: none
  */
-void Player::addSteps(const uint32_t &value)
+void Player::addSteps(const uint32_t& value)
 {
   steps += value;
 }
@@ -180,7 +183,7 @@ Party* Player::getBearacks()
 /* Returns the carry weight */
 double Player::getCarryWeight()
 {
-  if (sleuth->getInventory() != nullptr)
+  if(sleuth->getInventory() != nullptr)
     return gravity * sleuth->getInventory()->getMass();
 
   return 0.0;
@@ -237,7 +240,7 @@ std::string Player::getPlayTimeStr()
     time_str += std::to_string(day_ref) + "d:";
   time_str += std::to_string(hour_ref) + "h:";
   time_str += std::to_string(play_time.minutes) + "m";
-  //time_str += ":" + std::to_string(play_time.milliseconds) + "ms";
+  // time_str += ":" + std::to_string(play_time.milliseconds) + "ms";
 
   return time_str;
 }
@@ -318,8 +321,9 @@ bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
   }
   else if(data.getElement(index) == "sex")
   {
-    //TODO: Set player sex [08-21-16]
-    //success &= player_sex = Helpers::sexFromStr(data.getDataString(&success));
+    // TODO: Set player sex [08-21-16]
+    // success &= player_sex =
+    // Helpers::sexFromStr(data.getDataString(&success));
   }
   /* ---- SLEUTH PARTY ---- */
   else if(data.getElement(index) == "sleuth")
@@ -346,7 +350,7 @@ bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
  */
 void Player::print()
 {
-  //TODO: Print function [01-18-14]
+  // TODO: Print function [01-18-14]
 }
 
 /*
@@ -356,7 +360,7 @@ void Player::print()
  * Inputs: uint32_t index the index of the bearacks member to be removed.
  * Output: bool - true if the removal occurs.
  */
-bool Player::removeBearacksMember(const uint32_t &index)
+bool Player::removeBearacksMember(const uint32_t& index)
 {
   return bearacks->removeMember(index);
 }
@@ -368,7 +372,7 @@ bool Player::removeBearacksMember(const uint32_t &index)
  * Inputs: const std::string name - the name of the bearacks member to be rem.
  * Output: bool - true if the member was removed.
  */
-bool Player::removeBearacksMember(const std::string &name)
+bool Player::removeBearacksMember(const std::string& name)
 {
   return bearacks->removeMember(name);
 }
@@ -379,7 +383,7 @@ bool Player::removeBearacksMember(const std::string &name)
  * Inputs: uint32_t value - the number of credits to remove
  * Output: bool - true if credits removed
  */
-bool Player::removeCredits(const uint32_t &value)
+bool Player::removeCredits(const uint32_t& value)
 {
   bool removed = false;
 
@@ -399,7 +403,7 @@ bool Player::removeCredits(const uint32_t &value)
  * Inputs: uint32_t index - the index of sleuth member to be removed.
  * Output: bool - true if the member was removed successfully.
  */
-bool Player::removeSleuthMember(const uint32_t &index)
+bool Player::removeSleuthMember(const uint32_t& index)
 {
   return sleuth->removeMember(index);
 }
@@ -411,7 +415,7 @@ bool Player::removeSleuthMember(const uint32_t &index)
  * Inputs: const std::string name - the name of the sleuth member to remo.
  * Output: bool - true if the member was removed.
  */
-bool Player::removeSleuthMember(const std::string &name)
+bool Player::removeSleuthMember(const std::string& name)
 {
   return sleuth->removeMember(name);
 }
@@ -445,8 +449,8 @@ bool Player::saveData(FileHandler* fh)
       fh->writeXmlData("gravity", gravity);
     fh->writeXmlElement("playtime");
     fh->writeXmlData("hours", play_time.hours);
-    //fh->writeXmlData("sex", Helpers::sexToStr(player_sex));
-    //fh->writeXmlData("name", player_name);
+    // fh->writeXmlData("sex", Helpers::sexToStr(player_sex));
+    // fh->writeXmlData("name", player_name);
     fh->writeXmlData("minutes", play_time.minutes);
     fh->writeXmlData("milliseconds", play_time.milliseconds);
     fh->writeXmlElementEnd();
@@ -481,9 +485,9 @@ void Player::setBearacks(Party* const new_bearacks)
  * Inputs: uint32_t value - the amoutn of credtis the player has.
  * Output: bool - true if the credit assignment was kosher.
  */
-bool Player::setCredits(const uint32_t &value)
+bool Player::setCredits(const uint32_t& value)
 {
-  if (value < kMAX_CREDITS)
+  if(value < kMAX_CREDITS)
   {
     credits = value;
 
@@ -500,11 +504,37 @@ bool Player::setCredits(const uint32_t &value)
  * Inputs: uint32_t new_value - new value for gravity for the player.
  * Output: bool - true if the assignment was successful.
  */
-bool Player::setGravity(const uint32_t &new_value)
+bool Player::setGravity(const uint32_t& new_value)
 {
   gravity = new_value;
 
   return true;
+}
+
+/*
+ * Description: Assigns the string name to be assigned for the player
+ *
+ * Inputs: std::string player_name - assigns the player name
+ * Output: none
+ */
+void Player::setName(std::string player_name)
+{
+  this->player_name = player_name;
+
+  if(sleuth && sleuth->getMember(0))
+    sleuth->getMember(0)->setName(this->player_name);
+}
+
+/*
+ * Description: Assigns the enumerated Sex of the Player, for rendering of the
+ *              Sprites.
+ *
+ * Inputs: Sex player_sex - enumerated sexual genital formations owned by Player
+ * Output: none
+ */
+void Player::setSex(Sex player_sex)
+{
+  this->player_sex = player_sex;
 }
 
 /*
@@ -516,8 +546,8 @@ bool Player::setGravity(const uint32_t &new_value)
  *         uint32_t milliseconds - the milliseconds played
  * Output: none
  */
-void Player::setPlayTime(const uint32_t &hours, const uint32_t &minutes,
-                         const uint32_t &milliseconds)
+void Player::setPlayTime(const uint32_t& hours, const uint32_t& minutes,
+                         const uint32_t& milliseconds)
 {
   play_time.hours = hours;
   play_time.minutes = minutes;
@@ -544,7 +574,7 @@ void Player::setSleuth(Party* const new_sleuth)
  * Inputs: const uint32_t &new_value - the complete count of steps for player
  * Output: none
  */
-void Player::setSteps(const uint32_t &new_value)
+void Player::setSteps(const uint32_t& new_value)
 {
   steps = new_value;
 }
