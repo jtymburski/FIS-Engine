@@ -3066,7 +3066,7 @@ bool Battle::update(int32_t cycle_time)
       checkIfOutcome();
 
       if(outcome != OutcomeType::NONE)
-        swapDealy()s;
+        swapDelay();
     }
 
     bool allow_set_next = true;
