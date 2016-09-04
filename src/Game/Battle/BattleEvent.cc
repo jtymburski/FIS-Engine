@@ -893,6 +893,31 @@ int32_t BattleEvent::calcAltering(BattleActor* curr_target)
   return -1;
 }
 
+// int32_t BattleEvent::calcAnimationTime(BattleDisplayData* display_data)
+// {
+//   int32_t delay_amount = 0;
+
+//   if(display_data)
+//   {
+//   if(getCurrSkill())
+//   {
+//     if(getCurrAction())
+//     {
+
+//     }
+//     else if (getCurrSkill()->getAnimation())
+//     {
+//       auto animaiton = getCurrSkill()->getAnimation();
+
+//       delay_amount = animation->getAnimationTime() * animation->getSize();
+
+//     }
+//   }
+//   }
+
+//   return delay_amount;
+// }
+
 // TODO: Guarding damage factor [11-01-15]
 // TODO: Guarding for users who are guarding this actor [11-01-15]
 int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)

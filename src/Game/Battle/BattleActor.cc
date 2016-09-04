@@ -22,10 +22,10 @@
  *============================================================================*/
 
 const float BattleActor::kVELOCITY_X{-1.550};
-const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{225, 10, 10, 85};
-const SDL_Color BattleActor::kFLASHING_POISON_COLOR{84, 152, 80, 85};
-const SDL_Color BattleActor::kFLASHING_INFLICT_COLOR{96, 88, 133, 85};
-const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 115};
+const SDL_Color BattleActor::kFLASHING_DAMAGE_COLOR{225, 10, 10, 65};
+const SDL_Color BattleActor::kFLASHING_POISON_COLOR{84, 152, 80, 65};
+const SDL_Color BattleActor::kFLASHING_INFLICT_COLOR{96, 88, 133, 65};
+const SDL_Color BattleActor::kFLASHING_KO_COLOR{200, 20, 20, 105};
 const SDL_Color BattleActor::kFLASHING_RELIEVE_COLOR{200, 200, 200, 125};
 
 const float BattleActor::kREGEN_RATE_ZERO_PC = 0.00;
@@ -778,7 +778,8 @@ bool BattleActor::update(int32_t cycle_time)
     updateSpriteFlashing(cycle_time);
   else if(state_active_sprite == SpriteState::BOBBING)
     updateSpriteBobbing(cycle_time);
-  else if(getActiveSprite())
+
+  if(getActiveSprite())
     getActiveSprite()->update(cycle_time);
 
   return true;

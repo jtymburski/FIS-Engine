@@ -186,6 +186,8 @@ void RenderElement::createAsDamageText(std::string text, DamageType type,
                                        int32_t sc_height, int32_t x, int32_t y)
 {
   text_string = text;
+
+  std::cout << "Creating damage text: " << text_string << std::endl;
   color = {0, 0, 0, 255};
   setShadow(colorFromDamageType(type), kDAMAGE_SHADOW, kDAMAGE_SHADOW - 1);
   setTimes(750, 350, 200);
@@ -210,15 +212,17 @@ void RenderElement::createAsDamageValue(int32_t amount, DamageType type,
                                         int32_t sc_height, int32_t x, int32_t y)
 {
   text_string = std::to_string(amount);
+
   createAsDamageText(text_string, type, sc_height, x, y);
 
-  render_type = RenderType::DAMAGE_VALUE;
+  render_type = RenderType::DAMAGE_TEXT;
 }
 
 void RenderElement::createAsRegenValue(int32_t amount, DamageType type,
                                        int32_t sc_height, int32_t x, int32_t y)
 {
   createAsDamageText(std::to_string(amount), type, sc_height, x, y);
+
   setTimes(750, 350, 350);
   status = initialStatusFade();
   setAcceleration(0.000, -0.0001);

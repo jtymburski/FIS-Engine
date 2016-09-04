@@ -92,8 +92,9 @@ private:
   /* The assigned configuration for the Battle */
   Options* config;
 
-  /* Delay for all processing */
-  uint32_t delay;
+  /* Delay values for Battle processing */
+  uint32_t delay_curr;
+  uint32_t delay_next;
 
   /* The current battle event */
   BattleEvent* event;
@@ -242,6 +243,7 @@ private:
 
   /* Adds a delay amount for processing relative to the current speed setting */
   void addDelay(int32_t delay_amount, bool for_outcomes = false);
+  void addDelayNext(int32_t delay_amount, bool for_outcomes = false);
 
   /* Buffer the current selection of the menu to the action buffer */
   bool bufferMenuSelection();
@@ -320,6 +322,9 @@ private:
 
   /* Processes a given infliction onto the given BattleActor */
   void processInfliction(BattleActor* target, Infliction type);
+
+  /* Move delay next into the current delay */
+  void swapDelay();
 
   /* Update the begin step of the Battle */
   void updateBegin();

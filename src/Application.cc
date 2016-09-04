@@ -210,6 +210,7 @@ void Application::handleEvents()
       /* -- Pause toggle -- */
       if(key_handler.isDepressed(GameKey::PAUSE))
       {
+        std::cout << "Pause trigger!" << std::endl;
         if(mode == PAUSED)
         {
           revertMode();

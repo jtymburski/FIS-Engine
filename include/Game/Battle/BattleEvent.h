@@ -16,6 +16,7 @@
 #define BATTLE_EVENT_H
 
 #include "Game/Battle/BattleActor.h"
+#include "Game/Battle/BattleDisplayData.h"
 
 enum class BattleEventType
 {
@@ -256,6 +257,9 @@ private:
 public:
   /* Calculate alteration taking place */
   int32_t calcAltering(BattleActor* curr_target);
+
+  /* Calculate the proper animation time delay for this event */
+  int32_t calcAnimationTime(BattleDisplayData* display_data);
 
   /* Returns the calculated critical hit factor */
   float calcCritFactor(BattleActor* curr_target);

@@ -116,7 +116,9 @@ void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
       else if(call_mode == KeyMode::NAME_ENTRY &&
               text.size() < StringDb::kMAX_TITLE_NAME)
       {
-        addKeyEntry(key);
+
+        if(text.back() != ' ' || key.keycode != SDLK_SPACE)
+          addKeyEntry(key);
       }
       else if(call_mode == KeyMode::INPUT && key.keycode == bp_keycode)
         removeKeyEntry();
@@ -449,7 +451,7 @@ bool KeyHandler::update(int32_t cycle_time)
   }
   else if(mode == KeyMode::NAME_ENTRY)
   {
-      for(auto& element : keys)
+    for(auto& element : keys)
       updateKey(element, cycle_time, KeyMode::INPUT);
 
     for(auto& element : text_keys)

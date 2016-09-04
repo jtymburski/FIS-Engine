@@ -114,7 +114,8 @@ Battle::Battle()
       battle_menu{nullptr},
       battle_buffer{nullptr},
       config{nullptr},
-      delay{0},
+      delay_curr{0},
+      delay_next{0},
       event{nullptr},
       eh{nullptr},
       flags_combat{static_cast<CombatState>(0)},
@@ -192,7 +193,7 @@ void Battle::actionStateSlideIn()
   element->createAsActionText(action_string);
   render_elements.push_back(element);
   event->action_state = ActionState::FADE_IN_TEXT;
-  addDelay(350);
+  addDelay(300);
 }
 
 void Battle::actionStateFadeInText()
@@ -203,7 +204,7 @@ void Battle::actionStateFadeInText()
     event->action_state = ActionState::SLIDE_OUT;
   }
 
-  addDelay(300);
+  addDelay(350);
 }
 
 void Battle::actionStateSlideOut()
@@ -230,8 +231,15 @@ void Battle::actionStateSlideOut()
       event->actor->setActiveSprite(ActiveSprite::FOE);
   }
 
+  if (event->actor->getActiveSprite())
+  {
+    auto animation = event->actor->getActiveSprite();
+    auto delay_amount = animation->getSize() * animation->getAnimationTime();
+
+    addDelay(std::max(delay_amount, 100));
+  }
+
   event->action_state = ActionState::SWITCH_SPRITE;
-  addDelay(1);
 }
 
 void Battle::actionStateSwitchSprite()
@@ -245,8 +253,6 @@ void Battle::actionStateSwitchSprite()
   {
     event->action_state = ActionState::DONE;
   }
-
-  addDelay(1);
 }
 
 void Battle::actionStateActionStart()
@@ -280,8 +286,6 @@ void Battle::actionStateActionStart()
     // event->action_state = ActionState::SWITCH_SPRITE;
     else
       event->action_state = ActionState::DONE;
-
-    addDelay(250);
   }
 }
 
@@ -291,7 +295,7 @@ void Battle::addDelay(int32_t delay_amount, bool for_outcomes)
   {
     if(config && config->getFlag(OptionState::FAST_BATTLE))
     {
-      delay += 5;
+      delay_curr += 5;
     }
     else
     {
@@ -303,11 +307,33 @@ void Battle::addDelay(int32_t delay_amount, bool for_outcomes)
             (int32_t)std::round((float)to_add / event->actor_outcomes.size());
       }
 
-      delay += (to_add * kDELAY_NORM_FACTOR);
+      delay_curr += (to_add * kDELAY_NORM_FACTOR);
+    }
+  }
+}
+
+void Battle::addDelayNext(int32_t delay_amount, bool for_outcomes)
+{
+  if(delay_amount > 0)
+  {
+    if(config && config->getFlag(OptionState::FAST_BATTLE))
+    {
+      delay_next += 5;
+    }
+    else
+    {
+      int32_t to_add = delay_amount * kDELAY_NORM_FACTOR;
+
+      if(for_outcomes && event && event->actor_outcomes.size() > 0)
+      {
+        to_add =
+            (int32_t)std::round((float)to_add / event->actor_outcomes.size());
+      }
+
+      delay_next += (to_add * kDELAY_NORM_FACTOR);
     }
   }
 
-  std::cout << "Delay: " << delay << std::endl;
 }
 
 bool Battle::bufferMenuSelection()
@@ -659,12 +685,15 @@ void Battle::outcomeStateActionMiss(ActorOutcome& outcome)
   auto damage_font = config->getFontTTF(FontName::BATTLE_DAMAGE);
   auto element = new RenderElement(renderer, damage_font);
 
+  //TODO: Get miss text to actually render
   element->createAsDamageText(
       "Miss", DamageType::ACTION_MISS, config->getScreenHeight(),
       getActorX(outcome.actor), getActorY(outcome.actor));
+
   render_elements.push_back(element);
 
   outcome.actor_outcome_state = ActionState::ACTION_END;
+
   addDelay(600, true);
 }
 
@@ -674,7 +703,7 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
   auto y = getActorY(outcome.actor);
 
   /* Default beginning delay amount for processing */
-  int32_t delay_amount = 25;
+  int32_t delay_amount = 1;
 
   /* Create the render element sprite */
   if(event->getCurrAction()->actionFlag(ActionFlags::DAMAGE) ||
@@ -689,12 +718,15 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
     {
       Sprite* animation = event->getCurrSkill()->getAnimation();
 
+      if(!animation && action->actionFlag(ActionFlags::INFLICT))
+        animation = nullptr;//display_data->getPlepAilment(action->getAilment());
+
       /* Increase the delay by the Sprite's total animation time */
       if(animation)
+      {
+        animation->loadData(renderer);
         delay_amount += animation->getSize() * animation->getAnimationTime();
-
-      if(action->actionFlag(ActionFlags::INFLICT) && !animation)
-        animation = display_data->getPlepAilment(action->getAilment());
+      }
 
       render_elements.push_back(
           new RenderElement(renderer, animation, 1, {x, y}));
@@ -706,14 +738,10 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
     auto type = event->getCurrAction()->getAilment();
     playInflictionSound(type);
     outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
-
-    /* Increase the delay by the flashing amount of time */
-    //delay_amount += 100;
   }
   else
   {
     eh->triggerSound(Sound::kID_SOUND_BTL_PLEP, SoundChannels::TRIGGERS);
-    delay_amount += 100;
   }
 
   /* Set the next state based on the action flag */
@@ -725,7 +753,8 @@ void Battle::outcomeStatePlep(ActorOutcome& outcome)
     outcome.actor_outcome_state = ActionState::INFLICT_FLASH;
 
   /* Add the delay to the buffer, based on the speed mode of the Battle */
-  addDelay(delay_amount, true);
+  addDelay(100, true);
+  addDelayNext(delay_amount, true);
 }
 
 void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
@@ -764,7 +793,7 @@ void Battle::outcomeStateDamageValue(ActorOutcome& outcome)
 
   render_elements.push_back(element);
   outcome.actor_outcome_state = ActionState::SPRITE_FLASH;
-  addDelay(1, true);
+  addDelay(25, true);
 }
 
 void Battle::outcomeStateSpriteFlash(ActorOutcome& outcome)
@@ -808,7 +837,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
     outcome.actor->startFlashing(flashing_type, 750);
     outcome.actor_outcome_state = ActionState::OUTCOME;
 
-    addDelay(1, true);
+    //addDelayNext(600, true);
   }
   else if(outcome.infliction_status == InflictionStatus::IMMUNE)
   {
@@ -820,7 +849,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
         "Immune", DamageType::IMMUNE, config->getScreenHeight(),
         getActorX(outcome.actor), getActorY(outcome.actor));
     render_elements.push_back(element);
-    addDelay(600, true);
+    //addDelayNext(600, true);
     outcome.actor_outcome_state = ActionState::ACTION_END;
   }
   else if(outcome.infliction_status == InflictionStatus::ALREADY_INFLICTED)
@@ -833,7 +862,7 @@ void Battle::outcomeStateInflictFlash(ActorOutcome& outcome)
         "Fizzle", DamageType::ALREADY_INFLICTED, config->getScreenHeight(),
         getActorX(outcome.actor), getActorY(outcome.actor));
     render_elements.push_back(element);
-    addDelay(600, true);
+    //addDelayNext(600, true);
     outcome.actor_outcome_state = ActionState::ACTION_END;
   }
   else if(outcome.infliction_status == InflictionStatus::FIZZLE)
@@ -918,6 +947,13 @@ bool Battle::calculateEnemySelection(BattleActor* next_actor,
   return success;
 }
 
+/* Move the next delay into the current delay */
+void Battle::swapDelay()
+{
+  this->delay_curr = this->delay_next;
+  this->delay_next = 0;
+}
+
 void Battle::updateBegin()
 {
   setFlagCombat(CombatState::PHASE_DONE, true);
@@ -948,10 +984,10 @@ void Battle::updateBufferNext()
 
 void Battle::updateDelay(int32_t decrement_delay)
 {
-  if(delay > static_cast<uint32_t>(decrement_delay))
-    delay -= decrement_delay;
+  if(delay_curr > static_cast<uint32_t>(decrement_delay))
+    delay_curr -= decrement_delay;
   else
-    delay = 0;
+    delay_curr = 0;
 }
 
 /* Update the current Buffer element */
@@ -1030,8 +1066,9 @@ void Battle::processEventAction(Action* curr_action, BattleActor* target)
         outcome.infliction_status = InflictionStatus::ALREADY_INFLICTED;
       else if(outcome.actor->isImmune(type))
         outcome.infliction_status = InflictionStatus::IMMUNE;
+      else
+        outcome.infliction_status = InflictionStatus::INFLICTION;
 
-      outcome.infliction_status = InflictionStatus::INFLICTION;
       outcome.actor_outcome_state = ActionState::PLEP;
     }
     else if(curr_action->actionFlag(ActionFlags::ALTER))
@@ -1983,7 +2020,6 @@ void Battle::createLay(std::string path, int32_t anim_time, Floatinate velocity,
   lays.push_back(new Lay(path, anim_time, velocity, lay_type, screen_size));
 }
 
-// Other todos
 bool Battle::render()
 {
   auto success = false;
@@ -2656,8 +2692,8 @@ void Battle::upkeepAilmentFlash()
   {
     upkeep_actor->startFlashing(FlashingType::POISON, 750);
   }
-  else
-    upkeep_actor->startFlashing(FlashingType::INFLICT, 750);
+  // else
+  //   upkeep_actor->startFlashing(FlashingType::INFLICT, 750);
 
   upkeep_actor->setUpkeepState(UpkeepState::AILMENT_DAMAGE);
   addDelay(750);
@@ -2808,7 +2844,7 @@ bool Battle::startBattle(Party* friends, Party* foes)
   buildEnemyBackdrop();
 
   turn_state = TurnState::BEGIN;
-  delay = 0;
+  delay_curr = 0;
 
   return true;
 }
@@ -2830,7 +2866,8 @@ void Battle::stopBattle()
     battle_buffer->clear();
 
   flags_combat = static_cast<CombatState>(0);
-  delay = 0;
+  delay_curr = 0;
+  delay_next = 0;
   music_id = Sound::kID_MUSIC_BATTLE;
   outcome = OutcomeType::NONE;
   turn_state = TurnState::STOPPED;
@@ -3024,8 +3061,13 @@ bool Battle::update(int32_t cycle_time)
 
   if(turn_state != TurnState::FINISHED && turn_state != TurnState::STOPPED)
   {
-    if(outcome == OutcomeType::NONE && delay == 0)
+    if(outcome == OutcomeType::NONE && delay_curr == 0)
+    {
       checkIfOutcome();
+
+      if(outcome != OutcomeType::NONE)
+        swapDealy()s;
+    }
 
     bool allow_set_next = true;
 
@@ -3033,14 +3075,16 @@ bool Battle::update(int32_t cycle_time)
       allow_set_next = false;
     else if(!getFlagCombat(CombatState::PHASE_DONE))
       allow_set_next = false;
-    else if(delay > 0)
+    else if(delay_curr > 0)
       allow_set_next = false;
 
     if(allow_set_next)
       setNextTurnState();
 
-    if(delay == 0)
+    if(delay_curr == 0)
     {
+      swapDelay();
+
       if(turn_state == TurnState::BEGIN)
         updateBegin();
       else if(turn_state == TurnState::ENTER_DIM)

@@ -1013,7 +1013,7 @@ int MapInteractiveObject::getInactiveTime() const
     return static_cast<MapInteractiveObject*>(base)->time_return;
   return time_return;
 }
-  
+
 /* Returns the interaction at the current state */
 MapState::InteractionState MapInteractiveObject::getInteraction()
 {

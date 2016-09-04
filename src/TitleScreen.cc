@@ -246,13 +246,13 @@ bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
 
   valid &= player_name != "";
   valid &= (player_name == trim_name);
-  valid &= (player_name != "Arcadius");
-  valid &= (player_name != "Malgidus");
-  valid &= (player_name != "Frosty");
-  valid &= (player_name != "Atkst");
-  valid &= (player_name != "Chubby");
-  valid &= (player_name != "Kevin");
-  valid &= (player_name != "Dave");
+  valid &= (player_name != "ARCADIUS");
+  valid &= (player_name != "MALGIDUS");
+  valid &= (player_name != "FROSTY");
+  valid &= (player_name != "ATKST");
+  valid &= (player_name != "CHUBBY");
+  valid &= (player_name != "KEVIN");
+  valid &= (player_name != "DAVE");
 
   return valid;
 }
@@ -521,7 +521,7 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
         name_color = kCOLOR_TEXT_INVALID;
 
       t_player_title.setText(renderer, "Player Name: ", name_color);
-      t_player_name.setText(renderer, player_name, kCOLOR_TEXT);
+      t_player_name.setText(renderer, player_name, name_color);
       t_player_title.render(renderer, current.x, current.y);
       current.x += t_player_title.getWidth();
 
