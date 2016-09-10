@@ -50,6 +50,9 @@ public:
   /* Is the BattleSkill offensive? */
   bool isOffensive();
 
+  /* Load the animation data for the Skill */
+  bool loadData(SDL_Renderer* renderer);
+
   /* Print the information of the BattleSkill */
   void print();
 };

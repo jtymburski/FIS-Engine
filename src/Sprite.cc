@@ -959,17 +959,11 @@ bool Sprite::loadData(SDL_Renderer* renderer)
     {
       if(element.build_path_head != "" && element.build_path_tail == "")
       {
-        // std::cout << "Inserting 1 Frame: " << element.build_path_head
-        //                  << std::endl;
         insertTail(element.build_path_head, renderer);
         success = true;
       }
       else if(element.build_path_head != "" && element.build_path_tail != "")
       {
-        std::cout << "Inserting " << std::endl;
-        std::cout << "Head: " << element.build_path_head << std::endl;
-        std::cout << "# Frames: " << element.build_frames << std::endl;
-        std::cout << "Tail: " << element.build_path_tail << std::endl;
         insertSequence(element.build_path_head, element.build_frames,
                        element.build_path_tail, renderer);
 
@@ -979,7 +973,7 @@ bool Sprite::loadData(SDL_Renderer* renderer)
   }
 
   built_texture = true;
-  std::cout << "Size of this animation: " << size << std::endl;
+
   return success;
 }
 

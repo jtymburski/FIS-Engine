@@ -39,6 +39,7 @@ const uint32_t Sound::kID_MUSIC_DEFEAT = 4;
 const uint32_t Sound::kID_SOUND_MENU_CHG = 0;
 const uint32_t Sound::kID_SOUND_MENU_NEXT = 1;
 const uint32_t Sound::kID_SOUND_MENU_PREV = 2;
+const uint32_t Sound::kID_SOUND_MENU_ERR = 3;
 
 /* Map Sounds*/
 const uint32_t Sound::kID_SOUND_PICK_COIN = 50;

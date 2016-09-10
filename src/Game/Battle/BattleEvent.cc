@@ -748,11 +748,8 @@ InflictionStatus BattleEvent::canInflictTarget(BattleActor* curr_target,
 {
   if(curr_target && type != Infliction::INVALID)
   {
-    if(curr_target->isInflicted(type))
-      return InflictionStatus::ALREADY_INFLICTED;
     if(curr_target->isImmune(type))
       return InflictionStatus::IMMUNE;
-
     if(curr_target->getAilments().size() < 5)
       return InflictionStatus::INFLICTION;
   }

@@ -169,7 +169,7 @@ void RenderElement::createAsActionText(std::string action_name)
   text_string = action_name;
   color = {0, 0, 0, 255};
   setShadow({kACTION_COLOR_R, 0, 0, 255}, kACTION_SHADOW, kACTION_SHADOW);
-  setTimes(1000, 150, 150);
+  setTimes(950, 150, 200);
   render_type = RenderType::ACTION_TEXT;
   status = initialStatusFade();
 
@@ -186,8 +186,6 @@ void RenderElement::createAsDamageText(std::string text, DamageType type,
                                        int32_t sc_height, int32_t x, int32_t y)
 {
   text_string = text;
-
-  std::cout << "Creating damage text: " << text_string << std::endl;
   color = {0, 0, 0, 255};
   setShadow(colorFromDamageType(type), kDAMAGE_SHADOW, kDAMAGE_SHADOW - 1);
   setTimes(750, 350, 200);

@@ -49,6 +49,9 @@ public:
   /* Is the BattleItem offensvie? */
   bool isOffensive();
 
+  /* Load the animation data for the Skill */
+  bool loadData(SDL_Renderer* renderer);
+
   /* Print out the BattleItem information */
   void print();
 };

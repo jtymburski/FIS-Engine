@@ -26,6 +26,18 @@ bool BattleSkill::isOffensive()
   return false;
 }
 
+bool BattleSkill::loadData(SDL_Renderer* renderer)
+{
+  if(renderer && skill && skill->getAnimation())
+  {
+    skill->getAnimation()->loadData(renderer);
+
+    return true;
+  }
+
+  return false;
+}
+
 void BattleSkill::print()
 {
   std::cout << "-- Battle Skill --" << std::endl;

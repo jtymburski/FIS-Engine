@@ -600,6 +600,8 @@ void TitleScreen::buildTitleBackground(SDL_Renderer* renderer)
 {
 #ifndef TITLE_SKIP
   title_background.buildSprites(config, renderer);
+#else
+  (void)renderer;
 #endif
 }
 

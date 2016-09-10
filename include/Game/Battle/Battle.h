@@ -238,7 +238,6 @@ private:
   void actionStateFadeInText();
   void actionStateSlideOut();
   void actionStateSwitchSprite();
-  void actionStateSkillMiss();
   void actionStateActionStart();
 
   /* Adds a delay amount for processing relative to the current speed setting */
