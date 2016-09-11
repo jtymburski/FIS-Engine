@@ -663,6 +663,7 @@ bool EventHandler::pollUnlockTile(int* section_id, int* tile_x, int* tile_y,
   return false;
 }
 
+
 /* Sets the sound handler used. If unset, no sounds will play */
 void EventHandler::setSoundHandler(SoundHandler* new_handler)
 {
