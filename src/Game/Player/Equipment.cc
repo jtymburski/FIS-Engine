@@ -1,4 +1,4 @@
-/*******************************************************************************
+F/*******************************************************************************
  * Class Name: Equipment [Implementation]
  * Date Created: Decmber 14, 2013
  * Inheritance: Item
@@ -215,7 +215,7 @@ Signature* Equipment::getSignature()
  */
 SkillSet Equipment::getSkills()
 {
-  return *base_skill_list + *equip_signature->getSkillBonus();
+  return *base_skill_list;
 }
 
 /*

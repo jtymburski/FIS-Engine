@@ -24,10 +24,13 @@
 /*=============================================================================
  * CONSTANTS - See implementation for details
  *============================================================================*/
- 
+/* Static ID Counter */
+int32_t Bubby::id{0};
+
 const uint32_t Bubby::kMIN_EXP       = 75;
 const uint32_t Bubby::kMAX_LEVEL_EXP = 858585;
 const uint32_t Bubby::kMAX_EXP       = 1500000;
+const int32_t Bubby::kUNSET_ID{-1};
 
 /* The exp table level up values */
 std::vector<uint32_t> Bubby::exp_table{};
@@ -41,7 +44,9 @@ std::vector<uint32_t> Bubby::exp_table{};
  *
  * Inputs: none
  */
-Bubby::Bubby() : Item()
+Bubby::Bubby()
+               : my_id{++id}
+               , game_id{kUNSET_ID}
                , level{0}
                , tier{0}
                , total_exp{kMIN_EXP}
@@ -58,8 +63,7 @@ Bubby::Bubby() : Item()
  *         tier - tier-level to create the Bubby at
  */
 Bubby::Bubby(Flavour* const parent, const uint32_t &tier)
-  : Item(parent)
-  , level{0}
+  : level{0}
   , tier{tier}
   , total_exp{kMIN_EXP}
   , type{parent}
@@ -203,28 +207,21 @@ bool Bubby::addExperience(const uint32_t &amount)
  *         item_info - boolean whether to print out the item info portion
  * Output: none
  */
-void Bubby::print(const bool &print_table, const bool &item_info)
-{
-  /* Print out the Bubby-only portion data in a simple format */
-  std::cout << "--- Bubby --- \n";
-  std::cout << "T: " << tier << " L: " << level << " E: " << total_exp << "\n";
-  std::cout << "Type: " << type->getName() << "\n";
-  std::cout << "Value: " << this->getValue() << "\n";
+// void Bubby::print(const bool &print_table, const bool &item_info)
+// {
+//   /* Print out the Bubby-only portion data in a simple format */
+//   std::cout << "--- Bubby --- \n";
+//   std::cout << "T: " << tier << " L: " << level << " E: " << total_exp << "\n";
+//   std::cout << "Type: " << type->getName() << "\n";
+//   std::cout << "Value: " << this->getValue() << "\n";
 
-  /* Print out the Item portion of the Bubby */
-  if (item_info)
-  {
-    printInfo();
-    printFlags();
-  }
-
-  /* Print out the table of exp values */
-  if (print_table)
-    for (uint32_t value : exp_table)
-      std::cout << value << "\n";
+//   /* Print out the table of exp values */
+//   if (print_table)
+//     for (uint32_t value : exp_table)
+//       std::cout << value << "\n";
   
-  std::cout << "--- /Bubby --- \n";
-}
+//   std::cout << "--- /Bubby --- \n";
+// }
 
 /*
  * Description: Upgrades only a tier 0 bubby into a tier 1 Bubby, which can
@@ -289,7 +286,17 @@ uint32_t Bubby::getMass()
 
   return 0.0;
 }
+
+int32_t Bubby::getID()
+{
+  return my_id;
+}
   
+int32_t Bubby::getGameID()
+{
+  return game_id; 
+}
+
 /*
  * Description: Returns the Bubby's current stat boost by ref.
  *

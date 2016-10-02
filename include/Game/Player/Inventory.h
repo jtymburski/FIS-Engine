@@ -26,7 +26,6 @@
 #include "Frame.h"
 #include "Game/Player/Item.h"
 #include "Game/Player/Bubby.h"
-#include "Game/Player/Equipment.h"
 #include "Helpers.h"
 #include "StringDb.h"
 
@@ -58,7 +57,7 @@ private:
 
   /* Items */
   std::vector<std::pair<Bubby*, uint16_t>> bubbies;
-  std::vector<std::pair<Equipment*, uint16_t>> equipments;
+  std::vector<std::pair<Item*, uint16_t>> equipments;
   std::vector<std::pair<Item*, uint16_t>> items;
 
   /* Current Mass */
@@ -113,11 +112,7 @@ public:
   /* Attempts to add a Bubby */
   AddStatus add(Bubby* new_bubby, const uint32_t& amount = 1,
                 bool bypass = false);
-
-  /* Attempts to add an equipment */
-  AddStatus add(Equipment* new_equipment, const uint32_t& amount = 1,
-                bool bypass = false);
-
+  
   /* Adds an item to the Inventory */
   AddStatus add(Item* new_item, const uint32_t& amount = 1,
                 bool bypass = false);
@@ -128,8 +123,8 @@ public:
   /* Check if a given item ID exists in the inventory */
   bool contains(const int32_t& id_check);
 
-  /* Calcs and returns the number of spaces in the Inv. for a given Equip */
-  uint32_t hasRoom(Equipment* const equip, uint32_t amount = 1);
+  //  Calcs and returns the number of spaces in the Inv. for a given Equip 
+  // uint32_t hasRoom(Item* const equip, uint32_t amount = 1);
 
   /* Calcs and returns the number of spaces in the Inv. for a given Bubby */
   uint32_t hasRoom(Bubby* const bubby, uint32_t amount = 1);
@@ -231,7 +226,7 @@ public:
   std::vector<std::pair<Bubby*, uint16_t>> getBubbies();
 
   /* Returns a vector of all equipment */
-  std::vector<std::pair<Equipment*, uint16_t>> getEquipments();
+  std::vector<std::pair<Item*, uint16_t>> getEquipments();
 
   /* Returns the vector of all standard items */
   std::vector<std::pair<Item*, uint16_t>> getItems();
@@ -246,7 +241,7 @@ public:
   std::vector<Bubby*> getUniqueBubbies();
 
   /* Returns a vector of each Equipment */
-  std::vector<Equipment*> getUniqueEquipments();
+  std::vector<Item*> getUniqueEquipments();
 
   /* Returns a vector of each Item */
   std::vector<Item*> getUniqueItems();

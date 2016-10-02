@@ -46,6 +46,7 @@ Item::Item()
     : game_id{kUNSET_ID},
       my_id{++id},
       base_item{nullptr},
+      base_skill_set{nullptr},
       thumbnail{nullptr},
       value{0}
 {
@@ -64,6 +65,7 @@ Item::Item(Flavour* const source)
     : game_id{source->game_id},
       my_id{++id},
       base_item{nullptr},
+      base_skill_set{nullptr},
       thumbnail{nullptr}
 {
   setupClass();
@@ -88,6 +90,16 @@ Item::Item(Item* const source)
     : game_id{source->game_id}, my_id{++id}, base_item{source}
 {
   setupClass();
+
+  if(source && source->getFlag(ItemFlags::EQUIPMENT) && (source->getSignature() == nullptr || 
+                                                         !source->getSignature()->isEmpty()))
+    std::cerr << "[Warning] Cloning equipment with non-empty Signature";
+  else
+  {
+    //TODO: Signature creation
+    //createSignature(source->getSignature()->getX(), source->getSignature()->getY());
+    this->setFlag(ItemFlags::EQUIPMENT, true);
+  }
 }
 
 /*
@@ -150,6 +162,26 @@ Item::~Item()
  *============================================================================*/
 
 /*
+ * Description: Dynamically allocates a new Signature object for use with this
+ *              unique equipment.
+ *
+ * Inputs: size_x - the x-dimension of signature to be created.
+ *         size_y - the y-dimension of signature to be created.
+ * Output: none
+ */
+bool Item::createSignature(uint32_t size_x, uint32_t size_y)
+{
+  if(equip_signature == nullptr)
+  {
+    equip_signature = new Signature(size_x, size_y);
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
 * Description: Sets the Item class to default values. Private function that
 *              should NEVER be called outside of construction or assignment
 *              operations.
@@ -171,11 +203,11 @@ void Item::setupClass()
     description = StringDb::kDEFAULT_ITEM_DESC;
     composition = static_cast<Material>(0);
     durability = max_durability;
+    equip_signature = nullptr;
     flags = static_cast<ItemFlags>(0);
     item_tier = ItemTier::NONE;
     prefix = StringDb::kDEFAULT_ITEM_PREFIX;
     occasion = ActionOccasion::NONE;
-
     using_skill = nullptr;
     using_animation = nullptr;
     using_message = "";
@@ -190,6 +222,7 @@ void Item::setupClass()
     description = base_item->description;
     max_durability = base_item->max_durability;
     durability = max_durability;
+    equip_signature = base_item->equip_signature;
     composition = base_item->composition;
     flags = base_item->flags;
     item_tier = base_item->item_tier;
@@ -273,6 +306,9 @@ void Item::print()
 */
 AttributeSet Item::getStats()
 {
+  if(getFlag(ItemFlags::EQUIPMENT) && equip_signature)
+    return buff_set + equip_signature->getBonusStats();
+
   return buff_set;
 }
 
@@ -720,6 +756,23 @@ std::string Item::getPrefix()
 ActionOccasion Item::getOccasion()
 {
   return occasion;
+}
+
+/*
+ * Description: Returns the pointer to the equipment's unique signature
+ *
+ * Inputs: none
+ * Output: Signature* - pointer to the signature object
+ */
+Signature* Item::getSignature()
+{
+  return equip_signature;
+}
+
+//
+SkillSet Item::getSkills()
+{
+  return *base_skill_set;
 }
 
 /*

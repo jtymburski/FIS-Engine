@@ -21,7 +21,7 @@
 #include "Game/Map/Map.h"
 #include "Game/Map/Menu.h"
 #include "Game/Player/Player.h"
-#include "Game/Player/Bubby.h"
+//#include "Game/Player/Bubby.h"
 #include "Game/Player/Inventory.h"
 #include "Game/Save.h"
 #include "Options.h"

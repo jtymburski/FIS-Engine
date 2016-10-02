@@ -21,6 +21,7 @@
  *
  * TODO
  * ----
+ * - Equipment Constructor
  ******************************************************************************/
 #ifndef ITEM_H
 #define ITEM_H
@@ -28,14 +29,16 @@
 #include <iostream>
 
 #include "Game/Player/AttributeSet.h"
-#include "Game/Player/Flavour.h"
 #include "Game/Player/Skill.h"
+#include "Game/Player/Signature.h"
 //#include "EnumDb.h"
 //#include "EnumFlags.h"
 #include "Helpers.h"
 #include "Sprite.h"
 #include "StringDb.h"
 #include "Sound.h"
+
+//class Flavour;
 
 /* Item flags describing the type of an Item */
 ENUM_FLAGS(ItemFlags)
@@ -75,7 +78,7 @@ enum class Material
 
 class Item
 {
-  friend Flavour;
+  //friend Flavour;
 
 public:
   /* Blank constructor */
@@ -111,6 +114,8 @@ protected:
   /* Pointer to the Base Item, null if the Item has changed in any way */
   Item* base_item;
 
+  SkillSet* base_skill_set;
+
   /* AttrSet by which the Item will alter stats */
   AttributeSet buff_set;
 
@@ -124,6 +129,9 @@ protected:
   /* Item Durability */
   uint32_t max_durability;
   uint32_t durability;
+
+  /* Return pointer to the Item signature (if equipment) */
+  Signature* equip_signature;
 
   /* Flag set for the type of the current item */
   ItemFlags flags;
@@ -172,6 +180,9 @@ public:
 
 /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
+  /* Create the equipment's signature */
+  bool createSignature(uint32_t x, uint32_t y);
+
   /* Sets up the Item class with basic values */
   void setupClass();
 
@@ -245,6 +256,12 @@ public:
 
   /* Returns the occasion [conditions of use] of the Item */
   ActionOccasion getOccasion();
+
+  /* Returns a pointer to the Signature */
+  Signature* getSignature();
+
+  /* Returns a ptr to the SkillSet including the Signature's skills */
+  SkillSet getSkills();
 
   /* Returns the ptr to the thumbnail */
   virtual Frame* getThumb();

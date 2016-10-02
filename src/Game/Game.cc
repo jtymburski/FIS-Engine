@@ -147,11 +147,12 @@ Item* Game::addItem(const int32_t& id, SortObjects type)
   }
   else if(type == SortObjects::BUBBIES)
   {
-    new_item = new Bubby();
+    //new_item = new Bubby();
   }
   else if(type == SortObjects::EQUIPMENTS)
   {
-    new_item = new Equipment();
+    new_item = new Item();
+    new_item->setFlag(ItemFlags::EQUIPMENT, true);
   }
   else if(type == SortObjects::ZERO_BUBBIES)
   {

@@ -38,7 +38,7 @@ const uint8_t Person::kACTION_X = 60;
 const uint8_t Person::kACTION_Y = 128;
 const uint32_t Person::kID_PLAYER{0};
 const size_t Person::kNUM_LEVELS{15};
-const size_t Person::kNUM_EQUIP_SLOTS{5};
+//const size_t Person::kNUM_EQUIP_SLOTS{5};
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */
 const uint32_t Person::kMAX_EXP{1000000000};      /* 1 billion */
 const uint32_t Person::kMAX_EXP_DROP{1000000};    /* 1 million */
@@ -156,8 +156,6 @@ void Person::copySelf(const Person& source)
   primary_curve = source.primary_curve;
   secondary_curve = source.secondary_curve;
 
-  equipments = source.equipments;
-
   item_drops = source.item_drops;
   credit_drop = source.credit_drop;
   exp_drop = source.exp_drop;
@@ -173,6 +171,9 @@ void Person::copySelf(const Person& source)
   sprite_foe = source.sprite_foe;
   sprite_foe_defensive = source.sprite_foe_defensive;
   sprite_foe_offensive = source.sprite_foe_offensive;
+
+  //Equipment is not copied
+  equipment = nullptr;
 }
 
 /*
@@ -186,6 +187,7 @@ void Person::loadDefaults()
   action_x = kACTION_X;
   action_y = kACTION_Y;
   ai_module = nullptr;
+  equipment = nullptr;
   person_flags = static_cast<PState>(0);
 
   setPFlag(PState::CAN_GAIN_EXP, true);
@@ -194,6 +196,7 @@ void Person::loadDefaults()
   setPFlag(PState::CAN_CHANGE_EQUIP, true);
 
   // person_record{};
+
 
   updateRank();
 
@@ -219,6 +222,7 @@ void Person::loadDefaults()
   if(learned_skills != nullptr)
     std::cerr << "[Warning]: Missing deletion of temp skills\n";
 
+  equipment = nullptr;
   base_skills = nullptr;
   curr_skills = nullptr;
   learned_skills = nullptr;
@@ -227,9 +231,6 @@ void Person::loadDefaults()
 
   dmg_mod = 1.000;
   exp_mod = 1.000;
-
-  for(size_t a = 0; a < kNUM_EQUIP_SLOTS; a++)
-    equipments.push_back(nullptr);
 
   credit_drop = 0;
   exp_drop = 0;
@@ -296,15 +297,14 @@ void Person::setupClass()
     exp_mod = base_person->exp_mod;
 
     /* Equipments are deep-copied */
-    for(auto equipment : base_person->equipments)
+    if(base_person->equipment)
     {
-      if(equipment != nullptr)
-      {
-        auto new_equip = new Equipment(equipment);
-        equipments.push_back(new Equipment(new_equip));
-      }
-      else
-        equipments.push_back(nullptr);
+      auto new_equip = new Item(base_person->equipment);
+      equipment = new_equip;
+    }
+    else
+    {
+      equipment = nullptr;
     }
 
     item_drops = base_person->item_drops;
@@ -342,18 +342,9 @@ void Person::unsetAll(const bool& clear)
 {
   if(clear)
   {
-    /* Delete the equipments contained within the person */
-    for(auto equipment_index : equipments)
-    {
-      if(equipment_index != nullptr)
-      {
-        if(!(equipment_index->getEquipFlag(EquipState::TWO_HANDED) &&
-             equipment_index == getEquip(EquipSlots::RARM)))
-          delete equipment_index;
-      }
-
-      equipment_index = nullptr;
-    }
+    /* Delete the equipment */
+    if(equipment)
+      delete equipment;
 
     /* Delete the skills sets */
     if(base_person == nullptr && base_skills != nullptr)
@@ -367,6 +358,7 @@ void Person::unsetAll(const bool& clear)
   if(base_person == nullptr)
     unsetSprites();
 
+  equipment = nullptr;
   ai_module = nullptr;
   base_skills = nullptr;
   curr_skills = nullptr;
@@ -548,9 +540,8 @@ bool Person::addExp(const uint32_t& amount, const bool& update,
       can_add = true;
     }
 
-    for(auto equipment : equipments)
-      if(equipment != nullptr)
-        equipment->getSignature()->addExp(amount);
+    if(equipment && equipment->getSignature())
+      equipment->getSignature()->addExp(amount);
   }
 
   if(can_add && update)
@@ -1030,42 +1021,23 @@ bool Person::loseExpPercent(const uint16_t& percent)
  * Inputs: equip_slot - enumerated equip slot to remove the equipment for
  * Output: bool - true if a piece of equipment was there and removed
  */
-bool Person::removeEquip(const EquipSlots& equip_slot)
+bool Person::removeEquipment()
 {
-  auto removed = false;
-
-  if(getEquip(equip_slot) == nullptr)
-    return false;
-
-  auto equip = getEquip(equip_slot);
-
-  switch(equip_slot)
+  if(equipment && equipment->getSignature())
   {
-  case(EquipSlots::LARM):
-  case(EquipSlots::RARM):
-    if(equip->getEquipFlag(EquipState::TWO_HANDED))
+    if(equipment->getSignature()->isEmpty())
     {
-      equipments.at(1) = nullptr;
-      equipments.at(2) = nullptr;
+      return false;
     }
-    else if(equip_slot == EquipSlots::LARM)
-      equipments.at(1) = nullptr;
-    else if(equip_slot == EquipSlots::RARM)
-      equipments.at(2) = nullptr;
+    else
+    {
+      equipment = nullptr;
 
-    removed = true;
-    break;
-  case(EquipSlots::HEAD):
-    equipments.at(0) = nullptr;
-  case(EquipSlots::BODY):
-    equipments.at(3) = nullptr;
-  case(EquipSlots::LEGS):
-    equipments.at(4) = nullptr;
-  default:
-    std::cerr << "Warning: Attempting removal of invalid equip slot.\n";
+      return true;
+    }
   }
 
-  return removed;
+  return false;
 }
 
 /*
@@ -1264,9 +1236,8 @@ void Person::updateSkills()
   if(base_skills != nullptr)
     *curr_skills += *base_skills;
 
-  for(auto equipment : equipments)
-    if(equipment != nullptr)
-      *curr_skills += equipment->getSkills();
+  if(equipment)
+    *curr_skills += equipment->getSkills();
 }
 
 /*
@@ -1306,9 +1277,8 @@ void Person::updateStats()
 
   temp_max_stats = curr_max_stats;
 
-  for(auto equipment : equipments)
-    if(equipment != nullptr)
-      temp_max_stats += equipment->getStats();
+  if(equipment)
+    temp_max_stats += equipment->getStats();
 
   curr_stats.cleanUp();
   curr_max_stats.cleanUp();
@@ -1594,14 +1564,9 @@ float Person::getExpMod()
  * Inputs: equip_slot - the equip slot to check the equipment for
  * Output: Equipment* - pointer to the equipment at the enumerated slot
  */
-Equipment* Person::getEquip(const EquipSlots& equip_slot)
+Item* Person::getEquipment()
 {
-  auto index = getEquipIndex(equip_slot);
-
-  if(index < equipments.size())
-    return equipments.at(index);
-
-  return nullptr;
+  return equipment;
 }
 
 /*
@@ -1611,29 +1576,29 @@ Equipment* Person::getEquip(const EquipSlots& equip_slot)
  * Inputs: none
  * Output: uint32_t - the mapped index of a given equip slot
  */
-uint32_t Person::getEquipIndex(const EquipSlots& equip_slot)
-{
-  if(static_cast<uint8_t>(equip_slot) < equipments.size())
-  {
-    switch(equip_slot)
-    {
-    case(EquipSlots::HEAD):
-      return 0;
-    case(EquipSlots::LARM):
-      return 1;
-    case(EquipSlots::RARM):
-      return 2;
-    case(EquipSlots::BODY):
-      return 3;
-    case(EquipSlots::LEGS):
-      return 4;
-    default:
-      std::cerr << "Error: Checking invalid EquipSlots enum";
-      break;
-    }
-  }
-  return equipments.size() + 1;
-}
+// uint32_t Person::getEquipIndex(const EquipSlots& equip_slot)
+// {
+//   if(static_cast<uint8_t>(equip_slot) < equipments.size())
+//   {
+//     switch(equip_slot)
+//     {
+//     case(EquipSlots::HEAD):
+//       return 0;
+//     case(EquipSlots::LARM):
+//       return 1;
+//     case(EquipSlots::RARM):
+//       return 2;
+//     case(EquipSlots::BODY):
+//       return 3;
+//     case(EquipSlots::LEGS):
+//       return 4;
+//     default:
+//       std::cerr << "Error: Checking invalid EquipSlots enum";
+//       break;
+//     }
+//   }
+//   return equipments.size() + 1;
+// }
 
 /*
  * Description: Returns the assigned credit drop awarded upon defeat of this
@@ -2008,29 +1973,15 @@ bool Person::setExpMod(const float& new_exp_mod)
  *         new_equip - pointer to the equipment to be equipped
  * Output: bool - true if the equipment was attached successfully
  */
-bool Person::setEquip(const EquipSlots& slot, Equipment* new_equip)
+bool Person::setEquipment(Item* equipment)
 {
-  if(new_equip == nullptr || slot != new_equip->getEquipSlot())
-    return false;
-
-  if(new_equip->getEquipFlag(EquipState::EQUIPPED))
-    return false;
-
-  if(new_equip->getEquipFlag(EquipState::TWO_HANDED))
+  if(equipment && equipment->getSignature())
   {
-    if(getEquip(EquipSlots::LARM) == nullptr &&
-       getEquip(EquipSlots::RARM) == nullptr)
-    {
-      equipments[getEquipIndex(EquipSlots::LARM)] = new_equip;
-      equipments[getEquipIndex(EquipSlots::RARM)] = new_equip;
-    }
+    if(equipment->getSignature()->isEmpty())
+      return true;
   }
-  else
-  {
-    equipments[getEquipIndex(slot)] = new_equip;
-  }
-
-  return true;
+  
+  return false;
 }
 
 /*
@@ -2182,18 +2133,6 @@ uint16_t Person::getLevelAt(const uint32_t& experience)
 size_t Person::getNumLevels()
 {
   return kNUM_LEVELS;
-}
-
-/*
- * Description: Grabs the number of equipment slots a Person has
- *
- * Inputs: none
- * Output: size_t - kNUM_EQUIP_SLOTS - the number of equipment slots for
- *Persons
- */
-size_t Person::getNumEquipSlots()
-{
-  return kNUM_EQUIP_SLOTS;
 }
 
 /*

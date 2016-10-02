@@ -24,11 +24,9 @@
 
 #include <iostream>
 
-#include "Helpers.h"
 #include "Game/Player/Flavour.h"
-#include "Game/Player/Item.h"
 
-class Bubby : public Item
+class Bubby
 {
 public:
   /* Blank constructor */
@@ -41,9 +39,14 @@ public:
   ~Bubby() = default;
 
 private:
+  static int32_t id;
 
   /* Experience values for levels of Bubbiesby */
   static std::vector<uint32_t> exp_table;
+
+  /* My ID */
+  int32_t my_id;
+  int32_t game_id;
 
   /* The level of the Bubby */
   uint32_t level;
@@ -61,6 +64,7 @@ private:
   static const uint32_t kMIN_EXP;         /* Starting experience value */
   static const uint32_t kMAX_LEVEL_EXP;   /* Experience required for last lvl */
   static const uint32_t kMAX_EXP;         /* Abs. maximum experience value */
+  static const int32_t  kUNSET_ID;        /* Unset ID for the Bubby */
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -88,7 +92,7 @@ public:
   bool addExperience(const uint32_t &amount);
 
   /* Prints out the information for the Bubby */
-  void print(const bool& print_table = false, const bool& item_info = false);
+  //void print(const bool& print_table = false, const bool& item_info = false);
 
   /* This method MUST be called to upgrade the Bubby from Tier 0 to Tier 1 */
   bool upgrade();
@@ -98,6 +102,10 @@ public:
 
   /* Returns the minimum level required for the Bubby to reach the next tier */
   uint32_t getLevelNext();
+
+  /* Returns the unique ID of the Item */
+  int32_t getID();
+  int32_t getGameID();
 
   /* Returns the mass at the current tier (determined from Flavour */
   uint32_t getMass();

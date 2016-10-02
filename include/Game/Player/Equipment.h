@@ -99,8 +99,7 @@ public:
   /* Grabs the EquipSlot this equipment can be placed on */
   EquipSlots getEquipSlot();
 
-  /* Returns a pointer to the Signature */
-  Signature* getSignature();
+
 
   /* Returns a ptr to the SkillSet including the Signature's skills */
   SkillSet getSkills();

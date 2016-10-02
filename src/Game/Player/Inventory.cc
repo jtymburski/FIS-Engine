@@ -87,9 +87,9 @@ void Inventory::calcMass()
     if(bubby.first)
       temp_mass += (bubby.first->getMass() * bubby.second) / 1000.0;
 
-  for(auto equipment : equipments)
-    if(equipment.first)
-      temp_mass += (equipment.first->getMass() * equipment.second) / 1000.0;
+  // for(auto equipment : equipments)
+  //   if(equipment.first)
+  //     temp_mass += (equipment.first->getMass() * equipment.second) / 1000.0;
 
   for(auto item : items)
     if(item.first)
@@ -127,21 +127,21 @@ bool Inventory::increaseCount(const uint32_t& game_id, const uint16_t& amount)
     }
   }
 
-  if(!increased)
-  {
-    index = getEquipIndex(game_id);
+  // if(!increased)
+  // {
+  //   index = getEquipIndex(game_id);
 
-    if(index != -1)
-    {
-      auto count = equipments.at(index).second;
+  //   if(index != -1)
+  //   {
+  //     auto count = equipments.at(index).second;
 
-      if(count != 0)
-      {
-        equipments[index].second += amount;
-        increased = true;
-      }
-    }
-  }
+  //     if(count != 0)
+  //     {
+  //       equipments[index].second += amount;
+  //       increased = true;
+  //     }
+  //   }
+  // }
 
   if(!increased)
   {
@@ -187,21 +187,21 @@ bool Inventory::decreaseCount(const uint32_t& game_id, const uint16_t& amount)
     }
   }
 
-  if(!decreased)
-  {
-    index = getEquipIndex(game_id);
+  // if(!decreased)
+  // {
+  //   index = getEquipIndex(game_id);
 
-    if(index != -1)
-    {
-      auto count = equipments.at(index).second;
+  //   if(index != -1)
+  //   {
+  //     auto count = equipments.at(index).second;
 
-      if(count > 0)
-      {
-        equipments[index].second -= amount;
-        decreased = true;
-      }
-    }
-  }
+  //     if(count > 0)
+  //     {
+  //       equipments[index].second -= amount;
+  //       decreased = true;
+  //     }
+  //   }
+  // }
 
   if(!decreased)
   {
@@ -300,70 +300,6 @@ AddStatus Inventory::add(Bubby* new_bubby, const uint32_t& amount, bool bypass)
 }
 
 /*
- * Description: Attempts to add an amount of equipment objects given an equip
- *              object pointer to the inventory, if the Inventory has room for
- *              them unless bypass is true.
- *
- * Note [1]: If the Inventory is a shop storage, the value of bypass is
- *           irrelevant.
- *
- * Inputs: Equipment* new_equipment - an equip object to be added
- *         amount - the amount of Bubby objects to be added
- *         bypass - true if limit checks are to be bypassed
- * Output: AddStatus - enumerated values of the status of addition
- */
-AddStatus Inventory::add(Equipment* new_equipment, const uint32_t& amount,
-                         bool bypass)
-{
-  auto status = AddStatus::FAIL;
-
-  if(amount > 0)
-  {
-    bypass |= getFlag(InvState::SHOP_STORAGE);
-
-    auto spaces = hasRoom(new_equipment, amount);
-
-    if(new_equipment != nullptr && (spaces >= amount || bypass))
-    {
-      if(getFlag(InvState::SHOP_STORAGE))
-      {
-        if(getEquipCount(new_equipment->getGameID()) > 0)
-          increaseCount(new_equipment->getGameID(), amount);
-        else
-        {
-          auto created_equip = new Equipment(new_equipment);
-          equipments.push_back(std::make_pair(created_equip, amount));
-        }
-      }
-      else
-      {
-        equipments.push_back(std::make_pair(new_equipment, 1));
-
-        for(uint32_t i = 1; i < amount; i++)
-        {
-          auto created_equip = new Equipment(new_equipment);
-          equipments.push_back(std::make_pair(created_equip, 1));
-        }
-      }
-
-      calcMass();
-
-      if(getFlag(InvState::SHOP_STORAGE))
-        status = AddStatus::GOOD_DELETE;
-      else
-        status = AddStatus::GOOD_KEEP;
-    }
-  }
-
-  /* Update the add status, if the shop flag is set since shops delete no
-   * items and need to be managed from an outside source */
-  if(status == AddStatus::GOOD_KEEP && getFlag(InvState::SHOP_STORAGE))
-    status = AddStatus::GOOD_DELETE;
-
-  return status;
-}
-
-/*
  * Description: Attempts to add an amount of item objects given an Item object
  *              pointer to the inventory, if the Inventory has room for them
  *              unless bypass is true.
@@ -443,19 +379,19 @@ void Inventory::clear(const bool& free)
       bubby.first = nullptr;
     }
 
-    /* Each equipment is required to be deleted */
-    for(auto equip : equipments)
-    {
-      if(equip.first != nullptr)
-      {
-        if(getFlag(InvState::SHOP_STORAGE))
-          std::cerr << "[ERROR]: Deleting equip in shop storage inventory\n";
+    // /* Each equipment is required to be deleted */
+    // for(auto equip : equipments)
+    // {
+    //   if(equip.first != nullptr)
+    //   {
+    //     if(getFlag(InvState::SHOP_STORAGE))
+    //       std::cerr << "[ERROR]: Deleting equip in shop storage inventory\n";
 
-        delete equip.first;
-      }
+    //     delete equip.first;
+    //   }
 
-      equip.first = nullptr;
-    }
+    //   equip.first = nullptr;
+    // }
 
     /* Each index of the items is required to be deleted */
     for(auto item : items)
@@ -474,7 +410,7 @@ void Inventory::clear(const bool& free)
 
   /* Empty the vectors */
   bubbies.clear();
-  equipments.clear();
+  //equipments.clear();
   items.clear();
 }
 
@@ -491,10 +427,10 @@ bool Inventory::contains(const int32_t& id_check)
       if(bubby.first->getID() == id_check)
         return true;
 
-  for(auto equipment : equipments)
-    if(equipment.first != nullptr)
-      if(equipment.first->getID() == id_check)
-        return true;
+  // for(auto equipment : equipments)
+  //   if(equipment.first != nullptr)
+  //     if(equipment.first->getID() == id_check)
+  //       return true;
 
   for(auto item : items)
     if(item.first != nullptr)
@@ -538,39 +474,39 @@ uint32_t Inventory::hasRoom(Bubby* const b, uint32_t n)
   return n;
 }
 
-/*
- * Description: Checks how many of n equipments may be added to the inventory.
- *
- * Inputs: equip - pointer to an equipment object to be checked room for
- *         n - the maximum number of objects to be checked for
- * Output: int32_t - the # of the equipment the inventory has room for
- */
-uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
-{
-  if(equip)
-  {
-    if(!getFlag(InvState::SHOP_STORAGE))
-    {
-      n = std::min(equip_limit - getEquipTotalCount(), n);
+// /*
+//  * Description: Checks how many of n equipments may be added to the inventory.
+//  *
+//  * Inputs: equip - pointer to an equipment object to be checked room for
+//  *         n - the maximum number of objects to be checked for
+//  * Output: int32_t - the # of the equipment the inventory has room for
+//  */
+// uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
+// {
+//   if(equip)
+//   {
+//     if(!getFlag(InvState::SHOP_STORAGE))
+//     {
+//       n = std::min(equip_limit - getEquipTotalCount(), n);
 
-      if(equip->getMass() > 0)
-      {
-        auto lim = std::floor((mass_limit - getMass()) / equip->getMass());
-        n = std::min(static_cast<uint32_t>(lim), n);
-      }
-    }
-    else
-    {
-      n = kMAX_ITEM;
-    }
-  }
-  else
-  {
-    n = 0;
-  }
+//       if(equip->getMass() > 0)
+//       {
+//         auto lim = std::floor((mass_limit - getMass()) / equip->getMass());
+//         n = std::min(static_cast<uint32_t>(lim), n);
+//       }
+//     }
+//     else
+//     {
+//       n = kMAX_ITEM;
+//     }
+//   }
+//   else
+//   {
+//     n = 0;
+//   }
 
-  return n;
-}
+//   return n;
+// }
 
 /*
  * Description:
@@ -637,10 +573,10 @@ bool Inventory::loadData(XmlData data, int index, SDL_Renderer* renderer,
           setLimits(val, equip_limit, item_limit, mass_limit);
         }
         /* Equipment Limit */
-        else if(inside == "equipments")
-        {
-          setLimits(bubby_limit, val, item_limit, mass_limit);
-        }
+        // else if(inside == "equipments")
+        // {
+        //   setLimits(bubby_limit, val, item_limit, mass_limit);
+        // }
         /* Generic Item Limit */
         else if(inside == "items")
         {
@@ -672,8 +608,8 @@ void Inventory::print(bool simple)
   std::cout << "# Unique Bubbies: " << bubbies.size() << "\n";
   std::cout << "# Unique Bubbies: " << getBubbyTotalCount() << "/"
             << bubby_limit << "\n";
-  std::cout << "# Unique Equips:  " << equipments.size() << "/" << equip_limit
-            << "\n";
+  // std::cout << "# Unique Equips:  " << equipments.size() << "/" << equip_limit
+  //           << "\n";
   std::cout << "Item Stacks: " << getItemStackCount() << "/" << item_limit
             << "\n";
   std::cout << "Item Stacks (+ keys): " << getItemStackCount(true) << std::endl;
@@ -686,23 +622,23 @@ void Inventory::print(bool simple)
 
     for(auto bubby : bubbies)
     {
-      if(bubby.first != nullptr)
+      if(bubby.first != nullptr && bubby.first->getType())
       {
-        std::cout << bubby.first->getName() << " T: " << bubby.first->getTier()
+        std::cout << bubby.first->getType()->getName() << " T: " << bubby.first->getTier()
                   << " " << static_cast<int>(bubby.second) << "\n";
       }
     }
 
-    std::cout << "\nEquipments:\n";
+    // std::cout << "\nEquipments:\n";
 
-    for(auto equipment : equipments)
-    {
-      if(equipment.first != nullptr)
-      {
-        std::cout << equipment.first->getName() << " "
-                  << static_cast<int>(equipment.second) << "\n";
-      }
-    }
+    // for(auto equipment : equipments)
+    // {
+    //   if(equipment.first != nullptr)
+    //   {
+    //     std::cout << equipment.first->getName() << " "
+    //               << static_cast<int>(equipment.second) << "\n";
+    //   }
+    // }
 
     std::cout << "\nItems:\n";
 
@@ -737,8 +673,8 @@ bool Inventory::removeID(const uint32_t& game_id, const uint16_t& amount)
 
   removed |= removeBubbyID(game_id, amount);
 
-  if(!removed)
-    removed |= removeEquipID(game_id, amount);
+  // if(!removed)
+  //   removed |= removeEquipID(game_id, amount);
 
   if(!removed)
     removed |= removeItemID(game_id, amount);
@@ -761,8 +697,8 @@ bool Inventory::removeUID(const uint32_t& unique_id, const uint16_t& amount)
 
   removed &= removeBubbyUID(unique_id, amount);
 
-  if(!removed)
-    removed &= removeEquipUID(unique_id, amount);
+  // if(!removed)
+  //   removed &= removeEquipUID(unique_id, amount);
 
   if(!removed)
     removed &= removeItemUID(unique_id, amount);
@@ -847,87 +783,87 @@ bool Inventory::removeBubbyUID(const uint32_t& unique_id,
   return false;
 }
 
-/*
- * Description: Attempts to remove equipments by a given index
- *
- * Inputs: index - the index of equipments to be removed
- *         amount - the amount of Bubbies to be removed
- * Output: bool - true if the removal was successful
- */
-bool Inventory::removeEquipIndex(const uint32_t& index, const uint16_t& amount)
-{
-  if(index < equipments.size())
-  {
-    if(bubbies.at(index).first != nullptr)
-    {
-      auto count = equipments[index].second;
+// /*
+//  * Description: Attempts to remove equipments by a given index
+//  *
+//  * Inputs: index - the index of equipments to be removed
+//  *         amount - the amount of Bubbies to be removed
+//  * Output: bool - true if the removal was successful
+//  */
+// bool Inventory::removeEquipIndex(const uint32_t& index, const uint16_t& amount)
+// {
+//   if(index < equipments.size())
+//   {
+//     if(bubbies.at(index).first != nullptr)
+//     {
+//       auto count = equipments[index].second;
 
-      if(count > 1 && count > amount)
-      {
-        std::cout << "count: " << count << " count > 1 && count > amount\n";
-        decreaseCount(equipments.at(index).first->getGameID(), amount);
-      }
-      else if(count == amount)
-      {
-        std::cout << "count == amount\n";
-        if(!getFlag(InvState::SHOP_STORAGE))
-          delete equipments[index].first;
+//       if(count > 1 && count > amount)
+//       {
+//         std::cout << "count: " << count << " count > 1 && count > amount\n";
+//         decreaseCount(equipments.at(index).first->getGameID(), amount);
+//       }
+//       else if(count == amount)
+//       {
+//         std::cout << "count == amount\n";
+//         if(!getFlag(InvState::SHOP_STORAGE))
+//           delete equipments[index].first;
 
-        equipments[index].first = nullptr;
-        equipments.erase(begin(equipments) + index);
-      }
-      else
-        return false;
+//         equipments[index].first = nullptr;
+//         equipments.erase(begin(equipments) + index);
+//       }
+//       else
+//         return false;
 
-      calcMass();
-    }
+//       calcMass();
+//     }
 
-    return true;
-  }
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
-/*
- * Description: Attempts to remove equipments by an ID
- *
- * Inputs: game_id - the game ID of equipments to be removed
- *         amount - the amount of equipment of the given ID to be removed
- * Output: bool - true if the removal was successful
- */
-bool Inventory::removeEquipID(const uint32_t& game_id, const uint16_t& amount)
-{
-  auto equip_index = getEquipIndex(game_id);
 
-  if(equip_index != -1)
-    return removeEquipIndex(equip_index, amount);
+//  * Description: Attempts to remove equipments by an ID
+//  *
+//  * Inputs: game_id - the game ID of equipments to be removed
+//  *         amount - the amount of equipment of the given ID to be removed
+//  * Output: bool - true if the removal was successful
+ 
+// bool Inventory::removeEquipID(const uint32_t& game_id, const uint16_t& amount)
+// {
+//   auto equip_index = getEquipIndex(game_id);
 
-  return false;
-}
+//   if(equip_index != -1)
+//     return removeEquipIndex(equip_index, amount);
 
-/*
- * Description: Remove an equipment from the Inventory by a given unique item
- *              ID value
- *
- * Inputs: unique_id - the unique ID of equipment to be removed
- *         amount - the amount of Bubbies to be removed
- * Output: bool - true if the removal was successful
- */
-bool Inventory::removeEquipUID(const uint32_t& unique_id,
-                               const uint16_t& amount)
-{
-  auto equip_index = -1;
+//   return false;
+// }
 
-  for(uint32_t i = 0; i < equipments.size(); i++)
-    if(equipments[i].first != nullptr)
-      if(equipments[i].first->getID() == static_cast<int32_t>(unique_id))
-        equip_index = i;
+// /*
+//  * Description: Remove an equipment from the Inventory by a given unique item
+//  *              ID value
+//  *
+//  * Inputs: unique_id - the unique ID of equipment to be removed
+//  *         amount - the amount of Bubbies to be removed
+//  * Output: bool - true if the removal was successful
+//  */
+// bool Inventory::removeEquipUID(const uint32_t& unique_id,
+//                                const uint16_t& amount)
+// {
+//   auto equip_index = -1;
 
-  if(equip_index != -1)
-    return removeEquipIndex(equip_index, amount);
+//   for(uint32_t i = 0; i < equipments.size(); i++)
+//     if(equipments[i].first != nullptr)
+//       if(equipments[i].first->getID() == static_cast<int32_t>(unique_id))
+//         equip_index = i;
 
-  return false;
-}
+//   if(equip_index != -1)
+//     return removeEquipIndex(equip_index, amount);
+
+//   return false;
+// }
 
 /*
  * Description: Attempts to remove Items by a given index
@@ -1054,16 +990,16 @@ bool Inventory::saveData(FileHandler* fh)
       }
     }
 
-    /* Equipment */
-    for(auto const& pair : equipments)
-    {
-      if(pair.first)
-      {
-        std::string set = std::to_string(pair.first->getGameID()) + "," +
-                          std::to_string(pair.second);
-        fh->writeXmlData("equip", set);
-      }
-    }
+    // /* Equipment */
+    // for(auto const& pair : equipments)
+    // {
+    //   if(pair.first)
+    //   {
+    //     std::string set = std::to_string(pair.first->getGameID()) + "," +
+    //                       std::to_string(pair.second);
+    //     fh->writeXmlData("equip", set);
+    //   }
+    // }
 
     /* Bubbies */
     for(auto const& pair : bubbies)
@@ -1110,11 +1046,6 @@ bool Inventory::sort(const SortType sort_type, SortObjects object,
       std::sort(begin(bubbies), end(bubbies), Helpers::CompPairByMass());
       sort_status = true;
     }
-    else if(sort_type == SortType::NAME)
-    {
-      std::sort(begin(bubbies), end(bubbies), Helpers::CompPairByName());
-      sort_status = true;
-    }
     else if(sort_type == SortType::VALUE)
     {
       std::sort(begin(bubbies), end(bubbies), Helpers::CompPairByValue());
@@ -1130,32 +1061,32 @@ bool Inventory::sort(const SortType sort_type, SortObjects object,
   }
   case(SortObjects::EQUIPMENTS):
   {
-    if(sort_type == SortType::ID)
-    {
-      std::sort(begin(equipments), end(equipments), Helpers::CompPairByID());
-      sort_status = true;
-    }
-    if(sort_type == SortType::MASS)
-    {
-      std::sort(begin(equipments), end(equipments), Helpers::CompPairByMass());
-      sort_status = true;
-    }
-    if(sort_type == SortType::NAME)
-    {
-      std::sort(begin(equipments), end(equipments), Helpers::CompPairByName());
-      sort_status = true;
-    }
-    if(sort_type == SortType::VALUE)
-    {
-      std::sort(begin(equipments), end(equipments), Helpers::CompPairByID());
-      sort_status = true;
-    }
-    if(sort_type == SortType::VALUEPERMASS)
-    {
-      std::sort(begin(equipments), end(equipments),
-                Helpers::CompPairByValueMass());
-      sort_status = true;
-    }
+    // if(sort_type == SortType::ID)
+    // {
+    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByID());
+    //   sort_status = true;
+    // }
+    // if(sort_type == SortType::MASS)
+    // {
+    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByMass());
+    //   sort_status = true;
+    // }
+    // if(sort_type == SortType::NAME)
+    // {
+    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByName());
+    //   sort_status = true;
+    // }
+    // if(sort_type == SortType::VALUE)
+    // {
+    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByID());
+    //   sort_status = true;
+    // }
+    // if(sort_type == SortType::VALUEPERMASS)
+    // {
+    //   std::sort(begin(equipments), end(equipments),
+    //             Helpers::CompPairByValueMass());
+    //   sort_status = true;
+    // }
 
     break;
   }
@@ -1206,9 +1137,9 @@ bool Inventory::sort(const SortType sort_type, SortObjects object,
     case(SortObjects::BUBBIES):
       std::reverse(begin(bubbies), end(bubbies));
       break;
-    case(SortObjects::EQUIPMENTS):
-      std::reverse(begin(equipments), end(equipments));
-      break;
+    // case(SortObjects::EQUIPMENTS):
+    //   std::reverse(begin(equipments), end(equipments));
+    //   break;
     case(SortObjects::ITEMS):
       std::reverse(begin(items), end(items));
       break;
@@ -1282,21 +1213,21 @@ uint32_t Inventory::getBubbyTotalCount()
   return total;
 }
 
-/*
- * Description: Returns the total number of equipment of given game_id type.
- *
- * Inputs: game_id - the game ID to check the equipment count for
- * Output: int32_t - the count of the equipment at the given game_id
- */
-int32_t Inventory::getEquipCount(const uint32_t& game_id)
-{
-  for(auto it = begin(equipments); it != end(equipments); ++it)
-    if((*it).first != nullptr)
-      if((*it).first->getGameID() == static_cast<int32_t>(game_id))
-        return (*it).second;
+// /*
+//  * Description: Returns the total number of equipment of given game_id type.
+//  *
+//  * Inputs: game_id - the game ID to check the equipment count for
+//  * Output: int32_t - the count of the equipment at the given game_id
+//  */
+// int32_t Inventory::getEquipCount(const uint32_t& game_id)
+// {
+//   for(auto it = begin(equipments); it != end(equipments); ++it)
+//     if((*it).first != nullptr)
+//       if((*it).first->getGameID() == static_cast<int32_t>(game_id))
+//         return (*it).second;
 
-  return 0;
-}
+//   return 0;
+// }
 
 /*
  * Description:
@@ -1307,10 +1238,8 @@ int32_t Inventory::getEquipCount(const uint32_t& game_id)
 int32_t Inventory::getEquipTotalCount()
 {
   int32_t total{0};
-
-  for(auto it = begin(equipments); it != end(equipments); ++it)
-    if((*it).first)
-      total += (*it).second;
+  
+  //TODO: Totalize Item by equipment flag
 
   return total;
 }
@@ -1342,21 +1271,21 @@ int32_t Inventory::getBubbyIndex(const uint32_t& game_id)
   return -1;
 }
 
-/*
- * Description: Returns the index of a given equipment game ID
- *
- * Inputs: game_id - the game ID to find the equipment index for
- * Output: int32_t - the index of equipment having the given game ID
- */
-int32_t Inventory::getEquipIndex(const uint32_t& game_id)
-{
-  for(uint32_t i = 0; i < equipments.size(); i++)
-    if(equipments[i].first != nullptr)
-      if(equipments[i].first->getGameID() == static_cast<int32_t>(game_id))
-        return i;
+// /*
+//  * Description: Returns the index of a given equipment game ID
+//  *
+//  * Inputs: game_id - the game ID to find the equipment index for
+//  * Output: int32_t - the index of equipment having the given game ID
+//  */
+// int32_t Inventory::getEquipIndex(const uint32_t& game_id)
+// {
+//   for(uint32_t i = 0; i < equipments.size(); i++)
+//     if(equipments[i].first != nullptr)
+//       if(equipments[i].first->getGameID() == static_cast<int32_t>(game_id))
+//         return i;
 
-  return -1;
-}
+//   return -1;
+// }
 
 /*
  * Description: Returns the index of a given item game ID
@@ -1396,16 +1325,16 @@ std::vector<std::pair<Bubby*, uint16_t>> Inventory::getBubbies()
   return bubbies;
 }
 
-/*
- * Description: Returns the vector of equipment
- *
- * Inputs: none
- * Output: std::vector<std::pair<Equipment*, uint16_t>> - vector of equipment
- */
-std::vector<std::pair<Equipment*, uint16_t>> Inventory::getEquipments()
-{
-  return equipments;
-}
+
+//  * Description: Returns the vector of equipment
+//  *
+//  * Inputs: none
+//  * Output: std::vector<std::pair<Equipment*, uint16_t>> - vector of equipment
+ 
+// std::vector<std::pair<Equipment*, uint16_t>> Inventory::getEquipments()
+// {
+//   return equipments;
+// }
 
 /*
  * Description: Returns the vector of item
@@ -1479,22 +1408,22 @@ std::vector<Bubby*> Inventory::getUniqueBubbies()
   return temps;
 }
 
-/*
- * Description: Returns a vector of one of each bubby
- *
- * Inputs: none
- * Output: std::vector<Bubby*> - a vector of each bubby
- */
-std::vector<Equipment*> Inventory::getUniqueEquipments()
-{
-  std::vector<Equipment*> temps;
+// /*
+//  * Description: Returns a vector of one of each bubby
+//  *
+//  * Inputs: none
+//  * Output: std::vector<Bubby*> - a vector of each bubby
+//  */
+// std::vector<Equipment*> Inventory::getUniqueEquipments()
+// {
+//   std::vector<Equipment*> temps;
 
-  for(auto equipment : equipments)
-    if(equipment.first != nullptr)
-      temps.push_back(equipment.first);
+//   for(auto equipment : equipments)
+//     if(equipment.first != nullptr)
+//       temps.push_back(equipment.first);
 
-  return temps;
-}
+//   return temps;
+// }
 
 /*
  * Description: Returns a vector of one of each item

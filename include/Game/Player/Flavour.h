@@ -23,17 +23,15 @@
 
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
-#include "Frame.h"
 #include "StringDb.h"
 
-/* Forward declare for friends with Item */
 class Item;
 
 class Flavour
 {
+public:
   friend Item;
 
-public:
   /* Constructs a default Flavour object */
   Flavour();
 

@@ -229,21 +229,21 @@ bool Category::addImmunity(const Infliction &new_immunity)
  * Inputs: Equipment* const check - equipment to check
  * Output: bool - whether persons of the category can equip the equipment
  */
-bool Category::canEquip(Equipment* const check)
-{
-  //TODO: Actual classes of equipment [01-21-14]
-  if (check == nullptr)
-    return false;
+// bool Category::canEquip(Equipment* const check)
+// {
+//   //TODO: Actual classes of equipment [01-21-14]
+//   if (check == nullptr)
+//     return false;
 
-  bool can_equip = true;
+//   bool can_equip = true;
 
-  if (check->getEquipFlag(EquipState::STAFF))
-    can_equip &=  getFlag(CategoryState::E_STAFF);
-  if (check->getEquipFlag(EquipState::SWORD))
-    can_equip &= getFlag(CategoryState::E_SWORD);
+//   if (check->getEquipFlag(EquipState::STAFF))
+//     can_equip &=  getFlag(CategoryState::E_STAFF);
+//   if (check->getEquipFlag(EquipState::SWORD))
+//     can_equip &= getFlag(CategoryState::E_SWORD);
 
-  return can_equip;
-}
+//   return can_equip;
+// }
 
 /*
  * Description: Determines whether a person of the given Category is immune
