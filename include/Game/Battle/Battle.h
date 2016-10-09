@@ -46,7 +46,8 @@ enum class CombatState
   PHASE_DONE = 1 << 0,
   EVENT_READY = 1 << 1,
   AILMENT_CLEARS = 1 << 2,
-  CREATED_VICTORY_TEXT = 1 << 3
+  CREATED_VICTORY_TEXT = 1 << 3,
+  CURR_UPKEEP_DONE = 1 << 4
 };
 
 ENUM_FLAGS(RenderState)
@@ -281,9 +282,6 @@ private:
   /* Returns true if the given actor needs to select a menu option */
   bool doesActorNeedToSelect(BattleActor* actor);
 
-  /* Returns whether an actor needs to be upkeeped or not */
-  bool doesActorNeedToUpkeep(BattleActor* actor);
-
   /* Checks whether the current buffer element is valid for processing */
   bool isBufferElementValid();
 
@@ -397,7 +395,7 @@ private:
 
   /* Returns a pointer to the next actor needing to have an upkeep configured */
   BattleActor* getNextUpkeepActor();
-
+  
   /* Sets the next turn state of the Battle */
   void setNextTurnState();
 

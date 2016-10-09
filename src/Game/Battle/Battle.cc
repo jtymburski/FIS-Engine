@@ -554,19 +554,6 @@ bool Battle::doesActorNeedToSelect(BattleActor* actor)
   return to_select;
 }
 
-bool Battle::doesActorNeedToUpkeep(BattleActor* actor)
-{
-  bool to_upkeep = (actor != nullptr);
-
-  if(to_upkeep)
-  {
-    to_upkeep &= actor->getStateLiving() == LivingState::ALIVE;
-    to_upkeep &= actor->getStateUpkeep() == UpkeepState::VITA_REGEN;
-  }
-
-  return to_upkeep;
-}
-
 void Battle::updateGeneralUpkeep()
 {
   /* First turn -> skip updates, other turns -> add to update */
@@ -1227,8 +1214,12 @@ void Battle::updatePersonalUpkeep()
   {
     auto state = upkeep_actor->getStateUpkeep();
 
-    if(state == UpkeepState::COMPLETE)
+    if(getFlagCombat(CombatState::CURR_UPKEEP_DONE) || state == UpkeepState::COMPLETE)
+    {
+      std::cout << "Unsetting upkeep actor" << std::endl;
+      setFlagCombat(CombatState::CURR_UPKEEP_DONE, false);
       upkeep_actor = nullptr;
+    }
     else if(state == UpkeepState::VITA_REGEN)
       updatePersonalVitaRegen();
     else if(state == UpkeepState::QTDR_REGEN)
@@ -1239,6 +1230,9 @@ void Battle::updatePersonalUpkeep()
   else
   {
     upkeep_actor = getNextUpkeepActor();
+
+    if(upkeep_actor)
+    std::cout << "Next Upkeep Actor: " << upkeep_actor->getBasePerson()->getName() << std::endl;
 
     if(!upkeep_actor)
       setFlagCombat(CombatState::PHASE_DONE, true);
@@ -1264,9 +1258,10 @@ void Battle::updatePersonalVitaRegen()
         getActorX(upkeep_actor), getActorY(upkeep_actor));
 
     render_elements.push_back(element);
-    addDelay(350);
+    //addDelay(350);
   }
 
+  setFlagCombat(CombatState::CURR_UPKEEP_DONE);
   upkeep_actor->setUpkeepState(UpkeepState::QTDR_REGEN);
 }
 
@@ -1284,9 +1279,10 @@ void Battle::updatePersonalQtdrRegen()
         qtdr_regen, DamageType::QTDR_REGEN, config->getScreenHeight(),
         getActorX(upkeep_actor), getActorY(upkeep_actor));
     render_elements.push_back(element);
-    addDelay(350);
+
   }
   // Calculate and create the qtdr regen for the upkeep_actor
+  setFlagCombat(CombatState::CURR_UPKEEP_DONE);
   upkeep_actor->setUpkeepState(UpkeepState::AILMENT_BEGIN);
 }
 
@@ -1332,7 +1328,10 @@ void Battle::updatePersonalAilments()
     upkeep_ailment = upkeep_actor->nextUpdateAilment();
 
     if(!upkeep_ailment)
+    {
+      std::cout << "Setting upkeep actor state to complete" << std::endl;
       upkeep_actor->setUpkeepState(UpkeepState::COMPLETE);
+    }
     else
       upkeep_actor->setUpkeepState(UpkeepState::AILMENT_BEGIN);
   }
@@ -1589,8 +1588,19 @@ BattleActor* Battle::getNextMenuActor()
 
 BattleActor* Battle::getNextUpkeepActor()
 {
+  /* Are we still on VITA Regens? */
   for(const auto& actor : actors)
-    if(doesActorNeedToUpkeep(actor))
+    if(actor && actor->getStateUpkeep() == UpkeepState::VITA_REGEN)
+      return actor;
+
+  /* Are we on QTDR Regens? */
+  for(const auto& actor : actors)
+    if(actor && actor->getStateUpkeep() == UpkeepState::QTDR_REGEN)
+      return actor;
+
+  /* Else, return the next non-complete actor */
+  for(const auto& actor : actors)
+    if(actor && actor->getStateUpkeep() != UpkeepState::COMPLETE)
       return actor;
 
   return nullptr;
@@ -2730,7 +2740,7 @@ void Battle::upkeepAilmentOutcome()
     {
       eh->triggerSound(Sound::kID_SOUND_BTL_DEATH, SoundChannels::TRIGGERS);
       upkeep_actor->startFlashing(FlashingType::KOING);
-      upkeep_actor->removeAilmentsKO();
+      upkeep_actor->removeAilmentsKO(); 
       addDelay(1200);
     }
   }
@@ -3047,6 +3057,13 @@ void Battle::setNextTurnState()
     turn_state = TurnState::UPKEEP;
   else if(turn_state == TurnState::UPKEEP)
     turn_state = TurnState::SELECT_ACTION_ALLY;
+  //   turn_state = TurnState::UPKEEP_VITA;
+  // else if(turn_state == TurnState::UPKEEP_VITA)
+  //   turn_state = TurnState::UPKEEP_QTDR;
+  // else if(turn_state == TurnState::UPKEEP_QTDR)
+  //   turn_state = TurnState::UPKEEP_AILMENTS;
+  // else if(turn_state == TurnState::UPKEEP_AILMENTS)
+  //   turn_state = TurnState::SELECT_ACTION_ALLY;
   else if(turn_state == TurnState::SELECT_ACTION_ALLY)
     turn_state = TurnState::SELECT_ACTION_ENEMY;
   else if(turn_state == TurnState::SELECT_ACTION_ENEMY)
