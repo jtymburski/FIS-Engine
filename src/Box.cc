@@ -527,6 +527,11 @@ bool Box::render(SDL_Renderer* renderer)
        * selected (hovered on). */
       Frame::setRenderDrawColor(renderer, border_color);
       success &= Frame::renderRect(rect, border_width, renderer);
+
+      /* Render the scroll box elements as required */
+      if(getFlag(BoxState::SCROLL_BOX))
+        renderElements(renderer, view_index, getNumViewable());
+
     }
     else if(box_type == BoxType::CORNER_CUT_BOX)
     {

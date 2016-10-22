@@ -26,6 +26,7 @@
 
 #include "Game/Player/Flavour.h"
 
+
 class Bubby
 {
 public:
@@ -122,6 +123,9 @@ public:
   /* Return the Flavour [type] of the Bubby by ref */
   Flavour* getType();
 
+  /* Return string name of Flavour */
+  std::string getName();
+
   /* Returns the total exp */
   uint32_t getExp();
 
@@ -130,6 +134,9 @@ public:
 
   /* Returns the value [currency] worth */
   uint32_t getValue();
+
+  /* Assign a Game ID to a Bubby */
+  void setGameID(int32_t id);
 };
 
 #endif //BUBBY_H

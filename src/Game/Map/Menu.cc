@@ -2675,10 +2675,20 @@ void Menu::renderSave()
 
   save_scroll_box.setFlag(BoxState::SCROLL_BOX);
   save_scroll_box.setFlag(BoxState::SELECTABLE);
-  setupDefaultBox(save_scroll_box);
+
+  save_scroll_box.color_border = {0, 0, 0, 0};
+  save_scroll_box.color_border_selected = {0, 0, 0, 0};
+  save_scroll_box.color_bg = {0, 0, 0, 0};
+  save_scroll_box.color_bg_selected = {0, 0, 0, 0};
+
+  save_scroll_box.point.x = main.point.x + gap;
+  save_scroll_box.point.y = main.point.y + gap;
+  save_scroll_box.height = main.height - 4 * gap;
+  save_scroll_box.width  = main.width - 2 * gap;
 
   current = {main.point.x + gap, main.point.y + gap};
 
+  /* Refresh elements for the Save scroll box */
   std::vector<Frame*> save_frames;
   save_scroll_box.clearElements();
 
@@ -2692,10 +2702,19 @@ void Menu::renderSave()
 
     current.y += save.location.height + gap;
 
-    save_frames.push_back(save.createRenderFrame(renderer));
+    if(!save.getFlag(SaveState::EMPTY))
+    {
+      auto new_frame = save.createRenderFrame(renderer);
+
+      if(new_frame)
+        save_frames.push_back(new_frame);
+      else
+        std::cerr << "[Error] Creating render frame for Save file." << std::endl;
+    }
   }
 
   save_scroll_box.setElements(save_frames);
+
   save_scroll_box.render(renderer);
 }
 

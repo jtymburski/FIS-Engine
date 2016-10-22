@@ -337,6 +337,8 @@ Frame* Save::createRenderFrame(SDL_Renderer* renderer)
     auto save_frame = new Frame();
     save_frame->setTexture(texture);
 
+    save_frame->render(renderer);
+
     return save_frame;
   }
 

@@ -348,6 +348,14 @@ Flavour* Bubby::getType()
   return type;
 }
 
+std::string Bubby::getName()
+{
+  if(type)
+    return type->getName();
+
+  return "";
+}
+
 /*
  * Description: Returns the total experience earned by the Bubby
  *
@@ -387,4 +395,9 @@ uint32_t Bubby::getValue()
     return type->getValue(tier);
 
   return 0;
+}
+
+void Bubby::setGameID(int32_t id)
+{
+  this->game_id = id;
 }

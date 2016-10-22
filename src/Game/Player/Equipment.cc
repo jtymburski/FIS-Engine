@@ -1,4 +1,4 @@
-F/*******************************************************************************
+/*******************************************************************************
  * Class Name: Equipment [Implementation]
  * Date Created: Decmber 14, 2013
  * Inheritance: Item
@@ -200,10 +200,10 @@ EquipSlots Equipment::getEquipSlot()
  * Inputs: none
  * Output: Signature* - pointer to the signature object
  */
-Signature* Equipment::getSignature()
-{
-  return equip_signature;
-}
+//Signature* Equipment::getSignature()
+//{
+//  return equip_signature;
+//}
 
 /*
  * Description: Returns a combined SkillSet object of the base SkillSet for the
