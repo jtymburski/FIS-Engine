@@ -65,6 +65,7 @@ protected:
   std::string description;
   int id;
   std::string name;
+  std::string name_display;
   bool visible;
   float x;
   float y;
@@ -409,6 +410,7 @@ public:
 
   /* Sets the things name */
   void setName(std::string new_name);
+  void setNameDisplay(std::string new_name);
 
   /* Sets the sound ID reference. Less than 0 unsets */
   void setSoundID(int32_t id);

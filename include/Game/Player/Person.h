@@ -103,6 +103,7 @@ private:
 
   /* Person's string name */
   std::string name;
+  std::string name_display;
 
   /* Rank of the Person */
   Rank rank;
@@ -327,6 +328,7 @@ public:
 
   /* Returns the string name */
   std::string getName() const;
+  std::string getNameDisplay() const;
 
   /* Returns the enumerated rank of the Person */
   Rank getRank();
@@ -456,6 +458,7 @@ public:
 
   /* Assigns the name of the person */
   void setName(std::string name);
+  void setNameDisplay(std::string name_display);
 
   /* Assigns a new race class */
   void setRace(Category* const category);

@@ -848,6 +848,14 @@ Sprite* BattleActor::getActiveSprite()
   return nullptr;
 }
 
+std::string BattleActor::getDisplayName()
+{
+  if(person_base)
+  {
+    auto display_name = person_base->getNameDisplay();
+  }
+}
+
 std::vector<ActionType> BattleActor::getValidActionTypes()
 {
   resetActionTypes();

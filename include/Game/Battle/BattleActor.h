@@ -353,6 +353,9 @@ public:
   /* Returns a pointer to the active sprite based on the ActiveSprite enum */
   Sprite* getActiveSprite();
 
+  /* Get the Actor's Visible Display Name (ex. Reverdile A, Reverdile B, etc.) */
+  std::string getDisplayName();
+
   /* Returns a vector of valid action types for the actor */
   std::vector<ActionType> getValidActionTypes();
 

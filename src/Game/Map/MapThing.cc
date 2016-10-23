@@ -10,6 +10,7 @@
  *              this class since its a generic parent.
  * Notes: Any private or protected function do not ensure sprite_set is not
  *        NULL or necessarily in range.
+ * TODO: Save/Load DisplayName [10-25-16]
  *****************************************************************************/
 #include "Game/Map/MapThing.h"
 
@@ -56,6 +57,7 @@ MapThing::MapThing(int id, std::string name, std::string description)
   setDescription(description);
   setID(id);
   setName(name);
+  setNameDisplay(name); //TODO: Display name additional parameter?
 }
 
 /*
@@ -2598,6 +2600,17 @@ void MapThing::setMovementPaused(bool paused)
 void MapThing::setName(std::string new_name)
 {
   name = new_name;
+}
+
+/*
+ * Description: Sets the display name for the thing.
+ *
+ * Inputs: std::string new_name - the new name for the thing
+ * Output: none
+ */
+void MapThing::setNameDisplay(std::string new_name)
+{
+  name_display = new_name;
 }
 
 /*

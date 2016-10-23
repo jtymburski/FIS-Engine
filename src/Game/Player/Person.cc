@@ -1402,6 +1402,11 @@ std::string Person::getName() const
   return name;
 }
 
+std::string Person::getNameDisplay() const
+{
+  return name_display;
+}
+
 /*
  * Description: Returns the enumerated rank of the Person
  *
@@ -2048,6 +2053,11 @@ bool Person::setLoot(const uint32_t& new_credit_drop,
 void Person::setName(std::string name)
 {
   this->name = name;
+}
+
+void Person::setNameDisplay(std::string name)
+{
+  this->name_display = name;
 }
 
 /*
