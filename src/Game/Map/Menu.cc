@@ -1054,8 +1054,8 @@ void Menu::renderExtraAttributes(Coordinate start, int32_t gap)
         texture = buildAttributeFrame(Attribute::UNBR, width, height);
       else if(i == 1)
         texture = buildAttributeFrame(Attribute::LIMB, width, height);
-      else if(i == 2)
-        texture = buildAttributeFrame(Attribute::MMNT, width, height);
+      // else if(i == 2)
+      //   texture = buildAttributeFrame(Attribute::MMNT, width, height);
 
       if(texture)
       {
@@ -1109,8 +1109,8 @@ SDL_Texture* Menu::buildAttributeFrame(Attribute attr, uint32_t width,
         t_name.setText(renderer, "Unbearability: ", kCOLOR_TEXT);
       else if(attr == Attribute::LIMB)
         t_name.setText(renderer, "Limbertude: ", kCOLOR_TEXT);
-      else if(attr == Attribute::MMNT)
-        t_name.setText(renderer, "Momentum: ", kCOLOR_TEXT);
+      // else if(attr == Attribute::MMNT)
+      //   t_name.setText(renderer, "Momentum: ", kCOLOR_TEXT);
 
       std::string value_str =
           std::to_string(actor->getStatsRendered().getValue(attr));
@@ -1134,81 +1134,83 @@ SDL_Texture* Menu::buildAttributeFrame(Attribute attr, uint32_t width,
 SDL_Texture* Menu::buildElementFrame(Element elm, uint32_t width,
                                      uint32_t height)
 {
-  auto actor = getCurrentActor();
-
-  if(battle_display_data && renderer && config && actor)
-  {
-    auto frame_element = battle_display_data->getFrameElement(elm);
-    auto stats = actor->getStatsRendered();
-    auto attributes = Helpers::elementToStats(elm);
-
-    // TODO: Element special inset?
-    auto inset = (uint32_t)std::round(width * kSLEUTH_ATTRIBUTE_INSET);
-
-    SDL_Texture* texture =
-        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                          SDL_TEXTUREACCESS_TARGET, width, height);
-    SDL_SetRenderTarget(renderer, texture);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-
-    if(frame_element)
-    {
-      frame_element->render(renderer, inset,
-                            height / 2 - frame_element->getHeight() / 2);
-
-      Text t_name{getFont(FontName::M_ITEM_HEADER)};
-      Text t_atk_title{getFont(FontName::M_VALUE)};
-      Text t_def_title{getFont(FontName::M_VALUE)};
-      Text t_value_atk{getFont(FontName::M_VALUE)};
-      Text t_value_def{getFont(FontName::M_VALUE)};
-      Text t_max{getFont(FontName::M_VALUE)};
-
-      t_max.setText(renderer, "FRT:     9999", kCOLOR_TEXT);
-
-      t_atk_title.setText(renderer, "AGR: ", kCOLOR_TEXT);
-      t_def_title.setText(renderer, "FRT: ", kCOLOR_TEXT);
-
-      std::string value_atk_str =
-          std::to_string(stats.getValue(attributes.second));
-      std::string value_def_str =
-          std::to_string(stats.getValue(attributes.second));
-
-      t_value_atk.setText(renderer, value_atk_str, kCOLOR_TEXT);
-      t_value_def.setText(renderer, value_def_str, kCOLOR_TEXT);
-
-      std::string element_str = Helpers::elementToDisplayString(elm);
-      std::transform(element_str.begin(), element_str.end(),
-                     element_str.begin(), ::toupper);
-
-      t_name.setText(renderer, element_str, kCOLOR_TEXT);
-      t_value_atk.setText(renderer, value_atk_str, kCOLOR_TEXT);
-      t_value_def.setText(renderer, value_def_str, kCOLOR_TEXT);
-
-      auto text_x = 2 * inset + frame_element->getWidth();
-      t_name.render(renderer, text_x, 1);
-      t_atk_title.render(renderer, text_x, height - t_value_atk.getHeight());
-
-      auto atk_value_x = text_x + t_max.getWidth() - t_value_atk.getWidth();
-      t_value_atk.render(renderer, atk_value_x,
-                         height - t_value_atk.getHeight());
-
-      auto def_value_title_x =
-          text_x + t_max.getWidth() + t_def_title.getWidth() / 4;
-      t_def_title.render(renderer, def_value_title_x,
-                         height - t_def_title.getHeight());
-
-      auto def_value_x =
-          def_value_title_x + t_max.getWidth() - t_value_def.getWidth();
-      t_value_def.render(renderer, def_value_x,
-                         height - t_value_def.getHeight());
-    }
-
-    SDL_SetRenderTarget(renderer, nullptr);
-    return texture;
-  }
-
   return nullptr;
+  // auto actor = getCurrentActor();
+
+  // if(battle_display_data && renderer && config && actor)
+  // {
+  //   auto frame_element = battle_display_data->getFrameElement(elm);
+  //   auto stats = actor->getStatsRendered();
+    
+  //   //auto attributes = Helpers::elementToStats(elm);
+
+  //   // TODO: Element special inset?
+  //   auto inset = (uint32_t)std::round(width * kSLEUTH_ATTRIBUTE_INSET);
+
+  //   SDL_Texture* texture =
+  //       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+  //                         SDL_TEXTUREACCESS_TARGET, width, height);
+  //   SDL_SetRenderTarget(renderer, texture);
+  //   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  //   SDL_RenderClear(renderer);
+
+  //   if(frame_element)
+  //   {
+  //     frame_element->render(renderer, inset,
+  //                           height / 2 - frame_element->getHeight() / 2);
+
+  //     Text t_name{getFont(FontName::M_ITEM_HEADER)};
+  //     Text t_atk_title{getFont(FontName::M_VALUE)};
+  //     Text t_def_title{getFont(FontName::M_VALUE)};
+  //     Text t_value_atk{getFont(FontName::M_VALUE)};
+  //     Text t_value_def{getFont(FontName::M_VALUE)};
+  //     Text t_max{getFont(FontName::M_VALUE)};
+
+  //     t_max.setText(renderer, "FRT:     9999", kCOLOR_TEXT);
+
+  //     t_atk_title.setText(renderer, "AGR: ", kCOLOR_TEXT);
+  //     t_def_title.setText(renderer, "FRT: ", kCOLOR_TEXT);
+
+  //     std::string value_atk_str =
+  //         std::to_string(stats.getValue(attributes.second));
+  //     std::string value_def_str =
+  //         std::to_string(stats.getValue(attributes.second));
+
+  //     t_value_atk.setText(renderer, value_atk_str, kCOLOR_TEXT);
+  //     t_value_def.setText(renderer, value_def_str, kCOLOR_TEXT);
+
+  //     std::string element_str = Helpers::elementToDisplayString(elm);
+  //     std::transform(element_str.begin(), element_str.end(),
+  //                    element_str.begin(), ::toupper);
+
+  //     t_name.setText(renderer, element_str, kCOLOR_TEXT);
+  //     t_value_atk.setText(renderer, value_atk_str, kCOLOR_TEXT);
+  //     t_value_def.setText(renderer, value_def_str, kCOLOR_TEXT);
+
+  //     auto text_x = 2 * inset + frame_element->getWidth();
+  //     t_name.render(renderer, text_x, 1);
+  //     t_atk_title.render(renderer, text_x, height - t_value_atk.getHeight());
+
+  //     auto atk_value_x = text_x + t_max.getWidth() - t_value_atk.getWidth();
+  //     t_value_atk.render(renderer, atk_value_x,
+  //                        height - t_value_atk.getHeight());
+
+  //     auto def_value_title_x =
+  //         text_x + t_max.getWidth() + t_def_title.getWidth() / 4;
+  //     t_def_title.render(renderer, def_value_title_x,
+  //                        height - t_def_title.getHeight());
+
+  //     auto def_value_x =
+  //         def_value_title_x + t_max.getWidth() - t_value_def.getWidth();
+  //     t_value_def.render(renderer, def_value_x,
+  //                        height - t_value_def.getHeight());
+  //   }
+
+  //   SDL_SetRenderTarget(renderer, nullptr);
+  //   return texture;
+  // }
+
+  // return nullptr;
 }
 
 void Menu::renderBubbies()

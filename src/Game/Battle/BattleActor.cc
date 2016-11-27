@@ -11,11 +11,11 @@
 *
 * See .h file for TODOs
 ******************************************************************************/
+#include "Game/Battle/BattleActor.h"
 #include "Game/Battle/AIModule.h"
+#include "Game/Battle/BattleStats.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Person.h"
-#include "Game/Battle/BattleActor.h"
-#include "Game/Battle/BattleStats.h"
 
 /*=============================================================================
  * CONSTANTS
@@ -127,11 +127,14 @@ BattleActor::~BattleActor()
  */
 void BattleActor::battleSetup(bool is_ally, bool can_run)
 {
-  auto equip_stats = person_base->calcEquipStats();
+  /* Calculate the Signature statistics */
+  // auto sig_stats = person_base->calcSignatureStats();
+  // TOOD [10-08-16] Implement Personal Signature
+
   auto curr_stats = person_base->getCurr();
 
-  stats_actual = BattleStats(equip_stats, curr_stats);
-  stats_rendered = BattleStats(equip_stats, curr_stats);
+  stats_actual = BattleStats(curr_stats, curr_stats);
+  stats_rendered = BattleStats(curr_stats, curr_stats);
 
   /* If the person's current VITA is >0, they are not KO'd */
   if(person_base->getCurr().getStat(Attribute::VITA) > 0)
@@ -285,8 +288,7 @@ void BattleActor::createSprites()
 
     if(person_base->getSpriteFoe())
     {
-      sprite_foe =
-          new Sprite(*(person_base->getSpriteFoe()));
+      sprite_foe = new Sprite(*(person_base->getSpriteFoe()));
     }
     if(person_base->getSpriteFoeDefensive())
     {
@@ -454,7 +456,8 @@ void BattleActor::addAilment(Infliction type, int32_t min_turns,
                              int32_t max_turns, double chance)
 {
   auto new_ailment =
-      new Ailment(type, &stats_actual, min_turns, max_turns, chance);
+      new Ailment(type, &stats_actual, person_base->getPrimary(),
+                  person_base->getSecondary(), min_turns, max_turns, chance);
 
   if(Ailment::getClassOfInfliction(type) == AilmentClass::BUFF)
     new_ailment->applyBuffs();
@@ -697,12 +700,10 @@ bool BattleActor::removeAilment(Ailment* remove_ailment)
     if(ail_class == AilmentClass::BUFF)
       stats_actual.removeLinked(remove_ailment);
 
-    ailments.erase(std::remove_if(ailments.begin(), ailments.end(),
-                                  [&](Ailment* a) -> bool
-                                  {
-                                    return a == remove_ailment;
-                                  }),
-                   ailments.end());
+    ailments.erase(
+        std::remove_if(ailments.begin(), ailments.end(),
+                       [&](Ailment* a) -> bool { return a == remove_ailment; }),
+        ailments.end());
 
     return true;
   }
@@ -851,9 +852,9 @@ Sprite* BattleActor::getActiveSprite()
 std::string BattleActor::getDisplayName()
 {
   if(person_base)
-  {
     auto display_name = person_base->getNameDisplay();
-  }
+
+  return "";
 }
 
 std::vector<ActionType> BattleActor::getValidActionTypes()
@@ -1105,10 +1106,9 @@ void BattleActor::setActiveSprite(ActiveSprite new_active_sprite)
     sprite_foe_offensive->setNumLoops(1);
     sprite_foe_offensive->resetLoops();
   }
-  else if(active_sprite == ActiveSprite::FOE_DEFENSIVE &&
-          sprite_ally_defensive)
+  else if(active_sprite == ActiveSprite::FOE_DEFENSIVE && sprite_ally_defensive)
   {
-    //sprite_ally_defensive->setFreezeAtTail(true);
+    // sprite_ally_defensive->setFreezeAtTail(true);
     sprite_foe_defensive->setNumLoops(1);
     sprite_foe_defensive->resetLoops();
   }

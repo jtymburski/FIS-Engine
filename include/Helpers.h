@@ -274,8 +274,8 @@ public:
 
   /*===================== PLAYER HELPER FUNCTIONS ============================*/
 public:
-  /* Returns the pair of off/def attributes corresponding to an element */
-  static std::pair<Attribute, Attribute> elementToStats(const Element& element);
+  // /* Returns the pair of off/def attributes corresponding to an element */
+  // static std::pair<Attribute, Attribute> elementToStats(const Element& element);
 
   /* Returns the elemental strength to a given element */
   static Element getStrength(const Element& element);

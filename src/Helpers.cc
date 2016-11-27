@@ -571,42 +571,52 @@ std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
       return "VITA";
     else if(attribute == Attribute::QTDR)
       return "QTDR";
-    else if(attribute == Attribute::PHAG)
-      return "PHAG";
-    else if(attribute == Attribute::PHFD)
-      return "PHFD";
-    else if(attribute == Attribute::THAG)
-      return "THAG";
-    else if(attribute == Attribute::THFD)
-      return "THFD";
+    // else if(attribute == Attribute::PHAG)
+    //   return "PHAG";
+    // else if(attribute == Attribute::PHFD)
+    //   return "PHFD";
+    // else if(attribute == Attribute::THAG)
+    //   return "THAG";
+    // else if(attribute == Attribute::THFD)
+    //   return "THFD";
+    // else if(attribute == Attribute::PRAG)
+    //   return "PRAG";
+    // else if(attribute == Attribute::PRFD)
+    //   return "PRFD";
+    // else if(attribute == Attribute::POAG)
+    //   return "POAG";
+    // else if(attribute == Attribute::POFD)
+    //   return "POFD";
+    // else if(attribute == Attribute::CHAG)
+    //   return "CHAG";
+    // else if(attribute == Attribute::CHFD)
+    //   return "CHFD";
+    // else if(attribute == Attribute::CYAG)
+    //   return "CYAG";
+    // else if(attribute == Attribute::CYFD)
+    //   return "CYFD";
+    // else if(attribute == Attribute::NIAG)
+    //   return "NIAG";
+    // else if(attribute == Attribute::NIFD)
+    //   return "NIFD";
     else if(attribute == Attribute::PRAG)
       return "PRAG";
     else if(attribute == Attribute::PRFD)
       return "PRFD";
-    else if(attribute == Attribute::POAG)
-      return "POAG";
-    else if(attribute == Attribute::POFD)
-      return "POFD";
-    else if(attribute == Attribute::CHAG)
-      return "CHAG";
-    else if(attribute == Attribute::CHFD)
-      return "CHFD";
-    else if(attribute == Attribute::CYAG)
-      return "CYAG";
-    else if(attribute == Attribute::CYFD)
-      return "CYFD";
-    else if(attribute == Attribute::NIAG)
-      return "NIAG";
-    else if(attribute == Attribute::NIFD)
-      return "NIFD";
-    else if(attribute == Attribute::MMNT)
-      return "MMNT";
+    else if(attribute == Attribute::SEAG)
+      return "SEAG";
+    else if(attribute == Attribute::SEFD)
+      return "SEFD";
+    // else if(attribute == Attribute::MMNT)
+    //   return "MMNT";
     else if(attribute == Attribute::LIMB)
       return "LIMB";
     else if(attribute == Attribute::UNBR)
       return "UNBR";
-    else if(attribute == Attribute::MANN)
-      return "MANN";
+    // else if(attribute == Attribute::MANN)
+    //   return "MANN";
+    else if(attribute == Attribute::WILL)
+      return "WILL";
   }
   /* Else long form - description */
   else
@@ -615,42 +625,52 @@ std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
       return "Vitality - hit points, when 0 character is incapacitated";
     else if(attribute == Attribute::QTDR)
       return "Quantum Drive - skill cost currency";
-    else if(attribute == Attribute::PHAG)
-      return "Physical Aggression - non-elemental attack statistic";
-    else if(attribute == Attribute::PHFD)
-      return "Physical Fortitude - non-elemental defense statistic";
-    else if(attribute == Attribute::THAG)
-      return "Thermal Aggression - fire-elemental attack statistic";
-    else if(attribute == Attribute::THFD)
-      return "Thermal Fortitude - fire-elemental defense statistic";
+    // else if(attribute == Attribute::PHAG)
+    //   return "Physical Aggression - non-elemental attack statistic";
+    // else if(attribute == Attribute::PHFD)
+    //   return "Physical Fortitude - non-elemental defense statistic";
+    // else if(attribute == Attribute::THAG)
+    //   return "Thermal Aggression - fire-elemental attack statistic";
+    // else if(attribute == Attribute::THFD)
+    //   return "Thermal Fortitude - fire-elemental defense statistic";
+    // else if(attribute == Attribute::PRAG)
+    //   return "Primal Aggression - forest-elemental attack statistic";
+    // else if(attribute == Attribute::PRFD)
+    //   return "Primal Fortitude - forest-elemental defense statistic";
+    // else if(attribute == Attribute::POAG)
+    //   return "Polar Aggression - ice-elemental attack statistic";
+    // else if(attribute == Attribute::POFD)
+    //   return "Polar Fortitude - ice-elemental defense statistic";
+    // else if(attribute == Attribute::CHAG)
+    //   return "Charged Aggression - electric-elemental attack statistic";
+    // else if(attribute == Attribute::CHFD)
+    //   return "Charged Fortitude - electric-elemental defense statistic";
+    // else if(attribute == Attribute::CYAG)
+    //   return "Cybernetic Aggression - digital-elemental attack statistic";
+    // else if(attribute == Attribute::CYFD)
+    //   return "Cybernetic Fortitude - digital-elemental defense statistic";
+    // else if(attribute == Attribute::NIAG)
+    //   return "Nihil Aggression - void-elemental attack statistic";
+    // else if(attribute == Attribute::NIFD)
+    //   return "Nihil Fortitude - void-elemental defense statistic";
+    // else if(attribute == Attribute::MMNT)
+    //   return "Momentum - speed, in relation to turn order and action order";
     else if(attribute == Attribute::PRAG)
-      return "Primal Aggression - forest-elemental attack statistic";
+      return "Primary Aggression - Primary Elemental attack";
     else if(attribute == Attribute::PRFD)
-      return "Primal Fortitude - forest-elemental defense statistic";
-    else if(attribute == Attribute::POAG)
-      return "Polar Aggression - ice-elemental attack statistic";
-    else if(attribute == Attribute::POFD)
-      return "Polar Fortitude - ice-elemental defense statistic";
-    else if(attribute == Attribute::CHAG)
-      return "Charged Aggression - electric-elemental attack statistic";
-    else if(attribute == Attribute::CHFD)
-      return "Charged Fortitude - electric-elemental defense statistic";
-    else if(attribute == Attribute::CYAG)
-      return "Cybernetic Aggression - digital-elemental attack statistic";
-    else if(attribute == Attribute::CYFD)
-      return "Cybernetic Fortitude - digital-elemental defense statistic";
-    else if(attribute == Attribute::NIAG)
-      return "Nihil Aggression - void-elemental attack statistic";
-    else if(attribute == Attribute::NIFD)
-      return "Nihil Fortitude - void-elemental defense statistic";
-    else if(attribute == Attribute::MMNT)
-      return "Momentum - speed, in relation to turn order and action order";
+      return "Primary Fortitude - Primary Elemental defense";
+    else if(attribute == Attribute::SEAG)
+      return "Secondary Aggression - Secondary Elemental attack";
+    else if(attribute == Attribute::SEFD)
+      return "Secondary Fortitutde - Secondary Elemental defense";
     else if(attribute == Attribute::LIMB)
-      return "Limbertude - dodge chance in avoiding attacks/ActionScope";
+      return "Limbertude - dodge chance in avoiding attacks";
     else if(attribute == Attribute::UNBR)
-      return "Unbearability - critical hit chance, increase base dmg by factor";
-    else if(attribute == Attribute::MANN)
-      return "Manna - luck which has various effects on outcomes/earnings etc.";
+      return "Unbearability - critical hit chance";
+    else if(attribute == Attribute::WILL)
+      return "Will - various luck effect on outcome of Battle events";
+    // else if(attribute == Attribute::MANN)
+    //   return "Manna - luck which has various effects on outcomes/earnings etc.";
   }
   return "";
 }
@@ -1489,25 +1509,25 @@ std::string Helpers::victoryStateToStr(VictoryState victory_state)
  * Inputs: element - Enumerated element type to find attributes for
  * Output: std::pair<Attr, Attr> - the corresponding off/def enumerated attrs.
  */
-std::pair<Attribute, Attribute> Helpers::elementToStats(const Element& element)
-{
-  if(element == Element::PHYSICAL)
-    return std::make_pair(Attribute::PHAG, Attribute::PHFD);
-  else if(element == Element::FIRE)
-    return std::make_pair(Attribute::THAG, Attribute::THFD);
-  else if(element == Element::FOREST)
-    return std::make_pair(Attribute::PRAG, Attribute::PRFD);
-  else if(element == Element::ICE)
-    return std::make_pair(Attribute::POAG, Attribute::POFD);
-  else if(element == Element::ELECTRIC)
-    return std::make_pair(Attribute::CHAG, Attribute::CHFD);
-  else if(element == Element::DIGITAL)
-    return std::make_pair(Attribute::CYAG, Attribute::CYFD);
-  else if(element == Element::NIHIL)
-    return std::make_pair(Attribute::NIAG, Attribute::NIFD);
+// std::pair<Attribute, Attribute> Helpers::elementToStats(const Element& element)
+// {
+//   if(element == Element::PHYSICAL)
+//     return std::make_pair(Attribute::PHAG, Attribute::PHFD);
+//   else if(element == Element::FIRE)
+//     return std::make_pair(Attribute::THAG, Attribute::THFD);
+//   else if(element == Element::FOREST)
+//     return std::make_pair(Attribute::PRAG, Attribute::PRFD);
+//   else if(element == Element::ICE)
+//     return std::make_pair(Attribute::POAG, Attribute::POFD);
+//   else if(element == Element::ELECTRIC)
+//     return std::make_pair(Attribute::CHAG, Attribute::CHFD);
+//   else if(element == Element::DIGITAL)
+//     return std::make_pair(Attribute::CYAG, Attribute::CYFD);
+//   else if(element == Element::NIHIL)
+//     return std::make_pair(Attribute::NIAG, Attribute::NIFD);
 
-  return std::make_pair(Attribute::NONE, Attribute::NONE);
-}
+//   return std::make_pair(Attribute::NONE, Attribute::NONE);
+//}
 
 /*
  * Description: Determines and returns the element which a given element is

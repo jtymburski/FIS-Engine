@@ -394,7 +394,7 @@ bool Victory::update(int32_t cycle_time)
 
         if(victory_actor.orig_lvl == base->getLevel())
         {
-          auto equip_stats = base->calcEquipStats();
+          //auto equip_stats = base->calcEquipStats();
           auto max_health = (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
           auto curr_health = actor->getStats().getBaseValue(Attribute::VITA);
           auto max_qtdr = (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);

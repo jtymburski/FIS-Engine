@@ -38,8 +38,8 @@ std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
     std::stable_sort(begin(actions), end(actions), Helpers::CompItemFirst());
   else if(buffer_sorts == BufferSorts::SKILL_FIRST)
     std::stable_sort(begin(actions), end(actions), Helpers::CompSkillFirst());
-  else if(buffer_sorts == BufferSorts::MOMENTUM)
-    std::stable_sort(begin(actions), end(actions), Helpers::CompMomentum());
+  else if(buffer_sorts == BufferSorts::LIMBERTUDE)
+    std::stable_sort(begin(actions), end(actions), Helpers::CompLimbertude());
 
   return actions;
 }
@@ -238,7 +238,7 @@ void Buffer::print(bool simple)
         std::cout << "User: " << element.user->getBasePerson()->getName()
                   << "\n";
         std::cout << "User Speed: "
-                  << element.user->getStats().getValue(Attribute::MMNT) << "\n";
+                  << element.user->getStats().getValue(Attribute::LIMB) << "\n";
       }
 
       for(const auto& target : element.targets)
@@ -372,8 +372,8 @@ void Buffer::reorder()
             [&](const BufferAction& a, const BufferAction& b) -> bool
             {
 
-              return (a.user->getStats().getValue(Attribute::MMNT) >=
-                      b.user->getStats().getValue(Attribute::MMNT));
+              return (a.user->getStats().getValue(Attribute::LIMB) >=
+                      b.user->getStats().getValue(Attribute::LIMB));
             });
 
   sorted = true;

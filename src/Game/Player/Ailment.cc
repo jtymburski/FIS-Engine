@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 * Class Name: Ailment
 * Date Created: March 6th, 2013
@@ -70,12 +71,15 @@ Ailment::Ailment(Infliction type, BattleStats* stats_victim)
       max_turns_left{0},
       total_turns{0},
       type{type},
-      update_status{AilmentStatus::INCOMPLETE}
+      update_status{AilmentStatus::INCOMPLETE},
+      victim_prim{Element::NONE},
+      victim_secd{Element::NONE}
 {
   ailment_class = getClassOfInfliction(type);
 }
 
-Ailment::Ailment(Infliction type, BattleStats* stats_victim, uint32_t min_turns,
+Ailment::Ailment(Infliction type, BattleStats* stats_victim,
+                 Element victim_prim, Element victim_secd, uint32_t min_turns,
                  uint32_t max_turns, double chance)
     : Ailment(type, stats_victim)
 {
@@ -85,6 +89,8 @@ Ailment::Ailment(Infliction type, BattleStats* stats_victim, uint32_t min_turns,
   setFlag(AilState::CURABLE_TIME, true);
   setFlag(AilState::CURABLE_KO, true);
   setFlag(AilState::CURABLE_DEATH, true);
+  this->victim_prim = victim_prim;
+  this->victim_secd = victim_secd;
 }
 
 /*=============================================================================
@@ -218,60 +224,124 @@ bool Ailment::applyBuffs()
   if(type == Infliction::ALLATKBUFF)
   {
     value = kPC_ALL_ATK_BUFF;
-    stats_to_buff = AttributeSet::getAllOffensive();
+    stats_to_buff.push_back(Attribute::PRAG);
+    stats_to_buff.push_back(Attribute::SEAG);
   }
   else if(type == Infliction::ALLDEFBUFF)
   {
     value = kPC_ALL_DEF_BUFF;
-    stats_to_buff = AttributeSet::getAllDefensive();
+    stats_to_buff.push_back(Attribute::PRFD);
+    stats_to_buff.push_back(Attribute::SEFD);
   }
   else if(type == Infliction::PHYBUFF)
   {
     value = kPC_PHYS_BUFF;
-    stats_to_buff.push_back(Attribute::PHAG);
-    stats_to_buff.push_back(Attribute::PHFD);
+
+    if(victim_prim == Element::PHYSICAL)
+    {
+      stats_to_buff.push_back(Attribute::PRAG);
+      stats_to_buff.push_back(Attribute::PRFD);
+    }
+    else if(victim_secd == Element::PHYSICAL)
+    {
+      stats_to_buff.push_back(Attribute::SEAG);
+      stats_to_buff.push_back(Attribute::SEFD);
+    }
   }
   else if(type == Infliction::THRBUFF)
   {
     value = kPC_ELEMENTAL_BUFF;
-    stats_to_buff.push_back(Attribute::THAG);
-    stats_to_buff.push_back(Attribute::THFD);
+
+    if(victim_prim == Element::FIRE)
+    {
+      stats_to_buff.push_back(Attribute::PRAG);
+      stats_to_buff.push_back(Attribute::PRFD);
+    }
+    else if(victim_secd == Element::FIRE)
+    {
+      stats_to_buff.push_back(Attribute::SEAG);
+      stats_to_buff.push_back(Attribute::SEFD);
+    }
   }
   else if(type == Infliction::POLBUFF)
   {
     value = kPC_ELEMENTAL_BUFF;
-    stats_to_buff.push_back(Attribute::POAG);
-    stats_to_buff.push_back(Attribute::POFD);
+
+    if(victim_prim == Element::ICE)
+    {
+      stats_to_buff.push_back(Attribute::PRAG);
+      stats_to_buff.push_back(Attribute::PRFD);
+    }
+    else if(victim_secd == Element::ICE)
+    {
+      stats_to_buff.push_back(Attribute::SEAG);
+      stats_to_buff.push_back(Attribute::SEFD);
+    }
   }
   else if(type == Infliction::PRIBUFF)
   {
     value = kPC_ELEMENTAL_BUFF;
-    stats_to_buff.push_back(Attribute::PRAG);
-    stats_to_buff.push_back(Attribute::PRFD);
+
+    if(victim_prim == Element::FOREST)
+    {
+      stats_to_buff.push_back(Attribute::PRAG);
+      stats_to_buff.push_back(Attribute::PRFD);
+    }
+    else if(victim_secd == Element::FOREST)
+    {
+      stats_to_buff.push_back(Attribute::SEAG);
+      stats_to_buff.push_back(Attribute::SEFD);
+    }
   }
   else if(type == Infliction::CHGBUFF)
   {
     value = kPC_ELEMENTAL_BUFF;
-    stats_to_buff.push_back(Attribute::CHAG);
-    stats_to_buff.push_back(Attribute::CHFD);
+
+    if(victim_prim == Element::ELECTRIC)
+    {
+      stats_to_buff.push_back(Attribute::PRAG);
+      stats_to_buff.push_back(Attribute::PRFD);
+    }
+    else if(victim_secd == Element::ELECTRIC)
+    {
+      stats_to_buff.push_back(Attribute::SEAG);
+      stats_to_buff.push_back(Attribute::SEFD);
+    }
   }
   else if(type == Infliction::CYBBUFF)
   {
     value = kPC_ELEMENTAL_BUFF;
-    stats_to_buff.push_back(Attribute::CYAG);
-    stats_to_buff.push_back(Attribute::CYFD);
+
+    if(victim_prim == Element::DIGITAL)
+    {
+      stats_to_buff.push_back(Attribute::PRAG);
+      stats_to_buff.push_back(Attribute::PRFD);
+    }
+    else if(victim_secd == Element::DIGITAL)
+    {
+      stats_to_buff.push_back(Attribute::SEAG);
+      stats_to_buff.push_back(Attribute::SEFD);
+    }
   }
   else if(type == Infliction::NIHBUFF)
   {
     value = kPC_ELEMENTAL_BUFF;
-    stats_to_buff.push_back(Attribute::NIAG);
-    stats_to_buff.push_back(Attribute::NIFD);
+
+    if(victim_prim == Element::NIHIL)
+    {
+      stats_to_buff.push_back(Attribute::PRAG);
+      stats_to_buff.push_back(Attribute::PRFD);
+    }
+    else if(victim_secd == Element::NIHIL)
+    {
+      stats_to_buff.push_back(Attribute::SEAG);
+      stats_to_buff.push_back(Attribute::SEFD);
+    }
   }
   else if(type == Infliction::LIMBUFF)
   {
     value = kPC_LIMB_BUFF;
     stats_to_buff.push_back(Attribute::LIMB);
-    stats_to_buff.push_back(Attribute::MMNT);
   }
   else if(type == Infliction::UNBBUFF)
   {

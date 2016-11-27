@@ -82,12 +82,12 @@ struct CompProbability
   }
 };
 
-struct CompMomentum
+struct CompLimbertude
 {
   template <class T> bool operator()(const T& a, const T& b) const
   {
-    return a.user->getStats().getValue(Attribute::MMNT) >
-           b.user->getStats().getValue(Attribute::MMNT);
+    return a.user->getStats().getValue(Attribute::LIMB) >
+           b.user->getStats().getValue(Attribute::LIMB);
   }
 };
 

@@ -25,7 +25,7 @@ enum class BufferSorts
 {
   ITEM_FIRST,
   SKILL_FIRST,
-  MOMENTUM,
+  LIMBERTUDE,
   NONE
 };
 

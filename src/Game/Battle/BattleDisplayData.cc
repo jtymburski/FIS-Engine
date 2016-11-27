@@ -230,8 +230,8 @@ void BattleDisplayData::buildFramesAttributes()
                         "sprites/Overlay/Menu/Unbearability.png");
   setFrameAttribute(Attribute::LIMB, config->getBasePath() +
                                          "sprites/Overlay/Menu/Limbertude.png");
-  setFrameAttribute(Attribute::MMNT, config->getBasePath() +
-                                         "sprites/Overlay/Menu/Momentum.png");
+  // setFrameAttribute(Attribute::MMNT, config->getBasePath() +
+  //                                        "sprites/Overlay/Menu/Momentum.png");
 }
 
 void BattleDisplayData::buildFramesElements()

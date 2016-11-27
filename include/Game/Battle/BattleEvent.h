@@ -234,8 +234,8 @@ private:
   int32_t calcLevelDifference();
 
   /* Calculation sub-functiosn for damage calculations */
-  int32_t calcValPhysPow();
-  int32_t calcValPhysDef(BattleStats target_stats);
+  // int32_t calcValPhysPow();
+  // int32_t calcValPhysDef(BattleStats target_stats);
   int32_t calcValPrimAtk(Skill* curr_skill);
   int32_t calcValPrimDef(Skill* curr_skill, BattleStats target_stats);
   int32_t calcValSecdAtk(Skill* curr_skill);

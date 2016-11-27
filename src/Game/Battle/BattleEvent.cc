@@ -149,30 +149,32 @@ BattleEvent::BattleEvent(ActionType type, BattleActor* actor) : BattleEvent()
 void BattleEvent::calcActionVariables()
 {
   auto curr_skill = getCurrSkill();
-  auto prim = Helpers::elementToStats(Element::PHYSICAL);
-  auto secd = Helpers::elementToStats(Element::PHYSICAL);
 
-  if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
-  {
-    prim = Helpers::elementToStats(curr_skill->getPrimary());
-    secd = Helpers::elementToStats(curr_skill->getSecondary());
-  }
-  else if(action_type == ActionType::IMPLODE)
-  {
-    prim = Helpers::elementToStats(actor->getBasePerson()->getPrimary());
-    secd = Helpers::elementToStats(actor->getBasePerson()->getSecondary());
-  }
 
-  attr_prio = prim.first;
-  attr_prid = prim.second;
-  attr_seco = secd.first;
-  attr_secd = secd.second;
+  // auto prim = Helpers::elementToStats(Element::PHYSICAL);
+  // auto secd = Helpers::elementToStats(Element::PHYSICAL);
+
+  // if(action_type == ActionType::SKILL || action_type == ActionType::ITEM)
+  // {
+  //   prim = Helpers::elementToStats(curr_skill->getPrimary());
+  //   secd = Helpers::elementToStats(curr_skill->getSecondary());
+  // }
+  // else if(action_type == ActionType::IMPLODE)
+  // {
+  //   prim = Helpers::elementToStats(actor->getBasePerson()->getPrimary());
+  //   secd = Helpers::elementToStats(actor->getBasePerson()->getSecondary());
+  // }
+
+  // attr_prio = prim.first;
+  // attr_prid = prim.second;
+  // attr_seco = secd.first;
+  // attr_secd = secd.second;
 
   /* User ref. vars rel. to prim/secd skill attributes, -1 if Attr:NONE */
-  auto prim_user_off = temp_user_stats.getValue(attr_prio);
-  auto prim_user_def = temp_user_stats.getValue(attr_prid);
-  auto secd_user_off = temp_user_stats.getValue(attr_seco);
-  auto secd_user_def = temp_user_stats.getValue(attr_secd);
+  auto prim_user_off = temp_user_stats.getValue(Attribute::PRAG);
+  auto prim_user_def = temp_user_stats.getValue(Attribute::PRFD);
+  auto secd_user_off = temp_user_stats.getValue(Attribute::SEAG);
+  auto secd_user_def = temp_user_stats.getValue(Attribute::SEFD);
 
   if(action_type == ActionType::SKILL)
   {
@@ -189,10 +191,10 @@ void BattleEvent::calcActionVariables()
     }
   }
 
-  temp_user_stats.setBaseValue(attr_prio, prim_user_off);
-  temp_user_stats.setBaseValue(attr_prid, prim_user_def);
-  temp_user_stats.setBaseValue(attr_seco, secd_user_off);
-  temp_user_stats.setBaseValue(attr_secd, secd_user_def);
+  temp_user_stats.setBaseValue(Attribute::PRAG, prim_user_off);
+  temp_user_stats.setBaseValue(Attribute::PRFD, prim_user_def);
+  temp_user_stats.setBaseValue(Attribute::SEAG, secd_user_off);
+  temp_user_stats.setBaseValue(Attribute::SEFD, secd_user_def);
 }
 
 void BattleEvent::calcElementalMods(BattleActor* curr_target)
@@ -302,71 +304,71 @@ void BattleEvent::calcIgnoreState()
 
   if(curr_action && curr_skill)
   {
-    auto IG_PHYS_ATK = IgnoreState::IGNORE_PHYS_ATK;
-    auto IG_PHYS_DEF = IgnoreState::IGNORE_PHYS_DEF;
-    auto IG_PRIM_ATK = IgnoreState::IGNORE_PRIM_ATK;
-    auto IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_DEF;
-    auto IG_SECD_ATK = IgnoreState::IGNORE_SECD_ATK;
-    auto IG_SECD_DEF = IgnoreState::IGNORE_SECD_DEF;
-    auto IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_ATK;
-    auto IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_DEF;
+    // auto IG_PHYS_ATK = IgnoreState::IGNORE_PHYS_ATK;
+    // auto IG_PHYS_DEF = IgnoreState::IGNORE_PHYS_DEF;
+    // auto IG_PRIM_ATK = IgnoreState::IGNORE_PRIM_ATK;
+    // auto IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_DEF;
+    // auto IG_SECD_ATK = IgnoreState::IGNORE_SECD_ATK;
+    // auto IG_SECD_DEF = IgnoreState::IGNORE_SECD_DEF;
+    // auto IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_ATK;
+    // auto IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_DEF;
 
-    setFlagIgnore(IG_PHYS_ATK, curr_action->atkFlag(IgnoreFlags::PHYSICAL));
-    setFlagIgnore(IG_PHYS_DEF, curr_action->defFlag(IgnoreFlags::PHYSICAL));
-    setFlagIgnore(IG_LUCK_ATK, curr_action->atkFlag(IgnoreFlags::LUCK));
-    setFlagIgnore(IG_LUCK_DEF, curr_action->defFlag(IgnoreFlags::LUCK));
+    // setFlagIgnore(IG_PHYS_ATK, curr_action->atkFlag(IgnoreFlags::PHYSICAL));
+    // setFlagIgnore(IG_PHYS_DEF, curr_action->defFlag(IgnoreFlags::PHYSICAL));
+    // setFlagIgnore(IG_LUCK_ATK, curr_action->atkFlag(IgnoreFlags::LUCK));
+    // setFlagIgnore(IG_LUCK_DEF, curr_action->defFlag(IgnoreFlags::LUCK));
 
-    if(attr_prio == Attribute::THAG)
-      setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::THERMAL));
-    else if(attr_prio == Attribute::POAG)
-      setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::POLAR));
-    else if(attr_prio == Attribute::PRAG)
-      setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::PRIMAL));
-    else if(attr_prio == Attribute::CHAG)
-      setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::CHARGED));
-    else if(attr_prio == Attribute::CYAG)
-      setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::CYBERNETIC));
-    else if(attr_prio == Attribute::NIAG)
-      setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::NIHIL));
+    // if(attr_prio == Attribute::THAG)
+    //   setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::THERMAL));
+    // else if(attr_prio == Attribute::POAG)
+    //   setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::POLAR));
+    // else if(attr_prio == Attribute::PRAG)
+    //   setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::PRIMAL));
+    // else if(attr_prio == Attribute::CHAG)
+    //   setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::CHARGED));
+    // else if(attr_prio == Attribute::CYAG)
+    //   setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::CYBERNETIC));
+    // else if(attr_prio == Attribute::NIAG)
+    //   setFlagIgnore(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::NIHIL));
 
-    if(attr_prid == Attribute::THFD)
-      setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::THERMAL));
-    else if(attr_prid == Attribute::POFD)
-      setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::POLAR));
-    else if(attr_prid == Attribute::PRFD)
-      setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::PRIMAL));
-    else if(attr_prid == Attribute::CHFD)
-      setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::CHARGED));
-    else if(attr_prid == Attribute::CYFD)
-      setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::CYBERNETIC));
-    else if(attr_prid == Attribute::NIFD)
-      setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::NIHIL));
+    // if(attr_prid == Attribute::THFD)
+    //   setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::THERMAL));
+    // else if(attr_prid == Attribute::POFD)
+    //   setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::POLAR));
+    // else if(attr_prid == Attribute::PRFD)
+    //   setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::PRIMAL));
+    // else if(attr_prid == Attribute::CHFD)
+    //   setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::CHARGED));
+    // else if(attr_prid == Attribute::CYFD)
+    //   setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::CYBERNETIC));
+    // else if(attr_prid == Attribute::NIFD)
+    //   setFlagIgnore(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::NIHIL));
 
-    if(attr_seco == Attribute::THAG)
-      setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::THERMAL));
-    else if(attr_seco == Attribute::POAG)
-      setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::POLAR));
-    else if(attr_seco == Attribute::PRAG)
-      setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::PRIMAL));
-    else if(attr_seco == Attribute::CHAG)
-      setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::CHARGED));
-    else if(attr_seco == Attribute::CYAG)
-      setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::CYBERNETIC));
-    else if(attr_seco == Attribute::NIAG)
-      setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::NIHIL));
+    // if(attr_seco == Attribute::THAG)
+    //   setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::THERMAL));
+    // else if(attr_seco == Attribute::POAG)
+    //   setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::POLAR));
+    // else if(attr_seco == Attribute::PRAG)
+    //   setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::PRIMAL));
+    // else if(attr_seco == Attribute::CHAG)
+    //   setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::CHARGED));
+    // else if(attr_seco == Attribute::CYAG)
+    //   setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::CYBERNETIC));
+    // else if(attr_seco == Attribute::NIAG)
+    //   setFlagIgnore(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::NIHIL));
 
-    if(attr_secd == Attribute::THFD)
-      setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::THERMAL));
-    else if(attr_secd == Attribute::POFD)
-      setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::POLAR));
-    else if(attr_secd == Attribute::PRFD)
-      setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::PRIMAL));
-    else if(attr_secd == Attribute::CHFD)
-      setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::CHARGED));
-    else if(attr_secd == Attribute::CYFD)
-      setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::CYBERNETIC));
-    else if(attr_secd == Attribute::NIAG)
-      setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::NIHIL));
+    // if(attr_secd == Attribute::THFD)
+    //   setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::THERMAL));
+    // else if(attr_secd == Attribute::POFD)
+    //   setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::POLAR));
+    // else if(attr_secd == Attribute::PRFD)
+    //   setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::PRIMAL));
+    // else if(attr_secd == Attribute::CHFD)
+    //   setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::CHARGED));
+    // else if(attr_secd == Attribute::CYFD)
+    //   setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::CYBERNETIC));
+    // else if(attr_secd == Attribute::NIAG)
+    //   setFlagIgnore(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::NIHIL));
   }
 }
 
@@ -651,21 +653,21 @@ int32_t BattleEvent::calcLevelDifference()
   return total;
 }
 
-int32_t BattleEvent::calcValPhysPow()
-{
-  if(getFlagIgnore(IgnoreState::IGNORE_PHYS_ATK))
-    return 0;
+// int32_t BattleEvent::calcValPhysPow()
+// {
+//   if(getFlagIgnore(IgnoreState::IGNORE_PHYS_ATK))
+//     return 0;
 
-  return temp_user_stats.getValue(Attribute::PHAG) * kOFF_PHYS_MODIFIER;
-}
+//   return temp_user_stats.getValue(Attribute::PHAG) * kOFF_PHYS_MODIFIER;
+// }
 
-int32_t BattleEvent::calcValPhysDef(BattleStats target_stats)
-{
-  if(getFlagIgnore(IgnoreState::IGNORE_PHYS_DEF))
-    return 0;
+// int32_t BattleEvent::calcValPhysDef(BattleStats target_stats)
+// {
+//   if(getFlagIgnore(IgnoreState::IGNORE_PHYS_DEF))
+//     return 0;
 
-  return target_stats.getValue(Attribute::PHFD) * kDEF_PHYS_MODIFIER;
-}
+//   return target_stats.getValue(Attribute::PHFD) * kDEF_PHYS_MODIFIER;
+// }
 
 int32_t BattleEvent::calcValPrimAtk(Skill* curr_skill)
 {
@@ -732,7 +734,7 @@ int32_t BattleEvent::calcValLuckAtk()
   if(getFlagIgnore(IgnoreState::IGNORE_LUCK_ATK))
     return 0;
 
-  return temp_user_stats.getValue(Attribute::MANN) * kMANNA_POW_MODIFIER;
+  return temp_user_stats.getValue(Attribute::WILL) * kMANNA_POW_MODIFIER;
 }
 
 int32_t BattleEvent::calcValLuckDef(BattleStats target_stats)
@@ -740,7 +742,7 @@ int32_t BattleEvent::calcValLuckDef(BattleStats target_stats)
   if(getFlagIgnore(IgnoreState::IGNORE_LUCK_DEF))
     return 0;
 
-  return target_stats.getValue(Attribute::MANN) * kMANNA_DEF_MODIFIER;
+  return target_stats.getValue(Attribute::WILL) * kMANNA_DEF_MODIFIER;
 }
 
 InflictionStatus BattleEvent::canInflictTarget(BattleActor* curr_target,
@@ -928,10 +930,10 @@ int32_t BattleEvent::calcDamage(BattleActor* curr_target, float crit_factor)
   auto curr_action = getCurrAction();
 
   /* Summation of base power / defense */
-  auto base_user_pow = calcValPhysPow() + calcValPrimAtk(curr_skill) +
+  auto base_user_pow = calcValPrimAtk(curr_skill) +
                        calcValSecdAtk(curr_skill) + calcValLuckAtk();
   auto base_targ_def =
-      calcValPhysDef(targ_stats) + calcValPrimDef(curr_skill, targ_stats) +
+      calcValPrimDef(curr_skill, targ_stats) +
       calcValSecdDef(curr_skill, targ_stats) + calcValLuckDef(targ_stats);
 
   /* Addition of the power of the action */

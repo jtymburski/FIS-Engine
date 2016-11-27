@@ -222,8 +222,8 @@ public:
   bool addExp(const uint32_t& amount, const bool& update = true,
               const bool& ignore_flags = false);
 
-  /* Recalculates the stat bonuses for equipment */
-  AttributeSet calcEquipStats();
+  //  Recalculates the stat bonuses for equipment 
+  // AttributeSet calcEquipStats();
 
   /* Calculates the % of vitality/qtdr which a target value would be */
   float calcVitaPercentAtVal(uint32_t target_value);

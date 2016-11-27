@@ -19,45 +19,53 @@
  * CONSTANTS - See implementation for descriptions
  *============================================================================*/
 
+// const std::vector<std::string> AttributeSet::kSHORT_NAMES = {
+//     "VITA", "QTDR", "PHAG", "PHFD", "THAG", "THFD", "POAG",
+//     "POFD", "PIAG", "PIFD", "CHAG", "CHFD", "CYAG", "CYFD",
+//     "NIAG", "NIFD", "LIMB", "MMTM", "UNBR", "MANN"};
+
 const std::vector<std::string> AttributeSet::kSHORT_NAMES = {
-    "VITA", "QTDR", "PHAG", "PHFD", "THAG", "THFD", "POAG",
-    "POFD", "PIAG", "PIFD", "CHAG", "CHFD", "CYAG", "CYFD",
-    "NIAG", "NIFD", "LIMB", "MMTM", "UNBR", "MANN"};
+    "VITA", "QTDR", "PRAG", "PRFD", "SEAG", "SEFD", "LIMB", "UNBR", "WILL"};
+
+// const std::vector<std::string> AttributeSet::kLONG_NAMES = {
+//     "VITALITY", "QUANTUM DRIVE", "PHYSICIAL AGGRESSION", "PHYSICIAL
+//     FORTITUDE",
+//     "THERMAL AGGRESSION", "THERMAL FORTITUDE", "POLAR AGGRESSION",
+//     "POLAR FORTITUDE", "PRIMAL AGGRESSION", "PRIMAL FORTITUDE",
+//     "CHARGED AGGRESSION", "CHARGED FORTITUDE", "CYBERNETIC AGGRESSION",
+//     "CYBERNETIC FORTITUDE", "NIHIL AGGRESSION", "NIHIL FORTITUDE",
+//     "LIMBERTUDE",
+//     "MOMENTUM", "UNBEARABILITY", "MANNA"};
 
 const std::vector<std::string> AttributeSet::kLONG_NAMES = {
-    "VITALITY", "QUANTUM DRIVE", "PHYSICIAL AGGRESSION", "PHYSICIAL FORTITUDE",
-    "THERMAL AGGRESSION", "THERMAL FORTITUDE", "POLAR AGGRESSION",
-    "POLAR FORTITUDE", "PRIMAL AGGRESSION", "PRIMAL FORTITUDE",
-    "CHARGED AGGRESSION", "CHARGED FORTITUDE", "CYBERNETIC AGGRESSION",
-    "CYBERNETIC FORTITUDE", "NIHIL AGGRESSION", "NIHIL FORTITUDE", "LIMBERTUDE",
-    "MOMENTUM", "UNBEARABILITY", "MANNA"};
+    "VITALIT",           "QUANTUM DRIVE",        "PRIMARY AGGRESSION",
+    "PRIMARY FORTITUDE", "SECONDARY AGGRESSION", "SECONDARY FORTITUTDE",
+    "LIMBERTUDE",        "UNBEARABILITY",        "WILL"};
 
 const std::vector<std::vector<int32_t>> AttributeSet::kPRESETS = {
     {100, 25, 5, 5, /* Weak Stats */
-     5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 5, 3, 1},
+     5, 3, 5, 3, 1},
 
     {150, 30, 15, 15, /* Not as Weak Stats */
-     20, 15, 20, 15, 20, 15, 20, 15, 20, 15, 20, 15, 15, 15, 10, 2},
+     20, 15, 15, 10, 2},
 
     {150, 30, 5, 10, /* Normal Stats */
-     20, 15, 20, 15, 20, 15, 20, 15, 20, 15, 20, 15, 15, 15, 10, 2},
+     20, 15, 15, 10, 2},
 
     {1000, 200, 45, 45, /* Medium, strong physical, polar stats */
-     60, 40, 60, 40, 80, 75, 80, 75, 60, 40, 60, 40, 40, 50, 25, 5},
+     60, 40, 50, 25, 5},
 
     {5000, 3000, 1000, 1000, /* Potential top end set */
-     250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 150, 150, 55,
-     19},
+     250, 250, 150, 55, 19},
 
     {999999, 9000, 3000, 3000, /* Boss LVL 1000 */
-     3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000,
-     2000, 2000, 2000, 200}};
+     3000, 3000, 2000, 2000, 200}};
 
 const int32_t AttributeSet::kDEFAULT = 0;
 const int32_t AttributeSet::kMIN_VALUE = -9999;
 const int32_t AttributeSet::kMIN_P_VALUE = 0;
 const uint32_t AttributeSet::kMAX_VALUE = 999999;
-const uint32_t AttributeSet::kNUM_ELEMENTS = 20;
+const uint32_t AttributeSet::kNUM_ELEMENTS = 9;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -83,8 +91,8 @@ AttributeSet::AttributeSet()
  *
  * Inputs: const int &preset_level - const ref to the preset to set
  */
-AttributeSet::AttributeSet(const int32_t &preset_level, const bool &personal,
-                           const bool &constant)
+AttributeSet::AttributeSet(const int32_t& preset_level, const bool& personal,
+                           const bool& constant)
 {
   buildAsPreset(preset_level);
 
@@ -101,8 +109,8 @@ AttributeSet::AttributeSet(const int32_t &preset_level, const bool &personal,
  *
  * Inputs: std::vector<int> new_values - vector of values to be set
  */
-AttributeSet::AttributeSet(const std::vector<int32_t> &new_values,
-                           const bool &personal, const bool &constant)
+AttributeSet::AttributeSet(const std::vector<int32_t>& new_values,
+                           const bool& personal, const bool& constant)
 {
   if(new_values.size() == kSHORT_NAMES.size())
     values = new_values;
@@ -126,7 +134,7 @@ AttributeSet::AttributeSet(const std::vector<int32_t> &new_values,
  *         constant - boolean value if the AttributeSet is of unchanging value
  * Output: none
  */
-void AttributeSet::classSetup(const bool &personal, const bool &constant)
+void AttributeSet::classSetup(const bool& personal, const bool& constant)
 {
   if(personal)
     flags |= AttributeState::PERSONAL;
@@ -145,7 +153,7 @@ void AttributeSet::classSetup(const bool &personal, const bool &constant)
  * Inputs: const size_t &level - const ref to which preset to use
  * Output: none
  */
-void AttributeSet::buildAsPreset(const size_t &level)
+void AttributeSet::buildAsPreset(const size_t& level)
 {
   if(level == 0 || level > kPRESETS.size())
     values = std::vector<int>(kSHORT_NAMES.size(), kDEFAULT);
@@ -185,7 +193,7 @@ void AttributeSet::cleanUp()
  * Inputs: simple - boolean value whether to show simple or large format
  * Output:
  */
-void AttributeSet::print(const bool &simple)
+void AttributeSet::print(const bool& simple)
 {
   std::cout << "--- Attribute Set ---\n";
 
@@ -206,7 +214,7 @@ void AttributeSet::print(const bool &simple)
  *         const int &amount - the amount by which to alter the stat (+/-)
  * Output: bool - true if the index was a valid stat
  */
-bool AttributeSet::alterStat(const int32_t &index, const int32_t &amount)
+bool AttributeSet::alterStat(const int32_t& index, const int32_t& amount)
 {
   if(getFlag(AttributeState::CONSTANT))
     return false;
@@ -236,7 +244,7 @@ bool AttributeSet::alterStat(const int32_t &index, const int32_t &amount)
  *         const int &amount - the amount by which to alter the stat (+/-)
  * Output: bool - true if the enumeration was a valid attribute
  */
-bool AttributeSet::alterStat(const Attribute &stat, const int32_t &amount)
+bool AttributeSet::alterStat(const Attribute& stat, const int32_t& amount)
 {
   return alterStat(getIndex(stat), amount);
 }
@@ -250,7 +258,7 @@ bool AttributeSet::alterStat(const Attribute &stat, const int32_t &amount)
  *         const int &amount - the amount by which to alter the stat
  * Output: bool - true if the name relates to a valid stat
  */
-bool AttributeSet::alterStat(const std::string &name, const int32_t &amount)
+bool AttributeSet::alterStat(const std::string& name, const int32_t& amount)
 {
   return alterStat(getIndex(name), amount);
 }
@@ -273,7 +281,7 @@ bool AttributeSet::getFlag(AttributeState test_flag) const
  * Inputs: const int &index - const ref. to the index to be retrieved (def. 0)
  * Output: int - the value of the stat at the index, else -1
  */
-int32_t AttributeSet::getStat(const int32_t &index) const
+int32_t AttributeSet::getStat(const int32_t& index) const
 {
   if(index != -1 && index < static_cast<int32_t>(values.size()))
     return values[index];
@@ -289,7 +297,7 @@ int32_t AttributeSet::getStat(const int32_t &index) const
  * Inputs: const Attribute &stat - enumerated value representing an attribute
  * Output: int - the value of the stat corresponding to the enum value, or -1
  */
-int32_t AttributeSet::getStat(const Attribute &stat) const
+int32_t AttributeSet::getStat(const Attribute& stat) const
 {
   return getStat(getIndex(stat));
 }
@@ -301,7 +309,7 @@ int32_t AttributeSet::getStat(const Attribute &stat) const
  * Inputs: const std::string &name - name of stat to check value for
  * Output: int - the value of the stat if it exists, else -1
  */
-int32_t AttributeSet::getStat(const std::string &name) const
+int32_t AttributeSet::getStat(const std::string& name) const
 {
   return getStat(getIndex(name));
 }
@@ -314,7 +322,7 @@ int32_t AttributeSet::getStat(const std::string &name) const
  *         bool state - true the flag is enabled. false otherwise. def true.
  * Output: none
  */
-void AttributeSet::setFlag(const AttributeState &flag, const bool &state)
+void AttributeSet::setFlag(const AttributeState& flag, const bool& state)
 {
   if(state)
     flags |= flag;
@@ -330,7 +338,7 @@ void AttributeSet::setFlag(const AttributeState &flag, const bool &state)
  *         const int32_t &value - the value to assign the stat to
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const int32_t &index, const int32_t &value)
+bool AttributeSet::setStat(const int32_t& index, const int32_t& value)
 {
   auto can_set = true;
 
@@ -362,7 +370,7 @@ bool AttributeSet::setStat(const int32_t &index, const int32_t &value)
  *         const int32_t &value - the value to assign to the stat
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const Attribute &stat, const int32_t &value)
+bool AttributeSet::setStat(const Attribute& stat, const int32_t& value)
 {
   return setStat(getIndex(stat), value);
 }
@@ -375,7 +383,7 @@ bool AttributeSet::setStat(const Attribute &stat, const int32_t &value)
  *         const int &value - the value to assign to the stat
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const std::string &name, const int32_t &value)
+bool AttributeSet::setStat(const std::string& name, const int32_t& value)
 {
   return setStat(getIndex(name), value);
 }
@@ -384,23 +392,23 @@ bool AttributeSet::setStat(const std::string &name, const int32_t &value)
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-std::vector<Attribute> AttributeSet::getAllOffensive()
-{
-  std::vector<Attribute> offensive{
-      Attribute::PHAG, Attribute::THAG, Attribute::PRAG, Attribute::POAG,
-      Attribute::CHAG, Attribute::CYAG, Attribute::NIAG};
+// std::vector<Attribute> AttributeSet::getAllOffensive()
+// {
+//   std::vector<Attribute> offensive{
+//       Attribute::PHAG, Attribute::THAG, Attribute::PRAG, Attribute::POAG,
+//       Attribute::CHAG, Attribute::CYAG, Attribute::NIAG};
 
-  return offensive;
-}
+//   return offensive;
+// }
 
-std::vector<Attribute> AttributeSet::getAllDefensive()
-{
-  std::vector<Attribute> defensive{
-      Attribute::PHFD, Attribute::THFD, Attribute::PRFD, Attribute::POFD,
-      Attribute::CHFD, Attribute::CYFD, Attribute::NIFD};
+// std::vector<Attribute> AttributeSet::getAllDefensive()
+// {
+//   std::vector<Attribute> defensive{
+//       Attribute::PHFD, Attribute::THFD, Attribute::PRFD, Attribute::POFD,
+//       Attribute::CHFD, Attribute::CYFD, Attribute::NIFD};
 
-  return defensive;
-}
+//   return defensive;
+// }
 
 /*
  * Description: Returns the index of a given enumerated Attribute, or
@@ -409,7 +417,7 @@ std::vector<Attribute> AttributeSet::getAllDefensive()
  * Inputs: const Attribute &stat - enumerated attribute to find the index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int32_t AttributeSet::getIndex(const Attribute &stat)
+int32_t AttributeSet::getIndex(const Attribute& stat)
 {
   if(stat < Attribute::NONE)
     return static_cast<int32_t>(stat);
@@ -417,75 +425,77 @@ int32_t AttributeSet::getIndex(const Attribute &stat)
   return -1;
 }
 
-/*
- * Description: Returns the index of an Element's corresponding offensive
- *              attribute.
- *
- * Inputs: const Element &stat - enumerated Element to find offensive index for
- * Output: int - the index of the corresponding attribute (if it exists)
- */
-int32_t AttributeSet::getOffensiveIndex(const Element &stat)
-{
-  switch(stat)
-  {
-  case(Element::PHYSICAL):
-    return getIndex(Attribute::PHAG);
-  case(Element::FIRE):
-    return getIndex(Attribute::THAG);
-  case(Element::FOREST):
-    return getIndex(Attribute::PRAG);
-  case(Element::ICE):
-    return getIndex(Attribute::POAG);
-  case(Element::ELECTRIC):
-    return getIndex(Attribute::CHAG);
-  case(Element::DIGITAL):
-    return getIndex(Attribute::CYAG);
-  case(Element::NIHIL):
-    return getIndex(Attribute::NIAG);
-  case(Element::NONE):
-    return getIndex(Attribute::NONE);
-  default:
-    std::cerr << "[Error] Obtaining offensive index of bad Element value\n";
-    break;
-  }
+// /*
+//  * Description: Returns the index of an Element's corresponding offensive
+//  *              attribute.
+//  *
+//  * Inputs: const Element &stat - enumerated Element to find offensive index
+//  for
+//  * Output: int - the index of the corresponding attribute (if it exists)
+//  */
+// int32_t AttributeSet::getOffensiveIndex(const Element& stat)
+// {
+//   switch(stat)
+//   {
+//   case(Element::PHYSICAL):
+//     return getIndex(Attribute::PHAG);
+//   case(Element::FIRE):
+//     return getIndex(Attribute::THAG);
+//   case(Element::FOREST):
+//     return getIndex(Attribute::PRAG);
+//   case(Element::ICE):
+//     return getIndex(Attribute::POAG);
+//   case(Element::ELECTRIC):
+//     return getIndex(Attribute::CHAG);
+//   case(Element::DIGITAL):
+//     return getIndex(Attribute::CYAG);
+//   case(Element::NIHIL):
+//     return getIndex(Attribute::NIAG);
+//   case(Element::NONE):
+//     return getIndex(Attribute::NONE);
+//   default:
+//     std::cerr << "[Error] Obtaining offensive index of bad Element value\n";
+//     break;
+//   }
 
-  return -1;
-}
+//   return -1;
+// }
 
-/*
- * Description: Returns the index of an Element's corresponding defensive
- *              attribute.
- *
- * Inputs: const Element &stat - enumerated Element to find defensive index for
- * Output: int - the index of the corresponding attribute (if it exists)
- */
-int32_t AttributeSet::getDefensiveIndex(const Element &stat)
-{
-  switch(stat)
-  {
-  case(Element::PHYSICAL):
-    return getIndex(Attribute::PHFD);
-  case(Element::FIRE):
-    return getIndex(Attribute::THFD);
-  case(Element::FOREST):
-    return getIndex(Attribute::PRFD);
-  case(Element::ICE):
-    return getIndex(Attribute::POFD);
-  case(Element::ELECTRIC):
-    return getIndex(Attribute::CHFD);
-  case(Element::DIGITAL):
-    return getIndex(Attribute::CYFD);
-  case(Element::NIHIL):
-    return getIndex(Attribute::NIFD);
-  case(Element::NONE):
-    return getIndex(Attribute::NONE);
-  default:
-    std::cerr << "[Error] Obtaining defensive index of bad Element value\n";
-    break;
-  }
+// /*
+//  * Description: Returns the index of an Element's corresponding defensive
+//  *              attribute.
+//  *
+//  * Inputs: const Element &stat - enumerated Element to find defensive index
+//  for
+//  * Output: int - the index of the corresponding attribute (if it exists)
+//  */
+// int32_t AttributeSet::getDefensiveIndex(const Element& stat)
+// {
+//   switch(stat)
+//   {
+//   case(Element::PHYSICAL):
+//     return getIndex(Attribute::PHFD);
+//   case(Element::FIRE):
+//     return getIndex(Attribute::THFD);
+//   case(Element::FOREST):
+//     return getIndex(Attribute::PRFD);
+//   case(Element::ICE):
+//     return getIndex(Attribute::POFD);
+//   case(Element::ELECTRIC):
+//     return getIndex(Attribute::CHFD);
+//   case(Element::DIGITAL):
+//     return getIndex(Attribute::CYFD);
+//   case(Element::NIHIL):
+//     return getIndex(Attribute::NIFD);
+//   case(Element::NONE):
+//     return getIndex(Attribute::NONE);
+//   default:
+//     std::cerr << "[Error] Obtaining defensive index of bad Element value\n";
+//     break;
+//   }
 
-  return -1;
-}
+//   return -1;
+// }
 
 /*
  * Description: Returns the index of an attribute given a name (short or long)
@@ -494,7 +504,7 @@ int32_t AttributeSet::getDefensiveIndex(const Element &stat)
  * Inputs: const std::string &name - the name of the attribute to find index of
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int32_t AttributeSet::getIndex(const std::string &name)
+int32_t AttributeSet::getIndex(const std::string& name)
 {
   /* Find the index in the vector of short or long names */
   for(size_t i = 0; i < kSHORT_NAMES.size(); i++)
@@ -535,7 +545,7 @@ uint32_t AttributeSet::getMaxValue()
  * Inputs: const Attribute &stat - the enum. stat to find the name for
  * Output: std::string - the long version of the attributes name (if it exists)
  */
-std::string AttributeSet::getLongName(const Attribute &s)
+std::string AttributeSet::getLongName(const Attribute& s)
 {
   auto index = getIndex(s);
 
@@ -551,7 +561,7 @@ std::string AttributeSet::getLongName(const Attribute &s)
  * Inputs: const size_t &index - the index to return the long-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getLongName(const size_t &index)
+std::string AttributeSet::getLongName(const size_t& index)
 {
   if(index < kSHORT_NAMES.size())
     return kLONG_NAMES[index];
@@ -566,7 +576,7 @@ std::string AttributeSet::getLongName(const size_t &index)
  * Inputs: const Attribute &stat - the enumerated attribute to find the name for
  * Output: std::string - the short version of the attributes name (if it exists)
  */
-std::string AttributeSet::getName(const Attribute &stat)
+std::string AttributeSet::getName(const Attribute& stat)
 {
   auto index = getIndex(stat);
 
@@ -582,7 +592,7 @@ std::string AttributeSet::getName(const Attribute &stat)
  * Inputs: const size_t &index - the index to return the short-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getName(const size_t &index)
+std::string AttributeSet::getName(const size_t& index)
 {
   if(index < kSHORT_NAMES.size())
     return kSHORT_NAMES[index];
@@ -597,7 +607,7 @@ std::string AttributeSet::getName(const size_t &index)
  * Inputs: std::string str - the comma delimited string
  * Output: AttributeSet - the produced set from the string
  */
-AttributeSet AttributeSet::setFromStr(const std::string &str)
+AttributeSet AttributeSet::setFromStr(const std::string& str)
 {
   std::vector<std::string> set = Helpers::split(str, ',');
   std::vector<int> value_set;
@@ -633,7 +643,7 @@ AttributeSet AttributeSet::setFromStr(const std::string &str)
  * Inputs: AttributeSet set - the set to convert to a string
  * Output: std::string - the produced comma delimited string
  */
-std::string AttributeSet::setToStr(const AttributeSet &set)
+std::string AttributeSet::setToStr(const AttributeSet& set)
 {
   std::string str = "";
 
@@ -651,6 +661,8 @@ std::string AttributeSet::setToStr(const AttributeSet &set)
   else
     str += "F";
 
+  std::cout << "String: " << str << std::endl;
+
   return str;
 }
 
@@ -665,7 +677,7 @@ std::string AttributeSet::setToStr(const AttributeSet &set)
  * Inputs: const AttributeSet& rhs - the set to be added to the current set
  * Output: AttributeSet& - ref to the current object (after compounding)
  */
-AttributeSet &AttributeSet::operator+=(const AttributeSet &rhs)
+AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
 {
   /* Inherit flags from rhs */
   this->classSetup(rhs.getFlag(AttributeState::PERSONAL),
@@ -691,7 +703,7 @@ AttributeSet &AttributeSet::operator+=(const AttributeSet &rhs)
  * Inputs: const AttributeSet& rhs - the set to be subtracted from the current
  * Output: AttributeSet& - ref to the current object (after subtraction)
  */
-AttributeSet &AttributeSet::operator-=(const AttributeSet &rhs)
+AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
 {
   /* Inherit flags from rhs */
   this->classSetup(rhs.getFlag(AttributeState::PERSONAL),
@@ -718,7 +730,7 @@ AttributeSet &AttributeSet::operator-=(const AttributeSet &rhs)
  *         const AttributeSet &rhs - the right side expression AttributeSet
  * Output: AttributeSet - the new object after addition
  */
-AttributeSet &AttributeSet::operator+(const AttributeSet &rhs)
+AttributeSet& AttributeSet::operator+(const AttributeSet& rhs)
 {
   /* Reuse compound addition operator */
   *this += rhs;
@@ -734,7 +746,7 @@ AttributeSet &AttributeSet::operator+(const AttributeSet &rhs)
  *         const AttributeSet& rhs - the right expression AS
  * Output: AttributeSet - the left hand expression after subtration
  */
-AttributeSet &AttributeSet::operator-(const AttributeSet &rhs)
+AttributeSet& AttributeSet::operator-(const AttributeSet& rhs)
 {
   /* Reuse the compound subtraction operator */
   *this -= rhs;
@@ -750,7 +762,7 @@ AttributeSet &AttributeSet::operator-(const AttributeSet &rhs)
  *         const AttributeSet& rhs - the right expression AS
  * Output: bool - truth if lhs and rhs are equivalent
  */
-bool AttributeSet::operator==(const AttributeSet &rhs)
+bool AttributeSet::operator==(const AttributeSet& rhs)
 {
   return ((values == rhs.values) && (flags == rhs.flags));
 }
@@ -763,7 +775,7 @@ bool AttributeSet::operator==(const AttributeSet &rhs)
  *         const AttributeSet& rhs - the right expression AS
  * Output: bool - truth if lhs and rhs are not equivalent
  */
-bool AttributeSet::operator!=(const AttributeSet &rhs)
+bool AttributeSet::operator!=(const AttributeSet& rhs)
 {
   return !(this->operator==(rhs));
 }

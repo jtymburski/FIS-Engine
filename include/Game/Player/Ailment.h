@@ -56,7 +56,7 @@ public:
   Ailment(Infliction type, BattleStats* stats_victim);
 
   /* Detailed constructor */
-  Ailment(Infliction type, BattleStats* stats_victim, uint32_t min_turns,
+  Ailment(Infliction type, BattleStats* stats_victim, Element victim_prim, Element victim_secd, uint32_t min_turns,
           uint32_t max_turns, double chance);
 
   /* Annihilates an AttributeSet object */
@@ -88,6 +88,10 @@ private:
 
   /* The status for updating the ailment */
   AilmentStatus update_status;
+
+  /* Victim's Elements */
+  Element victim_prim;
+  Element victim_secd;
 
   /*------------------- Buff Constants -----------------------*/
   static const float kPC_ALL_ATK_BUFF;

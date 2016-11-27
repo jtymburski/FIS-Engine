@@ -242,29 +242,45 @@ enum class AilmentStatus
  * MVIT - Maximum Vitality (Limit)
  * MQTD - Maximum Quantum Drive (Limit)
  */
-enum class Attribute : std::uint8_t
+// enum class Attribute : std::uint8_t
+// {
+//   VITA = 0,
+//   QTDR = 1,
+//   PHAG = 2,
+//   PHFD = 3,
+//   THAG = 4,
+//   THFD = 5,
+//   PRAG = 6,
+//   PRFD = 7,
+//   POAG = 8,
+//   POFD = 9,
+//   CHAG = 10,
+//   CHFD = 11,
+//   CYAG = 12,
+//   CYFD = 13,
+//   NIAG = 14,
+//   NIFD = 15,
+//   MMNT = 16,
+//   LIMB = 17,
+//   UNBR = 18,
+//   MANN = 19,
+//   MVIT = 20,
+//   MQTD = 21,
+//   NONE = 22
+// };
+
+enum class Attribute
 {
   VITA = 0,
   QTDR = 1,
-  PHAG = 2,
-  PHFD = 3,
-  THAG = 4,
-  THFD = 5,
-  PRAG = 6,
-  PRFD = 7,
-  POAG = 8,
-  POFD = 9,
-  CHAG = 10,
-  CHFD = 11,
-  CYAG = 12,
-  CYFD = 13,
-  NIAG = 14,
-  NIFD = 15,
-  MMNT = 16,
-  LIMB = 17,
-  UNBR = 18,
-  MANN = 19,
-  MVIT = 20,
+  PRAG = 2,
+  PRFD = 3,
+  SEAG = 4,
+  SEFD = 5,
+  LIMB = 6,
+  UNBR = 7,
+  WILL = 8,
+  MVIT = 20, //TODO: [10-24-16] Renumber
   MQTD = 21,
   NONE = 22
 };

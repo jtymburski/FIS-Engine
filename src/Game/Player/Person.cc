@@ -28,8 +28,8 @@
  *
  * See .h file for TODOs
  ******************************************************************************/
-#include "Game/Battle/AIModule.h"
 #include "Game/Player/Person.h"
+#include "Game/Battle/AIModule.h"
 
 /*=============================================================================
  * CONSTANTS - See implementation for details
@@ -38,7 +38,7 @@ const uint8_t Person::kACTION_X = 60;
 const uint8_t Person::kACTION_Y = 128;
 const uint32_t Person::kID_PLAYER{0};
 const size_t Person::kNUM_LEVELS{15};
-//const size_t Person::kNUM_EQUIP_SLOTS{5};
+// const size_t Person::kNUM_EQUIP_SLOTS{5};
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */
 const uint32_t Person::kMAX_EXP{1000000000};      /* 1 billion */
 const uint32_t Person::kMAX_EXP_DROP{1000000};    /* 1 million */
@@ -172,7 +172,7 @@ void Person::copySelf(const Person& source)
   sprite_foe_defensive = source.sprite_foe_defensive;
   sprite_foe_offensive = source.sprite_foe_offensive;
 
-  //Equipment is not copied
+  // Equipment is not copied
   equipment = nullptr;
 }
 
@@ -196,7 +196,6 @@ void Person::loadDefaults()
   setPFlag(PState::CAN_CHANGE_EQUIP, true);
 
   // person_record{};
-
 
   updateRank();
 
@@ -551,28 +550,6 @@ bool Person::addExp(const uint32_t& amount, const bool& update,
 }
 
 /*
- * Description: Updates the temp_max_stats attribute set to reflect the
- *              curr_max_stat attribute plus the buff sets for each of the
- *              equipped equipment.
- *
- * Inputs: none
- * Output: none
- */
-AttributeSet Person::calcEquipStats()
-{
-  // TODO: Fix this function
-  // auto equip_bonus = AttributeSet();
-
-  // for(auto it = begin(equipments); it != end(equipments); ++it)
-  //   if((*it) != nullptr)
-  //     equip_bonus += (*it)->getStats();
-
-  // return (curr_max_stats + equip_bonus);
-
-  return curr_max_stats;
-}
-
-/*
  * Description: Calculates the vitality percent at the given value v. max.
  *
  * Inputs: uint32_t target_value - the target VITA value
@@ -897,14 +874,14 @@ bool Person::loadData(XmlData data, int index, SDL_Renderer* renderer,
     success &= sprite_ally_defensive->addFileInformation(
         data, index + 1, renderer, base_path, false, false);
   }
-   /* ---- SPRITE FOE ---- */
+  /* ---- SPRITE FOE ---- */
   else if(data.getElement(index) == "sprite_foe")
   {
     if(sprite_foe == nullptr)
       sprite_foe = new Sprite();
 
     success &= sprite_foe->addFileInformation(data, index + 1, renderer,
-                                               base_path, false, false);
+                                              base_path, false, false);
   }
   /* ---- SPRITE FOE OFFENSIVE---- */
   else if(data.getElement(index) == "sprite_foe_off")
@@ -1165,8 +1142,8 @@ void Person::updateBaseStats()
 
   if(primary != Element::NONE)
   {
-    prim_indexes.push_back(AttributeSet::getOffensiveIndex(primary));
-    prim_indexes.push_back(AttributeSet::getDefensiveIndex(primary));
+    prim_indexes.push_back(AttributeSet::getIndex(Attribute::PRAG));
+    prim_indexes.push_back(AttributeSet::getIndex(Attribute::PRFD));
 
     auto p_mod = getCurveModifier(primary_curve, true);
 
@@ -1186,8 +1163,8 @@ void Person::updateBaseStats()
 
   if(secondary != Element::NONE)
   {
-    secd_indexes.push_back(AttributeSet::getOffensiveIndex(secondary));
-    secd_indexes.push_back(AttributeSet::getDefensiveIndex(secondary));
+    secd_indexes.push_back(AttributeSet::getIndex(Attribute::SEAG));
+    secd_indexes.push_back(AttributeSet::getIndex(Attribute::SEFD));
 
     auto s_mod = getCurveModifier(secondary_curve, false);
 
@@ -1985,7 +1962,7 @@ bool Person::setEquipment(Item* equipment)
     if(equipment->getSignature()->isEmpty())
       return true;
   }
-  
+
   return false;
 }
 
