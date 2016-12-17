@@ -162,7 +162,7 @@ void AttributeSet::buildAsPreset(const size_t& level)
 }
 
 /*
- * Description: Assigns all the values (statS) contained in the AttributeSet to
+ * Description: Assigns all the values (stats) contained in the AttributeSet to
  *              values within kMIN_VALUE and kMAX_VALUE.
  *
  * Inputs: none
@@ -661,7 +661,7 @@ std::string AttributeSet::setToStr(const AttributeSet& set)
   else
     str += "F";
 
-  std::cout << "String: " << str << std::endl;
+  //std::cout << "String: " << str << std::endl;
 
   return str;
 }

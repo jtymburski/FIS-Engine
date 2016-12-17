@@ -1214,9 +1214,10 @@ void Battle::updatePersonalUpkeep()
   {
     auto state = upkeep_actor->getStateUpkeep();
 
-    if(getFlagCombat(CombatState::CURR_UPKEEP_DONE) || state == UpkeepState::COMPLETE)
+    if(getFlagCombat(CombatState::CURR_UPKEEP_DONE) ||
+       state == UpkeepState::COMPLETE)
     {
-      std::cout << "Unsetting upkeep actor" << std::endl;
+      std::cout << "Unsettinge upkeep actor" << std::endl;
       setFlagCombat(CombatState::CURR_UPKEEP_DONE, false);
       upkeep_actor = nullptr;
     }
@@ -1232,7 +1233,8 @@ void Battle::updatePersonalUpkeep()
     upkeep_actor = getNextUpkeepActor();
 
     if(upkeep_actor)
-    std::cout << "Next Upkeep Actor: " << upkeep_actor->getBasePerson()->getName() << std::endl;
+      std::cout << "Next Upkeep Actor: "
+                << upkeep_actor->getBasePerson()->getName() << std::endl;
 
     if(!upkeep_actor)
       setFlagCombat(CombatState::PHASE_DONE, true);
@@ -1258,7 +1260,7 @@ void Battle::updatePersonalVitaRegen()
         getActorX(upkeep_actor), getActorY(upkeep_actor));
 
     render_elements.push_back(element);
-    //addDelay(350);
+    // addDelay(350);
   }
 
   setFlagCombat(CombatState::CURR_UPKEEP_DONE);
@@ -1279,7 +1281,6 @@ void Battle::updatePersonalQtdrRegen()
         qtdr_regen, DamageType::QTDR_REGEN, config->getScreenHeight(),
         getActorX(upkeep_actor), getActorY(upkeep_actor));
     render_elements.push_back(element);
-
   }
   // Calculate and create the qtdr regen for the upkeep_actor
   setFlagCombat(CombatState::CURR_UPKEEP_DONE);
@@ -2011,8 +2012,7 @@ void Battle::clearElementsTimedOut()
 {
   render_elements.erase(
       std::remove_if(begin(render_elements), end(render_elements),
-                     [&](RenderElement* element) -> bool
-                     {
+                     [&](RenderElement* element) -> bool {
                        if(element)
                        {
                          return (element->status == RenderStatus::TIMED_OUT);
@@ -2740,7 +2740,7 @@ void Battle::upkeepAilmentOutcome()
     {
       eh->triggerSound(Sound::kID_SOUND_BTL_DEATH, SoundChannels::TRIGGERS);
       upkeep_actor->startFlashing(FlashingType::KOING);
-      upkeep_actor->removeAilmentsKO(); 
+      upkeep_actor->removeAilmentsKO();
       addDelay(1200);
     }
   }

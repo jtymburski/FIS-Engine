@@ -352,12 +352,8 @@ bool Category::loadData(XmlData data, int index, SDL_Renderer* renderer)
   /* ---- STATS BASE ---- */
   else if(data.getElement(index) == "stats_base")
   {
-    std::cout << "Name: " << name << std::endl;
-    std::cout << "Stats base: " << data.getDataString(&success) << std::endl;
     base_stats = AttributeSet::setFromStr(data.getDataString(&success));
     cleanUpStats();
-
-    base_stats.print();
   }
   /* ---- STATS MAX ---- */
   else if(data.getElement(index) == "stats_max")

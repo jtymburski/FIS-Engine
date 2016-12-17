@@ -32,7 +32,7 @@ using std::end;
 enum class ModifierType : int
 {
   ADDITIVE = 0,
-  MULTIPLICATIVE = 1,
+  MULTIPLICATIVE = 1
 };
 
 /* Structure which describes the modifications for the Attributes */

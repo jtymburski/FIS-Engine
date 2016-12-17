@@ -133,12 +133,12 @@ void BattleStats::print()
     if(static_cast<uint8_t>(value.first) < AttributeSet::getSize())
     {
       std::cout << AttributeSet::getName(static_cast<Attribute>(value.first))
-                << ": " << value.second << std::endl;
+                << ": " << value.second << " --> " << getValue(value.first) << std::endl;
     }
     else if(value.first == Attribute::MVIT)
-      std::cout << "MVIT: " << value.second << std::endl;
+      std::cout << "MVIT: " << value.second << " --> " << getValue(value.first) << std::endl;
     else if(value.first == Attribute::MQTD)
-      std::cout << "MQTD: " << value.second << std::endl;
+      std::cout << "MQTD: " << value.second << " --> " << getValue(value.first) << std::endl;
   }
 
   std::cout << std::endl;
@@ -167,22 +167,8 @@ void BattleStats::print()
 
   if(modifiers.size() > 0)
     std::cout << std::endl;
-
-  /* Print out the actual calculated values of the BattleStats */
-  for(const auto& value : values)
-  {
-    auto final_value = getValue(value.first);
-
-    if(static_cast<uint8_t>(value.first) < AttributeSet::getSize())
-    {
-      std::cout << AttributeSet::getName(static_cast<Attribute>(value.first))
-                << ": " << final_value << std::endl;
-    }
-    else if(value.first == Attribute::MVIT)
-      std::cout << "MVIT: " << final_value << std::endl;
-    else if(value.first == Attribute::MQTD)
-      std::cout << "MQTD: " << final_value << std::endl;
-  }
+  else
+    std::cout << "-- No Modifiers Present --" << std::endl;
 #endif
 }
 

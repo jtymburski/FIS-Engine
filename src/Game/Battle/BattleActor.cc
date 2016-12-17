@@ -133,6 +133,11 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
 
   auto curr_stats = person_base->getCurr();
 
+
+  // std::cout << "Current stats for: " << getBasePerson()->getName() << std::endl;
+  // curr_stats.print();
+  std::cout << std::endl;
+
   stats_actual = BattleStats(curr_stats, curr_stats);
   stats_rendered = BattleStats(curr_stats, curr_stats);
 
@@ -154,8 +159,6 @@ void BattleActor::battleSetup(bool is_ally, bool can_run)
   {
     setFlag(ActorState::ALLY, false);
     active_sprite = ActiveSprite::FOE;
-
-    std::cout << "Setting active sprite to foe" << std::endl;
   }
 
   /* Reset the action types useable by the battle actor */

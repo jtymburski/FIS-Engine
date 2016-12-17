@@ -269,6 +269,8 @@ enum class AilmentStatus
 //   NONE = 22
 // };
 
+
+
 enum class Attribute
 {
   VITA = 0,
@@ -280,9 +282,9 @@ enum class Attribute
   LIMB = 6,
   UNBR = 7,
   WILL = 8,
-  MVIT = 20, //TODO: [10-24-16] Renumber
-  MQTD = 21,
-  NONE = 22
+  MVIT = 9, //TODO: [10-24-16] Renumber
+  MQTD = 10,
+  NONE = 11
 };
 
 /*
