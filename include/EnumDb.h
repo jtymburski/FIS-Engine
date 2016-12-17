@@ -284,7 +284,7 @@ enum class Attribute
   WILL = 8,
   MVIT = 9, //TODO: [10-24-16] Renumber
   MQTD = 10,
-  NONE = 11
+  NONE = 22
 };
 
 /*
