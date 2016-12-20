@@ -19,6 +19,8 @@
 #include "EnumFlags.h"
 #include "Frame.h"
 
+#include "GFX/SDL2_gfxPrimitives.h"
+
 #include <vector>
 
 using std::begin;

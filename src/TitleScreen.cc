@@ -288,7 +288,6 @@ void TitleScreen::keyDownAction(KeyHandler& key_handler)
                                     SoundChannels::MENUS, true);
     }
 
-
     /* If the current menu type is now TITLE_QUIT, set flag to quit the game */
     if(menu_type == MenuType::TITLE_QUIT)
       setFlag(TitleState::EXIT_GAME);
@@ -440,8 +439,11 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
         {
           auto rect =
               getRect(current, t_element.getHeight(), t_element.getWidth());
-          Frame::setRenderDrawColor(renderer, {150, 150, 150, 125});
-          SDL_RenderFillRect(renderer, &rect);
+
+          short x[4] = {rect.x, rect.x + rect.w, rect.x + rect.w, rect.x};
+          short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
+
+          filledPolygonRGBA(renderer, x, y, 4, 125, 125, 125, 125);
         }
 
         current.y += (int32_t)std::round(t_element.getHeight() * 1.425);
@@ -700,6 +702,8 @@ bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
 #ifndef TITLE_SKIP
   title_background.render(renderer);
 #endif
+
+  arcColor(renderer, 300, 300, 200, 165, 362, 0xEEEEEEEE);
 
   if(menu_layer == MenuLayer::TITLE)
   {

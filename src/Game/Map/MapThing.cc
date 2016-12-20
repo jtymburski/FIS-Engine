@@ -52,12 +52,12 @@ MapThing::MapThing()
  *         std::string description - the description of the thing, default to ""
  */
 MapThing::MapThing(int id, std::string name, std::string description)
-        : MapThing()
+    : MapThing()
 {
   setDescription(description);
   setID(id);
   setName(name);
-  setNameDisplay(name); //TODO: Display name additional parameter?
+  setNameDisplay(name); // TODO: Display name additional parameter?
 }
 
 /*
@@ -71,7 +71,7 @@ MapThing::MapThing(int id, std::string name, std::string description)
  */
 MapThing::MapThing(std::vector<std::vector<TileSprite*>> frames, int id,
                    std::string name, std::string description)
-        : MapThing(id, name, description)
+    : MapThing(id, name, description)
 {
   setFrames(frames, true);
 }
@@ -351,8 +351,7 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
   bool move_allowed = true;
   SpriteMatrix* sprite_set = getMatrix();
 
-  if(tile_set.size() > 0 &&
-     tile_set.size() == sprite_set->width() &&
+  if(tile_set.size() > 0 && tile_set.size() == sprite_set->width() &&
      tile_set.front().size() == sprite_set->height())
   {
     for(uint16_t i = 0; move_allowed && (i < sprite_set->width()); i++)
@@ -360,9 +359,9 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
       for(uint16_t j = 0; move_allowed && (j < sprite_set->height()); j++)
       {
         if(sprite_set->at(i, j) != NULL)
-          move_allowed = isTileMoveAllowed(getTileMain(i, j), tile_set[i][j],
-                                      sprite_set->at(i, j)->getRenderDepth(),
-                                      move_request);
+          move_allowed = isTileMoveAllowed(
+              getTileMain(i, j), tile_set[i][j],
+              sprite_set->at(i, j)->getRenderDepth(), move_request);
       }
     }
 
@@ -405,8 +404,7 @@ bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next,
         move_allowed = false;
       }
     }
-    else if(next->getStatus() == Tile::OFF ||
-            next->isThingSet(render_depth))
+    else if(next->getStatus() == Tile::OFF || next->isThingSet(render_depth))
     {
       move_allowed = false;
     }
@@ -428,9 +426,8 @@ bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next,
  *         int render_y - the top y corner of the tile rendering in px
  * Output: bool - status if call was successful
  */
-bool MapThing::renderAdditional(SDL_Renderer* renderer, Tile* tile,
-                                int tile_x, int tile_y,
-                                int render_x, int render_y)
+bool MapThing::renderAdditional(SDL_Renderer* renderer, Tile* tile, int tile_x,
+                                int tile_y, int render_x, int render_y)
 {
   (void)renderer;
   (void)tile;
@@ -513,7 +510,7 @@ Floatinate MapThing::moveThing(int cycle_time)
  *         const bool &save_event - true to save the base event set (thing)
  * Output: none
  */
-bool MapThing::saveData(FileHandler* fh, const bool &save_event)
+bool MapThing::saveData(FileHandler* fh, const bool& save_event)
 {
   bool success = true;
 
@@ -541,7 +538,7 @@ bool MapThing::saveData(FileHandler* fh, const bool &save_event)
     Tile* ref_tile = tile_main.front().front();
     if(starting_x != ref_tile->getX() || starting_y != ref_tile->getY())
       fh->writeXmlData("savepoint", std::to_string(ref_tile->getX()) + "," +
-                                    std::to_string(ref_tile->getY()));
+                                        std::to_string(ref_tile->getY()));
   }
 
   /* Time elapsed status for change of status from inactive to active */
@@ -701,8 +698,8 @@ bool MapThing::setTileStart(Tile* old_tile, Tile* new_tile,
  * Output: bool - true if the tiles are set
  */
 bool MapThing::setTiles(std::vector<std::vector<Tile*>> tile_set,
-                        uint16_t section, bool no_events,
-                        bool just_store, bool avoid_player)
+                        uint16_t section, bool no_events, bool just_store,
+                        bool avoid_player)
 {
   SpriteMatrix* sprite_set = getMatrix();
   bool success = true;
@@ -825,8 +822,7 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
   uint16_t end_j = 0;
 
   /* Data prechecks -> to confirm equivalency */
-  if(tile_set.size() > 0 &&
-     tile_set.size() == sprite_set->width() &&
+  if(tile_set.size() > 0 && tile_set.size() == sprite_set->width() &&
      tile_set.back().size() == sprite_set->height())
   {
     /* If moving north or west, parse top down. Otherwise, parse up */
@@ -840,9 +836,9 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
           if(sprite_set->at(i, j) != NULL)
           {
             /* Set the tile start */
-            success &= setTileStart(tile_main[i][j], tile_set[i][j],
-                                    sprite_set->at(i, j)->getRenderDepth(),
-                                    no_events);
+            success &=
+                setTileStart(tile_main[i][j], tile_set[i][j],
+                             sprite_set->at(i, j)->getRenderDepth(), no_events);
 
             /* If unsuccessful, store how far it parsed */
             if(!success)
@@ -864,9 +860,9 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
           if(sprite_set->at(i, j) != NULL)
           {
             /* Set the tile start */
-            success &= setTileStart(tile_main[i][j], tile_set[i][j],
-                                    sprite_set->at(i, j)->getRenderDepth(),
-                                    no_events);
+            success &=
+                setTileStart(tile_main[i][j], tile_set[i][j],
+                             sprite_set->at(i, j)->getRenderDepth(), no_events);
 
             /* If unsuccessful, store how far it parsed */
             if(!success)
@@ -1017,8 +1013,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   /*--------------------- DIALOG IMAGE -----------------*/
   else if(identifier == "image" && elements.size() == 1)
   {
-    success &= setDialogImage(base_path + data.getDataString(&success),
-                              renderer);
+    success &=
+        setDialogImage(base_path + data.getDataString(&success), renderer);
   }
   /*--------------------- EVENT -----------------*/
   else if(identifier == "event")
@@ -1040,6 +1036,10 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     setName(data.getDataString(&success));
   }
+  else if(identifier == "name_display" && elements.size() == 1)
+  {
+    setNameDisplay(data.getDataString(&success));
+  }
   /*----------------- RENDER MATRIX -----------------*/
   else if(identifier == "rendermatrix" && elements.size() == 1)
   {
@@ -1053,7 +1053,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
     std::vector<std::string> points = Helpers::split(data.getDataString(), ',');
     if(points.size() == 2) /* There needs to be an x and y point */
       setLocationNext(section_index, std::stoul(points[0]),
-                                     std::stoul(points[1]));
+                      std::stoul(points[1]));
     else
       success = false;
   }
@@ -1081,7 +1081,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
     std::vector<std::string> points = Helpers::split(data.getDataString(), ',');
     if(points.size() == 2) /* There needs to be an x and y point */
       setLocationStart(section_index, std::stoul(points[0]),
-                                      std::stoul(points[1]));
+                       std::stoul(points[1]));
     else
       success = false;
   }
@@ -1107,7 +1107,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
  */
 ThingBase MapThing::classDescriptor()
 {
-  //return "MapThing";
+  // return "MapThing";
   return ThingBase::THING;
 }
 
@@ -1616,9 +1616,24 @@ std::string MapThing::getName() const
 {
   if(name != "")
     return name;
-  else if(base != NULL)
+  else if(base != nullptr)
     return base->getName();
   return name;
+}
+
+/*
+ * Description: Gets the things display name (ex. Reverdile A, B, etc.)
+ *
+ * Inputs: none
+ * Output: std::string - the name for the thing, as a string
+ */
+std::string MapThing::getNameDisplay() const
+{
+  if(name_display != "")
+    return name_display;
+  else if(base != nullptr)
+    return base->getNameDisplay();
+  return name_display;
 }
 
 /*
@@ -2102,27 +2117,26 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 
     /* Attempt render */
     if(base_category >= ThingBase::PERSON)
-      success =  getMatrix()->render(base_control->curr_frame, renderer,
-                                     render_x, render_y,
-                                     tile_main.front().front()->getWidth(),
-                                     tile_main.front().front()->getHeight());
+      success =
+          getMatrix()->render(base_control->curr_frame, renderer, render_x,
+                              render_y, tile_main.front().front()->getWidth(),
+                              tile_main.front().front()->getHeight());
     else
       success = getMatrix()->render(renderer, render_x, render_y,
-                                 tile_main.front().front()->getWidth(),
-                                 tile_main.front().front()->getHeight());
+                                    tile_main.front().front()->getWidth(),
+                                    tile_main.front().front()->getHeight());
 
     /* If successful, render additional */
     if(success)
     {
-      renderAdditional(renderer, tile_main.front().front(),
-                       0, 0, render_x, render_y);
+      renderAdditional(renderer, tile_main.front().front(), 0, 0, render_x,
+                       render_y);
       return success;
     }
   }
 
   return false;
 }
-
 
 /*
  * Description: Render the single frame, located on the designated tile.
@@ -2156,8 +2170,8 @@ bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
       int render_y = (tile_y + getFloatTileY()) * tile->getHeight() - offset_y;
 
       /* Render */
-      if(render_frame->render(renderer, render_x, render_y,
-                              tile->getWidth(), tile->getHeight()))
+      if(render_frame->render(renderer, render_x, render_y, tile->getWidth(),
+                              tile->getHeight()))
       {
         renderAdditional(renderer, tile, tile_x, tile_y, render_x, render_y);
         return true;
@@ -2200,8 +2214,8 @@ bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile,
       int render_y = (tile_y + getFloatTileY()) * tile->getHeight() - offset_y;
 
       /* Render */
-      if(render_frame->render(renderer, render_x, render_y,
-                              tile->getWidth(), tile->getHeight()))
+      if(render_frame->render(renderer, render_x, render_y, tile->getWidth(),
+                              tile->getHeight()))
       {
         renderAdditional(renderer, tile, tile_x, tile_y, render_x, render_y);
         return true;
@@ -2682,8 +2696,8 @@ bool MapThing::setTarget(MapThing* target)
  * Output: bool - true if the tiles are set
  */
 bool MapThing::setTilesNext(std::vector<std::vector<Tile*>> tile_set,
-                            uint16_t section, bool no_events,
-                            bool just_store, bool avoid_player)
+                            uint16_t section, bool no_events, bool just_store,
+                            bool avoid_player)
 {
   if(next_valid && tile_set.size() > 0 &&
      tile_set.front().front()->getX() == next_x &&
@@ -2714,8 +2728,8 @@ bool MapThing::setTilesNext(std::vector<std::vector<Tile*>> tile_set,
  * Output: bool - true if the tiles are set
  */
 bool MapThing::setTilesStart(std::vector<std::vector<Tile*>> tile_set,
-                             uint16_t section, bool no_events,
-                             bool just_store, bool avoid_player)
+                             uint16_t section, bool no_events, bool just_store,
+                             bool avoid_player)
 {
   if(tile_set.size() > 0 && tile_set.front().front()->getX() == starting_x &&
      tile_set.front().front()->getY() == starting_y &&
@@ -2756,7 +2770,7 @@ void MapThing::setVisibility(bool visible)
  */
 void MapThing::triggerWalkOff(MapPerson* trigger)
 {
-  (void) trigger;
+  (void)trigger;
 }
 
 /*
@@ -2768,7 +2782,7 @@ void MapThing::triggerWalkOff(MapPerson* trigger)
  */
 void MapThing::triggerWalkOn(MapPerson* trigger)
 {
-  (void) trigger;
+  (void)trigger;
 }
 
 /*
@@ -2798,7 +2812,7 @@ Floatinate MapThing::update(int cycle_time,
   {
     if(active_map)
       delta_move = moveThing(cycle_time);
-    //if(getBase() == nullptr)
+    // if(getBase() == nullptr)
     //  animate(cycle_time);
   }
   /* Otherwise, just update the inactive respawn time */

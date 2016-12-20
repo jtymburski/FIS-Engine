@@ -26,6 +26,8 @@
 #include "Sprite.h"
 #include "Window.h"
 
+#include "GFX/SDL2_gfxPrimitives.h"
+
 enum class InventoryIndex : uint8_t
 {
   NONE = 0,

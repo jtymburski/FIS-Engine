@@ -206,8 +206,8 @@ private:
   const static uint16_t kNAME_DISPLAY; /* Time to display map name */
   const static uint16_t kNAME_FADE; /* The time remaining to fade out */
   const static uint8_t kNAME_SIZE; /* Size of name font to render */
-  const static uint16_t kNAME_X; /* The top left x location of text */
-  const static uint16_t kNAME_Y; /* The top left y location of text */
+  const static float kNAME_X; /* The top left x location of text */
+  const static float kNAME_Y; /* The top left y location of text */
   const static uint8_t kPLAYER_ID; /* The player ID for computer control */
   const static uint16_t kZOOM_TILE_SIZE; /* The tile size, when zoomed out */
 

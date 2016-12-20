@@ -36,8 +36,8 @@ const uint32_t Map::kMUSIC_REPEAT = 300000; /* 5 minutes */
 const uint16_t Map::kNAME_DISPLAY = 5000;   /* 5 seconds */
 const uint16_t Map::kNAME_FADE = 1;
 const uint8_t Map::kNAME_SIZE = 48;
-const uint16_t Map::kNAME_X = 65;
-const uint16_t Map::kNAME_Y = 590;
+const float Map::kNAME_X = 0.075;
+const float Map::kNAME_Y = 0.925;
 const uint8_t Map::kPLAYER_ID = 0;
 const uint16_t Map::kSNAPSHOT_W = 600;
 const uint16_t Map::kSNAPSHOT_H = 500;
@@ -336,7 +336,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
     }
   }
   // Note: removed for new bases controlled by core group - delete future?
-  //else if(identifier == "mapitem")
+  // else if(identifier == "mapitem")
   //{
   //  /* Create a new item, if one doesn't exist */
   //  modified_thing = getItemBase(id);
@@ -1689,11 +1689,10 @@ std::vector<std::vector<int32_t>> Map::splitIdString(std::string id,
 
   return id_stack;
 }
-  
+
 /* Lay triggers based on passed in information */
-bool Map::triggerLay(std::string path, int anim_time,
-                     float velocity_x, float velocity_y, int lay_time,
-                     bool force)
+bool Map::triggerLay(std::string path, int anim_time, float velocity_x,
+                     float velocity_y, int lay_time, bool force)
 {
   if(!path.empty() && system_options != nullptr)
   {
@@ -1748,7 +1747,7 @@ bool Map::triggerLays(std::vector<LayOver> lay_data, int lay_time, bool force)
     for(uint32_t i = 0; i < lay_data.size(); i++)
       lay_ptrs.push_back(new Lay(lay_data[i], LayType::OVERLAY,
                                  {system_options->getScreenWidth(),
-                                 system_options->getScreenHeight()}));
+                                  system_options->getScreenHeight()}));
 
     /* Try and generate using the given lay pointers */
     bool success = triggerLays(lay_data, lay_time, force);
@@ -1794,7 +1793,7 @@ bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
   /* Parse and check view data */
   bool view, scroll;
   EventSet::dataEnumView(view_mode, view, scroll);
-  if(view)// && view_time > 0)
+  if(view) // && view_time > 0)
   {
     /* Set data */
     this->view_acc = 0;
@@ -1811,7 +1810,7 @@ bool Map::triggerViewThing(MapThing* view_thing, UnlockView view_mode,
   }
   return false;
 }
-  
+
 /* Triggers a view of the passed in data */
 bool Map::triggerViewFinish()
 {
@@ -1830,7 +1829,7 @@ bool Map::triggerViewTile(Tile* view_tile, uint16_t view_section,
   /* Parse and check view data */
   bool view, scroll;
   EventSet::dataEnumView(view_mode, view, scroll);
-  if(view)// && view_time > 0)
+  if(view) // && view_time > 0)
   {
     /* Set data */
     this->view_acc = 0;
@@ -2133,12 +2132,12 @@ void Map::updateTileSize(bool force)
     if(tile_height == zoom_size || tile_width == zoom_size)
     {
       zooming = false;
-      //viewport.setTravelForce(false);
+      // viewport.setTravelForce(false);
     }
     else
     {
-      //viewport.setTravelForce(true);
-      //viewport.setToTravel(true);
+      // viewport.setTravelForce(true);
+      // viewport.setToTravel(true);
     }
   }
 
@@ -2230,9 +2229,8 @@ void Map::battleWon()
     /* Trigger battle won event, if valid */
     if(event_handler != nullptr)
     {
-      event_handler->executeEventRef(battle_eventwin.base,
-                                     battle_eventwin.inst, battle_person,
-                                     battle_thing);
+      event_handler->executeEventRef(battle_eventwin.base, battle_eventwin.inst,
+                                     battle_person, battle_thing);
       battle_eventwin.inst->has_exec = true;
     }
   }
@@ -2871,10 +2869,9 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     else if(event.keysym.sym == SDLK_b)
     {
       UnlockView view_mode = EventSet::createEnumView(true, true);
-      //triggerViewTile(sub_map[map_index].tiles[5][5], map_index, view_mode,
+      // triggerViewTile(sub_map[map_index].tiles[5][5], map_index, view_mode,
       //                10000);
-      triggerViewTile(sub_map[0].tiles[5][5], 0, view_mode,
-                      -1);
+      triggerViewTile(sub_map[0].tiles[5][5], 0, view_mode, -1);
     }
     /* Test: Vibration trigger */
     else if(event.keysym.sym == SDLK_v)
@@ -2888,9 +2885,9 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     else if(event.keysym.sym == SDLK_z)
     {
       if(zoom_size != Helpers::getTileSize())
-        zoomRestore();//true);
+        zoomRestore(); // true);
       else
-        zoom(16);//, true);
+        zoom(16); //, true);
     }
     /* Test: Location of player */
     else if(event.keysym.sym == SDLK_l)
@@ -2919,10 +2916,9 @@ void Map::keyTestDownEvent(SDL_KeyboardEvent event)
     else if(event.keysym.sym == SDLK_n)
     {
       UnlockView view_mode = EventSet::createEnumView(true, true);
-      //triggerViewTile(sub_map[map_index].tiles[25][25], map_index, view_mode,
+      // triggerViewTile(sub_map[map_index].tiles[25][25], map_index, view_mode,
       //                -1);
-      triggerViewTile(sub_map[2].tiles[5][5], 2, view_mode,
-                      -1);
+      triggerViewTile(sub_map[2].tiles[5][5], 2, view_mode, -1);
     }
   }
 }
@@ -2962,7 +2958,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
         addSpriteData(data, data.getKeyValue(index), index + 1, renderer);
   }
   /* ---- BASE THINGS ---- */
-  //else if((element == "mapthing" || element == "mapperson" ||
+  // else if((element == "mapthing" || element == "mapperson" ||
   //      element == "mapnpc" || element == "mapitem" || element == "mapio") &&
   //      !data.getKeyValue(index).empty())
   else if((element == "mapthing" || element == "mapperson" ||
@@ -3293,8 +3289,8 @@ void Map::modifyThing(MapThing* source, ThingBase type, int id,
  * Default is invalid parameter which picks up all */
 bool Map::pickupItem(MapItem* item, int count)
 {
-  if(item != nullptr && item->getBase() != nullptr &&
-     item->getCount() > 0 && count != 0)
+  if(item != nullptr && item->getBase() != nullptr && item->getCount() > 0 &&
+     count != 0)
   {
     /* Set the map count */
     if(count < 0 || count >= (int)item->getCount())
@@ -3492,7 +3488,10 @@ bool Map::render(SDL_Renderer* renderer)
                                            name_text.getAlpha()});
 
       /* Render text */
-      name_text.render(renderer, kNAME_X, kNAME_Y);
+      if(system_options)
+        name_text.render(renderer, system_options->getScreenWidth() * kNAME_X,
+                         (system_options->getScreenHeight() * kNAME_Y) -
+                             name_text.getHeight());
     }
 
     /* Map dialog finally */
@@ -3564,8 +3563,8 @@ bool Map::setBaseItems(std::vector<ItemData> items, SDL_Renderer* renderer)
       TileSprite* new_frame = nullptr;
       if(!items[i].frame_path.empty())
         new_frame = new TileSprite(items[i].frame_path, renderer);
-      MapItem* new_item = new MapItem(new_frame, items[i].id,
-                                      items[i].name, items[i].description);
+      MapItem* new_item = new MapItem(new_frame, items[i].id, items[i].name,
+                                      items[i].description);
       new_item->setEventHandler(event_handler);
       base_items.push_back(new_item);
     }

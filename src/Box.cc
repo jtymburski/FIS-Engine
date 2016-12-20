@@ -122,7 +122,7 @@ void Box::loadDefaults()
   element_inset_x = kDEFAULT_ELEMENT_INSET_X;
   element_inset_y = kDEFAULT_ELEMENT_INSET_Y;
   flags = static_cast<BoxState>(0);
-  //setFlag(BoxState::USES_FRAMES, true);
+  // setFlag(BoxState::USES_FRAMES, true);
   point = Coordinate();
   height = 0;
   width = 0;
@@ -235,10 +235,10 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
         success &= Frame::renderRect(rect, border_width, renderer);
 
         /* Render the element and update the running Y-Coordinate */
-        //if(getFlag(BoxState::USES_FRAMES))
+        // if(getFlag(BoxState::USES_FRAMES))
         //{
-          success &= elements.at(i)->render(renderer, curr_x, curr_y);
-          curr_y += elements.at(i)->getHeight() + element_gap;
+        success &= elements.at(i)->render(renderer, curr_x, curr_y);
+        curr_y += elements.at(i)->getHeight() + element_gap;
         //}
       }
     }
@@ -520,65 +520,42 @@ bool Box::render(SDL_Renderer* renderer)
 
     if(box_type == BoxType::NORMAL_BOX)
     {
-      Frame::setRenderDrawColor(renderer, bg_color);
-      SDL_RenderFillRect(renderer, &rect);
+      short x[4] = {point.x, point.x + width, point.x + width, point.x};
+      short y[4] = {point.y, point.y, point.y + height, point.y + height};
+
+      filledPolygonRGBA(renderer, x, y, 4, bg_color.r, bg_color.g, bg_color.b,
+                        bg_color.a);
+      polygonRGBA(renderer, x, y, 4, border_color.r, border_color.g,
+                  border_color.b, border_color.a);
+
+      // Frame::setRenderDrawColor(renderer, bg_color);
+      // SDL_RenderFillRect(renderer, &rect);
 
       /* Render the border based on whether this scroll box is currently being
        * selected (hovered on). */
-      Frame::setRenderDrawColor(renderer, border_color);
-      success &= Frame::renderRect(rect, border_width, renderer);
+      // Frame::setRenderDrawColor(renderer, border_color);
+      // success &= Frame::renderRect(rect, border_width, renderer);
 
       /* Render the scroll box elements as required */
       if(getFlag(BoxState::SCROLL_BOX))
         renderElements(renderer, view_index, getNumViewable());
-
     }
     else if(box_type == BoxType::CORNER_CUT_BOX)
     {
       /* Render the frame outline and backdrop */
       Coordinate tl = {point.x, point.y};
-      Coordinate tr = {point.x + width - corner_inset, point.y};
+      Coordinate tr = {point.x + width, point.y};
       Coordinate bl = {point.x, point.y + height};
       Coordinate br = {point.x + width - corner_inset, point.y + height};
+      Coordinate trc = {tr.x, br.y - corner_inset};
 
-      Coordinate blc = {br.x + 1, br.y - 1};
-      Coordinate tlc = {tr.x + 1, tl.y};
-      Coordinate trc = {tr.x + corner_inset, tr.y};
-      Coordinate brc = {br.x + corner_inset, br.y - corner_inset};
+      short x[5] = {tl.x, tr.x, trc.x, br.x, bl.x};
+      short y[5] = {tl.y, tr.y, trc.y, br.y, bl.y};
 
-      Coordinate atl = {blc.x - 1, blc.y};
-      Coordinate abl = {blc.x, blc.y + 1};
-      Coordinate atr = {brc.x - 1, brc.y};
-      Coordinate abr = {brc.x, brc.y + 1};
-
-      auto top_bar = Helpers::bresenhamPoints(tl, tr);
-      auto bot_bar = Helpers::bresenhamPoints(bl, br);
-      auto top_corner = Helpers::bresenhamPoints(tlc, trc);
-      auto bot_corner = Helpers::bresenhamPoints(blc, brc);
-      auto left_line = Helpers::bresenhamPoints(tl, bl);
-      auto right_line = Helpers::bresenhamPoints(trc, brc);
-      auto corner_aa_top = Helpers::bresenhamPoints(atl, atr);
-      auto corner_aa_bot = Helpers::bresenhamPoints(abl, abr);
-
-      Frame::setRenderDrawColor(renderer, bg_color);
-      Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
-      Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
-
-      Frame::setRenderDrawColor(renderer, border_color);
-      Frame::drawLine(top_bar, renderer);
-      Frame::drawLine(bot_bar, renderer);
-      Frame::drawLine(top_corner, renderer);
-      Frame::drawLine(bot_corner, renderer);
-      Frame::drawLine(left_line, renderer);
-      Frame::drawLine(right_line, renderer);
-
-      /* Anti-Aliased Top Line */
-      // Frame::setRenderDrawColor(renderer, {255, 255, 255, 45});
-      // Frame::drawLine(corner_aa_top, renderer);
-
-      /* Anti-Aliased Bot Line */
-      // Frame::setRenderDrawColor(renderer, {255, 255, 255, 80});
-      // Frame::drawLine(corner_aa_bot, renderer);
+      filledPolygonRGBA(renderer, x, y, 5, bg_color.r, bg_color.g, bg_color.b,
+                        bg_color.a);
+      polygonRGBA(renderer, x, y, 5, border_color.r, border_color.g,
+                  border_color.b, border_color.a);
     }
     else if(box_type == BoxType::BAR)
     {

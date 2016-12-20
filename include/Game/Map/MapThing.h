@@ -279,6 +279,7 @@ public:
 
   /* Gets the things name */
   std::string getName() const;
+  std::string getNameDisplay() const;
 
   /* Returns the new coordinates - as set by setLocation() */
   uint16_t getNextSection();

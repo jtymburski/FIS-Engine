@@ -104,7 +104,11 @@ SOURCES=src/Application.cc \
         src/Game/Player/Player.cc \
         src/Game/Player/Signature.cc \
         src/Game/Player/Skill.cc \
-        src/Game/Player/SkillSet.cc
+        src/Game/Player/SkillSet.cc \
+        src/GFX/SDL2_framerate.cc \
+        src/GFX/SDL2_gfxPrimitives.cc \
+        src/GFX/SDL2_imageFilter.cc \
+        src/GFX/SDL2_rotozoom.cc
 
 OBJECTS=$(SOURCES:.cc=.o)
 

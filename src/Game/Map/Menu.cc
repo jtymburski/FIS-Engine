@@ -1141,7 +1141,7 @@ SDL_Texture* Menu::buildElementFrame(Element elm, uint32_t width,
   // {
   //   auto frame_element = battle_display_data->getFrameElement(elm);
   //   auto stats = actor->getStatsRendered();
-    
+
   //   //auto attributes = Helpers::elementToStats(elm);
 
   //   // TODO: Element special inset?
@@ -1240,44 +1240,18 @@ void Menu::renderTitleSection()
   Coordinate tl = {point.x, point.y};
   Coordinate tr = {point.x + location.width - corner_inset, point.y};
   Coordinate bl = {point.x, point.y + location.height};
-  Coordinate br = {point.x + location.width - corner_inset,
-                   point.y + location.height};
-
   Coordinate tc = {tr.x + corner_inset, tr.y + corner_inset};
-  Coordinate bc = {br.x + corner_inset, br.y};
+  Coordinate bc = {tc.x, bl.y};
 
-  Coordinate tr_aa_top = {tr.x + 1, tr.y};
-  Coordinate tc_aa_top = {tc.x, tc.y - 1};
+  short main_x[5] = {tl.x, tr.x, tc.x, bc.x, bl.x};
+  short main_y[5] = {tl.y, tr.y, tc.y, bc.y, bl.y};
 
-  Coordinate tr_aa_bot = {tr.x, tr.y + 1};
-  Coordinate tc_aa_bot = {tc.x - 1, tc.y};
+  filledPolygonRGBA(renderer, main_x, main_y, 5, kCOLOR_TITLE_BG.r,
+                    kCOLOR_TITLE_BG.g, kCOLOR_TITLE_BG.b, kCOLOR_TITLE_BG.a);
 
-  auto top_bar = Helpers::bresenhamPoints(tl, tr);
-  auto bot_bar = Helpers::bresenhamPoints(bl, br);
-  auto top_corner = Helpers::bresenhamPoints(tr, tc);
-  auto bot_corner = Helpers::bresenhamPoints(br, bc);
-  auto right_line = Helpers::bresenhamPoints(tc, bc);
-  auto corner_aa_top = Helpers::bresenhamPoints(tr_aa_top, tc_aa_top);
-  auto corner_aa_bot = Helpers::bresenhamPoints(tr_aa_bot, tc_aa_bot);
-
-  Frame::setRenderDrawColor(renderer, kCOLOR_TITLE_BG);
-  Frame::renderFillLineToLine(top_bar, bot_bar, renderer, true);
-  Frame::renderFillLineToLine(top_corner, bot_corner, renderer, true);
-
-  Frame::setRenderDrawColor(renderer, kCOLOR_TITLE_BORDER);
-  Frame::drawLine(top_bar, renderer);
-  Frame::drawLine(bot_bar, renderer);
-  Frame::drawLine(top_corner, renderer);
-  Frame::drawLine(bot_corner, renderer);
-  Frame::drawLine(right_line, renderer);
-
-  /* Anti-Aliased Top Line */
-  Frame::setRenderDrawColor(renderer, {255, 255, 255, 110});
-  Frame::drawLine(corner_aa_top, renderer);
-
-  /* Anti-Aliased Bot Line */
-  Frame::setRenderDrawColor(renderer, {255, 255, 255, 65});
-  Frame::drawLine(corner_aa_bot, renderer);
+  polygonRGBA(renderer, main_x, main_y, 5, kCOLOR_TITLE_BORDER.r,
+              kCOLOR_TITLE_BORDER.g, kCOLOR_TITLE_BORDER.b,
+              kCOLOR_TITLE_BORDER.a);
 
   auto x_offset = (int32_t)std::round(width * kTITLE_X_OFFSET);
   auto y_offset = (int32_t)std::round(height * kTITLE_Y_OFFSET);
@@ -1305,27 +1279,21 @@ void Menu::renderTitleSection()
     auto rect_y = element_offset + (title_element_index)*y_gap - (y_gap / 4);
     auto rect_h = title_element_height + (y_gap / 2);
 
-    Coordinate top_left{point.x, rect_y};
-    Coordinate top_right{point.x + title_width, rect_y};
-    Coordinate bot_left{point.x, rect_y + rect_h};
-    Coordinate bot_right{point.x + title_width, rect_y + rect_h};
-    auto top_line = Helpers::bresenhamPoints(top_left, top_right);
-    auto bot_line = Helpers::bresenhamPoints(bot_left, bot_right);
+    Coordinate tl = {point.x + title_width * kTITLE_HOVER_OFFSET_X, rect_y};
+    Coordinate tr = {tl.x + title_width * kTITLE_HOVER_WIDTH, rect_y};
+    Coordinate bl = {tl.x, tl.y + rect_h};
+    Coordinate br = {tr.x, bl.y};
 
-    SDL_Rect rect;
-    rect.x = point.x + title_width * kTITLE_HOVER_OFFSET_X;
-    rect.y = rect_y;
-    rect.h = rect_h;
-    rect.w = title_width * kTITLE_HOVER_WIDTH;
+    short select_x[4] = {tl.x, tr.x, br.x, bl.x};
+    short select_y[4] = {tl.y, tr.y, br.y, bl.y};
 
     auto brightness = Helpers::updateHoverBrightness(
         title_elements.at(title_element_index).hover_time, kTITLE_HOVER_RATE,
         kTITLE_HOVER_MIN, kTITLE_HOVER_MAX);
 
-    auto hover_color = kCOLOR_TITLE_HOVER;
-    SDL_SetRenderDrawColor(renderer, hover_color.r, hover_color.g,
-                           hover_color.b, hover_color.a * brightness);
-    SDL_RenderFillRect(renderer, &rect);
+    filledPolygonRGBA(renderer, select_x, select_y, 4, kCOLOR_TITLE_HOVER.r,
+                      kCOLOR_TITLE_HOVER.g, kCOLOR_TITLE_HOVER.b,
+                      kCOLOR_TITLE_HOVER.a * brightness);
   }
 
   /* Text Color */
@@ -1959,6 +1927,10 @@ void Menu::renderSleuth()
 
 void Menu::renderSleuthOverview()
 {
+  /* Sanity */
+  if(sleuth_element_index == -1)
+    sleuth_element_index = 0;
+
   auto start = main_section.location.point;
   auto width = config->getScreenWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
@@ -2686,7 +2658,7 @@ void Menu::renderSave()
   save_scroll_box.point.x = main.point.x + gap;
   save_scroll_box.point.y = main.point.y + gap;
   save_scroll_box.height = main.height - 4 * gap;
-  save_scroll_box.width  = main.width - 2 * gap;
+  save_scroll_box.width = main.width - 2 * gap;
 
   current = {main.point.x + gap, main.point.y + gap};
 
@@ -2694,30 +2666,32 @@ void Menu::renderSave()
   std::vector<Frame*> save_frames;
   save_scroll_box.clearElements();
 
-  for(auto& save : save_data)
-  {
-    setupDefaultBox(save.location);
-    save.location.width = save_width;
-    save.location.height = save_height;
-    save.location.point.x = current.x;
-    save.location.point.y = current.y;
+  // TODO: Fix
+  // for(auto& save : save_data)
+  // {
+  //   setupDefaultBox(save.location);
+  //   save.location.width = save_width;
+  //   save.location.height = save_height;
+  //   save.location.point.x = current.x;
+  //   save.location.point.y = current.y;
 
-    current.y += save.location.height + gap;
+  //   current.y += save.location.height + gap;
 
-    if(!save.getFlag(SaveState::EMPTY))
-    {
-      auto new_frame = save.createRenderFrame(renderer);
+  //   if(!save.getFlag(SaveState::EMPTY))
+  //   {
+  //     auto new_frame = save.createRenderFrame(renderer);
 
-      if(new_frame)
-        save_frames.push_back(new_frame);
-      else
-        std::cerr << "[Error] Creating render frame for Save file." << std::endl;
-    }
-  }
+  //     if(new_frame)
+  //       save_frames.push_back(new_frame);
+  //     else
+  //       std::cerr << "[Error] Creating render frame for Save file." <<
+  //       std::endl;
+  //   }
+  // // }
 
-  save_scroll_box.setElements(save_frames);
+  // save_scroll_box.setElements(save_frames);
 
-  save_scroll_box.render(renderer);
+  // save_scroll_box.render(renderer);
 }
 
 /* Renders the Quit Screen */

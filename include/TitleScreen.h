@@ -20,6 +20,8 @@
 #include "Text.h"
 #include "Window.h"
 
+#include "GFX/SDL2_gfxPrimitives.h"
+
 // SKIP THE TITLE BACKGROUND LOADING / RENDERING
 #define TITLE_SKIP
 
