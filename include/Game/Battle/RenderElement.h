@@ -129,8 +129,8 @@ private:
   const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
   const static uint16_t kACTION_SHADOW;  /* Shadow offset of middle text */
   const static uint16_t kDAMAGE_SHADOW;
-  const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
-  const static uint16_t kACTION_CENTER;
+  const static float kACTION_TEXT_X; /* Right edge of middle text */
+  const static float kACTION_CENTER;
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -142,7 +142,7 @@ public:
   bool buildSpriteLay(std::string sprite_path);
 
   /* Creates the render element as an action text*/
-  void createAsActionText(std::string text);
+  void createAsActionText(std::string text, int32_t screen_width, int32_t screen_height);
 
   /* Creates the render element as a damage text*/
   void createAsDamageText(std::string text, DamageType type, int32_t sc_height,

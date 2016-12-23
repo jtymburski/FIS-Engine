@@ -1335,6 +1335,28 @@ bool Frame::renderRect(SDL_Rect rect, uint16_t border_width,
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Frame::renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color)
+{
+  short x[4] = {rect.x, rect.x + rect.w, rect.x + rect.w, rect.x};
+  short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
+
+  filledPolygonRGBA(renderer, x, y, 4, color.r, color.g, color.b, color.a);
+}
+
+bool Frame::renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color)
+{
+  short x[4] = {rect.x, rect.x + rect.w, rect.x + rect.w, rect.x};
+  short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
+
+  polygonRGBA(renderer, x, y, 4, color.r, color.g, color.b, color.a);
+}
+
+/*
  * Description: Creates a right hand triangle, given the input parameters. The
  *              default right hand triangle with have its flat edges on the left
  *              and bottom sides. Reverse will put one of the flat edges

@@ -26,8 +26,6 @@
 #include "Sprite.h"
 #include "Window.h"
 
-#include "GFX/SDL2_gfxPrimitives.h"
-
 enum class InventoryIndex : uint8_t
 {
   NONE = 0,
@@ -186,6 +184,8 @@ private:
   /* Options for the Option Menu */
   AnalogOption option_audio_level;
   AnalogOption option_music_level;
+  AnalogOption option_scaling_ui_level;
+  AnalogOption option_scaling_text_level;
   DigitalOption option_auto_run;
   DigitalOption option_mute;
   DigitalOption option_fast_battle;
@@ -239,6 +239,7 @@ private:
   int32_t option_element_index;
   int32_t person_element_index;
   int32_t skills_element_index;
+  int32_t save_element_index;
   int32_t sleuth_element_index;
   int32_t title_element_index;
 
@@ -378,11 +379,17 @@ private:
   /* Builds the quit screen */
   void buildQuit();
 
+  /* Construct the Save box and screen */
+  void buildSave();
+
   /* Construct the Sleuth overview screen */
   bool buildSleuthScreen();
 
   /* Construct the skill frames for the current person */
   void buildSkillFrames();
+
+  /* Constructs the signature screen */
+  void buildSignature();
 
   /* Construct a vector of TitleElements for the Title Section */
   void buildTitleElements();
@@ -426,11 +433,13 @@ private:
   void decrementInventoryIndex();
   void decrementOptionIndex();
   void decrementQuitIndex();
+  void decrementSaveIndex();
   void decrementSleuthIndex();
 
   /* Increment index functions */
   void incrementInventoryIndex();
   void incrementOptionIndex();
+  void incrementSaveIndex();
   void incrementQuitIndex();
   void incrementSleuthIndex();
 
@@ -513,6 +522,9 @@ private:
   void unselectInventoryIndex();
   void unselectOptionIndex();
   void unselectSleuthIndex();
+
+  /* Update the UI for the current scaling factor */
+  void updateScalingFactor();
 
   /* Obtain a pointer to the currently selected person */
   BattleActor* getCurrentActor();

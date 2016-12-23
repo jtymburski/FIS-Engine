@@ -20,7 +20,7 @@
 
 #include "Helpers.h"
 
-//#include "GFX/SDL2_gfxPrimitives.h"
+#include "GFX/SDL2_gfxPrimitives.h"
 
 /* PI */
 #define PI 3.14159265359
@@ -198,6 +198,12 @@ public:
   /* Creates a rectangle with multiple pixel border */
   static bool renderRect(SDL_Rect rect, uint16_t border_width,
                          SDL_Renderer* renderer, bool reverse = false);
+  
+  /* Creates a Rectangle with SDL_Gfx given a specfic rectangle and color */
+  static bool renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color);
+
+  /* */
+  static bool renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color);
 
   /* Creates a right hand triangle, given the parameters and a renderer */
   static bool renderRHTriangle(uint32_t x, uint32_t y, uint16_t height,

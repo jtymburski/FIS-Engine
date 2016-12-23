@@ -28,28 +28,38 @@ TitleBackground::TitleBackground()
 {
 }
 
-bool TitleBackground::render(SDL_Renderer* renderer)
+bool TitleBackground::render(SDL_Renderer* renderer, Options* config)
 {
   bool success = false;
 
   if(renderer)
   {
     success = true;
+    
+    if(config)
+    {
+
+      auto x_offset = config->getScreenWidth() - Options::kDEF_SCREEN_WIDTH;
+      auto y_offset = config->getScreenHeight() - Options::kDEF_SCREEN_HEIGHT;
+
 
     /* Render the background */
-    success &= background.render(renderer, 0, 0);
-    success &= background6.render(renderer, -220, -48);
-    success &= background2.render(renderer, 153, 314);
+    success &= background.render(renderer, 0, 0, config->getScreenWidth(), config->getScreenHeight());
+    success &= background6.render(renderer, -220 + x_offset, -48 + y_offset);
+  
+    success &= background2.render(renderer, 153 + x_offset, 314 + y_offset);
 
     /* Waldo show - TODO: Only certain hours? */
-    success &= background7.render(renderer, 153, 314);
+    success &= background7.render(renderer, 153 + x_offset, 314 + y_offset);
 
     /* The flash and bangs */
-    success &= background4.render(renderer, 153, 314);
-    success &= background5.render(renderer, 153, 314);
+    success &= background4.render(renderer, 153 + x_offset, 314 + y_offset);
+    success &= background5.render(renderer, 153 + x_offset, 314 + y_offset);
 
     /* Render atmosphere */
-    success &= background3.render(renderer, 153, 314);
+    success &= background3.render(renderer, 153 + x_offset, 314 + y_offset);
+
+  }
 
     if(!render_disabled)
       success &= title.render(renderer, 50, 50);
@@ -178,6 +188,7 @@ bool TitleBackground::update(int32_t cycle_time)
 
 const SDL_Color TitleScreen::kCOLOR_BACKGROUND{0, 0, 0, 200};
 const SDL_Color TitleScreen::kCOLOR_BORDER{255, 255, 255, 255};
+const SDL_Color TitleScreen::kCOLOR_SELECT{125, 125, 125, 75};
 const SDL_Color TitleScreen::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color TitleScreen::kCOLOR_TEXT_INVALID{200, 100, 100, 255};
 
@@ -413,8 +424,8 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
     current = Coordinate{centre_x, centre_y};
 
     /* Title Element Box Rendering */
-    title_element_box.width = 1 * config->getScreenWidth() / 6;
-    title_element_box.height = 1 * config->getScreenHeight() / 4;
+    title_element_box.width = 1 * config->getScaledWidth() / 6;
+    title_element_box.height = 1 * config->getScaledHeight() / 4;
     title_element_box.point.x = centre_x - title_element_box.width / 2;
     title_element_box.point.y = centre_y - title_element_box.height / 5;
     title_element_box.color_border = kCOLOR_BORDER;
@@ -437,13 +448,7 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
         // TODO
         if(i != -1 && i == title_menu_index)
         {
-          auto rect =
-              getRect(current, t_element.getHeight(), t_element.getWidth());
-
-          short x[4] = {rect.x, rect.x + rect.w, rect.x + rect.w, rect.x};
-          short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
-
-          filledPolygonRGBA(renderer, x, y, 4, 125, 125, 125, 125);
+          Frame::renderRectSelect(getRect(current, t_element.getHeight(), t_element.getWidth()), renderer, kCOLOR_SELECT);
         }
 
         current.y += (int32_t)std::round(t_element.getHeight() * 1.425);
@@ -496,8 +501,8 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
     auto centre_x = config->getScreenWidth() / 2;
     auto centre_y = config->getScreenHeight() / 2;
 
-    player_selection_box.width = config->getScreenWidth() / 3;
-    player_selection_box.height = config->getScreenHeight() / 4;
+    player_selection_box.width = config->getScaledWidth() / 3;
+    player_selection_box.height = config->getScaledHeight() / 4;
     player_selection_box.point.x = centre_x - player_selection_box.width / 2;
     player_selection_box.point.y = centre_y - player_selection_box.height / 2;
     player_selection_box.color_border = kCOLOR_BORDER;
@@ -537,8 +542,8 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
         auto rect = getRect(
             {start.x + width / 2, start.y + t_player_title.getHeight() / 2},
             t_player_title.getHeight(), width);
-        Frame::setRenderDrawColor(renderer, {150, 150, 150, 125});
-        SDL_RenderFillRect(renderer, &rect);
+
+        Frame::renderRectSelect(rect, renderer, kCOLOR_SELECT);
       }
 
       t_female.setText(renderer, "Female", kCOLOR_TEXT);
@@ -551,12 +556,12 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
                              current.y + t_female.getHeight() / 2},
                             t_female.getHeight(), t_female.getWidth());
 
-        if(player_menu_index == 1)
-          Frame::setRenderDrawColor(renderer, {150, 150, 150, 125});
-        else
-          Frame::setRenderDrawColor(renderer, {150, 150, 150, 75});
+        SDL_Color color = kCOLOR_SELECT;
 
-        SDL_RenderFillRect(renderer, &rect);
+        if(player_menu_index == 1)
+          color = {125, 125, 125, 125};
+
+        Frame::renderRectSelect(rect, renderer, color);
       }
 
       t_male.setText(renderer, "Male", kCOLOR_TEXT);
@@ -569,12 +574,12 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
                              current.y + t_male.getHeight() / 2},
                             t_male.getHeight(), t_male.getWidth());
 
-        if(player_menu_index == 1)
-          Frame::setRenderDrawColor(renderer, {150, 150, 150, 125});
-        else
-          Frame::setRenderDrawColor(renderer, {150, 150, 150, 75});
+        SDL_Color color = kCOLOR_SELECT;
 
-        SDL_RenderFillRect(renderer, &rect);
+        if(player_menu_index == 1)
+          color = {125, 125, 125, 125};
+        
+        Frame::renderRectSelect(rect, renderer, color);
       }
 
       t_begin.setText(renderer, "Begin", kCOLOR_TEXT);
@@ -587,8 +592,8 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
         auto rect = getRect({current.x + t_begin.getWidth() / 2,
                              current.y + t_begin.getHeight() / 2},
                             t_begin.getHeight(), t_begin.getWidth());
-        Frame::setRenderDrawColor(renderer, {150, 150, 150, 125});
-        SDL_RenderFillRect(renderer, &rect);
+
+        Frame::renderRectSelect(rect, renderer, kCOLOR_SELECT);
       }
     }
   }
@@ -684,14 +689,7 @@ void TitleScreen::keyDownEvent(KeyHandler& key_handler)
 #ifdef UDEBUG
 void TitleScreen::keyTestDownEvent(SDL_KeyboardEvent event)
 {
-#ifndef TITLE_SKIP
-  /* Hide Text & logo from title */
-  title_background.render_disabled = !title_background.render_disabled;
-#else
-  if(event.keysym.sym == SDLK_F1)
-    /* Process warning if TitleSkip is not assigned */
-    (void)event;
-#endif
+ (void)event;
 }
 #endif
 
@@ -700,10 +698,8 @@ bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
 /* Update the title background if it's enabled */
 #ifndef TITLE_SKIP
-  title_background.render(renderer);
+  title_background.render(renderer, config);
 #endif
-
-  arcColor(renderer, 300, 300, 200, 165, 362, 0xEEEEEEEE);
 
   if(menu_layer == MenuLayer::TITLE)
   {

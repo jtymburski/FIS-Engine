@@ -204,7 +204,7 @@ void Save::print()
 }
 
 /* Return a Frame to render for the Save file */
-Frame* Save::createRenderFrame(SDL_Renderer* renderer)
+SDL_Texture* Save::createRenderFrame(SDL_Renderer* renderer)
 {
   if(config)
   {
@@ -229,11 +229,14 @@ Frame* Save::createRenderFrame(SDL_Renderer* renderer)
 
     auto height = Map::kSNAPSHOT_H / 4;
     auto width = Map::kSNAPSHOT_W / 4;
-    auto gap = (int32_t)(std::round((location.height - height) / 2));
+    auto save_height = location.height;
+    auto save_width = location.width;
+
+    auto gap = (int32_t)(std::floor((location.height - height) / 2));
 
     SDL_Texture* texture =
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                          SDL_TEXTUREACCESS_TARGET, width, height);
+                          SDL_TEXTUREACCESS_TARGET, save_width, save_height);
     SDL_SetRenderTarget(renderer, texture);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
@@ -250,9 +253,10 @@ Frame* Save::createRenderFrame(SDL_Renderer* renderer)
       t_empty.setText(renderer, "- Empty", kCOLOR_TEXT);
 
       Box blank_tile(current, width, height);
-      // blank_tile.render(renderer);
+      blank_tile.color_border = {125, 125, 125, 255};
+      blank_tile.render(renderer);
 
-      current.x += blank_tile.height + gap;
+      current.x += blank_tile.height + width + gap;
       current.y = location.point.y + location.height / 2;
 
       /* Render the slot empty text */
@@ -276,14 +280,17 @@ Frame* Save::createRenderFrame(SDL_Renderer* renderer)
       t_map_name.setText(renderer, map_name, kCOLOR_TEXT);
 
       /* Generate the map thumbnail */
-      Frame* map_frame = nullptr;
-
-      map_frame = new Frame(snapshot_path, renderer);
+      auto map_frame = new Frame(snapshot_path, renderer);
 
       if(map_frame)
       {
         map_frame->render(renderer, current.x, current.y);
         current.x += map_frame->getWidth() + gap;
+
+        delete map_frame;
+        map_frame = nullptr;
+
+
       }
 
       /* Render the first column of text - Slot Title, Date, Time, Map Name */
@@ -334,12 +341,7 @@ Frame* Save::createRenderFrame(SDL_Renderer* renderer)
 
     SDL_SetRenderTarget(renderer, nullptr);
 
-    auto save_frame = new Frame();
-    save_frame->setTexture(texture);
-
-    save_frame->render(renderer);
-
-    return save_frame;
+    return texture;
   }
 
   return nullptr;

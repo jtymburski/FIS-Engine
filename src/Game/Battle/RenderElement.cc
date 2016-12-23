@@ -26,8 +26,8 @@ const SDL_Color RenderElement::kMISS_TEXT_COLOR = {163, 163, 163, 225};
 const uint16_t RenderElement::kACTION_COLOR_R = 175;
 const uint16_t RenderElement::kACTION_SHADOW = 3;
 const uint16_t RenderElement::kDAMAGE_SHADOW = 2;
-const uint16_t RenderElement::kACTION_TEXT_X = 800;
-const uint16_t RenderElement::kACTION_CENTER = 381;
+const float RenderElement::kACTION_TEXT_X = 0.657;
+const float RenderElement::kACTION_CENTER = 0.543;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTOR
@@ -164,7 +164,7 @@ bool RenderElement::buildSprite(Sprite* build_sprite)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-void RenderElement::createAsActionText(std::string action_name)
+void RenderElement::createAsActionText(std::string action_name, int32_t screen_width, int32_t screen_height)
 {
   text_string = action_name;
   color = {0, 0, 0, 255};
@@ -177,8 +177,8 @@ void RenderElement::createAsActionText(std::string action_name)
   {
     element_text = Text(element_font);
     element_text.setText(renderer, action_name, color);
-    location.point.x = kACTION_TEXT_X - element_text.getWidth();
-    location.point.y = kACTION_CENTER - element_text.getHeight() / 2 - 8;
+    location.point.x = (screen_width * kACTION_TEXT_X) - element_text.getWidth();
+    location.point.y = (screen_height * kACTION_CENTER) - element_text.getHeight() / 2 - 8;
   }
 }
 

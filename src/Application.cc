@@ -615,6 +615,7 @@ bool Application::initialize()
     }
 #else // _WIN32_OPENGL
     renderer = SDL_CreateRenderer(window, -1, flags);
+    (void)driver_index;
 #endif
 
     if(renderer == NULL)

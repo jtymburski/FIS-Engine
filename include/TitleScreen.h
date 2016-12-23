@@ -20,10 +20,8 @@
 #include "Text.h"
 #include "Window.h"
 
-#include "GFX/SDL2_gfxPrimitives.h"
-
 // SKIP THE TITLE BACKGROUND LOADING / RENDERING
-#define TITLE_SKIP
+//#define TITLE_SKIP
 
 /* BState Flags - Flags which describe only battle-related flags */
 ENUM_FLAGS(TitleState)
@@ -76,7 +74,7 @@ public:
   void buildSprites(Options* config, SDL_Renderer* renderer);
 
   /* Render the TitleBackground */
-  bool render(SDL_Renderer* renderer, KeyHandler& key_handler);
+  bool render(SDL_Renderer* renderer, Options* config);
 
   /* Update the TitleBackground */
   bool update(int32_t cycle_time);
@@ -131,6 +129,7 @@ private:
   /* ----------------- CONSTANTS -------------------- */
   static const SDL_Color kCOLOR_BACKGROUND;
   static const SDL_Color kCOLOR_BORDER;
+  static const SDL_Color kCOLOR_SELECT;
   static const SDL_Color kCOLOR_TEXT;
   static const SDL_Color kCOLOR_TEXT_INVALID;
 

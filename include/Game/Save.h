@@ -124,7 +124,7 @@ public:
   void print();
 
   /* Return the Render frame for this Save */
-  Frame* createRenderFrame(SDL_Renderer* renderer);
+  SDL_Texture* createRenderFrame(SDL_Renderer* renderer);
 
   /* Assigns configuration to the save file */
   bool setConfig(Options* config);

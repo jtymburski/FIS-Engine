@@ -595,6 +595,7 @@ enum class MenuLayer
 /* Enumerated MenuType */
 enum class MenuType
 {
+  SIGNATURE,
   SLEUTH,
   SLEUTH_OVERVIEW,
   SLEUTH_EQUIPMENT,

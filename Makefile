@@ -15,9 +15,10 @@ endif
 
 # CFlags - first line is for normal operation. Switch comment to second line
 #          for additional debugging options in 'gdb'
-CFLAGS = -c -std=c++1y -Wall -Wextra
+CFLAGS = -c -std=c++1y -Wextra -Wno-unused-variable -Wno-narrowing
 #CFLAGS = -c -std=c++1y -Wall -Wextra -g
 INCLUDES = -Iinclude
+
 
 # WINDOWS only?! Helps the cmd not appear when running the app separately.
 # This stops all output to the command line though...
@@ -53,14 +54,14 @@ SOURCES=src/Application.cc \
         src/Music.cc \
         src/Options.cc \
         src/Sound.cc \
-				src/SoundHandler.cc \
+		src/SoundHandler.cc \
         src/Sprite.cc \
         src/Text.cc \
         src/TinyXML.cc \
         src/TitleScreen.cc \
         src/XmlData.cc \
         src/Game/EventHandler.cc \
-				src/Game/EventSet.cc \
+		src/Game/EventSet.cc \
         src/Game/Game.cc \
         src/Game/KeyHandler.cc \
         src/Game/Lay.cc \

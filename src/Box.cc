@@ -227,19 +227,14 @@ bool Box::renderElements(SDL_Renderer* renderer, uint32_t start_index,
         rect.w = elements.at(i)->getWidth();
 
         /* Render the Fill Rect */
-        Frame::setRenderDrawColor(renderer, color_fill);
-        success &= SDL_RenderFillRect(renderer, &rect);
+        Frame::renderRectSelect(rect, renderer, color_fill);
+
+        success &= elements.at(i)->render(renderer, curr_x, curr_y);
 
         /* Set the render draw color, render the border box */
-        Frame::setRenderDrawColor(renderer, color);
-        success &= Frame::renderRect(rect, border_width, renderer);
+        Frame::renderRectBorderSelect(rect, renderer, color);
 
-        /* Render the element and update the running Y-Coordinate */
-        // if(getFlag(BoxState::USES_FRAMES))
-        //{
-        success &= elements.at(i)->render(renderer, curr_x, curr_y);
         curr_y += elements.at(i)->getHeight() + element_gap;
-        //}
       }
     }
   }
@@ -511,34 +506,37 @@ bool Box::render(SDL_Renderer* renderer)
     }
 
     success = true;
+
     /* Render the background rectangle */
-    SDL_Rect rect;
-    rect.x = point.x;
-    rect.y = point.y;
-    rect.h = height;
-    rect.w = width;
+    // SDL_Rect rect;
+    // rect.x = point.x;
+    // rect.y = point.y;
+    // rect.h = height;
+    // rect.w = width;
 
     if(box_type == BoxType::NORMAL_BOX)
     {
-      short x[4] = {point.x, point.x + width, point.x + width, point.x};
-      short y[4] = {point.y, point.y, point.y + height, point.y + height};
+       short x[4] = {point.x, point.x + width, point.x + width, point.x};
+       short y[4] = {point.y, point.y, point.y + height, point.y + height};
 
-      filledPolygonRGBA(renderer, x, y, 4, bg_color.r, bg_color.g, bg_color.b,
-                        bg_color.a);
-      polygonRGBA(renderer, x, y, 4, border_color.r, border_color.g,
-                  border_color.b, border_color.a);
+       filledPolygonRGBA(renderer, x, y, 4, bg_color.r, bg_color.g, bg_color.b,
+                         bg_color.a);
+       polygonRGBA(renderer, x, y, 4, border_color.r, border_color.g,
+                   border_color.b, border_color.a);
 
       // Frame::setRenderDrawColor(renderer, bg_color);
       // SDL_RenderFillRect(renderer, &rect);
 
-      /* Render the border based on whether this scroll box is currently being
-       * selected (hovered on). */
+      //  Render the border based on whether this scroll box is currently being
+      //  * selected (hovered on). 
       // Frame::setRenderDrawColor(renderer, border_color);
       // success &= Frame::renderRect(rect, border_width, renderer);
 
       /* Render the scroll box elements as required */
       if(getFlag(BoxState::SCROLL_BOX))
+      {
         renderElements(renderer, view_index, getNumViewable());
+      }
     }
     else if(box_type == BoxType::CORNER_CUT_BOX)
     {
@@ -552,10 +550,10 @@ bool Box::render(SDL_Renderer* renderer)
       short x[5] = {tl.x, tr.x, trc.x, br.x, bl.x};
       short y[5] = {tl.y, tr.y, trc.y, br.y, bl.y};
 
-      filledPolygonRGBA(renderer, x, y, 5, bg_color.r, bg_color.g, bg_color.b,
-                        bg_color.a);
-      polygonRGBA(renderer, x, y, 5, border_color.r, border_color.g,
-                  border_color.b, border_color.a);
+       filledPolygonRGBA(renderer, x, y, 5, bg_color.r, bg_color.g, bg_color.b,
+                         bg_color.a);
+       polygonRGBA(renderer, x, y, 5, border_color.r, border_color.g,
+                   border_color.b, border_color.a);
     }
     else if(box_type == BoxType::BAR)
     {
@@ -573,8 +571,8 @@ bool Box::render(SDL_Renderer* renderer)
     }
 
     /* Render the required elements */
-    if(elements.size())
-      success &= renderElements(renderer, view_index, num_viewable);
+    // if(elements.size())
+    //   success &= renderElements(renderer, view_index, num_viewable);
   }
 
   return success;

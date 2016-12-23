@@ -24,18 +24,23 @@ const std::string Options::kFONTS[] = {
     "fonts/colab_light.otf", "fonts/crimes.ttf", "fonts/blanch_caps.otf",
     "fonts/colab_reg.otf", "fonts/colab_med.otf"};
 const uint8_t Options::kNUM_FONTS = 5;
-const uint8_t Options::kNUM_RESOLUTIONS = 8;
+const uint8_t Options::kNUM_RESOLUTIONS = 10;
 const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920,
-                                            1920, 2560, 2460, 3860};
+                                            1920, 2560, 2460, 3440, 3860, 4160};
 const uint16_t Options::kRESOLUTIONS_Y[] = {704,  705,  768,  1080,
-                                            1440, 1080, 1440, 2160};
+                                            1440, 1080, 1440, 1440, 2160, 2160};
 
 /* Default Screen Width and Height */
 const std::uint32_t Options::kDEF_SCREEN_WIDTH{1216};
 const std::uint32_t Options::kDEF_SCREEN_HEIGHT{704};
 
-const std::uint32_t Options::kDEF_AUDIO_LEVEL{50};
-const std::uint32_t Options::kDEF_MUSIC_LEVEL{50};
+/* Default Audio and Music Levels */
+const std::uint32_t Options::kDEF_AUDIO_LEVEL{40};
+const std::uint32_t Options::kDEF_MUSIC_LEVEL{30};
+
+/* Default Text and UI Scaling Options */
+const std::uint32_t Options::kDEF_SCALING_TEXT{50};
+const std::uint32_t Options::kDEF_SCALING_UI{0};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -91,6 +96,10 @@ void Options::setAllToDefault()
   setAudioLevel(kDEF_MUSIC_LEVEL);
   setMusicLevel(kDEF_AUDIO_LEVEL);
 
+  /* Scaling options */
+  setScalingText(kDEF_SCALING_TEXT);
+  setScalingUI(kDEF_SCALING_UI);
+
   /* Flags */
   setLinearFiltering(false);
 
@@ -106,7 +115,7 @@ void Options::setAllToDefault()
 
   /* Rendering Options */
   setFont(0, true);
-  setScreenResolution(2);
+  setScreenResolution(5);
 }
 
 /* Sets the chosen font */
@@ -227,6 +236,36 @@ int32_t Options::getMusicLevel()
   return music_level;
 }
 
+int32_t Options::getScaledHeight()
+{
+  auto value = kDEF_SCREEN_HEIGHT * ((float)scaling_ui + 100) / 100;
+
+  if (value > getScreenHeight())
+    return getScreenHeight();
+  
+  return value;
+}
+
+int32_t Options::getScaledWidth()
+{
+  auto value = kDEF_SCREEN_WIDTH * ((float)scaling_ui + 100) / 100;
+
+  if(value > getScreenWidth())
+    return getScreenWidth();
+
+  return value; 
+}
+
+int32_t Options::getScalingText()
+{
+  return scaling_text;
+}
+
+int32_t Options::getScalingUI()
+{
+  return scaling_ui;
+}
+
 uint16_t Options::getScreenHeight()
 {
   return kRESOLUTIONS_Y[resolution_y];
@@ -288,6 +327,16 @@ void Options::setMusicLevel(int32_t new_level)
     sound_handler->setMusicLevel(music_level);
   else if(sound_handler)
     sound_handler->setMusicLevel(0);
+}
+
+void Options::setScalingText(int32_t new_level)
+{
+  scaling_text = new_level;
+}
+
+void Options::setScalingUI(int32_t new_level)
+{
+  scaling_ui = new_level;
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */

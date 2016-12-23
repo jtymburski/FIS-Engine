@@ -158,7 +158,7 @@ const float Menu::kSLEUTH_WIDTH{0.60};
 /* Save Section */
 const float Menu::kSAVE_GAP{0.016};
 const float Menu::kSAVE_ELEMENT_WIDTH{0.90};
-const float Menu::kSAVE_ELEMENT_HEIGHT{0.31};
+const float Menu::kSAVE_ELEMENT_HEIGHT{0.30};
 
 /* Sleuth Section */
 const float Menu::kSLEUTH_GAP{0.009};
@@ -190,7 +190,7 @@ const uint32_t Menu::kNUM_OPTIONS{5};
 const float Menu::kOPTIONS_X{0.025};
 const float Menu::kOPTIONS_Y{0.05};
 const float Menu::kOPTIONS_Y_BAR_GAP{0.04};
-const float Menu::kOPTIONS_Y_GAP{0.075};
+const float Menu::kOPTIONS_Y_GAP{0.045};
 const float Menu::kOPTIONS_DIGITAL_TEXT_GAP{0.03};
 const float Menu::kOPTIONS_BOX_SIZE{0.017};
 
@@ -240,6 +240,7 @@ Menu::Menu()
       inventory_element_index{-1},
       option_element_index{-1},
       person_element_index{-1},
+      save_element_index{-1},
       skills_element_index{-1},
       sleuth_element_index{-1},
       title_element_index{-1},
@@ -339,7 +340,7 @@ int32_t Menu::calcSleuthTileSize()
   if(config)
   {
     int32_t sleuth_gap =
-        (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+        (int32_t)std::round(config->getScaledWidth() * kSLEUTH_GAP);
 
     auto size = (main_section.location.height - 6 * sleuth_gap) / 5;
 
@@ -451,6 +452,11 @@ void Menu::buildSkillFrames()
   }
 }
 
+void Menu::buildSignature()
+{
+
+}
+
 /* Construct the Item Frames -- Scroll Box and Details */
 void Menu::buildInventoryItems()
 {
@@ -556,7 +562,7 @@ int32_t Menu::calcMainCornerInset()
   if(config)
   {
     return static_cast<int32_t>(
-        std::ceil(config->getScreenWidth() * kMAIN_CORNER_LENGTH));
+        std::ceil(config->getScaledWidth() * kMAIN_CORNER_LENGTH));
   }
 
   return 0;
@@ -671,6 +677,43 @@ void Menu::clearIconFrames()
   frame_exp_empty = nullptr;
 }
 
+void Menu::buildSave()
+{
+  auto main = main_section.location;
+  auto save_width = (int32_t)std::round(main.width * kSAVE_ELEMENT_WIDTH);
+  auto save_height = (int32_t)std::round(main.height * kSAVE_ELEMENT_HEIGHT);
+
+    /* Refresh elements for the Save scroll box */
+  std::vector<Frame*> save_frames;
+  save_scroll_box.clearElements();
+
+  // TODO: Fix
+  std::cout << "Number of saves: " << save_data.size() << std::endl;
+
+  for(auto& save : save_data)
+  {
+    setupDefaultBox(save.location);
+    save.location.width = save_width;
+    save.location.height = save_height;
+
+      auto new_texture = save.createRenderFrame(renderer);
+
+      if(new_texture)
+      {
+        save_frames.push_back(new Frame());
+        save_frames.back()->setTexture(new_texture);
+      }
+      else
+      {
+        std::cerr << "[Error] Creating render frame for Save file." <<
+        std::endl;
+      }
+  }
+
+  save_scroll_box.setElements(save_frames);
+  save_element_index = 0;
+}
+
 /* Constructs the Options */
 void Menu::buildOptions()
 {
@@ -709,8 +752,17 @@ void Menu::buildOptions()
     option_music_level.val = &config->music_level;
     option_music_level.default_val = Options::kDEF_MUSIC_LEVEL;
     option_music_level.num_options = 20;
-    option_audio_level.location.color_border_selected = {255, 255, 255, 255};
-    option_audio_level.location.color_border = {255, 255, 255, 65};
+    option_music_level.location.color_border_selected = {255, 255, 255, 255};
+    option_music_level.location.color_border = {255, 255, 255, 65};
+
+    /* Scaling - Options */
+    option_scaling_ui_level = AnalogOption("UI SCALING");
+    option_scaling_ui_level.location = analog_box;
+    option_scaling_ui_level.val = &config->scaling_ui;
+    option_scaling_ui_level.default_val = Options::kDEF_SCALING_UI;
+    option_scaling_ui_level.num_options = 20;
+    option_scaling_ui_level.location.color_border_selected = {255, 255, 255, 255};
+    option_scaling_ui_level.location.color_border = {255, 255, 255, 65};
   }
 }
 
@@ -719,7 +771,7 @@ void Menu::buildMainSection(MenuType menu_type)
 {
   if(config && renderer)
   {
-    auto width = config->getScreenWidth();
+    auto width = config->getScaledWidth();
     int32_t main_width{0};
     auto title_point = title_section.location.point;
     auto title_corner = (int32_t)std::round(width * kTITLE_CORNER_LENGTH);
@@ -760,6 +812,10 @@ void Menu::buildMainSection(MenuType menu_type)
       buildSleuthScreen();
       buildSkillFrames();
     }
+    else if(menu_type == MenuType::SIGNATURE)
+    {
+      //buildSignature();
+    }
     else if(menu_type == MenuType::INVENTORY)
     {
       buildIconTitles(4);
@@ -772,6 +828,11 @@ void Menu::buildMainSection(MenuType menu_type)
       buildOptions();
       option_element_index = 0;
       selectOptionIndex();
+    }
+    else if(menu_type == MenuType::SAVE)
+    {
+      buildSave();
+      save_element_index = 0;
     }
     else if(menu_type == MenuType::QUIT)
     {
@@ -789,6 +850,10 @@ void Menu::buildTitleElements()
   /* Party TitleElement */
   title_elements.push_back(TitleElement(
       Helpers::menuTypeToStr(MenuType::SLEUTH), true, MenuType::SLEUTH));
+
+  /* Party TitleElement */
+  // title_elements.push_back(TitleElement(
+  //     "Signature", true, MenuType::SIGNATURE));
 
   /* Inventory TitleElement */
   title_elements.push_back(
@@ -837,9 +902,10 @@ void Menu::buildQuit()
 void Menu::buildTitleSection()
 {
   auto height = config->getScreenHeight();
-  auto width = config->getScreenWidth();
+  auto screen_height = config->getScaledHeight();
+  auto width = config->getScaledWidth();
 
-  auto title_height = (uint32_t)std::round(height * kTITLE_HEIGHT);
+  auto title_height = (uint32_t)std::round(screen_height * kTITLE_HEIGHT);
   auto y = (height - title_height) / 2 - (height * kTITLE_Y_OFFSET);
   auto title_width = (uint32_t)std::round(width * kTITLE_WIDTH);
   auto corner_width = (uint32_t)std::round(width * kTITLE_CORNER_LENGTH);
@@ -938,10 +1004,12 @@ void Menu::selectOptionIndex()
   else if(option_element_index == 1)
     option_music_level.location.setFlag(BoxState::SELECTED);
   else if(option_element_index == 2)
-    option_auto_run.location.setFlag(BoxState::SELECTED);
+    option_scaling_ui_level.location.setFlag(BoxState::SELECTED);
   else if(option_element_index == 3)
-    option_mute.location.setFlag(BoxState::SELECTED);
+    option_auto_run.location.setFlag(BoxState::SELECTED);
   else if(option_element_index == 4)
+    option_mute.location.setFlag(BoxState::SELECTED);
+  else if(option_element_index == 5)
     option_fast_battle.location.setFlag(BoxState::SELECTED);
 }
 
@@ -963,10 +1031,12 @@ void Menu::unselectOptionIndex()
   else if(option_element_index == 1)
     option_music_level.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 2)
-    option_auto_run.location.setFlag(BoxState::SELECTED, false);
+    option_scaling_ui_level.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 3)
-    option_mute.location.setFlag(BoxState::SELECTED, false);
+    option_auto_run.location.setFlag(BoxState::SELECTED, false);
   else if(option_element_index == 4)
+    option_mute.location.setFlag(BoxState::SELECTED, false);
+  else if(option_element_index == 5)
     option_fast_battle.location.setFlag(BoxState::SELECTED, false);
 }
 
@@ -974,6 +1044,26 @@ void Menu::unselectSleuthIndex()
 {
   if(sleuth_element_index < (int32_t)titles.size() && sleuth_element_index > -1)
     titles.at(sleuth_element_index).setFlag(BoxState::SELECTED, false);
+}
+
+void Menu::updateScalingFactor()
+{
+  if(config)
+  {
+    buildTitleSection();
+
+    title_section.location.point  = title_section.point;
+    title_section.status = WindowStatus::ON;
+
+    buildMainSection(MenuType::OPTIONS);
+
+    main_section.location.point = main_section.point;
+    main_section.status = WindowStatus::ON;
+    
+    unselectOptionIndex();
+    option_element_index = 2;
+    selectOptionIndex();
+  }
 }
 
 void Menu::selectSleuthIndex()
@@ -994,6 +1084,7 @@ void Menu::clearAttributeFrames()
 
   sleuth_attr_frames.clear();
 }
+
 void Menu::clearElementFrames()
 {
   for(auto& element_frame : sleuth_stat_frames)
@@ -1228,8 +1319,9 @@ void Menu::renderKeyItems()
 /* Renders the TitleSection */
 void Menu::renderTitleSection()
 {
-  auto height = config->getScreenHeight();
-  auto width = config->getScreenWidth();
+  auto screen_height = config->getScreenHeight();
+  auto height = config->getScaledHeight();
+  auto width = config->getScaledWidth();
   auto location = title_section.location;
   auto point = title_section.location.point;
 
@@ -1264,7 +1356,7 @@ void Menu::renderTitleSection()
 
   t_main_title.setText(renderer, "MENU", kCOLOR_TEXT);
 
-  int32_t y_gap = (int32_t)std::round(config->getScreenHeight() * 0.06);
+  int32_t y_gap = (int32_t)std::round(config->getScaledHeight() * 0.06);
   int32_t element_offset =
       point.y + y_offset + t_main_title.getHeight() + y_gap;
   int32_t running_offset = element_offset;
@@ -1311,33 +1403,37 @@ void Menu::renderTitleSection()
 
   if(curr_map && curr_player)
   {
-    auto bot_y_offset = (int32_t)std::round(height * kTITLE_LOCATION_Y_OFFSET);
+    //auto bot_y_offset = (int32_t)std::round(screen_height * kTITLE_LOCATION_Y_OFFSET);
     auto icons_y_gap = (int32_t)std::round(height * kTITLE_ICONS_Y_GAP);
     auto tx = (int32_t)std::round(width * kTITLE_ICON_TEXT_X);
     auto ty = (int32_t)std::round(height * kTITLE_ICON_TEXT_Y);
-    current.y = bot_y_offset + icons_y_gap;
+    current.y = title_section.location.height + point.y;
 
-    if(frame_location)
-    {
-      map_name.setText(renderer, curr_map->getName(), kCOLOR_TEXT);
-      frame_location->render(renderer, point.x + x_offset, current.y);
-      map_name.render(renderer, point.x + x_offset + tx, current.y + ty);
-    }
-    if(frame_footsteps)
-    {
-      current.y += icons_y_gap;
-      footsteps.setText(renderer, Helpers::formatUInt(curr_player->getSteps()),
-                        kCOLOR_TEXT);
-      frame_footsteps->render(renderer, point.x + x_offset, current.y);
-      footsteps.render(renderer, point.x + x_offset + tx, current.y + ty);
-    }
     if(frame_money)
     {
-      current.y += icons_y_gap;
+      current.y -= icons_y_gap;
       credits.setText(renderer, Helpers::formatUInt(curr_player->getCredits()),
                       kCOLOR_TEXT);
       frame_money->render(renderer, point.x + x_offset, current.y);
-      credits.render(renderer, point.x + x_offset + tx, current.y + ty);
+      credits.render(renderer, point.x + x_offset + tx, current.y);
+    }
+
+    if(frame_footsteps)
+    {
+      current.y -= icons_y_gap;
+      footsteps.setText(renderer, Helpers::formatUInt(curr_player->getSteps()),
+                        kCOLOR_TEXT);
+      frame_footsteps->render(renderer, point.x + x_offset, current.y);
+      footsteps.render(renderer, point.x + x_offset + tx, current.y);
+    }
+
+    if(frame_location)
+    {
+      current.y -= icons_y_gap;
+
+      map_name.setText(renderer, curr_map->getName(), kCOLOR_TEXT);
+      frame_location->render(renderer, point.x + x_offset, current.y);
+      map_name.render(renderer, point.x + x_offset + tx, current.y);
     }
   }
 
@@ -1393,7 +1489,7 @@ void Menu::renderMainSection()
 void Menu::renderInventory()
 {
   auto inv = player_inventory;
-  auto width = config->getScreenWidth();
+  auto width = config->getScaledWidth();
   auto start = main_section.location.point;
   auto gap = (int32_t)std::round(width * kINV_GAP);
   current.y = start.y + gap;
@@ -1541,7 +1637,7 @@ void Menu::renderInventory()
     number_str = std::to_string(inv->getEquipTotalCount()) + " / " +
                  std::to_string(inv->getEquipmentLimit());
 
-    title_text.setText(renderer, "Equipment", kCOLOR_TEXT);
+    title_text.setText(renderer, "Crafting", kCOLOR_TEXT);
   }
   else if(inventory_title_index == InventoryIndex::BUBBIES)
   {
@@ -1669,8 +1765,8 @@ void Menu::renderItem(Coordinate start, int32_t icon_w, int32_t gap,
 /* Renders the Options Screen */
 void Menu::renderOptions()
 {
-  auto width = config->getScreenWidth();
-  auto height = config->getScreenHeight();
+  auto width = config->getScaledWidth();
+  auto height = config->getScaledHeight();
 
   UCoordinate ucurrent{main_section.location.point.x +
                            (uint32_t)std::round(kOPTIONS_X * width),
@@ -1685,6 +1781,10 @@ void Menu::renderOptions()
   /* Render the music level */
   ucurrent.y = end.y + y_gap;
   end = renderOptionAnalog(option_music_level, ucurrent);
+
+  /* Render the UI scaling */
+  ucurrent.y = end.y + y_gap;
+  end = renderOptionAnalog(option_scaling_ui_level, ucurrent);
 
   /* Render the auto run flag */
   ucurrent.y = end.y + y_gap;
@@ -1706,8 +1806,8 @@ UCoordinate Menu::renderOptionAnalog(AnalogOption& option, UCoordinate point)
 
   if(renderer && config && option.val)
   {
-    auto width = config->getScreenWidth();
-    auto height = config->getScreenHeight();
+    auto width = config->getScaledWidth();
+    auto height = config->getScaledHeight();
     auto bar_gap = (uint32_t)std::round(kOPTIONS_Y_BAR_GAP * height);
     auto box_size = (int32_t)std::round(kOPTIONS_BOX_SIZE * width);
     auto start_x = (int32_t)point.x;
@@ -1774,7 +1874,7 @@ UCoordinate Menu::renderOptionDigital(DigitalOption& option, UCoordinate point)
 
   if(renderer && config)
   {
-    auto width = config->getScreenWidth();
+    auto width = config->getScaledWidth();
     auto text_gap = (uint32_t)std::round(kOPTIONS_DIGITAL_TEXT_GAP * width);
     auto box_size = (int32_t)std::round(kOPTIONS_BOX_SIZE * width);
     auto start_x = (int32_t)point.x;
@@ -1869,7 +1969,7 @@ void Menu::renderPersonElementTitle(TitleElement& element)
 void Menu::renderSleuth()
 {
   /* Obtained values */
-  auto width = config->getScreenWidth();
+  auto width = config->getScaledWidth();
   auto start = main_section.location.point;
 
   /* Calculated values */
@@ -1932,7 +2032,7 @@ void Menu::renderSleuthOverview()
     sleuth_element_index = 0;
 
   auto start = main_section.location.point;
-  auto width = config->getScreenWidth();
+  auto width = config->getScaledWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
   auto person = getCurrentPerson();
   auto actor = getCurrentActor();
@@ -2006,7 +2106,9 @@ void Menu::renderSleuthOverview()
   s_sprite_box.height =
       main.height - s_top_stats_box.height - 2 * s_top_box.height - 3 * gap;
   setupDefaultBox(s_sprite_box);
-  s_sprite_box.render(renderer);
+
+  //TODO: Flickering
+  //s_sprite_box.render(renderer);
 
   /* Render the person's sprite in the sleuth sprite box */
   actor->setActiveSprite(ActiveSprite::FOE);
@@ -2187,7 +2289,7 @@ void Menu::renderSleuthEquipment()
 /* Render the skills screen for the current person in sleuth selection */
 void Menu::renderSleuthSkills()
 {
-  auto width = config->getScreenWidth();
+  auto width = config->getScaledWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
 
   /* Useable height between the top box and the details box */
@@ -2386,7 +2488,7 @@ void Menu::renderSleuthSkillDetail(Coordinate start, int32_t icon_w,
 
 void Menu::renderSleuthDetails()
 {
-  auto width = config->getScreenWidth();
+  auto width = config->getScaledWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
 
   /* Useable height */
@@ -2415,7 +2517,7 @@ void Menu::renderSleuthDetails()
 /* Render a detailed breakdown of the experience for the person */
 void Menu::renderSleuthDetailsStats()
 {
-  auto gap = (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+  auto gap = (int32_t)std::round(config->getScaledWidth() * kSLEUTH_GAP);
   auto person = getCurrentPerson();
 
   if(person)
@@ -2441,7 +2543,7 @@ void Menu::renderSleuthDetailsStats()
 /* Render the extra attributes for the person (MMNT, LIMB, UNBR) */
 void Menu::renderSleuthDetailsExp()
 {
-  auto width = config->getScreenWidth();
+  auto width = config->getScaledWidth();
   auto gap = (int32_t)std::round(width * kSLEUTH_GAP);
   auto person = getCurrentPerson();
 
@@ -2549,7 +2651,7 @@ void Menu::renderSleuthDetailsExp()
 
 void Menu::renderSleuthDetailsRank()
 {
-  auto gap = (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+  auto gap = (int32_t)std::round(config->getScaledWidth() * kSLEUTH_GAP);
   auto person = getCurrentPerson();
 
   if(person)
@@ -2652,52 +2754,25 @@ void Menu::renderSave()
 
   save_scroll_box.color_border = {0, 0, 0, 0};
   save_scroll_box.color_border_selected = {0, 0, 0, 0};
+
+  save_scroll_box.color_element_border_selected = {255, 255, 255, 255};
+  save_scroll_box.color_element_border = {125, 125, 125, 255};
   save_scroll_box.color_bg = {0, 0, 0, 0};
   save_scroll_box.color_bg_selected = {0, 0, 0, 0};
 
   save_scroll_box.point.x = main.point.x + gap;
   save_scroll_box.point.y = main.point.y + gap;
-  save_scroll_box.height = main.height - 4 * gap;
+  save_scroll_box.height = main.height - 3 * gap;
   save_scroll_box.width = main.width - 2 * gap;
+  save_scroll_box.element_gap = gap;
 
-  current = {main.point.x + gap, main.point.y + gap};
-
-  /* Refresh elements for the Save scroll box */
-  std::vector<Frame*> save_frames;
-  save_scroll_box.clearElements();
-
-  // TODO: Fix
-  // for(auto& save : save_data)
-  // {
-  //   setupDefaultBox(save.location);
-  //   save.location.width = save_width;
-  //   save.location.height = save_height;
-  //   save.location.point.x = current.x;
-  //   save.location.point.y = current.y;
-
-  //   current.y += save.location.height + gap;
-
-  //   if(!save.getFlag(SaveState::EMPTY))
-  //   {
-  //     auto new_frame = save.createRenderFrame(renderer);
-
-  //     if(new_frame)
-  //       save_frames.push_back(new_frame);
-  //     else
-  //       std::cerr << "[Error] Creating render frame for Save file." <<
-  //       std::endl;
-  //   }
-  // // }
-
-  // save_scroll_box.setElements(save_frames);
-
-  // save_scroll_box.render(renderer);
+  save_scroll_box.render(renderer);
 }
 
 /* Renders the Quit Screen */
 void Menu::renderQuit()
 {
-  auto gap = (int32_t)std::round(config->getScreenWidth() * kSLEUTH_GAP);
+  auto gap = (int32_t)std::round(config->getScaledWidth() * kSLEUTH_GAP);
 
   /* Render the are you sure text */
   Text t_question{getFont(FontName::M_TITLE_ELM)};
@@ -2901,6 +2976,15 @@ void Menu::keyDownUp()
         buildInventoryElements();
       }
     }
+    else if(getMainMenuType() == MenuType::SAVE)
+    {
+      if(save_scroll_box.prevIndex())
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
+        save_element_index--;
+      }
+    }
     else if(getMainMenuType() == MenuType::SLEUTH)
     {
       if((uint32_t)sleuth_element_index > 1)
@@ -2965,6 +3049,16 @@ void Menu::keyDownDown()
         buildInventoryElements();
       }
     }
+    else if(getMainMenuType() == MenuType::SAVE)
+    {
+      if(save_scroll_box.nextIndex())
+      {
+          event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                      SoundChannels::MENUS);
+
+          save_element_index++;
+      }
+    }
     else if(getMainMenuType() == MenuType::SLEUTH)
     {
       if(canIncrementSleuth())
@@ -3027,6 +3121,12 @@ void Menu::keyDownLeft()
                                     SoundChannels::MENUS);
         option_music_level.decrease();
       }
+      else if(option_element_index == 2)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
+        option_scaling_ui_level.decrease();
+        updateScalingFactor();
+      }
     }
     else if(getMainMenuType() == MenuType::QUIT)
     {
@@ -3063,6 +3163,12 @@ void Menu::keyDownRight()
                                     SoundChannels::MENUS);
         option_music_level.increase();
       }
+      else if(option_element_index == 2)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT, SoundChannels::MENUS);
+        option_scaling_ui_level.increase();
+        updateScalingFactor();
+      }
     }
     else if(getMainMenuType() == MenuType::QUIT)
     {
@@ -3085,7 +3191,6 @@ void Menu::keyDownAction()
 
       /* Construct the main section with the appropriate parameters */
       buildMainSection(getMainMenuType());
-
       main_section.status = WindowStatus::SHOWING;
     }
   }

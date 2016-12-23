@@ -83,11 +83,17 @@ public:
   uint32_t audio_level;
   uint32_t music_level;
 
+  /* UI and Text Scaling */
+  uint32_t scaling_text;
+  uint32_t scaling_ui;
+
   /*--------------------- Constants --------------------*/
   const static std::uint32_t kDEF_SCREEN_WIDTH;
   const static std::uint32_t kDEF_SCREEN_HEIGHT;
   const static uint32_t kDEF_AUDIO_LEVEL;
   const static uint32_t kDEF_MUSIC_LEVEL;
+  const static uint32_t kDEF_SCALING_TEXT;
+  const static uint32_t kDEF_SCALING_UI;
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -136,6 +142,14 @@ public:
   /* Music getter */
   int32_t getMusicLevel();
 
+  /* Scaled height/width getter */
+  int32_t getScaledHeight();
+  int32_t getScaledWidth();
+
+  /* Return the text and UI scaling factors */
+  int32_t getScalingText();
+  int32_t getScalingUI();
+
   /* Returns the screen dimensions to be painted */
   uint16_t getScreenHeight();
   uint16_t getScreenWidth();
@@ -160,6 +174,10 @@ public:
 
   /* Sound setter */
   void setMusicLevel(int32_t new_level);
+
+  /* Set scaling factors */
+  void setScalingText(int32_t new_level);
+  void setScalingUI(int32_t new_level);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);

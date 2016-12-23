@@ -190,7 +190,7 @@ void Battle::actionStateSlideIn()
   else if(event->hit_status_skill == SkillHitStatus::MISS)
     action_string = event->actor->getBasePerson()->getName() + " Missed";
 
-  element->createAsActionText(action_string);
+  element->createAsActionText(action_string, config->getScreenWidth(), config->getScreenHeight());
   render_elements.push_back(element);
   event->action_state = ActionState::FADE_IN_TEXT;
   addDelayNext(300);
