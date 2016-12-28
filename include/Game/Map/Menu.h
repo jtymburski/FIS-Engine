@@ -215,6 +215,7 @@ private:
 
   /* Save screen scroll box */
   Box save_scroll_box;
+  MenuSaveState save_state;
 
   /* Skill Screen Boxes */
   Box skills_top_box;
@@ -328,6 +329,11 @@ private:
   static const float kOPTIONS_Y_GAP;
   static const float kOPTIONS_DIGITAL_TEXT_GAP;
   static const float kOPTIONS_BOX_SIZE;
+
+  /* Popup Sections */
+  static const float kSAVE_POPUP_HEIGHT;
+  static const float kSAVE_POPUP_WIDTH;
+  static const float kSAVE_POPUP_GAP;
 
   /* Colors */
   static const SDL_Color kCOLOR_TITLE_BG;
@@ -556,6 +562,9 @@ public:
   /* Return the current save index, or -1 if invalid index */
   int32_t getSaveIndex();
 
+  /* Return the SaveState */
+  MenuSaveState getMenuSaveState();
+
   /* Hide the Menu */
   void hide();
 
@@ -598,8 +607,14 @@ public:
   /* Save data */
   void setSaveData(std::vector<Save> saves);
 
+  /* Assigns the enumerated save state */
+  void setMenuSaveState(MenuSaveState save_state);
+
   /* Update the menu with the current cycle time */
   bool update(int32_t cycle_time);
+
+  /* Update the SaveTitles */
+  void updateSaveTitles();
 };
 
 #endif // MENU_H

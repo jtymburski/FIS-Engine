@@ -589,6 +589,8 @@ enum class MenuLayer
   TITLE,
   MAIN,
   MAIN_INDENT,
+  POPUP,
+  CONFIRMATION,
   INVALID
 };
 
@@ -689,6 +691,13 @@ enum class RegenRate : std::uint16_t
   NORMAL = 2,
   STRONG = 3,
   GRAND = 4
+};
+
+enum class MenuSaveState : std::uint16_t
+{
+  NONE = 0,
+  WRITE = 1,
+  CLEAR = 2
 };
 
 enum class Sex

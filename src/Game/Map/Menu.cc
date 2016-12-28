@@ -158,7 +158,7 @@ const float Menu::kSLEUTH_WIDTH{0.60};
 /* Save Section */
 const float Menu::kSAVE_GAP{0.016};
 const float Menu::kSAVE_ELEMENT_WIDTH{0.90};
-const float Menu::kSAVE_ELEMENT_HEIGHT{0.30};
+const float Menu::kSAVE_ELEMENT_HEIGHT{0.29};
 
 /* Sleuth Section */
 const float Menu::kSLEUTH_GAP{0.009};
@@ -193,6 +193,11 @@ const float Menu::kOPTIONS_Y_BAR_GAP{0.04};
 const float Menu::kOPTIONS_Y_GAP{0.045};
 const float Menu::kOPTIONS_DIGITAL_TEXT_GAP{0.03};
 const float Menu::kOPTIONS_BOX_SIZE{0.017};
+
+/* Popup Sections */
+const float Menu::kSAVE_POPUP_HEIGHT{0.21};
+const float Menu::kSAVE_POPUP_WIDTH{0.1};
+const float Menu::kSAVE_POPUP_GAP{0.055};
 
 const SDL_Color Menu::kCOLOR_TITLE_BG{0, 0, 0, 255};
 const SDL_Color Menu::kCOLOR_TITLE_BORDER{255, 255, 255, 255};
@@ -236,6 +241,7 @@ Menu::Menu()
       layer{MenuLayer::INVALID},
       player_inventory{nullptr},
       renderer{nullptr},
+      save_state{MenuSaveState::NONE},
       title_elements{},
       inventory_element_index{-1},
       option_element_index{-1},
@@ -711,7 +717,6 @@ void Menu::buildSave()
   }
 
   save_scroll_box.setElements(save_frames);
-  save_element_index = 0;
 }
 
 /* Constructs the Options */
@@ -832,7 +837,6 @@ void Menu::buildMainSection(MenuType menu_type)
     else if(menu_type == MenuType::SAVE)
     {
       buildSave();
-      save_element_index = 0;
     }
     else if(menu_type == MenuType::QUIT)
     {
@@ -2767,6 +2771,72 @@ void Menu::renderSave()
   save_scroll_box.element_gap = gap;
 
   save_scroll_box.render(renderer);
+
+  if(layer == MenuLayer::POPUP)
+  {
+    Box save_popup_box;
+    setupDefaultBox(save_popup_box);
+    save_popup_box.color_border = {255, 255, 255, 255};
+    
+    auto p_width = std::round(config->getScaledWidth() * kSAVE_POPUP_WIDTH);
+    auto p_height = std::round(config->getScaledHeight() * kSAVE_POPUP_HEIGHT);
+    auto popup_gap = std::round(config->getScaledHeight() * kSAVE_POPUP_GAP);
+    
+    save_popup_box.point.x = main.point.x + main.width / 2 - p_width / 2;
+    save_popup_box.point.y = main.point.y + main.height / 2 - p_height / 2;
+    save_popup_box.width = p_width;
+    save_popup_box.height = p_height;
+
+    save_popup_box.render(renderer);
+
+    Text t_cancel(getFont(FontName::M_HEADER));
+    Text t_save(getFont(FontName::M_HEADER));
+    Text t_delete(getFont(FontName::M_HEADER));
+
+    t_cancel.setText(renderer, "Cancel", kCOLOR_TEXT);
+    t_save.setText(renderer, "Save", kCOLOR_TEXT);
+    t_delete.setText(renderer, "Delete", kCOLOR_TEXT);
+
+    SDL_Rect rect;
+    rect.w = std::max(t_cancel.getWidth(), t_save.getWidth());
+    rect.w = std::max(rect.h, t_delete.getWidth()) * 1.45;
+    rect.h = t_delete.getHeight() * 1.45;
+
+    current.x = save_popup_box.point.x;
+    current.y = save_popup_box.point.y + popup_gap / 2;
+
+    t_cancel.render(renderer, current.x + p_width / 2 - t_cancel.getWidth() / 2, current.y);
+    
+    if(save_element_index == 1)
+    {
+      rect.x = current.x + p_width / 2 - rect.w / 2;
+      rect.y = current.y + t_cancel.getHeight() / 2 - rect.h / 2;
+      
+      Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+    }
+
+    current.y += popup_gap;
+    t_save.render(renderer, current.x + p_width / 2 - t_save.getWidth() / 2, current.y);
+
+    if(save_element_index == 2)
+    {
+      rect.x = current.x + p_width / 2 - rect.w / 2;
+      rect.y = current.y + t_save.getHeight() / 2 - rect.h / 2;
+      
+      Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+    }
+
+    current.y += popup_gap;
+    t_delete.render(renderer, current.x + p_width / 2 - t_delete.getWidth() / 2, current.y);
+    
+    if(save_element_index == 3)
+    {
+      rect.x = current.x + p_width / 2 - rect.w / 2;
+      rect.y = current.y + t_delete.getHeight() / 2 - rect.h / 2;
+      
+      Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+    }
+  }
 }
 
 /* Renders the Quit Screen */
@@ -2982,7 +3052,6 @@ void Menu::keyDownUp()
       {
         event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
                                     SoundChannels::MENUS);
-        save_element_index--;
       }
     }
     else if(getMainMenuType() == MenuType::SLEUTH)
@@ -3015,6 +3084,18 @@ void Menu::keyDownUp()
         event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
                                     SoundChannels::MENUS);
         inventory_element_index--;
+      }
+    }
+  }
+    else if(layer == MenuLayer::POPUP)
+  {
+    if(getMainMenuType() == MenuType::SAVE)
+    {
+      if(save_element_index > 1)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                      SoundChannels::MENUS);
+        save_element_index--;
       }
     }
   }
@@ -3055,8 +3136,6 @@ void Menu::keyDownDown()
       {
           event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
                                       SoundChannels::MENUS);
-
-          save_element_index++;
       }
     }
     else if(getMainMenuType() == MenuType::SLEUTH)
@@ -3089,6 +3168,18 @@ void Menu::keyDownDown()
         event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
                                     SoundChannels::MENUS);
         inventory_element_index++;
+      }
+    }
+  }
+  else if(layer == MenuLayer::POPUP)
+  {
+    if(getMainMenuType() == MenuType::SAVE)
+    {
+      if(save_element_index < 3)
+      {
+        event_handler->triggerSound(Sound::kID_SOUND_MENU_NEXT,
+                                      SoundChannels::MENUS);
+        save_element_index++;
       }
     }
   }
@@ -3267,6 +3358,11 @@ void Menu::keyDownAction()
         inventory_scroll_box.setFlag(BoxState::SELECTED);
       }
     }
+    else if(getMainMenuType() == MenuType::SAVE)
+    {
+      layer = MenuLayer::POPUP;
+      save_element_index = 1;
+    }
     else if(getMainMenuType() == MenuType::QUIT)
     {
       if(quit_index == QuitIndex::NO)
@@ -3279,6 +3375,24 @@ void Menu::keyDownAction()
       {
         setFlag(MenuState::QUITTING, true);
       }
+    }
+  }
+  else if(layer == MenuLayer::POPUP)
+  {
+    if(getMainMenuType() == MenuType::SAVE)
+    {
+      layer = MenuLayer::MAIN;
+      save_state = MenuSaveState::NONE;
+
+      if(save_element_index == 2)
+      {
+        std::cout << "Setting to write" << std::endl;
+        save_state = MenuSaveState::WRITE;
+      }
+      else if(save_element_index == 3)
+        save_state = MenuSaveState::CLEAR;
+
+      save_element_index = -1;
     }
   }
 }
@@ -3303,6 +3417,14 @@ void Menu::keyDownCancel()
       inventory_scroll_box.setFlag(BoxState::SELECTED, false);
       event_handler->triggerSound(Sound::kID_SOUND_MENU_PREV,
                                   SoundChannels::MENUS);
+    }
+  }
+  else if(layer == MenuLayer::POPUP)
+  {
+    if(getMainMenuType() == MenuType::SAVE)
+    {
+      layer = MenuLayer::MAIN;
+      save_element_index = -1;
     }
   }
   else if(main_section.status == WindowStatus::ON)
@@ -3495,6 +3617,11 @@ int32_t Menu::getSaveIndex()
   return -1;
 }
 
+MenuSaveState Menu::getMenuSaveState()
+{
+  return save_state;
+}
+
 /* Assign the BattleDisplayData */
 void Menu::setBattleDisplayData(BattleDisplayData* battle_display_data)
 {
@@ -3547,4 +3674,19 @@ void Menu::setRenderer(SDL_Renderer* renderer)
 void Menu::setSaveData(std::vector<Save> saves)
 {
   this->save_data = saves;
+}
+
+void Menu::setMenuSaveState(MenuSaveState save_state)
+{
+  this->save_state = save_state;
+}
+
+void Menu::updateSaveTitles()
+{
+  auto old_index = save_scroll_box.getElementIndex();
+
+  buildSave();
+  renderSave();
+
+  save_scroll_box.setIndex(old_index);
 }

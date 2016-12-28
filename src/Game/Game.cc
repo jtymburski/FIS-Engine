@@ -28,7 +28,7 @@ const std::string Game::kSAVE_PATH_AUTO = "_auto";
 const std::string Game::kSAVE_PATH_BACK = ".save";
 const std::string Game::kSAVE_PATH_FRONT = "saves/slot";
 const uint8_t Game::kSAVE_SLOT_DEFAULT = 1;
-const uint8_t Game::kSAVE_SLOT_MAX = 8;
+const uint8_t Game::kSAVE_SLOT_MAX = 30;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -507,6 +507,8 @@ bool Game::eventMenuShow()
       map_ctrl.setDialogPaused(true);
 
     updatePlayerSteps();
+    menuPreparation();
+    
     map_menu.setRenderer(active_renderer);
     map_menu.setBattleDisplayData(battle_display_data);
     map_menu.setConfig(config);
@@ -1604,6 +1606,23 @@ void Game::updateMenuEnabledState()
 void Game::updateMenuSaving()
 {
   /* Update the state of the menu saving */
+  auto save_index = map_menu.getSaveIndex();
+  auto save_state = map_menu.getMenuSaveState();
+
+  if(save_state == MenuSaveState::WRITE)
+  {
+    save(save_index + 1, true);
+    map_menu.setSaveData(getSaveData());
+    map_menu.updateSaveTitles();
+  }
+  else if(save_state == MenuSaveState::CLEAR)
+  {
+    saveClear(save_index + 1);
+    map_menu.setSaveData(getSaveData());
+    map_menu.updateSaveTitles();
+  }
+
+  map_menu.setMenuSaveState(MenuSaveState::NONE);
 }
 
 /* Updates the player steps with the map information */
@@ -2118,13 +2137,13 @@ void Game::keyTestDownEvent(SDL_KeyboardEvent event)
   /* Save test to slot 1 */
   else if(event.keysym.sym == SDLK_F4)
   {
-    menuPreparation();
-    save(1, true);
+    // menuPreparation();
+    // save(1, true);
   }
   /* Save test to slot 3 */
   else if(event.keysym.sym == SDLK_F5)
   {
-    save(2);
+    // save(2);
     // std::cout << saveClear(3) << std::endl;
     // std::vector<Save> save_data = getSaveData();
     // for(uint32_t i = 0; i < save_data.size(); i++)
@@ -2581,6 +2600,7 @@ bool Game::update(int32_t cycle_time)
   // pollEvents();
 
   updateMenuEnabledState();
+  updateMenuSaving();
 
   // event_handler.getKeyHandler().print(false, true);
 
