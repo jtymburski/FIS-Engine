@@ -1059,37 +1059,6 @@ bool Inventory::sort(const SortType sort_type, SortObjects object,
 
     break;
   }
-  case(SortObjects::EQUIPMENTS):
-  {
-    // if(sort_type == SortType::ID)
-    // {
-    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByID());
-    //   sort_status = true;
-    // }
-    // if(sort_type == SortType::MASS)
-    // {
-    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByMass());
-    //   sort_status = true;
-    // }
-    // if(sort_type == SortType::NAME)
-    // {
-    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByName());
-    //   sort_status = true;
-    // }
-    // if(sort_type == SortType::VALUE)
-    // {
-    //   std::sort(begin(equipments), end(equipments), Helpers::CompPairByID());
-    //   sort_status = true;
-    // }
-    // if(sort_type == SortType::VALUEPERMASS)
-    // {
-    //   std::sort(begin(equipments), end(equipments),
-    //             Helpers::CompPairByValueMass());
-    //   sort_status = true;
-    // }
-
-    break;
-  }
   case(SortObjects::ITEMS):
   {
     if(sort_type == SortType::COUNT)

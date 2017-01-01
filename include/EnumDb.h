@@ -269,8 +269,6 @@ enum class AilmentStatus
 //   NONE = 22
 // };
 
-
-
 enum class Attribute
 {
   VITA = 0,
@@ -282,7 +280,7 @@ enum class Attribute
   LIMB = 6,
   UNBR = 7,
   WILL = 8,
-  MVIT = 9, //TODO: [10-24-16] Renumber
+  MVIT = 9, // TODO: [10-24-16] Renumber
   MQTD = 10,
   NONE = 22
 };
@@ -427,6 +425,17 @@ enum class ElementCurve : uint8_t
   B = 3,
   C = 4,
   D = 5
+};
+
+/*
+ * Description:
+ *
+ */
+enum class ElementType : uint8_t
+{
+  PRIMARY = 1 << 1,
+  SECONDARY = 1 << 2,
+  NONE = 1 << 0
 };
 
 /*
@@ -730,7 +739,6 @@ enum class SortObjects : std::uint32_t
 {
   ZERO_BUBBIES,
   BUBBIES,
-  EQUIPMENTS,
   ITEMS,
 };
 

@@ -35,31 +35,30 @@ bool TitleBackground::render(SDL_Renderer* renderer, Options* config)
   if(renderer)
   {
     success = true;
-    
+
     if(config)
     {
 
       auto x_offset = config->getScreenWidth() - Options::kDEF_SCREEN_WIDTH;
       auto y_offset = config->getScreenHeight() - Options::kDEF_SCREEN_HEIGHT;
 
+      /* Render the background */
+      success &= background.render(renderer, 0, 0, config->getScreenWidth(),
+                                   config->getScreenHeight());
+      success &= background6.render(renderer, -220 + x_offset, -48 + y_offset);
 
-    /* Render the background */
-    success &= background.render(renderer, 0, 0, config->getScreenWidth(), config->getScreenHeight());
-    success &= background6.render(renderer, -220 + x_offset, -48 + y_offset);
-  
-    success &= background2.render(renderer, 153 + x_offset, 314 + y_offset);
+      success &= background2.render(renderer, 153 + x_offset, 314 + y_offset);
 
-    /* Waldo show - TODO: Only certain hours? */
-    success &= background7.render(renderer, 153 + x_offset, 314 + y_offset);
+      /* Waldo show - TODO: Only certain hours? */
+      success &= background7.render(renderer, 153 + x_offset, 314 + y_offset);
 
-    /* The flash and bangs */
-    success &= background4.render(renderer, 153 + x_offset, 314 + y_offset);
-    success &= background5.render(renderer, 153 + x_offset, 314 + y_offset);
+      /* The flash and bangs */
+      success &= background4.render(renderer, 153 + x_offset, 314 + y_offset);
+      success &= background5.render(renderer, 153 + x_offset, 314 + y_offset);
 
-    /* Render atmosphere */
-    success &= background3.render(renderer, 153 + x_offset, 314 + y_offset);
-
-  }
+      /* Render atmosphere */
+      success &= background3.render(renderer, 153 + x_offset, 314 + y_offset);
+    }
 
     if(!render_disabled)
       success &= title.render(renderer, 50, 50);
@@ -192,6 +191,10 @@ const SDL_Color TitleScreen::kCOLOR_SELECT{125, 125, 125, 75};
 const SDL_Color TitleScreen::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color TitleScreen::kCOLOR_TEXT_INVALID{200, 100, 100, 255};
 
+const float TitleScreen::kSAVE_GAP{0.016};
+const float TitleScreen::kSAVE_ELEMENT_WIDTH{0.48};
+const float TitleScreen::kSAVE_ELEMENT_HEIGHT{0.15};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -203,6 +206,9 @@ TitleScreen::TitleScreen(Options* config)
       menu_type{MenuType::INVALID},
       player_name_select{""},
       player_sex_select{Sex::FEMALE},
+      load_element_index{-1},
+      load_state{MenuSaveState::NONE},
+      save_scroll_box{Box()},
       sound_handler{nullptr},
       title_elements{},
       title_menu_index{-1},
@@ -214,6 +220,41 @@ TitleScreen::TitleScreen(Options* config)
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+void TitleScreen::buildSave(SDL_Renderer* renderer)
+{
+  auto gap = (int32_t)std::round(config->getScaledWidth() * kSAVE_GAP);
+  auto save_width = config->getScaledWidth() * kSAVE_ELEMENT_WIDTH;
+  auto save_height = config->getScaledHeight() * kSAVE_ELEMENT_HEIGHT;
+
+  /* Refresh elements for the Save scroll box */
+  std::vector<Frame*> save_frames;
+  save_scroll_box.clearElements();
+
+  for(auto& save : save_data)
+  {
+    save.location.color_bg = {0, 0, 0, 255};
+    save.location.color_bg_selected = {0, 0, 0, 255};
+    save.location.color_border = {46, 46, 46, 255};
+    save.location.color_border_selected = {255, 255, 255, 255};
+    save.location.width = save_width;
+    save.location.height = save_height;
+
+    auto new_texture = save.createRenderFrame(renderer);
+
+    if(new_texture)
+    {
+      save_frames.push_back(new Frame());
+      save_frames.back()->setTexture(new_texture);
+    }
+    else
+    {
+      std::cerr << "[Error] Creating render frame for Save file." << std::endl;
+    }
+  }
+
+  save_scroll_box.setElements(save_frames);
+}
 
 /* Create the main menu title elements */
 void TitleScreen::buildTitleElements()
@@ -269,7 +310,7 @@ bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
 }
 
 /* Processing for the Action key */
-void TitleScreen::keyDownAction(KeyHandler& key_handler)
+void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
   if(menu_layer == MenuLayer::TITLE)
   {
@@ -292,6 +333,11 @@ void TitleScreen::keyDownAction(KeyHandler& key_handler)
       else
       {
         menu_type = title_menu_type;
+
+        if(menu_type == MenuType::TITLE_LOAD_GAME)
+        {
+          buildSave(renderer);
+        }
       }
 
       /* Play sound */
@@ -448,7 +494,9 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
         // TODO
         if(i != -1 && i == title_menu_index)
         {
-          Frame::renderRectSelect(getRect(current, t_element.getHeight(), t_element.getWidth()), renderer, kCOLOR_SELECT);
+          Frame::renderRectSelect(
+              getRect(current, t_element.getHeight(), t_element.getWidth()),
+              renderer, kCOLOR_SELECT);
         }
 
         current.y += (int32_t)std::round(t_element.getHeight() * 1.425);
@@ -578,7 +626,7 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
 
         if(player_menu_index == 1)
           color = {125, 125, 125, 125};
-        
+
         Frame::renderRectSelect(rect, renderer, color);
       }
 
@@ -596,6 +644,114 @@ void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
         Frame::renderRectSelect(rect, renderer, kCOLOR_SELECT);
       }
     }
+  }
+}
+
+void TitleScreen::renderLoadSelection(SDL_Renderer* renderer)
+{
+  if(renderer && config)
+  {
+    auto gap = (int32_t)std::round(config->getScaledWidth() * kSAVE_GAP);
+    auto save_width = config->getScaledWidth() * kSAVE_ELEMENT_WIDTH;
+    auto save_height = config->getScaledHeight() * kSAVE_ELEMENT_HEIGHT;
+
+    Coordinate current =
+        Coordinate{config->getScreenWidth() / 2 - save_width / 2,
+                   config->getScreenHeight() / 2 - save_height / 2};
+
+    save_scroll_box.setFlag(BoxState::SCROLL_BOX);
+    save_scroll_box.setFlag(BoxState::SELECTABLE);
+
+    save_scroll_box.color_border = {255, 255, 255, 255};
+    save_scroll_box.color_border_selected = {0, 0, 0, 0};
+
+    save_scroll_box.color_element_border_selected = {255, 255, 255, 255};
+    save_scroll_box.color_element_border = {125, 125, 125, 255};
+    save_scroll_box.color_bg = {0, 0, 0, 255};
+    save_scroll_box.color_bg_selected = {0, 0, 0, 0};
+
+    save_scroll_box.point.x = current.x;
+    save_scroll_box.point.y = current.y;
+    save_scroll_box.height = save_height * 3 + 3 * gap;
+    save_scroll_box.width = save_width + 2 * gap;
+    save_scroll_box.element_gap = gap;
+
+    save_scroll_box.render(renderer);
+
+    // if(layer == MenuLayer::POPUP)
+    // {
+    //   Box save_popup_box;
+    //   setupDefaultBox(save_popup_box);
+    //   save_popup_box.color_border = {255, 255, 255, 255};
+
+    //   auto p_width = std::round(config->getScaledWidth() *
+    //   kSAVE_POPUP_WIDTH);
+    //   auto p_height = std::round(config->getScaledHeight() *
+    //   kSAVE_POPUP_HEIGHT);
+    //   auto popup_gap = std::round(config->getScaledHeight() *
+    //   kSAVE_POPUP_GAP);
+
+    //   save_popup_box.point.x = main.point.x + main.width / 2 - p_width / 2;
+    //   save_popup_box.point.y = main.point.y + main.height / 2 - p_height / 2;
+    //   save_popup_box.width = p_width;
+    //   save_popup_box.height = p_height;
+
+    //   save_popup_box.render(renderer);
+
+    //   Text t_cancel(getFont(FontName::M_HEADER));
+    //   Text t_save(getFont(FontName::M_HEADER));
+    //   Text t_delete(getFont(FontName::M_HEADER));
+
+    //   t_cancel.setText(renderer, "Cancel", kCOLOR_TEXT);
+    //   t_save.setText(renderer, "Save", kCOLOR_TEXT);
+    //   t_delete.setText(renderer, "Delete", kCOLOR_TEXT);
+
+    //   SDL_Rect rect;
+    //   rect.w = std::max(t_cancel.getWidth(), t_save.getWidth());
+    //   rect.w = std::max(rect.w, t_delete.getWidth()) * 1.45;
+    //   rect.h = t_delete.getHeight() * 1.45;
+
+    //   current.x = save_popup_box.point.x;
+    //   current.y = save_popup_box.point.y + popup_gap / 2;
+
+    //   t_cancel.render(renderer, current.x + p_width / 2 - t_cancel.getWidth()
+    //   / 2,
+    //                   current.y);
+
+    //   if(save_element_index == 1)
+    //   {
+    //     rect.x = current.x + p_width / 2 - rect.w / 2;
+    //     rect.y = current.y + t_cancel.getHeight() / 2 - rect.h / 2;
+
+    //     Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+    //   }
+
+    //   current.y += popup_gap;
+    //   t_save.render(renderer, current.x + p_width / 2 - t_save.getWidth() /
+    //   2,
+    //                 current.y);
+
+    //   if(save_element_index == 2)
+    //   {
+    //     rect.x = current.x + p_width / 2 - rect.w / 2;
+    //     rect.y = current.y + t_save.getHeight() / 2 - rect.h / 2;
+
+    //     Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+    //   }
+
+    //   current.y += popup_gap;
+    //   t_delete.render(renderer, current.x + p_width / 2 - t_delete.getWidth()
+    //   / 2,
+    //                   current.y);
+
+    //   if(save_element_index == 3)
+    //   {
+    //     rect.x = current.x + p_width / 2 - rect.w / 2;
+    //     rect.y = current.y + t_delete.getHeight() / 2 - rect.h / 2;
+
+    //     Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+    //   }
+    // }
   }
 }
 
@@ -665,13 +821,13 @@ Sex TitleScreen::getPlayerSexSelect()
 }
 
 /* The KeyDown event handler -- sends keys to specific functions */
-void TitleScreen::keyDownEvent(KeyHandler& key_handler)
+void TitleScreen::keyDownEvent(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
   if(config && sound_handler && !getFlag(TitleState::CLEAR_NAME))
   {
     /* Main code items */
     if(key_handler.isDepressed(GameKey::ACTION))
-      keyDownAction(key_handler);
+      keyDownAction(renderer, key_handler);
     if(key_handler.isDepressed(GameKey::CANCEL))
       keyDownCancel(key_handler);
     if(key_handler.isDepressed(GameKey::MOVE_DOWN))
@@ -689,7 +845,7 @@ void TitleScreen::keyDownEvent(KeyHandler& key_handler)
 #ifdef UDEBUG
 void TitleScreen::keyTestDownEvent(SDL_KeyboardEvent event)
 {
- (void)event;
+  (void)event;
 }
 #endif
 
@@ -714,6 +870,10 @@ bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
       else
         renderTitleElements(renderer);
     }
+    else if(menu_type == MenuType::TITLE_LOAD_GAME)
+    {
+      renderLoadSelection(renderer);
+    }
   }
 
   return true;
@@ -730,6 +890,11 @@ bool TitleScreen::setConfig(Options* config)
 void TitleScreen::setFlag(TitleState set_flags, const bool& set_value)
 {
   (set_value) ? (flags |= set_flags) : (flags &= ~set_flags);
+}
+
+void TitleScreen::setSaveData(std::vector<Save> saves)
+{
+  this->save_data = saves;
 }
 
 /* Sets the sound handler used. If unset, no sounds will play */

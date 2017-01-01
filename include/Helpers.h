@@ -18,18 +18,18 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <algorithm> /* std::min(), std::max() */
 #include <cassert>
 #include <cctype>
-#include <clocale>
 #include <chrono>
+#include <clocale>
 #include <functional>
 #include <iostream>
 #include <locale>
 #include <memory>
 #include <random>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -112,7 +112,6 @@ struct BattleScene
   std::vector<LayOver> midlays;
   std::vector<LayOver> overlays;
 };
-
 
 /* Coordinate with uints */
 struct UCoordinate
@@ -253,7 +252,7 @@ public:
   static std::string tierToDisplayStr(const ItemTier& tier);
 
   /* Returns the title case of a given string */
-  static std::string titleCase(const std::string &str);
+  static std::string titleCase(const std::string& str);
 
   /* Returns the enumerated tracking state to/from string form */
   static TrackingState trackingFromStr(const std::string& track);
@@ -274,8 +273,9 @@ public:
 
   /*===================== PLAYER HELPER FUNCTIONS ============================*/
 public:
-  // /* Returns the pair of off/def attributes corresponding to an element */
-  // static std::pair<Attribute, Attribute> elementToStats(const Element& element);
+  /* Returns the pair of off/def attributes corresponding to an element */
+  static std::pair<Attribute, Attribute>
+  elementTypeToStats(const ElementType& element);
 
   /* Returns the elemental strength to a given element */
   static Element getStrength(const Element& element);

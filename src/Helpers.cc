@@ -670,7 +670,8 @@ std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
     else if(attribute == Attribute::WILL)
       return "Will - various luck effect on outcome of Battle events";
     // else if(attribute == Attribute::MANN)
-    //   return "Manna - luck which has various effects on outcomes/earnings etc.";
+    //   return "Manna - luck which has various effects on outcomes/earnings
+    //   etc.";
   }
   return "";
 }
@@ -1034,20 +1035,9 @@ std::string Helpers::numToRoman(int value)
   };
 
   std::vector<roman_values> values{
-      {1000, "M"},
-      {900, "CM"},
-      {500, "D"},
-      {400, "CD"},
-      {100, "C"},
-      {90, "XC"},
-      {50, "L"},
-      {40, "XL"},
-      {10, "X"},
-      {9, "IX"},
-      {5, "V"},
-      {4, "IV"},
-      {1, "I"},
-      {0, ""},
+      {1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"}, {100, "C"},
+      {90, "XC"},  {50, "L"},   {40, "XL"}, {10, "X"},   {9, "IX"},
+      {5, "V"},    {4, "IV"},   {1, "I"},   {0, ""},
   };
 
   std::string result = "";
@@ -1509,25 +1499,16 @@ std::string Helpers::victoryStateToStr(VictoryState victory_state)
  * Inputs: element - Enumerated element type to find attributes for
  * Output: std::pair<Attr, Attr> - the corresponding off/def enumerated attrs.
  */
-// std::pair<Attribute, Attribute> Helpers::elementToStats(const Element& element)
-// {
-//   if(element == Element::PHYSICAL)
-//     return std::make_pair(Attribute::PHAG, Attribute::PHFD);
-//   else if(element == Element::FIRE)
-//     return std::make_pair(Attribute::THAG, Attribute::THFD);
-//   else if(element == Element::FOREST)
-//     return std::make_pair(Attribute::PRAG, Attribute::PRFD);
-//   else if(element == Element::ICE)
-//     return std::make_pair(Attribute::POAG, Attribute::POFD);
-//   else if(element == Element::ELECTRIC)
-//     return std::make_pair(Attribute::CHAG, Attribute::CHFD);
-//   else if(element == Element::DIGITAL)
-//     return std::make_pair(Attribute::CYAG, Attribute::CYFD);
-//   else if(element == Element::NIHIL)
-//     return std::make_pair(Attribute::NIAG, Attribute::NIFD);
+std::pair<Attribute, Attribute>
+Helpers::elementTypeToStats(const ElementType& element)
+{
+  if(element == ElementType::PRIMARY)
+    return std::make_pair(Attribute::PRAG, Attribute::PRFD);
+  else if(element == ElementType::SECONDARY)
+    return std::make_pair(Attribute::SEAG, Attribute::SEFD);
 
-//   return std::make_pair(Attribute::NONE, Attribute::NONE);
-//}
+  return std::make_pair(Attribute::NONE, Attribute::NONE);
+}
 
 /*
  * Description: Determines and returns the element which a given element is
@@ -2167,7 +2148,8 @@ std::vector<std::vector<uint16_t>> Helpers::parseRangeSet(std::string sequence)
 std::string& Helpers::rtrim(std::string& s)
 {
   s.erase(std::find_if(s.rbegin(), s.rend(),
-                       std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
+                       std::not1(std::ptr_fun<int, int>(std::isspace)))
+              .base(),
           end(s));
 
   return s;

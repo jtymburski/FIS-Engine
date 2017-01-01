@@ -226,7 +226,7 @@ void Application::handleEvents()
       /* Send the key to the relevant view */
       if(mode == TITLESCREEN)
       {
-        title_screen.keyDownEvent(key_handler);
+        title_screen.keyDownEvent(renderer, key_handler);
       }
       else if(mode == GAME)
       {
@@ -303,6 +303,7 @@ bool Application::load()
     game_handler->setPath(app_path, app_map, false);
 
   /* Change mode back to title screen */
+  title_screen.setSaveData(game_handler->getSaveData());
   changeMode(TITLESCREEN);
 
   return success;

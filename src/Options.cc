@@ -115,7 +115,7 @@ void Options::setAllToDefault()
 
   /* Rendering Options */
   setFont(0, true);
-  setScreenResolution(5);
+  setScreenResolution(3);
 }
 
 /* Sets the chosen font */

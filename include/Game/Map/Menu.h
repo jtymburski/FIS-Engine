@@ -15,8 +15,8 @@
 
 #include <SDL2/SDL.h>
 
-#include "Game/Battle/BattleDisplayData.h"
 #include "Game/Battle/BattleActor.h"
+#include "Game/Battle/BattleDisplayData.h"
 #include "Game/EventHandler.h"
 #include "Game/KeyHandler.h"
 #include "Game/Map/Map.h"
@@ -299,6 +299,7 @@ private:
   /* Sleuth Section */
   static const float kSLEUTH_GAP;
   static const float kSLEUTH_SPRITE_WIDTH;
+  static const float kSLEUTH_ATTRIBUTE_HEIGHT;
   static const float kSLEUTH_ELEMENT_HEIGHT;
   static const float kSLEUTH_EQUIP_ICON_SIZE;
   static const float kSLEUTH_ATTRIBUTE_INSET;
@@ -366,7 +367,8 @@ private:
   /* Texture Creations for Attributes, Elements */
   SDL_Texture* buildAttributeFrame(Attribute attr, uint32_t width,
                                    uint32_t height);
-  SDL_Texture* buildElementFrame(Element elm, uint32_t width, uint32_t height);
+  SDL_Texture* buildElementFrame(ElementType element_type, uint32_t width,
+                                 uint32_t height);
 
   /* Item Frame */
   SDL_Texture* buildItemListFrame(Item* build_item, int32_t count,
@@ -407,6 +409,7 @@ private:
   void buildTitleSection();
   int32_t calcMainCornerInset();
   int32_t calcSleuthAttributeHeight();
+  int32_t calcSleuthElementHeight();
   int32_t calcSleuthTileSize();
 
   /* Calculate the required string for Item Details */
@@ -464,7 +467,6 @@ private:
 
   /* Render the attribute frames */
   void renderAttributes(Coordinate start, int32_t gap);
-  void renderExtraAttributes(Coordinate start, int32_t gap);
 
   /* Render Bubbies */
   void renderBubbies();

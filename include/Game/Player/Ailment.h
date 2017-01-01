@@ -33,8 +33,8 @@
 
 #include <limits>
 
-#include "EnumFlags.h"
 #include "EnumDb.h"
+#include "EnumFlags.h"
 #include "Game/Battle/BattleStats.h"
 
 /* Enumerated AilState Flags */
@@ -56,8 +56,9 @@ public:
   Ailment(Infliction type, BattleStats* stats_victim);
 
   /* Detailed constructor */
-  Ailment(Infliction type, BattleStats* stats_victim, Element victim_prim, Element victim_secd, uint32_t min_turns,
-          uint32_t max_turns, double chance);
+  Ailment(Infliction type, BattleStats* stats_victim, Element victim_prim,
+          Element victim_secd, uint32_t min_turns, uint32_t max_turns,
+          double chance);
 
   /* Annihilates an AttributeSet object */
   ~Ailment() = default;

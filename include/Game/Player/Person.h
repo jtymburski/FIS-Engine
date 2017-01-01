@@ -38,7 +38,6 @@ class AIModule;
 #include "FileHandler.h"
 #include "Game/Battle/AIModule.h"
 #include "Game/Player/Category.h"
-//#include "Game/Player/Equipment.h"
 
 /* PState Flags - flags which have impacts outside of Battle */
 ENUM_FLAGS(PState)
@@ -53,7 +52,7 @@ enum class PState
   CAN_GAIN_EXP = 1 << 6,     /* Can this person gain exp? */
   CAN_LEVEL_UP = 1 << 7,     /* Can this person level up? */
   CAN_LEARN_SKILLS = 1 << 8, /* Can this person change skills? */
-  CAN_CHANGE_EQUIP = 1 << 9, /* Can this person modify equipment? */
+  CAN_CHANGE_SIG = 1 << 9, /* Can this person modify signature? */
   MAX_LVL = 1 << 10          /* Person reached max level? */
 };
 
@@ -87,9 +86,6 @@ private:
 
   /* Pointer to the base person */
   Person* base_person;
-
-  /* Item pointer for equipment */
-  Item* equipment;
 
   /* Flags for the curent Battle State and Person State */
   PState person_flags;
@@ -134,9 +130,6 @@ private:
   /* Current modifier for experience gain */
   float exp_mod;
 
-  /* Current equipment attached to the Person */
-  //std::vector<Equipment*> equipments;
-
   /* Loot of Person when defeated */
   std::vector<uint32_t> item_drops;
   uint32_t credit_drop;
@@ -166,7 +159,6 @@ public:
   static const uint8_t kACTION_Y; /* Action render Y point */
   static const uint32_t kID_PLAYER;
   static const size_t kNUM_LEVELS;        /* Number of Levels for Persons */
-  //static const size_t kNUM_EQUIP_SLOTS;   /* Number of Equip Slots */
   static const uint32_t kMAX_CREDIT_DROP; /* Maximum credit award */
   static const uint32_t kMAX_EXP;         /* Max. Exp possible */
   static const uint32_t kMAX_EXP_DROP;    /* Maximum award for one Exp */
@@ -222,9 +214,6 @@ public:
   bool addExp(const uint32_t& amount, const bool& update = true,
               const bool& ignore_flags = false);
 
-  //  Recalculates the stat bonuses for equipment 
-  // AttributeSet calcEquipStats();
-
   /* Calculates the % of vitality/qtdr which a target value would be */
   float calcVitaPercentAtVal(uint32_t target_value);
   float calcQtdrPercentAtVal(uint32_t target_value);
@@ -264,10 +253,6 @@ public:
   /* Method for printing out the data of the class */
   void print(const bool& simple = true, const bool& equips = false,
              const bool& flags = false, const bool& skills = false);
-
-  /* Removes the equipment from a given slot */
-  //bool removeEquip(const EquipSlots& equip_slot);
-  bool removeEquipment();
 
   /* Restoring functions */
   void restoreHealth();
@@ -372,15 +357,6 @@ public:
   /* Returns the experience modifier value */
   float getExpMod();
 
-  /* Returns a pointer to the Item equipment for the person */
-  Item* getEquipment();
-
-  /* Returns a pointer to the equipment a given slot */
-  //Equipment* getEquip(const EquipSlots& equip_slot);
-
-  /* Returns the corresponding index slot of a given enumerated EquipSlots */
-  //uint32_t getEquipIndex(const EquipSlots& equip_slot);
-
   /* Returns the credit drop reward */
   uint32_t getCreditDrop();
 
@@ -443,12 +419,6 @@ public:
   /* Assigns a new experience modifier value */
   bool setExpMod(const float& new_exp_mod);
 
-  /* Assigns the equipment to the person */
-  bool setEquipment(Item* equipment);
-
-  /* Attempts to assign a given equipment slot a given equipment pointer */
-  //bool setEquip(const EquipSlots& equip_slot, Equipment* new_equipment);
-
   /* Assigns the game ID for the person */
   void setGameID(int id);
 
@@ -473,9 +443,6 @@ public:
 
   /* Grabs the number the total number of levels for Person progression */
   static size_t getNumLevels();
-
-  /* Grabs the number of equipment slots a Person has */
-  //static size_t getNumEquipSlots();
 
   /* Returns the minimum experience possible */
   static uint32_t getMinExp();

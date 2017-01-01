@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Game/KeyHandler.h"
+#include "Game/Save.h"
 #include "Music.h"
 #include "Options.h"
 #include "SoundHandler.h"
@@ -107,6 +108,12 @@ private:
   std::string player_name_select;
   Sex player_sex_select;
 
+  /* Loading element indexes */
+  int32_t load_element_index;
+  MenuSaveState load_state;
+  Box save_scroll_box;
+  std::vector<Save> save_data;
+
   /* Pointer to the SoundHandler */
   SoundHandler* sound_handler;
 
@@ -133,6 +140,10 @@ private:
   static const SDL_Color kCOLOR_TEXT;
   static const SDL_Color kCOLOR_TEXT_INVALID;
 
+  static const float kSAVE_GAP;
+  static const float kSAVE_ELEMENT_WIDTH;
+  static const float kSAVE_ELEMENT_HEIGHT;
+
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Constructs the menu options */
@@ -145,7 +156,7 @@ private:
   bool isPlayerNameValid(KeyHandler& key_handler);
 
   /* KeyDown Events */
-  void keyDownAction(KeyHandler& key_handler);
+  void keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler);
   void keyDownCancel(KeyHandler& key_handler);
   void keyDownDown(KeyHandler& key_handler);
   void keyDownLeft(KeyHandler& key_handler);
@@ -155,6 +166,9 @@ private:
   /* Render the Player Section Box */
   void renderPlayerSelection(SDL_Renderer* renderer, KeyHandler& key_handler);
 
+  /* Render Load Selection */
+  void renderLoadSelection(SDL_Renderer* renderer);
+
   /* Render Title Elements */
   void renderTitleElements(SDL_Renderer* renderer);
 
@@ -163,6 +177,9 @@ private:
 
   /*======================== PUBLIC FUNCTIONS ================================*/
 public:
+  /* Constructs the Save Frames */
+  void buildSave(SDL_Renderer* renderer);
+
   /* Constructs the TitleBackground */
   void buildTitleBackground(SDL_Renderer* renderer);
 
@@ -186,7 +203,7 @@ public:
   Sex getPlayerSexSelect();
 
   /* Key down event, called with the KeyHandler */
-  void keyDownEvent(KeyHandler& key_handler);
+  void keyDownEvent(SDL_Renderer* renderer, KeyHandler& key_handler);
 
 /* If in debug mode, activate test keys */
 #ifdef UDEBUG
@@ -201,6 +218,9 @@ public:
 
   /* Assign flag */
   void setFlag(TitleState set_flags, const bool& set_value = true);
+
+  /* */
+  void setSaveData(std::vector<Save> saves);
 
   /* Assigns the running sound handler */
   bool setSoundHandler(SoundHandler* sound_hanler);
