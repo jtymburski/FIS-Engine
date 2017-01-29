@@ -1547,6 +1547,17 @@ void Game::removeSkillSets()
   list_set.clear();
 }
 
+bool Game::setSaveSlot(uint8_t save_slot)
+{
+  if(save_slot <= kSAVE_SLOT_MAX)
+  {
+    this->save_slot = save_slot;
+
+    return true;
+  }
+
+  return false;
+}
 /* Update mode */
 void Game::updateMode(int cycle_time)
 {
@@ -1638,6 +1649,7 @@ void Game::updatePlayerSteps()
 /* Enable view trigger */
 void Game::enableView(bool enable)
 {
+  std::cout << "Enable view: " << enable << std::endl;
   if(enable)
     changeMode(LOADING);
   else

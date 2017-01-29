@@ -30,8 +30,10 @@ enum class TitleState
 {
   GO_TO_GAME = 1 << 0, /* Can the person use item in battle? */
   CLEAR_NAME = 1 << 1,
-  GAME_LOADING = 1 << 1,
-  EXIT_GAME = 1 << 2   /* Can the person use 'Defend'? */
+  GAME_LOADING = 1 << 2,
+  EXIT_GAME = 1 << 3, /* Can the person use 'Defend'? */
+  LOAD_FROM_SAVE = 1 << 4,
+  DELETE_SAVE = 1 << 5
 };
 
 /* TitleBackground Elements */
@@ -139,10 +141,14 @@ private:
   static const SDL_Color kCOLOR_SELECT;
   static const SDL_Color kCOLOR_TEXT;
   static const SDL_Color kCOLOR_TEXT_INVALID;
+  static const SDL_Color kCOLOR_TITLE_HOVER;
 
   static const float kSAVE_GAP;
   static const float kSAVE_ELEMENT_WIDTH;
   static const float kSAVE_ELEMENT_HEIGHT;
+  static const float kSAVE_POPUP_GAP;
+  static const float kSAVE_POPUP_WIDTH;
+  static const float kSAVE_POPUP_HEIGHT;
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -201,6 +207,9 @@ public:
 
   /* Return the selected player sex */
   Sex getPlayerSexSelect();
+
+  /* Return the select save to LOAD or DELETE */
+  int32_t getSaveIndex();
 
   /* Key down event, called with the KeyHandler */
   void keyDownEvent(SDL_Renderer* renderer, KeyHandler& key_handler);

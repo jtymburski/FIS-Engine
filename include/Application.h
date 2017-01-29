@@ -158,7 +158,7 @@ public:
   /* Runs the application */
   bool run(bool skip_title = false);
 
-  /* Sets the application path */
+  /* Sets the application path s*/
   void setPath(std::string path, int level = 0, bool skip_title = false);
 
   /*===================== PUBLIC STATIC FUNCTIONS ============================*/

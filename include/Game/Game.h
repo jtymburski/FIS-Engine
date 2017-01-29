@@ -51,7 +51,7 @@ public:
   {
     DISABLED       = 0,
     MAP            = 1,
-  BATTLE         = 2,
+    BATTLE         = 2,
     LOADING        = 3,
     MENU           = 4, /* Processing paused for Map */
     NONE           = 5
@@ -326,6 +326,9 @@ public:
 
   /* Sets the active renderer to be used */
   void setRenderer(SDL_Renderer* renderer);
+
+  /* Assign the Save slot (for loading from title) */
+  bool setSaveSlot(uint8_t save_slot);
 
   /* Sets the sound handler used. If unset, no sounds will play */
   void setSoundHandler(SoundHandler* new_handler);

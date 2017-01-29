@@ -190,10 +190,14 @@ const SDL_Color TitleScreen::kCOLOR_BORDER{255, 255, 255, 255};
 const SDL_Color TitleScreen::kCOLOR_SELECT{125, 125, 125, 75};
 const SDL_Color TitleScreen::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color TitleScreen::kCOLOR_TEXT_INVALID{200, 100, 100, 255};
+const SDL_Color TitleScreen::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
 
-const float TitleScreen::kSAVE_GAP{0.016};
-const float TitleScreen::kSAVE_ELEMENT_WIDTH{0.48};
-const float TitleScreen::kSAVE_ELEMENT_HEIGHT{0.15};
+const float TitleScreen::kSAVE_GAP{0.014};
+const float TitleScreen::kSAVE_ELEMENT_WIDTH{0.60};
+const float TitleScreen::kSAVE_ELEMENT_HEIGHT{0.21};
+const float TitleScreen::kSAVE_POPUP_WIDTH{0.12};
+const float TitleScreen::kSAVE_POPUP_GAP{0.058};
+const float TitleScreen::kSAVE_POPUP_HEIGHT{0.21};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -358,6 +362,39 @@ void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
       player_name_select = Helpers::titleCase(key_handler.getTextEntry());
       key_handler.clearTextEntry();
       setFlag(TitleState::GO_TO_GAME);
+
+      menu_layer = MenuLayer::TITLE;
+      player_menu_index = -1;
+    }
+    else if(menu_type == MenuType::TITLE_LOAD_GAME)
+    {
+      menu_layer = MenuLayer::POPUP;
+      load_element_index = 0;
+    }
+  }
+  else if(menu_layer == MenuLayer::POPUP)
+  {
+    if(load_element_index == 0)
+    {
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
+                                    SoundChannels::MENUS);
+
+      menu_layer = MenuLayer::MAIN;
+      load_element_index = -1;
+    }
+    else if(load_element_index == 1)
+    {
+      /* Load the Game from Save */
+      setFlag(TitleState::LOAD_FROM_SAVE);
+      load_element_index = -1;
+      menu_layer = MenuLayer::TITLE;
+    }
+    else if(load_element_index == 2)
+    {
+      /* Delete that Save */
+      setFlag(TitleState::DELETE_SAVE);
+      load_element_index = -1;
+      menu_layer = MenuLayer::MAIN;
     }
   }
 }
@@ -382,6 +419,14 @@ void TitleScreen::keyDownCancel(KeyHandler& key_handler)
     menu_layer = MenuLayer::TITLE;
     player_menu_index = -1;
   }
+  else if(menu_layer == MenuLayer::POPUP)
+  {
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
+                                  SoundChannels::MENUS);
+
+    menu_layer = MenuLayer::MAIN;
+    load_element_index = -1;
+  }
 }
 
 /* Processing for the Down key */
@@ -403,9 +448,33 @@ void TitleScreen::keyDownDown(KeyHandler& key_handler)
   }
   else if(menu_layer == MenuLayer::MAIN)
   {
-    if(player_menu_index + 1 < 3)
+    if(menu_type == MenuType::TITLE_PLAYER_SELECT)
     {
-      player_menu_index++;
+      if(player_menu_index + 1 < 3)
+      {
+        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                      SoundChannels::MENUS);
+
+        player_menu_index++;
+      }
+    }
+    else if(menu_type == MenuType::TITLE_LOAD_GAME)
+    {
+      if(save_scroll_box.nextIndex())
+      {
+        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                      SoundChannels::MENUS);
+      }
+    }
+  }
+  else if(menu_layer == MenuLayer::POPUP)
+  {
+    if(load_element_index + 1 < 3)
+    {
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
+
+      load_element_index++;
     }
   }
 }
@@ -452,9 +521,35 @@ void TitleScreen::keyDownUp(KeyHandler& key_handler)
   }
   else if(menu_layer == MenuLayer::MAIN)
   {
-    /* Decrement the menu index on the Player box */
-    if(player_menu_index > 0)
-      player_menu_index--;
+    if(menu_type == MenuType::TITLE_PLAYER_SELECT)
+    {
+      /* Decrement the menu index on the Player box */
+      if(player_menu_index > 0)
+      {
+        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                      SoundChannels::MENUS);
+
+        player_menu_index--;
+      }
+    }
+    else if(menu_type == MenuType::TITLE_LOAD_GAME)
+    {
+      if(save_scroll_box.prevIndex())
+      {
+        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                      SoundChannels::MENUS);
+      }
+    }
+  }
+  else if(menu_layer == MenuLayer::POPUP)
+  {
+    if(load_element_index > 0)
+    {
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                    SoundChannels::MENUS);
+
+      load_element_index--;
+    }
   }
 }
 
@@ -672,86 +767,92 @@ void TitleScreen::renderLoadSelection(SDL_Renderer* renderer)
 
     save_scroll_box.point.x = current.x;
     save_scroll_box.point.y = current.y;
-    save_scroll_box.height = save_height * 3 + 3 * gap;
+    save_scroll_box.height = save_height * 3 + 4 * gap;
     save_scroll_box.width = save_width + 2 * gap;
     save_scroll_box.element_gap = gap;
+    save_scroll_box.element_inset_y = gap;
+    save_scroll_box.element_inset_x = gap;
+    save_scroll_box.scroll_inset_y = gap * 1.3;
 
     save_scroll_box.render(renderer);
 
-    // if(layer == MenuLayer::POPUP)
-    // {
-    //   Box save_popup_box;
-    //   setupDefaultBox(save_popup_box);
-    //   save_popup_box.color_border = {255, 255, 255, 255};
+    if(menu_layer == MenuLayer::POPUP)
+    {
+      Box save_popup_box;
+      save_popup_box.color_bg = {0, 0, 0, 255};
+      save_popup_box.color_bg_selected = {0, 0, 0, 0};
+      save_popup_box.color_border = {125, 125, 125, 125};
+      save_popup_box.color_border_selected = {255, 255, 255, 255};
 
-    //   auto p_width = std::round(config->getScaledWidth() *
-    //   kSAVE_POPUP_WIDTH);
-    //   auto p_height = std::round(config->getScaledHeight() *
-    //   kSAVE_POPUP_HEIGHT);
-    //   auto popup_gap = std::round(config->getScaledHeight() *
-    //   kSAVE_POPUP_GAP);
+      auto p_width = std::round(config->getScaledWidth() * kSAVE_POPUP_WIDTH);
+      auto p_height =
+          std::round(config->getScaledHeight() * kSAVE_POPUP_HEIGHT);
+      auto popup_gap = std::round(config->getScaledHeight() * kSAVE_POPUP_GAP);
 
-    //   save_popup_box.point.x = main.point.x + main.width / 2 - p_width / 2;
-    //   save_popup_box.point.y = main.point.y + main.height / 2 - p_height / 2;
-    //   save_popup_box.width = p_width;
-    //   save_popup_box.height = p_height;
+      save_popup_box.height = p_height;
+      save_popup_box.width = p_width;
+      save_popup_box.point.x = save_scroll_box.point.x +
+                               save_scroll_box.width / 2 -
+                               save_popup_box.width / 2;
+      save_popup_box.point.y = save_scroll_box.point.y +
+                               save_scroll_box.height / 2 -
+                               save_popup_box.height / 2;
 
-    //   save_popup_box.render(renderer);
+      save_popup_box.render(renderer);
 
-    //   Text t_cancel(getFont(FontName::M_HEADER));
-    //   Text t_save(getFont(FontName::M_HEADER));
-    //   Text t_delete(getFont(FontName::M_HEADER));
+      Text t_cancel(config->getFontTTF(FontName::M_HEADER));
+      Text t_load(config->getFontTTF(FontName::M_HEADER));
+      Text t_delete(config->getFontTTF(FontName::M_HEADER));
 
-    //   t_cancel.setText(renderer, "Cancel", kCOLOR_TEXT);
-    //   t_save.setText(renderer, "Save", kCOLOR_TEXT);
-    //   t_delete.setText(renderer, "Delete", kCOLOR_TEXT);
+      t_cancel.setText(renderer, "Cancel", kCOLOR_TEXT);
+      t_load.setText(renderer, "Load", kCOLOR_TEXT);
+      t_delete.setText(renderer, "Delete", kCOLOR_TEXT);
 
-    //   SDL_Rect rect;
-    //   rect.w = std::max(t_cancel.getWidth(), t_save.getWidth());
-    //   rect.w = std::max(rect.w, t_delete.getWidth()) * 1.45;
-    //   rect.h = t_delete.getHeight() * 1.45;
+      SDL_Rect rect;
+      rect.w = std::max(t_cancel.getWidth(), t_load.getWidth());
+      rect.w = std::max(rect.w, t_delete.getWidth()) * 1.45;
+      rect.h = t_delete.getHeight() * 1.45;
 
-    //   current.x = save_popup_box.point.x;
-    //   current.y = save_popup_box.point.y + popup_gap / 2;
+      current.x = save_popup_box.point.x;
+      current.y = save_popup_box.point.y + popup_gap / 2;
 
-    //   t_cancel.render(renderer, current.x + p_width / 2 - t_cancel.getWidth()
-    //   / 2,
-    //                   current.y);
+      t_cancel.render(renderer,
+                      current.x + p_width / 2 - t_cancel.getWidth() / 2,
+                      current.y);
 
-    //   if(save_element_index == 1)
-    //   {
-    //     rect.x = current.x + p_width / 2 - rect.w / 2;
-    //     rect.y = current.y + t_cancel.getHeight() / 2 - rect.h / 2;
+      if(load_element_index == 0)
+      {
+        rect.x = current.x + p_width / 2 - rect.w / 2;
+        rect.y = current.y + t_cancel.getHeight() / 2 - rect.h / 2;
 
-    //     Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
-    //   }
+        Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+      }
 
-    //   current.y += popup_gap;
-    //   t_save.render(renderer, current.x + p_width / 2 - t_save.getWidth() /
-    //   2,
-    //                 current.y);
+      current.y += popup_gap;
+      t_load.render(renderer, current.x + p_width / 2 - t_load.getWidth() / 2,
+                    current.y);
 
-    //   if(save_element_index == 2)
-    //   {
-    //     rect.x = current.x + p_width / 2 - rect.w / 2;
-    //     rect.y = current.y + t_save.getHeight() / 2 - rect.h / 2;
+      if(load_element_index == 1)
+      {
+        rect.x = current.x + p_width / 2 - rect.w / 2;
+        rect.y = current.y + t_load.getHeight() / 2 - rect.h / 2;
 
-    //     Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
-    //   }
+        Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+      }
 
-    //   current.y += popup_gap;
-    //   t_delete.render(renderer, current.x + p_width / 2 - t_delete.getWidth()
-    //   / 2,
-    //                   current.y);
+      current.y += popup_gap;
+      t_delete.render(renderer,
+                      current.x + p_width / 2 - t_delete.getWidth() / 2,
+                      current.y);
 
-    //   if(save_element_index == 3)
-    //   {
-    //     rect.x = current.x + p_width / 2 - rect.w / 2;
-    //     rect.y = current.y + t_delete.getHeight() / 2 - rect.h / 2;
+      if(load_element_index == 2)
+      {
+        rect.x = current.x + p_width / 2 - rect.w / 2;
+        rect.y = current.y + t_delete.getHeight() / 2 - rect.h / 2;
 
-    //     Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
-    //   }
-    // }
+        Frame::renderRectSelect(rect, renderer, kCOLOR_TITLE_HOVER);
+      }
+    }
   }
 }
 
@@ -820,6 +921,11 @@ Sex TitleScreen::getPlayerSexSelect()
   return player_sex_select;
 }
 
+int32_t TitleScreen::getSaveIndex()
+{
+  return save_scroll_box.getElementIndex();
+}
+
 /* The KeyDown event handler -- sends keys to specific functions */
 void TitleScreen::keyDownEvent(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
@@ -861,7 +967,7 @@ bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
   {
     renderTitleElements(renderer);
   }
-  else if(menu_layer == MenuLayer::MAIN)
+  else if(menu_layer == MenuLayer::MAIN || menu_layer == MenuLayer::POPUP)
   {
     if(menu_type == MenuType::TITLE_PLAYER_SELECT)
     {

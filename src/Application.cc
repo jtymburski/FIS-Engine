@@ -303,7 +303,9 @@ bool Application::load()
     game_handler->setPath(app_path, app_map, false);
 
   /* Change mode back to title screen */
-  title_screen.setSaveData(game_handler->getSaveData());
+    title_screen.setSaveData(game_handler->getSaveData());
+    title_screen.buildSave(renderer);
+
   changeMode(TITLESCREEN);
 
   return success;
@@ -470,7 +472,20 @@ bool Application::updateViews(int cycle_time)
       {
         /* Disable Go To Game to send title screen to useable state */
         title_screen.setFlag(TitleState::GAME_LOADING, true);
+        title_screen.setFlag(TitleState::GO_TO_GAME, false);
         changeMode(GAME);
+      }
+      else if(title_screen.getFlag(TitleState::LOAD_FROM_SAVE))
+      {
+        game_handler->setSaveSlot(title_screen.getSaveIndex() + 1);
+        title_screen.setFlag(TitleState::LOAD_FROM_SAVE, false);
+        changeMode(GAME);
+      }
+      else if(title_screen.getFlag(TitleState::DELETE_SAVE))
+      {
+        game_handler->saveClear(title_screen.getSaveIndex() + 1);
+        title_screen.setSaveData(game_handler->getSaveData());
+        title_screen.buildSave(renderer);
       }
     }
   }
@@ -480,7 +495,14 @@ bool Application::updateViews(int cycle_time)
     if(game_handler->update(cycle_time))
     {
       if(mode_next == NONE)
+      {
+        game_handler->unload(false);
+
+        title_screen.setSaveData(game_handler->getSaveData());
+        title_screen.buildSave(renderer);
+
         changeMode(TITLESCREEN);
+      }
     }
   }
   /* Loading */
