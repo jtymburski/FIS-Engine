@@ -3081,7 +3081,7 @@ void Menu::keyDownDown()
   {
     if(getMainMenuType() == MenuType::OPTIONS)
     {
-      if((uint32_t)option_element_index + 1 < kNUM_OPTIONS)
+      if((uint32_t)option_element_index + 1 <= kNUM_OPTIONS)
         incrementOptionIndex();
     }
     else if(getMainMenuType() == MenuType::INVENTORY)
@@ -3266,19 +3266,19 @@ void Menu::keyDownAction()
     /* Key down event on the options. --> If digital option, select flag */
     else if(getMainMenuType() == MenuType::OPTIONS)
     {
-      if(option_element_index == 2)
+      if(option_element_index == 3)
       {
         event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
                                     SoundChannels::MENUS);
         option_auto_run.toggle();
       }
-      else if(option_element_index == 3)
+      else if(option_element_index == 4)
       {
         event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
                                     SoundChannels::MENUS);
         option_mute.toggle();
       }
-      else if(option_element_index == 4)
+      else if(option_element_index == 5)
       {
         event_handler->triggerSound(Sound::kID_SOUND_MENU_CHG,
                                     SoundChannels::MENUS);
