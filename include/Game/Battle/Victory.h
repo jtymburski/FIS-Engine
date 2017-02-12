@@ -94,6 +94,11 @@ private:
   /* The active card index */
   uint32_t index;
 
+  /* Experience frames for rendering */
+  Frame* frame_exp_empty;
+  Frame* frame_exp_full;
+  Frame* frame_exp_middle;
+
   /* Vector of Battle actors to calculate experience/loot with */
   std::vector<BattleActor*> losers;
 

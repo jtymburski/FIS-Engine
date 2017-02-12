@@ -428,8 +428,8 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h,
           SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
         else
           SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-        return (SDL_RenderCopyEx(renderer, texture, src_rect, &rect, 0,
-                                 nullptr, flip) == 0);
+        return (SDL_RenderCopyEx(renderer, texture, src_rect, &rect, 0, nullptr,
+                                 flip) == 0);
       }
     }
   }
@@ -515,8 +515,7 @@ bool Frame::setColorMode(ColorMode mode)
           bool full_switch = false;
           if((color_mode == ColorMode::COLORING &&
               mode == ColorMode::GREYING) ||
-             (color_mode == ColorMode::GREYING &&
-              mode == ColorMode::COLORING))
+             (color_mode == ColorMode::GREYING && mode == ColorMode::COLORING))
           {
             full_switch = true;
           }
@@ -1036,7 +1035,7 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
 /*
  * Description: Takes a series of coordinates and draws the line between all.
  *
- * Inputs: std::vector<Coordinate> line_points - the points to draw lines 
+ * Inputs: std::vector<Coordinate> line_points - the points to draw lines
  *                                               between
  *         SDL_Renderer* renderer - the rendering engine pointer
  * Output: none
@@ -1047,8 +1046,8 @@ void Frame::drawLine(std::vector<Coordinate> line_points,
   for(auto& point : line_points)
     SDL_RenderDrawPoint(renderer, point.x, point.y);
 }
-  
-/* 
+
+/*
  * Description: Converts RGB to grey scale value
  *
  * Inputs: uint8_t red - the red color value
@@ -1340,7 +1339,8 @@ bool Frame::renderRect(SDL_Rect rect, uint16_t border_width,
  * Inputs:
  * Output:
  */
-bool Frame::renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color)
+bool Frame::renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer,
+                             SDL_Color color)
 {
   short x[4] = {rect.x, rect.x + rect.w, rect.x + rect.w, rect.x};
   short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
@@ -1348,7 +1348,8 @@ bool Frame::renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color co
   filledPolygonRGBA(renderer, x, y, 4, color.r, color.g, color.b, color.a);
 }
 
-bool Frame::renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color)
+bool Frame::renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer,
+                                   SDL_Color color)
 {
   short x[4] = {rect.x, rect.x + rect.w, rect.x + rect.w, rect.x};
   short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
@@ -1795,6 +1796,66 @@ bool Frame::renderTrapezoid(Coordinate start, int32_t h, int32_t b1, int32_t b2,
 
   return true;
 }
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ *
+ * Notes:
+ */
+
+//TODO
+// -background circle
+// -curr exp arc
+// -exp gain arc
+// -foreground arc (for leveled up)
+// // -inner circle
+// bool Frame::renderExpCircle(Coordinate start, uint32_t w, float curr_exp_pc,
+//                             float orig_exp_pc, uint32_t level,
+//                             uint32_t orig_level, SDL_Renderer* renderer)
+// {
+  // Coordinate centre{start.x + w / 2, start.y + w / 2};
+
+  // /* Filled background circle */
+  // SDL_Color color = {0, 0, 0, 255};
+  // filledCircleRGBA(renderer, centre.x, centre.y, w / 2, color.r, color.g, color.b, color.a);
+
+  // /* Existing EXP Pie */
+  // color = {255, 165, 0, 255};
+  
+  // int16_t deg_start = 0;
+  // int16_t deg_end = 270; //(int16_t)(360.0 * orig_exp_pc) % 360;
+
+  // filledPieRGBA(renderer, centre.x, centre.y, w / 2, deg_start, deg_end, color.r, color.g, color.b, color.a);
+
+  // /* Added EXP pie */
+  // color = {11, 156, 45, 255};
+  
+
+  // //deg_start = 270;
+  // //std::cout << curr_exp_pc << std::endl;
+  // //deg_end = (int16_t)(360.0 * curr_exp_pc) % 360;
+  
+  // std::cout << "Deg End: " << deg_end << std::endl;
+  // filledPieRGBA(renderer, centre.x, centre.y, w / 2, deg_start, deg_end, color.r, color.g, color.b, color.a);
+
+  // //color = {75, 150, 125, 125};
+  // //filledPieRGBA(renderer, centre.x, centre.y, w / 2, 270, 360, color.r, color.g, color.b, color.a);
+
+  // /* Border of the outer circle */
+  // color = {255, 255, 255, 255};
+  // circleRGBA(renderer, centre.x, centre.y, w / 2, color.r, color.g, color.b, color.a);
+
+  // /* Filled black part of the inner circle */
+  // color = {0, 0, 0, 255};
+  // filledCircleRGBA(renderer, centre.x, centre.y, w / 3, color.r, color.g, color.b, color.a);
+
+  // /* Border of the inner circle */
+  // color = {255, 255, 255, 255};  
+  // circleRGBA(renderer, centre.x, centre.y, w / 3, color.r, color.g, color.b, color.a);
+//}
 
 /*
  * Description:

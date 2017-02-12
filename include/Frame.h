@@ -10,11 +10,11 @@
 #ifndef FRAME_H
 #define FRAME_H
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <cmath>
 #include <cstdio>
 #include <iostream>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <string>
 #include <vector>
 
@@ -80,11 +80,11 @@ private:
 
   /*------------------- Private Constants -----------------------*/
   const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
-  const static float kGREY_FOR_BLUE; /* Grey scale convert for blue factor */
-  const static float kGREY_FOR_GREEN; /* Grey scale convert for green factor */
-  const static float kGREY_FOR_RED; /* Grey scale convert for red factor */
+  const static float kGREY_FOR_BLUE;   /* Grey scale convert for blue factor */
+  const static float kGREY_FOR_GREEN;  /* Grey scale convert for green factor */
+  const static float kGREY_FOR_RED;    /* Grey scale convert for red factor */
 
-/*========================= PUBLIC FUNCTIONS ===============================*/
+  /*========================= PUBLIC FUNCTIONS ===============================*/
 public:
   /* Executes the necessary image adjustments, as per the file data handlers */
   bool execImageAdjustment(std::string adjustment);
@@ -154,7 +154,7 @@ public:
   /* Unsets the texture, if one is set */
   void unsetTexture();
 
-/*===================== PRIVATE STATIC  FUNCTIONS ==========================*/
+  /*===================== PRIVATE STATIC  FUNCTIONS ==========================*/
 private:
   /* Draws a line. This is needed because of SDL draw line glitch */
   static void drawLine(int32_t x1, int32_t x2, int32_t y,
@@ -174,7 +174,7 @@ private:
                                     SDL_Renderer* renderer, bool aliasing,
                                     bool flat_side = false);
 
-/*===================== PUBLIC STATIC  FUNCTIONS ===========================*/
+  /*===================== PUBLIC STATIC  FUNCTIONS ===========================*/
 public:
   /* Draws a line given a vector of coordinates */
   static void drawLine(std::vector<Coordinate> line_points,
@@ -198,12 +198,14 @@ public:
   /* Creates a rectangle with multiple pixel border */
   static bool renderRect(SDL_Rect rect, uint16_t border_width,
                          SDL_Renderer* renderer, bool reverse = false);
-  
+
   /* Creates a Rectangle with SDL_Gfx given a specfic rectangle and color */
-  static bool renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color);
+  static bool renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer,
+                               SDL_Color color);
 
   /* */
-  static bool renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer, SDL_Color color);
+  static bool renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer,
+                                     SDL_Color color);
 
   /* Creates a right hand triangle, given the parameters and a renderer */
   static bool renderRHTriangle(uint32_t x, uint32_t y, uint16_t height,
@@ -252,6 +254,10 @@ public:
 
   static bool renderFoursided(Coordinate a, Coordinate b, Coordinate c,
                               Coordinate d);
+
+  // static bool renderExpCircle(Coordinate start, uint32_t w, float curr_exp_pc,
+  //                             float orig_exp_pc, uint32_t level,
+  //                             uint32_t orig_level, SDL_Renderer* renderer);
 
   /* Render a hexagonal experience bar given needed values */
   static bool renderExpHex(Coordinate start, uint32_t w, float curr_exp_pc,

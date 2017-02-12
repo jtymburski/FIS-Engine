@@ -21,6 +21,9 @@ Victory::Victory()
     : config{nullptr},
       display_data{nullptr},
       dim_time{0},
+      frame_exp_empty{nullptr},
+      frame_exp_full{nullptr},
+      frame_exp_middle{nullptr},
       index{0},
       renderer{nullptr},
       victory_state{VictoryState::DIM_BATTLE}
@@ -37,11 +40,33 @@ Victory::Victory(Options* config, BattleDisplayData* display_data,
   this->renderer = renderer;
   this->victors = victors;
   this->losers = losers;
+
+  if(config && renderer)
+  {
+    frame_exp_empty = new Frame(
+        config->getBasePath() + "sprites/Overlay/Menu/exp_empty.png", renderer);
+    frame_exp_middle =
+        new Frame(config->getBasePath() + "sprites/Overlay/Menu/exp_middle.png",
+                  renderer);
+    frame_exp_full = new Frame(
+        config->getBasePath() + "sprites/Overlay/Menu/exp_full.png", renderer);
+  }
 }
 
 Victory::~Victory()
 {
   clearCard();
+
+  if(frame_exp_empty)
+    delete frame_exp_empty;
+  if(frame_exp_middle)
+    delete frame_exp_middle;
+  if(frame_exp_full)
+    delete frame_exp_full;
+
+  frame_exp_empty = nullptr;
+  frame_exp_middle = nullptr;
+  frame_exp_full = nullptr;
 }
 
 /*=============================================================================
@@ -213,7 +238,7 @@ void Victory::renderCard(VictoryCard& card)
     auto col1_x = static_cast<int32_t>(x + std::floor(0.13 * (float)width));
     auto col1_y = static_cast<int32_t>(y + std::floor(0.08 * (float)height));
 
-    auto e_size = (int32_t)(std::round(0.18 * height));
+    auto e_size = (int32_t)(std::round(0.14 * height));
     auto os_x = (int32_t)(std::round(0.15 * width));
     auto os_y = (int32_t)(std::round(0.1625 * height));
 
@@ -266,7 +291,7 @@ bool Victory::renderLoot(Coordinate start)
 
     std::vector<Text> item_texts;
 
-    //    for(auto& item : loot_card.loot)
+    //for(auto& item : loot_card.loot)
     //    {
     //      Text temp(item_font);
     // TODO - Obtain the item name
@@ -284,8 +309,12 @@ bool Victory::renderLoot(Coordinate start)
 bool Victory::renderMainActorData(VictoryActor actor, Coordinate start,
                                   uint32_t exp_bar_size)
 {
-  if(renderer && actor.actor && actor.actor->getBasePerson())
+  if(renderer && actor.actor && actor.actor->getBasePerson()) 
   {
+    assert(frame_exp_empty);
+    assert(frame_exp_full);
+    assert(frame_exp_middle);
+
     double cos60 = std::cos(60 * 3.14159265358 / 180.0);
     double sin60 = std::sin(60 * 3.14159265358 / 180.0);
 
@@ -297,11 +326,46 @@ bool Victory::renderMainActorData(VictoryActor actor, Coordinate start,
     SDL_Color color{255, 255, 255, 255};
     auto name_font = config->getFontTTF(FontName::BATTLE_VICTORY_NAME);
 
-    /* Render the Actor's Experience Bar */
-    Frame::renderExpHex(start, exp_bar_size,
-                        base_person->findExpPercent() / 100.0,
-                        actor.orig_exp / 100.0, base_person->getLevel(),
-                        actor.orig_lvl, renderer);
+    // ==== START EXP RENDER (FACTOR OUT?) ==== //
+    frame_exp_full->render(renderer, start.x, start.y);
+
+    auto height =
+        frame_exp_empty->getHeight() -
+        (base_person->findExpPercent() / 100.0 * frame_exp_empty->getHeight());
+    auto gap = (int32_t)std::round(config->getScaledWidth() * 0.009);
+
+    SDL_Rect exp_rect;
+    exp_rect.x = 0;
+    exp_rect.y = 0;
+    exp_rect.h = height;
+    exp_rect.w = frame_exp_full->getWidth();
+
+    frame_exp_empty->render(renderer, start.x, start.y, 0, height, &exp_rect);
+    frame_exp_middle->render(renderer,
+                             start.x + frame_exp_empty->getWidth() / 2 -
+                                 frame_exp_middle->getWidth() / 2,
+                             start.y + frame_exp_empty->getHeight() / 2 -
+                                 frame_exp_middle->getHeight() / 2);
+
+    /* Render the level text centred to the frame middle exp */
+    Text t_level_title{config->getFontTTF(FontName::M_ITEM_HEADER)};
+    Text t_level{config->getFontTTF(FontName::M_TITLE_ELM)};
+
+    t_level_title.setText(renderer, "LEVEL", {255, 255, 255, 255});
+    t_level.setText(renderer, std::to_string(base_person->getLevel()),
+                    {255, 255, 255, 255});
+
+    auto x = start.x;
+    auto y = start.y;
+    start.x += frame_exp_empty->getWidth() / 2 - t_level_title.getWidth() / 2;
+    start.y += frame_exp_empty->getHeight() * 0.24;
+    t_level_title.render(renderer, start.x, start.y);
+
+    start.x = x + frame_exp_empty->getWidth() / 2 - t_level.getWidth() / 2;
+    start.y += 3 * gap / 2;
+    t_level.render(renderer, start.x, start.y);
+
+    // === END EXP RENDER === //
 
     /* Render the Name Data */
     Text name(name_font);
@@ -394,8 +458,9 @@ bool Victory::update(int32_t cycle_time)
 
         if(victory_actor.orig_lvl == base->getLevel())
         {
-          //auto equip_stats = base->calcEquipStats();
-          auto max_health = (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
+          // auto equip_stats = base->calcEquipStats();
+          auto max_health =
+              (uint32_t)base->getCurrMax().getStat(Attribute::VITA);
           auto curr_health = actor->getStats().getBaseValue(Attribute::VITA);
           auto max_qtdr = (uint32_t)base->getCurrMax().getStat(Attribute::QTDR);
           auto curr_qtdr = actor->getStats().getBaseValue(Attribute::QTDR);
