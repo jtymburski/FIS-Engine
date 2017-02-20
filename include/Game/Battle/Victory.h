@@ -18,6 +18,7 @@
 #include "Game/Battle/BattleActor.h"
 #include "Game/Battle/BattleDisplayData.h"
 #include "Game/Battle/RenderElement.h"
+#include "Game/EventHandler.h"
 
 struct VictoryActor
 {
@@ -91,6 +92,9 @@ private:
   /* Remaining time the Battle needs to dim */
   int32_t dim_time;
 
+  /* Event Handler */
+  EventHandler* event_handler;
+
   /* The active card index */
   uint32_t index;
 
@@ -98,6 +102,7 @@ private:
   Frame* frame_exp_empty;
   Frame* frame_exp_full;
   Frame* frame_exp_middle;
+  Frame* frame_exp_full_yellow;
 
   /* Vector of Battle actors to calculate experience/loot with */
   std::vector<BattleActor*> losers;
@@ -165,6 +170,9 @@ public:
 
   /* Assigns a dim time from Battle */
   void setDimTime(int32_t new_dim_time);
+
+  /* Assigns an event handler */
+  void setEventHandler(EventHandler* event_handler);
 
   /* Assigns a new renderer to the Victory Screen */
   bool setRenderer(SDL_Renderer* new_renderer);

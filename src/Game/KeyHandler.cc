@@ -503,6 +503,7 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
 /*
  * Description: Assigns a given enumerated GameKey to be mapped to a given SDL
  *              Keycode if a match can be made. A GameKey cannot be mapped to
+ *              a keycode that is already mapped with this function.
  *
  * Inputs: GameKey game_key - enumerated game function key to map keycode to
  *         SDL_Keycode new_keycode - the keycode to map the game function key to
@@ -519,6 +520,11 @@ bool KeyHandler::setKey(GameKey game_key, SDL_Keycode new_keycode)
   }
 
   return false;
+}
+
+bool KeyHandler::unsetKey(GameKey game_key)
+{
+
 }
 
 /*

@@ -21,8 +21,10 @@ Victory::Victory()
     : config{nullptr},
       display_data{nullptr},
       dim_time{0},
+      event_handler{nullptr},
       frame_exp_empty{nullptr},
       frame_exp_full{nullptr},
+      frame_exp_full_yellow{nullptr},
       frame_exp_middle{nullptr},
       index{0},
       renderer{nullptr},
@@ -50,6 +52,9 @@ Victory::Victory(Options* config, BattleDisplayData* display_data,
                   renderer);
     frame_exp_full = new Frame(
         config->getBasePath() + "sprites/Overlay/Menu/exp_full.png", renderer);
+    frame_exp_full_yellow = new Frame(
+        config->getBasePath() + "sprites/Overlay/Menu/exp_full_yellow.png",
+        renderer);
   }
 }
 
@@ -63,10 +68,13 @@ Victory::~Victory()
     delete frame_exp_middle;
   if(frame_exp_full)
     delete frame_exp_full;
+  if(frame_exp_full_yellow)
+    delete frame_exp_full_yellow;
 
   frame_exp_empty = nullptr;
   frame_exp_middle = nullptr;
   frame_exp_full = nullptr;
+  frame_exp_full_yellow = nullptr;
 }
 
 /*=============================================================================
@@ -291,7 +299,7 @@ bool Victory::renderLoot(Coordinate start)
 
     std::vector<Text> item_texts;
 
-    //for(auto& item : loot_card.loot)
+    // for(auto& item : loot_card.loot)
     //    {
     //      Text temp(item_font);
     // TODO - Obtain the item name
@@ -309,11 +317,12 @@ bool Victory::renderLoot(Coordinate start)
 bool Victory::renderMainActorData(VictoryActor actor, Coordinate start,
                                   uint32_t exp_bar_size)
 {
-  if(renderer && actor.actor && actor.actor->getBasePerson()) 
+  if(renderer && actor.actor && actor.actor->getBasePerson())
   {
     assert(frame_exp_empty);
     assert(frame_exp_full);
     assert(frame_exp_middle);
+    assert(frame_exp_full_yellow);
 
     double cos60 = std::cos(60 * 3.14159265358 / 180.0);
     double sin60 = std::sin(60 * 3.14159265358 / 180.0);
@@ -329,18 +338,30 @@ bool Victory::renderMainActorData(VictoryActor actor, Coordinate start,
     // ==== START EXP RENDER (FACTOR OUT?) ==== //
     frame_exp_full->render(renderer, start.x, start.y);
 
-    auto height =
+    // auto original_height =
+    //     frame_exp_full_yellow->getHeight() -
+    //     (actor.orig_exp / 100.0 * frame_exp_full_yellow->getHeight());
+
+    auto empty_height =
         frame_exp_empty->getHeight() -
         (base_person->findExpPercent() / 100.0 * frame_exp_empty->getHeight());
+
     auto gap = (int32_t)std::round(config->getScaledWidth() * 0.009);
 
     SDL_Rect exp_rect;
     exp_rect.x = 0;
     exp_rect.y = 0;
-    exp_rect.h = height;
+    exp_rect.h = empty_height;
     exp_rect.w = frame_exp_full->getWidth();
 
-    frame_exp_empty->render(renderer, start.x, start.y, 0, height, &exp_rect);
+    frame_exp_empty->render(renderer, start.x, start.y, 0, empty_height,
+                            &exp_rect);
+
+    // exp_rect.h = original_height;
+
+    // frame_exp_full_yellow->render(renderer, start.x, start.y, 0,
+    //                               original_height, &exp_rect);
+
     frame_exp_middle->render(renderer,
                              start.x + frame_exp_empty->getWidth() / 2 -
                                  frame_exp_middle->getWidth() / 2,
@@ -439,7 +460,50 @@ bool Victory::update(int32_t cycle_time)
         //                  PState::CAN_GAIN_EXP) << std::endl;
 
         victory_actor.exp_left -= add_exp;
+
+        auto level_before = victory_actor.base_person->getLevel();
+        auto skills = victory_actor.base_person->getCurrSkills();
+
         victory_actor.base_person->addExp(add_exp);
+
+        /* Experience gain sound trigger */
+        if(event_handler)
+        {
+          event_handler->triggerSound(Sound::kID_SOUND_VIC_EXPUP,
+                                      SoundChannels::MENUS);
+        }
+
+        auto level_after = victory_actor.base_person->getLevel();
+
+        if(level_after > level_before)
+        {
+          //TODO: Fire up level event and move to EventHandler
+          std::cout << "Level up!" << std::endl;
+
+          if(event_handler)
+          {
+            event_handler->triggerSound(Sound::kID_SOUND_VIC_LEVEL,
+                                        SoundChannels::MENUS);
+          }
+
+          if(skills)
+          {
+            if(skills->getElements(level_after).size() >
+               skills->getElements(level_before).size())
+            {
+              
+              //TODO: Fire Skill gain event and move to EventHandler
+              if(event_handler)
+              {
+                event_handler->triggerSound(Sound::kID_SOUND_VIC_SKILL,
+                                            SoundChannels::MENUS);
+              }
+
+              std::cout << "Skill was gained!" << std::endl;
+            }
+          }
+
+             }
 
         done &= (victory_actor.exp_left == 0);
       }
@@ -489,6 +553,11 @@ bool Victory::setConfiguration(Options* new_config)
 void Victory::setDimTime(int32_t new_dim_time)
 {
   this->dim_time = new_dim_time;
+}
+
+void Victory::setEventHandler(EventHandler* event_handler)
+{
+  this->event_handler = event_handler;
 }
 
 bool Victory::setRenderer(SDL_Renderer* new_renderer)

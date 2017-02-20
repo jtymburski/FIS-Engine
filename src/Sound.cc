@@ -29,9 +29,10 @@ const uint32_t Sound::kID_MUSIC_VICTORY = 3;
 const uint32_t Sound::kID_MUSIC_DEFEAT = 4;
 
 /* Reserved Sound IDs
- *    System Sounds  0 - 49
- *    Map Sounds    50 - 99
- *   Battle Sounds 100 - 199
+ *   System Sounds    0 -  49
+ *   Map Sounds      50 -  99
+ *   Battle Sounds  100 - 299
+ *   Victory Sound: 300 - 350
  *   Custom Sounds 1000+
  */
 
@@ -58,6 +59,12 @@ const uint32_t Sound::kID_SOUND_BTL_RAISE = 118;
 const uint32_t Sound::kID_SOUND_BTL_SILENCE = 119;
 const uint32_t Sound::kID_SOUND_BTL_POISON = 120;
 
+/* Victory Sounds */
+const uint32_t Sound::kID_SOUND_VIC_EXPUP = 301;
+const uint32_t Sound::kID_SOUND_VIC_EXPDOWN = 302;
+const uint32_t Sound::kID_SOUND_VIC_LEVEL = 303;
+const uint32_t Sound::kID_SOUND_VIC_SKILL = 304;
+
 /* -- */
 const int Sound::kUNSET_ID = -1;
 
@@ -80,7 +87,6 @@ Sound::Sound()
   loop_count = 0;
   raw_data = NULL;
   volume = MIX_MAX_VOLUME * kDEFAULT_RATIO;
-  //default_volume = MIX_MAX_VOLUME - MIX_MAX_VOLUME / 4; // TODO: Remove?
 }
 
 /*

@@ -57,6 +57,8 @@ enum class EventClassifier : std::uint32_t
   /* Separator: All categories lower are not editable by game designer */
   ITEMPICKUP      = 1 << 14,
   SHIFTIO         = 1 << 15,
+  VICTORY_LEVEL_UP = 1 << 16,
+  VICTORY_SKILL_GAIN = 1 << 17
 };
 
 /*

@@ -21,11 +21,11 @@
 #ifndef KEYHANDLER_H
 #define KEYHANDLER_H
 
-#include <SDL2/SDL.h>
-#include <vector>
-#include "StringDb.h"
 #include "EnumDb.h"
 #include "Helpers.h"
+#include "StringDb.h"
+#include <SDL2/SDL.h>
+#include <vector>
 
 enum class KeyMode
 {
@@ -146,6 +146,9 @@ public:
   Key& getKey(GameKey game_key);
   Key& getKey(SDL_Keycode keycode, bool* found);
 
+  /* Returns the current state of text entry */
+  std::string getTextEntry();
+
   /* Set Keys */
   bool setKey(GameKey game_key, SDL_Keycode new_keycode);
 
@@ -159,8 +162,8 @@ public:
   /* Set a given GameKey to be held */
   bool setHeld(GameKey key);
 
-  /* Returns the current state of text entry */
-  std::string getTextEntry();
+  /* Unassigns a current GameKey so that it can be assigned */
+  bool unsetKey(GameKey key);
 
   /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:

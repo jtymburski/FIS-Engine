@@ -119,6 +119,12 @@ public:
   const static uint32_t kID_SOUND_BTL_SILENCE;
   const static uint32_t kID_SOUND_BTL_POISON;
 
+  /* Reserved Sound Victory IDs */
+  const static uint32_t kID_SOUND_VIC_EXPUP;
+  const static uint32_t kID_SOUND_VIC_EXPDOWN;
+  const static uint32_t kID_SOUND_VIC_LEVEL;
+  const static uint32_t kID_SOUND_VIC_SKILL;
+
   const static int kUNSET_ID; /* The placeholder unset ID */
 
   /*======================== PRIVATE FUNCTIONS ===============================*/

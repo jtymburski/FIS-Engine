@@ -213,62 +213,6 @@ enum class AilmentStatus
   NONE
 };
 
-/*
- * Description: The Attribute enumerations are representations of the
- *              statistics contained within Battle-related entities: Persons,
- *              Items, BubbyFlavours, Equipments, etc.
- *
- * VITA - Vitality - hit points, when 0 character is incapacitated
- * QTDR - Quantum Drive - skill cost currency
- * PHAG - Physical Aggression - non-elemental attack statistic
- * PHFD - Physical Fortitude - non-elemental defense statistic
- * THAG - Thermal Aggression - fire-elemental attack statistic
- * THFD - Thermal Fortitude - fire-elemental defense statistic
- * PRAG - Primal Aggression - forest-elemental attack statistic
- * PRFD - Primal Fortitude - forest-elemental defense statistic
- * POAG - Polar Aggression - ice-elemental attack statistic
- * POFD - Polar Fortitude - ice-elemental defense statistic
- * CHAG - Charged Aggression - electric-elemental attack statistic
- * CHFD - Charged Fortitude - electric-elemental defense statistic
- * CYAG - Cybernetic Aggression - digital-elemental attack statistic
- * CYFD - Cybernetic Fortitude - digital-elemental defense statistic
- * NIAG - Nihil Aggression - void-elemental attack statistic
- * NIFD - Nihil Fortitude - void-elemental defense statistic
- * MMNT - Momentum - speed, in relation to turn order and action order
- * LIMB - Limbertude - dodge chance in avoiding attacks/ActionScope
- * UNBR - Unbearability - critical hit chance, increases base damage by factor
- * MANN - Manna - luck which has various effects on outcomes/earnings etc.
- * NONE - No Attribute - the enumeration does not describe an attribute
- * MVIT - Maximum Vitality (Limit)
- * MQTD - Maximum Quantum Drive (Limit)
- */
-// enum class Attribute : std::uint8_t
-// {
-//   VITA = 0,
-//   QTDR = 1,
-//   PHAG = 2,
-//   PHFD = 3,
-//   THAG = 4,
-//   THFD = 5,
-//   PRAG = 6,
-//   PRFD = 7,
-//   POAG = 8,
-//   POFD = 9,
-//   CHAG = 10,
-//   CHFD = 11,
-//   CYAG = 12,
-//   CYFD = 13,
-//   NIAG = 14,
-//   NIFD = 15,
-//   MMNT = 16,
-//   LIMB = 17,
-//   UNBR = 18,
-//   MANN = 19,
-//   MVIT = 20,
-//   MQTD = 21,
-//   NONE = 22
-// };
-
 enum class Attribute
 {
   VITA = 0,
