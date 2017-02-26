@@ -31,7 +31,8 @@
  */
 Key::Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled)
     : game_key{new_key},
-      keycode{new_keycode},
+      keycode_prim{new_keycode},
+      keycode_secd{new_keycode},
       depressed{false},
       enabled{enabled},
       time_depressed{0}
@@ -84,7 +85,7 @@ KeyHandler::KeyHandler() : mode{KeyMode::INPUT}
 void KeyHandler::printIndex(Key key)
 {
   std::cout << "[Game: " << Helpers::gameKeyToStr(key.game_key)
-            << "] [P.Key: " << SDL_GetKeyName(key.keycode) << "] [Enabled? "
+            << "] [P.Key: " << SDL_GetKeyName(key.keycode_prim) << "] [Enabled? "
             << key.enabled << "] [Time Depressed: " << key.time_depressed << "]"
             << std::endl;
 }
@@ -97,9 +98,11 @@ void KeyHandler::printIndex(Key key)
  */
 void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
 {
+  //TODO: Updating for secondary keys.
+
   /* Grab the SDL_Scancode matching the current element's Keycode */
-  auto scan_code = SDL_GetScancodeFromKey(key.keycode);
-  auto bp_keycode = getKey(GameKey::BACKSPACE).keycode;
+  auto scan_code = SDL_GetScancodeFromKey(key.keycode_prim);
+  auto bp_keycode = getKey(GameKey::BACKSPACE).keycode_prim;
   auto state = SDL_GetKeyboardState(nullptr);
 
   if(state)
@@ -117,10 +120,10 @@ void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
               text.size() < StringDb::kMAX_TITLE_NAME)
       {
 
-        if(text.back() != ' ' || key.keycode != SDLK_SPACE)
+        if(text.back() != ' ' || key.keycode_prim != SDLK_SPACE)
           addKeyEntry(key);
       }
-      else if(call_mode == KeyMode::INPUT && key.keycode == bp_keycode)
+      else if(call_mode == KeyMode::INPUT && key.keycode_prim == bp_keycode)
         removeKeyEntry();
     }
     else if(state[scan_code] && key.depressed)
@@ -149,16 +152,16 @@ void KeyHandler::addKeyEntry(Key& key)
   bool found = false;
 
   for(auto& element : text_keys)
-    if(element.keycode == key.keycode)
+    if(element.keycode_prim == key.keycode_prim)
       found = true;
 
   if(found)
   {
-    auto key_name = SDL_GetKeyName(key.keycode);
+    auto key_name = SDL_GetKeyName(key.keycode_prim);
 
     if(key_name)
     {
-      if(key.keycode == SDLK_SPACE)
+      if(key.keycode_prim == SDLK_SPACE)
         text += " ";
       else
         text += key_name;
@@ -303,7 +306,7 @@ bool KeyHandler::isEnabled(SDL_Keycode keycode, bool* found)
 {
   for(auto& element : keys)
   {
-    if(element.keycode == keycode)
+    if(element.keycode_prim == keycode)
     {
       *found = true;
 
@@ -323,7 +326,7 @@ bool KeyHandler::isEnabled(SDL_Keycode keycode, bool* found)
 bool KeyHandler::isKeycodeMapped(SDL_Keycode keycode)
 {
   for(auto& element : keys)
-    if(element.keycode == keycode)
+    if(element.keycode_prim == keycode || element.keycode_secd == keycode)
       return true;
 
   return false;
@@ -488,7 +491,7 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
 {
   for(auto& element : keys)
   {
-    if(element.keycode == keycode)
+    if(element.keycode_prim == keycode || element.keycode_secd)
     {
       if(found)
         *found = true;
@@ -509,12 +512,34 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
  *         SDL_Keycode new_keycode - the keycode to map the game function key to
  * Output: bool - true if a Key matching the game key was found.
  */
-bool KeyHandler::setKey(GameKey game_key, SDL_Keycode new_keycode)
+bool KeyHandler::setKeyPrimary(GameKey game_key, SDL_Keycode new_keycode)
 {
   if(!isKeycodeMapped(new_keycode))
   {
     auto& key = getKey(game_key);
-    key.keycode = new_keycode;
+    key.keycode_prim = new_keycode;
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Assigns a given enumerated GameKey to be mapped to a given SDL
+ *              Keycode if a match can be made. A GameKey cannot be mapped to
+ *              a keycode that is already mapped with this function.
+ *
+ * Inputs: GameKey game_key - enumerated game function key to map keycode to
+ *         SDL_Keycode new_keycode - the keycode to map the game function key to
+ * Output: bool - true if a Key matching the game key was found.
+ */
+bool KeyHandler::setKeySecondary(GameKey game_key, SDL_Keycode new_keycode)
+{
+  if(!isKeycodeMapped(new_keycode))
+  {
+    auto& key = getKey(game_key);
+    key.keycode_secd = new_keycode;
 
     return true;
   }
@@ -565,7 +590,7 @@ bool KeyHandler::setEnabled(SDL_Keycode keycode, bool enabled)
 {
   for(auto& element : keys)
   {
-    if(element.keycode == keycode)
+    if(element.keycode_prim == keycode || element.keycode_secd == keycode)
     {
       element.enabled = enabled;
 

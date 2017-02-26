@@ -961,6 +961,10 @@ std::string Helpers::menuTypeToStr(const MenuType& menu_type)
     return "Load Game";
   if(menu_type == MenuType::TITLE_OPTIONS)
     return "Options";
+  if(menu_type == MenuType::TITLE_OPTIONS_MAIN)
+    return "Main";
+  if(menu_type == MenuType::TITLE_OPTIONS_CONTROLS)
+    return "Controls";
   if(menu_type == MenuType::TITLE_QUIT)
     return "Quit";
   if(menu_type == MenuType::INVALID)

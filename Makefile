@@ -43,7 +43,9 @@ else
 	endif
 endif
 
-SOURCES=src/Application.cc \
+SOURCES=src/AnalogOption.cc \
+        src/DigitalOption.cc \
+        src/Application.cc \
         src/Box.cc \
         src/FileHandler.cc \
         src/Fonts.cc \

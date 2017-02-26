@@ -14,6 +14,8 @@
 
 #include "Game/KeyHandler.h"
 #include "Game/Save.h"
+#include "AnalogOption.h"
+#include "DigitalOption.h"
 #include "Music.h"
 #include "Options.h"
 #include "SoundHandler.h"
@@ -126,6 +128,7 @@ private:
 
   /* Vector of TitleElements */
   std::vector<TitleElement> title_elements;
+  std::vector<TitleElement> option_title_elements;
 
   /* TitleElement Box */
   Box title_element_box;
@@ -133,6 +136,7 @@ private:
 
   /* Current title mennu index */
   int32_t title_menu_index;
+  int32_t option_menu_index;
   int32_t player_menu_index;
 
   /* ----------------- CONSTANTS -------------------- */
@@ -154,6 +158,7 @@ private:
 private:
   /* Constructs the menu options */
   void buildTitleElements();
+  void buildOptionTitleElements();
 
   /* Build the standard hover rectancular given coordinate information */
   SDL_Rect getRect(Coordinate current, int32_t height, int32_t width);
@@ -169,6 +174,11 @@ private:
   void keyDownRight(KeyHandler& key_handler);
   void keyDownUp(KeyHandler& key_handler);
 
+  /* Render the Title Options */
+  void renderOptions(SDL_Renderer* renderer, KeyHandler& key_handler);
+  void renderOptionElementTitle(TitleElement& title);
+  void renderOptionElementTitles(int32_t gap);
+
   /* Render the Player Section Box */
   void renderPlayerSelection(SDL_Renderer* renderer, KeyHandler& key_handler);
 
@@ -178,7 +188,7 @@ private:
   /* Render Title Elements */
   void renderTitleElements(SDL_Renderer* renderer);
 
-  /* Updates the state of the KeyHandler (INPUT vs. TEXT_ENTRY) */
+  /* Updates the state of  the KeyHandler (INPUT vs. TEXT_ENTRY) */
   bool updateKeyHandler(KeyHandler& key_handler);
 
   /*======================== PUBLIC FUNCTIONS ================================*/

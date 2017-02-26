@@ -216,9 +216,11 @@ TitleScreen::TitleScreen(Options* config)
       sound_handler{nullptr},
       title_elements{},
       title_menu_index{-1},
+      option_menu_index{-1},
       player_menu_index{-1}
 {
   buildTitleElements();
+  buildOptionTitleElements();
 }
 
 /*=============================================================================
@@ -291,6 +293,19 @@ void TitleScreen::buildTitleElements()
   menu_type = MenuType::TITLE_NEW_GAME;
 }
 
+void TitleScreen::buildOptionTitleElements()
+{
+  option_title_elements.clear();
+
+  auto elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_OPTIONS_MAIN),
+                          true, MenuType::TITLE_OPTIONS_MAIN);
+  option_title_elements.push_back(elm);
+
+  elm = TitleElement(Helpers::menuTypeToStr(MenuType::TITLE_OPTIONS_CONTROLS),
+                     true, MenuType::TITLE_OPTIONS_CONTROLS);
+  option_title_elements.push_back(elm);
+}
+
 /* Checks if the entered player name is valid for game selection */
 bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
 {
@@ -334,24 +349,23 @@ void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
         /* Set the clear name to true to purge first key press (this one) */
         setFlag(TitleState::CLEAR_NAME);
       }
-      else
+      else if(title_menu_type == MenuType::TITLE_LOAD_GAME)
       {
         menu_type = title_menu_type;
-
-        if(menu_type == MenuType::TITLE_LOAD_GAME)
-        {
-          buildSave(renderer);
-        }
+        buildSave(renderer);
       }
+      else if(title_menu_type == MenuType::TITLE_OPTIONS)
+      {
+        menu_type = MenuType::TITLE_OPTIONS;
+        option_menu_index = 0;
+      }
+      else if(title_menu_type == MenuType::TITLE_QUIT)
+        setFlag(TitleState::EXIT_GAME);
 
       /* Play sound */
       sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
                                     SoundChannels::MENUS, true);
     }
-
-    /* If the current menu type is now TITLE_QUIT, set flag to quit the game */
-    if(menu_type == MenuType::TITLE_QUIT)
-      setFlag(TitleState::EXIT_GAME);
   }
   else if(menu_layer == MenuLayer::MAIN)
   {
@@ -418,6 +432,7 @@ void TitleScreen::keyDownCancel(KeyHandler& key_handler)
     menu_type = MenuType::INVALID;
     menu_layer = MenuLayer::TITLE;
     player_menu_index = -1;
+    option_menu_index = -1;
   }
   else if(menu_layer == MenuLayer::POPUP)
   {
@@ -619,9 +634,7 @@ bool TitleScreen::updateKeyHandler(KeyHandler& key_handler)
   if(menu_layer == MenuLayer::MAIN)
   {
     if(player_menu_index == 0)
-    {
       key_handler.setMode(KeyMode::NAME_ENTRY);
-    }
     else
       key_handler.setMode(KeyMode::INPUT);
   }
@@ -629,6 +642,13 @@ bool TitleScreen::updateKeyHandler(KeyHandler& key_handler)
     key_handler.setMode(KeyMode::INPUT);
 
   return false;
+}
+
+void TitleScreen::renderOptions(SDL_Renderer* renderer, KeyHandler& key_handler)
+{
+  if(config)
+  {
+  }
 }
 
 void TitleScreen::renderPlayerSelection(SDL_Renderer* renderer,
@@ -979,6 +999,10 @@ bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
     else if(menu_type == MenuType::TITLE_LOAD_GAME)
     {
       renderLoadSelection(renderer);
+    }
+    else if(menu_type == MenuType::TITLE_OPTIONS)
+    {
+      renderOptions(renderer, key_handler);
     }
   }
 

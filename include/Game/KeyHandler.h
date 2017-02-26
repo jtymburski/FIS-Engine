@@ -45,7 +45,8 @@ struct Key
   GameKey game_key;
 
   /* The mapped SDL Keycode for that enumerated key value */
-  SDL_Keycode keycode;
+  SDL_Keycode keycode_prim;
+  SDL_Keycode keycode_secd;
 
   /* Whether that key is depressed */
   bool depressed;
@@ -150,7 +151,8 @@ public:
   std::string getTextEntry();
 
   /* Set Keys */
-  bool setKey(GameKey game_key, SDL_Keycode new_keycode);
+  bool setKeyPrimary(GameKey game_key, SDL_Keycode new_keycode);
+  bool setKeySecondary(GameKey game_key, SDL_Keycode new_keycode);
 
   /* Assign a new enumerated mode to the KeyHandler */
   void setMode(KeyMode mode);

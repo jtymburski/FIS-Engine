@@ -22,6 +22,8 @@
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
 #include "Game/Save.h"
+#include "AnalogOption.h"
+#include "DigitalOption.h"
 #include "Options.h"
 #include "Sprite.h"
 #include "Window.h"
@@ -40,78 +42,6 @@ enum class QuitIndex : uint8_t
   NONE = 0,
   NO = 1,
   YES = 2
-};
-
-/* Option Box Construction for Analog Values */
-struct AnalogOption
-{
-  /* Constructs an AnalogOption */
-  AnalogOption();
-
-  /* Constructs an AnalogOption with a string name */
-  AnalogOption(std::string name);
-
-  /* Pointer to the value for the analog option (0 - 100) */
-  uint32_t* val;
-
-  /* Pointer to a default value */
-  uint32_t default_val;
-
-  /* The number of possible options */
-  uint32_t num_options;
-
-  /* Location for the analog option */
-  Box location;
-
-  /* String name of the option */
-  std::string name;
-
-  /* Decrease the value */
-  void decrease();
-
-  /* Reset the analog option to a default value */
-  void reset();
-
-  /* Increase the value */
-  void increase();
-};
-
-/* Option Box Construction for On/Off Values */
-struct DigitalOption
-{
-  /* Constructs a DigitalOption */
-  DigitalOption();
-
-  /* Constructs a DigitalOption */
-  DigitalOption(Options* config, Coordinate point, int32_t width,
-                int32_t height, int32_t flag_index, std::string name);
-
-  /* Configuraiton pointer */
-  Options* config;
-
-  /* Value */
-  int32_t flag_index;
-
-  /* Location for the DigitalOption */
-  Box location;
-
-  /* String name of the option */
-  std::string name;
-
-  /* Resets a DigitalOption */
-  void reset();
-
-  /* Sets a DigitalOption */
-  void set();
-
-  /* Toggles the DigitalOption */
-  void toggle();
-
-  /* Unsets the DigitalOption */
-  void unset();
-
-  /* Returns whether the Option is Set */
-  bool isSet();
 };
 
 ENUM_FLAGS(MenuState)
