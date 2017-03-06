@@ -115,7 +115,6 @@ private:
   /* Loading element indexes */
   int32_t load_element_index;
   MenuSaveState load_state;
-  Box save_scroll_box;
   std::vector<Save> save_data;
 
   /* Pointer to the SoundHandler */
@@ -130,13 +129,17 @@ private:
   std::vector<TitleElement> title_elements;
   std::vector<TitleElement> option_title_elements;
 
-  /* TitleElement Box */
+  /* Boxes */
   Box title_element_box;
+  Box option_element_box;
+  Box option_menu_box;
   Box player_selection_box;
+  Box save_scroll_box;
 
   /* Current title mennu index */
   int32_t title_menu_index;
   int32_t option_menu_index;
+  int32_t option_element_index;
   int32_t player_menu_index;
 
   /* ----------------- CONSTANTS -------------------- */
@@ -146,6 +149,11 @@ private:
   static const SDL_Color kCOLOR_TEXT;
   static const SDL_Color kCOLOR_TEXT_INVALID;
   static const SDL_Color kCOLOR_TITLE_HOVER;
+
+  static const float kOPTIONS_GAP;
+  static const float kOPTIONS_ELEMENT_HEIGHT;
+  static const float kOPTIONS_HEIGHT;
+  static const float kOPTIONS_WIDTH;
 
   static const float kSAVE_GAP;
   static const float kSAVE_ELEMENT_WIDTH;
@@ -176,8 +184,10 @@ private:
 
   /* Render the Title Options */
   void renderOptions(SDL_Renderer* renderer, KeyHandler& key_handler);
-  void renderOptionElementTitle(TitleElement& title);
-  void renderOptionElementTitles(int32_t gap);
+  void renderOptionsMain(SDL_Renderer* renderer, KeyHandler& key_handler);
+  void renderOptionsControls(SDL_Renderer* renderer, KeyHandler& key_handler);
+  void renderOptionElementTitle(SDL_Renderer* renderer, TitleElement& title);
+  void renderOptionElementTitles(SDL_Renderer* renderer, int32_t gap);
 
   /* Render the Player Section Box */
   void renderPlayerSelection(SDL_Renderer* renderer, KeyHandler& key_handler);

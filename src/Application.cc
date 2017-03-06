@@ -160,6 +160,7 @@ void Application::handleEvents()
     /* Otherwise, pass the key down events on to the active view */
     else if(event.type == SDL_KEYDOWN)
     {
+      std::cout << "Last key pressed: " << SDL_GetKeyName(event.key.keysym.sym) << std::endl;
 #ifdef UDEBUG
       SDL_KeyboardEvent press_event = event.key;
 

@@ -1848,9 +1848,10 @@ void Menu::renderPersonElementTitles(int32_t gap)
       if((int32_t)i != person_element_index)
         renderPersonElementTitle(person_title_elements.at(i));
 
-    for(uint32_t i = 0; i < person_title_elements.size(); i++)
-      if((int32_t)i == person_element_index)
-        renderPersonElementTitle(person_title_elements.at(i));
+    //TODO: Remove this?
+    // for(uint32_t i = 0; i < person_title_elements.size(); i++)
+    //   if((int32_t)i == person_element_index)
+    //     renderPersonElementTitle(person_title_elements.at(i));
   }
 }
 

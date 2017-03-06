@@ -192,6 +192,11 @@ const SDL_Color TitleScreen::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color TitleScreen::kCOLOR_TEXT_INVALID{200, 100, 100, 255};
 const SDL_Color TitleScreen::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
 
+const float TitleScreen::kOPTIONS_GAP{0.014};
+const float TitleScreen::kOPTIONS_ELEMENT_HEIGHT{0.05};
+const float TitleScreen::kOPTIONS_HEIGHT{0.6};
+const float TitleScreen::kOPTIONS_WIDTH{0.3};
+
 const float TitleScreen::kSAVE_GAP{0.014};
 const float TitleScreen::kSAVE_ELEMENT_WIDTH{0.60};
 const float TitleScreen::kSAVE_ELEMENT_HEIGHT{0.21};
@@ -212,11 +217,17 @@ TitleScreen::TitleScreen(Options* config)
       player_sex_select{Sex::FEMALE},
       load_element_index{-1},
       load_state{MenuSaveState::NONE},
-      save_scroll_box{Box()},
       sound_handler{nullptr},
       title_elements{},
+      option_title_elements{},
+      title_element_box{Box()},
+      option_element_box{Box()},
+      option_menu_box{Box()},
+      player_selection_box{Box()},
+      save_scroll_box{Box()},
       title_menu_index{-1},
       option_menu_index{-1},
+      option_element_index{-1},
       player_menu_index{-1}
 {
   buildTitleElements();
@@ -503,6 +514,9 @@ void TitleScreen::keyDownLeft(KeyHandler& key_handler)
   {
     if(player_menu_index == 1)
       player_sex_select = Sex::FEMALE;
+
+    if(option_menu_index == 1)
+      option_menu_index--;
   }
 }
 
@@ -515,6 +529,9 @@ void TitleScreen::keyDownRight(KeyHandler& key_handler)
   {
     if(player_menu_index == 1)
       player_sex_select = Sex::MALE;
+
+    if(option_menu_index == 0)
+      option_menu_index++;
   }
 }
 
@@ -648,6 +665,118 @@ void TitleScreen::renderOptions(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
   if(config)
   {
+    auto width = (int32_t)std::round(config->getScaledWidth() * kOPTIONS_WIDTH);
+    auto height =
+        (int32_t)std::round(config->getScaledHeight() * kOPTIONS_HEIGHT);
+
+    option_menu_box.height = height;
+    option_menu_box.width = width;
+
+    auto gap = (int32_t)std::round(width * kOPTIONS_GAP);
+
+    renderOptionElementTitles(renderer, gap);
+
+    if(option_menu_index == 0)
+      renderOptionsMain(renderer, key_handler);
+    else if(option_menu_index == 1)
+      renderOptionsControls(renderer, key_handler);
+  }
+}
+
+void TitleScreen::renderOptionsMain(SDL_Renderer* renderer,
+                                    KeyHandler& key_handler)
+{
+  if(config)
+  {
+  }
+}
+
+void TitleScreen::renderOptionElementTitles(SDL_Renderer* renderer, int32_t gap)
+{
+  if(config && renderer && option_element_index > -1 &&
+     option_element_index < (int32_t)option_title_elements.size() &&
+     option_title_elements.size() > 0)
+  {
+    /*Render the required number of boxes for the element titles */
+    auto point = Coordinate{current.x, current.y};
+    auto box_length = option_menu_box.width / option_title_elements.size();
+    auto box_height = (int32_t)std::round(config->getScaledHeight() *
+                                          kOPTIONS_ELEMENT_HEIGHT);
+
+    for(auto& title : option_title_elements)
+    {
+    }
+  }
+
+  //   int32_t max_remain_length = s_top_box.width + 2;
+
+  //   int32_t index{0};
+
+  //   for(auto& title : person_title_elements)
+  //   {
+  //     auto actual_length = std::min(max_remain_length, box_length);
+  //     title.title_box = Box(point, actual_length, box_height);
+  //     max_remain_length -= actual_length - 1;
+  //     setupDefaultBox(title.title_box);
+
+  //     if(index == person_element_index)
+  //     {
+  //       // title.title_box.setFlag(BoxState::SELECTED, true);
+  //       title.title_box.color_bg = kCOLOR_BORDER_UNSELECTED;
+  //     }
+  //     else
+  //     {
+  //       title.title_box.setFlag(BoxState::SELECTED, false);
+  //     }
+
+  //     point.x += box_length - 1;
+  //     index++;
+  //   }
+
+    // /* Rendder */
+    // for(uint32_t i = 0; i < option_title_elements.size(); i++)
+    //   if((int32_t)i != option_element_index)
+    //     renderOptionElementTitle(option_title_elements.at(i));
+}
+
+void TitleScreen::renderOptionElementTitle(SDL_Renderer* renderer,
+                                           TitleElement& element)
+{
+  element.title_box.render(renderer);
+
+  Text t(config->getFontTTF(FontName::M_SMALL_TITLE_ELM));
+
+  t.setText(renderer, element.name, kCOLOR_TEXT);
+
+  auto b = element.title_box;
+
+  // t.render(renderer, b.point.x, b.width / 2 - t.getWidth() / 2,
+  //          b.point.y + b.height / 2 - t.getHeight() / 2);
+}
+
+void TitleScreen::renderOptionsControls(SDL_Renderer* renderer,
+                                        KeyHandler& key_handler)
+{
+
+  if(config && renderer)
+  {
+    /* Grab each game key and display the current state of control select */
+    auto keys = key_handler.getGameKeys();
+
+    for(auto& key : keys)
+    {
+      auto key_name_game = Helpers::gameKeyToStr(key);
+      auto key_name_prim = key_handler.getKeyNamePrim(key, nullptr);
+      auto key_name_secd = key_handler.getKeyNameSecd(key, nullptr);
+
+      /* Change the display of the game Key whether it is being assigned */
+      if(key_handler.getKey(key).state == GameKeyState::READY)
+      {
+      }
+      else if(key_handler.getKey(key).state == GameKeyState::ASSIGNING)
+      {
+      }
+    }
   }
 }
 

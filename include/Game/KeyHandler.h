@@ -11,11 +11,9 @@
 * -----
 *
 * [1]: The time for a key to be considered 'held' is set in a constant.
-* [2]: Whether multiple mapping are permitted is set in a constant.
 *
 * TODO
 * ----
-* [04-11-15]: Mapping of GameKey to multiple physical keys.
 * [04-11-15]: Convert game KeyDownEvents to grab the state of the keyboard
 *****************************************************************************/
 #ifndef KEYHANDLER_H
@@ -32,14 +30,22 @@ enum class KeyMode
   DISABLED,
   INPUT,
   TEXT_ENTRY,
-  NAME_ENTRY
+  NAME_ENTRY,
+  CONTROL_ENTRY
+};
+
+enum class GameKeyState
+{
+  ASSIGNING,
+  READY
 };
 
 /* Key Map Structure */
 struct Key
 {
   /* Key constructor */
-  Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled = true);
+  Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled = true,
+      bool assigned_prim = true);
 
   /* The enumerated key value */
   GameKey game_key;
@@ -51,11 +57,18 @@ struct Key
   /* Whether that key is depressed */
   bool depressed;
 
+  /* Whether the game_key Primary and Secondary keys are assigned */
+  bool assigned_prim;
+  bool assigned_secd;
+
   /* Whether operation of that Key is currently enabled */
   bool enabled;
 
   /* How long that key has been depressed for */
   int32_t time_depressed;
+
+  /* Current state of the Game Key */
+  GameKeyState state;
 };
 
 class KeyHandler
@@ -78,20 +91,27 @@ private:
   std::string text;
 
   /* ------------ Constants --------------- */
-  static const SDL_Keycode kMOVE_LEFT_DEFAULT;  /* Default moving left key */
+  static const SDL_Keycode kMOVE_LEFT_DEFAULT; /* Default moving left key */
+  static const SDL_Keycode kMOVE_LEFT_SECD;
   static const SDL_Keycode kMOVE_RIGHT_DEFAULT; /* Default moving right key */
-  static const SDL_Keycode kMOVE_UP_DEFAULT;    /* Default moving up key */
-  static const SDL_Keycode kMOVE_DOWN_DEFAULT;  /* Default moving down key */
-  static const SDL_Keycode kMENU_DEFAULT;       /* Default menu open key */
-  static const SDL_Keycode kACTION_DEFAULT;     /* Default action key */
-  static const SDL_Keycode kCANCEL_DEFAULT;     /* Default cancel/close key */
-  static const SDL_Keycode kBACKSPACE_DEFAULT;  /* Default backspace key */
-  static const SDL_Keycode kRUN_DEFAULT;        /* Default run key */
-  static const SDL_Keycode kDEBUG_DEFAULT;      /* Default debug key */
-  static const SDL_Keycode kPAUSE_DEFAULT;      /* Default pause key */
-
+  static const SDL_Keycode kMOVE_RIGHT_SECD;
+  static const SDL_Keycode kMOVE_UP_DEFAULT; /* Default moving up key */
+  static const SDL_Keycode kMOVE_UP_SECD;
+  static const SDL_Keycode kMOVE_DOWN_DEFAULT; /* Default moving down key */
+  static const SDL_Keycode kMOVE_DOWN_SECD;
+  static const SDL_Keycode kMENU_DEFAULT; /* Default menu open key */
+  static const SDL_Keycode kMENU_SECD;
+  static const SDL_Keycode kACTION_DEFAULT; /* Default action key */
+  static const SDL_Keycode kACTION_SECD;
+  static const SDL_Keycode kCANCEL_DEFAULT; /* Default cancel/close key */
+  static const SDL_Keycode kCANCEL_SECD;
+  static const SDL_Keycode kBACKSPACE_DEFAULT; /* Default backspace key */
+  static const SDL_Keycode kBACKSPACE_SECD;
+  static const SDL_Keycode kRUN_DEFAULT; /* Default run key */
+  static const SDL_Keycode kRUN_SECD;
+  static const SDL_Keycode kPAUSE_DEFAULT; /* Default pause key */
+  static const SDL_Keycode kPAUSE_SECD;
   static const int32_t kMIN_HELD_TIME; /* Amount of time for key to be 'Held' */
-  static const bool kMULTIPLE_MAPPINGS; /* Can GameKeys be multi-mapped? */
 
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
@@ -128,7 +148,8 @@ public:
   bool isEnabled(SDL_Keycode keycode, bool* found);
 
   /* Checks to see if a given keycode has already been mapped */
-  bool isKeycodeMapped(SDL_Keycode keycode);
+  bool isKeycodeMappedPrim(SDL_Keycode keycode);
+  bool isKeycodeMappedSecd(SDL_Keycode keycode);
 
   /* Checks if a key has been depressed and not held (sets to held) */
   bool isStruck(GameKey game_key);
@@ -143,9 +164,16 @@ public:
   /* Update function */
   bool update(int32_t cycle_time);
 
+  /* Get a list of GameKeys */
+  std::vector<GameKey> getGameKeys();
+
   /* Functions to obtain keys */
   Key& getKey(GameKey game_key);
   Key& getKey(SDL_Keycode keycode, bool* found);
+
+  /* Functions to obtain string names of the keys */
+  std::string getKeyNamePrim(GameKey game_key, bool* found);
+  std::string getKeyNameSecd(GameKey game_key, bool* found);
 
   /* Returns the current state of text entry */
   std::string getTextEntry();
@@ -165,7 +193,7 @@ public:
   bool setHeld(GameKey key);
 
   /* Unassigns a current GameKey so that it can be assigned */
-  bool unsetKey(GameKey key);
+  bool unsetKey(GameKey key, bool* found);
 
   /*===================== PUBLIC STATIC FUNCTIONS ============================*/
 public:

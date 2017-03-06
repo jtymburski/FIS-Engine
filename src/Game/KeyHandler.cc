@@ -29,13 +29,17 @@
  *         SDL_Keycode new_keycode - the keycode to map the key to
  *         bool enabled - true if the Key is set to be useable by default
  */
-Key::Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled)
+Key::Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled,
+         bool assigned_prim)
     : game_key{new_key},
       keycode_prim{new_keycode},
       keycode_secd{new_keycode},
       depressed{false},
+      assigned_prim{assigned_prim},
+      assigned_secd{false},
       enabled{enabled},
-      time_depressed{0}
+      time_depressed{0},
+      state{GameKeyState::READY}
 {
 }
 
@@ -43,19 +47,27 @@ Key::Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled)
  * CONSTANTSd
  *============================================================================*/
 
-const SDL_Keycode KeyHandler::kMOVE_LEFT_DEFAULT = SDLK_LEFT;
-const SDL_Keycode KeyHandler::kMOVE_RIGHT_DEFAULT = SDLK_RIGHT;
-const SDL_Keycode KeyHandler::kMOVE_UP_DEFAULT = SDLK_UP;
-const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT = SDLK_DOWN;
-const SDL_Keycode KeyHandler::kMENU_DEFAULT = SDLK_d;
+const SDL_Keycode KeyHandler::kMOVE_LEFT_DEFAULT = SDLK_a;
+const SDL_Keycode KeyHandler::kMOVE_LEFT_SECD = SDLK_LEFT;
+const SDL_Keycode KeyHandler::kMOVE_RIGHT_DEFAULT = SDLK_d;
+const SDL_Keycode KeyHandler::kMOVE_RIGHT_SECD = SDLK_RIGHT;
+const SDL_Keycode KeyHandler::kMOVE_UP_DEFAULT = SDLK_w;
+const SDL_Keycode KeyHandler::kMOVE_UP_SECD = SDLK_UP;
+const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT = SDLK_s;
+const SDL_Keycode KeyHandler::kMOVE_DOWN_SECD = SDLK_DOWN;
+const SDL_Keycode KeyHandler::kMENU_DEFAULT = SDLK_ESCAPE;
+const SDL_Keycode KeyHandler::kMENU_SECD = SDLK_e;
 const SDL_Keycode KeyHandler::kACTION_DEFAULT = SDLK_SPACE;
-const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_ESCAPE;
+const SDL_Keycode KeyHandler::kACTION_SECD = SDLK_RETURN;
+const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_x;
+const SDL_Keycode KeyHandler::kCANCEL_SECD = SDLK_TAB;
 const SDL_Keycode KeyHandler::kBACKSPACE_DEFAULT = SDLK_BACKSPACE;
+const SDL_Keycode KeyHandler::kBACKSPACE_SECD = SDLK_DELETE;
 const SDL_Keycode KeyHandler::kRUN_DEFAULT = SDLK_LSHIFT;
-const SDL_Keycode KeyHandler::kDEBUG_DEFAULT = SDLK_f;
-const SDL_Keycode KeyHandler::kPAUSE_DEFAULT = SDLK_RCTRL;
+const SDL_Keycode KeyHandler::kRUN_SECD = SDLK_RSHIFT;
+const SDL_Keycode KeyHandler::kPAUSE_DEFAULT = SDLK_p;
+const SDL_Keycode KeyHandler::kPAUSE_SECD = SDLK_LCTRL;
 
-const bool KeyHandler::kMULTIPLE_MAPPINGS = false;
 const int32_t KeyHandler::kMIN_HELD_TIME = 100;
 
 /*=============================================================================
@@ -85,9 +97,9 @@ KeyHandler::KeyHandler() : mode{KeyMode::INPUT}
 void KeyHandler::printIndex(Key key)
 {
   std::cout << "[Game: " << Helpers::gameKeyToStr(key.game_key)
-            << "] [P.Key: " << SDL_GetKeyName(key.keycode_prim) << "] [Enabled? "
-            << key.enabled << "] [Time Depressed: " << key.time_depressed << "]"
-            << std::endl;
+            << "] [P.Key: " << SDL_GetKeyName(key.keycode_prim)
+            << "] [Enabled? " << key.enabled
+            << "] [Time Depressed: " << key.time_depressed << "]" << std::endl;
 }
 
 /*
@@ -98,43 +110,55 @@ void KeyHandler::printIndex(Key key)
  */
 void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
 {
-  //TODO: Updating for secondary keys.
+  // TODO: Updating for secondary keys.
 
   /* Grab the SDL_Scancode matching the current element's Keycode */
-  auto scan_code = SDL_GetScancodeFromKey(key.keycode_prim);
-  auto bp_keycode = getKey(GameKey::BACKSPACE).keycode_prim;
+  auto scan_code_prim = SDL_GetScancodeFromKey(key.keycode_prim);
+  auto scan_code_secd = SDL_GetScancodeFromKey(key.keycode_secd);
+  ;
+
+  auto bp_keycode_prim = getKey(GameKey::BACKSPACE).keycode_prim;
+  auto bp_keycode_secd = getKey(GameKey::BACKSPACE).keycode_secd;
+
   auto state = SDL_GetKeyboardState(nullptr);
 
   if(state)
   {
     /* Determine if the state of the Keyboard if scan code is depressed */
-    if(state[scan_code] && !key.depressed)
+    if(key.assigned_prim)
     {
-      /* Assign the element to be a depressed state */
-      key.depressed = true;
-      key.time_depressed = 0;
-
-      if(call_mode == KeyMode::TEXT_ENTRY)
-        addKeyEntry(key);
-      else if(call_mode == KeyMode::NAME_ENTRY &&
-              text.size() < StringDb::kMAX_TITLE_NAME)
+      if((state[scan_code_prim] || state[scan_code_secd]) && !key.depressed)
       {
+        /* Assign the element to be a depressed state */
+        key.depressed = true;
+        key.time_depressed = 0;
 
-        if(text.back() != ' ' || key.keycode_prim != SDLK_SPACE)
+        if(call_mode == KeyMode::TEXT_ENTRY)
           addKeyEntry(key);
+        else if(call_mode == KeyMode::NAME_ENTRY &&
+                text.size() < StringDb::kMAX_TITLE_NAME)
+        {
+
+          if(text.back() != ' ' || key.keycode_prim != SDLK_SPACE)
+            addKeyEntry(key);
+        }
+        else if(call_mode == KeyMode::INPUT &&
+                (key.keycode_prim == bp_keycode_prim ||
+                 key.keycode_secd == bp_keycode_secd))
+        {
+          removeKeyEntry();
+        }
       }
-      else if(call_mode == KeyMode::INPUT && key.keycode_prim == bp_keycode)
-        removeKeyEntry();
-    }
-    else if(state[scan_code] && key.depressed)
-    {
-      key.time_depressed += cycle_time;
-    }
-    else
-    {
-      /* Assign the element to be an unpressed state */
-      key.depressed = false;
-      key.time_depressed = 0;
+      else if(state[scan_code_prim] && key.depressed)
+      {
+        key.time_depressed += cycle_time;
+      }
+      else
+      {
+        /* Assign the element to be an unpressed state */
+        key.depressed = false;
+        key.time_depressed = 0;
+      }
     }
   }
 }
@@ -323,10 +347,19 @@ bool KeyHandler::isEnabled(SDL_Keycode keycode, bool* found)
  * Inputs: SDL_Keycode keycode - the keycode to look for mapping
  * Output: bool - true if a Key mapped to this keycode exists
  */
-bool KeyHandler::isKeycodeMapped(SDL_Keycode keycode)
+bool KeyHandler::isKeycodeMappedPrim(SDL_Keycode keycode)
 {
   for(auto& element : keys)
-    if(element.keycode_prim == keycode || element.keycode_secd == keycode)
+    if(element.keycode_prim == keycode)
+      return true;
+
+  return false;
+}
+
+bool KeyHandler::isKeycodeMappedSecd(SDL_Keycode keycode)
+{
+  for(auto& element : keys)
+    if(element.keycode_secd == keycode)
       return true;
 
   return false;
@@ -354,8 +387,17 @@ void KeyHandler::loadDefaults()
   keys.push_back(Key(GameKey::CANCEL, kCANCEL_DEFAULT));
   keys.push_back(Key(GameKey::BACKSPACE, kBACKSPACE_DEFAULT));
   keys.push_back(Key(GameKey::RUN, kRUN_DEFAULT));
-  keys.push_back(Key(GameKey::DEBUG, kDEBUG_DEFAULT));
   keys.push_back(Key(GameKey::PAUSE, kPAUSE_DEFAULT));
+  setKeySecondary(GameKey::MOVE_UP, kMOVE_UP_SECD);
+  setKeySecondary(GameKey::MOVE_LEFT, kMOVE_LEFT_SECD);
+  setKeySecondary(GameKey::MOVE_DOWN, kMOVE_DOWN_SECD);
+  setKeySecondary(GameKey::MOVE_RIGHT, kMOVE_RIGHT_SECD);
+  setKeySecondary(GameKey::MENU, kMENU_SECD);
+  setKeySecondary(GameKey::ACTION, kACTION_SECD);
+  setKeySecondary(GameKey::CANCEL, kCANCEL_SECD);
+  setKeySecondary(GameKey::BACKSPACE, kBACKSPACE_SECD);
+  setKeySecondary(GameKey::RUN, kRUN_SECD);
+  setKeySecondary(GameKey::PAUSE, kPAUSE_SECD);
 
   /* Text Entry Keys */
   text_keys.push_back(Key(GameKey::NONE, SDLK_a));
@@ -434,8 +476,6 @@ void KeyHandler::print(bool only_depressed, bool only_held)
  */
 bool KeyHandler::update(int32_t cycle_time)
 {
-  // std::cout << "Updating the key handler: " << cycle_time << std::endl;
-
   /* Update the state of Keys */
   SDL_PumpEvents();
 
@@ -464,8 +504,19 @@ bool KeyHandler::update(int32_t cycle_time)
   return false;
 }
 
+std::vector<GameKey> KeyHandler::getGameKeys()
+{
+  std::vector<GameKey> game_keys;
+
+  for(auto& element : keys)
+    game_keys.push_back(element.game_key);
+
+  return game_keys;
+}
+
 /*
- * Description: Returns a referene to a Key matching a given enumerated GameKey.
+ * Description: Returns a reference to a Key matching a given enumerated
+ * GameKey.
  *
  * Inputs: GameKey game_key - enumerated game function key to find a Key for
  * Output: Key& - ref. to the desired key
@@ -504,6 +555,58 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+std::string KeyHandler::getKeyNamePrim(GameKey game_key, bool* found)
+{
+  for(auto& element : keys)
+  {
+    if(element.game_key == game_key)
+    {
+      if(found)
+        *found = true;
+
+      /* Return the name of the assigned key if it is designated asigned */
+      if(element.assigned_prim)
+        return SDL_GetKeyName(element.keycode_prim);
+      else
+        return "Unassigned";
+    }
+  }
+
+  return "";
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+std::string KeyHandler::getKeyNameSecd(GameKey game_key, bool* found)
+{
+  for(auto& element : keys)
+  {
+    if(element.game_key == game_key)
+    {
+      if(found)
+        *found = true;
+
+      /* Return the name of the assigned key if it is designated assigned */
+      if(element.assigned_secd)
+        return SDL_GetKeyName(element.keycode_secd);
+      else
+        return "Unassigned";
+    }
+  }
+
+  return "";
+}
+
+/*
  * Description: Assigns a given enumerated GameKey to be mapped to a given SDL
  *              Keycode if a match can be made. A GameKey cannot be mapped to
  *              a keycode that is already mapped with this function.
@@ -514,10 +617,11 @@ Key& KeyHandler::getKey(SDL_Keycode keycode, bool* found)
  */
 bool KeyHandler::setKeyPrimary(GameKey game_key, SDL_Keycode new_keycode)
 {
-  if(!isKeycodeMapped(new_keycode))
+  if(!isKeycodeMappedPrim(new_keycode))
   {
     auto& key = getKey(game_key);
     key.keycode_prim = new_keycode;
+    key.assigned_prim = true;
 
     return true;
   }
@@ -536,10 +640,11 @@ bool KeyHandler::setKeyPrimary(GameKey game_key, SDL_Keycode new_keycode)
  */
 bool KeyHandler::setKeySecondary(GameKey game_key, SDL_Keycode new_keycode)
 {
-  if(!isKeycodeMapped(new_keycode))
+  if(!isKeycodeMappedSecd(new_keycode))
   {
     auto& key = getKey(game_key);
     key.keycode_secd = new_keycode;
+    key.assigned_secd = true;
 
     return true;
   }
@@ -547,9 +652,25 @@ bool KeyHandler::setKeySecondary(GameKey game_key, SDL_Keycode new_keycode)
   return false;
 }
 
-bool KeyHandler::unsetKey(GameKey game_key)
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool KeyHandler::unsetKey(GameKey game_key, bool* found)
 {
+  for(auto& element : keys)
+  {
+    if(element.game_key == game_key)
+    {
+      if(found)
+        *found = true;
 
+      element.assigned_prim = false;
+      element.assigned_secd = false;
+    }
+  }
 }
 
 /*
