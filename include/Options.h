@@ -13,12 +13,13 @@
 
 class Fonts;
 
-#include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <iostream>
 #include <string>
 
 #include "EnumFlags.h"
+#include "FileHandler.h"
 #include "Fonts.h"
 #include "SoundHandler.h"
 
@@ -165,6 +166,12 @@ public:
 
   /* Returns if vertical refresh syncing is enabled */
   bool isVsyncEnabled();
+
+  /* Load Options data from Save File */
+  bool loadData(XmlData data, int index);
+
+  /* Save Options data to Save File */
+  bool saveData(FileHandler* fh);
 
   /* Audio setter */
   void setAudioLevel(int32_t new_level);

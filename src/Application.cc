@@ -160,9 +160,11 @@ void Application::handleEvents()
     /* Otherwise, pass the key down events on to the active view */
     else if(event.type == SDL_KEYDOWN)
     {
-      std::cout << "Last key pressed: " << SDL_GetKeyName(event.key.keysym.sym) << std::endl;
 #ifdef UDEBUG
       SDL_KeyboardEvent press_event = event.key;
+
+      /* Record the Event in the Key Handler */
+      key_handler.setLastEvent(press_event);
 
       /* -- Refresh config: cycle maps -- */
       if(press_event.keysym.sym == SDLK_F10)
@@ -208,22 +210,6 @@ void Application::handleEvents()
       }
 #endif
 
-      /* -- Pause toggle -- */
-      if(key_handler.isDepressed(GameKey::PAUSE))
-      {
-
-        std::cout << "Pause trigger!" << std::endl;
-
-        if(mode == PAUSED)
-        {
-          revertMode();
-        }
-        else
-        {
-          mode_temp = mode;
-          changeMode(PAUSED);
-        }
-      }
       /* Send the key to the relevant view */
       if(mode == TITLESCREEN)
       {
@@ -231,6 +217,21 @@ void Application::handleEvents()
       }
       else if(mode == GAME)
       {
+        /* -- Pause toggle -- */
+        if(key_handler.isDepressed(GameKey::PAUSE))
+        {
+
+          if(mode == PAUSED)
+          {
+            revertMode();
+          }
+          else
+          {
+            mode_temp = mode;
+            changeMode(PAUSED);
+          }
+        }
+
         game_handler->keyDownEvent(key_handler);
       }
     }
@@ -304,8 +305,8 @@ bool Application::load()
     game_handler->setPath(app_path, app_map, false);
 
   /* Change mode back to title screen */
-    title_screen.setSaveData(game_handler->getSaveData());
-    title_screen.buildSave(renderer);
+  title_screen.setSaveData(game_handler->getSaveData());
+  title_screen.buildSave(renderer);
 
   changeMode(TITLESCREEN);
 
@@ -714,15 +715,6 @@ bool Application::run(bool skip_title)
   bool quit = false;
   uint32_t ticks = 0;
 
-  /* Font testing - TODO: Remove */
-  // Text text1;
-  // text1.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
-  // text1.setText(renderer, "341", {255, 255, 255, 255});
-  // Text text2;
-  // text2.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
-  // TTF_SetFontOutline(text2.getFont(), 2);
-  // text2.setText(renderer, "341", {0, 0, 0, 255});
-
   if(isInitialized())
   {
     /* If skip title triggered, jump straight to map */
@@ -772,10 +764,6 @@ bool Application::run(bool skip_title)
 
         /* Render the application view */
         render(cycle_time);
-
-        // Font testing - TODO: Remove
-        // text2.render(renderer, 48, 48);
-        // text1.render(renderer, 50, 50);
 
         /* Update screen */
         SDL_RenderPresent(renderer);

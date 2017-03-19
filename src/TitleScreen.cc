@@ -192,7 +192,7 @@ const SDL_Color TitleScreen::kCOLOR_TEXT{255, 255, 255, 255};
 const SDL_Color TitleScreen::kCOLOR_TEXT_INVALID{200, 100, 100, 255};
 const SDL_Color TitleScreen::kCOLOR_TITLE_HOVER{255, 255, 255, 65};
 
-const float TitleScreen::kOPTIONS_GAP{0.014};
+const float TitleScreen::kOPTIONS_GAP{0.011};
 const float TitleScreen::kOPTIONS_ELEMENT_HEIGHT{0.05};
 const float TitleScreen::kOPTIONS_HEIGHT{0.6};
 const float TitleScreen::kOPTIONS_WIDTH{0.3};
@@ -342,6 +342,9 @@ bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
 /* Processing for the Action key */
 void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
+  bool play_next_sound = false;
+  bool play_prev_sound = false;
+
   if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index != -1 &&
@@ -369,13 +372,12 @@ void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
       {
         menu_type = MenuType::TITLE_OPTIONS;
         option_menu_index = 0;
+        option_element_index = 0;
       }
       else if(title_menu_type == MenuType::TITLE_QUIT)
         setFlag(TitleState::EXIT_GAME);
 
-      /* Play sound */
-      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
-                                    SoundChannels::MENUS, true);
+      play_next_sound = true;
     }
   }
   else if(menu_layer == MenuLayer::MAIN)
@@ -396,16 +398,28 @@ void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
       menu_layer = MenuLayer::POPUP;
       load_element_index = 0;
     }
+    else if(menu_type == MenuType::TITLE_OPTIONS)
+    {
+      if(option_menu_index == 1)
+      {
+        auto& key = getSelectedKey(key_handler);
+
+        if(key.state == GameKeyState::READY)
+        {
+          key.state = GameKeyState::ASSIGNING;
+          setFlag(TitleState::SELECTING_PRIMARY, true);
+          play_next_sound = true;
+        }
+      }
+    }
   }
   else if(menu_layer == MenuLayer::POPUP)
   {
     if(load_element_index == 0)
     {
-      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
-                                    SoundChannels::MENUS);
-
       menu_layer = MenuLayer::MAIN;
       load_element_index = -1;
+      play_prev_sound = true;
     }
     else if(load_element_index == 1)
     {
@@ -413,6 +427,7 @@ void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
       setFlag(TitleState::LOAD_FROM_SAVE);
       load_element_index = -1;
       menu_layer = MenuLayer::TITLE;
+      play_next_sound = true;
     }
     else if(load_element_index == 2)
     {
@@ -420,6 +435,21 @@ void TitleScreen::keyDownAction(SDL_Renderer* renderer, KeyHandler& key_handler)
       setFlag(TitleState::DELETE_SAVE);
       load_element_index = -1;
       menu_layer = MenuLayer::MAIN;
+      play_next_sound = true;
+    }
+  }
+
+  if(sound_handler)
+  {
+    if(play_next_sound)
+    {
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_NEXT,
+                                    SoundChannels::MENUS);
+    }
+    else if(play_prev_sound)
+    {
+      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_PREV,
+                                    SoundChannels::MENUS);
     }
   }
 }
@@ -459,18 +489,20 @@ void TitleScreen::keyDownCancel(KeyHandler& key_handler)
 void TitleScreen::keyDownDown(KeyHandler& key_handler)
 {
   (void)key_handler; // WARNING
+  bool play_sound = false;
 
   if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index + 1 < (int32_t)title_elements.size())
     {
-      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                    SoundChannels::MENUS);
-
       title_menu_index++;
+      play_sound = true;
     }
     else
+    {
       title_menu_index = 0;
+      play_sound = true;
+    }
   }
   else if(menu_layer == MenuLayer::MAIN)
   {
@@ -478,18 +510,21 @@ void TitleScreen::keyDownDown(KeyHandler& key_handler)
     {
       if(player_menu_index + 1 < 3)
       {
-        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                      SoundChannels::MENUS);
-
         player_menu_index++;
+        play_sound = true;
       }
     }
     else if(menu_type == MenuType::TITLE_LOAD_GAME)
     {
       if(save_scroll_box.nextIndex())
+        play_sound = true;
+    }
+    else if(menu_type == MenuType::TITLE_OPTIONS)
+    {
+      if(option_element_index + 1 < (int32_t)key_handler.getGameKeys().size())
       {
-        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                      SoundChannels::MENUS);
+        option_element_index++;
+        play_sound = true;
       }
     }
   }
@@ -497,11 +532,15 @@ void TitleScreen::keyDownDown(KeyHandler& key_handler)
   {
     if(load_element_index + 1 < 3)
     {
-      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                    SoundChannels::MENUS);
-
       load_element_index++;
+      play_sound = true;
     }
+  }
+
+  if(sound_handler && play_sound)
+  {
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                  SoundChannels::MENUS);
   }
 }
 
@@ -510,13 +549,27 @@ void TitleScreen::keyDownLeft(KeyHandler& key_handler)
 {
   (void)key_handler; // WARNING
 
+  bool play_sound = false;
+
   if(menu_layer == MenuLayer::MAIN)
   {
     if(player_menu_index == 1)
+    {
       player_sex_select = Sex::FEMALE;
+      play_sound = true;
+    }
 
     if(option_menu_index == 1)
+    {
       option_menu_index--;
+      play_sound = true;
+    }
+  }
+
+  if(sound_handler && play_sound)
+  {
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                  SoundChannels::MENUS, true);
   }
 }
 
@@ -525,13 +578,27 @@ void TitleScreen::keyDownRight(KeyHandler& key_handler)
 {
   (void)key_handler; // WARNING
 
+  bool play_sound = false;
+
   if(menu_layer == MenuLayer::MAIN)
   {
     if(player_menu_index == 1)
+    {
       player_sex_select = Sex::MALE;
+      play_sound = true;
+    }
 
     if(option_menu_index == 0)
+    {
       option_menu_index++;
+      play_sound = true;
+    }
+  }
+
+  if(sound_handler && play_sound)
+  {
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                  SoundChannels::MENUS, true);
   }
 }
 
@@ -539,17 +606,21 @@ void TitleScreen::keyDownRight(KeyHandler& key_handler)
 void TitleScreen::keyDownUp(KeyHandler& key_handler)
 {
   (void)key_handler; // WARNING
+
+  bool play_sound = false;
+
   if(menu_layer == MenuLayer::TITLE)
   {
     if(title_menu_index > 0)
     {
-      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                    SoundChannels::MENUS);
-
       title_menu_index--;
+      play_sound = true;
     }
     else
+    {
       title_menu_index = title_elements.size() - 1;
+      play_sound = true;
+    }
   }
   else if(menu_layer == MenuLayer::MAIN)
   {
@@ -558,18 +629,21 @@ void TitleScreen::keyDownUp(KeyHandler& key_handler)
       /* Decrement the menu index on the Player box */
       if(player_menu_index > 0)
       {
-        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                      SoundChannels::MENUS);
-
         player_menu_index--;
+        play_sound = true;
       }
     }
     else if(menu_type == MenuType::TITLE_LOAD_GAME)
     {
       if(save_scroll_box.prevIndex())
+        play_sound = true;
+    }
+    else if(menu_type == MenuType::TITLE_OPTIONS)
+    {
+      if(option_element_index > 0)
       {
-        sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                      SoundChannels::MENUS);
+        option_element_index--;
+        play_sound = true;
       }
     }
   }
@@ -577,11 +651,15 @@ void TitleScreen::keyDownUp(KeyHandler& key_handler)
   {
     if(load_element_index > 0)
     {
-      sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
-                                    SoundChannels::MENUS);
-
       load_element_index--;
+      play_sound = true;
     }
+  }
+
+  if(sound_handler && play_sound)
+  {
+    sound_handler->addPlayToQueue(Sound::kID_SOUND_MENU_CHG,
+                                  SoundChannels::MENUS);
   }
 }
 
@@ -635,6 +713,19 @@ void TitleScreen::renderTitleElements(SDL_Renderer* renderer)
   }
 }
 
+Key& TitleScreen::getSelectedKey(KeyHandler& key_handler)
+{
+  if(option_element_index > -1 &&
+     option_element_index < (int32_t)key_handler.getGameKeys().size() &&
+     option_menu_index == 1)
+  {
+    return key_handler.getKey(
+        key_handler.getGameKeys().at(option_element_index));
+  }
+
+  return key_handler.getKey(GameKey::ACTION);
+}
+
 SDL_Rect TitleScreen::getRect(Coordinate current, int32_t height, int32_t width)
 {
   SDL_Rect rect;
@@ -665,14 +756,24 @@ void TitleScreen::renderOptions(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
   if(config)
   {
+    auto centre_x = config->getScreenWidth() / 2;
+    auto centre_y = config->getScreenHeight() / 2;
+
     auto width = (int32_t)std::round(config->getScaledWidth() * kOPTIONS_WIDTH);
     auto height =
         (int32_t)std::round(config->getScaledHeight() * kOPTIONS_HEIGHT);
 
     option_menu_box.height = height;
     option_menu_box.width = width;
+    option_menu_box.point.x = centre_x - option_menu_box.width / 2;
+    option_menu_box.point.y = centre_y - option_menu_box.height / 2;
+    option_menu_box.color_border = kCOLOR_BORDER;
+    option_menu_box.color_bg = kCOLOR_BACKGROUND;
+    option_menu_box.render(renderer);
 
     auto gap = (int32_t)std::round(width * kOPTIONS_GAP);
+
+    option_menu_box.render(renderer);
 
     renderOptionElementTitles(renderer, gap);
 
@@ -693,50 +794,43 @@ void TitleScreen::renderOptionsMain(SDL_Renderer* renderer,
 
 void TitleScreen::renderOptionElementTitles(SDL_Renderer* renderer, int32_t gap)
 {
-  if(config && renderer && option_element_index > -1 &&
-     option_element_index < (int32_t)option_title_elements.size() &&
+  if(config && renderer && option_menu_index > -1 &&
+     option_menu_index < (int32_t)option_title_elements.size() &&
      option_title_elements.size() > 0)
   {
     /*Render the required number of boxes for the element titles */
-    auto point = Coordinate{current.x, current.y};
-    auto box_length = option_menu_box.width / option_title_elements.size();
+    auto point = Coordinate{option_menu_box.point.x, option_menu_box.point.y};
+    auto box_length = (int32_t)std::ceil(option_menu_box.width * 1.0 /
+                                         option_title_elements.size());
     auto box_height = (int32_t)std::round(config->getScaledHeight() *
                                           kOPTIONS_ELEMENT_HEIGHT);
 
+    int32_t index{0};
+    int32_t max_remain_length = option_menu_box.width + 2;
+
     for(auto& title : option_title_elements)
     {
+      auto actual_length = std::min(max_remain_length, box_length);
+      title.title_box = Box(point, actual_length, box_height);
+      max_remain_length -= actual_length - 1;
+
+      title.title_box.color_bg = {0, 0, 0, 255};
+      title.title_box.color_bg_selected = {0, 0, 0, 0};
+      title.title_box.color_border = {255, 255, 255, 255};
+      title.title_box.color_border_selected = {255, 255, 255, 255};
+
+      if(index == option_menu_index)
+        title.title_box.color_bg = {46, 46, 46, 255};
+      else
+        title.title_box.setFlag(BoxState::SELECTED, false);
+
+      point.x += box_length - 1;
+      index++;
     }
+
+    for(uint32_t i = 0; i < option_title_elements.size(); i++)
+      renderOptionElementTitle(renderer, option_title_elements.at(i));
   }
-
-  //   int32_t max_remain_length = s_top_box.width + 2;
-
-  //   int32_t index{0};
-
-  //   for(auto& title : person_title_elements)
-  //   {
-  //     auto actual_length = std::min(max_remain_length, box_length);
-  //     title.title_box = Box(point, actual_length, box_height);
-  //     max_remain_length -= actual_length - 1;
-  //     setupDefaultBox(title.title_box);
-
-  //     if(index == person_element_index)
-  //     {
-  //       // title.title_box.setFlag(BoxState::SELECTED, true);
-  //       title.title_box.color_bg = kCOLOR_BORDER_UNSELECTED;
-  //     }
-  //     else
-  //     {
-  //       title.title_box.setFlag(BoxState::SELECTED, false);
-  //     }
-
-  //     point.x += box_length - 1;
-  //     index++;
-  //   }
-
-    // /* Rendder */
-    // for(uint32_t i = 0; i < option_title_elements.size(); i++)
-    //   if((int32_t)i != option_element_index)
-    //     renderOptionElementTitle(option_title_elements.at(i));
 }
 
 void TitleScreen::renderOptionElementTitle(SDL_Renderer* renderer,
@@ -750,18 +844,43 @@ void TitleScreen::renderOptionElementTitle(SDL_Renderer* renderer,
 
   auto b = element.title_box;
 
-  // t.render(renderer, b.point.x, b.width / 2 - t.getWidth() / 2,
-  //          b.point.y + b.height / 2 - t.getHeight() / 2);
+  t.render(renderer, b.point.x + b.width / 2 - t.getWidth() / 2,
+           b.point.y + b.height / 2 - t.getHeight() / 2);
 }
 
 void TitleScreen::renderOptionsControls(SDL_Renderer* renderer,
                                         KeyHandler& key_handler)
 {
-
   if(config && renderer)
   {
     /* Grab each game key and display the current state of control select */
     auto keys = key_handler.getGameKeys();
+
+    auto gap = (int32_t)std::round(config->getScaledWidth() * kOPTIONS_GAP);
+    auto point =
+        Coordinate{option_menu_box.point.x, option_menu_box.point.y + 2 * gap};
+
+    if(option_title_elements.size())
+      point.y += option_title_elements.at(0).title_box.height;
+
+    auto font = config->getFontTTF(FontName::M_HEADER);
+    int32_t index{0};
+
+    Text t_key_name_game_h(font);
+    Text t_key_name_prim_h(font);
+    Text t_key_name_secd_h(font);
+
+    t_key_name_game_h.setText(renderer, "Action", kCOLOR_TEXT);
+    t_key_name_prim_h.setText(renderer, "Primary", kCOLOR_TEXT);
+    t_key_name_secd_h.setText(renderer, "Secondary", kCOLOR_TEXT);
+
+    t_key_name_game_h.render(renderer, point.x + gap, point.y);
+    t_key_name_prim_h.render(
+        renderer, point.x + option_menu_box.width / 3 + gap, point.y);
+    t_key_name_secd_h.render(
+        renderer, point.x + 2 * option_menu_box.width / 3 + gap, point.y);
+
+    point.y += t_key_name_game_h.getHeight() + 3 * gap / 2;
 
     for(auto& key : keys)
     {
@@ -769,13 +888,63 @@ void TitleScreen::renderOptionsControls(SDL_Renderer* renderer,
       auto key_name_prim = key_handler.getKeyNamePrim(key, nullptr);
       auto key_name_secd = key_handler.getKeyNameSecd(key, nullptr);
 
+      bool assigning = key_handler.getKey(key).state == GameKeyState::ASSIGNING;
+
+      Text t_key_name_game(font);
+      Text t_key_name_prim(font);
+      Text t_key_name_secd(font);
+
+      SDL_Color t_color_h = kCOLOR_TEXT;
+      SDL_Color t_color_prim = kCOLOR_TEXT;
+      SDL_Color t_color_secd = kCOLOR_TEXT;
+
       /* Change the display of the game Key whether it is being assigned */
       if(key_handler.getKey(key).state == GameKeyState::READY)
       {
+        t_color_prim = kCOLOR_TEXT;
+        t_color_secd = kCOLOR_TEXT;
       }
-      else if(key_handler.getKey(key).state == GameKeyState::ASSIGNING)
+      else if(assigning)
       {
+        if(getFlag(TitleState::SELECTING_PRIMARY))
+          t_color_prim = kCOLOR_TEXT_INVALID;
+        if(getFlag(TitleState::SELECTING_SECONDARY))
+          t_color_secd = kCOLOR_TEXT_INVALID;
       }
+
+      t_key_name_game.setText(renderer, key_name_game, t_color_h);
+      t_key_name_prim.setText(renderer, key_name_prim, t_color_prim);
+      t_key_name_secd.setText(renderer, key_name_secd, t_color_secd);
+
+      t_key_name_game.render(renderer, point.x + gap, point.y);
+      t_key_name_prim.render(
+          renderer, point.x + option_menu_box.width / 3 + gap, point.y);
+      t_key_name_secd.render(
+          renderer, point.x + 2 * option_menu_box.width / 3 + gap, point.y);
+
+      if(option_element_index == index)
+      {
+        Coordinate box_point{point.x + gap / 2, point.y - gap / 2};
+
+        Box option_key_box{Box(box_point, option_menu_box.width - gap,
+                               t_key_name_secd.getHeight() + gap)};
+
+        if(assigning)
+        {
+          option_key_box.color_bg = {100, 100, 100, 100};
+          option_key_box.color_border = {255, 255, 255, 255};
+        }
+        else
+        {
+          option_key_box.color_bg = {75, 75, 75, 75};
+          option_key_box.color_border = {100, 100, 100, 255};
+        }
+
+        option_key_box.render(renderer);
+      }
+
+      index++;
+      point.y += t_key_name_game.getHeight() + gap;
     }
   }
 }
@@ -1080,19 +1249,54 @@ void TitleScreen::keyDownEvent(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
   if(config && sound_handler && !getFlag(TitleState::CLEAR_NAME))
   {
-    /* Main code items */
-    if(key_handler.isDepressed(GameKey::ACTION))
-      keyDownAction(renderer, key_handler);
-    if(key_handler.isDepressed(GameKey::CANCEL))
-      keyDownCancel(key_handler);
-    if(key_handler.isDepressed(GameKey::MOVE_DOWN))
-      keyDownDown(key_handler);
-    if(key_handler.isDepressed(GameKey::MOVE_LEFT))
-      keyDownLeft(key_handler);
-    if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
-      keyDownRight(key_handler);
-    if(key_handler.isDepressed(GameKey::MOVE_UP))
-      keyDownUp(key_handler);
+    if(!getFlag(TitleState::SELECTING_PRIMARY) &&
+       !getFlag(TitleState::SELECTING_SECONDARY))
+    {
+      /* Main code items */
+      if(key_handler.isDepressed(GameKey::ACTION))
+        keyDownAction(renderer, key_handler);
+      if(key_handler.isDepressed(GameKey::CANCEL))
+        keyDownCancel(key_handler);
+      if(key_handler.isDepressed(GameKey::MOVE_DOWN))
+        keyDownDown(key_handler);
+      if(key_handler.isDepressed(GameKey::MOVE_LEFT))
+        keyDownLeft(key_handler);
+      if(key_handler.isDepressed(GameKey::MOVE_RIGHT))
+        keyDownRight(key_handler);
+      if(key_handler.isDepressed(GameKey::MOVE_UP))
+        keyDownUp(key_handler);
+    }
+    else
+    {
+      auto& key = getSelectedKey(key_handler);
+      auto event = key_handler.getLastEvent();
+
+      std::cout << "Last key event: " << SDL_GetKeyName(event.keysym.sym)
+                << std::endl;
+
+      if(getFlag(TitleState::SELECTING_PRIMARY))
+      {
+        auto success =
+            key_handler.setKeyPrimary(key.game_key, event.keysym.sym);
+
+        if(success)
+        {
+          setFlag(TitleState::SELECTING_PRIMARY, false);
+          setFlag(TitleState::SELECTING_SECONDARY, true);
+        }
+      }
+      else if(getFlag(TitleState::SELECTING_SECONDARY))
+      {
+        auto success =
+            key_handler.setKeySecondary(key.game_key, event.keysym.sym);
+
+        if(success)
+        {
+          setFlag(TitleState::SELECTING_SECONDARY, false);
+          key.state = GameKeyState::READY;
+        }
+      }
+    }
   }
 }
 

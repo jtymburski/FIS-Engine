@@ -35,7 +35,9 @@ enum class TitleState
   GAME_LOADING = 1 << 2,
   EXIT_GAME = 1 << 3, /* Can the person use 'Defend'? */
   LOAD_FROM_SAVE = 1 << 4,
-  DELETE_SAVE = 1 << 5
+  DELETE_SAVE = 1 << 5,
+  SELECTING_PRIMARY = 1 << 6,
+  SELECTING_SECONDARY = 1 << 7
 };
 
 /* TitleBackground Elements */
@@ -170,6 +172,9 @@ private:
 
   /* Build the standard hover rectancular given coordinate information */
   SDL_Rect getRect(Coordinate current, int32_t height, int32_t width);
+
+  /* Return the reference to the currently selected key */
+  Key& getSelectedKey(KeyHandler& key_handler);
 
   /* Checks if the Player name is valid */
   bool isPlayerNameValid(KeyHandler& key_handler);

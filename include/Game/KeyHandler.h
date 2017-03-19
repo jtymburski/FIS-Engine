@@ -78,6 +78,9 @@ public:
   KeyHandler();
 
 private:
+  /* Assign the last keyboard event */
+  SDL_KeyboardEvent last_event;
+
   /* Vector of Keys */
   std::vector<Key> keys;
 
@@ -132,6 +135,9 @@ public:
   /* Clears the current state of text entry */
   void clearTextEntry();
 
+  /* Return the most recent keyboard event */
+  SDL_KeyboardEvent getLastEvent();
+
   /* Returns the enumerated mode of the KeyHandler */
   KeyMode getMode();
 
@@ -177,6 +183,8 @@ public:
 
   /* Returns the current state of text entry */
   std::string getTextEntry();
+
+  void setLastEvent(SDL_KeyboardEvent event);
 
   /* Set Keys */
   bool setKeyPrimary(GameKey game_key, SDL_Keycode new_keycode);

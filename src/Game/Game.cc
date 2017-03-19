@@ -1110,6 +1110,15 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
       player_main->loadData(data, index + 1, renderer, base_path);
     }
   }
+  else if(element == "options")
+  {
+    std::cout << "Trying to load options data" << std::endl;
+    if(config)
+    {
+      std::cout << "Loading options data" << std::endl;
+      success &= config->loadData(data, index + 1);
+    }
+  }
   /* ---- RACES ---- */
   else if(element == "race")
   {
@@ -2398,6 +2407,11 @@ bool Game::save(uint8_t slot, bool from_menu)
         /* Write player data which contains all other data related */
         updatePlayerSteps();
         success &= player_main->saveData(&save_handle);
+      }
+
+      if(config)
+      {
+        success &= config->saveData(&save_handle);
       }
 
       if(map_ctrl.isLoaded())

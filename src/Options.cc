@@ -25,10 +25,10 @@ const std::string Options::kFONTS[] = {
     "fonts/colab_reg.otf", "fonts/colab_med.otf"};
 const uint8_t Options::kNUM_FONTS = 5;
 const uint8_t Options::kNUM_RESOLUTIONS = 10;
-const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920,
-                                            1920, 2560, 2460, 3440, 3860, 4160};
-const uint16_t Options::kRESOLUTIONS_Y[] = {704,  705,  768,  1080,
-                                            1440, 1080, 1440, 1440, 2160, 2160};
+const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920, 1920,
+                                            2560, 2460, 3440, 3860, 4160};
+const uint16_t Options::kRESOLUTIONS_Y[] = {704,  705,  768,  1080, 1440,
+                                            1080, 1440, 1440, 2160, 2160};
 
 /* Default Screen Width and Height */
 const std::uint32_t Options::kDEF_SCREEN_WIDTH{1216};
@@ -240,9 +240,9 @@ int32_t Options::getScaledHeight()
 {
   auto value = kDEF_SCREEN_HEIGHT * ((float)scaling_ui + 100) / 100;
 
-  if (value > getScreenHeight())
+  if(value > getScreenHeight())
     return getScreenHeight();
-  
+
   return value;
 }
 
@@ -253,7 +253,7 @@ int32_t Options::getScaledWidth()
   if(value > getScreenWidth())
     return getScreenWidth();
 
-  return value; 
+  return value;
 }
 
 int32_t Options::getScalingText()
@@ -296,6 +296,91 @@ bool Options::isLinearFilteringEnabled()
 bool Options::isVsyncEnabled()
 {
   return getFlag(OptionState::VSYNC);
+}
+
+bool Options::loadData(XmlData data, int index)
+{
+  bool success{true};
+
+  if(data.getElement(index) == "linear_filtering")
+  {
+    setFlag(OptionState::LINEAR_FILTERING, data.getDataBool(&success));
+  }
+  else if(data.getElement(index) == "vsync")
+  {
+    setFlag(OptionState::VSYNC, data.getDataBool(&success));
+  }
+  else if(data.getElement(index) == "fullscreen")
+  {
+    setFlag(OptionState::FULLSCREEN, data.getDataBool(&success));
+  }
+  else if(data.getElement(index) == "autorun")
+  {
+    setFlag(OptionState::AUTO_RUN, data.getDataBool(&success));
+  }
+  else if(data.getElement(index) == "battle_animations")
+  {
+    setFlag(OptionState::BATTLE_ANIMATIONS, data.getDataBool(&success));
+  }
+  else if(data.getElement(index) == "gui_enabled")
+  {
+    setFlag(OptionState::GUI_ENABLED, data.getDataBool(&success));
+  }
+  else if(data.getElement(index) == "FAST_BATTLE")
+  {
+    setFlag(OptionState::FAST_BATTLE, data.getDataBool(&success));
+  }
+  else if(data.getElement(index) == "audio_level")
+  {
+    audio_level = data.getDataInteger(&success);
+  }
+  else if(data.getElement(index) == "music_level")
+  {
+    music_level = data.getDataInteger(&success);
+  }
+  else if(data.getElement(index) == "scaling_text")
+  {
+    scaling_text = data.getDataInteger(&success);
+  }
+  else if(data.getElement(index) == "scaling_ui")
+  {
+    scaling_ui = data.getDataInteger(&success);
+  }
+
+  return success;
+}
+
+bool Options::saveData(FileHandler* fh)
+{
+  if(fh)
+  {
+    fh->writeXmlElement("options");
+
+    /* Write option flags to file */
+    fh->writeXmlData("linear_filtering",
+                     getFlag(OptionState::LINEAR_FILTERING));
+    fh->writeXmlData("vsync", getFlag(OptionState::VSYNC));
+    fh->writeXmlData("fullscreen", getFlag(OptionState::FULLSCREEN));
+    fh->writeXmlData("autorun", getFlag(OptionState::AUTO_RUN));
+    fh->writeXmlData("battle_animations",
+                     getFlag(OptionState::BATTLE_ANIMATIONS));
+    fh->writeXmlData("gui_enabled", getFlag(OptionState::MUTE));
+    fh->writeXmlData("fast_battle", getFlag(OptionState::FAST_BATTLE));
+
+    /* Write option values to file */
+    // fh->writeXmlData("resolution_x", resolution_x);
+    // fh->writeXmlData("resolution_y", resolution_y);
+    fh->writeXmlData("audio_level", audio_level);
+    fh->writeXmlData("music_level", music_level);
+    fh->writeXmlData("scaling_text", scaling_text);
+    fh->writeXmlData("scaling_ui", scaling_ui);
+
+    fh->writeXmlElementEnd();
+
+    return true;
+  }
+
+  return false;
 }
 
 void Options::setAudioLevel(int32_t new_level)

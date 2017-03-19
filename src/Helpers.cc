@@ -996,12 +996,10 @@ std::string Helpers::gameKeyToStr(const GameKey& game_key)
     return "Up";
   if(game_key == GameKey::MOVE_DOWN)
     return "Down";
-  if(game_key == GameKey::MENU)
-    return "Menu";
   if(game_key == GameKey::ACTION)
     return "Action";
   if(game_key == GameKey::CANCEL)
-    return "Cancel";
+    return "Cancel / Menu";
   if(game_key == GameKey::RUN)
     return "Run";
   if(game_key == GameKey::DEBUG)

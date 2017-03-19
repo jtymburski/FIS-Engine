@@ -55,12 +55,10 @@ const SDL_Keycode KeyHandler::kMOVE_UP_DEFAULT = SDLK_w;
 const SDL_Keycode KeyHandler::kMOVE_UP_SECD = SDLK_UP;
 const SDL_Keycode KeyHandler::kMOVE_DOWN_DEFAULT = SDLK_s;
 const SDL_Keycode KeyHandler::kMOVE_DOWN_SECD = SDLK_DOWN;
-const SDL_Keycode KeyHandler::kMENU_DEFAULT = SDLK_ESCAPE;
-const SDL_Keycode KeyHandler::kMENU_SECD = SDLK_e;
 const SDL_Keycode KeyHandler::kACTION_DEFAULT = SDLK_SPACE;
 const SDL_Keycode KeyHandler::kACTION_SECD = SDLK_RETURN;
-const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_x;
-const SDL_Keycode KeyHandler::kCANCEL_SECD = SDLK_TAB;
+const SDL_Keycode KeyHandler::kCANCEL_DEFAULT = SDLK_ESCAPE;
+const SDL_Keycode KeyHandler::kCANCEL_SECD = SDLK_x;
 const SDL_Keycode KeyHandler::kBACKSPACE_DEFAULT = SDLK_BACKSPACE;
 const SDL_Keycode KeyHandler::kBACKSPACE_SECD = SDLK_DELETE;
 const SDL_Keycode KeyHandler::kRUN_DEFAULT = SDLK_LSHIFT;
@@ -218,6 +216,11 @@ void KeyHandler::removeKeyEntry()
 void KeyHandler::clearTextEntry()
 {
   text = "";
+}
+
+SDL_KeyboardEvent KeyHandler::getLastEvent()
+{
+  return last_event;
 }
 
 /*
@@ -382,17 +385,17 @@ void KeyHandler::loadDefaults()
   keys.push_back(Key(GameKey::MOVE_RIGHT, kMOVE_RIGHT_DEFAULT));
   keys.push_back(Key(GameKey::MOVE_UP, kMOVE_UP_DEFAULT));
   keys.push_back(Key(GameKey::MOVE_DOWN, kMOVE_DOWN_DEFAULT));
-  keys.push_back(Key(GameKey::MENU, kMENU_DEFAULT));
   keys.push_back(Key(GameKey::ACTION, kACTION_DEFAULT));
   keys.push_back(Key(GameKey::CANCEL, kCANCEL_DEFAULT));
   keys.push_back(Key(GameKey::BACKSPACE, kBACKSPACE_DEFAULT));
   keys.push_back(Key(GameKey::RUN, kRUN_DEFAULT));
   keys.push_back(Key(GameKey::PAUSE, kPAUSE_DEFAULT));
+
+  /* */
   setKeySecondary(GameKey::MOVE_UP, kMOVE_UP_SECD);
   setKeySecondary(GameKey::MOVE_LEFT, kMOVE_LEFT_SECD);
   setKeySecondary(GameKey::MOVE_DOWN, kMOVE_DOWN_SECD);
   setKeySecondary(GameKey::MOVE_RIGHT, kMOVE_RIGHT_SECD);
-  setKeySecondary(GameKey::MENU, kMENU_SECD);
   setKeySecondary(GameKey::ACTION, kACTION_SECD);
   setKeySecondary(GameKey::CANCEL, kCANCEL_SECD);
   setKeySecondary(GameKey::BACKSPACE, kBACKSPACE_SECD);
@@ -617,16 +620,20 @@ std::string KeyHandler::getKeyNameSecd(GameKey game_key, bool* found)
  */
 bool KeyHandler::setKeyPrimary(GameKey game_key, SDL_Keycode new_keycode)
 {
-  if(!isKeycodeMappedPrim(new_keycode))
+  bool valid = true;
+  auto& key = getKey(game_key);
+
+  valid &= !isKeycodeMappedPrim(new_keycode);
+  valid &= !isKeycodeMappedSecd(new_keycode);
+  valid |= (new_keycode == key.keycode_prim);
+
+  if(valid)
   {
-    auto& key = getKey(game_key);
     key.keycode_prim = new_keycode;
     key.assigned_prim = true;
-
-    return true;
   }
 
-  return false;
+  return valid;
 }
 
 /*
@@ -640,16 +647,20 @@ bool KeyHandler::setKeyPrimary(GameKey game_key, SDL_Keycode new_keycode)
  */
 bool KeyHandler::setKeySecondary(GameKey game_key, SDL_Keycode new_keycode)
 {
-  if(!isKeycodeMappedSecd(new_keycode))
+  bool valid = true;
+  auto& key = getKey(game_key);
+
+  valid &= !isKeycodeMappedPrim(new_keycode);
+  valid &= !isKeycodeMappedSecd(new_keycode);
+  valid |= (new_keycode == key.keycode_secd);
+
+  if(valid)
   {
-    auto& key = getKey(game_key);
     key.keycode_secd = new_keycode;
     key.assigned_secd = true;
-
-    return true;
   }
 
-  return false;
+  return valid;
 }
 
 /*
@@ -752,6 +763,11 @@ bool KeyHandler::setHeld(GameKey key)
 std::string KeyHandler::getTextEntry()
 {
   return text;
+}
+
+void KeyHandler::setLastEvent(SDL_KeyboardEvent event)
+{
+  this->last_event = event;
 }
 
 /*=============================================================================
