@@ -44,8 +44,7 @@ bool initSDL()
   int rate = Sound::kDEFAULT_FREQUENCY;   /* Frequency of Audio Playback */
   /* 8 mixing channels are chosen by default. Currently have 9. Once sectors
    * are active, will need to enable more (or if any more are added) */
-  if(!Mix_Init(MIX_INIT_OGG) ||
-     Mix_OpenAudio(rate, AUDIO_S16SYS, channels, buffers) != 0)
+  if(Mix_OpenAudio(rate, AUDIO_S16SYS, channels, buffers) != 0 || !Mix_Init(MIX_INIT_OGG))
   {
     std::cerr << "[WARNING] Unable to initialize audio: "
               << Mix_GetError() << std::endl;
