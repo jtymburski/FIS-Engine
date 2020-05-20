@@ -2,7 +2,7 @@
 * Class Name: ClassName [Implementation]
 * Date Created: June 22, 2014
 * Inheritance: None
-* Description: 
+* Description:
 *
 * Notes
 * -----
@@ -27,7 +27,7 @@
  */
  ClassName::ClassName()
  {
- 
+
  }
 
 /*

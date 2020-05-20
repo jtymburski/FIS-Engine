@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: Window
+* Class Name: ClassName [Header]
 * Date Created: June 18, 2016
 * Inheritance: None
 * Description:
@@ -13,8 +13,8 @@
 * ----
 *****************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef CLASSNAME_H
+#define CLASSNAME_H
 
 struct Window
 {
@@ -81,4 +81,4 @@ public:
 
 };
 
-#endif //WINDOW_H
+#endif // CLASSNAME_H

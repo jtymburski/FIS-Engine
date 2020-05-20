@@ -1,9 +1,12 @@
-CC = g++
+CC := g++
+
+# TODO: Test in windows. -p not supported, builds directory trees by default
+MKDIR_P := mkdir -p
 
 # Pre-additions for platform specific libraries
 ifeq ($(OS),Windows_NT)
 	# Windows parameters
-	LIBS = -lmingw32 -lSDL2main
+	LIBS := -lmingw32 -lSDL2main
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
@@ -13,118 +16,57 @@ else
 	endif
 endif
 
-# CFlags - first line is for normal operation. Switch comment to second line
-#          for additional debugging options in 'gdb'
-CFLAGS = -c -std=c++1y -Wextra -Wno-unused-variable -Wno-narrowing
-#CFLAGS = -c -std=c++1y -Wall -Wextra -g
-INCLUDES = -Iinclude
-
-
-# WINDOWS only?! Helps the cmd not appear when running the app separately.
-# This stops all output to the command line though...
-# -Wl,-subsystem,windows
-#LNFLAGS=-Wl,-O1
-EXECUTABLE=Univursa
+# Add -g for additional debugging options in 'gdb'
+CFLAGS := -c -std=c++1y -Wextra -Wno-unused-variable -Wno-narrowing
 
 # Post-additions for platform specific libraries
 ifeq ($(OS),Windows_NT)
+	UNAME_S := Windows
+
 	# Windows parameters
 	LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
-	LNFLAGS=-Wl,-O1
+	LNFLAGS := -Wl,-O1
 else
 	UNAME_S := $(shell uname -s)
+
 	ifeq ($(UNAME_S),Linux)
 		# Linux parameters
 		LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
-		LNFLAGS=-Wl,-O1
+		LNFLAGS := -Wl,-O1
 	else
 		# MAC parameters
 		LIBS += -framework SDL2 -framework SDL2_image -framework SDL2_mixer -framework SDL2_ttf -framework Cocoa
 	endif
 endif
 
-SOURCES=src/AnalogOption.cc \
-        src/DigitalOption.cc \
-        src/Application.cc \
-        src/Box.cc \
-        src/FileHandler.cc \
-        src/Fonts.cc \
-        src/Frame.cc \
-        src/Helpers.cc \
-        src/Main.cc \
-        src/Md5.cc \
-        src/Music.cc \
-        src/Options.cc \
-        src/Sound.cc \
-		src/SoundHandler.cc \
-        src/Sprite.cc \
-        src/Text.cc \
-        src/TinyXML.cc \
-        src/TitleScreen.cc \
-        src/XmlData.cc \
-        src/Game/EventHandler.cc \
-		src/Game/EventSet.cc \
-        src/Game/Game.cc \
-        src/Game/KeyHandler.cc \
-        src/Game/Lay.cc \
-        src/Game/Save.cc \
-        src/Game/Battle/AIModule.cc \
-        src/Game/Battle/Battle.cc \
-        src/Game/Battle/BattleActor.cc \
-        src/Game/Battle/BattleEvent.cc \
-        src/Game/Battle/BattleItem.cc \
-        src/Game/Battle/BattleSkill.cc \
-        src/Game/Battle/BattleStats.cc \
-        src/Game/Battle/BattleDisplayData.cc \
-        src/Game/Battle/BattleMenu.cc \
-        src/Game/Battle/Buffer.cc \
-        src/Game/Battle/RenderElement.cc \
-        src/Game/Battle/Victory.cc \
-        src/Game/Map/ItemStore.cc \
-        src/Game/Map/Map.cc \
-        src/Game/Map/MapDialog.cc \
-        src/Game/Map/MapInteractiveObject.cc \
-        src/Game/Map/MapItem.cc \
-        src/Game/Map/MapNPC.cc \
-        src/Game/Map/MapPerson.cc \
-        src/Game/Map/MapState.cc \
-        src/Game/Map/MapThing.cc \
-        src/Game/Map/MapViewport.cc \
-        src/Game/Map/Menu.cc \
-        src/Game/Map/SpriteMatrix.cc \
-        src/Game/Map/Tile.cc \
-        src/Game/Map/TileSprite.cc \
-        src/Game/Player/Action.cc \
-        src/Game/Player/Ailment.cc \
-        src/Game/Player/AttributeSet.cc \
-        src/Game/Player/Bubby.cc \
-        src/Game/Player/Category.cc \
-        src/Game/Player/Flavour.cc \
-        src/Game/Player/Inventory.cc \
-        src/Game/Player/Item.cc \
-        src/Game/Player/Party.cc \
-        src/Game/Player/Person.cc \
-        src/Game/Player/Player.cc \
-        src/Game/Player/Signature.cc \
-        src/Game/Player/Skill.cc \
-        src/Game/Player/SkillSet.cc \
-        src/GFX/SDL2_framerate.cc \
-        src/GFX/SDL2_gfxPrimitives.cc \
-        src/GFX/SDL2_imageFilter.cc \
-        src/GFX/SDL2_rotozoom.cc
+INCLUDES := -Iinclude
 
-OBJECTS=$(SOURCES:.cc=.o)
+BUILD_DIR := bin
+EXEC_GENERIC := $(BUILD_DIR)/FISE
+EXEC_OS := $(EXEC_GENERIC)-$(UNAME_S)
 
+SRC_DIR := src
+SRC_FILE_DIRS := $(SRC_DIR) \
+                 $(SRC_DIR)/Game \
+                 $(SRC_DIR)/Game/Battle \
+                 $(SRC_DIR)/Game/Map \
+                 $(SRC_DIR)/Game/Player \
+                 $(SRC_DIR)/GFX
+SOURCES := $(foreach dir,$(SRC_FILE_DIRS),$(wildcard $(dir)/*.cc))
 
-all: $(EXECUTABLE)
+OBJ_DIR := $(BUILD_DIR)/obj
+OBJECTS := $(patsubst $(SRC_DIR)/%.cc,$(OBJ_DIR)/%.o,$(SOURCES))
 
-$(EXECUTABLE): $(OBJECTS)
+all: $(EXEC_OS)
+
+$(EXEC_OS): $(OBJECTS)
 	$(CC) $(LNFLAGS) -g -o $@ $(OBJECTS) $(LIBS)
 
-.cc.o:
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
+	@$(MKDIR_P) $(@D)
 	$(CC) $(CFLAGS) $(INCLUDES) $< -o $@
 
 .PHONY: clean
 
 clean:
-	$(RM) $(OBJECTS) $(EXECUTABLE) $(EXECUTABLE).exe
+	$(RM) $(OBJECTS) $(EXEC_GENERIC)*
