@@ -1,7 +1,9 @@
 CC := g++
 
-# TODO: Test in windows. -p not supported, builds directory trees by default
+# TODO: Port for windows
+CP_RF := cp -rf
 MKDIR_P := mkdir -p
+RM_RF := rm -rf
 
 # Pre-additions for platform specific libraries
 ifeq ($(OS),Windows_NT)
@@ -39,11 +41,13 @@ else
 	endif
 endif
 
-INCLUDES := -Iinclude
-
 BUILD_DIR := bin
 EXEC_GENERIC := $(BUILD_DIR)/FISE
 EXEC_OS := $(EXEC_GENERIC)-$(UNAME_S)
+
+ASSETS_DIR := assets
+
+INCLUDES := -Iinclude
 
 SRC_DIR := src
 SRC_FILE_DIRS := $(SRC_DIR) \
@@ -60,6 +64,7 @@ OBJECTS := $(patsubst $(SRC_DIR)/%.cc,$(OBJ_DIR)/%.o,$(SOURCES))
 all: $(EXEC_OS)
 
 $(EXEC_OS): $(OBJECTS)
+	@$(CP_RF) $(ASSETS_DIR) $(BUILD_DIR)
 	$(CC) $(LNFLAGS) -g -o $@ $(OBJECTS) $(LIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
@@ -70,3 +75,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
 
 clean:
 	$(RM) $(OBJECTS) $(EXEC_GENERIC)*
+
+deepclean: clean
+	$(RM_RF) $(BUILD_DIR)

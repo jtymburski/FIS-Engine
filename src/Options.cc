@@ -21,8 +21,12 @@
 
 /* Constant Implementation - see header file for descriptions */
 const std::string Options::kFONTS[] = {
-    "fonts/colab_light.otf", "fonts/crimes.ttf", "fonts/blanch_caps.otf",
-    "fonts/colab_reg.otf", "fonts/colab_med.otf"};
+    "assets/fonts/colaborate_light.otf",
+    "assets/fonts/crimes.ttf",
+    "assets/fonts/dosis_semibold.ttf",
+    "assets/fonts/colaborate_regular.otf",
+    "assets/fonts/colaborate_medium.otf"
+};
 const uint8_t Options::kNUM_FONTS = 5;
 const uint8_t Options::kNUM_RESOLUTIONS = 10;
 const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920, 1920,
