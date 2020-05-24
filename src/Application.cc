@@ -28,8 +28,8 @@ Application::Application(std::string base_path, std::string app_path,
 
   /* Initialize the variables */
   this->app_path = app_path;
+  this->app_directory = Helpers::getParentDirectory(app_path);
   this->app_map = app_map;
-  this->base_path = base_path;
   initialized = false;
   renderer = NULL;
   window = NULL;
@@ -277,7 +277,7 @@ bool Application::load()
         if(data.getElement(index + 1) == "music" ||
            data.getElement(index + 1) == "sound")
         {
-          sound_handler.load(data, index + 1, system_options->getBasePath());
+          sound_handler.load(data, index + 1, app_directory);
         }
       }
     } while(!done && success);
@@ -292,7 +292,7 @@ bool Application::load()
   /* If success, load into game handler with noted map */
   if(success)
   {
-    game_handler->setPath(app_path, app_map, false);
+    game_handler->setPath(app_path, app_directory, app_map, false);
 
     /* Change mode back to title screen */
     title_screen.setSaveData(game_handler->getSaveData());
@@ -565,7 +565,7 @@ bool Application::initialize()
     /* Otherwise, create window icon */
     else
     {
-      std::string icon_path = base_path + kLOGO_ICON;
+      std::string icon_path = system_options->getBasePath() + kLOGO_ICON;
       SDL_Surface* surface = IMG_Load(icon_path.c_str());
       SDL_SetWindowIcon(window, surface);
     }
@@ -789,7 +789,7 @@ void Application::setPath(std::string path, int level, bool skip_title)
 
       /* Set the new level */
       app_map = level;
-      game_handler->setPath(app_path, app_map, false);
+      game_handler->setPath(app_path, app_directory, app_map, false);
 
       /* If mode is already in game, update the map accordingly */
       // if(mode == GAME)

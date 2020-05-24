@@ -1951,9 +1951,20 @@ uint32_t Helpers::getDistance(Coordinate a, Coordinate b)
 }
 
 /*
+ * Description: Returns the parent directory from a file name path. For example,
+ * "path/to/file/data.txt" will return "path/to/file/". It expects at least one "/" in the path.
+ *
+ * Inputs: std::string file_name - full file name path
+ * Output: std::string - returned parent directory path
+ */
+std::string Helpers::getParentDirectory(std::string file_name)
+{
+  return file_name.substr(0, file_name.find_last_of("/\\") + 1);
+}
+
+/*
  * Description: Returns the render depth of the count of things that can be
- *              stacked on top of each other. Relevant for thing motion
- *control
+ *              stacked on top of each other. Relevant for thing motion control
  *              and rendering.
  *
  * Inputs: none
@@ -2014,14 +2025,14 @@ uint32_t Helpers::hexToBaseTen(std::string base_sixteen)
 /*
  * Description: Trims white space from the left side of a std::string
  *
- * Inputs: std::string &s - the string to trim whitespace from
- * Output: std::string& - the string with the whitespace removed
+ * Inputs: std::string s - the string to trim whitespace from
+ * Output: std::string - the string with the whitespace removed
  */
-std::string& Helpers::ltrim(std::string& s)
+std::string Helpers::ltrim(std::string s)
 {
-  s.erase(begin(s),
-          std::find_if(begin(s), end(s),
-                       std::not1(std::ptr_fun<int, int>(std::isspace))));
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+    return !std::isspace(ch);
+  }));
 
   return s;
 }
@@ -2144,15 +2155,14 @@ std::vector<std::vector<uint16_t>> Helpers::parseRangeSet(std::string sequence)
 /*
  * Description: Trims white space from the right side of a std::string
  *
- * Inputs: std::string &s - the string to trim whitespace from
- * Output: std::string& - the string with the whitespace removed
+ * Inputs: std::string s - the string to trim whitespace from
+ * Output: std::string - the string with the whitespace removed
  */
-std::string& Helpers::rtrim(std::string& s)
+std::string Helpers::rtrim(std::string s)
 {
-  s.erase(std::find_if(s.rbegin(), s.rend(),
-                       std::not1(std::ptr_fun<int, int>(std::isspace)))
-              .base(),
-          end(s));
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+    return !std::isspace(ch);
+  }).base(), s.end());
 
   return s;
 }
@@ -2187,10 +2197,10 @@ std::vector<std::string> Helpers::split(const std::string& line, char delim)
 /*
  * Description Trims white space from both sides of a std::string
  *
- * Inputs: std::string &s - the string to trim whitespace from
- * Output: std::string& - the string with the whitespace removed
+ * Inputs: std::string s - the string to trim whitespace from
+ * Output: std::string - the string with the whitespace removed
  */
-std::string& Helpers::trim(std::string& s)
+std::string Helpers::trim(std::string s)
 {
   return ltrim(rtrim(s));
 }

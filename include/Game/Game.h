@@ -61,12 +61,6 @@ private:
   /* The active rendering engine */
   SDL_Renderer* active_renderer;
 
-  /* The computed base path for common resources in the application */
-  std::string base_path;
-
-  /* The computed base path for game specific resources in the application */
-  std::string base_game_path;
-
   /* Battle control and visual */
   Battle* battle_ctrl;
 
@@ -81,6 +75,7 @@ private:
   EventHandler event_handler;
 
   /* Game file path */
+  std::string game_directory;
   std::string game_path;
 
   /* List of objects */
@@ -321,7 +316,7 @@ public:
   bool setConfiguration(Options* running_config);
 
   /* Sets the path of the game */
-  bool setPath(std::string path, int level = 0, bool load = false);
+  bool setPath(std::string path, std::string directory, int level = 0, bool load = false);
 
   /* Assign the Player name / sex */
   void setPlayerName(std::string player_name);

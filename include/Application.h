@@ -54,11 +54,9 @@ public:
 
 private:
   /* The configured path for operation */
+  std::string app_directory;
   int app_map;
   std::string app_path;
-
-  /* The base path, for accessing resources */
-  std::string base_path;
 
   /* Handler for state of the keyboard */
   KeyHandler key_handler;

@@ -41,12 +41,11 @@ Game::Game(Options* running_config)
 
   /* Initalize class variables */
   active_renderer = nullptr;
-  base_path = "";
-  base_game_path = "";
   battle_ctrl = nullptr;
   battle_display_data = nullptr;
   config = nullptr;
   event_disable = false;
+  game_directory = "";
   game_path = "";
   loaded_core = false;
   loaded_sub = false;
@@ -575,7 +574,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(base_game_path + lay.path, lay.anim_time, velocity,
+          battle_ctrl->createLay(game_directory + lay.path, lay.anim_time, velocity,
                                  LayType::UNDERLAY);
         }
 
@@ -584,7 +583,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(base_game_path + lay.path, lay.anim_time, velocity,
+          battle_ctrl->createLay(game_directory + lay.path, lay.anim_time, velocity,
                                  LayType::MIDLAY);
         }
 
@@ -593,7 +592,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(base_game_path + lay.path, lay.anim_time, velocity,
+          battle_ctrl->createLay(game_directory + lay.path, lay.anim_time, velocity,
                                  LayType::OVERLAY);
         }
       }
@@ -601,7 +600,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
       /* Build display data */
       if(!battle_display_data->isDataBuilt())
       {
-        battle_display_data->buildData(base_game_path);
+        battle_display_data->buildData(game_directory);
         battle_display_data->buildItemMap(list_item);
       }
 
@@ -758,7 +757,7 @@ bool Game::load(std::string base_file, SDL_Renderer* renderer, uint8_t slot,
   success &= fh_base.start();
 
   /* Create the save slot file handler, if applicable */
-  FileHandler fh_slot(getSlotPath(slot, base_path), false, true, encryption);
+  FileHandler fh_slot(getSlotPath(slot, config->getBasePath()), false, true, encryption);
   bool slot_valid = (slot > 0);
   if(slot_valid)
     slot_valid &= fh_slot.start();
@@ -892,7 +891,7 @@ bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer, bool core_data,
         if(data.getElement(index + 1) == "map" &&
            data.getKeyValue(index + 1) == level)
         {
-          success &= map_ctrl.loadData(data, index + 2, renderer, base_game_path,
+          success &= map_ctrl.loadData(data, index + 2, renderer, game_directory,
                                        save_data);
         }
       }
@@ -958,7 +957,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(data.getElement(index + 1) == "skill")
       edit_item->setUseSkill(getSkill(data.getDataInteger(&success)));
     else
-      success &= edit_item->loadData(data, index + 1, renderer, base_game_path);
+      success &= edit_item->loadData(data, index + 1, renderer, game_directory);
   }
   /* ---- PARTIES ---- */
   else if(element == "party")
@@ -1009,12 +1008,12 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
       else
       {
         edit_party->getInventory()->loadData(data, index + 2, renderer,
-                                             base_game_path);
+                                             game_directory);
       }
     }
     else
     {
-      success &= edit_party->loadData(data, index + 1, renderer, base_game_path);
+      success &= edit_party->loadData(data, index + 1, renderer, game_directory);
     }
   }
   /* ---- PERSONS ---- */
@@ -1030,7 +1029,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     else if(data.getElement(index + 1) == "race")
       edit_person->setRace(getRace(data.getDataInteger(&success)));
     else
-      success &= edit_person->loadData(data, index + 1, renderer, base_game_path);
+      success &= edit_person->loadData(data, index + 1, renderer, game_directory);
   }
   /* ---- PLAYER ---- */
   else if(element == "player")
@@ -1108,7 +1107,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     /* All other cases */
     else
     {
-      player_main->loadData(data, index + 1, renderer, base_game_path);
+      player_main->loadData(data, index + 1, renderer, game_directory);
     }
   }
   else if(element == "options")
@@ -1144,7 +1143,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(data.getElement(index + 1) == "action")
       edit_skill->addAction(getAction(data.getDataInteger(&success)), false);
     else
-      success &= edit_skill->loadData(data, index + 1, renderer, base_game_path);
+      success &= edit_skill->loadData(data, index + 1, renderer, game_directory);
 
     /* Flag setup after changes */
     edit_skill->flagSetup();
@@ -1184,7 +1183,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
 void Game::menuPreparation()
 {
   /* Save screenshot */
-  saveScreenshot(getSlotPath(0, base_path, true, true),
+  saveScreenshot(getSlotPath(0, config->getBasePath(), true, true),
                  map_ctrl.getSnapshotRect(), active_renderer);
 }
 
@@ -1919,8 +1918,8 @@ std::vector<Save> Game::getSaveData(bool encryption)
   /* Go through all slots up to range and find data */
   for(uint8_t i = 1; i <= kSAVE_SLOT_MAX; i++)
   {
-    std::string path = getSlotPath(i, base_path);
-    std::string path_img = getSlotPath(i, base_path, true);
+    std::string path = getSlotPath(i, config->getBasePath());
+    std::string path_img = getSlotPath(i, config->getBasePath(), true);
     Save slot(i, config);
 
     /* Attempt to open the path with the file handling system */
@@ -2320,7 +2319,7 @@ bool Game::render(SDL_Renderer* renderer)
 
     /* Build the data if it isn't built */
     if(renderer && !battle_display_data->isDataBuilt())
-      battle_display_data->buildData(base_game_path);
+      battle_display_data->buildData(game_directory);
     else if(battle_display_data->isDataBuilt())
     {
       battle_ctrl->setRenderer(renderer);
@@ -2356,13 +2355,13 @@ bool Game::save(uint8_t slot, bool from_menu)
       if(slot == 0)
         slot = kSAVE_SLOT_DEFAULT;
     }
-    std::string save_path = getSlotPath(slot, base_path);
-    std::string save_path_img = getSlotPath(slot, base_path, true);
+    std::string save_path = getSlotPath(slot, config->getBasePath());
+    std::string save_path_img = getSlotPath(slot, config->getBasePath(), true);
 
     /* If the slot is different, the old data needs to be copied */
     if(slot != save_slot && save_slot > 0)
     {
-      std::string old_path = getSlotPath(save_slot, base_path);
+      std::string old_path = getSlotPath(save_slot, config->getBasePath());
       if(FileHandler::fileExists(old_path))
         success &= FileHandler::fileCopy(old_path, save_path, true);
     }
@@ -2385,7 +2384,7 @@ bool Game::save(uint8_t slot, bool from_menu)
       /* If from menu, use auto save image */
       if(from_menu)
       {
-        std::string save_auto_img = getSlotPath(0, base_path, true, true);
+        std::string save_auto_img = getSlotPath(0, config->getBasePath(), true, true);
         if(FileHandler::fileExists(save_auto_img))
           FileHandler::fileCopy(save_auto_img, save_path_img, true);
       }
@@ -2459,14 +2458,14 @@ bool Game::saveClear(uint8_t slot)
   if(slot <= kSAVE_SLOT_MAX)
   {
     /* Find the path and if it exists */
-    std::string delete_path = getSlotPath(slot, base_path);
+    std::string delete_path = getSlotPath(slot, config->getBasePath());
     if(FileHandler::fileExists(delete_path))
     {
       /* Delete the path */
       bool success = FileHandler::fileDelete(delete_path);
 
       /* Delete the image path, if it exists */
-      std::string save_path = getSlotPath(slot, base_path, true);
+      std::string save_path = getSlotPath(slot, config->getBasePath(), true);
       if(FileHandler::fileExists(save_path))
         success &= FileHandler::fileDelete(save_path);
 
@@ -2482,7 +2481,6 @@ bool Game::setConfiguration(Options* running_config)
   if(running_config)
   {
     config = running_config;
-    base_path = config->getBasePath();
 
     /* Set in secondary classes */
     map_ctrl.setConfiguration(running_config);
@@ -2506,7 +2504,7 @@ bool Game::setConfiguration(Options* running_config)
 }
 
 /* Sets the path of the game */
-bool Game::setPath(std::string path, int level, bool load)
+bool Game::setPath(std::string path, std::string directory, int level, bool load)
 {
   if(!path.empty() && level >= 0)
   {
@@ -2519,7 +2517,7 @@ bool Game::setPath(std::string path, int level, bool load)
       if(full_load)
         save_slot = 0;
       game_path = path;
-      base_game_path = path.substr(0, path.find_last_of("/\\") + 1);
+      game_directory = directory;
       map_lvl = level;
 
       /* Handle what condition for the game */

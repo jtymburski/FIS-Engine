@@ -312,6 +312,9 @@ public:
   /* Returns the distance between two Coordinates */
   static uint32_t getDistance(Coordinate a, Coordinate b);
 
+  /* Returns the parent path for a file */
+  static std::string getParentDirectory(std::string file_name);
+
   /* Get render depth for thing stacks */
   static uint8_t getRenderDepth();
 
@@ -323,7 +326,7 @@ public:
   static uint32_t hexToBaseTen(std::string base_sixteen);
 
   /* Methods for trimming white space from left of string ends */
-  static std::string& ltrim(std::string& s);
+  static std::string ltrim(std::string s);
 
   /* Takes a range and parses it to determine the x and y, min and max parts */
   static bool parseRange(std::string sequence, uint32_t& x_min, uint32_t& x_max,
@@ -333,13 +336,13 @@ public:
   static std::vector<std::vector<uint16_t>> parseRangeSet(std::string sequence);
 
   /* Methods for trimming white space from right of string ends */
-  static std::string& rtrim(std::string& s);
+  static std::string rtrim(std::string s);
 
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string& s, char delim);
 
   /* Methods for trimming whitespace from both ends of std::strings */
-  static std::string& trim(std::string& s);
+  static std::string trim(std::string s);
 
   /* Update load calls for global structs */
   static LayOver updateLayOver(LayOver lay_over, XmlData data, int file_index);

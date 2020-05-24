@@ -321,8 +321,7 @@ void TitleScreen::buildOptionTitleElements()
 bool TitleScreen::isPlayerNameValid(KeyHandler& key_handler)
 {
   auto player_name = key_handler.getTextEntry();
-  auto trim_name = key_handler.getTextEntry();
-  Helpers::trim(trim_name);
+  auto trim_name = Helpers::trim(key_handler.getTextEntry());
 
   bool valid{true};
 
