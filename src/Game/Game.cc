@@ -601,7 +601,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
       /* Build display data */
       if(!battle_display_data->isDataBuilt())
       {
-        battle_display_data->buildData();
+        battle_display_data->buildData(base_game_path);
         battle_display_data->buildItemMap(list_item);
       }
 
@@ -2320,7 +2320,7 @@ bool Game::render(SDL_Renderer* renderer)
 
     /* Build the data if it isn't built */
     if(renderer && !battle_display_data->isDataBuilt())
-      battle_display_data->buildData();
+      battle_display_data->buildData(base_game_path);
     else if(battle_display_data->isDataBuilt())
     {
       battle_ctrl->setRenderer(renderer);
@@ -2566,10 +2566,6 @@ void Game::setRenderer(SDL_Renderer* renderer)
     if(battle_display_data)
     {
       battle_display_data->setRenderer(renderer);
-
-      /* If the data hasn't been built, build it with the renderer */
-      if(!battle_display_data->isDataBuilt())
-        battle_display_data->buildData();
     }
   }
 }

@@ -82,28 +82,28 @@ private:
   /*======================== PRIVATE FUNCTIONS ===============================*/
 private:
   /* Constructs the battle bar */
-  void buildBattleBar();
+  void buildBattleBar(std::string asset_path);
 
   /* Builds the ailment frames */
-  void buildFramesAilments();
+  void buildFramesAilments(std::string asset_path);
 
   /* Builds the attribute frames */
-  void buildFramesAttributes();
+  void buildFramesAttributes(std::string asset_path);
 
   /* Builds elemental frames */
-  void buildFramesElements();
+  void buildFramesElements(std::string asset_path);
 
   /* Builds action scopes */
-  void buildFramesScopes();
+  void buildFramesScopes(std::string asset_path);
 
   /* Build extra frames */
-  void buildFramesExtra();
+  void buildFramesExtra(std::string asset_path);
 
   /* Builds ailment pleps */
-  void buildPlepsAilments();
+  void buildPlepsAilments(std::string asset_path);
 
   /* Build pleps for event types (such as defend) */
-  void buildPlepsEvents();
+  void buildPlepsEvents(std::string asset_path);
 
   /* Assigns an ailment frame */
   void setFrameAilment(Infliction type, std::string path);
@@ -129,7 +129,7 @@ public:
   bool isDataBuilt();
 
   /* Builds the data of the BDD */
-  bool buildData();
+  bool buildData(std::string base_game_path);
 
   /* Assemble the vector of Item Maps */
   void buildItemMap(std::vector<Item*> items);
