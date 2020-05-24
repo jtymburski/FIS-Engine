@@ -61,8 +61,11 @@ private:
   /* The active rendering engine */
   SDL_Renderer* active_renderer;
 
-  /* The computed base path for resources in the application */
+  /* The computed base path for common resources in the application */
   std::string base_path;
+
+  /* The computed base path for game specific resources in the application */
+  std::string base_game_path;
 
   /* Battle control and visual */
   Battle* battle_ctrl;

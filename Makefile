@@ -14,7 +14,7 @@ else
 	ifeq ($(UNAME_S),Linux)
 		# Linux parameters
 	else
-		# MAC parameters
+		# OSX parameters
 	endif
 endif
 
@@ -31,13 +31,14 @@ ifeq ($(OS),Windows_NT)
 else
 	UNAME_S := $(shell uname -s)
 
+	# *nix parameters
+	LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+
 	ifeq ($(UNAME_S),Linux)
 		# Linux parameters
-		LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 		LNFLAGS := -Wl,-O1
 	else
-		# MAC parameters
-		LIBS += -framework SDL2 -framework SDL2_image -framework SDL2_mixer -framework SDL2_ttf -framework Cocoa
+		# OSX parameters
 	endif
 endif
 

@@ -42,6 +42,7 @@ Game::Game(Options* running_config)
   /* Initalize class variables */
   active_renderer = nullptr;
   base_path = "";
+  base_game_path = "";
   battle_ctrl = nullptr;
   battle_display_data = nullptr;
   config = nullptr;
@@ -574,7 +575,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(base_path + lay.path, lay.anim_time, velocity,
+          battle_ctrl->createLay(base_game_path + lay.path, lay.anim_time, velocity,
                                  LayType::UNDERLAY);
         }
 
@@ -583,7 +584,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(base_path + lay.path, lay.anim_time, velocity,
+          battle_ctrl->createLay(base_game_path + lay.path, lay.anim_time, velocity,
                                  LayType::MIDLAY);
         }
 
@@ -592,7 +593,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(base_path + lay.path, lay.anim_time, velocity,
+          battle_ctrl->createLay(base_game_path + lay.path, lay.anim_time, velocity,
                                  LayType::OVERLAY);
         }
       }
@@ -891,7 +892,7 @@ bool Game::loadData(FileHandler* fh, SDL_Renderer* renderer, bool core_data,
         if(data.getElement(index + 1) == "map" &&
            data.getKeyValue(index + 1) == level)
         {
-          success &= map_ctrl.loadData(data, index + 2, renderer, base_path,
+          success &= map_ctrl.loadData(data, index + 2, renderer, base_game_path,
                                        save_data);
         }
       }
@@ -957,7 +958,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(data.getElement(index + 1) == "skill")
       edit_item->setUseSkill(getSkill(data.getDataInteger(&success)));
     else
-      success &= edit_item->loadData(data, index + 1, renderer, base_path);
+      success &= edit_item->loadData(data, index + 1, renderer, base_game_path);
   }
   /* ---- PARTIES ---- */
   else if(element == "party")
@@ -1008,12 +1009,12 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
       else
       {
         edit_party->getInventory()->loadData(data, index + 2, renderer,
-                                             base_path);
+                                             base_game_path);
       }
     }
     else
     {
-      success &= edit_party->loadData(data, index + 1, renderer, base_path);
+      success &= edit_party->loadData(data, index + 1, renderer, base_game_path);
     }
   }
   /* ---- PERSONS ---- */
@@ -1029,7 +1030,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     else if(data.getElement(index + 1) == "race")
       edit_person->setRace(getRace(data.getDataInteger(&success)));
     else
-      success &= edit_person->loadData(data, index + 1, renderer, base_path);
+      success &= edit_person->loadData(data, index + 1, renderer, base_game_path);
   }
   /* ---- PLAYER ---- */
   else if(element == "player")
@@ -1107,7 +1108,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     /* All other cases */
     else
     {
-      player_main->loadData(data, index + 1, renderer, base_path);
+      player_main->loadData(data, index + 1, renderer, base_game_path);
     }
   }
   else if(element == "options")
@@ -1143,7 +1144,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
     if(data.getElement(index + 1) == "action")
       edit_skill->addAction(getAction(data.getDataInteger(&success)), false);
     else
-      success &= edit_skill->loadData(data, index + 1, renderer, base_path);
+      success &= edit_skill->loadData(data, index + 1, renderer, base_game_path);
 
     /* Flag setup after changes */
     edit_skill->flagSetup();
@@ -2288,7 +2289,7 @@ void Game::keyUpEvent(KeyHandler& key_handler)
 /* Load game */
 bool Game::load(SDL_Renderer* renderer, bool full_load, uint8_t slot)
 {
-  return load(base_path + game_path, renderer, slot, false, full_load);
+  return load(game_path, renderer, slot, false, full_load);
 }
 
 /* Renders the title screen */
@@ -2512,14 +2513,13 @@ bool Game::setPath(std::string path, int level, bool load)
     /* Only execute change if it's different */
     if(path != game_path || map_lvl != level)
     {
-      bool full_load = true;
-      if(path == game_path)
-        full_load = false;
+      bool full_load = (path != game_path);
 
       /* Update info */
-      if(path != game_path)
+      if(full_load)
         save_slot = 0;
       game_path = path;
+      base_game_path = path.substr(0, path.find_last_of("/\\") + 1);
       map_lvl = level;
 
       /* Handle what condition for the game */

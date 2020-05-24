@@ -10,11 +10,9 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-const std::string Application::kLOGO_ICON =
-    "sprites/General/univ-logo-small.png";
-const std::string Application::kPATH = "maps/Univursa.ugv";
+const std::string Application::kLOADING_SCREEN = "assets/images/backgrounds/loading.png";
+const std::string Application::kLOGO_ICON = "assets/images/icon.png";
 const bool Application::kPATH_ENCRYPTED = false;
-const int Application::kPATH_MAP = 0;
 const uint8_t Application::kUPDATE_CHANGE_LIMIT = 5;
 const uint8_t Application::kUPDATE_RATE = 32;
 
@@ -29,17 +27,8 @@ Application::Application(std::string base_path, std::string app_path,
   game_handler = new Game();
 
   /* Initialize the variables */
-  if(app_path.empty())
-  {
-    this->app_path = kPATH;
-    this->app_map = kPATH_MAP;
-  }
-  else
-  {
-    this->app_path = app_path;
-    this->app_map = app_map;
-  }
-
+  this->app_path = app_path;
+  this->app_map = app_map;
   this->base_path = base_path;
   initialized = false;
   renderer = NULL;
@@ -302,13 +291,21 @@ bool Application::load()
 
   /* If success, load into game handler with noted map */
   if(success)
+  {
     game_handler->setPath(app_path, app_map, false);
 
-  /* Change mode back to title screen */
-  title_screen.setSaveData(game_handler->getSaveData());
-  title_screen.buildSave(renderer);
+    /* Change mode back to title screen */
+    title_screen.setSaveData(game_handler->getSaveData());
+    title_screen.buildSave(renderer);
 
-  changeMode(TITLESCREEN);
+    changeMode(TITLESCREEN);
+  }
+  else
+  {
+    std::cerr << "[ERROR] Failed to load map. Exiting early" << std::endl;
+
+    changeMode(EXIT);
+  }
 
   return success;
 }
@@ -553,7 +550,7 @@ bool Application::initialize()
     uint32_t flags = SDL_WINDOW_SHOWN;
     if(system_options->isFullScreen())
       flags |= SDL_WINDOW_FULLSCREEN;
-    window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED,
+    window = SDL_CreateWindow("FISE", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED,
                               system_options->getScreenWidth(),
                               system_options->getScreenHeight(), flags);
@@ -661,8 +658,7 @@ bool Application::initialize()
       /* Create helper graphical portions */
       Helpers::createMaskBlack(renderer);
       Helpers::createMaskWhite(renderer);
-      load_frame.setTexture(system_options->getBasePath() +
-                                "sprites/General/loading.png",
+      load_frame.setTexture(system_options->getBasePath() + kLOADING_SCREEN,
                             renderer);
 
       /* Set render color */
@@ -681,17 +677,8 @@ bool Application::initialize()
   /* If successful, attempt final load sequence */
   if(success)
   {
-    // success &= load();
-
-    // /* Set the title screen background - TODO: Encapsulate in load?? */
-    // title_screen.setBackground("sprites/Title/old_title.png", renderer);
-
-    if(success)
-    {
-      initialized = true;
-      changeMode(LOADING);
-      // game_handler.setPath(app_path, app_map, false);
-    }
+    initialized = true;
+    changeMode(LOADING);
   }
 
   /* Uninitialize everything, if the init sequence failed */
@@ -789,16 +776,10 @@ void Application::setPath(std::string path, int level, bool skip_title)
     /* If path is different then app path, full re-load */
     if(app_path != path)
     {
-      /* Unload internal resources */
-      // unload();
-
       /* Set new path */
       app_path = path;
       app_map = level;
       changeMode(LOADING);
-
-      /* Load */
-      // load();
     }
     /* Otherwise, only level update */
     else if(app_map != level)

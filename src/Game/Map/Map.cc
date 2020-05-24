@@ -113,7 +113,7 @@ Map::~Map()
 
 /* Add data based on the XML load information */
 bool Map::addSpriteData(XmlData data, std::string id, int file_index,
-                        SDL_Renderer* renderer)
+                        SDL_Renderer* renderer, std::string base_game_path)
 {
   int32_t access_id = -1;
   Sprite* access_sprite = nullptr;
@@ -155,7 +155,7 @@ bool Map::addSpriteData(XmlData data, std::string id, int file_index,
     }
 
     return access_sprite->addFileInformation(data, file_index, renderer,
-                                             base_path);
+                                             base_game_path);
   }
 
   return false;
@@ -286,7 +286,8 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
 }
 
 // TODO: Comment
-bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
+bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer,
+                           std::string base_game_path)
 {
   std::string identifier = data.getElement(file_index);
   uint32_t id = std::stoul(data.getKeyValue(file_index));
@@ -358,7 +359,7 @@ bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != nullptr)
     return modified_thing->addThingInformation(data, file_index + 1, 0,
-                                               renderer, base_path);
+                                               renderer, base_game_path);
   return false;
 }
 
@@ -2938,9 +2939,8 @@ void Map::keyUpEvent(KeyHandler& key_handler)
 
 /* Loads the map data - called from game */
 bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
-                   std::string base_path, bool from_save)
+                   std::string base_game_path, bool from_save)
 {
-  (void)base_path;
   bool success = true;
   std::string element = data.getElement(index);
 
@@ -2955,7 +2955,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
   else if(element == "sprite" && !data.getKeyValue(index).empty())
   {
     success &=
-        addSpriteData(data, data.getKeyValue(index), index + 1, renderer);
+        addSpriteData(data, data.getKeyValue(index), index + 1, renderer, base_game_path);
   }
   /* ---- BASE THINGS ---- */
   // else if((element == "mapthing" || element == "mapperson" ||
@@ -2965,7 +2965,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
            element == "mapnpc" || element == "mapio") &&
           !data.getKeyValue(index).empty())
   {
-    success &= addThingBaseData(data, index, renderer);
+    success &= addThingBaseData(data, index, renderer, base_game_path);
   }
   /* ---- BATTLE SCENES ---- */
   else if(element == "battlescene")

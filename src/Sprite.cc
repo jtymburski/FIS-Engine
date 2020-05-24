@@ -364,7 +364,7 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
  */
 void Sprite::createTexture(SDL_Renderer* renderer)
 {
-  if(head->isTextureSet() && texture == nullptr)
+  if(head != nullptr && head->isTextureSet() && texture == nullptr)
   {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                 SDL_TEXTUREACCESS_TARGET, head->getWidth(),

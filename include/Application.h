@@ -98,6 +98,7 @@ private:
   SDL_Window* window;
 
   /*------------------- Constants -----------------------*/
+  const static std::string kLOADING_SCREEN;  /* The loading fixed screen before title */
   const static std::string kLOGO_ICON; /* The logo icon path */
   const static std::string kPATH;      /* The main application path */
   const static bool kPATH_ENCRYPTED;   /* The main path - is it encrypted */

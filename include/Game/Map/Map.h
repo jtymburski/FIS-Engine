@@ -220,13 +220,14 @@ public:
 private:
   /* Adds sprite data, as per data from the file */
   bool addSpriteData(XmlData data, std::string id, int file_index,
-                     SDL_Renderer* renderer);
+                     SDL_Renderer* renderer, std::string base_game_path);
 
   /* Adds tile data, as per data from the file */
   bool addTileData(XmlData data, uint16_t section_index);
 
   /* Adds thing data, as per data from the file */
-  bool addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer);
+  bool addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer,
+                        std::string base_game_path);
   bool addThingData(XmlData data, uint16_t section_index,
                     SDL_Renderer* renderer, bool from_save = false);
 
@@ -450,7 +451,7 @@ public:
 
   /* Loads the map data */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
-                std::string base_path, bool from_save = false);
+                std::string base_game_path, bool from_save = false);
   void loadDataFinish(SDL_Renderer* renderer);
 
   /* Modify thing properties based on passed in properties */

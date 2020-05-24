@@ -60,8 +60,12 @@ int main(int argc, char** argv)
   if(argc > 1)
     init_app += argv[1];
   int map_lvl = 0;
+  bool map_requested = false;
   if(argc > 2)
+  {
     map_lvl = std::stoi(argv[2]);
+    map_requested = true;
+  }
 
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
@@ -77,7 +81,7 @@ int main(int argc, char** argv)
     /* Create the application and start the run loop */
     Application* game_app = new Application(dir_string, init_app, map_lvl);
     if(game_app->initialize())
-      game_app->run(!init_app.empty());
+      game_app->run(map_requested);
 
     /* Clean up the application, after the run loop is finished */
     //game_app->uninitialize();
@@ -92,5 +96,5 @@ int main(int argc, char** argv)
   IMG_Quit();
   SDL_Quit();
 
-	return 0;
+  return 0;
 }

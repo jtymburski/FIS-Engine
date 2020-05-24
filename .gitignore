@@ -1,1 +1,8 @@
+# Build paths
 bin/
+
+# Development paths
+.idea/
+
+# OSX specific
+.DS_Store
