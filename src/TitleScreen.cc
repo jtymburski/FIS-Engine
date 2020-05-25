@@ -11,20 +11,11 @@
 #include "TitleScreen.h"
 
 /*=============================================================================
- * TITLE_BACKGROUND - If defined
+ * TITLE_BACKGROUND
  *============================================================================*/
 
-#ifndef TITLE_SKIP
 /* Construct the TitleBackground Class */
 TitleBackground::TitleBackground()
-    : delay{0},
-      delay2{0},
-      elapsed_time{0},
-      render_disabled{false},
-      rotate1{0},
-      rotate2{0},
-      rotate3{0},
-      rotate6{0}
 {
 }
 
@@ -38,30 +29,16 @@ bool TitleBackground::render(SDL_Renderer* renderer, Options* config)
 
     if(config)
     {
-
       auto x_offset = config->getScreenWidth() - Options::kDEF_SCREEN_WIDTH;
       auto y_offset = config->getScreenHeight() - Options::kDEF_SCREEN_HEIGHT;
 
       /* Render the background */
       success &= background.render(renderer, 0, 0, config->getScreenWidth(),
                                    config->getScreenHeight());
-      success &= background6.render(renderer, -220 + x_offset, -48 + y_offset);
-
-      success &= background2.render(renderer, 153 + x_offset, 314 + y_offset);
-
-      /* Waldo show - TODO: Only certain hours? */
-      success &= background7.render(renderer, 153 + x_offset, 314 + y_offset);
-
-      /* The flash and bangs */
-      success &= background4.render(renderer, 153 + x_offset, 314 + y_offset);
-      success &= background5.render(renderer, 153 + x_offset, 314 + y_offset);
-
-      /* Render atmosphere */
-      success &= background3.render(renderer, 153 + x_offset, 314 + y_offset);
     }
 
-    if(!render_disabled)
-      success &= title.render(renderer, 50, 50);
+    /* Render the title */
+    success &= title.render(renderer, 50, 50);
   }
 
   return success;
@@ -71,115 +48,13 @@ void TitleBackground::buildSprites(Options* config, SDL_Renderer* renderer)
 {
   if(config && renderer)
   {
-    auto path = config->getBasePath();
+    background.insertFirst(
+        config->getBasePath() + "assets/images/backgrounds/title.png", renderer);
 
-    background.insertFirst(path + "sprites/Title/title-backdrop.png", renderer);
-    background2.insertFirst(path + "sprites/Title/title-dynaton.png", renderer);
-    background4.insertFirst(path + "sprites/Title/title-dynatonbooms1.png",
-                            renderer);
-    background4.setOpacity(0);
-    background5.insertFirst(path + "sprites/Title/title-dynatonbooms2.png",
-                            renderer);
-    background5.setOpacity(0);
-    background3.insertFirst(path + "sprites/Title/title-dynatonatmosphere.png",
-                            renderer);
-    background3.setOpacity(196);
-    background3.setColorBalance(255, 170, 170);
-    background6.insertFirst(path + "sprites/Title/title-moon.png", renderer);
-    background7.insertFirst(path + "sprites/Title/title-waldo.png", renderer);
-    title.setTexture(path + "sprites/Title/title.png", renderer);
+    title.setFont(config->getFontTTF(FontName::TITLE_MAIN_HEADER));
+    title.setText(renderer, "Real Title 2: End of the Seven Seas", {255, 255, 255, 255});
   }
 }
-
-/* Updates the title screen. Necessary for visual updates */
-bool TitleBackground::update(int32_t cycle_time)
-{
-  /* Increment the nav time */
-  elapsed_time += cycle_time;
-
-  /* Rotation testing */
-  // rotate1 += 0.03125;//0.0625;//0.001;
-  rotate2 += 0.03125;
-  rotate3 += 0.05;
-  rotate6 -= 0.075;
-
-  // background.setRotation(rotate1);
-  background2.setRotation(rotate2);
-  background3.setRotation(rotate3);
-  background4.setRotation(rotate2);
-  background5.setRotation(rotate2);
-  background6.setRotation(rotate6);
-  background7.setRotation(rotate2);
-
-  /* Poof Number 1 */
-  if(delay < 5000)
-  {
-    delay += cycle_time;
-  }
-  else if(delay < 10000)
-  {
-    delay = 10000;
-    background4.setOpacity(255);
-  }
-
-  if(delay == 10000)
-  {
-    background4.setBrightness(background4.getBrightness() - 0.03125);
-
-    if(background4.getBrightness() == 0.0)
-    {
-      uint8_t opacity = background4.getOpacity();
-
-      if(opacity >= 2)
-        background4.setOpacity(opacity - 2);
-      else
-      {
-        background4.setBrightness(1.0);
-        background4.setOpacity(0);
-        delay = 0;
-      }
-    }
-  }
-
-  /* Poof Number 2 */
-  if(delay2 < 7500)
-  {
-    delay2 += cycle_time;
-  }
-  else if(delay2 < 10000)
-  {
-    delay2 = 10000;
-    background5.setOpacity(255);
-  }
-
-  if(delay2 == 10000)
-  {
-    background5.setBrightness(background5.getBrightness() - 0.03125);
-
-    if(background5.getBrightness() == 0.0)
-    {
-      uint8_t opacity = background5.getOpacity();
-
-      if(opacity >= 2)
-        background5.setOpacity(opacity - 2);
-      else
-      {
-        background5.setBrightness(1.0);
-        background5.setOpacity(0);
-        delay2 = 0;
-      }
-    }
-  }
-
-  /* Brightness (flicker) concept */
-  // if(Helpers::randInt(10) < 2)
-  //  background.setBrightness(background.getBrightness() - 0.01);
-  // if(background.getBrightness() < 0.6)
-  //  background.setBrightness(1.0);
-
-  return false;
-}
-#endif
 
 /*=============================================================================
  * CONSTANTS
@@ -1179,11 +1054,7 @@ void TitleScreen::renderLoadSelection(SDL_Renderer* renderer)
 
 void TitleScreen::buildTitleBackground(SDL_Renderer* renderer)
 {
-#ifndef TITLE_SKIP
   title_background.buildSprites(config, renderer);
-#else
-  (void)renderer;
-#endif
 }
 
 /* Enables or disables the view. This includes any initialization for before
@@ -1310,10 +1181,8 @@ void TitleScreen::keyTestDownEvent(SDL_KeyboardEvent event)
 /* Renders the title screen */
 bool TitleScreen::render(SDL_Renderer* renderer, KeyHandler& key_handler)
 {
-/* Update the title background if it's enabled */
-#ifndef TITLE_SKIP
+  /* Update the title background */
   title_background.render(renderer, config);
-#endif
 
   if(menu_layer == MenuLayer::TITLE)
   {
@@ -1370,13 +1239,6 @@ bool TitleScreen::setSoundHandler(SoundHandler* sound_handler)
 /* Updates the title screen. Necessary for visual updates */
 bool TitleScreen::update(int32_t cycle_time, KeyHandler& key_handler)
 {
-/* Update the tile screen if it's enabled */
-#ifndef TITLE_SKIP
-  title_background.update(cycle_time);
-#else
-  (void)cycle_time; // TODO
-#endif
-
   if(getFlag(TitleState::CLEAR_NAME) &&
      !key_handler.isDepressed(GameKey::ACTION))
   {

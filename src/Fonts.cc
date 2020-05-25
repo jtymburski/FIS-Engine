@@ -124,6 +124,11 @@ bool Fonts::createFonts(Options* config)
                   Text::createFont(config->getBasePath() + config->getFont(3),
                                    20, TTF_STYLE_NORMAL));
 
+     /* Title Fonts */
+     fonts.emplace(FontName::TITLE_MAIN_HEADER,
+                   Text::createFont(config->getBasePath() + config->getFont(2),
+                                    72, TTF_STYLE_NORMAL));
+
     /* Assert all fonts are not nullptr */
     for(auto& map_font : fonts)
       success &= (map_font.second != nullptr);

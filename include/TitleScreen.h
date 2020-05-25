@@ -23,9 +23,6 @@
 #include "Text.h"
 #include "Window.h"
 
-// SKIP THE TITLE BACKGROUND LOADING / RENDERING
-//#define TITLE_SKIP
-
 /* BState Flags - Flags which describe only battle-related flags */
 ENUM_FLAGS(TitleState)
 enum class TitleState
@@ -41,40 +38,17 @@ enum class TitleState
 };
 
 /* TitleBackground Elements */
-#ifndef TITLE_SKIP
 class TitleBackground
 {
 public:
   TitleBackground();
 
 public:
-  /* TODO The background frame to render */
-  Sprite background;  // TODO: Fix - base
-  Sprite background2; // TODO: Remove - temporary - planet
-  Sprite background3; // TODO: Remove - temporary - planet shroud
-  Sprite background4; // TODO: Remove - temporary - booms 1
-  Sprite background5; // TODO: Remove - temporary - booms 2
-  Sprite background6; // TODO: Remove - temporary - moon
-  Sprite background7; // TODO: Remove - temporary - waldo
-
-  /* Delay values */
-  uint16_t delay;  // TODO: Remove or fix - for displaying poofs
-  uint16_t delay2; // TODO: Remove or fix - for displaying poofs
-
-  /* Elapsed time of the TitleBackground */
-  uint32_t elapsed_time;
-
-  /* Title render is disabled */
-  bool render_disabled;
-
-  /* Rotation values */
-  float rotate1;
-  float rotate2;
-  float rotate3;
-  float rotate6;
+  /* The background frame to render */
+  Sprite background;
 
   /* Title in corner */
-  Frame title;
+  Text title;
 
 public:
   /* Construct the Sprites */
@@ -82,11 +56,7 @@ public:
 
   /* Render the TitleBackground */
   bool render(SDL_Renderer* renderer, Options* config);
-
-  /* Update the TitleBackground */
-  bool update(int32_t cycle_time);
 };
-#endif
 
 /* TitleScreen Class */
 class TitleScreen

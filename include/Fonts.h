@@ -45,7 +45,8 @@ enum class FontName
   M_OPTIONS,
   M_VALUE,
   M_SMALL_TITLE_ELM,
-  REGULAR_FONT
+  REGULAR_FONT,
+  TITLE_MAIN_HEADER
 };
 
 class Fonts
