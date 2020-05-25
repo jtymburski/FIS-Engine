@@ -46,15 +46,13 @@ Victory::Victory(Options* config, BattleDisplayData* display_data,
   if(config && renderer)
   {
     frame_exp_empty = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/exp_empty.png", renderer);
-    frame_exp_middle =
-        new Frame(config->getBasePath() + "sprites/Overlay/Menu/exp_middle.png",
-                  renderer);
+        config->getBasePath() + "assets/images/ui/experience_empty.png", renderer);
+    frame_exp_middle = new Frame(
+        config->getBasePath() + "assets/images/ui/experience_middle.png", renderer);
     frame_exp_full = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/exp_full.png", renderer);
+        config->getBasePath() + "assets/images/ui/experience_full.png", renderer);
     frame_exp_full_yellow = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/exp_full_yellow.png",
-        renderer);
+        config->getBasePath() + "assets/images/ui/experience_full_yellow.png", renderer);
   }
 }
 
@@ -162,7 +160,7 @@ bool Victory::buildVictory()
 
     card = VictoryCard();
     card.frame_backdrop = new Frame(
-        config->getBasePath() + "sprites/Overlay/victory_card.png", renderer);
+        config->getBasePath() + "assets/images/ui/backgrounds/victory_card.png", renderer);
 
     auto frame_x = card.frame_backdrop->getWidth();
     auto frame_y = card.frame_backdrop->getHeight();

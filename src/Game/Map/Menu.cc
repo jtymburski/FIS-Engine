@@ -168,30 +168,28 @@ void Menu::buildIconFrames()
   if(config && renderer)
   {
     frame_bubbies = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/bubbies.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/menu_inventory_items.png", renderer);
     frame_checkbox = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/check.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/check.png", renderer);
     frame_equipment = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/equipment.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/menu_inventory_items.png", renderer);
     frame_footsteps = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/footsteps.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/menu_footsteps.png", renderer);
     frame_items = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/items.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/menu_inventory_items.png", renderer);
     frame_key_items = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/key_items.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/menu_inventory_items.png", renderer);
     frame_location = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/location.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/menu_location.png", renderer);
     frame_money = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/credits.png", renderer);
-    frame_equipment = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/equipment.png", renderer);
+        config->getBasePath() + "assets/images/ui/icons/menu_credits.png", renderer);
+
     frame_exp_full = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/exp_full.png", renderer);
-    frame_exp_middle =
-        new Frame(config->getBasePath() + "sprites/Overlay/Menu/exp_middle.png",
-                  renderer);
+        config->getBasePath() + "assets/images/ui/experience_full.png", renderer);
+    frame_exp_middle = new Frame(
+        config->getBasePath() + "assets/images/ui/experience_middle.png", renderer);
     frame_exp_empty = new Frame(
-        config->getBasePath() + "sprites/Overlay/Menu/exp_empty.png", renderer);
+        config->getBasePath() + "assets/images/ui/experience_empty.png", renderer);
   }
 }
 
@@ -1888,8 +1886,7 @@ void Menu::renderSleuth()
     // -- maintain face graphics inside of person
     if(i == 0)
     {
-      Frame* face = new Frame(
-          config->getBasePath() + "sprites/Map/Faces/player.png", renderer);
+      Frame* face = nullptr;
 
       if(face)
       {
@@ -2109,7 +2106,7 @@ void Menu::renderSleuthOverview()
   s_vita_bar.bar_amount = health_pc;
   s_vita_bar.color_bar = {(uint8_t)(150 * (1 - health_pc) * 2), 150, 0, 255};
   s_vita_bar.box_type = BoxType::BAR;
-  s_vita_bar.bar_degrees = 59.5;
+  s_vita_bar.bar_degrees = 59;
   s_vita_bar.render(renderer);
 
   current.x += s_vita_bar.width + gap;
@@ -2128,7 +2125,7 @@ void Menu::renderSleuthOverview()
   s_qtdr_bar.color_border = {230, 230, 230, 255};
   s_qtdr_bar.color_bar = {58, 170, 198, 255};
   s_qtdr_bar.bar_amount = qtdr_pc;
-  s_qtdr_bar.bar_degrees = 59.5;
+  s_qtdr_bar.bar_degrees = 59;
   s_qtdr_bar.box_type = BoxType::BAR;
   s_qtdr_bar.render(renderer);
 
