@@ -574,8 +574,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(game_directory + lay.path, lay.anim_time, velocity,
-                                 LayType::UNDERLAY);
+          battle_ctrl->createLay(lay.path, lay.anim_time, velocity, LayType::UNDERLAY);
         }
 
         /* Midlays */
@@ -583,8 +582,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(game_directory + lay.path, lay.anim_time, velocity,
-                                 LayType::MIDLAY);
+          battle_ctrl->createLay(lay.path, lay.anim_time, velocity, LayType::MIDLAY);
         }
 
         /* Overlays */
@@ -592,8 +590,7 @@ bool Game::eventStartBattle(int person_id, int source_id)
         {
           Floatinate velocity(lay.velocity_x, lay.velocity_y);
 
-          battle_ctrl->createLay(game_directory + lay.path, lay.anim_time, velocity,
-                                 LayType::OVERLAY);
+          battle_ctrl->createLay(lay.path, lay.anim_time, velocity, LayType::OVERLAY);
         }
       }
 

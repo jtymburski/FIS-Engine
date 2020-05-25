@@ -103,7 +103,7 @@ BattleDisplayData::~BattleDisplayData()
 void BattleDisplayData::buildBattleBar(std::string asset_path)
 {
   frame_battle_bar =
-      new Frame(asset_path + "sprites/Overlay/battle.png", renderer);
+      new Frame(asset_path + "assets/images/ui/backgrounds/battle.png", renderer);
 }
 
 void BattleDisplayData::buildFramesAilments(std::string asset_path)
