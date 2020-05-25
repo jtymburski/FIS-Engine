@@ -2212,11 +2212,13 @@ std::string Helpers::trim(std::string s)
  * Inputs: LayOver lay_over - the lay over to modify with the new data
  *         XmlData data - the load data element
  *         int file_index - the current index within the data set
+ *         std::string base_directory - the root path for loaded asset data
  * Output: LayOver - the updated lay over with the load data. No changes if
  *the
  *                   load failed.
  */
-LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index)
+LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index,
+                               std::string base_directory)
 {
   bool success = true;
   LayOver new_layover = lay_over;
@@ -2226,7 +2228,7 @@ LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index)
   if(element3 == "animation")
     new_layover.anim_time = data.getDataInteger(&success);
   else if(element3 == "path")
-    new_layover.path = data.getDataString(&success);
+    new_layover.path = base_directory + data.getDataString(&success);
   else if(element3 == "player")
     new_layover.player_relative = data.getDataBool(&success);
   else if(element3 == "velx")
@@ -2248,11 +2250,12 @@ LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index)
  * Inputs: BattleScene scene - the battle scene to modify with the new data
  *         XmlData data - the load data element
  *         int file_index - the current index within the data set
+ *         std::string base_directory - the root path for loaded asset data
  * Output: BattleScene - the updated scene with the load data. No changes if
  *                       the load failed.
  */
 BattleScene Helpers::updateScene(BattleScene scene, XmlData data,
-                                 int file_index)
+                                 int file_index, std::string base_directory)
 {
   bool success = true;
   BattleScene new_scene = scene;
@@ -2262,7 +2265,7 @@ BattleScene Helpers::updateScene(BattleScene scene, XmlData data,
   /* -- BACKGROUND PATH -- */
   if(element == "background")
   {
-    new_scene.background = data.getDataString(&success);
+    new_scene.background = base_directory + data.getDataString(&success);
   }
   /* -- MUSIC INTEGER -- */
   else if(element == "music")
@@ -2303,7 +2306,7 @@ BattleScene Helpers::updateScene(BattleScene scene, XmlData data,
       }
 
       /* Modify referenced layer */
-      *lay_ref = updateLayOver(*lay_ref, data, file_index + 1);
+      *lay_ref = updateLayOver(*lay_ref, data, file_index + 1, base_directory);
     }
   }
 

@@ -931,7 +931,7 @@ bool Game::loadData(XmlData data, int index, SDL_Renderer* renderer,
       edit_scene = addBattleScene(id);
 
     /* Modify */
-    *edit_scene = Helpers::updateScene(*edit_scene, data, index + 1);
+    *edit_scene = Helpers::updateScene(*edit_scene, data, index + 1, game_directory);
   }
   /* ---- CLASSES ---- */
   else if(element == "class")

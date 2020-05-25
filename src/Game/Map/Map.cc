@@ -3064,7 +3064,7 @@ bool Map::loadData(XmlData data, int index, SDL_Renderer* renderer,
           }
 
           /* Modify referenced lay */
-          *lay_ref = Helpers::updateLayOver(*lay_ref, data, index + 2);
+          *lay_ref = Helpers::updateLayOver(*lay_ref, data, index + 2, base_game_path);
         }
       }
       /* -- WEATHER -- */

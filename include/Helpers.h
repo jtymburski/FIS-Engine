@@ -345,9 +345,10 @@ public:
   static std::string trim(std::string s);
 
   /* Update load calls for global structs */
-  static LayOver updateLayOver(LayOver lay_over, XmlData data, int file_index);
+  static LayOver updateLayOver(LayOver lay_over, XmlData data, int file_index,
+                               std::string base_directory);
   static BattleScene updateScene(BattleScene scene, XmlData data,
-                                 int file_index);
+                                 int file_index, std::string base_directory);
 
   /*======================= GRAPHICAL FUNCTIONS =============================*/
 public:
