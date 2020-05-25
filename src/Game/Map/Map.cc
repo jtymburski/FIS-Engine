@@ -3103,24 +3103,25 @@ void Map::loadDataFinish(SDL_Renderer* renderer)
     base_path = system_options->getBasePath();
 
   /* Load the images */
-  img_spotted.setTexture(base_path + "sprites/Icons/exclamation.png", renderer);
+  img_spotted.setTexture(base_path + "assets/sprites/spotted.png", renderer);
 
   /* Load the item menu sprites */
-  item_menu.loadImageBackend("sprites/Overlay/item_store_left.png",
-                             "sprites/Overlay/item_store_right.png", renderer);
+  item_menu.loadImageBackend("assets/images/ui/backgrounds/item_store_main.png",
+                             "assets/images/ui/backgrounds/item_store_right.png",
+                             renderer);
 
   /* Load map dialog sprites */
-  map_dialog.loadImageClock("sprites/Overlay/PieClock_AA_A", 5, ".png",
+  map_dialog.loadImageClock("assets/images/ui/icons/dialog_clock_", 5, ".png",
                             renderer);
-  map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
-  map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png",
-                                   "sprites/Overlay/dialog_extender.png",
+  map_dialog.loadImageConversation("assets/images/ui/backgrounds/dialog.png", renderer);
+  map_dialog.loadImageDialogShifts("assets/images/ui/icons/dialog_next.png",
+                                   "assets/images/ui/icons/dialog_more.png",
                                    renderer);
-  map_dialog.loadImageNameLeftRight("sprites/Overlay/dialog_corner.png",
+  map_dialog.loadImageNameLeftRight("assets/images/ui/backgrounds/dialog_name_corner.png",
                                     renderer);
-  map_dialog.loadImageOptions("sprites/Overlay/option_circle.png",
-                              "sprites/Overlay/option_triangle.png", renderer);
-  map_dialog.loadImagePickupTopBottom("sprites/Overlay/notification_corner.png",
+  map_dialog.loadImageOptions("assets/images/ui/icons/dialog_option_middle.png",
+                              "assets/images/ui/icons/dialog_option_end.png", renderer);
+  map_dialog.loadImagePickupTopBottom("assets/images/ui/backgrounds/notification_corner.png",
                                       renderer);
 
   /* Clean up base things */
