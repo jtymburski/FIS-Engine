@@ -1346,6 +1346,7 @@ bool Frame::renderRectSelect(SDL_Rect rect, SDL_Renderer* renderer,
   short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
 
   filledPolygonRGBA(renderer, x, y, 4, color.r, color.g, color.b, color.a);
+  return true;
 }
 
 bool Frame::renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer,
@@ -1355,6 +1356,7 @@ bool Frame::renderRectBorderSelect(SDL_Rect rect, SDL_Renderer* renderer,
   short y[4] = {rect.y, rect.y, rect.y + rect.h, rect.y + rect.h};
 
   polygonRGBA(renderer, x, y, 4, color.r, color.g, color.b, color.a);
+  return true;
 }
 
 /*

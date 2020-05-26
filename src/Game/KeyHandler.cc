@@ -109,6 +109,9 @@ void KeyHandler::printIndex(Key key)
 void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
 {
   // TODO: Updating for secondary keys.
+  // TODO: Solution for alphanumeric entries during name/text entries
+  //       Suggestion: enforce at least one non-alphanumeric for both
+  //       action and cancel key
 
   /* Grab the SDL_Scancode matching the current element's Keycode */
   auto scan_code_prim = SDL_GetScancodeFromKey(key.keycode_prim);
@@ -136,8 +139,8 @@ void KeyHandler::updateKey(Key& key, int32_t cycle_time, KeyMode call_mode)
         else if(call_mode == KeyMode::NAME_ENTRY &&
                 text.size() < StringDb::kMAX_TITLE_NAME)
         {
-
-          if(text.back() != ' ' || key.keycode_prim != SDLK_SPACE)
+          // Disallow space prefixes and multiplespaces
+          if((!text.empty() && text.back() != ' ') || key.keycode_prim != SDLK_SPACE)
             addKeyEntry(key);
         }
         else if(call_mode == KeyMode::INPUT &&
@@ -682,6 +685,8 @@ bool KeyHandler::unsetKey(GameKey game_key, bool* found)
       element.assigned_secd = false;
     }
   }
+
+  return found;
 }
 
 /*
