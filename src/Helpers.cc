@@ -59,9 +59,7 @@ bool Helpers::chanceHappens(const uint32_t& pc_chance, const uint32_t& mag)
 
   auto random = randU(1, static_cast<int>(mag));
 
-  if(static_cast<uint32_t>(random) <= pc_chance)
-    return true;
-  return false;
+  return (static_cast<uint32_t>(random) <= pc_chance);
 }
 
 /*
@@ -281,6 +279,7 @@ ActionScope Helpers::actionScopeFromStr(const std::string scope)
     return ActionScope::NOT_USER;
   else if(scope_up == "ALL_NOT_USER")
     return ActionScope::ALL_NOT_USER;
+
   return ActionScope::NO_SCOPE;
 }
 
@@ -463,6 +462,7 @@ Infliction Helpers::ailmentFromStr(const std::string& ail)
     return Infliction::METATETHER;
   else if(ail_up == "MODULATE")
     return Infliction::MODULATE;
+
   return Infliction::INVALID;
 }
 
@@ -571,34 +571,6 @@ std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
       return "VITA";
     else if(attribute == Attribute::QTDR)
       return "QTDR";
-    // else if(attribute == Attribute::PHAG)
-    //   return "PHAG";
-    // else if(attribute == Attribute::PHFD)
-    //   return "PHFD";
-    // else if(attribute == Attribute::THAG)
-    //   return "THAG";
-    // else if(attribute == Attribute::THFD)
-    //   return "THFD";
-    // else if(attribute == Attribute::PRAG)
-    //   return "PRAG";
-    // else if(attribute == Attribute::PRFD)
-    //   return "PRFD";
-    // else if(attribute == Attribute::POAG)
-    //   return "POAG";
-    // else if(attribute == Attribute::POFD)
-    //   return "POFD";
-    // else if(attribute == Attribute::CHAG)
-    //   return "CHAG";
-    // else if(attribute == Attribute::CHFD)
-    //   return "CHFD";
-    // else if(attribute == Attribute::CYAG)
-    //   return "CYAG";
-    // else if(attribute == Attribute::CYFD)
-    //   return "CYFD";
-    // else if(attribute == Attribute::NIAG)
-    //   return "NIAG";
-    // else if(attribute == Attribute::NIFD)
-    //   return "NIFD";
     else if(attribute == Attribute::PRAG)
       return "PRAG";
     else if(attribute == Attribute::PRFD)
@@ -607,14 +579,10 @@ std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
       return "SEAG";
     else if(attribute == Attribute::SEFD)
       return "SEFD";
-    // else if(attribute == Attribute::MMNT)
-    //   return "MMNT";
     else if(attribute == Attribute::LIMB)
       return "LIMB";
     else if(attribute == Attribute::UNBR)
       return "UNBR";
-    // else if(attribute == Attribute::MANN)
-    //   return "MANN";
     else if(attribute == Attribute::WILL)
       return "WILL";
   }
@@ -625,36 +593,6 @@ std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
       return "Vitality - hit points, when 0 character is incapacitated";
     else if(attribute == Attribute::QTDR)
       return "Quantum Drive - skill cost currency";
-    // else if(attribute == Attribute::PHAG)
-    //   return "Physical Aggression - non-elemental attack statistic";
-    // else if(attribute == Attribute::PHFD)
-    //   return "Physical Fortitude - non-elemental defense statistic";
-    // else if(attribute == Attribute::THAG)
-    //   return "Thermal Aggression - fire-elemental attack statistic";
-    // else if(attribute == Attribute::THFD)
-    //   return "Thermal Fortitude - fire-elemental defense statistic";
-    // else if(attribute == Attribute::PRAG)
-    //   return "Primal Aggression - forest-elemental attack statistic";
-    // else if(attribute == Attribute::PRFD)
-    //   return "Primal Fortitude - forest-elemental defense statistic";
-    // else if(attribute == Attribute::POAG)
-    //   return "Polar Aggression - ice-elemental attack statistic";
-    // else if(attribute == Attribute::POFD)
-    //   return "Polar Fortitude - ice-elemental defense statistic";
-    // else if(attribute == Attribute::CHAG)
-    //   return "Charged Aggression - electric-elemental attack statistic";
-    // else if(attribute == Attribute::CHFD)
-    //   return "Charged Fortitude - electric-elemental defense statistic";
-    // else if(attribute == Attribute::CYAG)
-    //   return "Cybernetic Aggression - digital-elemental attack statistic";
-    // else if(attribute == Attribute::CYFD)
-    //   return "Cybernetic Fortitude - digital-elemental defense statistic";
-    // else if(attribute == Attribute::NIAG)
-    //   return "Nihil Aggression - void-elemental attack statistic";
-    // else if(attribute == Attribute::NIFD)
-    //   return "Nihil Fortitude - void-elemental defense statistic";
-    // else if(attribute == Attribute::MMNT)
-    //   return "Momentum - speed, in relation to turn order and action order";
     else if(attribute == Attribute::PRAG)
       return "Primary Aggression - Primary Elemental attack";
     else if(attribute == Attribute::PRFD)
@@ -669,10 +607,8 @@ std::string Helpers::attributeToStr(Attribute attribute, bool shortform)
       return "Unbearability - critical hit chance";
     else if(attribute == Attribute::WILL)
       return "Will - various luck effect on outcome of Battle events";
-    // else if(attribute == Attribute::MANN)
-    //   return "Manna - luck which has various effects on outcomes/earnings
-    //   etc.";
   }
+
   return "";
 }
 
@@ -721,6 +657,7 @@ ElementCurve Helpers::curveFromString(const std::string& curve)
     return ElementCurve::B;
   else if(curve_up == "C" || curve_up == "MODERATE")
     return ElementCurve::C;
+
   return ElementCurve::D;
 }
 
@@ -746,6 +683,7 @@ std::string Helpers::curveToString(const ElementCurve& curve, bool simple)
       return "B";
     else if(curve == ElementCurve::C)
       return "C";
+
     return "D";
   }
   /* Complex form is 'God-like', 'Normal', etc. */
@@ -786,6 +724,7 @@ Direction Helpers::directionFromString(const std::string& direction)
     return Direction::SOUTH;
   else if(dir_up == "WEST")
     return Direction::WEST;
+
   return Direction::DIRECTIONLESS;
 }
 
@@ -805,6 +744,7 @@ std::string Helpers::directionToString(const Direction& direction)
     return "SOUTH";
   else if(direction == Direction::WEST)
     return "WEST";
+
   return "";
 }
 
@@ -834,6 +774,7 @@ Element Helpers::elementFromString(const std::string& element)
     return Element::DIGITAL;
   else if(ele_up == "VOID")
     return Element::NIHIL;
+
   return Element::NONE;
 }
 
@@ -862,6 +803,7 @@ uint16_t Helpers::elementToInt(Element element)
     return 6;
   else if(element == Element::NONE)
     return 7;
+
   return 0;
 }
 
@@ -985,7 +927,12 @@ void Helpers::flushConsole(const char& c)
     std::cout << c << std::endl;
 }
 
-// TODO - Comments
+/*
+ * Description: Returns the string equivalent of a given GameKey enum.
+ *
+ * Inputs: const GameKey& game_key - enumerated GameKey object
+ * Output: std::string the string equivalent of the GameKey
+ */
 std::string Helpers::gameKeyToStr(const GameKey& game_key)
 {
   if(game_key == GameKey::MOVE_LEFT)
@@ -1007,7 +954,7 @@ std::string Helpers::gameKeyToStr(const GameKey& game_key)
   if(game_key == GameKey::PAUSE)
     return "Pause";
 
-  return "None";
+  return "";
 }
 
 /*
@@ -1078,6 +1025,7 @@ PartyType Helpers::partyTypeFromStr(const std::string& type)
     return PartyType::BEARACKS;
   else if(type_up == "SLEUTH")
     return PartyType::SLEUTH;
+
   return PartyType::REGULAR_FOE;
 }
 
@@ -1187,6 +1135,7 @@ RegenRate Helpers::regenRateFromStr(const std::string& regen_rate)
     return RegenRate::STRONG;
   else if(regen_up == "GRAND")
     return RegenRate::GRAND;
+
   return RegenRate::ZERO;
 }
 
@@ -1345,6 +1294,7 @@ TrackingState Helpers::trackingFromStr(const std::string& track)
     return TrackingState::AVOIDPLAYER;
   else if(track_up == "TO THE PLAYER")
     return TrackingState::TOPLAYER;
+
   return TrackingState::NOTRACK;
 }
 
@@ -1360,6 +1310,7 @@ std::string Helpers::trackingToStr(const TrackingState& track)
     return "Avoid the Player";
   else if(track == TrackingState::TOPLAYER)
     return "To the Player";
+
   return "None";
 }
 
@@ -1385,6 +1336,7 @@ ThingBase Helpers::typeFromStr(const std::string& type)
     return ThingBase::NPC;
   else if(type_up == "INTERACTIVE")
     return ThingBase::INTERACTIVE;
+
   return ThingBase::ISBASE;
 }
 
@@ -1406,6 +1358,7 @@ std::string Helpers::typeToStr(const ThingBase& type)
     return "NPC";
   else if(type == ThingBase::INTERACTIVE)
     return "Interactive";
+
   return "None";
 }
 
@@ -1665,6 +1618,7 @@ std::string Helpers::colorToHex(SDL_Color color, bool alpha)
                        hexFromBaseTen(color.b);
   if(alpha)
     result += hexFromBaseTen(color.a);
+
   return result;
 }
 
@@ -1711,6 +1665,7 @@ LayOver Helpers::createBlankLayOver()
   new_layover.velocity_x = 0.0;
   new_layover.velocity_y = 0.0;
   new_layover.player_relative = false;
+
   return new_layover;
 }
 
@@ -1729,6 +1684,7 @@ BattleScene Helpers::createBlankScene()
   scene.underlays.clear();
   scene.midlays.clear();
   scene.overlays.clear();
+
   return scene;
 }
 
@@ -1998,6 +1954,7 @@ std::string Helpers::hexFromBaseTen(uint32_t base_ten)
 {
   std::stringstream stream;
   stream << std::hex << base_ten;
+
   return stream.str();
 }
 
@@ -2239,6 +2196,7 @@ LayOver Helpers::updateLayOver(LayOver lay_over, XmlData data, int file_index,
   /* Return the appropriate set */
   if(success)
     return new_layover;
+
   return lay_over;
 }
 
@@ -2311,9 +2269,7 @@ BattleScene Helpers::updateScene(BattleScene scene, XmlData data,
   }
 
   /* Return the appropriate set */
-  if(success)
-    return new_scene;
-  return scene;
+  return success ? new_scene : scene;
 }
 
 /*=============================================================================
@@ -2541,6 +2497,7 @@ uint8_t Helpers::calcColorBlue(SDL_Color color, uint8_t alpha)
     pc_fade = (alpha * 100) / color.a;
 
   float blue_float = (pc_fade * color.b) / (float)100;
+
   return std::round(blue_float);
 }
 
@@ -2633,10 +2590,14 @@ void Helpers::deleteMasks()
 }
 
 /*
- * Description:
+ * Description: Given a coordinate to check, and it's top-left and bot-right
+ *              as bounding box, returns whether the check coordinate is within
+ *              the bounding box
  *
- * Inputs:
- * Output:
+ * Inputs: Coordinate test - check coordinate
+ *         Coordinate top_l - top left of bounding box
+ *         Coordinate bot_r - bottom right of bounding box
+ * Output: bool - true if check coordinate is within bounding box
  */
 bool Helpers::isWithinRange(Coordinate test, Coordinate top_l, Coordinate bot_r)
 {
