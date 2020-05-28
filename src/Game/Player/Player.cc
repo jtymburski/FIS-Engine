@@ -38,8 +38,7 @@ const uint32_t Player::kMAX_CREDITS{3141592654};
 Player::Player(Party* sleuth, Party* bearacks)
     : sleuth{sleuth},
       bearacks{bearacks},
-      player_sex{Sex::FEMALE} //
-      ,
+      player_sex{Sex::FEMALE},
       player_name{StringDb::kDEFAULT_PLAYER},
       credits{kSTARTING_CREDITS},
       gravity{kDEFAULT_GRAVITY},
@@ -60,18 +59,17 @@ Player::Player(Party* sleuth, Party* bearacks)
  */
 bool Player::addCredits(const uint32_t& value)
 {
-  auto added = false;
-
   if(value < kMAX_CREDITS)
   {
     if(kMAX_CREDITS - value >= credits)
       credits += value;
     else
       credits = kMAX_CREDITS;
-    added = true;
+
+    return true;
   }
 
-  return added;
+  return false;
 }
 
 /*
@@ -88,27 +86,23 @@ bool Player::addLearnedSkill(std::string party_type, Skill* skill,
                              const uint32_t& person_index,
                              const uint32_t& req_level)
 {
-  bool success = false;
-
-  if(skill != nullptr)
+  if(!skill)
   {
-    /* Get the reference party */
     Party* ref_party = nullptr;
     if(party_type == "sleuth")
       ref_party = sleuth;
     else if(party_type == "bearacks")
       ref_party = bearacks;
 
-    /* Access the party */
-    if(ref_party != nullptr && ref_party->getMember(person_index) != nullptr)
+    if(ref_party && !ref_party->getMember(person_index))
     {
-      success = ref_party->getMember(person_index)
-                    ->getLearnedSet(true)
-                    ->addSkill(skill, req_level);
+      return ref_party->getMember(person_index)
+                 ->getLearnedSet(true)
+                 ->addSkill(skill, req_level);
     }
   }
 
-  return success;
+  return false;
 }
 
 /*
@@ -120,16 +114,13 @@ bool Player::addLearnedSkill(std::string party_type, Skill* skill,
  */
 void Player::addPlayTime(const uint32_t& milliseconds)
 {
-  /* Add time */
   play_time.milliseconds += milliseconds;
 
-  /* If beyond thresholds for milliseconds, address */
   if(play_time.milliseconds >= 60000)
   {
     play_time.minutes += (play_time.milliseconds / 60000);
     play_time.milliseconds = (play_time.milliseconds % 60000);
 
-    /* If beyond thresholds for minutes, address */
     if(play_time.minutes >= 60)
     {
       play_time.hours += (play_time.minutes / 60);
@@ -183,7 +174,7 @@ Party* Player::getBearacks()
 /* Returns the carry weight */
 double Player::getCarryWeight()
 {
-  if(sleuth->getInventory() != nullptr)
+  if(sleuth->getInventory())
     return gravity * sleuth->getInventory()->getMass();
 
   return 0.0;
@@ -220,29 +211,21 @@ TimeStore Player::getPlayTime()
  */
 std::string Player::getPlayTimeStr()
 {
-  int day_ref = 0;
-  int hour_ref = 0;
   std::string time_str = "";
 
-  /* Determine days */
+  return time_str;
+
   if(play_time.hours >= 24)
   {
-    day_ref = (play_time.hours / 24);
-    hour_ref = (play_time.hours % 24);
+    time_str += std::to_string(play_time.hours / 24) + "d:";
+    time_str += std::to_string(play_time.hours % 24) + "h:";
   }
   else
   {
-    hour_ref = play_time.hours;
+    time_str += std::to_string(play_time.hours) + "h:";
   }
 
-  /* Format */
-  if(day_ref > 0)
-    time_str += std::to_string(day_ref) + "d:";
-  time_str += std::to_string(hour_ref) + "h:";
   time_str += std::to_string(play_time.minutes) + "m";
-  // time_str += ":" + std::to_string(play_time.milliseconds) + "ms";
-
-  return time_str;
 }
 
 /*
@@ -282,25 +265,21 @@ bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
 {
   bool success = true;
 
-  /* ---- BEARACKS PARTY ---- */
   if(data.getElement(index) == "bearacks")
   {
-    if(bearacks != nullptr)
+    if(bearacks)
       success &= bearacks->loadData(data, index + 1, renderer, base_path);
     else
       success = false;
   }
-  /* ---- CREDITS ---- */
   else if(data.getElement(index) == "credits")
   {
     success &= setCredits(data.getDataInteger(&success));
   }
-  /* ---- GRAVITY ---- */
   else if(data.getElement(index) == "gravity")
   {
     success &= setGravity(data.getDataInteger(&success));
   }
-  /* ---- PLAY TIME ---- */
   else if(data.getElement(index) == "playtime")
   {
     if(data.getElement(index + 1) == "hours")
@@ -325,7 +304,6 @@ bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
     // success &= player_sex =
     // Helpers::sexFromStr(data.getDataString(&success));
   }
-  /* ---- SLEUTH PARTY ---- */
   else if(data.getElement(index) == "sleuth")
   {
     if(sleuth != nullptr)
@@ -333,24 +311,12 @@ bool Player::loadData(XmlData data, int index, SDL_Renderer* renderer,
     else
       success = false;
   }
-  /* ---- STEPS ---- */
   else if(data.getElement(index) == "steps")
   {
     setSteps(data.getDataInteger(&success));
   }
 
   return success;
-}
-
-/*
- * Description: Prints out the information about the player
- *
- * Inputs:
- * Output:
- */
-void Player::print()
-{
-  // TODO: Print function [01-18-14]
 }
 
 /*
@@ -385,15 +351,14 @@ bool Player::removeBearacksMember(const std::string& name)
  */
 bool Player::removeCredits(const uint32_t& value)
 {
-  bool removed = false;
-
   if(value <= credits)
   {
     credits -= value;
-    removed = true;
+
+    return true;
   }
 
-  return removed;
+  return false;
 }
 
 /*
@@ -439,7 +404,7 @@ void Player::resetPlayTime()
  */
 bool Player::saveData(FileHandler* fh)
 {
-  if(fh != nullptr)
+  if(fh)
   {
     fh->writeXmlElement("player");
 
@@ -457,14 +422,16 @@ bool Player::saveData(FileHandler* fh)
     fh->writeXmlData("steps", steps);
 
     /* Write parties */
-    if(sleuth != nullptr)
+    if(sleuth)
       sleuth->saveData(fh, "sleuth");
-    if(bearacks != nullptr)
+    if(bearacks)
       bearacks->saveData(fh, "bearacks");
 
     fh->writeXmlElementEnd();
+
     return true;
   }
+
   return false;
 }
 
@@ -552,9 +519,6 @@ void Player::setPlayTime(const uint32_t& hours, const uint32_t& minutes,
   play_time.hours = hours;
   play_time.minutes = minutes;
   play_time.milliseconds = milliseconds;
-
-  /* Conform */
-  addPlayTime(0);
 }
 
 /*

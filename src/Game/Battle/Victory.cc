@@ -119,7 +119,7 @@ VictoryActor Victory::buildCard(BattleActor* actor)
 bool Victory::buildLoot()
 {
   auto success = true;
-  uint32_t credits;
+  uint32_t credits = 0;
 
   for(auto& enemy : losers)
   {

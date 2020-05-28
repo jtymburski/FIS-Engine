@@ -247,7 +247,7 @@ std::vector<StatModifier> BattleStats::getModifiersOfStat(Attribute battle_stat)
 
 uint32_t BattleStats::getNumAddModifiers(Attribute battle_stat)
 {
-  uint32_t num_add_modifiers;
+  uint32_t num_add_modifiers = 0;
 
   for(const auto& modifier : modifiers)
     if(modifier.type == ModifierType::ADDITIVE && modifier.stat == battle_stat)

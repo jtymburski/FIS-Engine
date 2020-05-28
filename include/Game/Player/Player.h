@@ -13,7 +13,6 @@
 *
 * TODO
 * ----
-* - Print function [01-18-14]
 *******************************************************************************/
 
 #ifndef PLAYER_H
@@ -104,9 +103,6 @@ public:
   /* Load data from file */
   bool loadData(XmlData data, int index, SDL_Renderer* renderer,
                 std::string base_path);
-
-  /* Methods for printing ou the info of the player */
-  void print();
 
   /* Removes a bearacks member by index by calling Party's remove function */
   bool removeBearacksMember(const uint32_t &index);
