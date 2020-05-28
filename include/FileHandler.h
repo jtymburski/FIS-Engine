@@ -49,7 +49,7 @@
 
 #include "Helpers.h"
 #include "Md5.h"
-#include "TinyXML.h"
+#include "tinyxml2.h"
 #include "XmlData.h"
 
 /* Macros */
@@ -96,8 +96,8 @@ private:
   bool file_write;
 
   /* XML handlers for reading/writing */
-  TinyXML2::XMLDocument* xml_document;
-  TinyXML2::XMLNode* xml_node;
+  tinyxml2::XMLDocument* xml_document;
+  tinyxml2::XMLNode* xml_node;
 
   /*------------------- Constants -----------------------*/
   const static int kASCII_IN_LONG;   /* # of ascii's that will fit in long */
@@ -175,11 +175,11 @@ private:
   int wrapNumber(int value, int limit);
 
   /* Returns the next data node from the current pointer */
-  TinyXML2::XMLNode* xmlNextData(TinyXML2::XMLNode* starting_node);
+  tinyxml2::XMLNode* xmlNextData(tinyxml2::XMLNode* starting_node);
 
   /* Returns the next node, that isn't a child but either a sibling or a
    * parent's sibling */
-  TinyXML2::XMLNode* xmlNextNode(TinyXML2::XMLNode* starting_node);
+  tinyxml2::XMLNode* xmlNextNode(tinyxml2::XMLNode* starting_node);
 
   /* Starts the XML reading procedure */
   bool xmlReadStart(bool read_before_write = false);
@@ -191,7 +191,7 @@ private:
 public:
   /* Finds the element sequence in the stack (not including data entry) and
    * puts the active node pointer at that location. */
-  TinyXML2::XMLNode* findElement(XmlData data, bool save_location = false);
+  tinyxml2::XMLNode* findElement(XmlData data, bool save_location = false);
 
   /* Returns a count of the number of elements */
   int getCount();
@@ -216,7 +216,7 @@ public:
 
   /* Finds the element in the stack (not including data entry) and then purges
    * all children. */
-  TinyXML2::XMLNode* purgeElement(XmlData data, bool save_location = false);
+  tinyxml2::XMLNode* purgeElement(XmlData data, bool save_location = false);
 
   /* Reads the following line as a string. Only valid for REGULAR files */
   std::string readRegularLine(bool* done = nullptr, bool* success = nullptr);

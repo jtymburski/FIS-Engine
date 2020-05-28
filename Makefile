@@ -48,7 +48,11 @@ EXEC_OS := $(EXEC_GENERIC)-$(UNAME_S)
 
 ASSETS_DIR := assets
 
-INCLUDES := -Iinclude
+INCLUDES := -Iinclude \
+            -Ilib/tinyxml2
+
+LIB_DIR := lib
+LIB_SOURCES := $(LIB_DIR)/tinyxml2/tinyxml2.cpp
 
 SRC_DIR := src
 SRC_FILE_DIRS := $(SRC_DIR) \
@@ -60,7 +64,8 @@ SRC_FILE_DIRS := $(SRC_DIR) \
 SOURCES := $(foreach dir,$(SRC_FILE_DIRS),$(wildcard $(dir)/*.cc))
 
 OBJ_DIR := $(BUILD_DIR)/obj
-OBJECTS := $(patsubst $(SRC_DIR)/%.cc,$(OBJ_DIR)/%.o,$(SOURCES))
+OBJECTS := $(patsubst %.cc,$(OBJ_DIR)/%.o,$(SOURCES)) \
+           $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(LIB_SOURCES))
 
 all: $(EXEC_OS)
 
@@ -68,7 +73,7 @@ $(EXEC_OS): $(OBJECTS)
 	@$(CP_RF) $(ASSETS_DIR) $(BUILD_DIR)
 	$(CC) $(LNFLAGS) -g -o $@ $(OBJECTS) $(LIBS)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
+$(OBJ_DIR)/%.o: %.c*
 	@$(MKDIR_P) $(@D)
 	$(CC) $(CFLAGS) $(INCLUDES) $< -o $@
 

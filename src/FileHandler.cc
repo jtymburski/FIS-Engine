@@ -914,12 +914,12 @@ int FileHandler::wrapNumber(int value, int limit)
  *              of the current given node. This returns NULL if one cannot be
  *              found.
  *
- * Inputs: TinyXML2::XMLNode* starting_node - a starting search node
- * Output: TinyXML2::XMLNode* - the pointer to the found node
+ * Inputs: tinyxml2::XMLNode* starting_node - a starting search node
+ * Output: tinyxml2::XMLNode* - the pointer to the found node
  */
-TinyXML2::XMLNode* FileHandler::xmlNextData(TinyXML2::XMLNode* starting_node)
+tinyxml2::XMLNode* FileHandler::xmlNextData(tinyxml2::XMLNode* starting_node)
 {
-  TinyXML2::XMLNode* node = starting_node;
+  tinyxml2::XMLNode* node = starting_node;
   bool search_done = false;
 
   if(node != NULL)
@@ -960,12 +960,12 @@ TinyXML2::XMLNode* FileHandler::xmlNextData(TinyXML2::XMLNode* starting_node)
  *              or a parent's sibling to the starting node. Returns NULL if one
  *              cannot be found.
  *
- * Inputs: TinyXML2::XMLNode* starting_node - a starting search node
- * Output: TinyXML2::XMLNode* - the pointer to the found node
+ * Inputs: tinyxml2::XMLNode* starting_node - a starting search node
+ * Output: tinyxml2::XMLNode* - the pointer to the found node
  */
-TinyXML2::XMLNode* FileHandler::xmlNextNode(TinyXML2::XMLNode* starting_node)
+tinyxml2::XMLNode* FileHandler::xmlNextNode(tinyxml2::XMLNode* starting_node)
 {
-  TinyXML2::XMLNode* node = starting_node;
+  tinyxml2::XMLNode* node = starting_node;
   bool search_done = false;
 
   /* Only proceed if the node is non-NULL */
@@ -1079,7 +1079,7 @@ bool FileHandler::xmlWriteEnd()
   if(available)
   {
     /* Set up the printer and output the document */
-    TinyXML2::XMLPrinter printer;
+    tinyxml2::XMLPrinter printer;
     xml_document->Print(&printer);
     std::string xml_output(printer.CStr());
 
@@ -1107,11 +1107,11 @@ bool FileHandler::xmlWriteEnd()
  *
  * Inputs: XmlData data - the data class to define the node sequence
  *         bool save_location - save found element location to active
- * Output: TinyXML2::XMLNode* - the found node location. NULL if failed
+ * Output: tinyxml2::XMLNode* - the found node location. NULL if failed
  */
-TinyXML2::XMLNode* FileHandler::findElement(XmlData data, bool save_location)
+tinyxml2::XMLNode* FileHandler::findElement(XmlData data, bool save_location)
 {
-  TinyXML2::XMLNode* node = nullptr;
+  tinyxml2::XMLNode* node = nullptr;
 
   if(available && file_type == XML && file_write && xml_document != nullptr)
   {
@@ -1128,12 +1128,12 @@ TinyXML2::XMLNode* FileHandler::findElement(XmlData data, bool save_location)
     while(!done && index < limit)
     {
       /* Find if a child element matches */
-      TinyXML2::XMLElement* ele =
+      tinyxml2::XMLElement* ele =
                         node->FirstChildElement(data.getElement(index).c_str());
       if(ele != nullptr)
       {
         /* Check the attribute if relevant */
-        const TinyXML2::XMLAttribute* attr = ele->FirstAttribute();
+        const tinyxml2::XMLAttribute* attr = ele->FirstAttribute();
         if(data.getKey(index).empty() ||
            (attr != nullptr && attr->Name() == data.getKey(index)
                             && attr->Value() == data.getKeyValue(index)))
@@ -1158,7 +1158,7 @@ TinyXML2::XMLNode* FileHandler::findElement(XmlData data, bool save_location)
       for(int i = index; i < limit; i++)
       {
         /* Create the element */
-        TinyXML2::XMLElement* ele =
+        tinyxml2::XMLElement* ele =
                            xml_document->NewElement(data.getElement(i).c_str());
         if(!data.getKey(i).empty())
           ele->SetAttribute(data.getKey(i).c_str(),data.getKeyValue(i).c_str());
@@ -1267,12 +1267,12 @@ bool FileHandler::isWriteEnabled()
  *
  * Inputs: XmlData data - the data class to define the node sequence
  *         bool save_location - save found element location to active
- * Output: TinyXML2::XMLNode* - the found node location. NULL if failed
+ * Output: tinyxml2::XMLNode* - the found node location. NULL if failed
  */
-TinyXML2::XMLNode* FileHandler::purgeElement(XmlData data, bool save_location)
+tinyxml2::XMLNode* FileHandler::purgeElement(XmlData data, bool save_location)
 {
   /* Find the node to purge */
-  TinyXML2::XMLNode* node = findElement(data, save_location);
+  tinyxml2::XMLNode* node = findElement(data, save_location);
   if(node != nullptr)
   {
     node->DeleteChildren();
@@ -1334,7 +1334,7 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
     /* Check to see if data was acquired */
     if(xml_node != NULL && xml_node->ToText() != NULL)
     {
-      TinyXML2::XMLNode* temp_node = xml_node->Parent();
+      tinyxml2::XMLNode* temp_node = xml_node->Parent();
 
       /* Loop through all the parent nodes till the top is reached */
       while(temp_node != 0)
@@ -1342,12 +1342,12 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
         /* Convert the node to an element -> only elements matter */
         std::string attribute_name = "";
         std::string attribute_value = "";
-        TinyXML2::XMLElement* element = temp_node->ToElement();
+        tinyxml2::XMLElement* element = temp_node->ToElement();
 
         if(element != NULL)
         {
           /* Get the attribute information, if relevant */
-          const TinyXML2::XMLAttribute* attribute = element->FirstAttribute();
+          const tinyxml2::XMLAttribute* attribute = element->FirstAttribute();
           if(attribute != NULL)
           {
             attribute_name = attribute->Name();
@@ -1563,7 +1563,7 @@ bool FileHandler::start(bool read_before_write)
     /* If the file type is XML, open the QXmlStreams and initialize XML */
     if(file_type == XML)
     {
-      xml_document = new TinyXML2::XMLDocument();
+      xml_document = new tinyxml2::XMLDocument();
       xml_node = xml_document;
       success &= xmlReadStart(read_before_write);
 
@@ -1688,7 +1688,7 @@ bool FileHandler::writeXmlData(std::string element,
     /* Only move foward if element string isn't empty */
     if(!element.empty() && !data.empty())
     {
-      TinyXML2::XMLElement* data_node =
+      tinyxml2::XMLElement* data_node =
                                       xml_document->NewElement(element.c_str());
       data_node->SetAttribute("type", static_cast<int>(type));
       data_node->InsertEndChild(xml_document->NewText(data.c_str()));
@@ -1792,13 +1792,13 @@ bool FileHandler::writeXmlDataSet(XmlData data, bool save_location)
   if(data.getNumElements() > 0 && !data.isDataUnset())
   {
     /* Find the node to insert */
-    TinyXML2::XMLNode* node = findElement(data, save_location);
+    tinyxml2::XMLNode* node = findElement(data, save_location);
     if(node != nullptr)
     {
       int index = data.getNumElements() - 1;
 
       /* Create or find the data entry */
-      TinyXML2::XMLElement* data_ele =
+      tinyxml2::XMLElement* data_ele =
                         node->FirstChildElement(data.getElement(index).c_str());
       if(data_ele == nullptr)
       {
@@ -1838,7 +1838,7 @@ bool FileHandler::writeXmlElement(std::string element,
     /* Only move forward if element string isn't empty */
     if(!element.empty())
     {
-      TinyXML2::XMLElement* element_node =
+      tinyxml2::XMLElement* element_node =
                                       xml_document->NewElement(element.c_str());
 
       /* Set the attribute if the key isn't empty */
@@ -1893,7 +1893,7 @@ bool FileHandler::writeXmlElementEnd(bool all)
     /* Otherwise, just go back one layer */
     else
     {
-      TinyXML2::XMLNode* parent_node = xml_node->Parent();
+      tinyxml2::XMLNode* parent_node = xml_node->Parent();
       if(parent_node != 0)
         xml_node = parent_node;
     }
@@ -1923,7 +1923,7 @@ std::string FileHandler::xmlToHead()
     /* If xml node is element, named date, and has a text, extract the date */
     if(xml_node != NULL && xml_node->ToElement() != NULL)
     {
-      TinyXML2::XMLElement* element = xml_node->ToElement();
+      tinyxml2::XMLElement* element = xml_node->ToElement();
       std::string category = element->Value();
       if(category == "date" && element->GetText() != NULL)
       {
@@ -1947,7 +1947,7 @@ bool FileHandler::xmlToTail()
 {
   if(available && file_type == XML && xml_document != nullptr)
   {
-    TinyXML2::XMLNode* node = xml_document->LastChild();
+    tinyxml2::XMLNode* node = xml_document->LastChild();
     if(node != nullptr)
     {
       while(node->Parent() != nullptr)
