@@ -20,7 +20,7 @@
 
 #include "Helpers.h"
 
-#include "GFX/SDL2_gfxPrimitives.h"
+#include "SDL2_gfxPrimitives.h"
 
 /* PI */
 #define PI 3.14159265359
