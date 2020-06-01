@@ -1,36 +1,43 @@
-CC := g++
-
 CP_RF := cp -rf
 MKDIR_P := mkdir -p
 RM_RF := rm -rf
 
+# Architecture Specific Configuration
+ifeq ($(ARCH),windows)
+  # Windows Config
+  SDL2_CONFIG := /usr/x86_64-w64-mingw32/bin/sdl2-config
+
+  CC := x86_64-w64-mingw32-g++
+  CFLAGS_ARCH := `$(SDL2_CONFIG) --cflags`
+  EXT_LIBS_ARCH := -static-libgcc -static-libstdc++ `$(SDL2_CONFIG) --libs`
+  LNFLAGS := -Wl,-O1
+else
+  # *nix Config
+  SDL2_CONFIG := sdl2-config
+
+  CC := g++
+  CFLAGS_ARCH := `$(SDL2_CONFIG) --cflags`
+  EXT_LIBS_ARCH := `$(SDL2_CONFIG) --libs`
+
+  ifeq ($(ARCH),linux)
+    # Linux Config
+    LNFLAGS := -Wl,-O1
+  else
+    # OSX Config
+    ARCH := osx
+  endif
+endif
+
 # Add -g for additional debugging options in 'gdb'
-CFLAGS := -c -std=c++1y `sdl2-config --cflags`
+CFLAGS := -c -std=c++1y $(CFLAGS_ARCH)
 CFLAGS_LIB := $(CFLAGS) -w
 CFLAGS_SRC := $(CFLAGS) -Wextra -Wno-unused-variable -Wno-narrowing
 
-# External Library Configuration
-EXT_LIBS := -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
-ifeq ($(OS),Windows_NT)
-	UNAME_S := Windows
-
-	# Windows parameters
-	EXT_LIBS += -lmingw32 -lSDL2main
-	LNFLAGS := -Wl,-O1
-else
-	UNAME_S := $(shell uname -s)
-
-	ifeq ($(UNAME_S),Linux)
-		# Linux parameters
-		LNFLAGS := -Wl,-O1
-	else
-		# OSX parameters
-	endif
-endif
+EXT_LIBS := $(EXT_LIBS_ARCH) -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 
 BUILD_DIR := bin
 EXEC_GENERIC := $(BUILD_DIR)/FISE
-EXEC_OS := $(EXEC_GENERIC)-$(UNAME_S)
+EXEC_OS := $(EXEC_GENERIC)-$(ARCH)
 
 ASSETS_DIR := assets
 
@@ -52,12 +59,40 @@ SRC_FILE_DIRS := $(SRC_DIR) \
                  $(SRC_DIR)/GFX
 SOURCES := $(foreach dir,$(SRC_FILE_DIRS),$(wildcard $(dir)/*.cc))
 
-OBJ_DIR := $(BUILD_DIR)/obj
+OBJ_DIR := $(BUILD_DIR)/obj/$(ARCH)
 OBJECTS := $(patsubst %.cc,$(OBJ_DIR)/%.o,$(SOURCES)) \
            $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(LIB_CPP_SOURCES)) \
            $(patsubst %.c,$(OBJ_DIR)/%.o,$(LIB_C_SOURCES))
 
-all: $(EXEC_OS)
+# Phony targets
+
+all: linux windows
+
+.PHONY: all clean cleansingle deepclean executable linux osx windows
+
+clean:
+	@$(MAKE) cleansingle ARCH=linux
+	@$(MAKE) cleansingle ARCH=osx
+	@$(MAKE) cleansingle ARCH=windows
+
+cleansingle:
+	$(RM) $(OBJECTS) $(EXEC_OS)*
+
+deepclean: clean
+	$(RM_RF) $(BUILD_DIR)
+
+executable: $(EXEC_OS)
+
+linux:
+	@$(MAKE) executable ARCH=linux
+
+osx:
+	@$(MAKE) executable ARCH=osx
+
+windows:
+	@$(MAKE) executable ARCH=windows
+
+# File targets
 
 $(EXEC_OS): $(OBJECTS)
 	@$(CP_RF) $(ASSETS_DIR) $(BUILD_DIR)
@@ -70,11 +105,3 @@ $(OBJ_DIR)/$(LIB_DIR)/%.o: $(LIB_DIR)/%.c*
 $(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c*
 	@$(MKDIR_P) $(@D)
 	$(CC) $(CFLAGS_SRC) $(INCLUDES) $< -o $@
-
-.PHONY: clean
-
-clean:
-	$(RM) $(OBJECTS) $(EXEC_GENERIC)*
-
-deepclean: clean
-	$(RM_RF) $(BUILD_DIR)
