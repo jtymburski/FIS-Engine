@@ -579,13 +579,12 @@ bool Application::initialize()
     if(system_options->isVsyncEnabled())
       flags |= SDL_RENDERER_PRESENTVSYNC;
 
-    auto driver_index = -1;
-
 #ifdef _WIN32_OPENGL
     /* Force OpenGL to be used as the rendering driver if there are more than
        one rendering drivers available */
     if(SDL_GetNumRenderDrivers() > 1)
     {
+      auto driver_index = -1;
       std::string open_gl = "opengl";
 
       /* Loop through each driver, comparing its value to "opengl" */
@@ -612,6 +611,7 @@ bool Application::initialize()
       /* Create the renderer */
       renderer = SDL_CreateRenderer(window, driver_index, flags);
 
+#ifdef UDEBUG
       /* Print out the chosen rendering driver info */
       if(renderer != nullptr)
       {
@@ -619,26 +619,25 @@ bool Application::initialize()
         SDL_GetRenderDriverInfo(0, renderer_info);
         auto error_index = SDL_GetRendererInfo(renderer, renderer_info);
 
-#ifdef UDEBUG
+
         if(error_index > -1 && renderer_info != nullptr)
           std::cout << "Rendering Driver: " << renderer_info->name << std::endl;
         else
           std::cerr << "[ERROR] Unable to get rendering driver info."
                     << std::endl;
-#endif
 
         delete renderer_info;
       }
+#endif // UDEBUG
     }
-    else
+#endif // _WIN32_OPENGL
+
+    /* If a specific renderer selection is not supported or failed,
+     * fall back to letting SDL choose */
+    if (renderer == NULL)
     {
-      /* If only one renderer exists, let SDL 'choose' */
       renderer = SDL_CreateRenderer(window, -1, flags);
     }
-#else // _WIN32_OPENGL
-    renderer = SDL_CreateRenderer(window, -1, flags);
-    (void)driver_index;
-#endif
 
     if(renderer == NULL)
     {
@@ -646,7 +645,6 @@ bool Application::initialize()
                 << SDL_GetError() << std::endl;
       success = false;
     }
-
     else
     {
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
