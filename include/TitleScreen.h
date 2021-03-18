@@ -227,7 +227,7 @@ public:
   void setSaveData(std::vector<Save> saves);
 
   /* Assigns the running sound handler */
-  bool setSoundHandler(SoundHandler* sound_hanler);
+  bool setSoundHandler(SoundHandler* sound_handler);
 
   /* Updates the title screen. Necessary for visual updates */
   bool update(int32_t cycle_time, KeyHandler& key_handler);
